@@ -6,6 +6,476 @@
     {
       "label": "SKILL.md",
       "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_skill",
+      "community": 21,
+      "norm_label": "skill.md"
+    },
+    {
+      "label": "Choose Technology Stack",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_skill_choose_technology_stack",
+      "community": 21,
+      "norm_label": "choose technology stack"
+    },
+    {
+      "label": "Overview",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_skill_overview",
+      "community": 21,
+      "norm_label": "overview"
+    },
+    {
+      "label": "Workflow",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_skill_workflow",
+      "community": 21,
+      "norm_label": "workflow"
+    },
+    {
+      "label": "Compare These Areas",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_skill_compare_these_areas",
+      "community": 21,
+      "norm_label": "compare these areas"
+    },
+    {
+      "label": "Guardrails",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L53",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_skill_guardrails",
+      "community": 21,
+      "norm_label": "guardrails"
+    },
+    {
+      "label": "selection-matrix.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_references_selection_matrix",
+      "community": 20,
+      "norm_label": "selection-matrix.md"
+    },
+    {
+      "label": "Stack Selection Matrix",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_references_selection_matrix_stack_selection_matrix",
+      "community": 20,
+      "norm_label": "stack selection matrix"
+    },
+    {
+      "label": "Required Inputs",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_references_selection_matrix_required_inputs",
+      "community": 20,
+      "norm_label": "required inputs"
+    },
+    {
+      "label": "Criteria",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_references_selection_matrix_criteria",
+      "community": 20,
+      "norm_label": "criteria"
+    },
+    {
+      "label": "Output Matrix",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_references_selection_matrix_output_matrix",
+      "community": 20,
+      "norm_label": "output matrix"
+    },
+    {
+      "label": "Decision Record",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "codex_skills_choose_technology_stack_references_selection_matrix_decision_record",
+      "community": 20,
+      "norm_label": "decision record"
+    },
+    {
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_skill",
+      "community": 25,
+      "norm_label": "skill.md"
+    },
+    {
+      "label": "Design Data Architecture",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_skill_design_data_architecture",
+      "community": 25,
+      "norm_label": "design data architecture"
+    },
+    {
+      "label": "Overview",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_skill_overview",
+      "community": 25,
+      "norm_label": "overview"
+    },
+    {
+      "label": "Workflow",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_skill_workflow",
+      "community": 25,
+      "norm_label": "workflow"
+    },
+    {
+      "label": "Guardrails",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": "L49",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_skill_guardrails",
+      "community": 25,
+      "norm_label": "guardrails"
+    },
+    {
+      "label": "data-decision-checklist.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_references_data_decision_checklist",
+      "community": 18,
+      "norm_label": "data-decision-checklist.md"
+    },
+    {
+      "label": "Data Architecture Checklist",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_references_data_decision_checklist_data_architecture_checklist",
+      "community": 18,
+      "norm_label": "data architecture checklist"
+    },
+    {
+      "label": "Domain Entities To Check",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_references_data_decision_checklist_domain_entities_to_check",
+      "community": 18,
+      "norm_label": "domain entities to check"
+    },
+    {
+      "label": "Invariants",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_references_data_decision_checklist_invariants",
+      "community": 18,
+      "norm_label": "invariants"
+    },
+    {
+      "label": "Storage Decisions",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_references_data_decision_checklist_storage_decisions",
+      "community": 18,
+      "norm_label": "storage decisions"
+    },
+    {
+      "label": "Scenario Validation",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_references_data_decision_checklist_scenario_validation",
+      "community": 18,
+      "norm_label": "scenario validation"
+    },
+    {
+      "label": "Output Template",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L57",
+      "_origin": "ast",
+      "id": "codex_skills_design_data_architecture_references_data_decision_checklist_output_template",
+      "community": 18,
+      "norm_label": "output template"
+    },
+    {
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_skill",
+      "community": 26,
+      "norm_label": "skill.md"
+    },
+    {
+      "label": "Design Observability Operations",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_skill_design_observability_operations",
+      "community": 26,
+      "norm_label": "design observability operations"
+    },
+    {
+      "label": "Overview",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_skill_overview",
+      "community": 26,
+      "norm_label": "overview"
+    },
+    {
+      "label": "Workflow",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_skill_workflow",
+      "community": 26,
+      "norm_label": "workflow"
+    },
+    {
+      "label": "Guardrails",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_skill_guardrails",
+      "community": 26,
+      "norm_label": "guardrails"
+    },
+    {
+      "label": "operations-checklist.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_references_operations_checklist",
+      "community": 19,
+      "norm_label": "operations-checklist.md"
+    },
+    {
+      "label": "Observability And Operations Checklist",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_references_operations_checklist_observability_and_operations_checklist",
+      "community": 19,
+      "norm_label": "observability and operations checklist"
+    },
+    {
+      "label": "Business Audit History",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_references_operations_checklist_business_audit_history",
+      "community": 19,
+      "norm_label": "business audit history"
+    },
+    {
+      "label": "Technical Logs",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_references_operations_checklist_technical_logs",
+      "community": 19,
+      "norm_label": "technical logs"
+    },
+    {
+      "label": "Metrics",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L37",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_references_operations_checklist_metrics",
+      "community": 19,
+      "norm_label": "metrics"
+    },
+    {
+      "label": "Backup And Restore",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_references_operations_checklist_backup_and_restore",
+      "community": 19,
+      "norm_label": "backup and restore"
+    },
+    {
+      "label": "Output Template",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L59",
+      "_origin": "ast",
+      "id": "codex_skills_design_observability_operations_references_operations_checklist_output_template",
+      "community": 19,
+      "norm_label": "output template"
+    },
+    {
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_skill",
+      "community": 27,
+      "norm_label": "skill.md"
+    },
+    {
+      "label": "Design System Interactions",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_skill_design_system_interactions",
+      "community": 27,
+      "norm_label": "design system interactions"
+    },
+    {
+      "label": "Overview",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_skill_overview",
+      "community": 27,
+      "norm_label": "overview"
+    },
+    {
+      "label": "Workflow",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_skill_workflow",
+      "community": 27,
+      "norm_label": "workflow"
+    },
+    {
+      "label": "Guardrails",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_skill_guardrails",
+      "community": 27,
+      "norm_label": "guardrails"
+    },
+    {
+      "label": "interaction-decision-checklist.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist",
+      "community": 22,
+      "norm_label": "interaction-decision-checklist.md"
+    },
+    {
+      "label": "Interaction Decision Checklist",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_interaction_decision_checklist",
+      "community": 22,
+      "norm_label": "interaction decision checklist"
+    },
+    {
+      "label": "Flows To Model",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_flows_to_model",
+      "community": 22,
+      "norm_label": "flows to model"
+    },
+    {
+      "label": "Boundary Questions",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_boundary_questions",
+      "community": 22,
+      "norm_label": "boundary questions"
+    },
+    {
+      "label": "Patterns To Compare",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_patterns_to_compare",
+      "community": 22,
+      "norm_label": "patterns to compare"
+    },
+    {
+      "label": "Output Template",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_output_template",
+      "community": 22,
+      "norm_label": "output template"
+    },
+    {
+      "label": "SKILL.md",
+      "file_type": "document",
       "source_file": ".codex/skills/graphify/SKILL.md",
       "source_location": "L1",
       "_origin": "ast",
@@ -602,6 +1072,126 @@
       "id": "codex_skills_graphify_references_update_for_cluster_only",
       "community": 6,
       "norm_label": "for --cluster-only"
+    },
+    {
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_skill",
+      "community": 24,
+      "norm_label": "skill.md"
+    },
+    {
+      "label": "Research Architecture Options",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_skill_research_architecture_options",
+      "community": 24,
+      "norm_label": "research architecture options"
+    },
+    {
+      "label": "Overview",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_skill_overview",
+      "community": 24,
+      "norm_label": "overview"
+    },
+    {
+      "label": "Workflow",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_skill_workflow",
+      "community": 24,
+      "norm_label": "workflow"
+    },
+    {
+      "label": "BodyLife Anchors",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_skill_bodylife_anchors",
+      "community": 24,
+      "norm_label": "bodylife anchors"
+    },
+    {
+      "label": "Guardrails",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_skill_guardrails",
+      "community": 24,
+      "norm_label": "guardrails"
+    },
+    {
+      "label": "research-protocol.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_references_research_protocol",
+      "community": 23,
+      "norm_label": "research-protocol.md"
+    },
+    {
+      "label": "Architecture Research Protocol",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_references_research_protocol_architecture_research_protocol",
+      "community": 23,
+      "norm_label": "architecture research protocol"
+    },
+    {
+      "label": "Evidence Order",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_references_research_protocol_evidence_order",
+      "community": 23,
+      "norm_label": "evidence order"
+    },
+    {
+      "label": "Questions To Answer",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_references_research_protocol_questions_to_answer",
+      "community": 23,
+      "norm_label": "questions to answer"
+    },
+    {
+      "label": "Decision Areas",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_references_research_protocol_decision_areas",
+      "community": 23,
+      "norm_label": "decision areas"
+    },
+    {
+      "label": "Output Template",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "codex_skills_research_architecture_options_references_research_protocol_output_template",
+      "community": 23,
+      "norm_label": "output template"
     },
     {
       "label": "AGENTS.md",
@@ -1438,6 +2028,396 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_skill",
+      "target": "codex_skills_choose_technology_stack_skill_choose_technology_stack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_skill_choose_technology_stack",
+      "target": "codex_skills_choose_technology_stack_skill_compare_these_areas",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_skill_choose_technology_stack",
+      "target": "codex_skills_choose_technology_stack_skill_guardrails",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_skill_choose_technology_stack",
+      "target": "codex_skills_choose_technology_stack_skill_overview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_skill_choose_technology_stack",
+      "target": "codex_skills_choose_technology_stack_skill_workflow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_references_selection_matrix",
+      "target": "codex_skills_choose_technology_stack_references_selection_matrix_stack_selection_matrix",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_references_selection_matrix_stack_selection_matrix",
+      "target": "codex_skills_choose_technology_stack_references_selection_matrix_criteria",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_references_selection_matrix_stack_selection_matrix",
+      "target": "codex_skills_choose_technology_stack_references_selection_matrix_decision_record",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_references_selection_matrix_stack_selection_matrix",
+      "target": "codex_skills_choose_technology_stack_references_selection_matrix_output_matrix",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_choose_technology_stack_references_selection_matrix_stack_selection_matrix",
+      "target": "codex_skills_choose_technology_stack_references_selection_matrix_required_inputs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_skill",
+      "target": "codex_skills_design_data_architecture_skill_design_data_architecture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_skill_design_data_architecture",
+      "target": "codex_skills_design_data_architecture_skill_guardrails",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_skill_design_data_architecture",
+      "target": "codex_skills_design_data_architecture_skill_overview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_skill_design_data_architecture",
+      "target": "codex_skills_design_data_architecture_skill_workflow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_references_data_decision_checklist",
+      "target": "codex_skills_design_data_architecture_references_data_decision_checklist_data_architecture_checklist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_references_data_decision_checklist_data_architecture_checklist",
+      "target": "codex_skills_design_data_architecture_references_data_decision_checklist_domain_entities_to_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_references_data_decision_checklist_data_architecture_checklist",
+      "target": "codex_skills_design_data_architecture_references_data_decision_checklist_invariants",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_references_data_decision_checklist_data_architecture_checklist",
+      "target": "codex_skills_design_data_architecture_references_data_decision_checklist_output_template",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_references_data_decision_checklist_data_architecture_checklist",
+      "target": "codex_skills_design_data_architecture_references_data_decision_checklist_scenario_validation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "codex_skills_design_data_architecture_references_data_decision_checklist_data_architecture_checklist",
+      "target": "codex_skills_design_data_architecture_references_data_decision_checklist_storage_decisions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_skill",
+      "target": "codex_skills_design_observability_operations_skill_design_observability_operations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_skill_design_observability_operations",
+      "target": "codex_skills_design_observability_operations_skill_guardrails",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_skill_design_observability_operations",
+      "target": "codex_skills_design_observability_operations_skill_overview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_skill_design_observability_operations",
+      "target": "codex_skills_design_observability_operations_skill_workflow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_references_operations_checklist",
+      "target": "codex_skills_design_observability_operations_references_operations_checklist_observability_and_operations_checklist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_references_operations_checklist_observability_and_operations_checklist",
+      "target": "codex_skills_design_observability_operations_references_operations_checklist_backup_and_restore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_references_operations_checklist_observability_and_operations_checklist",
+      "target": "codex_skills_design_observability_operations_references_operations_checklist_business_audit_history",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_references_operations_checklist_observability_and_operations_checklist",
+      "target": "codex_skills_design_observability_operations_references_operations_checklist_metrics",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_references_operations_checklist_observability_and_operations_checklist",
+      "target": "codex_skills_design_observability_operations_references_operations_checklist_output_template",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "codex_skills_design_observability_operations_references_operations_checklist_observability_and_operations_checklist",
+      "target": "codex_skills_design_observability_operations_references_operations_checklist_technical_logs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "codex_skills_design_system_interactions_skill",
+      "target": "codex_skills_design_system_interactions_skill_design_system_interactions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "codex_skills_design_system_interactions_skill_design_system_interactions",
+      "target": "codex_skills_design_system_interactions_skill_guardrails",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "codex_skills_design_system_interactions_skill_design_system_interactions",
+      "target": "codex_skills_design_system_interactions_skill_overview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "codex_skills_design_system_interactions_skill_design_system_interactions",
+      "target": "codex_skills_design_system_interactions_skill_workflow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_design_system_interactions_references_interaction_decision_checklist",
+      "target": "codex_skills_design_system_interactions_references_interaction_decision_checklist_interaction_decision_checklist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "codex_skills_design_system_interactions_references_interaction_decision_checklist_interaction_decision_checklist",
+      "target": "codex_skills_design_system_interactions_references_interaction_decision_checklist_boundary_questions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_design_system_interactions_references_interaction_decision_checklist_interaction_decision_checklist",
+      "target": "codex_skills_design_system_interactions_references_interaction_decision_checklist_flows_to_model",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "codex_skills_design_system_interactions_references_interaction_decision_checklist_interaction_decision_checklist",
+      "target": "codex_skills_design_system_interactions_references_interaction_decision_checklist_output_template",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "codex_skills_design_system_interactions_references_interaction_decision_checklist_interaction_decision_checklist",
+      "target": "codex_skills_design_system_interactions_references_interaction_decision_checklist_patterns_to_compare",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": ".codex/skills/graphify/SKILL.md",
       "source_location": "L6",
       "weight": 1.0,
@@ -1943,6 +2923,106 @@
       "weight": 1.0,
       "source": "codex_skills_graphify_references_update_graphify_reference_incremental_update_and_cluster_only",
       "target": "codex_skills_graphify_references_update_for_update_incremental_re_extraction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_skill",
+      "target": "codex_skills_research_architecture_options_skill_research_architecture_options",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_skill_research_architecture_options",
+      "target": "codex_skills_research_architecture_options_skill_bodylife_anchors",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_skill_research_architecture_options",
+      "target": "codex_skills_research_architecture_options_skill_guardrails",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_skill_research_architecture_options",
+      "target": "codex_skills_research_architecture_options_skill_overview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_skill_research_architecture_options",
+      "target": "codex_skills_research_architecture_options_skill_workflow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_references_research_protocol",
+      "target": "codex_skills_research_architecture_options_references_research_protocol_architecture_research_protocol",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_references_research_protocol_architecture_research_protocol",
+      "target": "codex_skills_research_architecture_options_references_research_protocol_decision_areas",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_references_research_protocol_architecture_research_protocol",
+      "target": "codex_skills_research_architecture_options_references_research_protocol_evidence_order",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_references_research_protocol_architecture_research_protocol",
+      "target": "codex_skills_research_architecture_options_references_research_protocol_output_template",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "codex_skills_research_architecture_options_references_research_protocol_architecture_research_protocol",
+      "target": "codex_skills_research_architecture_options_references_research_protocol_questions_to_answer",
       "confidence_score": 1.0
     },
     {
@@ -2756,5 +3836,6 @@
       "confidence_score": 1.0
     }
   ],
-  "hyperedges": []
+  "hyperedges": [],
+  "built_at_commit": "ac09d92faafaf628689cfa822769a680ef4fde9d"
 }

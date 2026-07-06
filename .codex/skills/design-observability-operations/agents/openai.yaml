@@ -1,0 +1,4 @@
+interface:
+  display_name: "Observability Operations"
+  short_description: "Design logs audit metrics operations"
+  default_prompt: "Use $design-observability-operations to design logging, audit, metrics, backups, deployment, and operational practices for BodyLife CRM."

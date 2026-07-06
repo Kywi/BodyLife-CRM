@@ -1,0 +1,4 @@
+interface:
+  display_name: "Architecture Research"
+  short_description: "Research neutral architecture options"
+  default_prompt: "Use $research-architecture-options to research architecture options for BodyLife CRM before choosing a stack."

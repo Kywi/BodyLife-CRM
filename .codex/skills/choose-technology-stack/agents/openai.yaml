@@ -1,0 +1,4 @@
+interface:
+  display_name: "Technology Stack"
+  short_description: "Compare languages frameworks databases"
+  default_prompt: "Use $choose-technology-stack to compare languages, frameworks, databases, and deployment options for BodyLife CRM."

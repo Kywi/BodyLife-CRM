@@ -1,0 +1,4 @@
+interface:
+  display_name: "Data Architecture"
+  short_description: "Design neutral data architecture"
+  default_prompt: "Use $design-data-architecture to design and compare data architecture options for BodyLife CRM."

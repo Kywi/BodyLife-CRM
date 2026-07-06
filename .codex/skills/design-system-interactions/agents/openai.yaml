@@ -1,0 +1,4 @@
+interface:
+  display_name: "System Interactions"
+  short_description: "Design APIs workflows boundaries"
+  default_prompt: "Use $design-system-interactions to design component interactions, APIs, workflows, and transaction boundaries for BodyLife CRM."

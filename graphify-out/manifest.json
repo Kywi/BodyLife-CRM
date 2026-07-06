@@ -78,5 +78,80 @@
     "mtime": 1783339943.8180554,
     "ast_hash": "f007ca50d21e7a600f757c0854322445",
     "semantic_hash": ""
+  },
+  ".codex/skills/choose-technology-stack/SKILL.md": {
+    "mtime": 1783341581.8529537,
+    "ast_hash": "9e53dca750a74845eaefa357504bfcd4",
+    "semantic_hash": ""
+  },
+  ".codex/skills/choose-technology-stack/agents/openai.yaml": {
+    "mtime": 1783341581.8529537,
+    "ast_hash": "2bcbd39793cd8c6ce8809a4a70021dc5",
+    "semantic_hash": ""
+  },
+  ".codex/skills/choose-technology-stack/references/selection-matrix.md": {
+    "mtime": 1783341581.8529537,
+    "ast_hash": "99d820f779d649d83a2b198efc073865",
+    "semantic_hash": ""
+  },
+  ".codex/skills/design-data-architecture/SKILL.md": {
+    "mtime": 1783342188.5967207,
+    "ast_hash": "532e51da5a80520a64e7d0dfe6045eeb",
+    "semantic_hash": ""
+  },
+  ".codex/skills/design-data-architecture/agents/openai.yaml": {
+    "mtime": 1783341581.8569536,
+    "ast_hash": "e538409d8c79ab19b9eb9c4e7cb114da",
+    "semantic_hash": ""
+  },
+  ".codex/skills/design-data-architecture/references/data-decision-checklist.md": {
+    "mtime": 1783342188.5967207,
+    "ast_hash": "151ff92949e1c99f83f0b1c82ded5497",
+    "semantic_hash": ""
+  },
+  ".codex/skills/design-observability-operations/SKILL.md": {
+    "mtime": 1783342188.6007206,
+    "ast_hash": "aabdfeec3a9c19f82216ac43b30a9c56",
+    "semantic_hash": ""
+  },
+  ".codex/skills/design-observability-operations/agents/openai.yaml": {
+    "mtime": 1783341581.8609536,
+    "ast_hash": "e6a9d44c1339e55567e41f7c699db7fe",
+    "semantic_hash": ""
+  },
+  ".codex/skills/design-observability-operations/references/operations-checklist.md": {
+    "mtime": 1783342188.6007206,
+    "ast_hash": "ccd960dcb694fcac1dd2c5ccb9973162",
+    "semantic_hash": ""
+  },
+  ".codex/skills/design-system-interactions/SKILL.md": {
+    "mtime": 1783342188.5967207,
+    "ast_hash": "a8f91a38b3798ae08a65c52fdfe41fc1",
+    "semantic_hash": ""
+  },
+  ".codex/skills/design-system-interactions/agents/openai.yaml": {
+    "mtime": 1783341581.8609536,
+    "ast_hash": "bb1dfc7888043fef0335bc99c929f1df",
+    "semantic_hash": ""
+  },
+  ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md": {
+    "mtime": 1783342188.5967207,
+    "ast_hash": "096ffd1bd2741b85ae57addeb9205542",
+    "semantic_hash": ""
+  },
+  ".codex/skills/research-architecture-options/SKILL.md": {
+    "mtime": 1783341581.8489537,
+    "ast_hash": "88b5bf102ac647267f28c0d650415d57",
+    "semantic_hash": ""
+  },
+  ".codex/skills/research-architecture-options/agents/openai.yaml": {
+    "mtime": 1783341581.8529537,
+    "ast_hash": "1eed6014e22cecd6b6e45c74514744eb",
+    "semantic_hash": ""
+  },
+  ".codex/skills/research-architecture-options/references/research-protocol.md": {
+    "mtime": 1783341581.8529537,
+    "ast_hash": "af8dc7293149d7ce5a93065d6698ae9a",
+    "semantic_hash": ""
   }
 }
