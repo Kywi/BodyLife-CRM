@@ -1,0 +1,77 @@
+{
+  ".codex/hooks.json": {
+    "mtime": 1783177173.8954494,
+    "ast_hash": "a3d2e47262cef516b55814336039982a",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/SKILL.md": {
+    "mtime": 1783177173.8914495,
+    "ast_hash": "21f78a7f96e2f9aecc0f7afc053bd3cc",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/add-watch.md": {
+    "mtime": 1783062767.8375993,
+    "ast_hash": "d59d027fe449f06aa03905a01184e779",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/exports.md": {
+    "mtime": 1783062767.8375993,
+    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/extraction-spec.md": {
+    "mtime": 1783062767.8375993,
+    "ast_hash": "bf895ec4d4e40f5f66f7d31c2a9bd4a7",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/github-and-merge.md": {
+    "mtime": 1783062767.8375993,
+    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/hooks.md": {
+    "mtime": 1783062767.8375993,
+    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/query.md": {
+    "mtime": 1783062767.8375993,
+    "ast_hash": "9e5aadc2c57ab561bc56600fcfa70735",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/transcribe.md": {
+    "mtime": 1783062767.8375993,
+    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/update.md": {
+    "mtime": 1783062767.8375993,
+    "ast_hash": "c698309979460d0f02ba616417844399",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1783177173.8914495,
+    "ast_hash": "6a47d64fcc136324ca395065a707ef76",
+    "semantic_hash": ""
+  },
+  "docs/first-version-proposal.html": {
+    "mtime": 1783339541.318377,
+    "ast_hash": "fc48fded6af51647c9592b4d336d4ea1",
+    "semantic_hash": ""
+  },
+  "docs/initial-context.txt": {
+    "mtime": 1783177007.2874663,
+    "ast_hash": "c29c176c7ac16f55e59a9189e83d93af",
+    "semantic_hash": ""
+  },
+  "docs/question-answering-interview.txt": {
+    "mtime": 1783176978.2434711,
+    "ast_hash": "f10b1ac07978eeff243e1d63db98e967",
+    "semantic_hash": ""
+  },
+  "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf": {
+    "mtime": 1783335552.9810355,
+    "ast_hash": "e0708949051f5fe8a04c3086b1af3813",
+    "semantic_hash": ""
+  }
+}

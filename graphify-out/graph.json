@@ -1,0 +1,2760 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill",
+      "community": 1,
+      "norm_label": "skill.md"
+    },
+    {
+      "label": "/graphify",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_graphify",
+      "community": 1,
+      "norm_label": "/graphify"
+    },
+    {
+      "label": "Usage",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_usage",
+      "community": 1,
+      "norm_label": "usage"
+    },
+    {
+      "label": "What graphify is for",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_what_graphify_is_for",
+      "community": 1,
+      "norm_label": "what graphify is for"
+    },
+    {
+      "label": "What You Must Do When Invoked",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L49",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "community": 0,
+      "norm_label": "what you must do when invoked"
+    },
+    {
+      "label": "Step 0 - GitHub repos and multi-path merge (only if a URL or several paths)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L61",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_0_github_repos_and_multi_path_merge_only_if_a_url_or_several_paths",
+      "community": 0,
+      "norm_label": "step 0 - github repos and multi-path merge (only if a url or several paths)"
+    },
+    {
+      "label": "Step 1 - Ensure graphify is installed",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L65",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_1_ensure_graphify_is_installed",
+      "community": 0,
+      "norm_label": "step 1 - ensure graphify is installed"
+    },
+    {
+      "label": "Step 2 - Detect files",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L107",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_2_detect_files",
+      "community": 0,
+      "norm_label": "step 2 - detect files"
+    },
+    {
+      "label": "Step 2.5 - Video and audio (only if video files detected)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L144",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_2_5_video_and_audio_only_if_video_files_detected",
+      "community": 0,
+      "norm_label": "step 2.5 - video and audio (only if video files detected)"
+    },
+    {
+      "label": "Step 3 - Extract entities and relationships",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L148",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_3_extract_entities_and_relationships",
+      "community": 0,
+      "norm_label": "step 3 - extract entities and relationships"
+    },
+    {
+      "label": "Part A - Structural extraction for code files",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L167",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_part_a_structural_extraction_for_code_files",
+      "community": 0,
+      "norm_label": "part a - structural extraction for code files"
+    },
+    {
+      "label": "Part B - Semantic extraction (parallel subagents)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L193",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_part_b_semantic_extraction_parallel_subagents",
+      "community": 0,
+      "norm_label": "part b - semantic extraction (parallel subagents)"
+    },
+    {
+      "label": "Part C - Merge AST + semantic into final extraction",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L350",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_part_c_merge_ast_semantic_into_final_extraction",
+      "community": 0,
+      "norm_label": "part c - merge ast + semantic into final extraction"
+    },
+    {
+      "label": "Step 4 - Build graph, cluster, analyze, generate outputs",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L384",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_4_build_graph_cluster_analyze_generate_outputs",
+      "community": 0,
+      "norm_label": "step 4 - build graph, cluster, analyze, generate outputs"
+    },
+    {
+      "label": "Step 4.5 - Graph health check (read-only integrity gate)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L447",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_4_5_graph_health_check_read_only_integrity_gate",
+      "community": 0,
+      "norm_label": "step 4.5 - graph health check (read-only integrity gate)"
+    },
+    {
+      "label": "Step 5 - Label communities",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L473",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_5_label_communities",
+      "community": 0,
+      "norm_label": "step 5 - label communities"
+    },
+    {
+      "label": "Step 6 - Generate Obsidian vault (opt-in) + HTML",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L514",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_6_generate_obsidian_vault_opt_in_html",
+      "community": 0,
+      "norm_label": "step 6 - generate obsidian vault (opt-in) + html"
+    },
+    {
+      "label": "Steps 6b-8 - Wiki, Neo4j, FalkorDB, SVG, GraphML, MCP, benchmark (only on their flags)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L534",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_steps_6b_8_wiki_neo4j_falkordb_svg_graphml_mcp_benchmark_only_on_their_flags",
+      "community": 0,
+      "norm_label": "steps 6b-8 - wiki, neo4j, falkordb, svg, graphml, mcp, benchmark (only on their flags)"
+    },
+    {
+      "label": "Step 9 - Save manifest, update cost tracker, clean up, and report",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L540",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_step_9_save_manifest_update_cost_tracker_clean_up_and_report",
+      "community": 0,
+      "norm_label": "step 9 - save manifest, update cost tracker, clean up, and report"
+    },
+    {
+      "label": "Interpreter guard for subcommands",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L620",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_interpreter_guard_for_subcommands",
+      "community": 1,
+      "norm_label": "interpreter guard for subcommands"
+    },
+    {
+      "label": "For --update and --cluster-only",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L638",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_for_update_and_cluster_only",
+      "community": 1,
+      "norm_label": "for --update and --cluster-only"
+    },
+    {
+      "label": "For /graphify query",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L644",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_for_graphify_query",
+      "community": 1,
+      "norm_label": "for /graphify query"
+    },
+    {
+      "label": "For /graphify add and --watch",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L656",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_for_graphify_add_and_watch",
+      "community": 1,
+      "norm_label": "for /graphify add and --watch"
+    },
+    {
+      "label": "For the commit hook and native CLAUDE.md integration",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L662",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_for_the_commit_hook_and_native_claude_md_integration",
+      "community": 1,
+      "norm_label": "for the commit hook and native claude.md integration"
+    },
+    {
+      "label": "Honesty Rules",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L668",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_skill_honesty_rules",
+      "community": 1,
+      "norm_label": "honesty rules"
+    },
+    {
+      "label": "add-watch.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_add_watch",
+      "community": 4,
+      "norm_label": "add-watch.md"
+    },
+    {
+      "label": "graphify reference: add a URL and watch a folder",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_add_watch_graphify_reference_add_a_url_and_watch_a_folder",
+      "community": 4,
+      "norm_label": "graphify reference: add a url and watch a folder"
+    },
+    {
+      "label": "For /graphify add",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_add_watch_for_graphify_add",
+      "community": 4,
+      "norm_label": "for /graphify add"
+    },
+    {
+      "label": "For --watch",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_add_watch_for_watch",
+      "community": 4,
+      "norm_label": "for --watch"
+    },
+    {
+      "label": "exports.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_exports",
+      "community": 2,
+      "norm_label": "exports.md"
+    },
+    {
+      "label": "graphify reference: extra exports and benchmark",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "community": 2,
+      "norm_label": "graphify reference: extra exports and benchmark"
+    },
+    {
+      "label": "Step 6b - Wiki (only if --wiki flag)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_exports_step_6b_wiki_only_if_wiki_flag",
+      "community": 2,
+      "norm_label": "step 6b - wiki (only if --wiki flag)"
+    },
+    {
+      "label": "Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_exports_step_7_neo4j_export_only_if_neo4j_or_neo4j_push_flag",
+      "community": 2,
+      "norm_label": "step 7 - neo4j export (only if --neo4j or --neo4j-push flag)"
+    },
+    {
+      "label": "Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_exports_step_7a_falkordb_export_only_if_falkordb_or_falkordb_push_flag",
+      "community": 2,
+      "norm_label": "step 7a - falkordb export (only if --falkordb or --falkordb-push flag)"
+    },
+    {
+      "label": "Step 7b - SVG export (only if --svg flag)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_exports_step_7b_svg_export_only_if_svg_flag",
+      "community": 2,
+      "norm_label": "step 7b - svg export (only if --svg flag)"
+    },
+    {
+      "label": "Step 7c - GraphML export (only if --graphml flag)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L53",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_exports_step_7c_graphml_export_only_if_graphml_flag",
+      "community": 2,
+      "norm_label": "step 7c - graphml export (only if --graphml flag)"
+    },
+    {
+      "label": "Step 7d - MCP server (only if --mcp flag)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L59",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_exports_step_7d_mcp_server_only_if_mcp_flag",
+      "community": 2,
+      "norm_label": "step 7d - mcp server (only if --mcp flag)"
+    },
+    {
+      "label": "Step 8 - Token reduction benchmark (only if total_words > 5000)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L79",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_exports_step_8_token_reduction_benchmark_only_if_total_words_5000",
+      "community": 2,
+      "norm_label": "step 8 - token reduction benchmark (only if total_words > 5000)"
+    },
+    {
+      "label": "extraction-spec.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/extraction-spec.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_extraction_spec",
+      "community": 11,
+      "norm_label": "extraction-spec.md"
+    },
+    {
+      "label": "graphify reference: extraction subagent prompt (compact)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/extraction-spec.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_extraction_spec_graphify_reference_extraction_subagent_prompt_compact",
+      "community": 11,
+      "norm_label": "graphify reference: extraction subagent prompt (compact)"
+    },
+    {
+      "label": "github-and-merge.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/github-and-merge.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_github_and_merge",
+      "community": 8,
+      "norm_label": "github-and-merge.md"
+    },
+    {
+      "label": "graphify reference: GitHub clone and cross-repo merge",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/github-and-merge.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge",
+      "community": 8,
+      "norm_label": "graphify reference: github clone and cross-repo merge"
+    },
+    {
+      "label": "Step 0 - Clone GitHub repo(s) (only if a GitHub URL was given)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/github-and-merge.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_github_and_merge_step_0_clone_github_repo_s_only_if_a_github_url_was_given",
+      "community": 8,
+      "norm_label": "step 0 - clone github repo(s) (only if a github url was given)"
+    },
+    {
+      "label": "hooks.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_hooks",
+      "community": 5,
+      "norm_label": "hooks.md"
+    },
+    {
+      "label": "graphify reference: commit hook and native CLAUDE.md integration",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration",
+      "community": 5,
+      "norm_label": "graphify reference: commit hook and native claude.md integration"
+    },
+    {
+      "label": "For git commit hook",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_hooks_for_git_commit_hook",
+      "community": 5,
+      "norm_label": "for git commit hook"
+    },
+    {
+      "label": "For native CLAUDE.md integration",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_hooks_for_native_claude_md_integration",
+      "community": 5,
+      "norm_label": "for native claude.md integration"
+    },
+    {
+      "label": "query.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_query",
+      "community": 3,
+      "norm_label": "query.md"
+    },
+    {
+      "label": "graphify reference: query, path, explain",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_query_graphify_reference_query_path_explain",
+      "community": 3,
+      "norm_label": "graphify reference: query, path, explain"
+    },
+    {
+      "label": "Step 0 \u2014 Constrained query expansion (REQUIRED before traversal)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L23",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_query_step_0_constrained_query_expansion_required_before_traversal",
+      "community": 3,
+      "norm_label": "step 0 \u2014 constrained query expansion (required before traversal)"
+    },
+    {
+      "label": "Step 1 \u2014 Traversal",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L61",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_query_step_1_traversal",
+      "community": 3,
+      "norm_label": "step 1 \u2014 traversal"
+    },
+    {
+      "label": "For /graphify path",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L186",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_query_for_graphify_path",
+      "community": 3,
+      "norm_label": "for /graphify path"
+    },
+    {
+      "label": "For /graphify explain",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L254",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_query_for_graphify_explain",
+      "community": 3,
+      "norm_label": "for /graphify explain"
+    },
+    {
+      "label": "transcribe.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/transcribe.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_transcribe",
+      "community": 9,
+      "norm_label": "transcribe.md"
+    },
+    {
+      "label": "graphify reference: transcribe video and audio",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/transcribe.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_transcribe_graphify_reference_transcribe_video_and_audio",
+      "community": 9,
+      "norm_label": "graphify reference: transcribe video and audio"
+    },
+    {
+      "label": "Step 2.5 - Transcribe video / audio files (only if video files detected)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/transcribe.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_transcribe_step_2_5_transcribe_video_audio_files_only_if_video_files_detected",
+      "community": 9,
+      "norm_label": "step 2.5 - transcribe video / audio files (only if video files detected)"
+    },
+    {
+      "label": "update.md",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_update",
+      "community": 6,
+      "norm_label": "update.md"
+    },
+    {
+      "label": "graphify reference: incremental update and cluster-only",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_update_graphify_reference_incremental_update_and_cluster_only",
+      "community": 6,
+      "norm_label": "graphify reference: incremental update and cluster-only"
+    },
+    {
+      "label": "For --update (incremental re-extraction)",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_update_for_update_incremental_re_extraction",
+      "community": 6,
+      "norm_label": "for --update (incremental re-extraction)"
+    },
+    {
+      "label": "For --cluster-only",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": "L184",
+      "_origin": "ast",
+      "id": "codex_skills_graphify_references_update_for_cluster_only",
+      "community": 6,
+      "norm_label": "for --cluster-only"
+    },
+    {
+      "label": "AGENTS.md",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "agents",
+      "community": 10,
+      "norm_label": "agents.md"
+    },
+    {
+      "label": "graphify",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "agents_graphify",
+      "community": 10,
+      "norm_label": "graphify"
+    },
+    {
+      "label": "first-version-requirements.md",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements",
+      "community": 7,
+      "norm_label": "first-version-requirements.md"
+    },
+    {
+      "label": "\u0414\u0435\u0442\u0430\u043b\u044c\u043d\u0430 \u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f \u043f\u0435\u0440\u0448\u043e\u0457 \u0432\u0435\u0440\u0441\u0456\u0457 \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u0434\u043b\u044f \u0437\u0430\u043b\u0443",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "community": 7,
+      "norm_label": "\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430 \u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456 \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u0434\u043b\u044f \u0437\u0430\u043b\u0443"
+    },
+    {
+      "label": "1. \u041f\u0440\u0438\u0437\u043d\u0430\u0447\u0435\u043d\u043d\u044f \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_1_\u043f\u0440\u0438\u0437\u043d\u0430\u0447\u0435\u043d\u043d\u044f_\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430",
+      "community": 7,
+      "norm_label": "1. \u043f\u0440\u0438\u0437\u043d\u0430\u0447\u0435\u043d\u043d\u044f \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430"
+    },
+    {
+      "label": "2. \u0413\u043e\u043b\u043e\u0432\u043d\u0430 \u043c\u0435\u0442\u0430 \u043f\u0435\u0440\u0448\u043e\u0457 \u0432\u0435\u0440\u0441\u0456\u0457",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_2_\u0433\u043e\u043b\u043e\u0432\u043d\u0430_\u043c\u0435\u0442\u0430_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "community": 7,
+      "norm_label": "2. \u0433\u043e\u043b\u043e\u0432\u043d\u0430 \u043c\u0435\u0442\u0430 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
+    },
+    {
+      "label": "3. \u041c\u0435\u0436\u0456 \u043f\u0435\u0440\u0448\u043e\u0457 \u0432\u0435\u0440\u0441\u0456\u0457",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_3_\u043c\u0435\u0436\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "community": 7,
+      "norm_label": "3. \u043c\u0435\u0436\u0456 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
+    },
+    {
+      "label": "3.1. \u0412\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_3_1_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
+      "community": 7,
+      "norm_label": "3.1. \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
+    },
+    {
+      "label": "3.2. \u041d\u0435 \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L53",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_3_2_\u043d\u0435_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
+      "community": 7,
+      "norm_label": "3.2. \u043d\u0435 \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
+    },
+    {
+      "label": "4. \u041a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456 \u0441\u0438\u0441\u0442\u0435\u043c\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L70",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_4_\u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456_\u0441\u0438\u0441\u0442\u0435\u043c\u0438",
+      "community": 7,
+      "norm_label": "4. \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456 \u0441\u0438\u0441\u0442\u0435\u043c\u0438"
+    },
+    {
+      "label": "4.1. \u0412\u043b\u0430\u0441\u043d\u0438\u043a",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L72",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_4_1_\u0432\u043b\u0430\u0441\u043d\u0438\u043a",
+      "community": 7,
+      "norm_label": "4.1. \u0432\u043b\u0430\u0441\u043d\u0438\u043a"
+    },
+    {
+      "label": "4.2. \u0410\u0434\u043c\u0456\u043d\u0456\u0441\u0442\u0440\u0430\u0442\u043e\u0440",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L87",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_4_2_\u0430\u0434\u043c\u0456\u043d\u0456\u0441\u0442\u0440\u0430\u0442\u043e\u0440",
+      "community": 7,
+      "norm_label": "4.2. \u0430\u0434\u043c\u0456\u043d\u0456\u0441\u0442\u0440\u0430\u0442\u043e\u0440"
+    },
+    {
+      "label": "4.3. \u0422\u0440\u0435\u043d\u0435\u0440",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L104",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_4_3_\u0442\u0440\u0435\u043d\u0435\u0440",
+      "community": 7,
+      "norm_label": "4.3. \u0442\u0440\u0435\u043d\u0435\u0440"
+    },
+    {
+      "label": "5. \u041e\u0441\u043d\u043e\u0432\u043d\u0456 \u0440\u043e\u0431\u043e\u0447\u0456 \u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L112",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "community": 15,
+      "norm_label": "5. \u043e\u0441\u043d\u043e\u0432\u043d\u0456 \u0440\u043e\u0431\u043e\u0447\u0456 \u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0456"
+    },
+    {
+      "label": "5.1. \u041a\u043b\u0456\u0454\u043d\u0442 \u043f\u0440\u0438\u0439\u0448\u043e\u0432 \u0443 \u0437\u0430\u043b \u0437 \u043a\u0430\u0440\u0442\u043a\u043e\u044e",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L114",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_1_\u043a\u043b\u0456\u0454\u043d\u0442_\u043f\u0440\u0438\u0439\u0448\u043e\u0432_\u0443_\u0437\u0430\u043b_\u0437_\u043a\u0430\u0440\u0442\u043a\u043e\u044e",
+      "community": 15,
+      "norm_label": "5.1. \u043a\u043b\u0456\u0454\u043d\u0442 \u043f\u0440\u0438\u0438\u0448\u043e\u0432 \u0443 \u0437\u0430\u043b \u0437 \u043a\u0430\u0440\u0442\u043a\u043e\u044e"
+    },
+    {
+      "label": "5.2. \u041a\u043b\u0456\u0454\u043d\u0442 \u043f\u0440\u0438\u0439\u0448\u043e\u0432 \u0431\u0435\u0437 \u043a\u0430\u0440\u0442\u043a\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L135",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_2_\u043a\u043b\u0456\u0454\u043d\u0442_\u043f\u0440\u0438\u0439\u0448\u043e\u0432_\u0431\u0435\u0437_\u043a\u0430\u0440\u0442\u043a\u0438",
+      "community": 15,
+      "norm_label": "5.2. \u043a\u043b\u0456\u0454\u043d\u0442 \u043f\u0440\u0438\u0438\u0448\u043e\u0432 \u0431\u0435\u0437 \u043a\u0430\u0440\u0442\u043a\u0438"
+    },
+    {
+      "label": "5.3. \u041d\u043e\u0432\u0438\u0439 \u043a\u043b\u0456\u0454\u043d\u0442",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L150",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_3_\u043d\u043e\u0432\u0438\u0439_\u043a\u043b\u0456\u0454\u043d\u0442",
+      "community": 15,
+      "norm_label": "5.3. \u043d\u043e\u0432\u0438\u0438 \u043a\u043b\u0456\u0454\u043d\u0442"
+    },
+    {
+      "label": "5.4. \u0412\u0438\u0434\u0430\u0447\u0430 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L171",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_4_\u0432\u0438\u0434\u0430\u0447\u0430_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "community": 15,
+      "norm_label": "5.4. \u0432\u0438\u0434\u0430\u0447\u0430 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
+    },
+    {
+      "label": "5.5. \u0412\u0456\u0434\u043c\u0456\u0442\u043a\u0430 \u0432\u0456\u0437\u0438\u0442\u0443",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L185",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_5_\u0432\u0456\u0434\u043c\u0456\u0442\u043a\u0430_\u0432\u0456\u0437\u0438\u0442\u0443",
+      "community": 15,
+      "norm_label": "5.5. \u0432\u0456\u0434\u043c\u0456\u0442\u043a\u0430 \u0432\u0456\u0437\u0438\u0442\u0443"
+    },
+    {
+      "label": "5.6. \u0421\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f \u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e\u0433\u043e \u0432\u0456\u0437\u0438\u0442\u0443",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L196",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_6_\u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f_\u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e\u0433\u043e_\u0432\u0456\u0437\u0438\u0442\u0443",
+      "community": 15,
+      "norm_label": "5.6. \u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f \u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e\u0433\u043e \u0432\u0456\u0437\u0438\u0442\u0443"
+    },
+    {
+      "label": "5.7. \u041e\u043f\u043b\u0430\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L212",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_7_\u043e\u043f\u043b\u0430\u0442\u0430",
+      "community": 15,
+      "norm_label": "5.7. \u043e\u043f\u043b\u0430\u0442\u0430"
+    },
+    {
+      "label": "5.8. \u0417\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L225",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_8_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "community": 15,
+      "norm_label": "5.8. \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
+    },
+    {
+      "label": "5.9. \u041d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439 \u0434\u0435\u043d\u044c \u0430\u0431\u043e \u0441\u0432\u044f\u0442\u043e",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L235",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_9_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0430\u0431\u043e_\u0441\u0432\u044f\u0442\u043e",
+      "community": 15,
+      "norm_label": "5.9. \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0438 \u0434\u0435\u043d\u044c \u0430\u0431\u043e \u0441\u0432\u044f\u0442\u043e"
+    },
+    {
+      "label": "5.10. \u041a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L251",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_5_10_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
+      "community": 15,
+      "norm_label": "5.10. \u043a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438"
+    },
+    {
+      "label": "6. \u0414\u0430\u043d\u0456, \u044f\u043a\u0456 \u0442\u0440\u0435\u0431\u0430 \u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L271",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "community": 16,
+      "norm_label": "6. \u0434\u0430\u043d\u0456, \u044f\u043a\u0456 \u0442\u0440\u0435\u0431\u0430 \u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438"
+    },
+    {
+      "label": "6.1. \u041a\u043b\u0456\u0454\u043d\u0442",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L275",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_1_\u043a\u043b\u0456\u0454\u043d\u0442",
+      "community": 16,
+      "norm_label": "6.1. \u043a\u043b\u0456\u0454\u043d\u0442"
+    },
+    {
+      "label": "6.2. \u041d\u043e\u043c\u0435\u0440 \u043a\u0430\u0440\u0442\u043a\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L297",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_2_\u043d\u043e\u043c\u0435\u0440_\u043a\u0430\u0440\u0442\u043a\u0438",
+      "community": 16,
+      "norm_label": "6.2. \u043d\u043e\u043c\u0435\u0440 \u043a\u0430\u0440\u0442\u043a\u0438"
+    },
+    {
+      "label": "6.3. \u0422\u0438\u043f \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L309",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_3_\u0442\u0438\u043f_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "community": 16,
+      "norm_label": "6.3. \u0442\u0438\u043f \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
+    },
+    {
+      "label": "6.4. \u0410\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442 \u043a\u043b\u0456\u0454\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L333",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_4_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442_\u043a\u043b\u0456\u0454\u043d\u0442\u0430",
+      "community": 16,
+      "norm_label": "6.4. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442 \u043a\u043b\u0456\u0454\u043d\u0442\u0430"
+    },
+    {
+      "label": "6.5. \u0412\u0456\u0437\u0438\u0442",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L366",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_5_\u0432\u0456\u0437\u0438\u0442",
+      "community": 16,
+      "norm_label": "6.5. \u0432\u0456\u0437\u0438\u0442"
+    },
+    {
+      "label": "6.6. \u041e\u043f\u043b\u0430\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L383",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_6_\u043e\u043f\u043b\u0430\u0442\u0430",
+      "community": 16,
+      "norm_label": "6.6. \u043e\u043f\u043b\u0430\u0442\u0430"
+    },
+    {
+      "label": "6.7. \u0417\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L397",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_7_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430",
+      "community": 16,
+      "norm_label": "6.7. \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430"
+    },
+    {
+      "label": "6.8. \u041d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439 \u0434\u0435\u043d\u044c \u0430\u0431\u043e \u043f\u0435\u0440\u0456\u043e\u0434",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L411",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_8_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0430\u0431\u043e_\u043f\u0435\u0440\u0456\u043e\u0434",
+      "community": 16,
+      "norm_label": "6.8. \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0438 \u0434\u0435\u043d\u044c \u0430\u0431\u043e \u043f\u0435\u0440\u0456\u043e\u0434"
+    },
+    {
+      "label": "6.9. \u0422\u0435\u0445\u043d\u0456\u0447\u043d\u0438\u0439 \u043a\u043b\u0456\u0454\u043d\u0442 \u0434\u043b\u044f \u0440\u0430\u0437\u043e\u0432\u0438\u0445 \u0456 \u043f\u0440\u043e\u0431\u043d\u0438\u0445 \u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u044c",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L431",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_6_9_\u0442\u0435\u0445\u043d\u0456\u0447\u043d\u0438\u0439_\u043a\u043b\u0456\u0454\u043d\u0442_\u0434\u043b\u044f_\u0440\u0430\u0437\u043e\u0432\u0438\u0445_\u0456_\u043f\u0440\u043e\u0431\u043d\u0438\u0445_\u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u044c",
+      "community": 16,
+      "norm_label": "6.9. \u0442\u0435\u0445\u043d\u0456\u0447\u043d\u0438\u0438 \u043a\u043b\u0456\u0454\u043d\u0442 \u0434\u043b\u044f \u0440\u0430\u0437\u043e\u0432\u0438\u0445 \u0456 \u043f\u0440\u043e\u0431\u043d\u0438\u0445 \u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u044c"
+    },
+    {
+      "label": "7. \u0411\u0456\u0437\u043d\u0435\u0441-\u043f\u0440\u0430\u0432\u0438\u043b\u0430 \u0456 \u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L442",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "community": 12,
+      "norm_label": "7. \u0431\u0456\u0437\u043d\u0435\u0441-\u043f\u0440\u0430\u0432\u0438\u043b\u0430 \u0456 \u0444\u043e\u0440\u043c\u0443\u043b\u0438"
+    },
+    {
+      "label": "7.1. \u041e\u0441\u043d\u043e\u0432\u043d\u0430 \u0444\u043e\u0440\u043c\u0443\u043b\u0430 \u0434\u0430\u0442\u0438 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L444",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_1_\u043e\u0441\u043d\u043e\u0432\u043d\u0430_\u0444\u043e\u0440\u043c\u0443\u043b\u0430_\u0434\u0430\u0442\u0438_\u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "community": 12,
+      "norm_label": "7.1. \u043e\u0441\u043d\u043e\u0432\u043d\u0430 \u0444\u043e\u0440\u043c\u0443\u043b\u0430 \u0434\u0430\u0442\u0438 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
+    },
+    {
+      "label": "7.2. \u0424\u043e\u0440\u043c\u0443\u043b\u0430 \u0437\u0430\u043b\u0438\u0448\u043a\u0443 \u0437\u0430\u043d\u044f\u0442\u044c",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L478",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_2_\u0444\u043e\u0440\u043c\u0443\u043b\u0430_\u0437\u0430\u043b\u0438\u0448\u043a\u0443_\u0437\u0430\u043d\u044f\u0442\u044c",
+      "community": 12,
+      "norm_label": "7.2. \u0444\u043e\u0440\u043c\u0443\u043b\u0430 \u0437\u0430\u043b\u0438\u0448\u043a\u0443 \u0437\u0430\u043d\u044f\u0442\u044c"
+    },
+    {
+      "label": "7.3. \u041c\u0456\u043d\u0443\u0441\u043e\u0432\u0456 \u0437\u0430\u043d\u044f\u0442\u0442\u044f",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L491",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_3_\u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456_\u0437\u0430\u043d\u044f\u0442\u0442\u044f",
+      "community": 12,
+      "norm_label": "7.3. \u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456 \u0437\u0430\u043d\u044f\u0442\u0442\u044f"
+    },
+    {
+      "label": "7.4. \u0414\u0430\u0442\u0430 \u0441\u0442\u0430\u0440\u0442\u0443 \u043d\u043e\u0432\u043e\u0433\u043e \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430 \u043f\u0440\u0438 \u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0438\u0445 \u0437\u0430\u043d\u044f\u0442\u0442\u044f\u0445",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L512",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_4_\u0434\u0430\u0442\u0430_\u0441\u0442\u0430\u0440\u0442\u0443_\u043d\u043e\u0432\u043e\u0433\u043e_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430_\u043f\u0440\u0438_\u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0438\u0445_\u0437\u0430\u043d\u044f\u0442\u0442\u044f\u0445",
+      "community": 12,
+      "norm_label": "7.4. \u0434\u0430\u0442\u0430 \u0441\u0442\u0430\u0440\u0442\u0443 \u043d\u043e\u0432\u043e\u0433\u043e \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430 \u043f\u0440\u0438 \u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0438\u0445 \u0437\u0430\u043d\u044f\u0442\u0442\u044f\u0445"
+    },
+    {
+      "label": "7.5. \u0410\u043a\u0442\u0438\u0432\u043d\u0456\u0441\u0442\u044c \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L537",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_5_\u0430\u043a\u0442\u0438\u0432\u043d\u0456\u0441\u0442\u044c_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "community": 12,
+      "norm_label": "7.5. \u0430\u043a\u0442\u0438\u0432\u043d\u0456\u0441\u0442\u044c \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
+    },
+    {
+      "label": "7.6. \u0417\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L563",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_6_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430",
+      "community": 12,
+      "norm_label": "7.6. \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430"
+    },
+    {
+      "label": "7.7. \u041d\u0435\u0440\u043e\u0431\u043e\u0447\u0456 \u0434\u043d\u0456 \u0442\u0430 \u0441\u0432\u044f\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L587",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_7_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0456_\u0434\u043d\u0456_\u0442\u0430_\u0441\u0432\u044f\u0442\u0430",
+      "community": 12,
+      "norm_label": "7.7. \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0456 \u0434\u043d\u0456 \u0442\u0430 \u0441\u0432\u044f\u0442\u0430"
+    },
+    {
+      "label": "7.8. \u0420\u043e\u0431\u043e\u0447\u0456 \u0434\u043d\u0456 \u0437\u0430\u043b\u0443",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L626",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_8_\u0440\u043e\u0431\u043e\u0447\u0456_\u0434\u043d\u0456_\u0437\u0430\u043b\u0443",
+      "community": 12,
+      "norm_label": "7.8. \u0440\u043e\u0431\u043e\u0447\u0456 \u0434\u043d\u0456 \u0437\u0430\u043b\u0443"
+    },
+    {
+      "label": "7.9. \u041a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L638",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_9_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
+      "community": 12,
+      "norm_label": "7.9. \u043a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438"
+    },
+    {
+      "label": "7.10. \u0414\u0435\u043d\u043d\u0438\u0439 \u0437\u0432\u0456\u0442",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L666",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_10_\u0434\u0435\u043d\u043d\u0438\u0439_\u0437\u0432\u0456\u0442",
+      "community": 12,
+      "norm_label": "7.10. \u0434\u0435\u043d\u043d\u0438\u0438 \u0437\u0432\u0456\u0442"
+    },
+    {
+      "label": "7.11. \u041f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f \u043f\u0440\u043e \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L688",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_7_11_\u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f_\u043f\u0440\u043e_\u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "community": 12,
+      "norm_label": "7.11. \u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f \u043f\u0440\u043e \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
+    },
+    {
+      "label": "8. \u0415\u043a\u0440\u0430\u043d\u0438 \u043f\u0435\u0440\u0448\u043e\u0457 \u0432\u0435\u0440\u0441\u0456\u0457",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L710",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "community": 13,
+      "norm_label": "8. \u0435\u043a\u0440\u0430\u043d\u0438 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
+    },
+    {
+      "label": "8.1. \u0412\u0445\u0456\u0434 \u0443 \u0441\u0438\u0441\u0442\u0435\u043c\u0443",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L712",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_1_\u0432\u0445\u0456\u0434_\u0443_\u0441\u0438\u0441\u0442\u0435\u043c\u0443",
+      "community": 13,
+      "norm_label": "8.1. \u0432\u0445\u0456\u0434 \u0443 \u0441\u0438\u0441\u0442\u0435\u043c\u0443"
+    },
+    {
+      "label": "8.2. \u0413\u043e\u043b\u043e\u0432\u043d\u0438\u0439 \u0435\u043a\u0440\u0430\u043d \u0440\u0435\u0446\u0435\u043f\u0446\u0456\u0457",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L720",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_2_\u0433\u043e\u043b\u043e\u0432\u043d\u0438\u0439_\u0435\u043a\u0440\u0430\u043d_\u0440\u0435\u0446\u0435\u043f\u0446\u0456\u0457",
+      "community": 13,
+      "norm_label": "8.2. \u0433\u043e\u043b\u043e\u0432\u043d\u0438\u0438 \u0435\u043a\u0440\u0430\u043d \u0440\u0435\u0446\u0435\u043f\u0446\u0456\u0456"
+    },
+    {
+      "label": "8.3. \u041f\u0440\u043e\u0444\u0456\u043b\u044c \u043a\u043b\u0456\u0454\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L733",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_3_\u043f\u0440\u043e\u0444\u0456\u043b\u044c_\u043a\u043b\u0456\u0454\u043d\u0442\u0430",
+      "community": 13,
+      "norm_label": "8.3. \u043f\u0440\u043e\u0444\u0456\u043b\u044c \u043a\u043b\u0456\u0454\u043d\u0442\u0430"
+    },
+    {
+      "label": "8.4. \u0415\u043a\u0440\u0430\u043d \u0432\u0438\u0434\u0430\u0447\u0456 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L757",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_4_\u0435\u043a\u0440\u0430\u043d_\u0432\u0438\u0434\u0430\u0447\u0456_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "community": 13,
+      "norm_label": "8.4. \u0435\u043a\u0440\u0430\u043d \u0432\u0438\u0434\u0430\u0447\u0456 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
+    },
+    {
+      "label": "8.5. \u0415\u043a\u0440\u0430\u043d \u0432\u0456\u0437\u0438\u0442\u0456\u0432",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L770",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_5_\u0435\u043a\u0440\u0430\u043d_\u0432\u0456\u0437\u0438\u0442\u0456\u0432",
+      "community": 13,
+      "norm_label": "8.5. \u0435\u043a\u0440\u0430\u043d \u0432\u0456\u0437\u0438\u0442\u0456\u0432"
+    },
+    {
+      "label": "8.6. \u0415\u043a\u0440\u0430\u043d \u043e\u043f\u043b\u0430\u0442",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L781",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_6_\u0435\u043a\u0440\u0430\u043d_\u043e\u043f\u043b\u0430\u0442",
+      "community": 13,
+      "norm_label": "8.6. \u0435\u043a\u0440\u0430\u043d \u043e\u043f\u043b\u0430\u0442"
+    },
+    {
+      "label": "8.7. \u0415\u043a\u0440\u0430\u043d \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043e\u043a",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L793",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_7_\u0435\u043a\u0440\u0430\u043d_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043e\u043a",
+      "community": 13,
+      "norm_label": "8.7. \u0435\u043a\u0440\u0430\u043d \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043e\u043a"
+    },
+    {
+      "label": "8.8. \u0415\u043a\u0440\u0430\u043d \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445 \u0434\u043d\u0456\u0432",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L806",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_8_\u0435\u043a\u0440\u0430\u043d_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445_\u0434\u043d\u0456\u0432",
+      "community": 13,
+      "norm_label": "8.8. \u0435\u043a\u0440\u0430\u043d \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445 \u0434\u043d\u0456\u0432"
+    },
+    {
+      "label": "8.9. \u0414\u0435\u043d\u043d\u0438\u0439 \u0437\u0432\u0456\u0442",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L817",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_9_\u0434\u0435\u043d\u043d\u0438\u0439_\u0437\u0432\u0456\u0442",
+      "community": 13,
+      "norm_label": "8.9. \u0434\u0435\u043d\u043d\u0438\u0438 \u0437\u0432\u0456\u0442"
+    },
+    {
+      "label": "8.10. \u041a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L829",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_10_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
+      "community": 13,
+      "norm_label": "8.10. \u043a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438"
+    },
+    {
+      "label": "8.11. \u041d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f \u0442\u0438\u043f\u0456\u0432 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0456\u0432",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L842",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_8_11_\u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f_\u0442\u0438\u043f\u0456\u0432_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0456\u0432",
+      "community": 13,
+      "norm_label": "8.11. \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f \u0442\u0438\u043f\u0456\u0432 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0456\u0432"
+    },
+    {
+      "label": "9. \u0406\u0441\u0442\u043e\u0440\u0456\u044f \u0456 \u043f\u0440\u043e\u0437\u043e\u0440\u0456\u0441\u0442\u044c \u0434\u0456\u0439",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L855",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_9_\u0456\u0441\u0442\u043e\u0440\u0456\u044f_\u0456_\u043f\u0440\u043e\u0437\u043e\u0440\u0456\u0441\u0442\u044c_\u0434\u0456\u0439",
+      "community": 7,
+      "norm_label": "9. \u0456\u0441\u0442\u043e\u0440\u0456\u044f \u0456 \u043f\u0440\u043e\u0437\u043e\u0440\u0456\u0441\u0442\u044c \u0434\u0456\u0438"
+    },
+    {
+      "label": "10. \u041f\u0440\u0430\u0432\u0438\u043b\u0430 \u043f\u043e\u0448\u0443\u043a\u0443",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L878",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_10_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u043f\u043e\u0448\u0443\u043a\u0443",
+      "community": 7,
+      "norm_label": "10. \u043f\u0440\u0430\u0432\u0438\u043b\u0430 \u043f\u043e\u0448\u0443\u043a\u0443"
+    },
+    {
+      "label": "11. \u0420\u0430\u0437\u043e\u0432\u0456 \u0456 \u043f\u0440\u043e\u0431\u043d\u0456 \u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u043d\u044f",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L901",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_11_\u0440\u0430\u0437\u043e\u0432\u0456_\u0456_\u043f\u0440\u043e\u0431\u043d\u0456_\u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u043d\u044f",
+      "community": 7,
+      "norm_label": "11. \u0440\u0430\u0437\u043e\u0432\u0456 \u0456 \u043f\u0440\u043e\u0431\u043d\u0456 \u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u043d\u044f"
+    },
+    {
+      "label": "12. \u0417\u0432\u0456\u0442\u0438 \u043f\u0435\u0440\u0448\u043e\u0457 \u0432\u0435\u0440\u0441\u0456\u0457",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L918",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_12_\u0437\u0432\u0456\u0442\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "community": 17,
+      "norm_label": "12. \u0437\u0432\u0456\u0442\u0438 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
+    },
+    {
+      "label": "12.1. \u0414\u0435\u043d\u043d\u0438\u0439 \u0437\u0432\u0456\u0442",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L920",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_12_1_\u0434\u0435\u043d\u043d\u0438\u0439_\u0437\u0432\u0456\u0442",
+      "community": 17,
+      "norm_label": "12.1. \u0434\u0435\u043d\u043d\u0438\u0438 \u0437\u0432\u0456\u0442"
+    },
+    {
+      "label": "12.2. \u0410\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438, \u044f\u043a\u0456 \u0441\u043a\u043e\u0440\u043e \u0437\u0430\u043a\u0456\u043d\u0447\u0443\u044e\u0442\u044c\u0441\u044f",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L932",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_12_2_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438_\u044f\u043a\u0456_\u0441\u043a\u043e\u0440\u043e_\u0437\u0430\u043a\u0456\u043d\u0447\u0443\u044e\u0442\u044c\u0441\u044f",
+      "community": 17,
+      "norm_label": "12.2. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438, \u044f\u043a\u0456 \u0441\u043a\u043e\u0440\u043e \u0437\u0430\u043a\u0456\u043d\u0447\u0443\u044e\u0442\u044c\u0441\u044f"
+    },
+    {
+      "label": "12.3. \u0410\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438 \u0437 \u043c\u0430\u043b\u0438\u043c \u0437\u0430\u043b\u0438\u0448\u043a\u043e\u043c \u0437\u0430\u043d\u044f\u0442\u044c",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L943",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_12_3_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438_\u0437_\u043c\u0430\u043b\u0438\u043c_\u0437\u0430\u043b\u0438\u0448\u043a\u043e\u043c_\u0437\u0430\u043d\u044f\u0442\u044c",
+      "community": 17,
+      "norm_label": "12.3. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438 \u0437 \u043c\u0430\u043b\u0438\u043c \u0437\u0430\u043b\u0438\u0448\u043a\u043e\u043c \u0437\u0430\u043d\u044f\u0442\u044c"
+    },
+    {
+      "label": "12.4. \u041c\u0456\u043d\u0443\u0441\u043e\u0432\u0456 \u043a\u043b\u0456\u0454\u043d\u0442\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L959",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_12_4_\u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456_\u043a\u043b\u0456\u0454\u043d\u0442\u0438",
+      "community": 17,
+      "norm_label": "12.4. \u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456 \u043a\u043b\u0456\u0454\u043d\u0442\u0438"
+    },
+    {
+      "label": "12.5. \u041a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L970",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_12_5_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
+      "community": 17,
+      "norm_label": "12.5. \u043a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438"
+    },
+    {
+      "label": "13. \u041f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f \u0456 \u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f \u0432\u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0456 \u0441\u0438\u0441\u0442\u0435\u043c\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L989",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_13_\u043f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f_\u0456_\u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f_\u0432\u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0456_\u0441\u0438\u0441\u0442\u0435\u043c\u0438",
+      "community": 7,
+      "norm_label": "13. \u043f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f \u0456 \u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f \u0432\u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0456 \u0441\u0438\u0441\u0442\u0435\u043c\u0438"
+    },
+    {
+      "label": "14. \u041a\u0440\u0430\u0439\u043d\u0456 \u0432\u0438\u043f\u0430\u0434\u043a\u0438, \u044f\u043a\u0456 \u0442\u0440\u0435\u0431\u0430 \u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1006",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "community": 14,
+      "norm_label": "14. \u043a\u0440\u0430\u0438\u043d\u0456 \u0432\u0438\u043f\u0430\u0434\u043a\u0438, \u044f\u043a\u0456 \u0442\u0440\u0435\u0431\u0430 \u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438"
+    },
+    {
+      "label": "14.1. \u041a\u043b\u0456\u0454\u043d\u0442 \u0431\u0435\u0437 \u043a\u0430\u0440\u0442\u043a\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1008",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_1_\u043a\u043b\u0456\u0454\u043d\u0442_\u0431\u0435\u0437_\u043a\u0430\u0440\u0442\u043a\u0438",
+      "community": 14,
+      "norm_label": "14.1. \u043a\u043b\u0456\u0454\u043d\u0442 \u0431\u0435\u0437 \u043a\u0430\u0440\u0442\u043a\u0438"
+    },
+    {
+      "label": "14.2. \u0414\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438 \u043a\u043b\u0456\u0454\u043d\u0442\u0456\u0432",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1014",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_2_\u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438_\u043a\u043b\u0456\u0454\u043d\u0442\u0456\u0432",
+      "community": 14,
+      "norm_label": "14.2. \u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438 \u043a\u043b\u0456\u0454\u043d\u0442\u0456\u0432"
+    },
+    {
+      "label": "14.3. \u0414\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438 \u043d\u043e\u043c\u0435\u0440\u0456\u0432 \u043a\u0430\u0440\u0442\u043e\u043a",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1024",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_3_\u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438_\u043d\u043e\u043c\u0435\u0440\u0456\u0432_\u043a\u0430\u0440\u0442\u043e\u043a",
+      "community": 14,
+      "norm_label": "14.3. \u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438 \u043d\u043e\u043c\u0435\u0440\u0456\u0432 \u043a\u0430\u0440\u0442\u043e\u043a"
+    },
+    {
+      "label": "14.4. \u0412\u0456\u0437\u0438\u0442 \u0431\u0435\u0437 \u0430\u043a\u0442\u0438\u0432\u043d\u043e\u0433\u043e \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1028",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_4_\u0432\u0456\u0437\u0438\u0442_\u0431\u0435\u0437_\u0430\u043a\u0442\u0438\u0432\u043d\u043e\u0433\u043e_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "community": 14,
+      "norm_label": "14.4. \u0432\u0456\u0437\u0438\u0442 \u0431\u0435\u0437 \u0430\u043a\u0442\u0438\u0432\u043d\u043e\u0433\u043e \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
+    },
+    {
+      "label": "14.5. \u0410\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442 \u0437\u0430\u043a\u0456\u043d\u0447\u0438\u0432\u0441\u044f \u043f\u043e \u0434\u0430\u0442\u0456, \u0430\u043b\u0435 \u0437\u0430\u043d\u044f\u0442\u0442\u044f \u0437\u0430\u043b\u0438\u0448\u0438\u043b\u0438\u0441\u044c",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1038",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_5_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442_\u0437\u0430\u043a\u0456\u043d\u0447\u0438\u0432\u0441\u044f_\u043f\u043e_\u0434\u0430\u0442\u0456_\u0430\u043b\u0435_\u0437\u0430\u043d\u044f\u0442\u0442\u044f_\u0437\u0430\u043b\u0438\u0448\u0438\u043b\u0438\u0441\u044c",
+      "community": 14,
+      "norm_label": "14.5. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442 \u0437\u0430\u043a\u0456\u043d\u0447\u0438\u0432\u0441\u044f \u043f\u043e \u0434\u0430\u0442\u0456, \u0430\u043b\u0435 \u0437\u0430\u043d\u044f\u0442\u0442\u044f \u0437\u0430\u043b\u0438\u0448\u0438\u043b\u0438\u0441\u044c"
+    },
+    {
+      "label": "14.6. \u0410\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442 \u0430\u043a\u0442\u0438\u0432\u043d\u0438\u0439 \u043f\u043e \u0434\u0430\u0442\u0456, \u0430\u043b\u0435 \u0437\u0430\u043d\u044f\u0442\u0442\u044f \u0437\u0430\u043a\u0456\u043d\u0447\u0438\u043b\u0438\u0441\u044c",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1047",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_6_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442_\u0430\u043a\u0442\u0438\u0432\u043d\u0438\u0439_\u043f\u043e_\u0434\u0430\u0442\u0456_\u0430\u043b\u0435_\u0437\u0430\u043d\u044f\u0442\u0442\u044f_\u0437\u0430\u043a\u0456\u043d\u0447\u0438\u043b\u0438\u0441\u044c",
+      "community": 14,
+      "norm_label": "14.6. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442 \u0430\u043a\u0442\u0438\u0432\u043d\u0438\u0438 \u043f\u043e \u0434\u0430\u0442\u0456, \u0430\u043b\u0435 \u0437\u0430\u043d\u044f\u0442\u0442\u044f \u0437\u0430\u043a\u0456\u043d\u0447\u0438\u043b\u0438\u0441\u044c"
+    },
+    {
+      "label": "14.7. \u0421\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f \u0432\u0456\u0437\u0438\u0442\u0443, \u044f\u043a\u0438\u0439 \u0441\u0442\u0432\u043e\u0440\u0438\u0432 \u043c\u0456\u043d\u0443\u0441",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1055",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_7_\u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f_\u0432\u0456\u0437\u0438\u0442\u0443_\u044f\u043a\u0438\u0439_\u0441\u0442\u0432\u043e\u0440\u0438\u0432_\u043c\u0456\u043d\u0443\u0441",
+      "community": 14,
+      "norm_label": "14.7. \u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f \u0432\u0456\u0437\u0438\u0442\u0443, \u044f\u043a\u0438\u0438 \u0441\u0442\u0432\u043e\u0440\u0438\u0432 \u043c\u0456\u043d\u0443\u0441"
+    },
+    {
+      "label": "14.8. \u0421\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1067",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_8_\u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438",
+      "community": 14,
+      "norm_label": "14.8. \u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438"
+    },
+    {
+      "label": "14.9. \u041d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439 \u0434\u0435\u043d\u044c \u0434\u043e\u0434\u0430\u043b\u0438 \u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1071",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_9_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0434\u043e\u0434\u0430\u043b\u0438_\u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e",
+      "community": 14,
+      "norm_label": "14.9. \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0438 \u0434\u0435\u043d\u044c \u0434\u043e\u0434\u0430\u043b\u0438 \u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e"
+    },
+    {
+      "label": "14.10. \u041f\u0435\u0440\u0435\u0442\u0438\u043d \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438 \u0456 \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445 \u0434\u043d\u0456\u0432",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1081",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_14_10_\u043f\u0435\u0440\u0435\u0442\u0438\u043d_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438_\u0456_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445_\u0434\u043d\u0456\u0432",
+      "community": 14,
+      "norm_label": "14.10. \u043f\u0435\u0440\u0435\u0442\u0438\u043d \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438 \u0456 \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445 \u0434\u043d\u0456\u0432"
+    },
+    {
+      "label": "15. \u041a\u0440\u0438\u0442\u0435\u0440\u0456\u0457 \u0433\u043e\u0442\u043e\u0432\u043d\u043e\u0441\u0442\u0456 \u043f\u0435\u0440\u0448\u043e\u0457 \u0432\u0435\u0440\u0441\u0456\u0457",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1096",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_15_\u043a\u0440\u0438\u0442\u0435\u0440\u0456\u0457_\u0433\u043e\u0442\u043e\u0432\u043d\u043e\u0441\u0442\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "community": 7,
+      "norm_label": "15. \u043a\u0440\u0438\u0442\u0435\u0440\u0456\u0456 \u0433\u043e\u0442\u043e\u0432\u043d\u043e\u0441\u0442\u0456 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
+    },
+    {
+      "label": "16. \u0429\u043e \u043f\u043e\u0442\u0440\u0456\u0431\u043d\u043e \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u0438 \u043f\u0435\u0440\u0435\u0434 \u0430\u0431\u043e \u043f\u0456\u0434 \u0447\u0430\u0441 \u0440\u0435\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0457",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1124",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_16_\u0449\u043e_\u043f\u043e\u0442\u0440\u0456\u0431\u043d\u043e_\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u0438_\u043f\u0435\u0440\u0435\u0434_\u0430\u0431\u043e_\u043f\u0456\u0434_\u0447\u0430\u0441_\u0440\u0435\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0457",
+      "community": 7,
+      "norm_label": "16. \u0449\u043e \u043f\u043e\u0442\u0440\u0456\u0431\u043d\u043e \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u0438 \u043f\u0435\u0440\u0435\u0434 \u0430\u0431\u043e \u043f\u0456\u0434 \u0447\u0430\u0441 \u0440\u0435\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0456"
+    },
+    {
+      "label": "17. \u041f\u043e\u0433\u043e\u0434\u0436\u0435\u043d\u0430 \u043b\u043e\u0433\u0456\u043a\u0430 \u043f\u0456\u0441\u043b\u044f \u043e\u0441\u0442\u0430\u043d\u043d\u044c\u043e\u0433\u043e \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u043d\u044f",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1142",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_17_\u043f\u043e\u0433\u043e\u0434\u0436\u0435\u043d\u0430_\u043b\u043e\u0433\u0456\u043a\u0430_\u043f\u0456\u0441\u043b\u044f_\u043e\u0441\u0442\u0430\u043d\u043d\u044c\u043e\u0433\u043e_\u0443\u0442\u043e\u0447\u043d\u0435\u043d\u043d\u044f",
+      "community": 7,
+      "norm_label": "17. \u043f\u043e\u0433\u043e\u0434\u0436\u0435\u043d\u0430 \u043b\u043e\u0433\u0456\u043a\u0430 \u043f\u0456\u0441\u043b\u044f \u043e\u0441\u0442\u0430\u043d\u043d\u044c\u043e\u0433\u043e \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u043d\u044f"
+    },
+    {
+      "label": "18. \u041f\u0456\u0434\u0441\u0443\u043c\u043e\u043a",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1150",
+      "_origin": "ast",
+      "id": "docs_first_version_requirements_18_\u043f\u0456\u0434\u0441\u0443\u043c\u043e\u043a",
+      "community": 7,
+      "norm_label": "18. \u043f\u0456\u0434\u0441\u0443\u043c\u043e\u043a"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill",
+      "target": "codex_skills_graphify_skill_graphify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L656",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_graphify",
+      "target": "codex_skills_graphify_skill_for_graphify_add_and_watch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L644",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_graphify",
+      "target": "codex_skills_graphify_skill_for_graphify_query",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L662",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_graphify",
+      "target": "codex_skills_graphify_skill_for_the_commit_hook_and_native_claude_md_integration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L638",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_graphify",
+      "target": "codex_skills_graphify_skill_for_update_and_cluster_only",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L668",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_graphify",
+      "target": "codex_skills_graphify_skill_honesty_rules",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L620",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_graphify",
+      "target": "codex_skills_graphify_skill_interpreter_guard_for_subcommands",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_graphify",
+      "target": "codex_skills_graphify_skill_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_graphify",
+      "target": "codex_skills_graphify_skill_what_graphify_is_for",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_graphify",
+      "target": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_0_github_repos_and_multi_path_merge_only_if_a_url_or_several_paths",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_1_ensure_graphify_is_installed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L144",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_2_5_video_and_audio_only_if_video_files_detected",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_2_detect_files",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_3_extract_entities_and_relationships",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L447",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_4_5_graph_health_check_read_only_integrity_gate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L384",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_4_build_graph_cluster_analyze_generate_outputs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L473",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_5_label_communities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L514",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_6_generate_obsidian_vault_opt_in_html",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L540",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_step_9_save_manifest_update_cost_tracker_clean_up_and_report",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L534",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
+      "target": "codex_skills_graphify_skill_steps_6b_8_wiki_neo4j_falkordb_svg_graphml_mcp_benchmark_only_on_their_flags",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_step_3_extract_entities_and_relationships",
+      "target": "codex_skills_graphify_skill_part_a_structural_extraction_for_code_files",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L193",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_step_3_extract_entities_and_relationships",
+      "target": "codex_skills_graphify_skill_part_b_semantic_extraction_parallel_subagents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": "L350",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_skill_step_3_extract_entities_and_relationships",
+      "target": "codex_skills_graphify_skill_part_c_merge_ast_semantic_into_final_extraction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_add_watch",
+      "target": "codex_skills_graphify_references_add_watch_graphify_reference_add_a_url_and_watch_a_folder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_add_watch_graphify_reference_add_a_url_and_watch_a_folder",
+      "target": "codex_skills_graphify_references_add_watch_for_graphify_add",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_add_watch_graphify_reference_add_a_url_and_watch_a_folder",
+      "target": "codex_skills_graphify_references_add_watch_for_watch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_exports",
+      "target": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "target": "codex_skills_graphify_references_exports_step_6b_wiki_only_if_wiki_flag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "target": "codex_skills_graphify_references_exports_step_7_neo4j_export_only_if_neo4j_or_neo4j_push_flag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "target": "codex_skills_graphify_references_exports_step_7a_falkordb_export_only_if_falkordb_or_falkordb_push_flag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "target": "codex_skills_graphify_references_exports_step_7b_svg_export_only_if_svg_flag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "target": "codex_skills_graphify_references_exports_step_7c_graphml_export_only_if_graphml_flag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "target": "codex_skills_graphify_references_exports_step_7d_mcp_server_only_if_mcp_flag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "target": "codex_skills_graphify_references_exports_step_8_token_reduction_benchmark_only_if_total_words_5000",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/extraction-spec.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_extraction_spec",
+      "target": "codex_skills_graphify_references_extraction_spec_graphify_reference_extraction_subagent_prompt_compact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/github-and-merge.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_github_and_merge",
+      "target": "codex_skills_graphify_references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/github-and-merge.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge",
+      "target": "codex_skills_graphify_references_github_and_merge_step_0_clone_github_repo_s_only_if_a_github_url_was_given",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_hooks",
+      "target": "codex_skills_graphify_references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration",
+      "target": "codex_skills_graphify_references_hooks_for_git_commit_hook",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration",
+      "target": "codex_skills_graphify_references_hooks_for_native_claude_md_integration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_query",
+      "target": "codex_skills_graphify_references_query_graphify_reference_query_path_explain",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L254",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_query_graphify_reference_query_path_explain",
+      "target": "codex_skills_graphify_references_query_for_graphify_explain",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L186",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_query_graphify_reference_query_path_explain",
+      "target": "codex_skills_graphify_references_query_for_graphify_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_query_graphify_reference_query_path_explain",
+      "target": "codex_skills_graphify_references_query_step_0_constrained_query_expansion_required_before_traversal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_query_graphify_reference_query_path_explain",
+      "target": "codex_skills_graphify_references_query_step_1_traversal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/transcribe.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_transcribe",
+      "target": "codex_skills_graphify_references_transcribe_graphify_reference_transcribe_video_and_audio",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/transcribe.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_transcribe_graphify_reference_transcribe_video_and_audio",
+      "target": "codex_skills_graphify_references_transcribe_step_2_5_transcribe_video_audio_files_only_if_video_files_detected",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_update",
+      "target": "codex_skills_graphify_references_update_graphify_reference_incremental_update_and_cluster_only",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": "L184",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_update_graphify_reference_incremental_update_and_cluster_only",
+      "target": "codex_skills_graphify_references_update_for_cluster_only",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "codex_skills_graphify_references_update_graphify_reference_incremental_update_and_cluster_only",
+      "target": "codex_skills_graphify_references_update_for_update_incremental_re_extraction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "agents",
+      "target": "agents_graphify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements",
+      "target": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L878",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_10_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u043f\u043e\u0448\u0443\u043a\u0443",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L901",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_11_\u0440\u0430\u0437\u043e\u0432\u0456_\u0456_\u043f\u0440\u043e\u0431\u043d\u0456_\u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u043d\u044f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L918",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_12_\u0437\u0432\u0456\u0442\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L989",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_13_\u043f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f_\u0456_\u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f_\u0432\u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0456_\u0441\u0438\u0441\u0442\u0435\u043c\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1006",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1096",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_15_\u043a\u0440\u0438\u0442\u0435\u0440\u0456\u0457_\u0433\u043e\u0442\u043e\u0432\u043d\u043e\u0441\u0442\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1124",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_16_\u0449\u043e_\u043f\u043e\u0442\u0440\u0456\u0431\u043d\u043e_\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u0438_\u043f\u0435\u0440\u0435\u0434_\u0430\u0431\u043e_\u043f\u0456\u0434_\u0447\u0430\u0441_\u0440\u0435\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0457",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1142",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_17_\u043f\u043e\u0433\u043e\u0434\u0436\u0435\u043d\u0430_\u043b\u043e\u0433\u0456\u043a\u0430_\u043f\u0456\u0441\u043b\u044f_\u043e\u0441\u0442\u0430\u043d\u043d\u044c\u043e\u0433\u043e_\u0443\u0442\u043e\u0447\u043d\u0435\u043d\u043d\u044f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1150",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_18_\u043f\u0456\u0434\u0441\u0443\u043c\u043e\u043a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_1_\u043f\u0440\u0438\u0437\u043d\u0430\u0447\u0435\u043d\u043d\u044f_\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_2_\u0433\u043e\u043b\u043e\u0432\u043d\u0430_\u043c\u0435\u0442\u0430_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_3_\u043c\u0435\u0436\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_4_\u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456_\u0441\u0438\u0441\u0442\u0435\u043c\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L271",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L442",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L710",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L855",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
+      "target": "docs_first_version_requirements_9_\u0456\u0441\u0442\u043e\u0440\u0456\u044f_\u0456_\u043f\u0440\u043e\u0437\u043e\u0440\u0456\u0441\u0442\u044c_\u0434\u0456\u0439",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_3_\u043c\u0435\u0436\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_3_1_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_3_\u043c\u0435\u0436\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_3_2_\u043d\u0435_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_4_\u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456_\u0441\u0438\u0441\u0442\u0435\u043c\u0438",
+      "target": "docs_first_version_requirements_4_1_\u0432\u043b\u0430\u0441\u043d\u0438\u043a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L87",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_4_\u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456_\u0441\u0438\u0441\u0442\u0435\u043c\u0438",
+      "target": "docs_first_version_requirements_4_2_\u0430\u0434\u043c\u0456\u043d\u0456\u0441\u0442\u0440\u0430\u0442\u043e\u0440",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_4_\u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456_\u0441\u0438\u0441\u0442\u0435\u043c\u0438",
+      "target": "docs_first_version_requirements_4_3_\u0442\u0440\u0435\u043d\u0435\u0440",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L251",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_10_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_1_\u043a\u043b\u0456\u0454\u043d\u0442_\u043f\u0440\u0438\u0439\u0448\u043e\u0432_\u0443_\u0437\u0430\u043b_\u0437_\u043a\u0430\u0440\u0442\u043a\u043e\u044e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L135",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_2_\u043a\u043b\u0456\u0454\u043d\u0442_\u043f\u0440\u0438\u0439\u0448\u043e\u0432_\u0431\u0435\u0437_\u043a\u0430\u0440\u0442\u043a\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_3_\u043d\u043e\u0432\u0438\u0439_\u043a\u043b\u0456\u0454\u043d\u0442",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_4_\u0432\u0438\u0434\u0430\u0447\u0430_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L185",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_5_\u0432\u0456\u0434\u043c\u0456\u0442\u043a\u0430_\u0432\u0456\u0437\u0438\u0442\u0443",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L196",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_6_\u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f_\u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e\u0433\u043e_\u0432\u0456\u0437\u0438\u0442\u0443",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L212",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_7_\u043e\u043f\u043b\u0430\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L225",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_8_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L235",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
+      "target": "docs_first_version_requirements_5_9_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0430\u0431\u043e_\u0441\u0432\u044f\u0442\u043e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L275",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_6_1_\u043a\u043b\u0456\u0454\u043d\u0442",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L297",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_6_2_\u043d\u043e\u043c\u0435\u0440_\u043a\u0430\u0440\u0442\u043a\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L309",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_6_3_\u0442\u0438\u043f_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L333",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_6_4_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442_\u043a\u043b\u0456\u0454\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L366",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_6_5_\u0432\u0456\u0437\u0438\u0442",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L383",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_6_6_\u043e\u043f\u043b\u0430\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L397",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_6_7_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L411",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_6_8_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0430\u0431\u043e_\u043f\u0435\u0440\u0456\u043e\u0434",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L431",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_6_9_\u0442\u0435\u0445\u043d\u0456\u0447\u043d\u0438\u0439_\u043a\u043b\u0456\u0454\u043d\u0442_\u0434\u043b\u044f_\u0440\u0430\u0437\u043e\u0432\u0438\u0445_\u0456_\u043f\u0440\u043e\u0431\u043d\u0438\u0445_\u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u044c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L666",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_10_\u0434\u0435\u043d\u043d\u0438\u0439_\u0437\u0432\u0456\u0442",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L688",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_11_\u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f_\u043f\u0440\u043e_\u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L444",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_1_\u043e\u0441\u043d\u043e\u0432\u043d\u0430_\u0444\u043e\u0440\u043c\u0443\u043b\u0430_\u0434\u0430\u0442\u0438_\u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L478",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_2_\u0444\u043e\u0440\u043c\u0443\u043b\u0430_\u0437\u0430\u043b\u0438\u0448\u043a\u0443_\u0437\u0430\u043d\u044f\u0442\u044c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L491",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_3_\u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456_\u0437\u0430\u043d\u044f\u0442\u0442\u044f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L512",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_4_\u0434\u0430\u0442\u0430_\u0441\u0442\u0430\u0440\u0442\u0443_\u043d\u043e\u0432\u043e\u0433\u043e_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430_\u043f\u0440\u0438_\u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0438\u0445_\u0437\u0430\u043d\u044f\u0442\u0442\u044f\u0445",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L537",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_5_\u0430\u043a\u0442\u0438\u0432\u043d\u0456\u0441\u0442\u044c_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L563",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_6_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L587",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_7_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0456_\u0434\u043d\u0456_\u0442\u0430_\u0441\u0432\u044f\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L626",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_8_\u0440\u043e\u0431\u043e\u0447\u0456_\u0434\u043d\u0456_\u0437\u0430\u043b\u0443",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L638",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
+      "target": "docs_first_version_requirements_7_9_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L829",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_10_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L842",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_11_\u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f_\u0442\u0438\u043f\u0456\u0432_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0456\u0432",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L712",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_1_\u0432\u0445\u0456\u0434_\u0443_\u0441\u0438\u0441\u0442\u0435\u043c\u0443",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L720",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_2_\u0433\u043e\u043b\u043e\u0432\u043d\u0438\u0439_\u0435\u043a\u0440\u0430\u043d_\u0440\u0435\u0446\u0435\u043f\u0446\u0456\u0457",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L733",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_3_\u043f\u0440\u043e\u0444\u0456\u043b\u044c_\u043a\u043b\u0456\u0454\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L757",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_4_\u0435\u043a\u0440\u0430\u043d_\u0432\u0438\u0434\u0430\u0447\u0456_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L770",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_5_\u0435\u043a\u0440\u0430\u043d_\u0432\u0456\u0437\u0438\u0442\u0456\u0432",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L781",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_6_\u0435\u043a\u0440\u0430\u043d_\u043e\u043f\u043b\u0430\u0442",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L793",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_7_\u0435\u043a\u0440\u0430\u043d_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043e\u043a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L806",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_8_\u0435\u043a\u0440\u0430\u043d_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445_\u0434\u043d\u0456\u0432",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L817",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_8_9_\u0434\u0435\u043d\u043d\u0438\u0439_\u0437\u0432\u0456\u0442",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L920",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_12_\u0437\u0432\u0456\u0442\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_12_1_\u0434\u0435\u043d\u043d\u0438\u0439_\u0437\u0432\u0456\u0442",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L932",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_12_\u0437\u0432\u0456\u0442\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_12_2_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438_\u044f\u043a\u0456_\u0441\u043a\u043e\u0440\u043e_\u0437\u0430\u043a\u0456\u043d\u0447\u0443\u044e\u0442\u044c\u0441\u044f",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L943",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_12_\u0437\u0432\u0456\u0442\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_12_3_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438_\u0437_\u043c\u0430\u043b\u0438\u043c_\u0437\u0430\u043b\u0438\u0448\u043a\u043e\u043c_\u0437\u0430\u043d\u044f\u0442\u044c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L959",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_12_\u0437\u0432\u0456\u0442\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_12_4_\u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456_\u043a\u043b\u0456\u0454\u043d\u0442\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L970",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_12_\u0437\u0432\u0456\u0442\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
+      "target": "docs_first_version_requirements_12_5_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1081",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_10_\u043f\u0435\u0440\u0435\u0442\u0438\u043d_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438_\u0456_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445_\u0434\u043d\u0456\u0432",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1008",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_1_\u043a\u043b\u0456\u0454\u043d\u0442_\u0431\u0435\u0437_\u043a\u0430\u0440\u0442\u043a\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1014",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_2_\u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438_\u043a\u043b\u0456\u0454\u043d\u0442\u0456\u0432",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1024",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_3_\u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438_\u043d\u043e\u043c\u0435\u0440\u0456\u0432_\u043a\u0430\u0440\u0442\u043e\u043a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1028",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_4_\u0432\u0456\u0437\u0438\u0442_\u0431\u0435\u0437_\u0430\u043a\u0442\u0438\u0432\u043d\u043e\u0433\u043e_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1038",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_5_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442_\u0437\u0430\u043a\u0456\u043d\u0447\u0438\u0432\u0441\u044f_\u043f\u043e_\u0434\u0430\u0442\u0456_\u0430\u043b\u0435_\u0437\u0430\u043d\u044f\u0442\u0442\u044f_\u0437\u0430\u043b\u0438\u0448\u0438\u043b\u0438\u0441\u044c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1047",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_6_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442_\u0430\u043a\u0442\u0438\u0432\u043d\u0438\u0439_\u043f\u043e_\u0434\u0430\u0442\u0456_\u0430\u043b\u0435_\u0437\u0430\u043d\u044f\u0442\u0442\u044f_\u0437\u0430\u043a\u0456\u043d\u0447\u0438\u043b\u0438\u0441\u044c",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1055",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_7_\u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f_\u0432\u0456\u0437\u0438\u0442\u0443_\u044f\u043a\u0438\u0439_\u0441\u0442\u0432\u043e\u0440\u0438\u0432_\u043c\u0456\u043d\u0443\u0441",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1067",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_8_\u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": "L1071",
+      "weight": 1.0,
+      "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
+      "target": "docs_first_version_requirements_14_9_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0434\u043e\u0434\u0430\u043b\u0438_\u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": []
+}

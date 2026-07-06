@@ -1,0 +1,1018 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Перша версія системи обліку для залу</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8f5;
+      --paper: #ffffff;
+      --ink: #222722;
+      --muted: #697168;
+      --line: #dfe4da;
+      --soft: #eef3ea;
+      --accent: #2f7d62;
+      --accent-dark: #1f5f49;
+      --gold: #b9862d;
+      --danger: #a94d43;
+      --shadow: 0 18px 50px rgba(36, 47, 38, 0.12);
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(47, 125, 98, 0.08), transparent 360px),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.58;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 64px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+      gap: 28px;
+      align-items: stretch;
+      min-height: 420px;
+      padding: 36px 0 28px;
+    }
+
+    .hero-main {
+      padding: 40px 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      color: var(--accent-dark);
+      font-size: 14px;
+      font-weight: 760;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.12;
+    }
+
+    h1 {
+      max-width: 780px;
+      font-size: clamp(38px, 7vw, 82px);
+      font-weight: 860;
+    }
+
+    .lead {
+      max-width: 740px;
+      margin: 22px 0 0;
+      color: #3e463f;
+      font-size: clamp(18px, 2vw, 23px);
+    }
+
+    .hero-summary {
+      align-self: end;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .summary-title {
+      margin: 0 0 14px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .facts {
+      display: grid;
+      gap: 12px;
+    }
+
+    .fact {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      background: var(--soft);
+      border-radius: var(--radius);
+      border: 1px solid rgba(47, 125, 98, 0.12);
+    }
+
+    .fact-icon {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .fact strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 17px;
+    }
+
+    .fact span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin: 0 0 36px;
+      background: rgba(247, 248, 245, 0.9);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+    }
+
+    .nav-inner {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 0;
+      scrollbar-width: thin;
+    }
+
+    .nav a {
+      flex: 0 0 auto;
+      padding: 9px 12px;
+      border-radius: 999px;
+      color: #39413a;
+      font-size: 14px;
+      font-weight: 680;
+      white-space: nowrap;
+    }
+
+    .nav a:hover {
+      background: var(--soft);
+      color: var(--accent-dark);
+    }
+
+    main {
+      display: grid;
+      gap: 28px;
+    }
+
+    section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(36, 47, 38, 0.06);
+      padding: clamp(22px, 4vw, 36px);
+    }
+
+    .section-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .section-kicker {
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 820;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 830;
+    }
+
+    h3 {
+      font-size: 19px;
+      font-weight: 790;
+    }
+
+    p {
+      margin: 0;
+      color: #3f473f;
+    }
+
+    .section-head p {
+      max-width: 820px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .flow-step {
+      min-height: 112px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: var(--soft);
+      border: 1px solid rgba(47, 125, 98, 0.14);
+    }
+
+    .flow-step b {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--accent-dark);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .flow-step span {
+      display: block;
+      color: #303731;
+      font-weight: 720;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .item {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfcfa;
+    }
+
+    .item h3 {
+      margin-bottom: 10px;
+    }
+
+    ul {
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      position: relative;
+      margin: 8px 0;
+      padding-left: 19px;
+      color: #424a43;
+    }
+
+    li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.72em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .muted-list li::before {
+      background: var(--gold);
+    }
+
+    .no-list li::before {
+      background: var(--danger);
+    }
+
+    .process {
+      display: grid;
+      gap: 14px;
+    }
+
+    .process-row {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      gap: 18px;
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .process-row:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .process-row strong {
+      color: var(--accent-dark);
+    }
+
+    .callout {
+      margin-top: 20px;
+      padding: 18px;
+      border-left: 4px solid var(--accent);
+      background: var(--soft);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+
+    .callout.warning {
+      border-left-color: var(--gold);
+      background: #fff7e8;
+    }
+
+    .callout.danger {
+      border-left-color: var(--danger);
+      background: #fff0ee;
+    }
+
+    .price-band {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .price {
+      padding: 24px;
+      background: #1f332b;
+      color: #fff;
+      border-radius: var(--radius);
+    }
+
+    .price .amount {
+      display: block;
+      margin: 12px 0 8px;
+      font-size: clamp(48px, 8vw, 82px);
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .price p,
+    .price span {
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .terms {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfcfa;
+    }
+
+    .screens {
+      counter-reset: screen;
+      display: grid;
+      gap: 12px;
+    }
+
+    .screen {
+      counter-increment: screen;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfcfa;
+    }
+
+    .screen::before {
+      content: counter(screen);
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 850;
+    }
+
+    .screen p {
+      margin-top: 6px;
+      color: var(--muted);
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .price-band,
+      .grid,
+      .grid.three {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: 0;
+        padding-top: 18px;
+      }
+
+      .hero-main {
+        padding: 18px 0 0;
+      }
+
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .process-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        width: min(100% - 20px, 1180px);
+        padding-top: 18px;
+      }
+
+      h1 {
+        font-size: 38px;
+      }
+
+      section {
+        padding: 20px;
+      }
+
+      .fact,
+      .screen {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page {
+        width: 100%;
+        padding: 0;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      section,
+      .hero-summary {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+
+      .hero {
+        min-height: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-main">
+        <div class="eyebrow">Перша робоча версія</div>
+        <h1>Система обліку абонементів для залу</h1>
+        <p class="lead">
+          Документ описує першу версію внутрішньої web-системи для обліку клієнтів,
+          абонементів, візитів, заморозок, неробочих днів і готівкових оплат.
+        </p>
+      </div>
+
+      <aside class="hero-summary" aria-label="Коротко про домовленість">
+        <p class="summary-title">Коротко</p>
+        <div class="facts">
+          <div class="fact">
+            <div class="fact-icon">$</div>
+            <div>
+              <strong>$400</strong>
+              <span>Фіксована ціна за першу версію.</span>
+            </div>
+          </div>
+          <div class="fact">
+            <div class="fact-icon">✓</div>
+            <div>
+              <strong>Оплата після завершення</strong>
+              <span>Після демонстрації робочої версії.</span>
+            </div>
+          </div>
+          <div class="fact">
+            <div class="fact-icon">1</div>
+            <div>
+              <strong>Тестовий запуск</strong>
+              <span>Баги і дрібні правки в межах домовленого виправляються.</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </header>
+
+    <nav class="nav" aria-label="Навігація по документу">
+      <div class="nav-inner">
+        <a href="#goal">Суть</a>
+        <a href="#workflow">Флоу</a>
+        <a href="#scope">Що входить</a>
+        <a href="#holidays">Неробочі дні</a>
+        <a href="#screens">Екрани</a>
+        <a href="#reports">Звіти</a>
+        <a href="#price">Ціна</a>
+        <a href="#not-included">Не входить</a>
+      </div>
+    </nav>
+
+    <main>
+      <section id="goal">
+        <div class="section-head">
+          <div class="section-kicker">Основна задача</div>
+          <h2>Прибрати ручний облік абонементів</h2>
+          <p>
+            Зараз у залі використовується паперовий облік: клієнта записують на один аркуш,
+            потім дані переносять в інший аркуш з абонементом, датами і відмітками занять.
+            Частина активних клієнтів також дублюється в Excel.
+          </p>
+        </div>
+
+        <div class="callout">
+          <p>
+            Перша версія має зробити головне: адміністратор знаходить клієнта, бачить стан
+            абонемента, відмічає тренування, фіксує оплату, а система сама рахує залишок занять,
+            мінуси, заморозки і продовження через неробочі дні.
+          </p>
+        </div>
+
+        <div class="flow" aria-label="Ключовий процес системи">
+          <div class="flow-step">
+            <b>Крок 1</b>
+            <span>Знайти клієнта</span>
+          </div>
+          <div class="flow-step">
+            <b>Крок 2</b>
+            <span>Побачити абонемент</span>
+          </div>
+          <div class="flow-step">
+            <b>Крок 3</b>
+            <span>Відмітити візит</span>
+          </div>
+          <div class="flow-step">
+            <b>Крок 4</b>
+            <span>Зафіксувати оплату</span>
+          </div>
+          <div class="flow-step">
+            <b>Крок 5</b>
+            <span>Отримати денний підсумок</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow">
+        <div class="section-head">
+          <div class="section-kicker">Робочий сценарій</div>
+          <h2>Як це має працювати на рецепції</h2>
+          <p>
+            Інтерфейс має бути зручний для планшета або телефона, бо основна робота буде йти
+            з робочого пристрою на рецепції. Власник також має мати доступ зі свого телефона.
+          </p>
+        </div>
+
+        <div class="process">
+          <div class="process-row">
+            <strong>Клієнт прийшов</strong>
+            <p>Адміністратор шукає клієнта по номеру картки, прізвищу, імені або телефону.</p>
+          </div>
+          <div class="process-row">
+            <strong>Картки немає</strong>
+            <p>Картка не є обов'язковою. Якщо клієнт забув картку, його можна знайти по ПІБ або останніх цифрах телефона.</p>
+          </div>
+          <div class="process-row">
+            <strong>На екрані клієнта</strong>
+            <p>Видно активність абонемента, дату завершення, залишок занять, мінусові тренування, заморозки, оплату та історію.</p>
+          </div>
+          <div class="process-row">
+            <strong>Відмітка візиту</strong>
+            <p>Адміністратор натискає одну дію, система списує заняття. Якщо занять немає, система дозволяє піти в мінус.</p>
+          </div>
+          <div class="process-row">
+            <strong>В кінці дня</strong>
+            <p>Власник або адміністратор бачить кількість відвідувань, кількість оплат і суму прийнятої готівки.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="scope">
+        <div class="section-head">
+          <div class="section-kicker">Функціонал першої версії</div>
+          <h2>Що входить у першу версію</h2>
+          <p>
+            Перша версія закриває основний робочий процес залу: клієнти, абонементи,
+            відвідування, заморозки, неробочі дні, готівкові оплати і денний підсумок.
+          </p>
+        </div>
+
+        <div class="grid">
+          <article class="item">
+            <h3>Клієнти</h3>
+            <p>Картка клієнта з базовими даними і всією історією.</p>
+            <ul>
+              <li>Прізвище, ім'я, по батькові.</li>
+              <li>Телефон і пошук по останніх цифрах.</li>
+              <li>Номер картки.</li>
+              <li>Коментарі по клієнту.</li>
+              <li>Історія візитів, оплат і заморозок.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Пошук</h3>
+            <p>Швидкий пошук для рецепції, щоб не затримувати клієнтів.</p>
+            <ul>
+              <li>По номеру картки.</li>
+              <li>По ПІБ.</li>
+              <li>По телефону або останніх 4 цифрах.</li>
+              <li>Картка є опцією, а не обов'язковою умовою.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Типи абонементів</h3>
+            <p>Налаштування абонементів без зайвого ускладнення.</p>
+            <ul>
+              <li>Місячні абонементи з різною кількістю занять.</li>
+              <li>Дитячі абонементи як окремі типи з іншою ціною.</li>
+              <li>Разове або пробне відвідування.</li>
+              <li>Ціна, тривалість, кількість занять.</li>
+              <li>Можливість вимкнути тип абонемента.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Видача абонемента</h3>
+            <p>Адмін видає клієнту абонемент і фіксує оплату.</p>
+            <ul>
+              <li>Вибір типу абонемента.</li>
+              <li>Дата старту і дата завершення.</li>
+              <li>Автоматичний розрахунок кінцевої дати.</li>
+              <li>Прив'язка оплати до абонемента.</li>
+              <li>Історія того, хто і коли видав абонемент.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Візити</h3>
+            <p>Відмічається тільки факт приходу, без часу входу і виходу.</p>
+            <ul>
+              <li>Кнопка відмітити тренування.</li>
+              <li>Автоматичне списання одного заняття.</li>
+              <li>Можливість скасувати помилковий візит.</li>
+              <li>Історія візитів клієнта.</li>
+              <li>Список останніх візитів за день.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Мінусові тренування</h3>
+            <p>Система не блокує реальний процес, який вже є в залі.</p>
+            <ul>
+              <li>Клієнт може прийти, навіть якщо заняття закінчились.</li>
+              <li>Залишок може бути -1, -2 і далі.</li>
+              <li>Мінуси видно у профілі клієнта.</li>
+              <li>При новій оплаті адміністратор бачить, що є мінусові заняття.</li>
+              <li>Борг ведеться по заняттях, не як складна фінансова заборгованість.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Заморозки</h3>
+            <p>Заморозка є частиною першої версії, бо вона вже існує в бізнес-процесі.</p>
+            <ul>
+              <li>Додати заморозку клієнту.</li>
+              <li>Вказати дату початку і завершення.</li>
+              <li>Автоматично продовжити абонемент.</li>
+              <li>Зберегти історію заморозок.</li>
+              <li>Показувати продовження у профілі клієнта.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Оплати готівкою</h3>
+            <p>Без онлайн-оплат і банківських інтеграцій на старті.</p>
+            <ul>
+              <li>Додати оплату клієнту.</li>
+              <li>Прив'язати оплату до абонемента.</li>
+              <li>Бачити дату, суму і хто прийняв оплату.</li>
+              <li>Історія оплат у профілі клієнта.</li>
+              <li>Денна сума готівки для власника.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="holidays">
+        <div class="section-head">
+          <div class="section-kicker">Обов'язкова бізнес-логіка</div>
+          <h2>Неробочі дні та свята</h2>
+          <p>
+            Цей блок обов'язковий для першої версії. Без нього система не буде відповідати
+            поточній логіці обліку абонементів, бо в паперовому процесі зал вже продовжує
+            активні абонементи через свята або непередбачувані закриття.
+          </p>
+        </div>
+
+        <div class="grid">
+          <article class="item">
+            <h3>Що має вміти система</h3>
+            <ul>
+              <li>Додати неробочий день або період.</li>
+              <li>Вказати причину: свято, ремонт, технічний день, інше.</li>
+              <li>Порахувати, скільки днів зал не працює.</li>
+              <li>Показати, скільки активних абонементів буде продовжено.</li>
+              <li>Після підтвердження автоматично додати ці дні до абонементів.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Як це має відображатись</h3>
+            <ul>
+              <li>У профілі клієнта видно, що абонемент продовжено через неробочий день.</li>
+              <li>В історії залишається причина і період продовження.</li>
+              <li>Дата завершення не змінюється незрозуміло, а має пояснення.</li>
+              <li>Адміністратор може пояснити клієнту, чому дата завершення саме така.</li>
+              <li>Власник бачить, коли і ким було додано неробочий період.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="callout warning">
+          <p>
+            Правило для першої версії: активний абонемент продовжується на кількість днів,
+            коли зал не працював. Це має працювати разом із заморозками, а не замість них.
+          </p>
+        </div>
+      </section>
+
+      <section id="screens">
+        <div class="section-head">
+          <div class="section-kicker">Екрани</div>
+          <h2>Що буде видно користувачу</h2>
+          <p>
+            Нижче описані основні екрани, які потрібні для щоденної роботи адміністратора
+            і перегляду інформації власником.
+          </p>
+        </div>
+
+        <div class="screens">
+          <div class="screen">
+            <div>
+              <h3>Вхід у систему</h3>
+              <p>Простий доступ для власника і адміністратора.</p>
+            </div>
+          </div>
+          <div class="screen">
+            <div>
+              <h3>Головний екран рецепції</h3>
+              <p>Пошук клієнта, ввід номера картки, останні візити, швидке додавання клієнта.</p>
+            </div>
+          </div>
+          <div class="screen">
+            <div>
+              <h3>Профіль клієнта</h3>
+              <p>Дані клієнта, активний абонемент, залишок занять, мінуси, дата завершення, історія.</p>
+            </div>
+          </div>
+          <div class="screen">
+            <div>
+              <h3>Видати абонемент</h3>
+              <p>Вибір типу абонемента, дата старту, оплата, розрахунок кінцевої дати.</p>
+            </div>
+          </div>
+          <div class="screen">
+            <div>
+              <h3>Відмітити візит</h3>
+              <p>Одна основна дія для адміністратора або тренера, коли адміністратора немає.</p>
+            </div>
+          </div>
+          <div class="screen">
+            <div>
+              <h3>Заморозки і неробочі дні</h3>
+              <p>Продовження абонементів через заморозку або закриття залу.</p>
+            </div>
+          </div>
+          <div class="screen">
+            <div>
+              <h3>Денний звіт</h3>
+              <p>Кількість відвідувань, кількість оплат і сума готівки за день.</p>
+            </div>
+          </div>
+          <div class="screen">
+            <div>
+              <h3>Налаштування абонементів</h3>
+              <p>Типи абонементів, ціни, кількість занять і тривалість.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="reports">
+        <div class="section-head">
+          <div class="section-kicker">Контроль для власника</div>
+          <h2>Звіти і попередження</h2>
+          <p>
+            У першій версії звіти мають бути практичні, а не бухгалтерські. Головне — бачити,
+            що сталося сьогодні і які абонементи скоро потребують уваги.
+          </p>
+        </div>
+
+        <div class="grid three">
+          <article class="item">
+            <h3>За день</h3>
+            <ul>
+              <li>Кількість відвідувань.</li>
+              <li>Список клієнтів, які приходили.</li>
+              <li>Кількість оплат.</li>
+              <li>Сума готівки.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Попередження адміністратору</h3>
+            <ul>
+              <li>Абонемент скоро закінчується.</li>
+              <li>Лишилось 1-2 тренування.</li>
+              <li>Клієнт пішов у мінус.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Історія клієнта</h3>
+            <ul>
+              <li>Візити.</li>
+              <li>Оплати.</li>
+              <li>Заморозки.</li>
+              <li>Продовження через неробочі дні.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Клієнти, які давно не ходили</h3>
+            <ul>
+              <li>Окремий список клієнтів без візитів за вибраний період.</li>
+              <li>Фільтр за кількістю днів: наприклад 14, 30 або 60 днів.</li>
+              <li>Дата останнього візиту і кількість днів без відвідувань.</li>
+              <li>Статус абонемента, залишок занять і дата завершення.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="price">
+        <div class="section-head">
+          <div class="section-kicker">Домовленість</div>
+          <h2>Ціна, оплата і правки</h2>
+          <p>
+            Вартість першої версії фіксується на старті. Оплата здійснюється після завершення
+            розробки і демонстрації робочої системи.
+          </p>
+        </div>
+
+        <div class="price-band">
+          <div class="price">
+            <span>Вартість першої версії</span>
+            <strong class="amount">$400</strong>
+            <p>Оплата після завершення і демонстрації робочої версії.</p>
+          </div>
+
+          <div class="terms">
+            <h3>Підтримка після запуску</h3>
+            <ul>
+              <li>Виправлення багів у межах погодженого функціоналу.</li>
+              <li>Дрібні правки, якщо щось незручно в реальному використанні.</li>
+              <li>Корекція логіки, якщо система рахує не так, як було домовлено.</li>
+              <li>Короткий тестовий період після першого запуску.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout">
+          <p>
+            У вартість входить перша робоча версія, базовий запуск, демонстрація і виправлення
+            помилок у межах погодженого функціоналу. Нові функції після погодження цього обсягу
+            оцінюються окремо.
+          </p>
+        </div>
+      </section>
+
+      <section id="not-included">
+        <div class="section-head">
+          <div class="section-kicker">Межі першої версії</div>
+          <h2>Що не входить у першу версію</h2>
+          <p>
+            Ці пункти не входять у погоджений обсяг першої версії. За потреби їх можна
+            розглянути окремо після запуску основної системи.
+          </p>
+        </div>
+
+        <div class="grid">
+          <article class="item">
+            <h3>Не робимо на старті</h3>
+            <ul class="no-list">
+              <li>Мобільний застосунок.</li>
+              <li>Онлайн-оплати та банківські інтеграції.</li>
+              <li>SMS, Telegram, Viber або Instagram-нагадування клієнтам.</li>
+              <li>Пошук або сканування по штрихкоду.</li>
+              <li>Турнікети або автоматичний контроль входу.</li>
+              <li>Складну бухгалтерію.</li>
+              <li>Складську систему, бонуси, акції, реферальні програми.</li>
+            </ul>
+          </article>
+
+          <article class="item">
+            <h3>Окремо оцінюється</h3>
+            <ul class="muted-list">
+              <li>Нові модулі після тестового запуску.</li>
+              <li>Складні місячні або фінансові звіти.</li>
+              <li>Імпорт старих даних, якщо він виявиться складним.</li>
+              <li>Окрема роль тренера з розширеними можливостями.</li>
+              <li>Персональні тренування, які тренери зараз ведуть самі.</li>
+              <li>Додаткові побажання, яких немає в цьому описі.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="callout danger">
+          <p>
+            Головний принцип: у фіксовану вартість входить погоджена перша робоча версія.
+            Нові побажання після запуску збираються в окремий список і оцінюються окремо.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div class="section-kicker">Підсумок</div>
+          <h2>Підсумок першої версії</h2>
+          <p>
+            Перша версія має замінити ручний облік абонементів і допомогти адміністратору
+            швидко працювати з клієнтами під час щоденної роботи залу.
+          </p>
+        </div>
+
+        <div class="callout">
+          <p>
+            Перша версія: клієнти, пошук, номери карток, абонементи, візити, мінусові
+            тренування, заморозки, неробочі дні, готівкові оплати, історія клієнта,
+            денний звіт і список клієнтів, які давно не ходили.
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
