@@ -2,156 +2,156 @@
   ".codex/hooks.json": {
     "mtime": 1783177173.8954494,
     "ast_hash": "a3d2e47262cef516b55814336039982a",
-    "semantic_hash": ""
+    "semantic_hash": "a3d2e47262cef516b55814336039982a"
   },
   ".codex/skills/graphify/SKILL.md": {
     "mtime": 1783177173.8914495,
     "ast_hash": "21f78a7f96e2f9aecc0f7afc053bd3cc",
-    "semantic_hash": ""
+    "semantic_hash": "21f78a7f96e2f9aecc0f7afc053bd3cc"
   },
   ".codex/skills/graphify/references/add-watch.md": {
     "mtime": 1783062767.8375993,
     "ast_hash": "d59d027fe449f06aa03905a01184e779",
-    "semantic_hash": ""
+    "semantic_hash": "d59d027fe449f06aa03905a01184e779"
   },
   ".codex/skills/graphify/references/exports.md": {
     "mtime": 1783062767.8375993,
     "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
-    "semantic_hash": ""
+    "semantic_hash": "9da2a2152e60a22f07f05fed5158f287"
   },
   ".codex/skills/graphify/references/extraction-spec.md": {
     "mtime": 1783062767.8375993,
     "ast_hash": "bf895ec4d4e40f5f66f7d31c2a9bd4a7",
-    "semantic_hash": ""
+    "semantic_hash": "bf895ec4d4e40f5f66f7d31c2a9bd4a7"
   },
   ".codex/skills/graphify/references/github-and-merge.md": {
     "mtime": 1783062767.8375993,
     "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
-    "semantic_hash": ""
+    "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
   },
   ".codex/skills/graphify/references/hooks.md": {
     "mtime": 1783062767.8375993,
     "ast_hash": "3f545db6ce646650bb9de588f5512a27",
-    "semantic_hash": ""
+    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
   },
   ".codex/skills/graphify/references/query.md": {
     "mtime": 1783062767.8375993,
     "ast_hash": "9e5aadc2c57ab561bc56600fcfa70735",
-    "semantic_hash": ""
+    "semantic_hash": "9e5aadc2c57ab561bc56600fcfa70735"
   },
   ".codex/skills/graphify/references/transcribe.md": {
     "mtime": 1783062767.8375993,
     "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
-    "semantic_hash": ""
+    "semantic_hash": "67b6a5fa6c0974e18f60db9f8932fbd8"
   },
   ".codex/skills/graphify/references/update.md": {
     "mtime": 1783062767.8375993,
     "ast_hash": "c698309979460d0f02ba616417844399",
-    "semantic_hash": ""
+    "semantic_hash": "c698309979460d0f02ba616417844399"
   },
   "AGENTS.md": {
     "mtime": 1783177173.8914495,
     "ast_hash": "6a47d64fcc136324ca395065a707ef76",
-    "semantic_hash": ""
+    "semantic_hash": "6a47d64fcc136324ca395065a707ef76"
   },
   "docs/first-version-proposal.html": {
     "mtime": 1783339541.318377,
     "ast_hash": "fc48fded6af51647c9592b4d336d4ea1",
-    "semantic_hash": ""
+    "semantic_hash": "fc48fded6af51647c9592b4d336d4ea1"
   },
   "docs/initial-context.txt": {
     "mtime": 1783177007.2874663,
     "ast_hash": "c29c176c7ac16f55e59a9189e83d93af",
-    "semantic_hash": ""
+    "semantic_hash": "c29c176c7ac16f55e59a9189e83d93af"
   },
   "docs/question-answering-interview.txt": {
     "mtime": 1783176978.2434711,
     "ast_hash": "f10b1ac07978eeff243e1d63db98e967",
-    "semantic_hash": ""
+    "semantic_hash": "f10b1ac07978eeff243e1d63db98e967"
   },
   "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf": {
     "mtime": 1783339606.6783264,
     "ast_hash": "d5701be8ee2418a3ad6683324b2fd011",
-    "semantic_hash": ""
+    "semantic_hash": "d5701be8ee2418a3ad6683324b2fd011"
   },
   "docs/first-version-requirements.md": {
     "mtime": 1783339943.8180554,
     "ast_hash": "f007ca50d21e7a600f757c0854322445",
-    "semantic_hash": ""
+    "semantic_hash": "f007ca50d21e7a600f757c0854322445"
   },
   ".codex/skills/choose-technology-stack/SKILL.md": {
     "mtime": 1783341581.8529537,
     "ast_hash": "9e53dca750a74845eaefa357504bfcd4",
-    "semantic_hash": ""
+    "semantic_hash": "9e53dca750a74845eaefa357504bfcd4"
   },
   ".codex/skills/choose-technology-stack/agents/openai.yaml": {
     "mtime": 1783341581.8529537,
     "ast_hash": "2bcbd39793cd8c6ce8809a4a70021dc5",
-    "semantic_hash": ""
+    "semantic_hash": "2bcbd39793cd8c6ce8809a4a70021dc5"
   },
   ".codex/skills/choose-technology-stack/references/selection-matrix.md": {
     "mtime": 1783341581.8529537,
     "ast_hash": "99d820f779d649d83a2b198efc073865",
-    "semantic_hash": ""
+    "semantic_hash": "99d820f779d649d83a2b198efc073865"
   },
   ".codex/skills/design-data-architecture/SKILL.md": {
     "mtime": 1783342188.5967207,
     "ast_hash": "532e51da5a80520a64e7d0dfe6045eeb",
-    "semantic_hash": ""
+    "semantic_hash": "532e51da5a80520a64e7d0dfe6045eeb"
   },
   ".codex/skills/design-data-architecture/agents/openai.yaml": {
     "mtime": 1783341581.8569536,
     "ast_hash": "e538409d8c79ab19b9eb9c4e7cb114da",
-    "semantic_hash": ""
+    "semantic_hash": "e538409d8c79ab19b9eb9c4e7cb114da"
   },
   ".codex/skills/design-data-architecture/references/data-decision-checklist.md": {
     "mtime": 1783342188.5967207,
     "ast_hash": "151ff92949e1c99f83f0b1c82ded5497",
-    "semantic_hash": ""
+    "semantic_hash": "151ff92949e1c99f83f0b1c82ded5497"
   },
   ".codex/skills/design-observability-operations/SKILL.md": {
     "mtime": 1783342188.6007206,
     "ast_hash": "aabdfeec3a9c19f82216ac43b30a9c56",
-    "semantic_hash": ""
+    "semantic_hash": "aabdfeec3a9c19f82216ac43b30a9c56"
   },
   ".codex/skills/design-observability-operations/agents/openai.yaml": {
     "mtime": 1783341581.8609536,
     "ast_hash": "e6a9d44c1339e55567e41f7c699db7fe",
-    "semantic_hash": ""
+    "semantic_hash": "e6a9d44c1339e55567e41f7c699db7fe"
   },
   ".codex/skills/design-observability-operations/references/operations-checklist.md": {
     "mtime": 1783342188.6007206,
     "ast_hash": "ccd960dcb694fcac1dd2c5ccb9973162",
-    "semantic_hash": ""
+    "semantic_hash": "ccd960dcb694fcac1dd2c5ccb9973162"
   },
   ".codex/skills/design-system-interactions/SKILL.md": {
     "mtime": 1783342188.5967207,
     "ast_hash": "a8f91a38b3798ae08a65c52fdfe41fc1",
-    "semantic_hash": ""
+    "semantic_hash": "a8f91a38b3798ae08a65c52fdfe41fc1"
   },
   ".codex/skills/design-system-interactions/agents/openai.yaml": {
     "mtime": 1783341581.8609536,
     "ast_hash": "bb1dfc7888043fef0335bc99c929f1df",
-    "semantic_hash": ""
+    "semantic_hash": "bb1dfc7888043fef0335bc99c929f1df"
   },
   ".codex/skills/design-system-interactions/references/interaction-decision-checklist.md": {
     "mtime": 1783342188.5967207,
     "ast_hash": "096ffd1bd2741b85ae57addeb9205542",
-    "semantic_hash": ""
+    "semantic_hash": "096ffd1bd2741b85ae57addeb9205542"
   },
   ".codex/skills/research-architecture-options/SKILL.md": {
     "mtime": 1783341581.8489537,
     "ast_hash": "88b5bf102ac647267f28c0d650415d57",
-    "semantic_hash": ""
+    "semantic_hash": "88b5bf102ac647267f28c0d650415d57"
   },
   ".codex/skills/research-architecture-options/agents/openai.yaml": {
     "mtime": 1783341581.8529537,
     "ast_hash": "1eed6014e22cecd6b6e45c74514744eb",
-    "semantic_hash": ""
+    "semantic_hash": "1eed6014e22cecd6b6e45c74514744eb"
   },
   ".codex/skills/research-architecture-options/references/research-protocol.md": {
     "mtime": 1783341581.8529537,
     "ast_hash": "af8dc7293149d7ce5a93065d6698ae9a",
-    "semantic_hash": ""
+    "semantic_hash": "af8dc7293149d7ce5a93065d6698ae9a"
   }
 }
