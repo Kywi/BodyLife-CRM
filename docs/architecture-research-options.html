@@ -1,0 +1,1305 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Архітектурне дослідження BodyLife CRM</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f4;
+      --paper: #ffffff;
+      --ink: #20251f;
+      --muted: #687168;
+      --line: #dde4dc;
+      --soft: #edf3ee;
+      --soft-2: #f7faf7;
+      --accent: #2f7d62;
+      --accent-dark: #1f5f49;
+      --warning: #a86f22;
+      --danger: #9f4942;
+      --blue: #315f83;
+      --shadow: 0 18px 48px rgba(31, 47, 36, 0.1);
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(47, 125, 98, 0.09), transparent 370px),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.58;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 30px 0 64px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+      gap: 28px;
+      align-items: stretch;
+      padding: 38px 0 28px;
+      min-height: 430px;
+    }
+
+    .hero-main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 18px;
+      color: var(--accent-dark);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.12;
+    }
+
+    h1 {
+      max-width: 900px;
+      font-size: clamp(38px, 6.5vw, 76px);
+      font-weight: 880;
+    }
+
+    .lead {
+      max-width: 780px;
+      margin: 22px 0 0;
+      color: #3d453d;
+      font-size: clamp(18px, 2vw, 23px);
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid rgba(47, 125, 98, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      color: #334038;
+      font-size: 14px;
+      font-weight: 720;
+      white-space: nowrap;
+    }
+
+    .hero-panel {
+      align-self: end;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .panel-title {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 840;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .decision-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .decision {
+      padding: 14px;
+      border: 1px solid rgba(47, 125, 98, 0.12);
+      border-radius: var(--radius);
+      background: var(--soft);
+    }
+
+    .decision strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 17px;
+    }
+
+    .decision span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin: 0 0 34px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(246, 247, 244, 0.92);
+      backdrop-filter: blur(16px);
+    }
+
+    .nav-inner {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 0;
+      scrollbar-width: thin;
+    }
+
+    .nav a {
+      flex: 0 0 auto;
+      padding: 9px 12px;
+      border-radius: 999px;
+      color: #354139;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav a:hover {
+      background: var(--soft);
+      color: var(--accent-dark);
+    }
+
+    main {
+      display: grid;
+      gap: 28px;
+    }
+
+    section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(31, 47, 36, 0.06);
+      padding: clamp(22px, 4vw, 36px);
+    }
+
+    .section-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .kicker {
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 840;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      max-width: 860px;
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 850;
+    }
+
+    h3 {
+      margin: 28px 0 10px;
+      font-size: 22px;
+      font-weight: 810;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--soft-2);
+    }
+
+    .card h3 {
+      margin: 0 0 9px;
+      font-size: 19px;
+    }
+
+    .card p:last-child,
+    .callout p:last-child,
+    li:last-child {
+      margin-bottom: 0;
+    }
+
+    .callout {
+      margin: 18px 0 0;
+      padding: 18px;
+      border: 1px solid rgba(47, 125, 98, 0.2);
+      border-left: 5px solid var(--accent);
+      border-radius: var(--radius);
+      background: #f4faf6;
+    }
+
+    .callout.warn {
+      border-color: rgba(168, 111, 34, 0.24);
+      border-left-color: var(--warning);
+      background: #fff8ec;
+    }
+
+    .callout.danger {
+      border-color: rgba(159, 73, 66, 0.24);
+      border-left-color: var(--danger);
+      background: #fff5f4;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 840px;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #edf3ee;
+      color: #25352c;
+      font-size: 13px;
+      font-weight: 820;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    td {
+      color: #30382f;
+      font-size: 15px;
+    }
+
+    .fit {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 820;
+      white-space: nowrap;
+    }
+
+    .fit.high {
+      background: #e3f3e9;
+      color: #1f6d4d;
+    }
+
+    .fit.medium {
+      background: #edf2fb;
+      color: #315f83;
+    }
+
+    .fit.low {
+      background: #fff1ec;
+      color: #9f4942;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .ranked {
+      display: grid;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .rank {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 14px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--soft-2);
+    }
+
+    .rank-num {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .rank h3 {
+      margin: 0 0 8px;
+      font-size: 21px;
+    }
+
+    .source-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .source {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--soft-2);
+      font-size: 14px;
+    }
+
+    .source a {
+      color: var(--accent-dark);
+      font-weight: 760;
+    }
+
+    .footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .split,
+      .grid,
+      .grid.two,
+      .source-list {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .hero-main {
+        padding-top: 10px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page {
+        width: min(100% - 24px, 1220px);
+        padding-top: 18px;
+      }
+
+      section {
+        padding: 20px;
+      }
+
+      .rank {
+        grid-template-columns: 1fr;
+      }
+
+      .pill {
+        white-space: normal;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      .page {
+        width: 100%;
+        padding: 0;
+      }
+
+      section,
+      .hero-panel,
+      .card,
+      .rank {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+
+      a {
+        text-decoration: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-main">
+        <div class="eyebrow">BodyLife CRM</div>
+        <h1>Архітектурне дослідження для першої веб-версії</h1>
+        <p class="lead">
+          Порівняння архітектурних підходів для внутрішнього web app, який замінює паперовий та Excel-облік клієнтів, абонементів, візитів, готівкових оплат, заморозок, історії дій і денного звіту.
+        </p>
+        <div class="meta" aria-label="Контекст документа">
+          <span class="pill">Дата: 2026-07-06</span>
+          <span class="pill">Оновлено: з відповідями власника/проєкту</span>
+          <span class="pill">Формат: research brief</span>
+          <span class="pill">Рішення: shortlist, не фінальний вибір</span>
+          <span class="pill">Без вибору мови, БД або фреймворку</span>
+          <a class="pill" href="architecture-research-options.md">Markdown source</a>
+        </div>
+      </div>
+      <aside class="hero-panel" aria-label="Короткий висновок">
+        <p class="panel-title">Найсильніший напрямок</p>
+        <div class="decision-list">
+          <div class="decision">
+            <strong>Modular monolith</strong>
+            <span>Один застосунок і один deploy, але з чіткими межами модулів.</span>
+          </div>
+          <div class="decision">
+            <strong>Hybrid server-rendered UI</strong>
+            <span>Сторінки рендеряться сервером, а пошук, швидкі дії й попередження інтерактивні.</span>
+          </div>
+          <div class="decision">
+            <strong>Окремий business audit</strong>
+            <span>Історія дій для спорів не змішується з технічними application logs.</span>
+          </div>
+          <div class="decision">
+            <strong>V1 без міграції та offline-first</strong>
+            <span>Старт зі стерильної бази, папір як fallback при втраті інтернету.</span>
+          </div>
+        </div>
+      </aside>
+    </header>
+
+    <nav class="nav" aria-label="Навігація по документу">
+      <div class="nav-inner">
+        <a href="#context">Контекст</a>
+        <a href="#clarifications">Уточнення</a>
+        <a href="#solutions">Класи рішень</a>
+        <a href="#matrix">Порівняння</a>
+        <a href="#critique">Критика</a>
+        <a href="#themes">Ключові теми</a>
+        <a href="#shortlist">Shortlist</a>
+        <a href="#avoid">Не робити</a>
+        <a href="#questions">Питання</a>
+        <a href="#adr">ADR</a>
+        <a href="#sources">Джерела</a>
+      </div>
+    </nav>
+
+    <main>
+      <section id="context">
+        <div class="section-head">
+          <div class="kicker">1. Контекст і драйвери</div>
+          <h2>Архітектура має обслуговувати рецепцію, а не демонструвати технічну складність</h2>
+        </div>
+        <div class="split">
+          <div>
+            <p>
+              BodyLife CRM у першій версії має замінити поточний ручний облік абонементів на папері та частково в Excel. Основний ланцюжок: клієнт, номер картки або пошук, абонемент, візит, залишок занять або мінус, заморозки, неробочі дні, готівкова оплата, історія, денний звіт і контроль клієнтів, які давно не ходили.
+            </p>
+            <p>
+              Важливо, що це не маркетингова CRM і не велика gym SaaS-платформа. Успіх v1 - коли адміністратор і власник перестають вручну рахувати абонементи на папері, а система стає основним місцем обліку.
+            </p>
+          </div>
+          <div class="callout">
+            <p><strong>Архітектурні драйвери:</strong></p>
+            <ul>
+              <li>швидкий пошук клієнта на рецепції;</li>
+              <li>надійні формули абонементів, мінусів, заморозок і неробочих днів;</li>
+              <li>прозора історія для спірних ситуацій;</li>
+              <li>денний контроль готівки й відвідувань;</li>
+              <li>простий backup/restore;</li>
+              <li>низька операційна складність;</li>
+              <li>модульність без enterprise-overengineering.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout warn">
+          <p>
+            Web app уже прийнятий як базовий напрямок. Ризики web app порівняно з native/desktop: залежність від браузера й мережі, слабший доступ до пристроїв, складніший offline-mode. Для v1 це прийнятно, бо очікується робочий планшет/телефон, доступ власника з телефону і стабільний інтернет.
+          </p>
+        </div>
+      </section>
+
+      <section id="clarifications">
+        <div class="section-head">
+          <div class="kicker">2. Уточнення після відповідей</div>
+          <h2>Частина ризиків знята: система може стартувати простіше, але абонементи треба моделювати уважніше</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Питання</th>
+                <th>Уточнена відповідь</th>
+                <th>Архітектурний наслідок</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Типи абонементів і ціни</td>
+                <td>Заповнюються динамічно, можуть додаватися нові. Не видаляються. Редагування потрібне тільки для виправлення помилок.</td>
+                <td>Membership Type має бути керованою довідниковою сутністю з деактивацією замість видалення і audit trail для змін.</td>
+              </tr>
+              <tr>
+                <td>Дата завершення</td>
+                <td>Дата завершення є останнім активним днем.</td>
+                <td>Фіксуємо правило active if today <= end date. Це треба винести в доменне правило й покрити тестами.</td>
+              </tr>
+              <tr>
+                <td>Ручне коригування дати завершення</td>
+                <td>Не потрібне.</td>
+                <td>Краще не давати прямого редагування end date. Дата має змінюватися через зрозумілі причини: freeze, non-working day, new membership, cancellation.</td>
+              </tr>
+              <tr>
+                <td>Мінусові заняття</td>
+                <td>Дуже часті, не є проблемою. Клієнт може дізнатись про -1 вже на рецепції.</td>
+                <td>Negative balance - core feature, не edge case. UI має явно показувати мінус, дату першого мінусового заняття і варіанти закриття.</td>
+              </tr>
+              <tr>
+                <td>Закриття мінусів</td>
+                <td>Мінус може покриватися новим абонементом зі стартом на дату першого мінусового заняття або кількома разовими оплатами.</td>
+                <td>Потрібен явний use case "закрити мінус": новим абонементом або разовими візитами/оплатами. Система не повинна автоматично приховувати це рішення.</td>
+              </tr>
+              <tr>
+                <td>Міграція</td>
+                <td>У v1 працюємо зі стерильною базою. Старих клієнтів з активними абонементами можна додати пізніше, якщо знадобиться.</td>
+                <td>Import не входить у v1. Але модель не повинна заважати ручному створенню клієнта з уже активним абонементом і датою старту з минулого.</td>
+              </tr>
+              <tr>
+                <td>Тренери</td>
+                <td>Окремого доступу немає. Є один девайс на адмін-стійці, яким користуються адміни або довірений тренер за відсутності адміна.</td>
+                <td>Trainer role прибирається з v1. Потрібні Owner/Admin і, можливо, session-level audit, щоб було видно, під чиїм доступом виконувались дії.</td>
+              </tr>
+              <tr>
+                <td>Фінанси для адміністратора</td>
+                <td>Поточна версія тільки про денну касу. Адміністратор бачить підсумкові фінанси за день, щоб підрахувати касу.</td>
+                <td>Admin finance visibility у v1 обмежується daily cash report. Довші фінансові періоди не входять у першу версію.</td>
+              </tr>
+              <tr>
+                <td>Owner-only дії</td>
+                <td>Власник керує типами абонементів і неробочими днями. Адміністратор може працювати з оплатами й заморозками, включно з виправленнями у межах поточного дня.</td>
+                <td>Permissions matrix стає простішою: owner-only для довідників, неробочих днів і службових речей; admin - для щоденної операційної роботи рецепції.</td>
+              </tr>
+              <tr>
+                <td>Хостинг і backup</td>
+                <td>Система буде на хостингу. Backup робить хостинг, а restore практично перевіряє власник.</td>
+                <td>Потрібна проста restore-check процедура для власника. Export даних з інтерфейсу у v1 не потрібен.</td>
+              </tr>
+              <tr>
+                <td>Втрата інтернету</td>
+                <td>Повертаються до паперу, а після появи інтернету все відмічають у системі.</td>
+                <td>Offline-first не потрібен. Потрібні прості ручні backdated entries з audit: хто вніс, коли фактично був візит/оплата, коли записали в систему.</td>
+              </tr>
+              <tr>
+                <td>Online payments</td>
+                <td>Малоймовірні, розмови про них немає.</td>
+                <td>Не проектувати payment platform у v1. Достатньо не закрити дорогу майбутньому payment method.</td>
+              </tr>
+              <tr>
+                <td>Client self-service</td>
+                <td>Ймовірно на цьому зупинимось. Якщо client self-service колись буде, бажано, щоб архітектурно його можна було додати без болючої перебудови.</td>
+                <td>Не робити у v1 і не обирати SPA/API тільки заради нього. Достатньо тримати доменну логіку окремо від admin UI, щоб майбутній read-only client view не був проблемою.</td>
+              </tr>
+              <tr>
+                <td>Barcode/turnstile</td>
+                <td>Малоймовірно. Поки достатньо цифр під штрихкодом; сканування може бути фічею з нижчим пріоритетом.</td>
+                <td>Card number лишається простим ідентифікатором. Barcode scanner можна додати пізніше як спосіб введення того самого номера, не як окрему архітектуру.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <p>
+            Після цих відповідей shortlist стає впевненішим: modular monolith + hybrid server-rendered UI залишається найпрактичнішим шляхом. Найбільша доменна зона ризику тепер не міграція або інтеграції, а часті мінусові заняття і правильне пояснення, чим саме вони закриті.
+          </p>
+        </div>
+      </section>
+
+      <section id="solutions">
+        <div class="section-head">
+          <div class="kicker">3. Наявні класи рішень</div>
+          <h2>BodyLife варто вчитися у gym/POS/membership систем, але не копіювати їхній масштаб</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Клас рішення</th>
+                <th>Що в них зроблено добре</th>
+                <th>Що взяти для BodyLife</th>
+                <th>Що буде зайвим у v1</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Gym CRM / fitness club management</td>
+                <td>Профіль клієнта, member records, check-in, memberships, payments, reports, інколи access control.</td>
+                <td>Картка клієнта, статус абонемента, швидка відмітка візиту, історія оплат і відвідувань.</td>
+                <td>Member app, online booking, marketing, recurring billing, trainer payroll, inventory, turnstiles.</td>
+              </tr>
+              <tr>
+                <td>Membership management</td>
+                <td>Централізована база учасників, renewals/expirations, dues/payments, member activity.</td>
+                <td>Абонемент як бізнес-стан з датою, залишком занять, оплатою й попередженнями.</td>
+                <td>Public portal, events, email campaigns, subscriptions-first accounting.</td>
+              </tr>
+              <tr>
+                <td>Small business CRM</td>
+                <td>Customer directory, notes, history, segmentation, activity timeline.</td>
+                <td>Пошук по ПІБ/телефону/картці, короткий профіль, історія дій.</td>
+                <td>Lead pipeline, sales forecasting, marketing automation.</td>
+              </tr>
+              <tr>
+                <td>POS-light systems</td>
+                <td>Daily sales summary, payment methods, void/correction semantics, cashier visibility.</td>
+                <td>Денний звіт по готівці, список оплат, скасування або виправлення з історією.</td>
+                <td>Повний POS, склад, фіскалізація, чеки, товарні позиції.</td>
+              </tr>
+              <tr>
+                <td>Booking/attendance systems</td>
+                <td>Attendance, check-in flows, class booking, waitlists, no-show automation.</td>
+                <td>Факт візиту, список останніх візитів, клієнти, які давно не ходили.</td>
+                <td>Розклад груп, self-service booking, penalty charges, автоматичні нагадування клієнтам.</td>
+              </tr>
+              <tr>
+                <td>Open-source ERP/CRM/admin</td>
+                <td>Модульність, ролі, CRUD, reports, інколи бухгалтерія й POS.</td>
+                <td>Ідею модульних меж і адміністративних екранів.</td>
+                <td>ERP-ширина: accounting, HR, stock, orders, procurement, custom workflow engine.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <p>
+            Головний урок: для BodyLife цінність не в кількості модулів, а в точній доменній моделі абонементів і швидкому reception workflow. Overengineering починається там, де система починає вирішувати задачі, яких бізнес ще не підтвердив.
+          </p>
+        </div>
+      </section>
+
+      <section id="matrix">
+        <div class="section-head">
+          <div class="kicker">4. Порівняння архітектурних підходів</div>
+          <h2>Підходи відрізняються не модністю, а ціною змін і операційним тягарем</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Підхід</th>
+                <th>Плюси</th>
+                <th>Мінуси</th>
+                <th>Прихована складність</th>
+                <th>Вплив на v1</th>
+                <th>Fit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Layered architecture</td>
+                <td>Зрозуміла структура: UI, application, domain, data.</td>
+                <td>Може розмазати бізнес-правила по сервісах.</td>
+                <td>Потрібно не допустити дублювання формул у reports/UI.</td>
+                <td>Швидкий старт.</td>
+                <td><span class="fit medium">Середній</span></td>
+              </tr>
+              <tr>
+                <td>Feature/module-based architecture</td>
+                <td>Добре мапиться на Clients, Memberships, Visits, Payments, Reports.</td>
+                <td>Є ризик локальних копій спільних правил.</td>
+                <td>Потрібні правила залежностей між модулями.</td>
+                <td>Допоможе тримати v1 зрозумілою.</td>
+                <td><span class="fit high">Високий</span></td>
+              </tr>
+              <tr>
+                <td>Modular monolith</td>
+                <td>Один deploy, але чіткі доменні межі.</td>
+                <td>Потребує дисципліни й ownership меж.</td>
+                <td>Легко назвати моноліт модульним, але не витримати межі.</td>
+                <td>Найкращий баланс для першої версії.</td>
+                <td><span class="fit high">Високий</span></td>
+              </tr>
+              <tr>
+                <td>Service-oriented / microservices</td>
+                <td>Незалежні сервіси, масштабування, deployment boundaries.</td>
+                <td>Distributed transactions, latency, monitoring, deployment complexity.</td>
+                <td>Кожна бізнес-дія стає міжсервісною координацією.</td>
+                <td>Сповільнить v1 без реальної вигоди.</td>
+                <td><span class="fit low">Низький</span></td>
+              </tr>
+              <tr>
+                <td>Event-driven</td>
+                <td>Добре для audit hooks, read models, notifications.</td>
+                <td>Ordering, retries, idempotency, eventual consistency.</td>
+                <td>Потрібно відрізняти domain events від event platform.</td>
+                <td>Корисно локально, не як окрема інфраструктура.</td>
+                <td><span class="fit medium">Умовний</span></td>
+              </tr>
+              <tr>
+                <td>Event sourcing</td>
+                <td>Повна історія змін і можливість відновлювати стан з events.</td>
+                <td>Projections, replay, schema evolution, складні виправлення.</td>
+                <td>Audit history не дорівнює event sourcing.</td>
+                <td>Занадто важко для v1.</td>
+                <td><span class="fit low">Низький</span></td>
+              </tr>
+              <tr>
+                <td>Server-rendered web app</td>
+                <td>Простий mental model, менше frontend-state, швидкий CRUD.</td>
+                <td>Обмеженіша інтерактивність без JS-острівців.</td>
+                <td>Потрібно акуратно зробити швидкий пошук і дії рецепції.</td>
+                <td>Дуже практичний старт.</td>
+                <td><span class="fit high">Високий</span></td>
+              </tr>
+              <tr>
+                <td>SPA + API</td>
+                <td>Багато інтерактивності, API може знадобитись mobile/client portal.</td>
+                <td>Два застосунки, auth/API versioning, більше JS-state.</td>
+                <td>Потрібно проектувати контракт і обробляти frontend consistency.</td>
+                <td>Може бути зайвим для v1.</td>
+                <td><span class="fit medium">Умовний</span></td>
+              </tr>
+              <tr>
+                <td>Hybrid SSR + interactive components</td>
+                <td>Прості сторінки плюс швидкі інтерактивні дії.</td>
+                <td>Потрібна дисципліна, щоб не створити хаос двох стилів.</td>
+                <td>Потрібно визначити, що інтерактивне, а що звичайна сторінка.</td>
+                <td>Дуже підходить для рецепції.</td>
+                <td><span class="fit high">Високий</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="critique">
+        <div class="section-head">
+          <div class="kicker">5. Критика підходів</div>
+          <h2>Чому кожен підхід може спрацювати або нашкодити саме BodyLife</h2>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <h3>Layered architecture</h3>
+            <p>Добра як внутрішня структура, але погана як єдиний принцип. Формули абонемента, мінусів, скасувань, заморозок і звітів не повинні жити в контролерах або різних report-сервісах.</p>
+          </div>
+          <div class="card">
+            <h3>Feature/module-based</h3>
+            <p>Дає природну організацію навколо бізнесу. Ризик у тому, що модулі почнуть напряму лізти в дані один одного. Потрібні явні application interfaces.</p>
+          </div>
+          <div class="card">
+            <h3>Modular monolith</h3>
+            <p>Найкращий компроміс: один runtime, одна операційна модель, але чіткі доменні межі. Поганим стане, якщо межі будуть тільки в назвах папок.</p>
+          </div>
+          <div class="card">
+            <h3>Microservices</h3>
+            <p>Для малого залу, малої команди й v1 це передчасна ціна. Візит, оплата, абонемент і audit мають бути атомарними в головному workflow, а microservices ускладнять це без потреби.</p>
+          </div>
+          <div class="card">
+            <h3>Event-driven</h3>
+            <p>Корисний як внутрішній патерн: після VisitRecorded можна створити audit entry або оновити read model. Але брокер подій і distributed consumers для v1 не потрібні.</p>
+          </div>
+          <div class="card">
+            <h3>Event sourcing</h3>
+            <p>Спокушає повною історією, але вимагає projections, replay, versioning events і спеціального мислення. BodyLife потрібна бізнес-історія, не повний event-sourced core.</p>
+          </div>
+          <div class="card">
+            <h3>Server-rendered app</h3>
+            <p>Практична база для CRUD, reports, roles і простого деплою. Слабке місце - reception UX, тому точкові інтерактивні компоненти майже напевно знадобляться.</p>
+          </div>
+          <div class="card">
+            <h3>SPA + API</h3>
+            <p>Має сенс, якщо підтвердяться mobile app, client portal або зовнішні інтеграції. Інакше це зайвий frontend-state, API-contract і auth-surface для першої версії.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="themes">
+        <div class="section-head">
+          <div class="kicker">6. Ключові архітектурні теми</div>
+          <h2>Найбільша складність не в CRUD, а в правилах і пояснюваності</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Тема</th>
+                <th>Архітектурний висновок</th>
+                <th>Ризик, якщо зробити слабко</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Модулі системи</td>
+                <td>Clients, Membership Types, Memberships, Visits, Payments, Freezes, Non-working Days, Reports, Audit, Users/Roles, Import/Export.</td>
+                <td>Усе стане одним великим admin CRUD без зрозумілих меж.</td>
+              </tr>
+              <tr>
+                <td>Межі відповідальності</td>
+                <td>Memberships володіє правилами активності, залишку, мінусів і продовжень. Reports читає готові правила, але не винаходить їх.</td>
+                <td>Різні екрани показуватимуть різний стан абонемента.</td>
+              </tr>
+              <tr>
+                <td>Бізнес-логіка абонементів</td>
+                <td>Потрібна окрема доменна модель для inclusive end date, counted visits, canceled visits, freezes, non-working overlap і negative visits.</td>
+                <td>Помилки у даті завершення, подвійні продовження, неправильний мінус.</td>
+              </tr>
+              <tr>
+                <td>Business audit/history</td>
+                <td>Append-only бізнес-історія: хто, коли, яку дію виконав, над яким об'єктом, з яким результатом або причиною.</td>
+                <td>Неможливо пояснити спірну оплату, скасування або заморозку.</td>
+              </tr>
+              <tr>
+                <td>Технічне логування</td>
+                <td>Окремо від audit: помилки, latency, auth failures, request id, background jobs, backup status.</td>
+                <td>Business audit загубиться в технічному шумі або технічні проблеми не будуть діагностовані.</td>
+              </tr>
+              <tr>
+                <td>Звіти</td>
+                <td>Daily report має бути read model або query layer поверх visits/payments, з однаковими правилами скасувань.</td>
+                <td>Денна готівка й відвідування не співпадуть з історією клієнтів.</td>
+              </tr>
+              <tr>
+                <td>Пошук клієнтів</td>
+                <td>Окремий search use case: card number, ПІБ, phone, last 4 digits, duplicate warnings.</td>
+                <td>Рецепція повернеться до паперу, якщо пошук повільний або нечіткий.</td>
+              </tr>
+              <tr>
+                <td>Backup/restore</td>
+                <td>Навіть якщо backup робить хостинг, у системі бажано мати мінімальний export і зрозумілу процедуру restore-check.</td>
+                <td>Відновлення даних залишиться припущенням, а не перевіреним процесом.</td>
+              </tr>
+              <tr>
+                <td>Міграція з Excel/паперу</td>
+                <td>У v1 не входить. Старт зі стерильної бази. Пізніше можна додати import або ручне заведення активних клієнтів з минулими датами.</td>
+                <td>Якщо модель не дозволить backdated membership, пізнє заведення активних клієнтів стане болючим.</td>
+              </tr>
+              <tr>
+                <td>Ролі користувачів</td>
+                <td>Owner і Admin у v1. Окремого Trainer доступу немає; довірений тренер користується девайсом адмін-стійки.</td>
+                <td>Передчасний RBAC ускладнить інтерфейс, але один спільний девайс вимагає акуратної audit visibility.</td>
+              </tr>
+              <tr>
+                <td>Майбутні інтеграції</td>
+                <td>Online payments і turnstile/barcode низької ймовірності. Client self-service можливий пізніше як read-only перегляд стану абонемента.</td>
+                <td>Не треба будувати API-first platform у v1, але домен не має бути зашитий тільки під admin screens.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="shortlist">
+        <div class="section-head">
+          <div class="kicker">7. Реалістичний shortlist</div>
+          <h2>Shortlist після уточнень: перший варіант став помітно сильнішим</h2>
+        </div>
+        <div class="ranked">
+          <article class="rank">
+            <div class="rank-num">1</div>
+            <div>
+              <h3>Modular monolith + feature modules + hybrid server-rendered UI</h3>
+              <p>
+                Найсильніший кандидат. Дає один deploy і просту операційну модель, але не перетворює код на суцільний CRUD. Після уточнень він ще краще підходить: немає окремої trainer role, немає міграції у v1, online payments малоймовірні, offline-first не потрібен.
+              </p>
+              <p class="muted">
+                Може змінитися, якщо з'явиться кілька незалежних точок входу, юридично значима каса або зовнішній API раніше, ніж очікується.
+              </p>
+            </div>
+          </article>
+          <article class="rank">
+            <div class="rank-num">2</div>
+            <div>
+              <h3>Simple layered monolith + server-rendered UI</h3>
+              <p>
+                Найпростіший варіант для дуже малого обсягу. Швидко дає working version, але потребує обережності, щоб бізнес-правила абонементів не розмазались між UI, reports і data access.
+              </p>
+              <p class="muted">
+                Може бути достатнім, якщо v1 точно лишається маленькою внутрішньою системою. Але часті мінусові заняття й варіанти їх закриття вже підштовхують до чіткішого доменного ядра.
+              </p>
+            </div>
+          </article>
+          <article class="rank">
+            <div class="rank-num">3</div>
+            <div>
+              <h3>SPA + API + modular backend</h3>
+              <p>
+                Conditional option. Має сенс, якщо з'явиться близький план окремого клієнтського кабінету, зовнішніх інтеграцій або кількох різних frontend-клієнтів. Для v1 це все ще зайва складність.
+              </p>
+              <p class="muted">
+                Може стати першим вибором тільки після підтвердження близького API/client-facing майбутнього, якого зараз немає.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="avoid">
+        <div class="section-head">
+          <div class="kicker">8. Що точно не варто робити у v1</div>
+          <h2>Перша версія має бути нудно-надійною, а не великою платформою</h2>
+        </div>
+        <div class="grid two">
+          <div class="callout danger">
+            <p><strong>Не варто будувати:</strong></p>
+            <ul>
+              <li>microservices або distributed workflow;</li>
+              <li>full event sourcing;</li>
+              <li>offline-first sync;</li>
+              <li>повний ERP/POS/accounting;</li>
+              <li>online payments і bank/terminal integrations;</li>
+              <li>turnstiles, NFC, QR/barcode як основу v1;</li>
+              <li>mobile app або public client portal у першій версії;</li>
+              <li>trainer payroll і персональний облік тренерів;</li>
+              <li>marketing automation і повідомлення клієнтам.</li>
+            </ul>
+          </div>
+          <div class="callout warn">
+            <p><strong>Не змішувати audit і logs:</strong></p>
+            <p>
+              Business audit відповідає на питання "хто зробив бізнес-дію, коли, над чим і чому". Application logs відповідають на питання "що сталося технічно": помилка, latency, request id, auth failure, job status. Це різні потоки даних, різні читачі й різні правила зберігання.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="questions">
+        <div class="section-head">
+          <div class="kicker">9. Закриті питання та permissions</div>
+          <h2>Після другого уточнення бізнес-межі v1 майже повністю визначені</h2>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <h3>Закрито уточненнями</h3>
+            <ul>
+              <li>Типи абонементів динамічні, не видаляються, можуть деактивуватися або виправлятися.</li>
+              <li>Дата завершення - останній активний день.</li>
+              <li>Ручне коригування дати завершення не потрібне.</li>
+              <li>Мінусові заняття часті й мають бути core workflow.</li>
+              <li>Міграція з Excel/паперу не входить у v1.</li>
+              <li>Окремого trainer access у v1 немає.</li>
+              <li>Адміністратор бачить тільки денну касу.</li>
+              <li>Export даних з інтерфейсу у v1 не потрібен.</li>
+              <li>Restore перевіряє власник.</li>
+              <li>Неробочі дні - owner-only.</li>
+              <li>Оплати й заморозки може виправляти адміністратор у межах поточного дня.</li>
+              <li>Online payments малоймовірні.</li>
+              <li>Barcode/turnstile низького пріоритету.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Лишилося оформити в ADR</h3>
+            <ul>
+              <li>Точні поля audit для виправлення оплат, заморозок і backdated entries.</li>
+              <li>Чи існує поняття "закритий день" для каси, після якого виправлення має робити тільки власник.</li>
+              <li>Який мінімальний restore-check власник реально виконуватиме.</li>
+              <li>Як саме майбутній read-only client self-service має читати стан абонемента, якщо колись буде потрібен.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Поточна матриця доступів для v1</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Дія</th>
+                <th>Роль</th>
+                <th>Чому так</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Додавати, редагувати, деактивувати типи абонементів</td>
+                <td><span class="fit high">Owner-only</span></td>
+                <td>Це змінює правила продажу, ціни, кількість занять і майбутні абонементи. Видалення краще заборонити.</td>
+              </tr>
+              <tr>
+                <td>Додавати клієнта, редагувати базові дані, прив'язувати картку</td>
+                <td><span class="fit medium">Admin + Owner</span></td>
+                <td>Це щоденна рецепційна робота. Потрібні duplicate warnings і audit, але не owner-only.</td>
+              </tr>
+              <tr>
+                <td>Видавати абонемент і фіксувати оплату</td>
+                <td><span class="fit medium">Admin + Owner</span></td>
+                <td>Адміністратор має працювати без очікування власника. Важливо логувати, хто видав і хто прийняв оплату.</td>
+              </tr>
+              <tr>
+                <td>Відмічати візит, у тому числі в мінус</td>
+                <td><span class="fit medium">Admin + Owner</span></td>
+                <td>Мінуси часті, тому блокування власником зламає reception flow.</td>
+              </tr>
+              <tr>
+                <td>Скасовувати помилковий візит</td>
+                <td><span class="fit medium">Admin + Owner</span></td>
+                <td>Це може бути оперативна помилка на рецепції. Потрібен коментар і audit.</td>
+              </tr>
+              <tr>
+                <td>Скасовувати або виправляти оплату</td>
+                <td><span class="fit medium">Admin + Owner у межах поточного дня</span></td>
+                <td>Це частина роботи адміністратора, якщо помилився з абонементом або оплатою. Потрібен audit: що було, що стало, хто і чому змінив.</td>
+              </tr>
+              <tr>
+                <td>Додавати заморозку</td>
+                <td><span class="fit medium">Admin + Owner</span></td>
+                <td>Заморозка є звичайною операцією по абонементу, але має бути видима в історії.</td>
+              </tr>
+              <tr>
+                <td>Скасовувати заморозку</td>
+                <td><span class="fit medium">Admin + Owner</span></td>
+                <td>Це операційна робота адміністратора: заморозити й розморозити абонемент. Потрібен коментар або причина в audit.</td>
+              </tr>
+              <tr>
+                <td>Додавати неробочий день або період</td>
+                <td><span class="fit high">Owner-only</span></td>
+                <td>Це масово продовжує активні абонементи. Перед підтвердженням треба показувати кількість зачеплених абонементів.</td>
+              </tr>
+              <tr>
+                <td>Скасовувати неробочий день або відкатувати його вплив</td>
+                <td><span class="fit high">Owner-only</span></td>
+                <td>Це небезпечна масова дія. Для v1 можна мінімізувати: показати вплив і дозволити ручне виправлення тільки через контрольований сценарій.</td>
+              </tr>
+              <tr>
+                <td>Бачити денний підсумок каси</td>
+                <td><span class="fit medium">Admin + Owner</span></td>
+                <td>Адміністратор має звірити касу за день.</td>
+              </tr>
+              <tr>
+                <td>Бачити фінансові звіти за довший період</td>
+                <td><span class="fit low">Не входить у v1</span></td>
+                <td>Поточна версія працює тільки з денною касою. Довші фінансові періоди можна залишити на майбутнє.</td>
+              </tr>
+              <tr>
+                <td>Export даних, backup/restore-панель, службові налаштування</td>
+                <td><span class="fit low">Export не входить у v1</span></td>
+                <td>Власник перевіряє restore, але окремий export з інтерфейсу зараз не потрібен. Службові налаштування лишаються owner-only, якщо з'являться.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Питання майбутнього розширення</h3>
+        <div class="grid two">
+          <div class="card">
+            <h3>Client self-service</h3>
+            <ul>
+              <li>Найімовірніше, система зупиниться на внутрішньому admin/owner web app.</li>
+              <li>Client self-service не є планом v1 і не має диктувати вибір SPA/API.</li>
+              <li>Архітектурно достатньо тримати доменну логіку окремо від admin UI, щоб колись додати read-only перегляд без переписування ядра.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Пізнє заведення старих клієнтів</h3>
+            <ul>
+              <li>Повний import не потрібен у v1.</li>
+              <li>Але вручну створити клієнта з активним абонементом і минулою датою старту має бути можливо.</li>
+              <li>Такі записи варто маркувати як manually entered/backfilled в audit.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout">
+          <p>
+            Після уточнень вибір може змінитися переважно через юридично значиму касу, нестабільний хостинг/інтернет, або якщо з'явиться вимога швидко переносити стару базу клієнтів з активними абонементами. Client self-service тепер не виглядає близьким драйвером, але його можна не блокувати архітектурно.
+          </p>
+        </div>
+      </section>
+
+      <section id="adr">
+        <div class="section-head">
+          <div class="kicker">10. ADR-кандидати</div>
+          <h2>Окремі рішення, які варто оформити перед реалізацією</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ADR</th>
+                <th>Тема</th>
+                <th>Що має зафіксувати</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ADR-001</td>
+                <td>Product shape</td>
+                <td>Internal web app як основний формат v1, без mobile/desktop-first.</td>
+              </tr>
+              <tr>
+                <td>ADR-002</td>
+                <td>Application architecture</td>
+                <td>Modular monolith vs simple layered monolith vs SPA/API.</td>
+              </tr>
+              <tr>
+                <td>ADR-003</td>
+                <td>UI rendering</td>
+                <td>Server-rendered, SPA або hybrid interactive components.</td>
+              </tr>
+              <tr>
+                <td>ADR-004</td>
+                <td>Module boundaries</td>
+                <td>Clients, Memberships, Visits, Payments, Extensions, Reports, Audit, Users.</td>
+              </tr>
+              <tr>
+                <td>ADR-005</td>
+                <td>Membership invariants</td>
+                <td>Inclusive end date, remaining visits, frequent negative visits, first-negative-date rule, freeze/non-working overlap.</td>
+              </tr>
+              <tr>
+                <td>ADR-006</td>
+                <td>Business audit</td>
+                <td>Окрема бізнес-історія дій, не application logs.</td>
+              </tr>
+              <tr>
+                <td>ADR-007</td>
+                <td>Reporting</td>
+                <td>Daily cash/visits, inactive clients, low remaining visits, negative clients.</td>
+              </tr>
+              <tr>
+                <td>ADR-008</td>
+                <td>Search</td>
+                <td>Card number, ПІБ, phone, last 4 digits, duplicate warnings.</td>
+              </tr>
+              <tr>
+                <td>ADR-009</td>
+                <td>Backup/restore</td>
+                <td>Що покриває хостинг, як власник перевіряє restore, і чому export з інтерфейсу не входить у v1.</td>
+              </tr>
+              <tr>
+                <td>ADR-010</td>
+                <td>Migration</td>
+                <td>У v1 без import; дозволити manual backfill активних клієнтів з audit, якщо знадобиться.</td>
+              </tr>
+              <tr>
+                <td>ADR-011</td>
+                <td>Membership type lifecycle</td>
+                <td>Додавання, виправлення, деактивація без видалення; вплив змін на уже видані абонементи.</td>
+              </tr>
+              <tr>
+                <td>ADR-012</td>
+                <td>Permissions matrix</td>
+                <td>Owner-only для типів абонементів і неробочих днів; admin daily cash; admin corrections для оплат/заморозок у межах поточного дня; no trainer role.</td>
+              </tr>
+              <tr>
+                <td>ADR-013</td>
+                <td>Future client self-service boundary</td>
+                <td>Не реалізовувати у v1 і не робити API-first заради нього; тримати доменну логіку придатною для майбутнього read-only client view.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sources">
+        <div class="section-head">
+          <div class="kicker">11. Джерела</div>
+          <h2>Матеріали, на яких базується дослідження</h2>
+        </div>
+        <h3>Локальні документи BodyLife</h3>
+        <div class="source-list">
+          <div class="source"><a href="first-version-requirements.md">first-version-requirements.md</a><br>Детальні вимоги, сценарії, формули, звіти й open questions.</div>
+          <div class="source"><a href="initial-context.txt">initial-context.txt</a><br>Початковий контекст: простий internal web app, картки, готівка, базові сутності.</div>
+          <div class="source"><a href="question-answering-interview.txt">question-answering-interview.txt</a><br>Interview notes: папір/Excel, мінусові заняття, історія для спорів, ролі й пристрої.</div>
+        </div>
+        <h3>Зовнішні джерела і порівняльні системи</h3>
+        <div class="source-list">
+          <div class="source"><a href="https://www.mindbodyonline.com/">Mindbody</a><br>Fitness/wellness management: scheduling, check-in, payments, reporting.</div>
+          <div class="source"><a href="https://www.gymmaster.com/">GymMaster</a><br>Gym management: member records, memberships, bookings, sales, communication.</div>
+          <div class="source"><a href="https://goteamup.com/product/gym-management-software/">TeamUp</a><br>Gym software: memberships, bookings, payments, attendance limits, waitlists.</div>
+          <div class="source"><a href="https://www.wildapricot.com/features/membership-management-software">WildApricot Membership Management</a><br>Member database, payments, membership operations.</div>
+          <div class="source"><a href="https://www.odoo.com/documentation/19.0/applications/sales/crm/optimize/member_partner_module.html">Odoo Membership / Partnership</a><br>Membership sale, renewals, expirations, dues and payments.</div>
+          <div class="source"><a href="https://www.dolibarr.org/">Dolibarr ERP/CRM</a><br>Open-source modular ERP/CRM pattern: enable only needed features.</div>
+          <div class="source"><a href="https://squareup.com/us/en/point-of-sale/features/customer-directory">Square Customer Directory</a><br>Customer directory connected with purchase/payment history.</div>
+          <div class="source"><a href="https://squareup.com/help/us/en/article/5072-summaries-and-reports-from-the-online-dashboard">Square Reporting</a><br>Sales summaries, payment methods, transaction reports.</div>
+          <div class="source"><a href="https://martinfowler.com/articles/microservices.html">Martin Fowler: Microservices</a><br>Microservices as independently deployable services around business capabilities.</div>
+          <div class="source"><a href="https://martinfowler.com/articles/microservice-trade-offs.html">Martin Fowler: Microservice Trade-Offs</a><br>Microservices bring both benefits and costs; context matters.</div>
+          <div class="source"><a href="https://martinfowler.com/eaaDev/EventSourcing.html">Martin Fowler: Event Sourcing</a><br>State changes captured as event objects for the lifetime of application state.</div>
+          <div class="source"><a href="https://developer.mozilla.org/en-US/docs/Glossary/SPA">MDN: SPA</a><br>Single-page application definition and client-side update model.</div>
+          <div class="source"><a href="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps">MDN: Progressive Web Apps</a><br>PWA/offline capabilities and service-worker-related APIs.</div>
+          <div class="source"><a href="https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html">OWASP Logging Cheat Sheet</a><br>Guidance for application/security logging.</div>
+          <div class="source"><a href="https://owasp.org/Top10/2021/A09_2021-Security_Logging_and_Monitoring_Failures/">OWASP Top 10 A09</a><br>High-value transactions should have integrity-protected audit trail.</div>
+          <div class="source"><a href="https://csrc.nist.gov/glossary/term/audit_log">NIST Audit Log Glossary</a><br>Audit log as chronological record and documentary evidence of events.</div>
+        </div>
+      </section>
+    </main>
+
+    <p class="footer">
+      Markdown source of truth: architecture-research-options.md. Документ є архітектурним shortlist, а не остаточним вибором технологій. Наступний крок - оформити ADR по архітектурі, permissions, audit, backup і membership rules.
+    </p>
+  </div>
+</body>
+</html>

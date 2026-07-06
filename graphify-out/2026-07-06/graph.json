@@ -1,7 +1,100 @@
 {
   "directed": false,
   "multigraph": false,
-  "graph": {},
+  "graph": {
+    "hyperedges": [
+      {
+        "id": "bodylife_architecture_design_skills",
+        "label": "BodyLife Architecture Design Skills",
+        "nodes": [
+          "_codex_skills_choose_technology_stack_skill_choose_technology_stack_skill",
+          "_codex_skills_design_data_architecture_skill_design_data_architecture_skill",
+          "_codex_skills_design_observability_operations_skill_design_observability_operations_skill",
+          "_codex_skills_design_system_interactions_skill_design_system_interactions_skill"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.85,
+        "source_file": ".codex/skills/choose-technology-stack/SKILL.md"
+      },
+      {
+        "id": "graphify_pipeline_reference_set",
+        "label": "Graphify Pipeline Reference Set",
+        "nodes": [
+          "_codex_skills_graphify_skill_graphify_skill",
+          "_codex_skills_graphify_references_github_and_merge_github_and_merge_reference",
+          "_codex_skills_graphify_references_transcribe_transcribe_reference",
+          "_codex_skills_graphify_references_extraction_spec_extraction_subagent_prompt",
+          "_codex_skills_graphify_references_exports_extra_exports_reference",
+          "_codex_skills_graphify_references_update_update_reference",
+          "_codex_skills_graphify_references_add_watch_add_watch_reference",
+          "_codex_skills_graphify_references_hooks_hooks_reference",
+          "_codex_skills_graphify_references_query_query_reference"
+        ],
+        "relation": "form",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": ".codex/skills/graphify/SKILL.md"
+      },
+      {
+        "id": "audit_history_consistency_pattern",
+        "label": "Audit History Consistency Pattern",
+        "nodes": [
+          "_codex_skills_design_data_architecture_skill_data_invariants",
+          "_codex_skills_design_observability_operations_references_operations_checklist_business_audit_history",
+          "_codex_skills_design_system_interactions_skill_transaction_consistency_boundaries"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.85,
+        "source_file": ".codex/skills/design-data-architecture/SKILL.md"
+      },
+      {
+        "id": "architecture_research_evidence_path",
+        "label": "Architecture Research Evidence Path",
+        "nodes": [
+          "_codex_skills_research_architecture_options_skill_research_architecture_options",
+          "_codex_skills_research_architecture_options_references_research_protocol_evidence_order",
+          "docs_first_version_requirements_first_version_requirements",
+          "docs_initial_context_project_context",
+          "docs_question_answering_interview_gym_system_interview"
+        ],
+        "relation": "participate_in",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": ".codex/skills/research-architecture-options/SKILL.md"
+      },
+      {
+        "id": "first_version_operational_chain",
+        "label": "First Version Operational Chain",
+        "nodes": [
+          "docs_initial_context_mvp_chain",
+          "docs_first_version_requirements_operational_chain",
+          "docs_first_version_proposal_reception_workflow",
+          "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_summary"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.95,
+        "source_file": "docs/first-version-requirements.md"
+      },
+      {
+        "id": "membership_extension_logic",
+        "label": "Membership Extension Logic",
+        "nodes": [
+          "docs_first_version_requirements_freeze",
+          "docs_first_version_requirements_non_working_period",
+          "docs_first_version_requirements_completion_date_formula",
+          "docs_first_version_requirements_overlap_extension_rule",
+          "docs_first_version_proposal_non_working_days_logic"
+        ],
+        "relation": "form",
+        "confidence": "INFERRED",
+        "confidence_score": 0.95,
+        "source_file": "docs/first-version-requirements.md"
+      }
+    ]
+  },
   "nodes": [
     {
       "label": "SKILL.md",
@@ -10,7 +103,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_skill",
-      "community": 21,
+      "community": 15,
       "norm_label": "skill.md"
     },
     {
@@ -20,7 +113,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_skill_choose_technology_stack",
-      "community": 21,
+      "community": 15,
       "norm_label": "choose technology stack"
     },
     {
@@ -30,7 +123,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_skill_overview",
-      "community": 21,
+      "community": 15,
       "norm_label": "overview"
     },
     {
@@ -40,7 +133,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_skill_workflow",
-      "community": 21,
+      "community": 15,
       "norm_label": "workflow"
     },
     {
@@ -50,7 +143,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_skill_compare_these_areas",
-      "community": 21,
+      "community": 15,
       "norm_label": "compare these areas"
     },
     {
@@ -60,7 +153,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_skill_guardrails",
-      "community": 21,
+      "community": 15,
       "norm_label": "guardrails"
     },
     {
@@ -70,7 +163,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_references_selection_matrix",
-      "community": 20,
+      "community": 8,
       "norm_label": "selection-matrix.md"
     },
     {
@@ -80,7 +173,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_references_selection_matrix_stack_selection_matrix",
-      "community": 20,
+      "community": 8,
       "norm_label": "stack selection matrix"
     },
     {
@@ -90,7 +183,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_references_selection_matrix_required_inputs",
-      "community": 20,
+      "community": 8,
       "norm_label": "required inputs"
     },
     {
@@ -100,7 +193,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_references_selection_matrix_criteria",
-      "community": 20,
+      "community": 8,
       "norm_label": "criteria"
     },
     {
@@ -110,7 +203,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_references_selection_matrix_output_matrix",
-      "community": 20,
+      "community": 8,
       "norm_label": "output matrix"
     },
     {
@@ -120,7 +213,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "codex_skills_choose_technology_stack_references_selection_matrix_decision_record",
-      "community": 20,
+      "community": 8,
       "norm_label": "decision record"
     },
     {
@@ -130,7 +223,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_skill",
-      "community": 25,
+      "community": 18,
       "norm_label": "skill.md"
     },
     {
@@ -140,7 +233,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_skill_design_data_architecture",
-      "community": 25,
+      "community": 18,
       "norm_label": "design data architecture"
     },
     {
@@ -150,7 +243,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_skill_overview",
-      "community": 25,
+      "community": 18,
       "norm_label": "overview"
     },
     {
@@ -160,17 +253,17 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_skill_workflow",
-      "community": 25,
+      "community": 18,
       "norm_label": "workflow"
     },
     {
       "label": "Guardrails",
       "file_type": "document",
       "source_file": ".codex/skills/design-data-architecture/SKILL.md",
-      "source_location": "L48",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_skill_guardrails",
-      "community": 25,
+      "community": 18,
       "norm_label": "guardrails"
     },
     {
@@ -180,7 +273,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_references_data_decision_checklist",
-      "community": 18,
+      "community": 9,
       "norm_label": "data-decision-checklist.md"
     },
     {
@@ -190,7 +283,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_references_data_decision_checklist_data_architecture_checklist",
-      "community": 18,
+      "community": 9,
       "norm_label": "data architecture checklist"
     },
     {
@@ -200,7 +293,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_references_data_decision_checklist_domain_entities_to_check",
-      "community": 18,
+      "community": 9,
       "norm_label": "domain entities to check"
     },
     {
@@ -210,7 +303,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_references_data_decision_checklist_invariants",
-      "community": 18,
+      "community": 9,
       "norm_label": "invariants"
     },
     {
@@ -220,7 +313,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_references_data_decision_checklist_storage_decisions",
-      "community": 18,
+      "community": 9,
       "norm_label": "storage decisions"
     },
     {
@@ -230,7 +323,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_references_data_decision_checklist_scenario_validation",
-      "community": 18,
+      "community": 9,
       "norm_label": "scenario validation"
     },
     {
@@ -240,7 +333,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "codex_skills_design_data_architecture_references_data_decision_checklist_output_template",
-      "community": 18,
+      "community": 9,
       "norm_label": "output template"
     },
     {
@@ -250,7 +343,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_skill",
-      "community": 26,
+      "community": 19,
       "norm_label": "skill.md"
     },
     {
@@ -260,7 +353,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_skill_design_observability_operations",
-      "community": 26,
+      "community": 19,
       "norm_label": "design observability operations"
     },
     {
@@ -270,7 +363,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_skill_overview",
-      "community": 26,
+      "community": 19,
       "norm_label": "overview"
     },
     {
@@ -280,17 +373,17 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_skill_workflow",
-      "community": 26,
+      "community": 19,
       "norm_label": "workflow"
     },
     {
       "label": "Guardrails",
       "file_type": "document",
       "source_file": ".codex/skills/design-observability-operations/SKILL.md",
-      "source_location": "L49",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_skill_guardrails",
-      "community": 26,
+      "community": 19,
       "norm_label": "guardrails"
     },
     {
@@ -300,7 +393,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_references_operations_checklist",
-      "community": 19,
+      "community": 6,
       "norm_label": "operations-checklist.md"
     },
     {
@@ -310,7 +403,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_references_operations_checklist_observability_and_operations_checklist",
-      "community": 19,
+      "community": 6,
       "norm_label": "observability and operations checklist"
     },
     {
@@ -320,7 +413,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_references_operations_checklist_business_audit_history",
-      "community": 19,
+      "community": 6,
       "norm_label": "business audit history"
     },
     {
@@ -330,7 +423,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_references_operations_checklist_technical_logs",
-      "community": 19,
+      "community": 6,
       "norm_label": "technical logs"
     },
     {
@@ -340,7 +433,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_references_operations_checklist_metrics",
-      "community": 19,
+      "community": 6,
       "norm_label": "metrics"
     },
     {
@@ -350,7 +443,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_references_operations_checklist_backup_and_restore",
-      "community": 19,
+      "community": 6,
       "norm_label": "backup and restore"
     },
     {
@@ -360,7 +453,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "codex_skills_design_observability_operations_references_operations_checklist_output_template",
-      "community": 19,
+      "community": 6,
       "norm_label": "output template"
     },
     {
@@ -370,7 +463,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_skill",
-      "community": 27,
+      "community": 20,
       "norm_label": "skill.md"
     },
     {
@@ -380,7 +473,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_skill_design_system_interactions",
-      "community": 27,
+      "community": 20,
       "norm_label": "design system interactions"
     },
     {
@@ -390,7 +483,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_skill_overview",
-      "community": 27,
+      "community": 20,
       "norm_label": "overview"
     },
     {
@@ -400,17 +493,17 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_skill_workflow",
-      "community": 27,
+      "community": 20,
       "norm_label": "workflow"
     },
     {
       "label": "Guardrails",
       "file_type": "document",
       "source_file": ".codex/skills/design-system-interactions/SKILL.md",
-      "source_location": "L41",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_skill_guardrails",
-      "community": 27,
+      "community": 20,
       "norm_label": "guardrails"
     },
     {
@@ -420,7 +513,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist",
-      "community": 22,
+      "community": 7,
       "norm_label": "interaction-decision-checklist.md"
     },
     {
@@ -430,7 +523,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_interaction_decision_checklist",
-      "community": 22,
+      "community": 7,
       "norm_label": "interaction decision checklist"
     },
     {
@@ -440,7 +533,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_flows_to_model",
-      "community": 22,
+      "community": 7,
       "norm_label": "flows to model"
     },
     {
@@ -450,7 +543,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_boundary_questions",
-      "community": 22,
+      "community": 7,
       "norm_label": "boundary questions"
     },
     {
@@ -460,7 +553,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_patterns_to_compare",
-      "community": 22,
+      "community": 7,
       "norm_label": "patterns to compare"
     },
     {
@@ -470,7 +563,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "codex_skills_design_system_interactions_references_interaction_decision_checklist_output_template",
-      "community": 22,
+      "community": 7,
       "norm_label": "output template"
     },
     {
@@ -480,7 +573,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill",
-      "community": 1,
+      "community": 32,
       "norm_label": "skill.md"
     },
     {
@@ -490,7 +583,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_graphify",
-      "community": 1,
+      "community": 32,
       "norm_label": "/graphify"
     },
     {
@@ -500,7 +593,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_usage",
-      "community": 1,
+      "community": 32,
       "norm_label": "usage"
     },
     {
@@ -510,7 +603,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_what_graphify_is_for",
-      "community": 1,
+      "community": 32,
       "norm_label": "what graphify is for"
     },
     {
@@ -520,7 +613,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_what_you_must_do_when_invoked",
-      "community": 0,
+      "community": 4,
       "norm_label": "what you must do when invoked"
     },
     {
@@ -530,7 +623,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_0_github_repos_and_multi_path_merge_only_if_a_url_or_several_paths",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 0 - github repos and multi-path merge (only if a url or several paths)"
     },
     {
@@ -540,7 +633,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_1_ensure_graphify_is_installed",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 1 - ensure graphify is installed"
     },
     {
@@ -550,7 +643,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_2_detect_files",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 2 - detect files"
     },
     {
@@ -560,7 +653,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_2_5_video_and_audio_only_if_video_files_detected",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 2.5 - video and audio (only if video files detected)"
     },
     {
@@ -570,7 +663,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_3_extract_entities_and_relationships",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 3 - extract entities and relationships"
     },
     {
@@ -580,7 +673,7 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_part_a_structural_extraction_for_code_files",
-      "community": 0,
+      "community": 4,
       "norm_label": "part a - structural extraction for code files"
     },
     {
@@ -590,7 +683,7 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_part_b_semantic_extraction_parallel_subagents",
-      "community": 0,
+      "community": 4,
       "norm_label": "part b - semantic extraction (parallel subagents)"
     },
     {
@@ -600,7 +693,7 @@
       "source_location": "L350",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_part_c_merge_ast_semantic_into_final_extraction",
-      "community": 0,
+      "community": 4,
       "norm_label": "part c - merge ast + semantic into final extraction"
     },
     {
@@ -610,7 +703,7 @@
       "source_location": "L384",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_4_build_graph_cluster_analyze_generate_outputs",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 4 - build graph, cluster, analyze, generate outputs"
     },
     {
@@ -620,7 +713,7 @@
       "source_location": "L447",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_4_5_graph_health_check_read_only_integrity_gate",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 4.5 - graph health check (read-only integrity gate)"
     },
     {
@@ -630,7 +723,7 @@
       "source_location": "L473",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_5_label_communities",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 5 - label communities"
     },
     {
@@ -640,7 +733,7 @@
       "source_location": "L514",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_6_generate_obsidian_vault_opt_in_html",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 6 - generate obsidian vault (opt-in) + html"
     },
     {
@@ -650,7 +743,7 @@
       "source_location": "L534",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_steps_6b_8_wiki_neo4j_falkordb_svg_graphml_mcp_benchmark_only_on_their_flags",
-      "community": 0,
+      "community": 4,
       "norm_label": "steps 6b-8 - wiki, neo4j, falkordb, svg, graphml, mcp, benchmark (only on their flags)"
     },
     {
@@ -660,7 +753,7 @@
       "source_location": "L540",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_step_9_save_manifest_update_cost_tracker_clean_up_and_report",
-      "community": 0,
+      "community": 4,
       "norm_label": "step 9 - save manifest, update cost tracker, clean up, and report"
     },
     {
@@ -670,7 +763,7 @@
       "source_location": "L620",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_interpreter_guard_for_subcommands",
-      "community": 1,
+      "community": 32,
       "norm_label": "interpreter guard for subcommands"
     },
     {
@@ -680,7 +773,7 @@
       "source_location": "L638",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_for_update_and_cluster_only",
-      "community": 1,
+      "community": 32,
       "norm_label": "for --update and --cluster-only"
     },
     {
@@ -690,7 +783,7 @@
       "source_location": "L644",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_for_graphify_query",
-      "community": 1,
+      "community": 32,
       "norm_label": "for /graphify query"
     },
     {
@@ -700,7 +793,7 @@
       "source_location": "L656",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_for_graphify_add_and_watch",
-      "community": 1,
+      "community": 32,
       "norm_label": "for /graphify add and --watch"
     },
     {
@@ -710,7 +803,7 @@
       "source_location": "L662",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_for_the_commit_hook_and_native_claude_md_integration",
-      "community": 1,
+      "community": 32,
       "norm_label": "for the commit hook and native claude.md integration"
     },
     {
@@ -720,7 +813,7 @@
       "source_location": "L668",
       "_origin": "ast",
       "id": "codex_skills_graphify_skill_honesty_rules",
-      "community": 1,
+      "community": 32,
       "norm_label": "honesty rules"
     },
     {
@@ -730,7 +823,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_add_watch",
-      "community": 4,
+      "community": 21,
       "norm_label": "add-watch.md"
     },
     {
@@ -740,7 +833,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_add_watch_graphify_reference_add_a_url_and_watch_a_folder",
-      "community": 4,
+      "community": 21,
       "norm_label": "graphify reference: add a url and watch a folder"
     },
     {
@@ -750,7 +843,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_add_watch_for_graphify_add",
-      "community": 4,
+      "community": 21,
       "norm_label": "for /graphify add"
     },
     {
@@ -760,7 +853,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_add_watch_for_watch",
-      "community": 4,
+      "community": 21,
       "norm_label": "for --watch"
     },
     {
@@ -770,7 +863,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_exports",
-      "community": 2,
+      "community": 14,
       "norm_label": "exports.md"
     },
     {
@@ -780,7 +873,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
-      "community": 2,
+      "community": 14,
       "norm_label": "graphify reference: extra exports and benchmark"
     },
     {
@@ -790,7 +883,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_exports_step_6b_wiki_only_if_wiki_flag",
-      "community": 2,
+      "community": 14,
       "norm_label": "step 6b - wiki (only if --wiki flag)"
     },
     {
@@ -800,7 +893,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_exports_step_7_neo4j_export_only_if_neo4j_or_neo4j_push_flag",
-      "community": 2,
+      "community": 14,
       "norm_label": "step 7 - neo4j export (only if --neo4j or --neo4j-push flag)"
     },
     {
@@ -810,7 +903,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_exports_step_7a_falkordb_export_only_if_falkordb_or_falkordb_push_flag",
-      "community": 2,
+      "community": 14,
       "norm_label": "step 7a - falkordb export (only if --falkordb or --falkordb-push flag)"
     },
     {
@@ -820,7 +913,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_exports_step_7b_svg_export_only_if_svg_flag",
-      "community": 2,
+      "community": 14,
       "norm_label": "step 7b - svg export (only if --svg flag)"
     },
     {
@@ -830,7 +923,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_exports_step_7c_graphml_export_only_if_graphml_flag",
-      "community": 2,
+      "community": 14,
       "norm_label": "step 7c - graphml export (only if --graphml flag)"
     },
     {
@@ -840,7 +933,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_exports_step_7d_mcp_server_only_if_mcp_flag",
-      "community": 2,
+      "community": 14,
       "norm_label": "step 7d - mcp server (only if --mcp flag)"
     },
     {
@@ -850,7 +943,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_exports_step_8_token_reduction_benchmark_only_if_total_words_5000",
-      "community": 2,
+      "community": 14,
       "norm_label": "step 8 - token reduction benchmark (only if total_words > 5000)"
     },
     {
@@ -860,7 +953,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_extraction_spec",
-      "community": 11,
+      "community": 27,
       "norm_label": "extraction-spec.md"
     },
     {
@@ -870,7 +963,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_extraction_spec_graphify_reference_extraction_subagent_prompt_compact",
-      "community": 11,
+      "community": 27,
       "norm_label": "graphify reference: extraction subagent prompt (compact)"
     },
     {
@@ -880,7 +973,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_github_and_merge",
-      "community": 8,
+      "community": 24,
       "norm_label": "github-and-merge.md"
     },
     {
@@ -890,7 +983,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge",
-      "community": 8,
+      "community": 24,
       "norm_label": "graphify reference: github clone and cross-repo merge"
     },
     {
@@ -900,7 +993,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_github_and_merge_step_0_clone_github_repo_s_only_if_a_github_url_was_given",
-      "community": 8,
+      "community": 24,
       "norm_label": "step 0 - clone github repo(s) (only if a github url was given)"
     },
     {
@@ -910,7 +1003,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_hooks",
-      "community": 5,
+      "community": 22,
       "norm_label": "hooks.md"
     },
     {
@@ -920,7 +1013,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration",
-      "community": 5,
+      "community": 22,
       "norm_label": "graphify reference: commit hook and native claude.md integration"
     },
     {
@@ -930,7 +1023,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_hooks_for_git_commit_hook",
-      "community": 5,
+      "community": 22,
       "norm_label": "for git commit hook"
     },
     {
@@ -940,7 +1033,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_hooks_for_native_claude_md_integration",
-      "community": 5,
+      "community": 22,
       "norm_label": "for native claude.md integration"
     },
     {
@@ -950,7 +1043,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_query",
-      "community": 3,
+      "community": 16,
       "norm_label": "query.md"
     },
     {
@@ -960,7 +1053,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_query_graphify_reference_query_path_explain",
-      "community": 3,
+      "community": 16,
       "norm_label": "graphify reference: query, path, explain"
     },
     {
@@ -970,7 +1063,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_query_step_0_constrained_query_expansion_required_before_traversal",
-      "community": 3,
+      "community": 16,
       "norm_label": "step 0 \u2014 constrained query expansion (required before traversal)"
     },
     {
@@ -980,7 +1073,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_query_step_1_traversal",
-      "community": 3,
+      "community": 16,
       "norm_label": "step 1 \u2014 traversal"
     },
     {
@@ -990,7 +1083,7 @@
       "source_location": "L186",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_query_for_graphify_path",
-      "community": 3,
+      "community": 16,
       "norm_label": "for /graphify path"
     },
     {
@@ -1000,7 +1093,7 @@
       "source_location": "L254",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_query_for_graphify_explain",
-      "community": 3,
+      "community": 16,
       "norm_label": "for /graphify explain"
     },
     {
@@ -1010,7 +1103,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_transcribe",
-      "community": 9,
+      "community": 25,
       "norm_label": "transcribe.md"
     },
     {
@@ -1020,7 +1113,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_transcribe_graphify_reference_transcribe_video_and_audio",
-      "community": 9,
+      "community": 25,
       "norm_label": "graphify reference: transcribe video and audio"
     },
     {
@@ -1030,7 +1123,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_transcribe_step_2_5_transcribe_video_audio_files_only_if_video_files_detected",
-      "community": 9,
+      "community": 25,
       "norm_label": "step 2.5 - transcribe video / audio files (only if video files detected)"
     },
     {
@@ -1040,7 +1133,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_update",
-      "community": 6,
+      "community": 23,
       "norm_label": "update.md"
     },
     {
@@ -1050,7 +1143,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_update_graphify_reference_incremental_update_and_cluster_only",
-      "community": 6,
+      "community": 23,
       "norm_label": "graphify reference: incremental update and cluster-only"
     },
     {
@@ -1060,7 +1153,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_update_for_update_incremental_re_extraction",
-      "community": 6,
+      "community": 23,
       "norm_label": "for --update (incremental re-extraction)"
     },
     {
@@ -1070,7 +1163,7 @@
       "source_location": "L184",
       "_origin": "ast",
       "id": "codex_skills_graphify_references_update_for_cluster_only",
-      "community": 6,
+      "community": 23,
       "norm_label": "for --cluster-only"
     },
     {
@@ -1080,7 +1173,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_skill",
-      "community": 24,
+      "community": 17,
       "norm_label": "skill.md"
     },
     {
@@ -1090,7 +1183,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_skill_research_architecture_options",
-      "community": 24,
+      "community": 17,
       "norm_label": "research architecture options"
     },
     {
@@ -1100,7 +1193,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_skill_overview",
-      "community": 24,
+      "community": 17,
       "norm_label": "overview"
     },
     {
@@ -1110,7 +1203,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_skill_workflow",
-      "community": 24,
+      "community": 17,
       "norm_label": "workflow"
     },
     {
@@ -1120,7 +1213,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_skill_bodylife_anchors",
-      "community": 24,
+      "community": 17,
       "norm_label": "bodylife anchors"
     },
     {
@@ -1130,7 +1223,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_skill_guardrails",
-      "community": 24,
+      "community": 17,
       "norm_label": "guardrails"
     },
     {
@@ -1140,7 +1233,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_references_research_protocol",
-      "community": 23,
+      "community": 33,
       "norm_label": "research-protocol.md"
     },
     {
@@ -1150,7 +1243,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_references_research_protocol_architecture_research_protocol",
-      "community": 23,
+      "community": 33,
       "norm_label": "architecture research protocol"
     },
     {
@@ -1160,7 +1253,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_references_research_protocol_evidence_order",
-      "community": 23,
+      "community": 33,
       "norm_label": "evidence order"
     },
     {
@@ -1170,7 +1263,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_references_research_protocol_questions_to_answer",
-      "community": 23,
+      "community": 33,
       "norm_label": "questions to answer"
     },
     {
@@ -1180,7 +1273,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_references_research_protocol_decision_areas",
-      "community": 23,
+      "community": 33,
       "norm_label": "decision areas"
     },
     {
@@ -1190,7 +1283,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "codex_skills_research_architecture_options_references_research_protocol_output_template",
-      "community": 23,
+      "community": 33,
       "norm_label": "output template"
     },
     {
@@ -1200,7 +1293,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents",
-      "community": 10,
+      "community": 26,
       "norm_label": "agents.md"
     },
     {
@@ -1210,7 +1303,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_graphify",
-      "community": 10,
+      "community": 26,
       "norm_label": "graphify"
     },
     {
@@ -1220,7 +1313,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_first_version_requirements",
-      "community": 7,
+      "community": 2,
       "norm_label": "first-version-requirements.md"
     },
     {
@@ -1230,7 +1323,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_first_version_requirements_\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430_\u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457_\u0441\u0438\u0441\u0442\u0435\u043c\u0438_\u0434\u043b\u044f_\u0437\u0430\u043b\u0443",
-      "community": 7,
+      "community": 2,
       "norm_label": "\u0434\u0435\u0442\u0430\u043b\u044c\u043d\u0430 \u0441\u043f\u0435\u0446\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456 \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u0434\u043b\u044f \u0437\u0430\u043b\u0443"
     },
     {
@@ -1240,7 +1333,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "docs_first_version_requirements_1_\u043f\u0440\u0438\u0437\u043d\u0430\u0447\u0435\u043d\u043d\u044f_\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430",
-      "community": 7,
+      "community": 2,
       "norm_label": "1. \u043f\u0440\u0438\u0437\u043d\u0430\u0447\u0435\u043d\u043d\u044f \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430"
     },
     {
@@ -1250,7 +1343,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "docs_first_version_requirements_2_\u0433\u043e\u043b\u043e\u0432\u043d\u0430_\u043c\u0435\u0442\u0430_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
-      "community": 7,
+      "community": 2,
       "norm_label": "2. \u0433\u043e\u043b\u043e\u0432\u043d\u0430 \u043c\u0435\u0442\u0430 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
     },
     {
@@ -1260,7 +1353,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_\u043c\u0435\u0436\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
-      "community": 7,
+      "community": 2,
       "norm_label": "3. \u043c\u0435\u0436\u0456 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
     },
     {
@@ -1270,7 +1363,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_1_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
-      "community": 7,
+      "community": 2,
       "norm_label": "3.1. \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
     },
     {
@@ -1280,7 +1373,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_2_\u043d\u0435_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
-      "community": 7,
+      "community": 2,
       "norm_label": "3.2. \u043d\u0435 \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
     },
     {
@@ -1290,7 +1383,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "docs_first_version_requirements_4_\u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456_\u0441\u0438\u0441\u0442\u0435\u043c\u0438",
-      "community": 7,
+      "community": 2,
       "norm_label": "4. \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456 \u0441\u0438\u0441\u0442\u0435\u043c\u0438"
     },
     {
@@ -1300,7 +1393,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "docs_first_version_requirements_4_1_\u0432\u043b\u0430\u0441\u043d\u0438\u043a",
-      "community": 7,
+      "community": 2,
       "norm_label": "4.1. \u0432\u043b\u0430\u0441\u043d\u0438\u043a"
     },
     {
@@ -1310,7 +1403,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "docs_first_version_requirements_4_2_\u0430\u0434\u043c\u0456\u043d\u0456\u0441\u0442\u0440\u0430\u0442\u043e\u0440",
-      "community": 7,
+      "community": 2,
       "norm_label": "4.2. \u0430\u0434\u043c\u0456\u043d\u0456\u0441\u0442\u0440\u0430\u0442\u043e\u0440"
     },
     {
@@ -1320,7 +1413,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "docs_first_version_requirements_4_3_\u0442\u0440\u0435\u043d\u0435\u0440",
-      "community": 7,
+      "community": 2,
       "norm_label": "4.3. \u0442\u0440\u0435\u043d\u0435\u0440"
     },
     {
@@ -1330,7 +1423,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_\u043e\u0441\u043d\u043e\u0432\u043d\u0456_\u0440\u043e\u0431\u043e\u0447\u0456_\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0457",
-      "community": 15,
+      "community": 12,
       "norm_label": "5. \u043e\u0441\u043d\u043e\u0432\u043d\u0456 \u0440\u043e\u0431\u043e\u0447\u0456 \u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0456"
     },
     {
@@ -1340,7 +1433,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_1_\u043a\u043b\u0456\u0454\u043d\u0442_\u043f\u0440\u0438\u0439\u0448\u043e\u0432_\u0443_\u0437\u0430\u043b_\u0437_\u043a\u0430\u0440\u0442\u043a\u043e\u044e",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.1. \u043a\u043b\u0456\u0454\u043d\u0442 \u043f\u0440\u0438\u0438\u0448\u043e\u0432 \u0443 \u0437\u0430\u043b \u0437 \u043a\u0430\u0440\u0442\u043a\u043e\u044e"
     },
     {
@@ -1350,7 +1443,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_2_\u043a\u043b\u0456\u0454\u043d\u0442_\u043f\u0440\u0438\u0439\u0448\u043e\u0432_\u0431\u0435\u0437_\u043a\u0430\u0440\u0442\u043a\u0438",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.2. \u043a\u043b\u0456\u0454\u043d\u0442 \u043f\u0440\u0438\u0438\u0448\u043e\u0432 \u0431\u0435\u0437 \u043a\u0430\u0440\u0442\u043a\u0438"
     },
     {
@@ -1360,7 +1453,7 @@
       "source_location": "L150",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_3_\u043d\u043e\u0432\u0438\u0439_\u043a\u043b\u0456\u0454\u043d\u0442",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.3. \u043d\u043e\u0432\u0438\u0438 \u043a\u043b\u0456\u0454\u043d\u0442"
     },
     {
@@ -1370,7 +1463,7 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_4_\u0432\u0438\u0434\u0430\u0447\u0430_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.4. \u0432\u0438\u0434\u0430\u0447\u0430 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
     },
     {
@@ -1380,7 +1473,7 @@
       "source_location": "L185",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_5_\u0432\u0456\u0434\u043c\u0456\u0442\u043a\u0430_\u0432\u0456\u0437\u0438\u0442\u0443",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.5. \u0432\u0456\u0434\u043c\u0456\u0442\u043a\u0430 \u0432\u0456\u0437\u0438\u0442\u0443"
     },
     {
@@ -1390,7 +1483,7 @@
       "source_location": "L196",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_6_\u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f_\u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e\u0433\u043e_\u0432\u0456\u0437\u0438\u0442\u0443",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.6. \u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f \u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e\u0433\u043e \u0432\u0456\u0437\u0438\u0442\u0443"
     },
     {
@@ -1400,7 +1493,7 @@
       "source_location": "L212",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_7_\u043e\u043f\u043b\u0430\u0442\u0430",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.7. \u043e\u043f\u043b\u0430\u0442\u0430"
     },
     {
@@ -1410,7 +1503,7 @@
       "source_location": "L225",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_8_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.8. \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
     },
     {
@@ -1420,7 +1513,7 @@
       "source_location": "L235",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_9_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0430\u0431\u043e_\u0441\u0432\u044f\u0442\u043e",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.9. \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0438 \u0434\u0435\u043d\u044c \u0430\u0431\u043e \u0441\u0432\u044f\u0442\u043e"
     },
     {
@@ -1430,7 +1523,7 @@
       "source_location": "L251",
       "_origin": "ast",
       "id": "docs_first_version_requirements_5_10_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
-      "community": 15,
+      "community": 12,
       "norm_label": "5.10. \u043a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438"
     },
     {
@@ -1440,7 +1533,7 @@
       "source_location": "L271",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_\u0434\u0430\u043d\u0456_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438",
-      "community": 16,
+      "community": 13,
       "norm_label": "6. \u0434\u0430\u043d\u0456, \u044f\u043a\u0456 \u0442\u0440\u0435\u0431\u0430 \u0437\u0431\u0435\u0440\u0456\u0433\u0430\u0442\u0438"
     },
     {
@@ -1450,7 +1543,7 @@
       "source_location": "L275",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_1_\u043a\u043b\u0456\u0454\u043d\u0442",
-      "community": 16,
+      "community": 13,
       "norm_label": "6.1. \u043a\u043b\u0456\u0454\u043d\u0442"
     },
     {
@@ -1460,7 +1553,7 @@
       "source_location": "L297",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_2_\u043d\u043e\u043c\u0435\u0440_\u043a\u0430\u0440\u0442\u043a\u0438",
-      "community": 16,
+      "community": 13,
       "norm_label": "6.2. \u043d\u043e\u043c\u0435\u0440 \u043a\u0430\u0440\u0442\u043a\u0438"
     },
     {
@@ -1470,7 +1563,7 @@
       "source_location": "L309",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_3_\u0442\u0438\u043f_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
-      "community": 16,
+      "community": 13,
       "norm_label": "6.3. \u0442\u0438\u043f \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
     },
     {
@@ -1480,7 +1573,7 @@
       "source_location": "L333",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_4_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442_\u043a\u043b\u0456\u0454\u043d\u0442\u0430",
-      "community": 16,
+      "community": 13,
       "norm_label": "6.4. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442 \u043a\u043b\u0456\u0454\u043d\u0442\u0430"
     },
     {
@@ -1490,7 +1583,7 @@
       "source_location": "L366",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_5_\u0432\u0456\u0437\u0438\u0442",
-      "community": 16,
+      "community": 13,
       "norm_label": "6.5. \u0432\u0456\u0437\u0438\u0442"
     },
     {
@@ -1500,7 +1593,7 @@
       "source_location": "L383",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_6_\u043e\u043f\u043b\u0430\u0442\u0430",
-      "community": 16,
+      "community": 13,
       "norm_label": "6.6. \u043e\u043f\u043b\u0430\u0442\u0430"
     },
     {
@@ -1510,7 +1603,7 @@
       "source_location": "L397",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_7_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430",
-      "community": 16,
+      "community": 13,
       "norm_label": "6.7. \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430"
     },
     {
@@ -1520,7 +1613,7 @@
       "source_location": "L411",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_8_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0430\u0431\u043e_\u043f\u0435\u0440\u0456\u043e\u0434",
-      "community": 16,
+      "community": 13,
       "norm_label": "6.8. \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0438 \u0434\u0435\u043d\u044c \u0430\u0431\u043e \u043f\u0435\u0440\u0456\u043e\u0434"
     },
     {
@@ -1530,7 +1623,7 @@
       "source_location": "L431",
       "_origin": "ast",
       "id": "docs_first_version_requirements_6_9_\u0442\u0435\u0445\u043d\u0456\u0447\u043d\u0438\u0439_\u043a\u043b\u0456\u0454\u043d\u0442_\u0434\u043b\u044f_\u0440\u0430\u0437\u043e\u0432\u0438\u0445_\u0456_\u043f\u0440\u043e\u0431\u043d\u0438\u0445_\u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u044c",
-      "community": 16,
+      "community": 13,
       "norm_label": "6.9. \u0442\u0435\u0445\u043d\u0456\u0447\u043d\u0438\u0438 \u043a\u043b\u0456\u0454\u043d\u0442 \u0434\u043b\u044f \u0440\u0430\u0437\u043e\u0432\u0438\u0445 \u0456 \u043f\u0440\u043e\u0431\u043d\u0438\u0445 \u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u044c"
     },
     {
@@ -1540,7 +1633,7 @@
       "source_location": "L442",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_\u0431\u0456\u0437\u043d\u0435\u0441_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u0456_\u0444\u043e\u0440\u043c\u0443\u043b\u0438",
-      "community": 12,
+      "community": 10,
       "norm_label": "7. \u0431\u0456\u0437\u043d\u0435\u0441-\u043f\u0440\u0430\u0432\u0438\u043b\u0430 \u0456 \u0444\u043e\u0440\u043c\u0443\u043b\u0438"
     },
     {
@@ -1550,7 +1643,7 @@
       "source_location": "L444",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_1_\u043e\u0441\u043d\u043e\u0432\u043d\u0430_\u0444\u043e\u0440\u043c\u0443\u043b\u0430_\u0434\u0430\u0442\u0438_\u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.1. \u043e\u0441\u043d\u043e\u0432\u043d\u0430 \u0444\u043e\u0440\u043c\u0443\u043b\u0430 \u0434\u0430\u0442\u0438 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
     },
     {
@@ -1560,7 +1653,7 @@
       "source_location": "L478",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_2_\u0444\u043e\u0440\u043c\u0443\u043b\u0430_\u0437\u0430\u043b\u0438\u0448\u043a\u0443_\u0437\u0430\u043d\u044f\u0442\u044c",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.2. \u0444\u043e\u0440\u043c\u0443\u043b\u0430 \u0437\u0430\u043b\u0438\u0448\u043a\u0443 \u0437\u0430\u043d\u044f\u0442\u044c"
     },
     {
@@ -1570,7 +1663,7 @@
       "source_location": "L491",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_3_\u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456_\u0437\u0430\u043d\u044f\u0442\u0442\u044f",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.3. \u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456 \u0437\u0430\u043d\u044f\u0442\u0442\u044f"
     },
     {
@@ -1580,7 +1673,7 @@
       "source_location": "L512",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_4_\u0434\u0430\u0442\u0430_\u0441\u0442\u0430\u0440\u0442\u0443_\u043d\u043e\u0432\u043e\u0433\u043e_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430_\u043f\u0440\u0438_\u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0438\u0445_\u0437\u0430\u043d\u044f\u0442\u0442\u044f\u0445",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.4. \u0434\u0430\u0442\u0430 \u0441\u0442\u0430\u0440\u0442\u0443 \u043d\u043e\u0432\u043e\u0433\u043e \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430 \u043f\u0440\u0438 \u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0438\u0445 \u0437\u0430\u043d\u044f\u0442\u0442\u044f\u0445"
     },
     {
@@ -1590,7 +1683,7 @@
       "source_location": "L537",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_5_\u0430\u043a\u0442\u0438\u0432\u043d\u0456\u0441\u0442\u044c_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.5. \u0430\u043a\u0442\u0438\u0432\u043d\u0456\u0441\u0442\u044c \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
     },
     {
@@ -1600,7 +1693,7 @@
       "source_location": "L563",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_6_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.6. \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0430"
     },
     {
@@ -1610,7 +1703,7 @@
       "source_location": "L587",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_7_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0456_\u0434\u043d\u0456_\u0442\u0430_\u0441\u0432\u044f\u0442\u0430",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.7. \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0456 \u0434\u043d\u0456 \u0442\u0430 \u0441\u0432\u044f\u0442\u0430"
     },
     {
@@ -1620,7 +1713,7 @@
       "source_location": "L626",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_8_\u0440\u043e\u0431\u043e\u0447\u0456_\u0434\u043d\u0456_\u0437\u0430\u043b\u0443",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.8. \u0440\u043e\u0431\u043e\u0447\u0456 \u0434\u043d\u0456 \u0437\u0430\u043b\u0443"
     },
     {
@@ -1630,7 +1723,7 @@
       "source_location": "L638",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_9_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.9. \u043a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438"
     },
     {
@@ -1640,7 +1733,7 @@
       "source_location": "L666",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_10_\u0434\u0435\u043d\u043d\u0438\u0439_\u0437\u0432\u0456\u0442",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.10. \u0434\u0435\u043d\u043d\u0438\u0438 \u0437\u0432\u0456\u0442"
     },
     {
@@ -1650,7 +1743,7 @@
       "source_location": "L688",
       "_origin": "ast",
       "id": "docs_first_version_requirements_7_11_\u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f_\u043f\u0440\u043e_\u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
-      "community": 12,
+      "community": 10,
       "norm_label": "7.11. \u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f \u043f\u0440\u043e \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
     },
     {
@@ -1660,7 +1753,7 @@
       "source_location": "L710",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_\u0435\u043a\u0440\u0430\u043d\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
-      "community": 13,
+      "community": 31,
       "norm_label": "8. \u0435\u043a\u0440\u0430\u043d\u0438 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
     },
     {
@@ -1670,7 +1763,7 @@
       "source_location": "L712",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_1_\u0432\u0445\u0456\u0434_\u0443_\u0441\u0438\u0441\u0442\u0435\u043c\u0443",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.1. \u0432\u0445\u0456\u0434 \u0443 \u0441\u0438\u0441\u0442\u0435\u043c\u0443"
     },
     {
@@ -1680,7 +1773,7 @@
       "source_location": "L720",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_2_\u0433\u043e\u043b\u043e\u0432\u043d\u0438\u0439_\u0435\u043a\u0440\u0430\u043d_\u0440\u0435\u0446\u0435\u043f\u0446\u0456\u0457",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.2. \u0433\u043e\u043b\u043e\u0432\u043d\u0438\u0438 \u0435\u043a\u0440\u0430\u043d \u0440\u0435\u0446\u0435\u043f\u0446\u0456\u0456"
     },
     {
@@ -1690,7 +1783,7 @@
       "source_location": "L733",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_3_\u043f\u0440\u043e\u0444\u0456\u043b\u044c_\u043a\u043b\u0456\u0454\u043d\u0442\u0430",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.3. \u043f\u0440\u043e\u0444\u0456\u043b\u044c \u043a\u043b\u0456\u0454\u043d\u0442\u0430"
     },
     {
@@ -1700,7 +1793,7 @@
       "source_location": "L757",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_4_\u0435\u043a\u0440\u0430\u043d_\u0432\u0438\u0434\u0430\u0447\u0456_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.4. \u0435\u043a\u0440\u0430\u043d \u0432\u0438\u0434\u0430\u0447\u0456 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
     },
     {
@@ -1710,7 +1803,7 @@
       "source_location": "L770",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_5_\u0435\u043a\u0440\u0430\u043d_\u0432\u0456\u0437\u0438\u0442\u0456\u0432",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.5. \u0435\u043a\u0440\u0430\u043d \u0432\u0456\u0437\u0438\u0442\u0456\u0432"
     },
     {
@@ -1720,7 +1813,7 @@
       "source_location": "L781",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_6_\u0435\u043a\u0440\u0430\u043d_\u043e\u043f\u043b\u0430\u0442",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.6. \u0435\u043a\u0440\u0430\u043d \u043e\u043f\u043b\u0430\u0442"
     },
     {
@@ -1730,7 +1823,7 @@
       "source_location": "L793",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_7_\u0435\u043a\u0440\u0430\u043d_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043e\u043a",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.7. \u0435\u043a\u0440\u0430\u043d \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043e\u043a"
     },
     {
@@ -1740,7 +1833,7 @@
       "source_location": "L806",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_8_\u0435\u043a\u0440\u0430\u043d_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445_\u0434\u043d\u0456\u0432",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.8. \u0435\u043a\u0440\u0430\u043d \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445 \u0434\u043d\u0456\u0432"
     },
     {
@@ -1750,7 +1843,7 @@
       "source_location": "L817",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_9_\u0434\u0435\u043d\u043d\u0438\u0439_\u0437\u0432\u0456\u0442",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.9. \u0434\u0435\u043d\u043d\u0438\u0438 \u0437\u0432\u0456\u0442"
     },
     {
@@ -1760,7 +1853,7 @@
       "source_location": "L829",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_10_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.10. \u043a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438"
     },
     {
@@ -1770,7 +1863,7 @@
       "source_location": "L842",
       "_origin": "ast",
       "id": "docs_first_version_requirements_8_11_\u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f_\u0442\u0438\u043f\u0456\u0432_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0456\u0432",
-      "community": 13,
+      "community": 31,
       "norm_label": "8.11. \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f \u0442\u0438\u043f\u0456\u0432 \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0456\u0432"
     },
     {
@@ -1780,7 +1873,7 @@
       "source_location": "L855",
       "_origin": "ast",
       "id": "docs_first_version_requirements_9_\u0456\u0441\u0442\u043e\u0440\u0456\u044f_\u0456_\u043f\u0440\u043e\u0437\u043e\u0440\u0456\u0441\u0442\u044c_\u0434\u0456\u0439",
-      "community": 7,
+      "community": 2,
       "norm_label": "9. \u0456\u0441\u0442\u043e\u0440\u0456\u044f \u0456 \u043f\u0440\u043e\u0437\u043e\u0440\u0456\u0441\u0442\u044c \u0434\u0456\u0438"
     },
     {
@@ -1790,7 +1883,7 @@
       "source_location": "L878",
       "_origin": "ast",
       "id": "docs_first_version_requirements_10_\u043f\u0440\u0430\u0432\u0438\u043b\u0430_\u043f\u043e\u0448\u0443\u043a\u0443",
-      "community": 7,
+      "community": 2,
       "norm_label": "10. \u043f\u0440\u0430\u0432\u0438\u043b\u0430 \u043f\u043e\u0448\u0443\u043a\u0443"
     },
     {
@@ -1800,7 +1893,7 @@
       "source_location": "L901",
       "_origin": "ast",
       "id": "docs_first_version_requirements_11_\u0440\u0430\u0437\u043e\u0432\u0456_\u0456_\u043f\u0440\u043e\u0431\u043d\u0456_\u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u043d\u044f",
-      "community": 7,
+      "community": 2,
       "norm_label": "11. \u0440\u0430\u0437\u043e\u0432\u0456 \u0456 \u043f\u0440\u043e\u0431\u043d\u0456 \u0432\u0456\u0434\u0432\u0456\u0434\u0443\u0432\u0430\u043d\u043d\u044f"
     },
     {
@@ -1810,7 +1903,7 @@
       "source_location": "L918",
       "_origin": "ast",
       "id": "docs_first_version_requirements_12_\u0437\u0432\u0456\u0442\u0438_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
-      "community": 17,
+      "community": 2,
       "norm_label": "12. \u0437\u0432\u0456\u0442\u0438 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
     },
     {
@@ -1820,7 +1913,7 @@
       "source_location": "L920",
       "_origin": "ast",
       "id": "docs_first_version_requirements_12_1_\u0434\u0435\u043d\u043d\u0438\u0439_\u0437\u0432\u0456\u0442",
-      "community": 17,
+      "community": 2,
       "norm_label": "12.1. \u0434\u0435\u043d\u043d\u0438\u0438 \u0437\u0432\u0456\u0442"
     },
     {
@@ -1830,7 +1923,7 @@
       "source_location": "L932",
       "_origin": "ast",
       "id": "docs_first_version_requirements_12_2_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438_\u044f\u043a\u0456_\u0441\u043a\u043e\u0440\u043e_\u0437\u0430\u043a\u0456\u043d\u0447\u0443\u044e\u0442\u044c\u0441\u044f",
-      "community": 17,
+      "community": 2,
       "norm_label": "12.2. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438, \u044f\u043a\u0456 \u0441\u043a\u043e\u0440\u043e \u0437\u0430\u043a\u0456\u043d\u0447\u0443\u044e\u0442\u044c\u0441\u044f"
     },
     {
@@ -1840,7 +1933,7 @@
       "source_location": "L943",
       "_origin": "ast",
       "id": "docs_first_version_requirements_12_3_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438_\u0437_\u043c\u0430\u043b\u0438\u043c_\u0437\u0430\u043b\u0438\u0448\u043a\u043e\u043c_\u0437\u0430\u043d\u044f\u0442\u044c",
-      "community": 17,
+      "community": 2,
       "norm_label": "12.3. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0438 \u0437 \u043c\u0430\u043b\u0438\u043c \u0437\u0430\u043b\u0438\u0448\u043a\u043e\u043c \u0437\u0430\u043d\u044f\u0442\u044c"
     },
     {
@@ -1850,7 +1943,7 @@
       "source_location": "L959",
       "_origin": "ast",
       "id": "docs_first_version_requirements_12_4_\u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456_\u043a\u043b\u0456\u0454\u043d\u0442\u0438",
-      "community": 17,
+      "community": 2,
       "norm_label": "12.4. \u043c\u0456\u043d\u0443\u0441\u043e\u0432\u0456 \u043a\u043b\u0456\u0454\u043d\u0442\u0438"
     },
     {
@@ -1860,7 +1953,7 @@
       "source_location": "L970",
       "_origin": "ast",
       "id": "docs_first_version_requirements_12_5_\u043a\u043b\u0456\u0454\u043d\u0442\u0438_\u044f\u043a\u0456_\u0434\u0430\u0432\u043d\u043e_\u043d\u0435_\u0445\u043e\u0434\u0438\u043b\u0438",
-      "community": 17,
+      "community": 2,
       "norm_label": "12.5. \u043a\u043b\u0456\u0454\u043d\u0442\u0438, \u044f\u043a\u0456 \u0434\u0430\u0432\u043d\u043e \u043d\u0435 \u0445\u043e\u0434\u0438\u043b\u0438"
     },
     {
@@ -1870,7 +1963,7 @@
       "source_location": "L989",
       "_origin": "ast",
       "id": "docs_first_version_requirements_13_\u043f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f_\u0456_\u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f_\u0432\u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0456_\u0441\u0438\u0441\u0442\u0435\u043c\u0438",
-      "community": 7,
+      "community": 2,
       "norm_label": "13. \u043f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f \u0456 \u043f\u043e\u043f\u0435\u0440\u0435\u0434\u0436\u0435\u043d\u043d\u044f \u0432\u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0456 \u0441\u0438\u0441\u0442\u0435\u043c\u0438"
     },
     {
@@ -1880,7 +1973,7 @@
       "source_location": "L1006",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
-      "community": 14,
+      "community": 11,
       "norm_label": "14. \u043a\u0440\u0430\u0438\u043d\u0456 \u0432\u0438\u043f\u0430\u0434\u043a\u0438, \u044f\u043a\u0456 \u0442\u0440\u0435\u0431\u0430 \u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438"
     },
     {
@@ -1890,7 +1983,7 @@
       "source_location": "L1008",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_1_\u043a\u043b\u0456\u0454\u043d\u0442_\u0431\u0435\u0437_\u043a\u0430\u0440\u0442\u043a\u0438",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.1. \u043a\u043b\u0456\u0454\u043d\u0442 \u0431\u0435\u0437 \u043a\u0430\u0440\u0442\u043a\u0438"
     },
     {
@@ -1900,7 +1993,7 @@
       "source_location": "L1014",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_2_\u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438_\u043a\u043b\u0456\u0454\u043d\u0442\u0456\u0432",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.2. \u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438 \u043a\u043b\u0456\u0454\u043d\u0442\u0456\u0432"
     },
     {
@@ -1910,7 +2003,7 @@
       "source_location": "L1024",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_3_\u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438_\u043d\u043e\u043c\u0435\u0440\u0456\u0432_\u043a\u0430\u0440\u0442\u043e\u043a",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.3. \u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442\u0438 \u043d\u043e\u043c\u0435\u0440\u0456\u0432 \u043a\u0430\u0440\u0442\u043e\u043a"
     },
     {
@@ -1920,7 +2013,7 @@
       "source_location": "L1028",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_4_\u0432\u0456\u0437\u0438\u0442_\u0431\u0435\u0437_\u0430\u043a\u0442\u0438\u0432\u043d\u043e\u0433\u043e_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.4. \u0432\u0456\u0437\u0438\u0442 \u0431\u0435\u0437 \u0430\u043a\u0442\u0438\u0432\u043d\u043e\u0433\u043e \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442\u0430"
     },
     {
@@ -1930,7 +2023,7 @@
       "source_location": "L1038",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_5_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442_\u0437\u0430\u043a\u0456\u043d\u0447\u0438\u0432\u0441\u044f_\u043f\u043e_\u0434\u0430\u0442\u0456_\u0430\u043b\u0435_\u0437\u0430\u043d\u044f\u0442\u0442\u044f_\u0437\u0430\u043b\u0438\u0448\u0438\u043b\u0438\u0441\u044c",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.5. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442 \u0437\u0430\u043a\u0456\u043d\u0447\u0438\u0432\u0441\u044f \u043f\u043e \u0434\u0430\u0442\u0456, \u0430\u043b\u0435 \u0437\u0430\u043d\u044f\u0442\u0442\u044f \u0437\u0430\u043b\u0438\u0448\u0438\u043b\u0438\u0441\u044c"
     },
     {
@@ -1940,7 +2033,7 @@
       "source_location": "L1047",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_6_\u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442_\u0430\u043a\u0442\u0438\u0432\u043d\u0438\u0439_\u043f\u043e_\u0434\u0430\u0442\u0456_\u0430\u043b\u0435_\u0437\u0430\u043d\u044f\u0442\u0442\u044f_\u0437\u0430\u043a\u0456\u043d\u0447\u0438\u043b\u0438\u0441\u044c",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.6. \u0430\u0431\u043e\u043d\u0435\u043c\u0435\u043d\u0442 \u0430\u043a\u0442\u0438\u0432\u043d\u0438\u0438 \u043f\u043e \u0434\u0430\u0442\u0456, \u0430\u043b\u0435 \u0437\u0430\u043d\u044f\u0442\u0442\u044f \u0437\u0430\u043a\u0456\u043d\u0447\u0438\u043b\u0438\u0441\u044c"
     },
     {
@@ -1950,7 +2043,7 @@
       "source_location": "L1055",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_7_\u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f_\u0432\u0456\u0437\u0438\u0442\u0443_\u044f\u043a\u0438\u0439_\u0441\u0442\u0432\u043e\u0440\u0438\u0432_\u043c\u0456\u043d\u0443\u0441",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.7. \u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f \u0432\u0456\u0437\u0438\u0442\u0443, \u044f\u043a\u0438\u0438 \u0441\u0442\u0432\u043e\u0440\u0438\u0432 \u043c\u0456\u043d\u0443\u0441"
     },
     {
@@ -1960,7 +2053,7 @@
       "source_location": "L1067",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_8_\u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.8. \u0441\u043a\u0430\u0441\u0443\u0432\u0430\u043d\u043d\u044f \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438"
     },
     {
@@ -1970,7 +2063,7 @@
       "source_location": "L1071",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_9_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0434\u043e\u0434\u0430\u043b\u0438_\u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.9. \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0438 \u0434\u0435\u043d\u044c \u0434\u043e\u0434\u0430\u043b\u0438 \u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e"
     },
     {
@@ -1980,7 +2073,7 @@
       "source_location": "L1081",
       "_origin": "ast",
       "id": "docs_first_version_requirements_14_10_\u043f\u0435\u0440\u0435\u0442\u0438\u043d_\u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438_\u0456_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445_\u0434\u043d\u0456\u0432",
-      "community": 14,
+      "community": 11,
       "norm_label": "14.10. \u043f\u0435\u0440\u0435\u0442\u0438\u043d \u0437\u0430\u043c\u043e\u0440\u043e\u0437\u043a\u0438 \u0456 \u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0445 \u0434\u043d\u0456\u0432"
     },
     {
@@ -1990,7 +2083,7 @@
       "source_location": "L1096",
       "_origin": "ast",
       "id": "docs_first_version_requirements_15_\u043a\u0440\u0438\u0442\u0435\u0440\u0456\u0457_\u0433\u043e\u0442\u043e\u0432\u043d\u043e\u0441\u0442\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
-      "community": 7,
+      "community": 2,
       "norm_label": "15. \u043a\u0440\u0438\u0442\u0435\u0440\u0456\u0456 \u0433\u043e\u0442\u043e\u0432\u043d\u043e\u0441\u0442\u0456 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
     },
     {
@@ -2000,7 +2093,7 @@
       "source_location": "L1124",
       "_origin": "ast",
       "id": "docs_first_version_requirements_16_\u0449\u043e_\u043f\u043e\u0442\u0440\u0456\u0431\u043d\u043e_\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u0438_\u043f\u0435\u0440\u0435\u0434_\u0430\u0431\u043e_\u043f\u0456\u0434_\u0447\u0430\u0441_\u0440\u0435\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0457",
-      "community": 7,
+      "community": 2,
       "norm_label": "16. \u0449\u043e \u043f\u043e\u0442\u0440\u0456\u0431\u043d\u043e \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u0438 \u043f\u0435\u0440\u0435\u0434 \u0430\u0431\u043e \u043f\u0456\u0434 \u0447\u0430\u0441 \u0440\u0435\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0456"
     },
     {
@@ -2010,7 +2103,7 @@
       "source_location": "L1142",
       "_origin": "ast",
       "id": "docs_first_version_requirements_17_\u043f\u043e\u0433\u043e\u0434\u0436\u0435\u043d\u0430_\u043b\u043e\u0433\u0456\u043a\u0430_\u043f\u0456\u0441\u043b\u044f_\u043e\u0441\u0442\u0430\u043d\u043d\u044c\u043e\u0433\u043e_\u0443\u0442\u043e\u0447\u043d\u0435\u043d\u043d\u044f",
-      "community": 7,
+      "community": 2,
       "norm_label": "17. \u043f\u043e\u0433\u043e\u0434\u0436\u0435\u043d\u0430 \u043b\u043e\u0433\u0456\u043a\u0430 \u043f\u0456\u0441\u043b\u044f \u043e\u0441\u0442\u0430\u043d\u043d\u044c\u043e\u0433\u043e \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u043d\u044f"
     },
     {
@@ -2020,8 +2113,2131 @@
       "source_location": "L1150",
       "_origin": "ast",
       "id": "docs_first_version_requirements_18_\u043f\u0456\u0434\u0441\u0443\u043c\u043e\u043a",
-      "community": 7,
+      "community": 2,
       "norm_label": "18. \u043f\u0456\u0434\u0441\u0443\u043c\u043e\u043a"
+    },
+    {
+      "label": "Graphify Instructions",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 113,
+      "norm_label": "graphify instructions",
+      "id": "agents_graphify_instructions"
+    },
+    {
+      "label": "Existing Graph Fast Path",
+      "file_type": "concept",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 112,
+      "norm_label": "existing graph fast path",
+      "id": "agents_existing_graph_fast_path"
+    },
+    {
+      "label": "Graphify Update Requirement",
+      "file_type": "concept",
+      "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 114,
+      "norm_label": "graphify update requirement",
+      "id": "agents_graphify_update_requirement"
+    },
+    {
+      "label": "Choose Technology Stack Skill",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 34,
+      "norm_label": "choose technology stack skill",
+      "id": "_codex_skills_choose_technology_stack_skill_choose_technology_stack_skill"
+    },
+    {
+      "label": "Stack Selection Workflow",
+      "file_type": "concept",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 42,
+      "norm_label": "stack selection workflow",
+      "id": "_codex_skills_choose_technology_stack_skill_stack_selection_workflow"
+    },
+    {
+      "label": "Decision Criteria",
+      "file_type": "concept",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 40,
+      "norm_label": "decision criteria",
+      "id": "_codex_skills_choose_technology_stack_skill_decision_criteria"
+    },
+    {
+      "label": "Operational Guardrails",
+      "file_type": "rationale",
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Technology choices must account for operations, restore ownership, correction workflows, audit preservation, migrations, tests, backups, and long-term maintenance rather than favoring a framework first.",
+      "community": 41,
+      "norm_label": "operational guardrails",
+      "id": "_codex_skills_choose_technology_stack_skill_operational_guardrails"
+    },
+    {
+      "label": "Technology Stack Interface",
+      "file_type": "document",
+      "source_file": ".codex/skills/choose-technology-stack/agents/openai.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 34,
+      "norm_label": "technology stack interface",
+      "id": "_codex_skills_choose_technology_stack_agents_openai_technology_stack_interface"
+    },
+    {
+      "label": "Stack Criteria",
+      "file_type": "concept",
+      "source_file": ".codex/skills/choose-technology-stack/references/selection-matrix.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 39,
+      "norm_label": "stack criteria",
+      "id": "_codex_skills_choose_technology_stack_references_selection_matrix_stack_criteria"
+    },
+    {
+      "label": "Design Data Architecture Skill",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 35,
+      "norm_label": "design data architecture skill",
+      "id": "_codex_skills_design_data_architecture_skill_design_data_architecture_skill"
+    },
+    {
+      "label": "Domain Model Extraction",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 46,
+      "norm_label": "domain model extraction",
+      "id": "_codex_skills_design_data_architecture_skill_domain_model_extraction"
+    },
+    {
+      "label": "Data Invariants",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 45,
+      "norm_label": "data invariants",
+      "id": "_codex_skills_design_data_architecture_skill_data_invariants"
+    },
+    {
+      "label": "Storage Approach Comparison",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 47,
+      "norm_label": "storage approach comparison",
+      "id": "_codex_skills_design_data_architecture_skill_storage_approach_comparison"
+    },
+    {
+      "label": "Data Architecture Guardrails",
+      "file_type": "rationale",
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The data design should model domain behavior, transaction rules, auditability, migrations, and backup expectations before finalizing tables or database technology.",
+      "community": 44,
+      "norm_label": "data architecture guardrails",
+      "id": "_codex_skills_design_data_architecture_skill_data_architecture_guardrails"
+    },
+    {
+      "label": "Data Architecture Interface",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-data-architecture/agents/openai.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 35,
+      "norm_label": "data architecture interface",
+      "id": "_codex_skills_design_data_architecture_agents_openai_data_architecture_interface"
+    },
+    {
+      "label": "Domain Entities",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-data-architecture/references/data-decision-checklist.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 43,
+      "norm_label": "domain entities",
+      "id": "_codex_skills_design_data_architecture_references_data_decision_checklist_domain_entities"
+    },
+    {
+      "label": "Design Observability Operations Skill",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 36,
+      "norm_label": "design observability operations skill",
+      "id": "_codex_skills_design_observability_operations_skill_design_observability_operations_skill"
+    },
+    {
+      "label": "Operational Requirements",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 52,
+      "norm_label": "operational requirements",
+      "id": "_codex_skills_design_observability_operations_skill_operational_requirements"
+    },
+    {
+      "label": "Record Type Separation",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 53,
+      "norm_label": "record type separation",
+      "id": "_codex_skills_design_observability_operations_skill_record_type_separation"
+    },
+    {
+      "label": "Minimum Viable Operations",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 50,
+      "norm_label": "minimum viable operations",
+      "id": "_codex_skills_design_observability_operations_skill_minimum_viable_operations"
+    },
+    {
+      "label": "Observability Guardrails",
+      "file_type": "rationale",
+      "source_file": ".codex/skills/design-observability-operations/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Operational design must keep business truth separate from runtime logs, protect sensitive data, test restore paths, and avoid heavy tooling unless the risk profile justifies it.",
+      "community": 51,
+      "norm_label": "observability guardrails",
+      "id": "_codex_skills_design_observability_operations_skill_observability_guardrails"
+    },
+    {
+      "label": "Observability Operations Interface",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/agents/openai.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 36,
+      "norm_label": "observability operations interface",
+      "id": "_codex_skills_design_observability_operations_agents_openai_observability_operations_interface"
+    },
+    {
+      "label": "Observability Operations Checklist",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 49,
+      "norm_label": "observability operations checklist",
+      "id": "_codex_skills_design_observability_operations_references_operations_checklist_observability_operations_checklist"
+    },
+    {
+      "label": "Backup Restore",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-observability-operations/references/operations-checklist.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 48,
+      "norm_label": "backup restore",
+      "id": "_codex_skills_design_observability_operations_references_operations_checklist_backup_restore"
+    },
+    {
+      "label": "Design System Interactions Skill",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 37,
+      "norm_label": "design system interactions skill",
+      "id": "_codex_skills_design_system_interactions_skill_design_system_interactions_skill"
+    },
+    {
+      "label": "Workflow Mapping",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 58,
+      "norm_label": "workflow mapping",
+      "id": "_codex_skills_design_system_interactions_skill_workflow_mapping"
+    },
+    {
+      "label": "Module Boundaries",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 55,
+      "norm_label": "module boundaries",
+      "id": "_codex_skills_design_system_interactions_skill_module_boundaries"
+    },
+    {
+      "label": "Interaction Contracts",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 54,
+      "norm_label": "interaction contracts",
+      "id": "_codex_skills_design_system_interactions_skill_interaction_contracts"
+    },
+    {
+      "label": "Transaction Consistency Boundaries",
+      "file_type": "concept",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 57,
+      "norm_label": "transaction consistency boundaries",
+      "id": "_codex_skills_design_system_interactions_skill_transaction_consistency_boundaries"
+    },
+    {
+      "label": "System Interaction Guardrails",
+      "file_type": "rationale",
+      "source_file": ".codex/skills/design-system-interactions/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Interaction architecture should place business rules outside UI components, define side effects and audit records before endpoint shape, and avoid distributed services before operational need is clear.",
+      "community": 56,
+      "norm_label": "system interaction guardrails",
+      "id": "_codex_skills_design_system_interactions_skill_system_interaction_guardrails"
+    },
+    {
+      "label": "System Interactions Interface",
+      "file_type": "document",
+      "source_file": ".codex/skills/design-system-interactions/agents/openai.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 37,
+      "norm_label": "system interactions interface",
+      "id": "_codex_skills_design_system_interactions_agents_openai_system_interactions_interface"
+    },
+    {
+      "label": "Graphify Skill",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 95,
+      "norm_label": "graphify skill",
+      "id": "_codex_skills_graphify_skill_graphify_skill"
+    },
+    {
+      "label": "Graphify Usage",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 101,
+      "norm_label": "graphify usage",
+      "id": "_codex_skills_graphify_skill_usage"
+    },
+    {
+      "label": "Existing Graph Fast Path",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 91,
+      "norm_label": "existing graph fast path",
+      "id": "_codex_skills_graphify_skill_existing_graph_fast_path"
+    },
+    {
+      "label": "Installation And Detection",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 96,
+      "norm_label": "installation and detection",
+      "id": "_codex_skills_graphify_skill_installation_and_detection"
+    },
+    {
+      "label": "Structural Extraction",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 100,
+      "norm_label": "structural extraction",
+      "id": "_codex_skills_graphify_skill_structural_extraction"
+    },
+    {
+      "label": "Semantic Extraction",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 99,
+      "norm_label": "semantic extraction",
+      "id": "_codex_skills_graphify_skill_semantic_extraction"
+    },
+    {
+      "label": "Extraction Cache",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 93,
+      "norm_label": "extraction cache",
+      "id": "_codex_skills_graphify_skill_extraction_cache"
+    },
+    {
+      "label": "Build Cluster Analyze",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 89,
+      "norm_label": "build cluster analyze",
+      "id": "_codex_skills_graphify_skill_build_cluster_analyze"
+    },
+    {
+      "label": "Graph Health Check",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 94,
+      "norm_label": "graph health check",
+      "id": "_codex_skills_graphify_skill_graph_health_check"
+    },
+    {
+      "label": "Community Labeling",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 90,
+      "norm_label": "community labeling",
+      "id": "_codex_skills_graphify_skill_community_labeling"
+    },
+    {
+      "label": "Graphify Exports",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 92,
+      "norm_label": "graphify exports",
+      "id": "_codex_skills_graphify_skill_exports"
+    },
+    {
+      "label": "Manifest Cost Cleanup",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 97,
+      "norm_label": "manifest cost cleanup",
+      "id": "_codex_skills_graphify_skill_manifest_cost_cleanup"
+    },
+    {
+      "label": "Query Path Explain Flows",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 98,
+      "norm_label": "query path explain flows",
+      "id": "_codex_skills_graphify_skill_query_path_explain_flows"
+    },
+    {
+      "label": "Add Watch Reference",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 0,
+      "norm_label": "add watch reference",
+      "id": "_codex_skills_graphify_references_add_watch_add_watch_reference"
+    },
+    {
+      "label": "URL Ingestion",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 59,
+      "norm_label": "url ingestion",
+      "id": "_codex_skills_graphify_references_add_watch_url_ingestion"
+    },
+    {
+      "label": "Watch Mode",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/add-watch.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 60,
+      "norm_label": "watch mode",
+      "id": "_codex_skills_graphify_references_add_watch_watch_mode"
+    },
+    {
+      "label": "Extra Exports Reference",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 61,
+      "norm_label": "extra exports reference",
+      "id": "_codex_skills_graphify_references_exports_extra_exports_reference"
+    },
+    {
+      "label": "Wiki Export",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 65,
+      "norm_label": "wiki export",
+      "id": "_codex_skills_graphify_references_exports_wiki_export"
+    },
+    {
+      "label": "Graph Database Exports",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 62,
+      "norm_label": "graph database exports",
+      "id": "_codex_skills_graphify_references_exports_graph_database_exports"
+    },
+    {
+      "label": "MCP Export",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 63,
+      "norm_label": "mcp export",
+      "id": "_codex_skills_graphify_references_exports_mcp_export"
+    },
+    {
+      "label": "Token Reduction Benchmark",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/exports.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 64,
+      "norm_label": "token reduction benchmark",
+      "id": "_codex_skills_graphify_references_exports_token_reduction_benchmark"
+    },
+    {
+      "label": "Extraction Subagent Prompt",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/extraction-spec.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 68,
+      "norm_label": "extraction subagent prompt",
+      "id": "_codex_skills_graphify_references_extraction_spec_extraction_subagent_prompt"
+    },
+    {
+      "label": "Extraction Rules",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/extraction-spec.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 67,
+      "norm_label": "extraction rules",
+      "id": "_codex_skills_graphify_references_extraction_spec_extraction_rules"
+    },
+    {
+      "label": "Confidence Rubric",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/extraction-spec.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 66,
+      "norm_label": "confidence rubric",
+      "id": "_codex_skills_graphify_references_extraction_spec_confidence_rubric"
+    },
+    {
+      "label": "Node ID Schema",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/extraction-spec.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 69,
+      "norm_label": "node id schema",
+      "id": "_codex_skills_graphify_references_extraction_spec_node_id_schema"
+    },
+    {
+      "label": "GitHub And Merge Reference",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/github-and-merge.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 71,
+      "norm_label": "github and merge reference",
+      "id": "_codex_skills_graphify_references_github_and_merge_github_and_merge_reference"
+    },
+    {
+      "label": "GitHub Clone",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/github-and-merge.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 72,
+      "norm_label": "github clone",
+      "id": "_codex_skills_graphify_references_github_and_merge_github_clone"
+    },
+    {
+      "label": "Cross Repo Merge",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/github-and-merge.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 70,
+      "norm_label": "cross repo merge",
+      "id": "_codex_skills_graphify_references_github_and_merge_cross_repo_merge"
+    },
+    {
+      "label": "Hooks Reference",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 74,
+      "norm_label": "hooks reference",
+      "id": "_codex_skills_graphify_references_hooks_hooks_reference"
+    },
+    {
+      "label": "Post Commit Hook",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 75,
+      "norm_label": "post commit hook",
+      "id": "_codex_skills_graphify_references_hooks_post_commit_hook"
+    },
+    {
+      "label": "Claude Integration",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/hooks.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 73,
+      "norm_label": "claude integration",
+      "id": "_codex_skills_graphify_references_hooks_claude_integration"
+    },
+    {
+      "label": "Query Reference",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 78,
+      "norm_label": "query reference",
+      "id": "_codex_skills_graphify_references_query_query_reference"
+    },
+    {
+      "label": "Constrained Query Expansion",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 76,
+      "norm_label": "constrained query expansion",
+      "id": "_codex_skills_graphify_references_query_constrained_query_expansion"
+    },
+    {
+      "label": "Traversal Modes",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 80,
+      "norm_label": "traversal modes",
+      "id": "_codex_skills_graphify_references_query_traversal_modes"
+    },
+    {
+      "label": "Save Result Work Memory",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 79,
+      "norm_label": "save result work memory",
+      "id": "_codex_skills_graphify_references_query_save_result_work_memory"
+    },
+    {
+      "label": "Path Explain Flows",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/query.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 77,
+      "norm_label": "path explain flows",
+      "id": "_codex_skills_graphify_references_query_path_explain_flows"
+    },
+    {
+      "label": "Transcribe Reference",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/transcribe.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 81,
+      "norm_label": "transcribe reference",
+      "id": "_codex_skills_graphify_references_transcribe_transcribe_reference"
+    },
+    {
+      "label": "Whisper Transcription",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/transcribe.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 83,
+      "norm_label": "whisper transcription",
+      "id": "_codex_skills_graphify_references_transcribe_whisper_transcription"
+    },
+    {
+      "label": "Transcript Doc Conversion",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/transcribe.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 82,
+      "norm_label": "transcript doc conversion",
+      "id": "_codex_skills_graphify_references_transcribe_transcript_doc_conversion"
+    },
+    {
+      "label": "Update Reference",
+      "file_type": "document",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 88,
+      "norm_label": "update reference",
+      "id": "_codex_skills_graphify_references_update_update_reference"
+    },
+    {
+      "label": "Incremental Detection",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 87,
+      "norm_label": "incremental detection",
+      "id": "_codex_skills_graphify_references_update_incremental_detection"
+    },
+    {
+      "label": "Code Only Update Optimization",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 86,
+      "norm_label": "code only update optimization",
+      "id": "_codex_skills_graphify_references_update_code_only_update_optimization"
+    },
+    {
+      "label": "Build Merge Update",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 84,
+      "norm_label": "build merge update",
+      "id": "_codex_skills_graphify_references_update_build_merge_update"
+    },
+    {
+      "label": "Cluster Only Flow",
+      "file_type": "concept",
+      "source_file": ".codex/skills/graphify/references/update.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 85,
+      "norm_label": "cluster only flow",
+      "id": "_codex_skills_graphify_references_update_cluster_only_flow"
+    },
+    {
+      "label": "Research Architecture Options Skill",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 38,
+      "norm_label": "research architecture options skill",
+      "id": "_codex_skills_research_architecture_options_skill_research_architecture_options"
+    },
+    {
+      "label": "Approach-Neutral Architecture Research",
+      "file_type": "rationale",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 107,
+      "norm_label": "approach-neutral architecture research",
+      "id": "_codex_skills_research_architecture_options_skill_approach_neutral_research"
+    },
+    {
+      "label": "BodyLife Architecture Anchors",
+      "file_type": "concept",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 109,
+      "norm_label": "bodylife architecture anchors",
+      "id": "_codex_skills_research_architecture_options_skill_bodylife_architecture_anchors"
+    },
+    {
+      "label": "BodyLife Decision Criteria",
+      "file_type": "concept",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 110,
+      "norm_label": "bodylife decision criteria",
+      "id": "_codex_skills_research_architecture_options_skill_bodylife_decision_criteria"
+    },
+    {
+      "label": "Business Audit History Is Separate From Application Logs",
+      "file_type": "rationale",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 108,
+      "norm_label": "business audit history is separate from application logs",
+      "id": "_codex_skills_research_architecture_options_skill_audit_history_separation"
+    },
+    {
+      "label": "Prefer Boring Understandable Operations",
+      "file_type": "rationale",
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 111,
+      "norm_label": "prefer boring understandable operations",
+      "id": "_codex_skills_research_architecture_options_skill_boring_operations_preference"
+    },
+    {
+      "label": "Architecture Research Interface",
+      "file_type": "document",
+      "source_file": ".codex/skills/research-architecture-options/agents/openai.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 38,
+      "norm_label": "architecture research interface",
+      "id": "_codex_skills_research_architecture_options_agents_openai_architecture_research_interface"
+    },
+    {
+      "label": "Architecture Evidence Order",
+      "file_type": "concept",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 105,
+      "norm_label": "architecture evidence order",
+      "id": "_codex_skills_research_architecture_options_references_research_protocol_evidence_order"
+    },
+    {
+      "label": "Architecture Decision Areas",
+      "file_type": "concept",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 104,
+      "norm_label": "architecture decision areas",
+      "id": "_codex_skills_research_architecture_options_references_research_protocol_decision_areas"
+    },
+    {
+      "label": "Architecture Research Brief Output Template",
+      "file_type": "concept",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 106,
+      "norm_label": "architecture research brief output template",
+      "id": "_codex_skills_research_architecture_options_references_research_protocol_output_template"
+    },
+    {
+      "label": "Cross-Cutting Concerns",
+      "file_type": "concept",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 103,
+      "norm_label": "cross-cutting concerns",
+      "id": "_codex_skills_research_architecture_options_references_research_protocol_cross_cutting_concerns"
+    },
+    {
+      "label": "ADR Candidates",
+      "file_type": "concept",
+      "source_file": ".codex/skills/research-architecture-options/references/research-protocol.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 102,
+      "norm_label": "adr candidates",
+      "id": "_codex_skills_research_architecture_options_references_research_protocol_adr_candidates"
+    },
+    {
+      "label": "First Version Proposal",
+      "file_type": "document",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "first version proposal",
+      "id": "docs_first_version_proposal_first_version_proposal"
+    },
+    {
+      "label": "Gym Membership Accounting System",
+      "file_type": "concept",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "gym membership accounting system",
+      "id": "docs_first_version_proposal_membership_accounting_system"
+    },
+    {
+      "label": "Reception Workflow",
+      "file_type": "concept",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "reception workflow",
+      "id": "docs_first_version_proposal_reception_workflow"
+    },
+    {
+      "label": "First Version Scope",
+      "file_type": "concept",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "first version scope",
+      "id": "docs_first_version_proposal_first_version_scope"
+    },
+    {
+      "label": "Non-Working Days Business Logic",
+      "file_type": "concept",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "non-working days business logic",
+      "id": "docs_first_version_proposal_non_working_days_logic"
+    },
+    {
+      "label": "Reports And Warnings",
+      "file_type": "concept",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "reports and warnings",
+      "id": "docs_first_version_proposal_reports_and_warnings"
+    },
+    {
+      "label": "Fixed Price 400 USD",
+      "file_type": "concept",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "fixed price 400 usd",
+      "id": "docs_first_version_proposal_fixed_price_400"
+    },
+    {
+      "label": "Payment After Completion",
+      "file_type": "concept",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "payment after completion",
+      "id": "docs_first_version_proposal_payment_after_completion"
+    },
+    {
+      "label": "Test Launch Support",
+      "file_type": "concept",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "test launch support",
+      "id": "docs_first_version_proposal_test_launch_support"
+    },
+    {
+      "label": "First Version Exclusions",
+      "file_type": "concept",
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "first version exclusions",
+      "id": "docs_first_version_proposal_exclusions"
+    },
+    {
+      "label": "Detailed First Version Requirements",
+      "file_type": "document",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 121,
+      "norm_label": "detailed first version requirements",
+      "id": "docs_first_version_requirements_first_version_requirements"
+    },
+    {
+      "label": "Manual Accounting Replacement",
+      "file_type": "rationale",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "manual accounting replacement",
+      "id": "docs_first_version_requirements_manual_accounting_replacement"
+    },
+    {
+      "label": "First Version Functional Scope",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 122,
+      "norm_label": "first version functional scope",
+      "id": "docs_first_version_requirements_first_version_scope"
+    },
+    {
+      "label": "Owner Role",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 129,
+      "norm_label": "owner role",
+      "id": "docs_first_version_requirements_owner_role"
+    },
+    {
+      "label": "Administrator Role",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 117,
+      "norm_label": "administrator role",
+      "id": "docs_first_version_requirements_administrator_role"
+    },
+    {
+      "label": "Trainer Limited Role",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 132,
+      "norm_label": "trainer limited role",
+      "id": "docs_first_version_requirements_trainer_limited_role"
+    },
+    {
+      "label": "Client",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 118,
+      "norm_label": "client",
+      "id": "docs_first_version_requirements_client"
+    },
+    {
+      "label": "Card Number",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "card number",
+      "id": "docs_first_version_requirements_card_number"
+    },
+    {
+      "label": "Membership Type",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 124,
+      "norm_label": "membership type",
+      "id": "docs_first_version_requirements_membership_type"
+    },
+    {
+      "label": "Client Membership",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 119,
+      "norm_label": "client membership",
+      "id": "docs_first_version_requirements_client_membership"
+    },
+    {
+      "label": "Visit",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 133,
+      "norm_label": "visit",
+      "id": "docs_first_version_requirements_visit"
+    },
+    {
+      "label": "Payment",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "payment",
+      "id": "docs_first_version_requirements_payment"
+    },
+    {
+      "label": "Freeze",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "freeze",
+      "id": "docs_first_version_requirements_freeze"
+    },
+    {
+      "label": "Non-Working Day Or Period",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "non-working day or period",
+      "id": "docs_first_version_requirements_non_working_period"
+    },
+    {
+      "label": "Technical Client For One-Time Visits",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 131,
+      "norm_label": "technical client for one-time visits",
+      "id": "docs_first_version_requirements_technical_client"
+    },
+    {
+      "label": "Completion Date Formula",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 120,
+      "norm_label": "completion date formula",
+      "id": "docs_first_version_requirements_completion_date_formula"
+    },
+    {
+      "label": "Remaining Visits Formula",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 130,
+      "norm_label": "remaining visits formula",
+      "id": "docs_first_version_requirements_remaining_visits_formula"
+    },
+    {
+      "label": "Negative Visits",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 126,
+      "norm_label": "negative visits",
+      "id": "docs_first_version_requirements_negative_visits"
+    },
+    {
+      "label": "Negative Start Date Rule",
+      "file_type": "rationale",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "negative start date rule",
+      "id": "docs_first_version_requirements_negative_start_date_rule"
+    },
+    {
+      "label": "Active Membership Rule",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 116,
+      "norm_label": "active membership rule",
+      "id": "docs_first_version_requirements_active_membership_rule"
+    },
+    {
+      "label": "No Double Extension For Overlapping Days",
+      "file_type": "rationale",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 128,
+      "norm_label": "no double extension for overlapping days",
+      "id": "docs_first_version_requirements_overlap_extension_rule"
+    },
+    {
+      "label": "Inactive Clients Report",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "inactive clients report",
+      "id": "docs_first_version_requirements_inactive_clients_report"
+    },
+    {
+      "label": "Daily Report",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "daily report",
+      "id": "docs_first_version_requirements_daily_report"
+    },
+    {
+      "label": "Membership Warnings",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 125,
+      "norm_label": "membership warnings",
+      "id": "docs_first_version_requirements_membership_warnings"
+    },
+    {
+      "label": "History And Transparency",
+      "file_type": "rationale",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 123,
+      "norm_label": "history and transparency",
+      "id": "docs_first_version_requirements_history_and_transparency"
+    },
+    {
+      "label": "Search Rules",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "search rules",
+      "id": "docs_first_version_requirements_search_rules"
+    },
+    {
+      "label": "Acceptance Criteria",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 115,
+      "norm_label": "acceptance criteria",
+      "id": "docs_first_version_requirements_acceptance_criteria"
+    },
+    {
+      "label": "Open Questions",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 127,
+      "norm_label": "open questions",
+      "id": "docs_first_version_requirements_open_questions"
+    },
+    {
+      "label": "First Version Operational Chain",
+      "file_type": "concept",
+      "source_file": "docs/first-version-requirements.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "first version operational chain",
+      "id": "docs_first_version_requirements_operational_chain"
+    },
+    {
+      "label": "Project Context",
+      "file_type": "document",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "project context",
+      "id": "docs_initial_context_project_context"
+    },
+    {
+      "label": "Simple Internal Web App",
+      "file_type": "rationale",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "simple internal web app",
+      "id": "docs_initial_context_simple_internal_web_app"
+    },
+    {
+      "label": "Card Number Identifier",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "card number identifier",
+      "id": "docs_initial_context_card_number_identifier"
+    },
+    {
+      "label": "Cash-Only Payments",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "cash-only payments",
+      "id": "docs_initial_context_cash_only_payments"
+    },
+    {
+      "label": "Administrator Role",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "administrator role",
+      "id": "docs_initial_context_administrator_role"
+    },
+    {
+      "label": "Owner Role",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "owner role",
+      "id": "docs_initial_context_owner_role"
+    },
+    {
+      "label": "Client",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "client",
+      "id": "docs_initial_context_client"
+    },
+    {
+      "label": "MembershipType",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "membershiptype",
+      "id": "docs_initial_context_membership_type"
+    },
+    {
+      "label": "Membership",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "membership",
+      "id": "docs_initial_context_membership"
+    },
+    {
+      "label": "Visit",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "visit",
+      "id": "docs_initial_context_visit"
+    },
+    {
+      "label": "Payment",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "payment",
+      "id": "docs_initial_context_payment"
+    },
+    {
+      "label": "Reception Home Screen",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 29,
+      "norm_label": "reception home screen",
+      "id": "docs_initial_context_reception_home"
+    },
+    {
+      "label": "Client Profile Screen",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 28,
+      "norm_label": "client profile screen",
+      "id": "docs_initial_context_client_profile"
+    },
+    {
+      "label": "Reports",
+      "file_type": "concept",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 30,
+      "norm_label": "reports",
+      "id": "docs_initial_context_reports"
+    },
+    {
+      "label": "Client Card Membership Visit Payment Chain",
+      "file_type": "rationale",
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 3,
+      "norm_label": "client card membership visit payment chain",
+      "id": "docs_initial_context_mvp_chain"
+    },
+    {
+      "label": "Gym System Interview",
+      "file_type": "document",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "gym system interview",
+      "id": "docs_question_answering_interview_gym_system_interview"
+    },
+    {
+      "label": "Vlad Owner",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "vlad owner",
+      "id": "docs_question_answering_interview_vlad_owner"
+    },
+    {
+      "label": "Denys Admin Trainer",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "denys admin trainer",
+      "id": "docs_question_answering_interview_denys_admin_trainer"
+    },
+    {
+      "label": "Manual Sheet Accounting",
+      "file_type": "rationale",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "manual sheet accounting",
+      "id": "docs_question_answering_interview_manual_sheet_accounting"
+    },
+    {
+      "label": "Card Iterations With Numbers And Barcodes",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "card iterations with numbers and barcodes",
+      "id": "docs_question_answering_interview_card_iterations"
+    },
+    {
+      "label": "Search Without Card",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "search without card",
+      "id": "docs_question_answering_interview_search_without_card"
+    },
+    {
+      "label": "Client History For Disputes",
+      "file_type": "rationale",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "client history for disputes",
+      "id": "docs_question_answering_interview_client_history_for_disputes"
+    },
+    {
+      "label": "Membership Types",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "membership types",
+      "id": "docs_question_answering_interview_membership_types"
+    },
+    {
+      "label": "Negative Visit Flow",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "negative visit flow",
+      "id": "docs_question_answering_interview_negative_visit_flow"
+    },
+    {
+      "label": "Freezes",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "freezes",
+      "id": "docs_question_answering_interview_freezes"
+    },
+    {
+      "label": "Non-Working Days",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "non-working days",
+      "id": "docs_question_answering_interview_non_working_days"
+    },
+    {
+      "label": "Cash Daily Summary",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "cash daily summary",
+      "id": "docs_question_answering_interview_cash_daily_summary"
+    },
+    {
+      "label": "Inactive Clients",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "inactive clients",
+      "id": "docs_question_answering_interview_inactive_clients"
+    },
+    {
+      "label": "Reception Phone Or Tablet",
+      "file_type": "concept",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "reception phone or tablet",
+      "id": "docs_question_answering_interview_reception_devices"
+    },
+    {
+      "label": "Success Criteria",
+      "file_type": "rationale",
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 1,
+      "norm_label": "success criteria",
+      "id": "docs_question_answering_interview_success_criteria"
+    },
+    {
+      "label": "First Version System Accounting PDF",
+      "file_type": "paper",
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "first version system accounting pdf",
+      "id": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_pdf"
+    },
+    {
+      "label": "Client-Facing Proposal PDF Layout",
+      "file_type": "concept",
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "client-facing proposal pdf layout",
+      "id": "docs_persha_versiya_systemy_obliku_dlya_zalu_pdf_layout"
+    },
+    {
+      "label": "Fixed Price 400 USD",
+      "file_type": "concept",
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "fixed price 400 usd",
+      "id": "docs_persha_versiya_systemy_obliku_dlya_zalu_fixed_price_400"
+    },
+    {
+      "label": "Payment After Completion",
+      "file_type": "concept",
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "payment after completion",
+      "id": "docs_persha_versiya_systemy_obliku_dlya_zalu_payment_after_completion"
+    },
+    {
+      "label": "Test Launch",
+      "file_type": "concept",
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "test launch",
+      "id": "docs_persha_versiya_systemy_obliku_dlya_zalu_test_launch"
+    },
+    {
+      "label": "First Version Summary",
+      "file_type": "concept",
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "first version summary",
+      "id": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_summary"
+    },
+    {
+      "label": "Not Included Scope",
+      "file_type": "concept",
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "community": 5,
+      "norm_label": "not included scope",
+      "id": "docs_persha_versiya_systemy_obliku_dlya_zalu_not_included_scope"
     }
   ],
   "links": [
@@ -2139,7 +4355,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".codex/skills/design-data-architecture/SKILL.md",
-      "source_location": "L48",
+      "source_location": "L49",
       "weight": 1.0,
       "source": "codex_skills_design_data_architecture_skill_design_data_architecture",
       "target": "codex_skills_design_data_architecture_skill_guardrails",
@@ -2239,7 +4455,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".codex/skills/design-observability-operations/SKILL.md",
-      "source_location": "L49",
+      "source_location": "L50",
       "weight": 1.0,
       "source": "codex_skills_design_observability_operations_skill_design_observability_operations",
       "target": "codex_skills_design_observability_operations_skill_guardrails",
@@ -2339,7 +4555,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": ".codex/skills/design-system-interactions/SKILL.md",
-      "source_location": "L41",
+      "source_location": "L42",
       "weight": 1.0,
       "source": "codex_skills_design_system_interactions_skill_design_system_interactions",
       "target": "codex_skills_design_system_interactions_skill_guardrails",
@@ -3834,8 +6050,779 @@
       "source": "docs_first_version_requirements_14_\u043a\u0440\u0430\u0439\u043d\u0456_\u0432\u0438\u043f\u0430\u0434\u043a\u0438_\u044f\u043a\u0456_\u0442\u0440\u0435\u0431\u0430_\u0432\u0440\u0430\u0445\u0443\u0432\u0430\u0442\u0438",
       "target": "docs_first_version_requirements_14_9_\u043d\u0435\u0440\u043e\u0431\u043e\u0447\u0438\u0439_\u0434\u0435\u043d\u044c_\u0434\u043e\u0434\u0430\u043b\u0438_\u043f\u043e\u043c\u0438\u043b\u043a\u043e\u0432\u043e",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".codex/skills/choose-technology-stack/agents/openai.yaml",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "_codex_skills_choose_technology_stack_agents_openai_technology_stack_interface",
+      "target": "_codex_skills_choose_technology_stack_skill_choose_technology_stack_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".codex/skills/design-data-architecture/agents/openai.yaml",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "_codex_skills_design_data_architecture_agents_openai_data_architecture_interface",
+      "target": "_codex_skills_design_data_architecture_skill_design_data_architecture_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".codex/skills/design-observability-operations/agents/openai.yaml",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "_codex_skills_design_observability_operations_agents_openai_observability_operations_interface",
+      "target": "_codex_skills_design_observability_operations_skill_design_observability_operations_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".codex/skills/design-system-interactions/agents/openai.yaml",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "_codex_skills_design_system_interactions_agents_openai_system_interactions_interface",
+      "target": "_codex_skills_design_system_interactions_skill_design_system_interactions_skill"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".codex/skills/research-architecture-options/agents/openai.yaml",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "_codex_skills_research_architecture_options_agents_openai_architecture_research_interface",
+      "target": "_codex_skills_research_architecture_options_skill_research_architecture_options"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_first_version_proposal",
+      "target": "docs_first_version_proposal_exclusions"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_first_version_proposal",
+      "target": "docs_first_version_proposal_first_version_scope"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_first_version_proposal",
+      "target": "docs_first_version_proposal_fixed_price_400"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_first_version_proposal",
+      "target": "docs_first_version_proposal_membership_accounting_system"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_first_version_proposal",
+      "target": "docs_first_version_proposal_non_working_days_logic"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_first_version_proposal",
+      "target": "docs_first_version_proposal_payment_after_completion"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_first_version_proposal",
+      "target": "docs_first_version_proposal_reception_workflow"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_first_version_proposal",
+      "target": "docs_first_version_proposal_reports_and_warnings"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_first_version_proposal",
+      "target": "docs_first_version_proposal_test_launch_support"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_pdf",
+      "target": "docs_first_version_proposal_first_version_proposal"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_reception_workflow",
+      "target": "docs_first_version_requirements_search_rules"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_non_working_days_logic",
+      "target": "docs_first_version_proposal_first_version_scope"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_non_working_days_logic",
+      "target": "docs_first_version_requirements_non_working_period"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_fixed_price_400",
+      "target": "docs_first_version_proposal_payment_after_completion"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_fixed_price_400",
+      "target": "docs_first_version_proposal_fixed_price_400"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/first-version-proposal.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_first_version_proposal_test_launch_support",
+      "target": "docs_first_version_proposal_payment_after_completion"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_payment_after_completion",
+      "target": "docs_first_version_proposal_payment_after_completion"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_test_launch",
+      "target": "docs_first_version_proposal_test_launch_support"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_not_included_scope",
+      "target": "docs_first_version_proposal_exclusions"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_manual_sheet_accounting",
+      "target": "docs_first_version_requirements_manual_accounting_replacement"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_card_number_identifier",
+      "target": "docs_first_version_requirements_card_number"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_cash_only_payments",
+      "target": "docs_first_version_requirements_payment"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_freezes",
+      "target": "docs_first_version_requirements_freeze"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_non_working_days",
+      "target": "docs_first_version_requirements_non_working_period"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_negative_visit_flow",
+      "target": "docs_first_version_requirements_negative_start_date_rule"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_inactive_clients",
+      "target": "docs_first_version_requirements_inactive_clients_report"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_cash_daily_summary",
+      "target": "docs_first_version_requirements_daily_report"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_mvp_chain",
+      "target": "docs_first_version_requirements_operational_chain"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_administrator_role"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_card_number_identifier"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_cash_only_payments"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_client"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_membership"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_membership_type"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_mvp_chain"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_owner_role"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_payment"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_simple_internal_web_app"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_project_context",
+      "target": "docs_initial_context_visit"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_mvp_chain",
+      "target": "docs_initial_context_client"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_mvp_chain",
+      "target": "docs_initial_context_membership"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_mvp_chain",
+      "target": "docs_initial_context_visit"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/initial-context.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_initial_context_mvp_chain",
+      "target": "docs_initial_context_payment"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_card_iterations"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_cash_daily_summary"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_client_history_for_disputes"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_denys_admin_trainer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_freezes"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_inactive_clients"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_manual_sheet_accounting"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_membership_types"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_negative_visit_flow"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_non_working_days"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_reception_devices"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_search_without_card"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_gym_system_interview",
+      "target": "docs_question_answering_interview_vlad_owner"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/question-answering-interview.txt",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_question_answering_interview_success_criteria",
+      "target": "docs_question_answering_interview_manual_sheet_accounting"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_pdf",
+      "target": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_summary"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_pdf",
+      "target": "docs_persha_versiya_systemy_obliku_dlya_zalu_fixed_price_400"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_pdf",
+      "target": "docs_persha_versiya_systemy_obliku_dlya_zalu_not_included_scope"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_pdf",
+      "target": "docs_persha_versiya_systemy_obliku_dlya_zalu_payment_after_completion"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_pdf",
+      "target": "docs_persha_versiya_systemy_obliku_dlya_zalu_pdf_layout"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/\u041f\u0435\u0440\u0448\u0430 \u0432\u0435\u0440\u0441\u0456\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0438 \u043e\u0431\u043b\u0456\u043a\u0443 \u0434\u043b\u044f \u0437\u0430\u043b\u0443.pdf",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_pdf",
+      "target": "docs_persha_versiya_systemy_obliku_dlya_zalu_test_launch"
     }
   ],
-  "hyperedges": [],
-  "built_at_commit": "ac09d92faafaf628689cfa822769a680ef4fde9d"
+  "hyperedges": [
+    {
+      "id": "bodylife_architecture_design_skills",
+      "label": "BodyLife Architecture Design Skills",
+      "nodes": [
+        "_codex_skills_choose_technology_stack_skill_choose_technology_stack_skill",
+        "_codex_skills_design_data_architecture_skill_design_data_architecture_skill",
+        "_codex_skills_design_observability_operations_skill_design_observability_operations_skill",
+        "_codex_skills_design_system_interactions_skill_design_system_interactions_skill"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": ".codex/skills/choose-technology-stack/SKILL.md"
+    },
+    {
+      "id": "graphify_pipeline_reference_set",
+      "label": "Graphify Pipeline Reference Set",
+      "nodes": [
+        "_codex_skills_graphify_skill_graphify_skill",
+        "_codex_skills_graphify_references_github_and_merge_github_and_merge_reference",
+        "_codex_skills_graphify_references_transcribe_transcribe_reference",
+        "_codex_skills_graphify_references_extraction_spec_extraction_subagent_prompt",
+        "_codex_skills_graphify_references_exports_extra_exports_reference",
+        "_codex_skills_graphify_references_update_update_reference",
+        "_codex_skills_graphify_references_add_watch_add_watch_reference",
+        "_codex_skills_graphify_references_hooks_hooks_reference",
+        "_codex_skills_graphify_references_query_query_reference"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".codex/skills/graphify/SKILL.md"
+    },
+    {
+      "id": "audit_history_consistency_pattern",
+      "label": "Audit History Consistency Pattern",
+      "nodes": [
+        "_codex_skills_design_data_architecture_skill_data_invariants",
+        "_codex_skills_design_observability_operations_references_operations_checklist_business_audit_history",
+        "_codex_skills_design_system_interactions_skill_transaction_consistency_boundaries"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": ".codex/skills/design-data-architecture/SKILL.md"
+    },
+    {
+      "id": "architecture_research_evidence_path",
+      "label": "Architecture Research Evidence Path",
+      "nodes": [
+        "_codex_skills_research_architecture_options_skill_research_architecture_options",
+        "_codex_skills_research_architecture_options_references_research_protocol_evidence_order",
+        "docs_first_version_requirements_first_version_requirements",
+        "docs_initial_context_project_context",
+        "docs_question_answering_interview_gym_system_interview"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".codex/skills/research-architecture-options/SKILL.md"
+    },
+    {
+      "id": "first_version_operational_chain",
+      "label": "First Version Operational Chain",
+      "nodes": [
+        "docs_initial_context_mvp_chain",
+        "docs_first_version_requirements_operational_chain",
+        "docs_first_version_proposal_reception_workflow",
+        "docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_summary"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/first-version-requirements.md"
+    },
+    {
+      "id": "membership_extension_logic",
+      "label": "Membership Extension Logic",
+      "nodes": [
+        "docs_first_version_requirements_freeze",
+        "docs_first_version_requirements_non_working_period",
+        "docs_first_version_requirements_completion_date_formula",
+        "docs_first_version_requirements_overlap_extension_rule",
+        "docs_first_version_proposal_non_working_days_logic"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "docs/first-version-requirements.md"
+    }
+  ],
+  "built_at_commit": "2a7cc45ad16f8758cc10398957d2495f2e2a2c59"
 }
