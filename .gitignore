@@ -1,0 +1,131 @@
+# Operating system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100/
+.Trashes/
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editor and IDE files
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+*.swp
+*.swo
+*~
+.history/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+*.local
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+vendor/
+
+# Package manager caches and metadata
+.npm/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Build and distribution output
+dist/
+build/
+out/
+public/build/
+.next/
+.nuxt/
+.svelte-kit/
+.vite/
+.parcel-cache/
+
+# Test and coverage output
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+htmlcov/
+.coverage
+.coverage.*
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+
+# TypeScript and JavaScript artifacts
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+
+# Framework and tool caches
+.cache/
+.tmp/
+tmp/
+temp/
+.turbo/
+.vercel/
+.netlify/
+
+# Runtime data and local databases
+*.pid
+*.pid.lock
+*.seed
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Archives and backups
+*.bak
+*.backup
+*.orig
+*.rej
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Generated reports and local exports
+*.lcov
+*.prof
+*.dump
+*.sql
