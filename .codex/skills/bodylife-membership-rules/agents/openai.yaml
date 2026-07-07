@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife Membership Rules"
+  short_description: "Implement membership recalculation rules"
+  default_prompt: "Use $bodylife-membership-rules to implement BodyLife CRM membership rules."

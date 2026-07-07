@@ -283,5 +283,145 @@
     "mtime": 1783455977.0664198,
     "ast_hash": "52b1f597ed236ab7e947eb430f67b8ad",
     "semantic_hash": "52b1f597ed236ab7e947eb430f67b8ad"
+  },
+  "docs/technology-stack-decision.md": {
+    "mtime": 1783459338.170063,
+    "ast_hash": "9ba6ef3fe0d2c066ce46dfa4e826a294",
+    "semantic_hash": "9ba6ef3fe0d2c066ce46dfa4e826a294"
+  },
+  "docs/vertical-slice-plan.md": {
+    "mtime": 1783459762.1700168,
+    "ast_hash": "15b17faf208466ac6d8889416d31fb9b",
+    "semantic_hash": "15b17faf208466ac6d8889416d31fb9b"
+  },
+  ".codex/skills/bodylife-aspnet-foundation/SKILL.md": {
+    "mtime": 1783461151.9538705,
+    "ast_hash": "9713b09dea283dc4c196f58156b23553",
+    "semantic_hash": "9713b09dea283dc4c196f58156b23553"
+  },
+  ".codex/skills/bodylife-aspnet-foundation/agents/openai.yaml": {
+    "mtime": 1783461151.9578707,
+    "ast_hash": "05e81a224541e04ae62dbf2865b5fb0c",
+    "semantic_hash": "05e81a224541e04ae62dbf2865b5fb0c"
+  },
+  ".codex/skills/bodylife-aspnet-foundation/references/source-map.md": {
+    "mtime": 1783461151.9578707,
+    "ast_hash": "6d65d06a9e084e2e521f4db12c5cd26c",
+    "semantic_hash": "6d65d06a9e084e2e521f4db12c5cd26c"
+  },
+  ".codex/skills/bodylife-command-workflows/SKILL.md": {
+    "mtime": 1783461151.9578707,
+    "ast_hash": "344fdcd636bade14e55e9cfd54eb6b28",
+    "semantic_hash": "344fdcd636bade14e55e9cfd54eb6b28"
+  },
+  ".codex/skills/bodylife-command-workflows/agents/openai.yaml": {
+    "mtime": 1783461151.9578707,
+    "ast_hash": "0ecf08c76a6d7ab196d71c3891095eeb",
+    "semantic_hash": "0ecf08c76a6d7ab196d71c3891095eeb"
+  },
+  ".codex/skills/bodylife-command-workflows/references/source-map.md": {
+    "mtime": 1783461151.9618707,
+    "ast_hash": "634a23f6f6587c2370f8fa6548c54d9c",
+    "semantic_hash": "634a23f6f6587c2370f8fa6548c54d9c"
+  },
+  ".codex/skills/bodylife-membership-rules/SKILL.md": {
+    "mtime": 1783461151.9618707,
+    "ast_hash": "6b893f7101a9189e816bea40b5c0251d",
+    "semantic_hash": "6b893f7101a9189e816bea40b5c0251d"
+  },
+  ".codex/skills/bodylife-membership-rules/agents/openai.yaml": {
+    "mtime": 1783461151.9618707,
+    "ast_hash": "40bf899b219d18bf295e879da2d4ce70",
+    "semantic_hash": "40bf899b219d18bf295e879da2d4ce70"
+  },
+  ".codex/skills/bodylife-membership-rules/references/source-map.md": {
+    "mtime": 1783461151.9658706,
+    "ast_hash": "f6cebe54c49b3fd0ac8da390b8a9967c",
+    "semantic_hash": "f6cebe54c49b3fd0ac8da390b8a9967c"
+  },
+  ".codex/skills/bodylife-operations-production-readiness/SKILL.md": {
+    "mtime": 1783461151.9778707,
+    "ast_hash": "5762f9c0831ee5a60914eb538e8d74ff",
+    "semantic_hash": "5762f9c0831ee5a60914eb538e8d74ff"
+  },
+  ".codex/skills/bodylife-operations-production-readiness/agents/openai.yaml": {
+    "mtime": 1783461151.9778707,
+    "ast_hash": "bfdb4e4473f0d04f0c215699efe6f4d1",
+    "semantic_hash": "bfdb4e4473f0d04f0c215699efe6f4d1"
+  },
+  ".codex/skills/bodylife-operations-production-readiness/references/source-map.md": {
+    "mtime": 1783461151.9778707,
+    "ast_hash": "2b839e956c01766732a405d29bf15889",
+    "semantic_hash": "2b839e956c01766732a405d29bf15889"
+  },
+  ".codex/skills/bodylife-postgres-data-access/SKILL.md": {
+    "mtime": 1783461151.9658706,
+    "ast_hash": "55c51fa67209f58f4ba3e737b0dffcce",
+    "semantic_hash": "55c51fa67209f58f4ba3e737b0dffcce"
+  },
+  ".codex/skills/bodylife-postgres-data-access/agents/openai.yaml": {
+    "mtime": 1783461151.9658706,
+    "ast_hash": "38320c5b891663c2f32981b39c61ba0c",
+    "semantic_hash": "38320c5b891663c2f32981b39c61ba0c"
+  },
+  ".codex/skills/bodylife-postgres-data-access/references/source-map.md": {
+    "mtime": 1783461151.9698706,
+    "ast_hash": "a933d7613dcb6f8746d5a23a0a8c6bb4",
+    "semantic_hash": "a933d7613dcb6f8746d5a23a0a8c6bb4"
+  },
+  ".codex/skills/bodylife-quality-gates/SKILL.md": {
+    "mtime": 1783461151.9818707,
+    "ast_hash": "426c73384dae51bd5d2943d114b5c251",
+    "semantic_hash": "426c73384dae51bd5d2943d114b5c251"
+  },
+  ".codex/skills/bodylife-quality-gates/agents/openai.yaml": {
+    "mtime": 1783461151.9818707,
+    "ast_hash": "e72ad5dc2386728b995fa2049b360b73",
+    "semantic_hash": "e72ad5dc2386728b995fa2049b360b73"
+  },
+  ".codex/skills/bodylife-quality-gates/references/source-map.md": {
+    "mtime": 1783461151.9818707,
+    "ast_hash": "654dfc0fa73e8e92dbf6a23b646765d0",
+    "semantic_hash": "654dfc0fa73e8e92dbf6a23b646765d0"
+  },
+  ".codex/skills/bodylife-reception-ui-htmx/SKILL.md": {
+    "mtime": 1783461151.9698706,
+    "ast_hash": "2699186312d535c08c22914392d03c96",
+    "semantic_hash": "2699186312d535c08c22914392d03c96"
+  },
+  ".codex/skills/bodylife-reception-ui-htmx/agents/openai.yaml": {
+    "mtime": 1783461151.9698706,
+    "ast_hash": "bd7dd2ce094fc85ae0b4adc7c2bb76b0",
+    "semantic_hash": "bd7dd2ce094fc85ae0b4adc7c2bb76b0"
+  },
+  ".codex/skills/bodylife-reception-ui-htmx/references/source-map.md": {
+    "mtime": 1783461151.9698706,
+    "ast_hash": "3cd927f6b4d6c203dfe51bfaa2c3c181",
+    "semantic_hash": "3cd927f6b4d6c203dfe51bfaa2c3c181"
+  },
+  ".codex/skills/bodylife-reports-audit-history/SKILL.md": {
+    "mtime": 1783461151.9738705,
+    "ast_hash": "6b44e7deb0832a5a1448636230c9dbb8",
+    "semantic_hash": "6b44e7deb0832a5a1448636230c9dbb8"
+  },
+  ".codex/skills/bodylife-reports-audit-history/agents/openai.yaml": {
+    "mtime": 1783461151.9738705,
+    "ast_hash": "70197788152bff3f90646b0765022fe9",
+    "semantic_hash": "70197788152bff3f90646b0765022fe9"
+  },
+  ".codex/skills/bodylife-reports-audit-history/references/source-map.md": {
+    "mtime": 1783461151.9738705,
+    "ast_hash": "e0cacdb13e043460fe9d2fa6afb5980a",
+    "semantic_hash": "e0cacdb13e043460fe9d2fa6afb5980a"
+  },
+  "docs/implementation-roadmap.md": {
+    "mtime": 1783460267.833964,
+    "ast_hash": "2e4b07311ea51c4ac98e675d64aa2fce",
+    "semantic_hash": "2e4b07311ea51c4ac98e675d64aa2fce"
+  },
+  "graphify-out/memory/query_20260707_213806_\u043d\u0430_\u043e\u0441\u043d\u043e\u0432\u0456_\u0432\u0441\u0456\u0445_post_adr_\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0456\u0432_\u0441\u0444\u043e\u0440\u043c\u0443\u0439_docs_im.md": {
+    "mtime": 1783460286.7579622,
+    "ast_hash": "f86a4fcb8d6191d126587d3d7b92e16e",
+    "semantic_hash": "f86a4fcb8d6191d126587d3d7b92e16e"
   }
 }

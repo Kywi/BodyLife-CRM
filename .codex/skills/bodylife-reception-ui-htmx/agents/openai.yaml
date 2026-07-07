@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife Reception UI htmx"
+  short_description: "Build Razor/htmx reception workflows"
+  default_prompt: "Use $bodylife-reception-ui-htmx to build BodyLife CRM reception UI workflows."

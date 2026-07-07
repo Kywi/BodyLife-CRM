@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife Production Readiness"
+  short_description: "Prepare operations, backups, and go-live"
+  default_prompt: "Use $bodylife-operations-production-readiness to prepare BodyLife CRM production readiness."

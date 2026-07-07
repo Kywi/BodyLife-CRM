@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife Quality Gates"
+  short_description: "Apply milestone test and release gates"
+  default_prompt: "Use $bodylife-quality-gates to define BodyLife CRM implementation quality gates."

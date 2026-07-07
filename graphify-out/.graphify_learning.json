@@ -1,6 +1,38 @@
 {
-  "generated_at": "2026-07-07T14:05:39.287018+00:00",
+  "generated_at": "2026-07-07T21:34:15.063621+00:00",
   "nodes": {
+    "docs_adr_adr_backlog_adr_backlog_для_bodylife_crm": {
+      "code_fingerprint": "8587e9f50a6bad2f1e3cf969b815bface8d14027062981a22c37c9c0693a4775",
+      "label": "ADR backlog для BodyLife CRM",
+      "last": "2026-07-07T14:09:50.244096+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-07T14:09:50.244096+00:00",
+          "outcome": "useful",
+          "q": "Сформувати accepted ADR package"
+        }
+      ],
+      "score": 0.992894713,
+      "source_file": "docs/adr/adr-backlog.md",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_architecture_research_options_архітектурне_дослідження_для_першої_веб_версії_bodylife_crm": {
+      "code_fingerprint": "bdd7a9aea7f0bd35b9d2409951aca1583ffc73d04b4addf5b9308a3a1a71583f",
+      "label": "Архітектурне дослідження для першої веб-версії BodyLife CRM",
+      "last": "2026-07-07T14:09:50.244096+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-07T14:09:50.244096+00:00",
+          "outcome": "useful",
+          "q": "Сформувати accepted ADR package"
+        }
+      ],
+      "score": 0.992894713,
+      "source_file": "docs/architecture-research-options.md",
+      "status": "tentative",
+      "uses": 1
+    },
     "docs_initial_context_membership": {
       "code_fingerprint": "65cc094e9c7fe34398ed58b38b27750ffc7ba0e98b45c15f2af440c1dae82256",
       "label": "Membership",
@@ -12,7 +44,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.983759666,
+      "score": 0.976704222,
       "source_file": "docs/initial-context.txt",
       "status": "tentative",
       "uses": 1
@@ -28,7 +60,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.983759666,
+      "score": 0.976704222,
       "source_file": "docs/question-answering-interview.txt",
       "status": "tentative",
       "uses": 1
@@ -44,7 +76,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.983759666,
+      "score": 0.976704222,
       "source_file": "docs/question-answering-interview.txt",
       "status": "tentative",
       "uses": 1
@@ -60,7 +92,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.983759666,
+      "score": 0.976704222,
       "source_file": "docs/question-answering-interview.txt",
       "status": "tentative",
       "uses": 1

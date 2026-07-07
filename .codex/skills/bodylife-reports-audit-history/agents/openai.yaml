@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife Reports and Audit"
+  short_description: "Implement reports, audit, and history"
+  default_prompt: "Use $bodylife-reports-audit-history to implement BodyLife CRM reports and audit history."

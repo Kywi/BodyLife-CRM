@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife ASP.NET Foundation"
+  short_description: "Scaffold BodyLife .NET modular monolith"
+  default_prompt: "Use $bodylife-aspnet-foundation to scaffold the BodyLife CRM ASP.NET Core foundation."

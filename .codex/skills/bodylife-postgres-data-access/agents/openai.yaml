@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife PostgreSQL Data Access"
+  short_description: "Build EF Core Npgsql persistence safely"
+  default_prompt: "Use $bodylife-postgres-data-access to implement BodyLife CRM PostgreSQL persistence."

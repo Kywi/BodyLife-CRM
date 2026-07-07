@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife Command Workflows"
+  short_description: "Implement audited state-changing commands"
+  default_prompt: "Use $bodylife-command-workflows to implement a BodyLife CRM state-changing command."
