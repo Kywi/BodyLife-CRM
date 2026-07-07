@@ -248,5 +248,40 @@
     "mtime": 1783433390.2426224,
     "ast_hash": "7aa205b856ffc2398b591fd8b9cee58f",
     "semantic_hash": "7aa205b856ffc2398b591fd8b9cee58f"
+  },
+  "docs/post-adr-implementation-plan.md": {
+    "mtime": 1783434782.4864764,
+    "ast_hash": "0bd91952eb407a7fa91fb5cd8101a105",
+    "semantic_hash": "0bd91952eb407a7fa91fb5cd8101a105"
+  },
+  "docs/architecture-baseline.md": {
+    "mtime": 1783435003.6064556,
+    "ast_hash": "9d0d83d267c01a6754094b2ea41105ae",
+    "semantic_hash": "9d0d83d267c01a6754094b2ea41105ae"
+  },
+  "docs/data-architecture.md": {
+    "mtime": 1783442149.6496916,
+    "ast_hash": "ce0087d8b88c326d7490aea7fda5013c",
+    "semantic_hash": "ce0087d8b88c326d7490aea7fda5013c"
+  },
+  "docs/domain-model.md": {
+    "mtime": 1783436120.5103333,
+    "ast_hash": "bc5926c75b1d87d309a1f5613f2e59a7",
+    "semantic_hash": "bc5926c75b1d87d309a1f5613f2e59a7"
+  },
+  "docs/interaction-contracts.md": {
+    "mtime": 1783455180.1785064,
+    "ast_hash": "28a63a22199651138d7b11bf96ef77f3",
+    "semantic_hash": "28a63a22199651138d7b11bf96ef77f3"
+  },
+  "docs/ui-workflows.md": {
+    "mtime": 1783455712.3584487,
+    "ast_hash": "86fa11cb93eb0738b257c5083ef7adea",
+    "semantic_hash": "86fa11cb93eb0738b257c5083ef7adea"
+  },
+  "docs/operations-design.md": {
+    "mtime": 1783455977.0664198,
+    "ast_hash": "52b1f597ed236ab7e947eb430f67b8ad",
+    "semantic_hash": "52b1f597ed236ab7e947eb430f67b8ad"
   }
 }
