@@ -155,8 +155,13 @@
     "semantic_hash": "af8dc7293149d7ce5a93065d6698ae9a"
   },
   "docs/architecture-research-options.html": {
-    "mtime": 1783367733.4140246,
-    "ast_hash": "b637323f6f83ecb6db5b0c9175447e34",
-    "semantic_hash": ""
+    "mtime": 1783368033.125993,
+    "ast_hash": "b8807a8bd65838b0b2d2aeae1c5e1ac6",
+    "semantic_hash": "b8807a8bd65838b0b2d2aeae1c5e1ac6"
+  },
+  "docs/architecture-research-options.md": {
+    "mtime": 1783368023.3939939,
+    "ast_hash": "16b544d300e624c8284b7fcc2ef5b562",
+    "semantic_hash": "16b544d300e624c8284b7fcc2ef5b562"
   }
 }

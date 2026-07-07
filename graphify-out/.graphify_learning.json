@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-07-07T14:05:39.287018+00:00",
+  "nodes": {
+    "docs_initial_context_membership": {
+      "code_fingerprint": "65cc094e9c7fe34398ed58b38b27750ffc7ba0e98b45c15f2af440c1dae82256",
+      "label": "Membership",
+      "last": "2026-07-06T21:05:10.575259+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-06T21:05:10.575259+00:00",
+          "outcome": "useful",
+          "q": "Що прийняти в ADR-005?"
+        }
+      ],
+      "score": 0.983759666,
+      "source_file": "docs/initial-context.txt",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_question_answering_interview_freezes": {
+      "code_fingerprint": "a19c55de663784ab702086faf0ec10b50de2f1076401fc583f8539ee77b0dd82",
+      "label": "Freezes",
+      "last": "2026-07-06T21:05:10.575259+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-06T21:05:10.575259+00:00",
+          "outcome": "useful",
+          "q": "Що прийняти в ADR-005?"
+        }
+      ],
+      "score": 0.983759666,
+      "source_file": "docs/question-answering-interview.txt",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_question_answering_interview_negative_visit_flow": {
+      "code_fingerprint": "a19c55de663784ab702086faf0ec10b50de2f1076401fc583f8539ee77b0dd82",
+      "label": "Negative Visit Flow",
+      "last": "2026-07-06T21:05:10.575259+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-06T21:05:10.575259+00:00",
+          "outcome": "useful",
+          "q": "Що прийняти в ADR-005?"
+        }
+      ],
+      "score": 0.983759666,
+      "source_file": "docs/question-answering-interview.txt",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_question_answering_interview_non_working_days": {
+      "code_fingerprint": "a19c55de663784ab702086faf0ec10b50de2f1076401fc583f8539ee77b0dd82",
+      "label": "Non-Working Days",
+      "last": "2026-07-06T21:05:10.575259+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-06T21:05:10.575259+00:00",
+          "outcome": "useful",
+          "q": "Що прийняти в ADR-005?"
+        }
+      ],
+      "score": 0.983759666,
+      "source_file": "docs/question-answering-interview.txt",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
+  "version": 1
+}

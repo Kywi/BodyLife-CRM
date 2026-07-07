@@ -164,89 +164,9 @@
     "ast_hash": "16b544d300e624c8284b7fcc2ef5b562",
     "semantic_hash": "16b544d300e624c8284b7fcc2ef5b562"
   },
-  "docs/adr/001-product-shape-and-operating-model.md": {
-    "mtime": 1783433323.942633,
-    "ast_hash": "49dfb1d4e6f79492ef31526ce57403b0",
-    "semantic_hash": "49dfb1d4e6f79492ef31526ce57403b0"
-  },
-  "docs/adr/002-application-architecture.md": {
-    "mtime": 1783433323.942633,
-    "ast_hash": "d337203c1dc2ba1b89a718e9b5b08a34",
-    "semantic_hash": "d337203c1dc2ba1b89a718e9b5b08a34"
-  },
-  "docs/adr/003-ui-rendering-and-interaction-model.md": {
-    "mtime": 1783433323.942633,
-    "ast_hash": "85d012e0a315040ff56ae837ca55f75c",
-    "semantic_hash": "85d012e0a315040ff56ae837ca55f75c"
-  },
-  "docs/adr/004-module-boundaries-and-business-rule-ownership.md": {
-    "mtime": 1783433323.942633,
-    "ast_hash": "4087a1d61b5861fc321fd64d97c17d54",
-    "semantic_hash": "4087a1d61b5861fc321fd64d97c17d54"
-  },
-  "docs/adr/005-membership-invariants-and-recalculation.md": {
-    "mtime": 1783433323.942633,
-    "ast_hash": "4790a4e037614c3356ae4a0db518836e",
-    "semantic_hash": "4790a4e037614c3356ae4a0db518836e"
-  },
-  "docs/adr/006-business-audit-corrections-and-technical-logs.md": {
-    "mtime": 1783433323.942633,
-    "ast_hash": "25d9bbbe3445a07fdbb0766f3def3188",
-    "semantic_hash": "25d9bbbe3445a07fdbb0766f3def3188"
-  },
-  "docs/adr/007-reporting-model-and-consistency-rules.md": {
-    "mtime": 1783433323.9466329,
-    "ast_hash": "0bdc7b9129fe98b553c9602853ae6f9b",
-    "semantic_hash": "0bdc7b9129fe98b553c9602853ae6f9b"
-  },
-  "docs/adr/008-search-identity-card-rules-and-duplicate-warnings.md": {
-    "mtime": 1783433323.9466329,
-    "ast_hash": "746d5af882b2e9719c5052301c2539e7",
-    "semantic_hash": "746d5af882b2e9719c5052301c2539e7"
-  },
-  "docs/adr/009-backup-restore-and-operational-recovery.md": {
-    "mtime": 1783433323.9466329,
-    "ast_hash": "6ec60bd78b1a283b24f57bf972a20f16",
-    "semantic_hash": "6ec60bd78b1a283b24f57bf972a20f16"
-  },
-  "docs/adr/010-migration-manual-backfill-and-paper-fallback.md": {
-    "mtime": 1783433323.9466329,
-    "ast_hash": "791a67d60160b0cc1947f024695bfe42",
-    "semantic_hash": "791a67d60160b0cc1947f024695bfe42"
-  },
-  "docs/adr/011-membership-type-lifecycle.md": {
-    "mtime": 1783433323.9466329,
-    "ast_hash": "a91cb1b187fdb05ea0c05033f64d75d0",
-    "semantic_hash": "a91cb1b187fdb05ea0c05033f64d75d0"
-  },
-  "docs/adr/012-permissions-session-accountability-and-corrections.md": {
-    "mtime": 1783433323.9466329,
-    "ast_hash": "76625e12631623c5bb40b7ef82c98984",
-    "semantic_hash": "76625e12631623c5bb40b7ef82c98984"
-  },
-  "docs/adr/013-future-client-self-service-boundary.md": {
-    "mtime": 1783433323.9466329,
-    "ast_hash": "e60b09f0f8d7fcdc26553dc0518417f4",
-    "semantic_hash": "e60b09f0f8d7fcdc26553dc0518417f4"
-  },
-  "docs/adr/README.md": {
-    "mtime": 1783434366.4905183,
-    "ast_hash": "9b00710118e1f8b9619d9059aacbf2ad",
-    "semantic_hash": "9b00710118e1f8b9619d9059aacbf2ad"
-  },
-  "graphify-out/memory/query_20260706_210510_\u0449\u043e_\u043f\u0440\u0438\u0439\u043d\u044f\u0442\u0438_\u0432_adr_005.md": {
-    "mtime": 1783371910.5695798,
-    "ast_hash": "dcbec1d43b6c0372ec54377dece68a06",
-    "semantic_hash": "dcbec1d43b6c0372ec54377dece68a06"
-  },
-  "docs/adr/adr-backlog.md": {
-    "mtime": 1783433074.3426576,
-    "ast_hash": "82a0e809d00e1b078f84fd53bdd5a06e",
-    "semantic_hash": "82a0e809d00e1b078f84fd53bdd5a06e"
-  },
-  "graphify-out/memory/query_20260707_140950_\u0441\u0444\u043e\u0440\u043c\u0443\u0432\u0430\u0442\u0438_accepted_adr_package.md": {
-    "mtime": 1783433390.2426224,
-    "ast_hash": "7aa205b856ffc2398b591fd8b9cee58f",
-    "semantic_hash": "7aa205b856ffc2398b591fd8b9cee58f"
+  "docs/adr-backlog.md": {
+    "mtime": 1783370256.869756,
+    "ast_hash": "f4209447ea9e7433f745ccf0230152d0",
+    "semantic_hash": ""
   }
 }

@@ -1,13 +1,18 @@
-# Graph Report - .  (2026-07-07)
+# Graph Report - BodyLife-CRM  (2026-07-06)
 
 ## Corpus Check
-- 17 files · ~41,218 words
+- 24 files · ~34,193 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 559 nodes · 470 edges · 167 communities (42 shown, 125 thin omitted)
-- Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 58 edges (avg confidence: 0.89)
+- 441 nodes · 305 edges · 155 communities (28 shown, 127 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 17 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `344ac7c0`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - [[_COMMUNITY_Architecture Research Options Markdown Brief|Architecture Research Options Markdown Brief]]
@@ -16,7 +21,7 @@
 - [[_COMMUNITY_Gym System Interview|Gym System Interview]]
 - [[_COMMUNITY_First Version Proposal|First Version Proposal]]
 - [[_COMMUNITY_Project Context|Project Context]]
-- [[_COMMUNITY_7. Бізнес правила і формули|7. Бізнес правила і формули]]
+- [[_COMMUNITY_7. Бізнес-правила і формули|7. Бізнес-правила і формули]]
 - [[_COMMUNITY_8. Екрани першої версії|8. Екрани першої версії]]
 - [[_COMMUNITY_14. Крайні випадки, які треба|14. Крайні випадки, які треба]]
 - [[_COMMUNITY_5. Основні робочі сценарії|5. Основні робочі сценарії]]
@@ -43,8 +48,8 @@
 - [[_COMMUNITY_Observability Operations Interface|Observability Operations Interface]]
 - [[_COMMUNITY_System Interactions Interface|System Interactions Interface]]
 - [[_COMMUNITY_Architecture Research Interface|Architecture Research Interface]]
-- [[_COMMUNITY_AGENTS|AGENTS]]
-- [[_COMMUNITY_extraction spec|extraction spec]]
+- [[_COMMUNITY_AGENTS|AGENTS.md]]
+- [[_COMMUNITY_extraction-spec|extraction-spec.md]]
 - [[_COMMUNITY_Stack Criteria|Stack Criteria]]
 - [[_COMMUNITY_Decision Criteria|Decision Criteria]]
 - [[_COMMUNITY_Operational Guardrails|Operational Guardrails]]
@@ -97,7 +102,7 @@
 - [[_COMMUNITY_Incremental Detection|Incremental Detection]]
 - [[_COMMUNITY_Update Reference|Update Reference]]
 - [[_COMMUNITY_Build Cluster Analyze|Build Cluster Analyze]]
-- [[_COMMUNITY_Post Commit Hook|Post Commit Hook]]
+- [[_COMMUNITY_Community Labeling|Community Labeling]]
 - [[_COMMUNITY_Existing Graph Fast Path|Existing Graph Fast Path]]
 - [[_COMMUNITY_Graphify Exports|Graphify Exports]]
 - [[_COMMUNITY_Extraction Cache|Extraction Cache]]
@@ -110,11 +115,11 @@
 - [[_COMMUNITY_Structural Extraction|Structural Extraction]]
 - [[_COMMUNITY_Graphify Usage|Graphify Usage]]
 - [[_COMMUNITY_ADR Candidates|ADR Candidates]]
-- [[_COMMUNITY_Cross Cutting Concerns|Cross Cutting Concerns]]
+- [[_COMMUNITY_Cross-Cutting Concerns|Cross-Cutting Concerns]]
 - [[_COMMUNITY_Architecture Decision Areas|Architecture Decision Areas]]
 - [[_COMMUNITY_Architecture Evidence Order|Architecture Evidence Order]]
 - [[_COMMUNITY_Architecture Research Brief Output Template|Architecture Research Brief Output Template]]
-- [[_COMMUNITY_Approach Neutral Architecture Research|Approach Neutral Architecture Research]]
+- [[_COMMUNITY_Approach-Neutral Architecture Research|Approach-Neutral Architecture Research]]
 - [[_COMMUNITY_Business Audit History Is Separate|Business Audit History Is Separate]]
 - [[_COMMUNITY_BodyLife Architecture Anchors|BodyLife Architecture Anchors]]
 - [[_COMMUNITY_BodyLife Decision Criteria|BodyLife Decision Criteria]]
@@ -138,49 +143,37 @@
 - [[_COMMUNITY_No Double Extension For Overlapping|No Double Extension For Overlapping]]
 - [[_COMMUNITY_Owner Role|Owner Role]]
 - [[_COMMUNITY_Remaining Visits Formula|Remaining Visits Formula]]
-- [[_COMMUNITY_Technical Client For One Time|Technical Client For One Time]]
+- [[_COMMUNITY_Technical Client For One-Time Visits|Technical Client For One-Time Visits]]
 - [[_COMMUNITY_Trainer Limited Role|Trainer Limited Role]]
 - [[_COMMUNITY_Visit|Visit]]
 - [[_COMMUNITY_Client Profile Screen|Client Profile Screen]]
 - [[_COMMUNITY_Reception Home Screen|Reception Home Screen]]
 - [[_COMMUNITY_Reports|Reports]]
-- [[_COMMUNITY_Архітектурне дослідження для першої веб|Архітектурне дослідження для першої веб]]
+- [[_COMMUNITY_Архітектурне дослідження для першої веб-версії BodyLife CRM|Архітектурне дослідження для першої веб-версії BodyLife CRM]]
 - [[_COMMUNITY_ADR backlog для BodyLife CRM|ADR backlog для BodyLife CRM]]
 - [[_COMMUNITY_ADR Candidates|ADR Candidates]]
 - [[_COMMUNITY_Application Logs|Application Logs]]
 - [[_COMMUNITY_Backdated Entries|Backdated Entries]]
 - [[_COMMUNITY_Backup and Restore|Backup and Restore]]
 - [[_COMMUNITY_BodyLife CRM V1|BodyLife CRM V1]]
-- [[_COMMUNITY_Client Self Service Boundary|Client Self Service Boundary]]
+- [[_COMMUNITY_Client Self-Service Boundary|Client Self-Service Boundary]]
 - [[_COMMUNITY_Close Negative Balance Use Case|Close Negative Balance Use Case]]
-- [[_COMMUNITY_Comparative Gym, Membership, CRM, POS,|Comparative Gym, Membership, CRM, POS,]]
+- [[_COMMUNITY_Comparative Gym, Membership, CRM, POS, and ERP Sources|Comparative Gym, Membership, CRM, POS, and ERP Sources]]
 - [[_COMMUNITY_Daily Cash Report|Daily Cash Report]]
 - [[_COMMUNITY_Martin Fowler Architecture Sources|Martin Fowler Architecture Sources]]
 - [[_COMMUNITY_Inclusive End Date|Inclusive End Date]]
 - [[_COMMUNITY_Local BodyLife Source Documents|Local BodyLife Source Documents]]
-- [[_COMMUNITY_MDN SPA and Progressive Web|MDN SPA and Progressive Web]]
+- [[_COMMUNITY_MDN SPA and Progressive Web Apps Sources|MDN SPA and Progressive Web Apps Sources]]
 - [[_COMMUNITY_Membership Domain Model|Membership Domain Model]]
 - [[_COMMUNITY_Membership Type Lifecycle|Membership Type Lifecycle]]
 - [[_COMMUNITY_Negative Visits|Negative Visits]]
 - [[_COMMUNITY_OWASP and NIST LoggingAudit Sources|OWASP and NIST Logging/Audit Sources]]
 - [[_COMMUNITY_Permissions Matrix|Permissions Matrix]]
 - [[_COMMUNITY_Search Use Case|Search Use Case]]
-- [[_COMMUNITY_ADR 001 Product shape and|ADR 001: Product shape and]]
-- [[_COMMUNITY_ADR 003 UI rendering and|ADR 003: UI rendering and]]
-- [[_COMMUNITY_ADR 004 Module boundaries and|ADR 004: Module boundaries and]]
-- [[_COMMUNITY_ADR 005 Membership invariants and|ADR 005: Membership invariants and]]
-- [[_COMMUNITY_ADR 006 Business audit, corrections|ADR 006: Business audit, corrections]]
-- [[_COMMUNITY_ADR 008 Search identity, card|ADR 008: Search identity, card]]
-- [[_COMMUNITY_ADR 009 Backup, restore and|ADR 009: Backup, restore and]]
-- [[_COMMUNITY_ADR 011 Membership type lifecycle|ADR 011: Membership type lifecycle]]
-- [[_COMMUNITY_ADR 012 Permissions matrix, session|ADR 012: Permissions matrix, session]]
-- [[_COMMUNITY_ADR 013 Future client self|ADR 013: Future client self]]
-- [[_COMMUNITY_Q Що прийняти в ADR|Q: Що прийняти в ADR]]
-- [[_COMMUNITY_Reports|Reports]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Детальна специфікація першої версії системи для залу` - 19 edges
-2. `Accepted ADR Package for BodyLife CRM` - 16 edges
+1. `ADR backlog для BodyLife CRM` - 20 edges
+2. `Детальна специфікація першої версії системи для залу` - 19 edges
 3. `Архітектурне дослідження для першої веб-версії BodyLife CRM` - 14 edges
 4. `Gym System Interview` - 13 edges
 5. `What You Must Do When Invoked` - 12 edges
@@ -206,9 +199,6 @@
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Membership State Single Source of Truth** — docs_adr_004_module_boundaries_and_business_rule_ownership_membership_rule_ownership, docs_adr_005_membership_invariants_and_recalculation_hybrid_membership_model, docs_adr_007_reporting_model_and_consistency_rules_reports_query_layer, docs_adr_013_future_client_self_service_boundary_client_self_service_guardrail [INFERRED 0.95]
-- **Business Audit and Accountability Model** — docs_adr_006_business_audit_corrections_and_technical_logs_append_only_business_audit, docs_adr_010_migration_manual_backfill_and_paper_fallback_manual_backfill, docs_adr_011_membership_type_lifecycle_editable_catalog_immutable_snapshot, docs_adr_012_permissions_session_accountability_and_corrections_owner_admin_shared_accounts [INFERRED 0.85]
-- **Reception Vertical Slice Risk Check** — docs_adr_003_ui_rendering_and_interaction_model_hybrid_server_rendered_ui, docs_adr_005_membership_invariants_and_recalculation_hybrid_membership_model, docs_adr_006_business_audit_corrections_and_technical_logs_append_only_business_audit, docs_adr_007_reporting_model_and_consistency_rules_reports_query_layer, docs_adr_008_search_identity_card_rules_and_duplicate_warnings_clients_search_identity [EXTRACTED 1.00]
 - **Recommended V1 Architecture Stack** — docs_architecture_research_options_recommended_v1_architecture, docs_architecture_research_options_modular_monolith, docs_architecture_research_options_hybrid_server_rendered_ui, docs_architecture_research_options_business_audit_history [EXTRACTED 1.00]
 - **Membership Rule Risk Cluster** — docs_architecture_research_options_membership_domain_model, docs_architecture_research_options_inclusive_end_date, docs_architecture_research_options_negative_visits, docs_architecture_research_options_close_negative_balance_use_case, docs_architecture_research_options_membership_type_lifecycle, docs_architecture_research_options_business_audit_history [EXTRACTED 1.00]
 - **Deferred V1 Platform Scope** — docs_architecture_research_options_microservices, docs_architecture_research_options_event_sourcing, docs_architecture_research_options_spa_api, docs_architecture_research_options_offline_paper_fallback, docs_architecture_research_options_client_self_service_boundary [EXTRACTED 1.00]
@@ -219,195 +209,139 @@
 - **First Version Operational Chain** — docs_initial_context_mvp_chain, docs_first_version_requirements_operational_chain, docs_first_version_proposal_reception_workflow, docs_persha_versiya_systemy_obliku_dlya_zalu_first_version_summary [INFERRED 0.95]
 - **Membership Extension Logic** — docs_first_version_requirements_freeze, docs_first_version_requirements_non_working_period, docs_first_version_requirements_completion_date_formula, docs_first_version_requirements_overlap_extension_rule, docs_first_version_proposal_non_working_days_logic [INFERRED 0.95]
 
-## Communities (167 total, 125 thin omitted)
+## Communities (155 total, 127 thin omitted)
 
 ### Community 0 - "Architecture Research Options Markdown Brief"
-Cohesion: 0.06
-Nodes (36): 10. Правила пошуку, 11. Разові і пробні відвідування, 12.1. Денний звіт, 12.2. Абонементи, які скоро закінчуються, 12.3. Абонементи з малим залишком занять, 12.4. Мінусові клієнти, 12.5. Клієнти, які давно не ходили, 12. Звіти першої версії (+28 more)
-
-### Community 1 - "What You Must Do When"
-Cohesion: 0.21
-Nodes (26): Internal Hosted Web App for One Gym, Modular Monolith, Hybrid Server-Rendered UI, Membership Rule Ownership by Business Modules, Hybrid Membership Model, Append-Only Business Audit Separate from Technical Logs, Reports Query Layer over Canonical Records, Clients/Search Identity Ownership (+18 more)
-
-### Community 2 - "Детальна специфікація першої версії системи"
-Cohesion: 0.08
-Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
-
-### Community 3 - "Gym System Interview"
-Cohesion: 0.09
-Nodes (20): 10. ADR-кандидати, 11. Джерела, 1. Modular monolith + feature modules + hybrid server-rendered UI, 1. Контекст і драйвери, 2. Simple layered monolith + server-rendered UI, 2. Уточнення після відповідей, 3. SPA + API + modular backend, 3. Наявні класи рішень (+12 more)
-
-### Community 4 - "First Version Proposal"
-Cohesion: 0.10
-Nodes (21): Daily Report, Freeze, Inactive Clients Report, Manual Accounting Replacement, Negative Start Date Rule, Non-Working Day Or Period, MembershipType, Card Iterations With Numbers And Barcodes (+13 more)
-
-### Community 5 - "Project Context"
-Cohesion: 0.16
-Nodes (18): First Version Exclusions, First Version Proposal, First Version Scope, Fixed Price 400 USD, Gym Membership Accounting System, Non-Working Days Business Logic, Payment After Completion, Reception Workflow (+10 more)
-
-### Community 6 - "7. Бізнес правила і формули"
 Cohesion: 0.13
 Nodes (15): 5. Критика підходів, Business Audit History, Event-driven, Event sourcing, Feature/module-based, Architecture Research Options HTML Preview, Hybrid Server-Rendered UI, Layered architecture (+7 more)
 
-### Community 7 - "8. Екрани першої версії"
-Cohesion: 0.19
-Nodes (14): Card Number, First Version Operational Chain, Payment, Administrator Role, Card Number Identifier, Cash-Only Payments, Client, Membership (+6 more)
+### Community 1 - "What You Must Do When"
+Cohesion: 0.08
+Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
-### Community 8 - "14. Крайні випадки, які треба"
+### Community 2 - "Детальна специфікація першої версії системи"
+Cohesion: 0.08
+Nodes (24): 10. Правила пошуку, 11. Разові і пробні відвідування, 12.1. Денний звіт, 12.2. Абонементи, які скоро закінчуються, 12.3. Абонементи з малим залишком занять, 12.4. Мінусові клієнти, 12.5. Клієнти, які давно не ходили, 12. Звіти першої версії (+16 more)
+
+### Community 3 - "Gym System Interview"
+Cohesion: 0.11
+Nodes (19): Daily Report, Freeze, Inactive Clients Report, Manual Accounting Replacement, Negative Start Date Rule, Card Iterations With Numbers And Barcodes, Cash Daily Summary, Client History For Disputes (+11 more)
+
+### Community 4 - "First Version Proposal"
+Cohesion: 0.14
+Nodes (20): First Version Exclusions, First Version Proposal, First Version Scope, Fixed Price 400 USD, Gym Membership Accounting System, Non-Working Days Business Logic, Payment After Completion, Reception Workflow (+12 more)
+
+### Community 5 - "Project Context"
+Cohesion: 0.17
+Nodes (15): Card Number, First Version Operational Chain, Payment, Administrator Role, Card Number Identifier, Cash-Only Payments, Client, Membership (+7 more)
+
+### Community 6 - "7. Бізнес-правила і формули"
 Cohesion: 0.17
 Nodes (12): 7.10. Денний звіт, 7.11. Попередження про завершення абонемента, 7.1. Основна формула дати завершення абонемента, 7.2. Формула залишку занять, 7.3. Мінусові заняття, 7.4. Дата старту нового абонемента при мінусових заняттях, 7.5. Активність абонемента, 7.6. Заморозка (+4 more)
 
-### Community 9 - "5. Основні робочі сценарії"
+### Community 7 - "8. Екрани першої версії"
+Cohesion: 0.17
+Nodes (12): 8.10. Клієнти, які давно не ходили, 8.11. Налаштування типів абонементів, 8.1. Вхід у систему, 8.2. Головний екран рецепції, 8.3. Профіль клієнта, 8.4. Екран видачі абонемента, 8.5. Екран візитів, 8.6. Екран оплат (+4 more)
+
+### Community 8 - "14. Крайні випадки, які треба"
 Cohesion: 0.18
 Nodes (11): 14.10. Перетин заморозки і неробочих днів, 14.1. Клієнт без картки, 14.2. Дублікати клієнтів, 14.3. Дублікати номерів карток, 14.4. Візит без активного абонемента, 14.5. Абонемент закінчився по даті, але заняття залишились, 14.6. Абонемент активний по даті, але заняття закінчились, 14.7. Скасування візиту, який створив мінус (+3 more)
 
-### Community 10 - "6. Дані, які треба зберігати"
+### Community 9 - "5. Основні робочі сценарії"
 Cohesion: 0.18
 Nodes (11): 5.10. Клієнти, які давно не ходили, 5.1. Клієнт прийшов у зал з карткою, 5.2. Клієнт прийшов без картки, 5.3. Новий клієнт, 5.4. Видача абонемента, 5.5. Відмітка візиту, 5.6. Скасування помилкового візиту, 5.7. Оплата (+3 more)
 
-### Community 11 - "graphify reference: extra exports and"
+### Community 10 - "6. Дані, які треба зберігати"
 Cohesion: 0.20
 Nodes (10): 6.1. Клієнт, 6.2. Номер картки, 6.3. Тип абонемента, 6.4. Абонемент клієнта, 6.5. Візит, 6.6. Оплата, 6.7. Заморозка, 6.8. Неробочий день або період (+2 more)
 
-### Community 12 - "Data Architecture Checklist"
+### Community 11 - "graphify reference: extra exports and"
 Cohesion: 0.22
 Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
 
-### Community 13 - "Observability And Operations Checklist"
-Cohesion: 0.25
-Nodes (8): docs/adr/001-product-shape-and-operating-model.md, ADR-001: Product shape and operating model v1, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 14 - "Stack Selection Matrix"
-Cohesion: 0.25
-Nodes (8): docs/adr/002-application-architecture.md, ADR-002: Application architecture and application boundary, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 15 - "Choose Technology Stack"
-Cohesion: 0.25
-Nodes (8): docs/adr/003-ui-rendering-and-interaction-model.md, ADR-003: UI rendering and interaction model, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 16 - "Interaction Decision Checklist"
-Cohesion: 0.25
-Nodes (8): docs/adr/004-module-boundaries-and-business-rule-ownership.md, ADR-004: Module boundaries and business rule ownership, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 17 - "graphify reference: query, path, explain"
-Cohesion: 0.25
-Nodes (8): docs/adr/005-membership-invariants-and-recalculation.md, ADR-005: Membership invariants and recalculation rules, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 18 - "Architecture Research Protocol"
-Cohesion: 0.25
-Nodes (8): docs/adr/006-business-audit-corrections-and-technical-logs.md, ADR-006: Business audit, corrections and technical logs, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 19 - "Research Architecture Options"
-Cohesion: 0.25
-Nodes (8): docs/adr/007-reporting-model-and-consistency-rules.md, ADR-007: Reporting model and consistency rules, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 20 - "Design Data Architecture"
-Cohesion: 0.25
-Nodes (8): docs/adr/008-search-identity-card-rules-and-duplicate-warnings.md, ADR-008: Search identity, card rules and duplicate warnings, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 21 - "Design Observability Operations"
-Cohesion: 0.25
-Nodes (8): docs/adr/009-backup-restore-and-operational-recovery.md, ADR-009: Backup, restore and operational recovery, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 22 - "Design System Interactions"
-Cohesion: 0.25
-Nodes (8): docs/adr/010-migration-manual-backfill-and-paper-fallback.md, ADR-010: Migration, manual backfill and paper fallback entries, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 23 - "graphify reference: add a URL"
-Cohesion: 0.25
-Nodes (8): docs/adr/011-membership-type-lifecycle.md, ADR-011: Membership type lifecycle, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 24 - "graphify reference: commit hook and"
-Cohesion: 0.25
-Nodes (8): docs/adr/012-permissions-session-accountability-and-corrections.md, ADR-012: Permissions matrix, session accountability and correction boundaries, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 25 - "graphify reference: incremental update and"
-Cohesion: 0.25
-Nodes (8): docs/adr/013-future-client-self-service-boundary.md, ADR-013: Future client self-service boundary, Статус, Контекст, Варіанти, Рішення, Наслідки, Що це означає для реалізації
-
-### Community 26 - "graphify reference: GitHub clone and"
-Cohesion: 0.29
-Nodes (6): Observability Operations Checklist, Backup And Restore, Business Audit History, Metrics, Output Template, Technical Logs
-
-### Community 27 - "graphify reference: transcribe video and"
+### Community 12 - "Data Architecture Checklist"
 Cohesion: 0.29
 Nodes (6): Data Architecture Checklist, Domain Entities To Check, Invariants, Output Template, Scenario Validation, Storage Decisions
 
-### Community 28 - "Technology Stack Interface"
-Cohesion: 0.33
-Nodes (7): graphify-out/memory/query_20260707_140950_сформувати_accepted_adr_package.md, Query: Form Accepted ADR Package, Answer, Outcome, Accepted ADR Package Creation Outcome, Q: Сформувати accepted ADR package, Source Nodes
+### Community 13 - "Observability And Operations Checklist"
+Cohesion: 0.29
+Nodes (6): Backup And Restore, Business Audit History, Metrics, Observability And Operations Checklist, Output Template, Technical Logs
 
-### Community 29 - "Data Architecture Interface"
+### Community 14 - "Stack Selection Matrix"
 Cohesion: 0.33
 Nodes (5): Criteria, Decision Record, Output Matrix, Required Inputs, Stack Selection Matrix
 
-### Community 30 - "Observability Operations Interface"
+### Community 15 - "Choose Technology Stack"
 Cohesion: 0.33
 Nodes (5): Choose Technology Stack, Compare These Areas, Guardrails, Overview, Workflow
 
-### Community 31 - "System Interactions Interface"
+### Community 16 - "Interaction Decision Checklist"
 Cohesion: 0.33
 Nodes (5): Boundary Questions, Flows To Model, Interaction Decision Checklist, Output Template, Patterns To Compare
 
-### Community 32 - "Architecture Research Interface"
+### Community 17 - "graphify reference: query, path, explain"
 Cohesion: 0.33
 Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
 
-### Community 33 - "AGENTS"
+### Community 18 - "Architecture Research Protocol"
 Cohesion: 0.33
 Nodes (5): Architecture Research Protocol, Decision Areas, Evidence Order, Output Template, Questions To Answer
 
-### Community 34 - "extraction spec"
+### Community 19 - "Research Architecture Options"
 Cohesion: 0.33
 Nodes (5): BodyLife Anchors, Guardrails, Overview, Research Architecture Options, Workflow
 
-### Community 35 - "Stack Criteria"
+### Community 20 - "Design Data Architecture"
 Cohesion: 0.40
 Nodes (4): Design Data Architecture, Guardrails, Overview, Workflow
 
-### Community 36 - "Decision Criteria"
+### Community 21 - "Design Observability Operations"
 Cohesion: 0.40
 Nodes (4): Design Observability Operations, Guardrails, Overview, Workflow
 
-### Community 37 - "Operational Guardrails"
+### Community 22 - "Design System Interactions"
 Cohesion: 0.40
 Nodes (4): Design System Interactions, Guardrails, Overview, Workflow
 
-### Community 38 - "Stack Selection Workflow"
-Cohesion: 0.40
-Nodes (5): docs/adr/README.md, ADR, Статус пакета, Джерела, Рекомендований порядок реалізації
-
-### Community 39 - "Domain Entities"
+### Community 23 - "graphify reference: add a URL"
 Cohesion: 0.50
 Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
 
-### Community 40 - "Data Architecture Guardrails"
+### Community 24 - "graphify reference: commit hook and"
 Cohesion: 0.50
 Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
 
-### Community 41 - "Data Invariants"
+### Community 25 - "graphify reference: incremental update and"
 Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
+### Community 134 - "Архітектурне дослідження для першої веб-версії BodyLife CRM"
+Cohesion: 0.09
+Nodes (20): 10. ADR-кандидати, 11. Джерела, 1. Modular monolith + feature modules + hybrid server-rendered UI, 1. Контекст і драйвери, 2. Simple layered monolith + server-rendered UI, 2. Уточнення після відповідей, 3. SPA + API + modular backend, 3. Наявні класи рішень (+12 more)
+
+### Community 135 - "ADR backlog для BodyLife CRM"
+Cohesion: 0.10
+Nodes (20): ADR-001. Product Shape І Операційна Модель V1, ADR-002. Application Architecture І Межі Застосунку, ADR-003. UI Rendering And Interaction Model, ADR-004. Module Boundaries І Ownership Бізнес-Правил, ADR-005. Membership Invariants І Правила Перерахунку, ADR-006. Business Audit, Corrections І Technical Logs, ADR-007. Reporting Model І Consistency Rules, ADR-008. Search Identity, Card Rules І Duplicate Warnings (+12 more)
+
 ## Knowledge Gaps
-- **417 isolated node(s):** `Overview`, `Workflow`, `Compare These Areas`, `Guardrails`, `Required Inputs` (+412 more)
+- **337 isolated node(s):** `Overview`, `Workflow`, `Compare These Areas`, `Guardrails`, `Required Inputs` (+332 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **125 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **127 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Детальна специфікація першої версії системи для залу` connect `Architecture Research Options Markdown Brief` to `Gym System Interview`, `14. Крайні випадки, які треба`, `5. Основні робочі сценарії`, `6. Дані, які треба зберігати`, `graphify reference: extra exports and`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
-- **Why does `Accepted ADR Package for BodyLife CRM` connect `What You Must Do When` to `Technology Stack Interface`, `Stack Selection Workflow`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
-- **Why does `Архітектурне дослідження для першої веб-версії BodyLife CRM` connect `Gym System Interview` to `7. Бізнес правила і формули`?**
-  _High betweenness centrality (0.021) - this node is a cross-community bridge._
+- **Why does `Детальна специфікація першої версії системи для залу` connect `Детальна специфікація першої версії системи` to `Архітектурне дослідження для першої веб-версії BodyLife CRM`, `7. Бізнес-правила і формули`, `14. Крайні випадки, які треба`, `5. Основні робочі сценарії`, `6. Дані, які треба зберігати`, `8. Екрани першої версії`?**
+  _High betweenness centrality (0.059) - this node is a cross-community bridge._
+- **Why does `Архітектурне дослідження для першої веб-версії BodyLife CRM` connect `Архітектурне дослідження для першої веб-версії BodyLife CRM` to `Architecture Research Options Markdown Brief`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+- **Why does `5. Критика підходів` connect `Architecture Research Options Markdown Brief` to `Архітектурне дослідження для першої веб-версії BodyLife CRM`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **What connects `Overview`, `Workflow`, `Compare These Areas` to the rest of the system?**
-  _432 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _352 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Architecture Research Options Markdown Brief` be split into smaller, more focused modules?**
-  _Cohesion score 0.05555555555555555 - nodes in this community are weakly interconnected._
-- **Should `Детальна специфікація першої версії системи` be split into smaller, more focused modules?**
+  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
+- **Should `What You Must Do When` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
-- **Should `Gym System Interview` be split into smaller, more focused modules?**
-  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
+- **Should `Детальна специфікація першої версії системи` be split into smaller, more focused modules?**
+  _Cohesion score 0.08333333333333333 - nodes in this community are weakly interconnected._
