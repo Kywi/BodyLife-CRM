@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife Logical Commits"
+  short_description: "Split tested work into clear commits"
+  default_prompt: "Use $bodylife-logical-commits to split the completed BodyLife task into logical commits with clear messages."
