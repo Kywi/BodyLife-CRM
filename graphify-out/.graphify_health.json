@@ -1,24 +1,24 @@
 {
-  "node_count": 1077,
-  "raw_edge_count": 958,
+  "node_count": 1102,
+  "raw_edge_count": 925,
   "non_object_edges": 0,
   "missing_endpoint_edges": 0,
   "dangling_endpoint_edges": 0,
   "self_loop_edges": 0,
-  "valid_candidate_edges": 958,
+  "valid_candidate_edges": 925,
   "exact_duplicate_edges": 0,
-  "directed_unique_endpoint_pairs": 877,
-  "directed_same_endpoint_collapsed_edges": 81,
-  "undirected_unique_endpoint_pairs": 877,
-  "undirected_same_endpoint_collapsed_edges": 81,
-  "same_endpoint_group_count": 81,
-  "relation_variant_groups": 81,
+  "directed_unique_endpoint_pairs": 922,
+  "directed_same_endpoint_collapsed_edges": 3,
+  "undirected_unique_endpoint_pairs": 922,
+  "undirected_same_endpoint_collapsed_edges": 3,
+  "same_endpoint_group_count": 3,
+  "relation_variant_groups": 3,
   "source_file_variant_groups": 0,
   "source_location_variant_groups": 0,
   "context_variant_groups": 0,
   "post_build_graph_type": "Graph",
-  "post_build_node_count": 1071,
-  "post_build_edge_count": 873,
+  "post_build_node_count": 1101,
+  "post_build_edge_count": 922,
   "post_build_error": "",
   "producer_suppression": {
     "path": "/home/genik/.local/share/uv/tools/graphifyy/lib/python3.14/site-packages/graphify/extract.py",
@@ -377,18 +377,39 @@
   },
   "examples": [
     {
-      "source": "codex_skills_bodylife_aspnet_foundation_skill_bodylife_asp_net_foundation",
-      "target": "codex_skills_bodylife_aspnet_foundation_skill_acceptance_checks",
+      "source": "agents_bodylife_crm_agent_instructions",
+      "target": "agents_architecture_guardrails",
       "edge_count": 2,
       "relations": [
         "contains",
         "references"
       ],
       "source_files": [
-        ".codex/skills/bodylife-aspnet-foundation/SKILL.md",
-        "/home/genik/BodyLife-CRM/.codex/skills/bodylife-aspnet-foundation/SKILL.md"
+        "/home/genik/BodyLife-CRM/AGENTS.md",
+        "AGENTS.md"
       ],
       "source_locations": [
+        "",
+        "L54"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "docs_implementation_roadmap_bodylife_crm_v1_implementation_roadmap",
+      "target": "docs_implementation_roadmap_cross_cutting_rules",
+      "edge_count": 2,
+      "relations": [
+        "contains",
+        "references"
+      ],
+      "source_files": [
+        "/home/genik/BodyLife-CRM/docs/implementation-roadmap.md",
+        "docs/implementation-roadmap.md"
+      ],
+      "source_locations": [
+        "",
         "L34"
       ],
       "contexts": [
@@ -396,76 +417,20 @@
       ]
     },
     {
-      "source": "codex_skills_bodylife_aspnet_foundation_skill_bodylife_asp_net_foundation",
-      "target": "codex_skills_bodylife_aspnet_foundation_skill_foundation_workflow",
+      "source": "docs_implementation_roadmap_bodylife_crm_v1_implementation_roadmap",
+      "target": "docs_implementation_roadmap_dependency_map",
       "edge_count": 2,
       "relations": [
         "contains",
         "references"
       ],
       "source_files": [
-        ".codex/skills/bodylife-aspnet-foundation/SKILL.md",
-        "/home/genik/BodyLife-CRM/.codex/skills/bodylife-aspnet-foundation/SKILL.md"
+        "/home/genik/BodyLife-CRM/docs/implementation-roadmap.md",
+        "docs/implementation-roadmap.md"
       ],
       "source_locations": [
-        "L24"
-      ],
-      "contexts": [
-        ""
-      ]
-    },
-    {
-      "source": "codex_skills_bodylife_aspnet_foundation_skill_bodylife_asp_net_foundation",
-      "target": "codex_skills_bodylife_aspnet_foundation_skill_guardrails",
-      "edge_count": 2,
-      "relations": [
-        "contains",
-        "references"
-      ],
-      "source_files": [
-        ".codex/skills/bodylife-aspnet-foundation/SKILL.md",
-        "/home/genik/BodyLife-CRM/.codex/skills/bodylife-aspnet-foundation/SKILL.md"
-      ],
-      "source_locations": [
-        "L43"
-      ],
-      "contexts": [
-        ""
-      ]
-    },
-    {
-      "source": "codex_skills_bodylife_aspnet_foundation_skill_bodylife_asp_net_foundation",
-      "target": "codex_skills_bodylife_aspnet_foundation_skill_start_here",
-      "edge_count": 2,
-      "relations": [
-        "contains",
-        "references"
-      ],
-      "source_files": [
-        ".codex/skills/bodylife-aspnet-foundation/SKILL.md",
-        "/home/genik/BodyLife-CRM/.codex/skills/bodylife-aspnet-foundation/SKILL.md"
-      ],
-      "source_locations": [
-        "L10"
-      ],
-      "contexts": [
-        ""
-      ]
-    },
-    {
-      "source": "codex_skills_bodylife_aspnet_foundation_references_source_map_source_map",
-      "target": "codex_skills_bodylife_aspnet_foundation_references_source_map_adrs",
-      "edge_count": 2,
-      "relations": [
-        "contains",
-        "references"
-      ],
-      "source_files": [
-        ".codex/skills/bodylife-aspnet-foundation/references/source-map.md",
-        "/home/genik/BodyLife-CRM/.codex/skills/bodylife-aspnet-foundation/references/source-map.md"
-      ],
-      "source_locations": [
-        "L12"
+        "",
+        "L17"
       ],
       "contexts": [
         ""
