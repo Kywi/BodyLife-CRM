@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>BodyLife.Crm.Web</RootNamespace>
+    <RootNamespace>BodyLife.Crm.Infrastructure</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,10 +9,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BodyLife.Crm\BodyLife.Crm.csproj" />
-    <ProjectReference Include="..\BodyLife.Crm.Infrastructure\BodyLife.Crm.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

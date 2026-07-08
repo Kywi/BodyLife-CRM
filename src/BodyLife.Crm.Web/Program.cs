@@ -1,4 +1,8 @@
+using BodyLife.Crm.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddBodyLifePersistence(builder.Configuration);
 
 builder.Services.AddRazorPages(options =>
 {

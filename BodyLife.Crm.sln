@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm", "src\BodyLif
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm.Web", "src\BodyLife.Crm.Web\BodyLife.Crm.Web.csproj", "{66CF9FC8-F1D4-4B04-9E6D-1916E68E33B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm.Infrastructure", "src\BodyLife.Crm.Infrastructure\BodyLife.Crm.Infrastructure.csproj", "{B1E919EF-9798-4CB3-B3AC-741F2D741E7D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{66CF9FC8-F1D4-4B04-9E6D-1916E68E33B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66CF9FC8-F1D4-4B04-9E6D-1916E68E33B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66CF9FC8-F1D4-4B04-9E6D-1916E68E33B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1E919EF-9798-4CB3-B3AC-741F2D741E7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1E919EF-9798-4CB3-B3AC-741F2D741E7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1E919EF-9798-4CB3-B3AC-741F2D741E7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1E919EF-9798-4CB3-B3AC-741F2D741E7D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

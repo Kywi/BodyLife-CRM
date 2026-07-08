@@ -62,8 +62,38 @@ Validation:
 
 Commit:
 
-- `build(shared): add module boundary conventions`.
+- `3288dab build(shared): add module boundary conventions`.
 
 Next recommended step:
 
 - Add EF Core/Npgsql/PostgreSQL setup.
+
+## Step 3 - EF Core/Npgsql/PostgreSQL setup
+
+Status: completed.
+
+Scope:
+
+- Add a separate infrastructure project for EF Core/Npgsql persistence wiring.
+- Add `BodyLifeDbContext` with PostgreSQL default schema and migrations history table settings.
+- Register persistence in the hosted web app through configuration.
+- Add a local development connection string placeholder for PostgreSQL.
+- Keep baseline migrations, schema tables, PostgreSQL containers, health checks and integration tests for later small steps.
+
+Validation:
+
+- `/tmp/bodylife-dotnet/dotnet restore BodyLife.Crm.sln --nologo` passed.
+- `/tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --nologo` passed with 0 warnings and 0 errors.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal` passed.
+- `dotnet-ef dbcontext info` passed using temporary tool install at `/tmp/bodylife-dotnet-tools`; provider is Npgsql, database is `bodylife_crm_dev`, and migrations history table is `bodylife.__ef_migrations_history`.
+- Web smoke returned `HTTP/1.1 200 OK` for `/`; local ASP.NET DataProtection logged warnings because this WSL profile has existing Windows-DPAPI-protected keys.
+- `graphify update .` was attempted for code graph maintenance but stopped with `[Errno 95] Operation not supported`.
+- `graphify . --update` was attempted for the progress markdown update but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(infra): wire EF Core PostgreSQL persistence`.
+
+Next recommended step:
+
+- Add the baseline migration and reviewable SQL workflow.
