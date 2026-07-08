@@ -97,3 +97,34 @@ Commit:
 Next recommended step:
 
 - Add the baseline migration and reviewable SQL workflow.
+
+## Step 4 - Baseline migration and reviewable SQL workflow
+
+Status: completed.
+
+Scope:
+
+- Add the initial EF Core baseline migration for the PostgreSQL `bodylife` schema.
+- Keep the baseline free of business shortcut tables.
+- Add a local `dotnet-ef` tool manifest.
+- Add a script to generate idempotent migration SQL for review/deploy preparation.
+- Keep real source-fact tables, constraints, indexes, seed/bootstrap data, integration tests and health checks for later small steps.
+
+Validation:
+
+- `/tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --nologo` passed with 0 warnings and 0 errors.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal` passed.
+- `dotnet tool restore --tool-manifest .config/dotnet-tools.json` restored `dotnet-ef` 10.0.4.
+- `dotnet-ef migrations list --no-connect` listed `20260708140900_InitialBaseline`.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/generate-migration-sql.sh /tmp/bodylife-baseline.sql` generated idempotent SQL that creates only the `bodylife` schema and EF migrations history table.
+- PostgreSQL migration apply check could not run in this WSL distro because Docker, `psql` and `pg_isready` are not available. SQLite/EF InMemory was not used as a substitute.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for the progress markdown update but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(infra): add baseline migration workflow`.
+
+Next recommended step:
+
+- Add health checks and structured logging foundation.
