@@ -19,8 +19,26 @@ env:
 
 jobs:
   quality-gate:
-    name: Build, analyzers, format, and migration metadata
+    name: Build, analyzers, tests, and PostgreSQL migrations
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: bodylife
+          POSTGRES_PASSWORD: bodylife_test_password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bodylife -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING: Host=localhost;Port=5432;Database=postgres;Username=bodylife;Password=bodylife_test_password
 
     steps:
       - name: Check out repository

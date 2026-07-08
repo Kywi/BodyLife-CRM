@@ -189,3 +189,37 @@ Commit:
 Next recommended step:
 
 - Add test projects and PostgreSQL integration/migration harness.
+
+## Step 7 - Test projects and PostgreSQL integration/migration harness
+
+Status: completed.
+
+Scope:
+
+- Add `tests/BodyLife.Crm.Tests` for fast unit/architecture gates.
+- Add `tests/BodyLife.Crm.Infrastructure.Tests` for PostgreSQL-backed migration and readiness checks.
+- Add unit tests for inclusive `DateRange`, accepted module names and command result/reread conventions.
+- Add PostgreSQL integration tests that create an isolated disposable PostgreSQL database, apply EF migrations and verify the `bodylife` schema plus EF migrations history table.
+- Add a PostgreSQL-backed `/health/ready` test through `WebApplicationFactory<Program>`.
+- Extend `scripts/validate.sh` to run unit and infrastructure test projects.
+- Extend GitHub Actions CI with a PostgreSQL service and `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING` so PostgreSQL tests run in CI.
+- Keep Playwright smoke harness for the next small step.
+
+Validation:
+
+- User reported the previous Step 6 GitHub CI workflow runs correctly before this Step 7 change.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed.
+- Local validation restored packages/tools, built Release with 0 warnings and 0 errors, verified formatting, ran 5 unit tests successfully, and listed `20260708140900_InitialBaseline`.
+- Local PostgreSQL integration tests were discovered and skipped because `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING` is not configured in this WSL distro.
+- GitHub Actions has been updated to provide a PostgreSQL service, so the same validation script should run the migration and `/health/ready` PostgreSQL tests there instead of skipping them.
+- No SQLite or EF InMemory provider was introduced.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for markdown progress updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `test(infra): add PostgreSQL migration harness`.
+
+Next recommended step:
+
+- Add Playwright smoke harness for tablet/phone reception entry.

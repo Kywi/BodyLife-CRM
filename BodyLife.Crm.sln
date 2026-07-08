@@ -8,6 +8,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm.Web", "src\Bod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm.Infrastructure", "src\BodyLife.Crm.Infrastructure\BodyLife.Crm.Infrastructure.csproj", "{B1E919EF-9798-4CB3-B3AC-741F2D741E7D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm.Tests", "tests\BodyLife.Crm.Tests\BodyLife.Crm.Tests.csproj", "{68DBF144-CE3A-47A4-ACB2-4068993FD09B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm.Infrastructure.Tests", "tests\BodyLife.Crm.Infrastructure.Tests\BodyLife.Crm.Infrastructure.Tests.csproj", "{E8DFFD70-DB5A-46A4-9CEB-6BEA350F2892}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,8 +32,20 @@ Global
 		{B1E919EF-9798-4CB3-B3AC-741F2D741E7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1E919EF-9798-4CB3-B3AC-741F2D741E7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1E919EF-9798-4CB3-B3AC-741F2D741E7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68DBF144-CE3A-47A4-ACB2-4068993FD09B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68DBF144-CE3A-47A4-ACB2-4068993FD09B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68DBF144-CE3A-47A4-ACB2-4068993FD09B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68DBF144-CE3A-47A4-ACB2-4068993FD09B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8DFFD70-DB5A-46A4-9CEB-6BEA350F2892}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8DFFD70-DB5A-46A4-9CEB-6BEA350F2892}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8DFFD70-DB5A-46A4-9CEB-6BEA350F2892}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8DFFD70-DB5A-46A4-9CEB-6BEA350F2892}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{68DBF144-CE3A-47A4-ACB2-4068993FD09B} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{E8DFFD70-DB5A-46A4-9CEB-6BEA350F2892} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

@@ -11,6 +11,16 @@ cd "$ROOT_DIR"
 "$DOTNET_BIN" restore BodyLife.Crm.sln --nologo
 "$DOTNET_BIN" build BodyLife.Crm.sln --configuration "$CONFIGURATION" --no-restore --nologo
 "$DOTNET_BIN" format BodyLife.Crm.sln --verify-no-changes --verbosity minimal --no-restore
+"$DOTNET_BIN" test "$ROOT_DIR/tests/BodyLife.Crm.Tests/BodyLife.Crm.Tests.csproj" \
+  --configuration "$CONFIGURATION" \
+  --no-build \
+  --no-restore \
+  --nologo
+"$DOTNET_BIN" test "$ROOT_DIR/tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj" \
+  --configuration "$CONFIGURATION" \
+  --no-build \
+  --no-restore \
+  --nologo
 "$DOTNET_BIN" tool run dotnet-ef migrations list \
   --no-connect \
   --project "$ROOT_DIR/src/BodyLife.Crm.Infrastructure/BodyLife.Crm.Infrastructure.csproj" \
