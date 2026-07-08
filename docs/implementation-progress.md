@@ -223,3 +223,34 @@ Commit:
 Next recommended step:
 
 - Add Playwright smoke harness for tablet/phone reception entry.
+
+## Step 8 - Playwright smoke harness for tablet/phone reception entry
+
+Status: completed.
+
+Scope:
+
+- Add `tests/BodyLife.Crm.Ui.SmokeTests` as an xUnit + Microsoft.Playwright smoke project.
+- Start the real Razor Pages web app through `dotnet run --no-build --no-launch-profile` on an isolated local Kestrel port during UI smoke tests.
+- Verify the reception entry page renders on tablet and phone viewport sizes.
+- Check the first screen contract stays reception-first: page title, heading, labeled search input, search button and client status region are visible.
+- Check a simple GET search round-trip preserves the query and the layout does not require horizontal scrolling.
+- Extend `scripts/validate.sh` so Playwright browser installation and UI smoke tests are part of the shared local/CI validation gate.
+- Keep business workflows, htmx islands, real search results and command duplicate-submit tests for later milestones.
+
+Validation:
+
+- `PLAYWRIGHT_INSTALL_WITH_DEPS=1 DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed after installing local Playwright browser system dependencies.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed afterward using the standard validation command.
+- The validation gate restored packages/tools, built Release with 0 warnings and 0 errors, verified formatting, ran 5 unit tests successfully, ran 2 Playwright smoke tests successfully and listed `20260708140900_InitialBaseline`.
+- Local PostgreSQL integration tests were discovered and skipped because `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING` is not configured in this WSL distro.
+- The first attempt with Microsoft.Playwright 1.55.0 failed because this environment is `ubuntu26.04-x64`; the smoke project now uses Microsoft.Playwright 1.61.0, which supports the local runtime.
+- The first browser launch attempt showed missing local Linux browser dependencies (`libasound.so.2`); running Playwright with `--with-deps` installed them. GitHub Actions will use `--with-deps` automatically because `CI=true`.
+
+Commit:
+
+- `test(ui): add Playwright smoke harness`.
+
+Next recommended step:
+
+- Do Milestone 1 documentation/progress cleanup and review remaining acceptance gaps before moving to Milestone 2.

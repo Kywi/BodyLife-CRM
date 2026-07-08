@@ -21,6 +21,31 @@ cd "$ROOT_DIR"
   --no-build \
   --no-restore \
   --nologo
+
+PLAYWRIGHT_SCRIPT="$ROOT_DIR/tests/BodyLife.Crm.Ui.SmokeTests/bin/$CONFIGURATION/net10.0/playwright.ps1"
+if [[ "${BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL:-0}" != "1" ]]; then
+  if ! command -v pwsh >/dev/null 2>&1; then
+    printf 'PowerShell is required to install Playwright browsers. Install pwsh or set BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 when browsers are already available.\n' >&2
+    exit 1
+  fi
+
+  if [[ ! -f "$PLAYWRIGHT_SCRIPT" ]]; then
+    printf 'Playwright install script not found at %s. Ensure the UI smoke test project built successfully.\n' "$PLAYWRIGHT_SCRIPT" >&2
+    exit 1
+  fi
+
+  if [[ "${CI:-false}" == "true" || "${PLAYWRIGHT_INSTALL_WITH_DEPS:-0}" == "1" ]]; then
+    pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
+  else
+    pwsh "$PLAYWRIGHT_SCRIPT" install chromium
+  fi
+fi
+
+"$DOTNET_BIN" test "$ROOT_DIR/tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj" \
+  --configuration "$CONFIGURATION" \
+  --no-build \
+  --no-restore \
+  --nologo
 "$DOTNET_BIN" tool run dotnet-ef migrations list \
   --no-connect \
   --project "$ROOT_DIR/src/BodyLife.Crm.Infrastructure/BodyLife.Crm.Infrastructure.csproj" \
