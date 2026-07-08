@@ -35,6 +35,26 @@
       "input_tokens": 0,
       "output_tokens": 0,
       "files": 20
+    },
+    {
+      "date": "2026-07-08T10:29:09.823218+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 3
+    },
+    {
+      "date": "2026-07-08T11:39:11.934175+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 52
+    },
+    {
+      "date": "2026-07-08T15:46:46.554761+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 160,
+      "backend": "cache+codex-subagent",
+      "note": "Semantic cache hits plus Codex subagent fallback; provider token accounting unavailable."
     }
   ],
   "total_input_tokens": 0,
