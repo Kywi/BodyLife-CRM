@@ -128,3 +128,34 @@ Commit:
 Next recommended step:
 
 - Add health checks and structured logging foundation.
+
+## Step 5 - Health checks and structured logging foundation
+
+Status: completed.
+
+Scope:
+
+- Add JSON console logging with scopes enabled for structured technical logs.
+- Add request correlation middleware that accepts `X-Request-Correlation-Id` or `X-Correlation-ID`, generates a safe fallback id and returns `X-Request-Correlation-Id` on responses.
+- Add request outcome logging with `request_correlation_id`, environment, route/command, method, status code, duration, outcome and error class.
+- Add health endpoints for local/staging monitoring: `/health/live`, `/health/ready` and `/health`.
+- Add a PostgreSQL readiness check through EF Core `CanConnectAsync`.
+- Keep CI, analyzer gate expansion, test projects, Testcontainers, Playwright and idempotency key storage for later small steps.
+
+Validation:
+
+- `/tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --nologo` passed with 0 warnings and 0 errors.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal` passed.
+- Runtime smoke with `ASPNETCORE_ENVIRONMENT=Development` and `ASPNETCORE_URLS=http://127.0.0.1:5097` started the app successfully.
+- `curl -i -H 'X-Request-Correlation-Id: step5-smoke-ordered' http://127.0.0.1:5097/health/live` returned `HTTP/1.1 200 OK`, JSON health output and response header `X-Request-Correlation-Id: step5-smoke-ordered`.
+- JSON console logs for the smoke request included `request_correlation_id`, `environment`, `route_or_command`, `duration_ms`, `outcome` and `error_class`.
+- `/health/ready` returned `503 Service Unavailable` in this WSL distro because PostgreSQL is not running/available; the check is wired but cannot be proven healthy until local/test PostgreSQL exists.
+- Local HTTP smoke still logs the existing ASP.NET HTTPS-port warning when no HTTPS port is configured; the warning now carries the request correlation scope.
+
+Commit:
+
+- `build(infra): add health and structured request logging`.
+
+Next recommended step:
+
+- Add analyzer/build gates and CI.
