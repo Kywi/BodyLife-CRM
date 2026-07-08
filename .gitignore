@@ -55,6 +55,8 @@ vendor/
 .yarn/install-state.gz
 
 # Build and distribution output
+bin/
+obj/
 dist/
 build/
 out/

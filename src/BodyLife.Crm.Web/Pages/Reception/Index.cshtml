@@ -1,0 +1,26 @@
+@page
+@model BodyLife.Crm.Web.Pages.Reception.IndexModel
+@{
+    ViewData["Title"] = "Reception";
+}
+
+<main class="page-shell">
+    <section class="reception-layout" aria-labelledby="reception-title">
+        <header class="reception-header">
+            <p class="eyebrow">BodyLife CRM</p>
+            <h1 id="reception-title">Reception</h1>
+        </header>
+
+        <form class="search-panel" method="get" role="search">
+            <label for="query">Client search</label>
+            <div class="search-row">
+                <input id="query" name="q" type="search" value="@Model.Query" autocomplete="off" placeholder="Card, name, phone" />
+                <button type="submit">Search</button>
+            </div>
+        </form>
+
+        <section class="status-panel" aria-label="Client status">
+            <h2>No client selected</h2>
+        </section>
+    </section>
+</main>
