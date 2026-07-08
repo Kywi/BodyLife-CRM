@@ -1,0 +1,91 @@
+# Graphify input ignore rules.
+# Keep the knowledge graph focused on source code and architecture docs.
+
+# Graphify output and caches
+graphify-out/
+.graphify/
+
+# .NET build output
+bin/
+obj/
+artifacts/
+publish/
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+*.nupkg
+*.snupkg
+
+# NuGet and local package caches
+packages/
+.nuget/
+project.assets.json
+project.nuget.cache
+*.nuget.g.props
+*.nuget.g.targets
+
+# Test, coverage, and generated reports
+TestResults/
+coverage/
+coverage-report/
+playwright-report/
+test-results/
+*.trx
+*.coverage
+*.coveragexml
+*.lcov
+
+# IDE and user-local state
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.rsuser
+*.DotSettings.user
+
+# Local databases, dumps, and generated data
+*.db
+*.sqlite
+*.sqlite3
+*.bak
+*.backup
+*.dump
+*.sql
+*.seed
+
+# Archives and compressed/binary bundles
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.gz
+*.bz2
+*.xz
+
+# Media and generated binary assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
+*.mp3
+*.wav
+*.m4a
+*.ogg
+
+# Binary documents are expensive to parse; keep curated markdown instead.
+*.pdf
+*.docx
+*.xlsx
+*.pptx
