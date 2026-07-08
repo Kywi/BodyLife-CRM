@@ -159,3 +159,33 @@ Commit:
 Next recommended step:
 
 - Add analyzer/build gates and CI.
+
+## Step 6 - Analyzer/build gates and CI
+
+Status: completed.
+
+Scope:
+
+- Add repository formatting defaults in `.editorconfig`.
+- Pin the local SDK expectation in `global.json` to .NET SDK 10.0.301 with feature roll-forward.
+- Strengthen `Directory.Build.props` so warnings, code analysis warnings and code style enforcement are part of build behavior.
+- Add `scripts/validate.sh` as the shared local/CI validation gate.
+- Add GitHub Actions CI for restore, Release build/analyzers, format verification and EF migration metadata listing.
+- Keep test projects, PostgreSQL/Testcontainers migration apply checks and Playwright for later small steps.
+
+Validation:
+
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed.
+- The validation gate restored local tools, restored the solution, built Release with 0 warnings and 0 errors, verified formatting and listed `20260708140900_InitialBaseline` with `dotnet-ef migrations list --no-connect`.
+- The first validation run exposed UTF-8 BOMs in generated EF migration files after `.editorconfig` was added; the BOMs were removed and the gate passed.
+- Real GitHub Actions execution was not run locally; `.github/workflows/ci.yml` was checked structurally through the same script it calls.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for markdown progress updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(infra): add CI validation gate`.
+
+Next recommended step:
+
+- Add test projects and PostgreSQL integration/migration harness.
