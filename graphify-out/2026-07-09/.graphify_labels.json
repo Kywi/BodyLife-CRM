@@ -183,7 +183,6 @@
   "181": "Q: Що прийняти в ADR-005?",
   "182": "Q: Сформувати accepted ADR package",
   "183": "Q: На основі всіх post-ADR документів сформуй docs/implementation-roadmap.md",
-  "184": "AddAccountCredentials",
   "185": "graphify reference: add a URL and watch a folder",
   "186": "graphify reference: commit hook and native CLAUDE.md integration",
   "187": "graphify reference: incremental update and cluster-only",
