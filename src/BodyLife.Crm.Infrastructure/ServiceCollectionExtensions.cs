@@ -1,6 +1,8 @@
 using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace BodyLife.Crm.Infrastructure;
 
@@ -20,6 +22,8 @@ public static class ServiceCollectionExtensions
 
         services.AddDbContext<BodyLifeDbContext>(
             options => BodyLifeDbContextOptions.Configure(options, connectionString));
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<OwnerBootstrapper>();
 
         return services;
     }

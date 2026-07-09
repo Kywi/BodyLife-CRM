@@ -428,3 +428,32 @@ Commit:
 Next recommended step:
 
 - Add the safe Owner bootstrap procedure without default production credentials.
+
+## Step 15 - Safe Owner bootstrap procedure
+
+Status: completed.
+
+Scope:
+
+- Add an application-hosted `bootstrap-owner` command path that runs before Kestrel starts.
+- Add `OwnerBootstrapper` to create the first active Owner account identity through EF Core instead of raw SQL.
+- Require explicit `BODYLIFE_BOOTSTRAP_OWNER_DISPLAY_NAME` or `BodyLife:Bootstrap:OwnerDisplayName`; no default Owner display name, password, token or session is created.
+- Make the bootstrap idempotent: if the Owner account already exists, the command exits successfully without creating another Owner.
+- Add `scripts/bootstrap-owner.sh` and `docs/owner-bootstrap.md` to document the safe procedure and boundaries.
+- Keep login/logout, password/session secret storage, named Admin/shared account bootstrap and UI account indicator for later Milestone 2 steps.
+
+Validation:
+
+- `bash -n scripts/bootstrap-owner.sh` passed.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo` passed with 13 PostgreSQL infrastructure tests.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 5 unit tests, 13 PostgreSQL infrastructure tests, 2 Playwright smoke tests and EF migration listing.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for markdown progress/bootstrap documentation updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(users): add safe owner bootstrap`.
+
+Next recommended step:
+
+- Add minimal login/logout/session tracking for the internal app.

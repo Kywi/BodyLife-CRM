@@ -32,6 +32,17 @@ builder.Services
 
 var app = builder.Build();
 
+if (OwnerBootstrapCommand.IsRequested(args))
+{
+    Environment.ExitCode = await OwnerBootstrapCommand.ExecuteAsync(
+        app.Services,
+        app.Configuration,
+        app.Logger,
+        app.Lifetime.ApplicationStopping);
+
+    return;
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
