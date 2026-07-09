@@ -68,6 +68,7 @@
   "66": "Openai Codex 4",
   "67": "Openai Codex 5",
   "68": "Openai Codex 6",
+  "69": ".InsertCommandIdempotencyRecordAsync",
   "70": "Initial Context",
   "71": "Initial Context 2",
   "72": "Initial Context 3",
@@ -388,5 +389,8 @@
   "387": "Query: What to Accept in ADR-005?",
   "388": "Hybrid Membership Model Recommendation",
   "389": "Query: Form Accepted ADR Package",
-  "390": "Accepted ADR Package Creation Outcome"
+  "390": "Accepted ADR Package Creation Outcome",
+  "391": "DateRange",
+  "392": "20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+  "393": "3. Межі першої версії"
 }

@@ -646,7 +646,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontext",
-      "community": 64,
+      "community": 25,
       "norm_label": "bodylifedbcontext.cs"
     },
     {
@@ -661,7 +661,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:a35cf01376c2536a",
-      "community": 64,
+      "community": 25,
       "norm_label": "bodylife.crm.infrastructure.persistence"
     },
     {
@@ -831,6 +831,129 @@
       "norm_label": "dbcontextoptionsbuilder"
     },
     {
+      "label": "CommandIdempotencyRecord.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecord.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
+      "community": 68,
+      "norm_label": "commandidempotencyrecord.cs"
+    },
+    {
+      "label": "BodyLife.Crm.Infrastructure.Persistence.Idempotency",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecord.cs",
+      "source_location": "L1",
+      "type": "namespace",
+      "metadata": {
+        "kind": "csharp_namespace",
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.Idempotency"
+      },
+      "_origin": "ast",
+      "id": "csharp_namespace:c7ebe20e2d7b2dd4",
+      "community": 68,
+      "norm_label": "bodylife.crm.infrastructure.persistence.idempotency"
+    },
+    {
+      "label": "CommandIdempotencyRecord",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecord.cs",
+      "source_location": "L3",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.Idempotency",
+        "scope_chain": [
+          "s0"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
+      "community": 68,
+      "norm_label": "commandidempotencyrecord"
+    },
+    {
+      "label": "Guid",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_guid",
+      "community": 68,
+      "norm_label": "guid"
+    },
+    {
+      "label": "DateTimeOffset",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_datetimeoffset",
+      "community": 68,
+      "norm_label": "datetimeoffset"
+    },
+    {
+      "label": "CommandIdempotencyRecordConfiguration.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
+      "community": 68,
+      "norm_label": "commandidempotencyrecordconfiguration.cs"
+    },
+    {
+      "label": "CommandIdempotencyRecordConfiguration",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L6",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.Idempotency",
+        "scope_chain": [
+          "s93"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
+      "community": 68,
+      "norm_label": "commandidempotencyrecordconfiguration"
+    },
+    {
+      "label": "IEntityTypeConfiguration",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "ientitytypeconfiguration",
+      "community": 68,
+      "norm_label": "ientitytypeconfiguration"
+    },
+    {
+      "label": ".Configure()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L8",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.Idempotency",
+        "scope_chain": [
+          "s93"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_configure",
+      "community": 68,
+      "norm_label": ".configure()"
+    },
+    {
+      "label": "EntityTypeBuilder",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "entitytypebuilder",
+      "community": 68,
+      "norm_label": "entitytypebuilder"
+    },
+    {
       "label": "20260708140900_InitialBaseline.Designer.cs",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260708140900_InitialBaseline.Designer.cs",
@@ -852,7 +975,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:40698925b3951abb",
-      "community": 64,
+      "community": 48,
       "norm_label": "bodylife.crm.infrastructure.persistence.migrations"
     },
     {
@@ -955,7 +1078,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "migrationbuilder",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_cs_migrationbuilder",
       "community": 48,
       "norm_label": "migrationbuilder"
     },
@@ -976,24 +1099,144 @@
       "norm_label": ".down()"
     },
     {
+      "label": "20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer",
+      "community": 392,
+      "norm_label": "20260709113419_addcommandidempotencykeys.designer.cs"
+    },
+    {
+      "label": "AddCommandIdempotencyKeys",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+      "source_location": "L14",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.Migrations",
+        "scope_chain": [
+          "s355"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
+      "community": 392,
+      "norm_label": "addcommandidempotencykeys"
+    },
+    {
+      "label": ".BuildTargetModel()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+      "source_location": "L19",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.Migrations",
+        "scope_chain": [
+          "s355"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_buildtargetmodel",
+      "community": 392,
+      "norm_label": ".buildtargetmodel()"
+    },
+    {
+      "label": "ModelBuilder",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_cs_modelbuilder",
+      "community": 392,
+      "norm_label": "modelbuilder"
+    },
+    {
+      "label": "20260709113419_AddCommandIdempotencyKeys.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys",
+      "community": 48,
+      "norm_label": "20260709113419_addcommandidempotencykeys.cs"
+    },
+    {
+      "label": "AddCommandIdempotencyKeys",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L9",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.Migrations",
+        "scope_chain": [
+          "s82"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
+      "community": 48,
+      "norm_label": "addcommandidempotencykeys"
+    },
+    {
+      "label": ".Up()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L12",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.Migrations",
+        "scope_chain": [
+          "s82"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_up",
+      "community": 48,
+      "norm_label": ".up()"
+    },
+    {
+      "label": "MigrationBuilder",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_cs_migrationbuilder",
+      "community": 48,
+      "norm_label": "migrationbuilder"
+    },
+    {
+      "label": ".Down()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L72",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.Migrations",
+        "scope_chain": [
+          "s82"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_down",
+      "community": 48,
+      "norm_label": ".down()"
+    },
+    {
       "label": "BodyLifeDbContextModelSnapshot.cs",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs",
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot",
-      "community": 64,
+      "community": 27,
       "norm_label": "bodylifedbcontextmodelsnapshot.cs"
     },
     {
       "label": "BodyLifeDbContextModelSnapshot",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs",
-      "source_location": "L12",
+      "source_location": "L13",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Persistence.Migrations",
         "scope_chain": [
-          "s293"
+          "s307"
         ]
       },
       "_origin": "ast",
@@ -1015,11 +1258,11 @@
       "label": ".BuildModel()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs",
-      "source_location": "L15",
+      "source_location": "L16",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Persistence.Migrations",
         "scope_chain": [
-          "s293"
+          "s307"
         ]
       },
       "_origin": "ast",
@@ -3189,7 +3432,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_daterange",
-      "community": 14,
+      "community": 391,
       "norm_label": "daterange.cs"
     },
     {
@@ -3205,7 +3448,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_daterange_bodylife_crm_sharedkernel_daterange",
-      "community": 14,
+      "community": 391,
       "norm_label": "daterange"
     },
     {
@@ -3215,7 +3458,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "dateonly",
-      "community": 14,
+      "community": 391,
       "norm_label": "dateonly"
     },
     {
@@ -3231,7 +3474,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_daterange_bodylife_crm_sharedkernel_daterange_contains",
-      "community": 14,
+      "community": 391,
       "norm_label": ".contains()"
     },
     {
@@ -3473,20 +3716,20 @@
       "norm_label": "microsoft.net.sdk"
     },
     {
-      "label": "PostgreSqlFactAttribute.cs",
+      "label": "PostgreSqlCommandIdempotencyStorageTests.cs",
       "file_type": "code",
-      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlFactAttribute.cs",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
       "community": 21,
-      "norm_label": "postgresqlfactattribute.cs"
+      "norm_label": "postgresqlcommandidempotencystoragetests.cs"
     },
     {
       "label": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
       "file_type": "code",
-      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlFactAttribute.cs",
-      "source_location": "L1",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L5",
       "type": "namespace",
       "metadata": {
         "kind": "csharp_namespace",
@@ -3496,6 +3739,136 @@
       "id": "csharp_namespace:105df1079acd785a",
       "community": 21,
       "norm_label": "bodylife.crm.infrastructure.tests.postgresql"
+    },
+    {
+      "label": "PostgreSqlCommandIdempotencyStorageTests",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L7",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s71"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
+      "community": 69,
+      "norm_label": "postgresqlcommandidempotencystoragetests"
+    },
+    {
+      "label": ".CommandIdempotencyStorageMigrationCreatesTableAndIndexes()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L9",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s71"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragemigrationcreatestableandindexes",
+      "community": 69,
+      "norm_label": ".commandidempotencystoragemigrationcreatestableandindexes()"
+    },
+    {
+      "label": "Task",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_task",
+      "community": 69,
+      "norm_label": "task"
+    },
+    {
+      "label": "PostgreSqlFact",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_postgresqlfact",
+      "community": 69,
+      "norm_label": "postgresqlfact"
+    },
+    {
+      "label": ".CommandIdempotencyStorageRejectsDuplicateCommandKey()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L52",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s71"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsduplicatecommandkey",
+      "community": 69,
+      "norm_label": ".commandidempotencystoragerejectsduplicatecommandkey()"
+    },
+    {
+      "label": ".CommandIdempotencyStorageRejectsInvalidStatus()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L75",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s71"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsinvalidstatus",
+      "community": 69,
+      "norm_label": ".commandidempotencystoragerejectsinvalidstatus()"
+    },
+    {
+      "label": ".InsertCommandIdempotencyRecordAsync()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L95",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s71"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_insertcommandidempotencyrecordasync",
+      "community": 69,
+      "norm_label": ".insertcommandidempotencyrecordasync()"
+    },
+    {
+      "label": "Guid",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_guid",
+      "community": 69,
+      "norm_label": "guid"
+    },
+    {
+      "label": "DateTimeOffset",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_datetimeoffset",
+      "community": 69,
+      "norm_label": "datetimeoffset"
+    },
+    {
+      "label": "PostgreSqlFactAttribute.cs",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlFactAttribute.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute",
+      "community": 21,
+      "norm_label": "postgresqlfactattribute.cs"
     },
     {
       "label": "PostgreSqlFactAttribute",
@@ -3732,7 +4105,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_createdbcontext",
-      "community": 25,
+      "community": 22,
       "norm_label": ".createdbcontext()"
     },
     {
@@ -6892,7 +7265,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_001_product_shape_and_operating_model",
-      "community": 30,
+      "community": 29,
       "norm_label": "001-product-shape-and-operating-model.md"
     },
     {
@@ -9242,7 +9615,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_\u043c\u0435\u0436\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
-      "community": 76,
+      "community": 393,
       "norm_label": "3. \u043c\u0435\u0436\u0456 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
     },
     {
@@ -9252,7 +9625,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_1_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
-      "community": 76,
+      "community": 393,
       "norm_label": "3.1. \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
     },
     {
@@ -9262,7 +9635,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_2_\u043d\u0435_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
-      "community": 76,
+      "community": 393,
       "norm_label": "3.2. \u043d\u0435 \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
     },
     {
@@ -10306,24 +10679,34 @@
       "norm_label": "step 10 - milestone 1 acceptance review"
     },
     {
-      "label": "Step 12 - CI PostgreSQL readiness test fix",
+      "label": "Step 11 - Local Docker PostgreSQL setup",
       "file_type": "document",
       "source_file": "docs/implementation-progress.md",
       "source_location": "L310",
+      "_origin": "ast",
+      "id": "docs_implementation_progress_step_11_local_docker_postgresql_setup",
+      "community": 82,
+      "norm_label": "step 11 - local docker postgresql setup"
+    },
+    {
+      "label": "Step 12 - CI PostgreSQL readiness test fix",
+      "file_type": "document",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L341",
       "_origin": "ast",
       "id": "docs_implementation_progress_step_12_ci_postgresql_readiness_test_fix",
       "community": 82,
       "norm_label": "step 12 - ci postgresql readiness test fix"
     },
     {
-      "label": "Step 11 - Local Docker PostgreSQL setup",
+      "label": "Step 13 - Idempotency key storage foundation",
       "file_type": "document",
       "source_file": "docs/implementation-progress.md",
-      "source_location": "L333",
+      "source_location": "L364",
       "_origin": "ast",
-      "id": "docs_implementation_progress_step_11_local_docker_postgresql_setup",
+      "id": "docs_implementation_progress_step_13_idempotency_key_storage_foundation",
       "community": 82,
-      "norm_label": "step 11 - local docker postgresql setup"
+      "norm_label": "step 13 - idempotency key storage foundation"
     },
     {
       "label": "implementation-roadmap.md",
@@ -11789,27 +12172,27 @@
       "label": "Acceptance criteria check",
       "file_type": "document",
       "source_file": "docs/milestone-1-acceptance-review.md",
-      "source_location": "L27",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "docs_milestone_1_acceptance_review_acceptance_criteria_check",
       "community": 66,
       "norm_label": "acceptance criteria check"
     },
     {
-      "label": "Remaining Milestone 1 gaps",
+      "label": "Remaining roadmap handoff items",
       "file_type": "document",
       "source_file": "docs/milestone-1-acceptance-review.md",
-      "source_location": "L40",
+      "source_location": "L41",
       "_origin": "ast",
-      "id": "docs_milestone_1_acceptance_review_remaining_milestone_1_gaps",
+      "id": "docs_milestone_1_acceptance_review_remaining_roadmap_handoff_items",
       "community": 66,
-      "norm_label": "remaining milestone 1 gaps"
+      "norm_label": "remaining roadmap handoff items"
     },
     {
       "label": "Decision",
       "file_type": "document",
       "source_file": "docs/milestone-1-acceptance-review.md",
-      "source_location": "L54",
+      "source_location": "L51",
       "_origin": "ast",
       "id": "docs_milestone_1_acceptance_review_decision",
       "community": 66,
@@ -13761,20 +14144,6 @@
       "community_name": "Implementation Roadmap",
       "norm_label": "reception dashboard htmx",
       "id": "codex_skills_bodylife_reception_ui_htmx_skill_reception_dashboard_htmx"
-    },
-    {
-      "label": "Openai",
-      "file_type": "document",
-      "source_file": ".codex/skills/bodylife-reception-ui-htmx/agents/openai.yaml",
-      "source_location": "L1",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 68,
-      "community_name": "Openai Codex 6",
-      "norm_label": "openai",
-      "id": "codex_skills_bodylife_reception_ui_htmx_agents_openai_openai"
     },
     {
       "label": "Reports Audit Consistency",
@@ -18603,8 +18972,24 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Infrastructure.Persistence",
+        "scope_kind": "file"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer",
+      "target": "csharp_namespace:a35cf01376c2536a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs",
-      "source_location": "L2",
+      "source_location": "L3",
       "weight": 1.0,
       "metadata": {
         "using_kind": "namespace",
@@ -18858,6 +19243,139 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecord.cs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
+      "target": "csharp_namespace:c7ebe20e2d7b2dd4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecord.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
+      "target": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
+      "target": "csharp_namespace:c7ebe20e2d7b2dd4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecord.cs",
+      "source_location": "L31",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "DateTimeOffset"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
+      "target": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_datetimeoffset",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecord.cs",
+      "source_location": "L37",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
+      "target": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L6",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "metadata": {
+        "ref_token": "CommandIdempotencyRecord"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
+      "target": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "metadata": {
+        "ref_token": "CommandIdempotencyRecord"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_configure",
+      "target": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
+      "target": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L6",
+      "weight": 1.0,
+      "metadata": {
+        "ref_token": "IEntityTypeConfiguration"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
+      "target": "ientitytypeconfiguration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
+      "target": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_configure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "EntityTypeBuilder"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_configure",
+      "target": "entitytypebuilder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260708140900_InitialBaseline.Designer.cs",
       "source_location": "L11",
       "weight": 1.0,
@@ -18888,8 +19406,28 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys",
+      "target": "csharp_namespace:40698925b3951abb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer",
+      "target": "csharp_namespace:40698925b3951abb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0,
       "source": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot",
       "target": "csharp_namespace:40698925b3951abb",
@@ -18963,6 +19501,19 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L9",
+      "weight": 1.0,
+      "metadata": {
+        "ref_token": "Migration"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
+      "target": "migration",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260708140900_InitialBaseline.cs",
@@ -18973,7 +19524,7 @@
         "ref_token": "MigrationBuilder"
       },
       "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_bodylife_crm_infrastructure_persistence_migrations_initialbaseline_up",
-      "target": "migrationbuilder",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_cs_migrationbuilder",
       "confidence_score": 1.0
     },
     {
@@ -18987,14 +19538,106 @@
         "ref_token": "MigrationBuilder"
       },
       "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_bodylife_crm_infrastructure_persistence_migrations_initialbaseline_down",
-      "target": "migrationbuilder",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_cs_migrationbuilder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_buildtargetmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+      "source_location": "L19",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "ModelBuilder"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_buildtargetmodel",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_cs_modelbuilder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_down",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_up",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L12",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "MigrationBuilder"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_up",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_cs_migrationbuilder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs",
+      "source_location": "L72",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "MigrationBuilder"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_down",
+      "target": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_cs_migrationbuilder",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0,
       "source": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot",
       "target": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot",
@@ -19004,7 +19647,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0,
       "metadata": {
         "ref_token": "ModelSnapshot"
@@ -19017,7 +19660,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "source": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot",
       "target": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot_buildmodel",
@@ -19027,7 +19670,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -21309,21 +21952,31 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlFactAttribute.cs",
-      "source_location": "L1",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L5",
       "weight": 1.0,
-      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute",
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
       "target": "csharp_namespace:105df1079acd785a",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlFactAttribute.cs",
-      "source_location": "L3",
+      "source_location": "L1",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute",
-      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute",
+      "target": "csharp_namespace:105df1079acd785a",
       "confidence_score": 1.0
     },
     {
@@ -21354,6 +22007,204 @@
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase",
       "target": "csharp_namespace:105df1079acd785a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragemigrationcreatestableandindexes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsduplicatecommandkey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsinvalidstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L95",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_insertcommandidempotencyrecordasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L9",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragemigrationcreatestableandindexes",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L9",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragemigrationcreatestableandindexes",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L52",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsduplicatecommandkey",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L75",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsinvalidstatus",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L95",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_insertcommandidempotencyrecordasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L52",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsduplicatecommandkey",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L75",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsinvalidstatus",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsduplicatecommandkey",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_insertcommandidempotencyrecordasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsinvalidstatus",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_insertcommandidempotencyrecordasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L95",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "DateTimeOffset"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_insertcommandidempotencyrecordasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_datetimeoffset",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs",
+      "source_location": "L95",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_insertcommandidempotencyrecordasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlFactAttribute.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute",
       "confidence_score": 1.0
     },
     {
@@ -27589,7 +28440,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/implementation-progress.md",
-      "source_location": "L333",
+      "source_location": "L310",
       "weight": 1.0,
       "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
       "target": "docs_implementation_progress_step_11_local_docker_postgresql_setup",
@@ -27599,10 +28450,20 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/implementation-progress.md",
-      "source_location": "L310",
+      "source_location": "L341",
       "weight": 1.0,
       "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
       "target": "docs_implementation_progress_step_12_ci_postgresql_readiness_test_fix",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L364",
+      "weight": 1.0,
+      "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
+      "target": "docs_implementation_progress_step_13_idempotency_key_storage_foundation",
       "confidence_score": 1.0
     },
     {
@@ -29109,7 +29970,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/milestone-1-acceptance-review.md",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0,
       "source": "docs_milestone_1_acceptance_review_milestone_1_acceptance_review",
       "target": "docs_milestone_1_acceptance_review_acceptance_criteria_check",
@@ -29129,7 +29990,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/milestone-1-acceptance-review.md",
-      "source_location": "L54",
+      "source_location": "L51",
       "weight": 1.0,
       "source": "docs_milestone_1_acceptance_review_milestone_1_acceptance_review",
       "target": "docs_milestone_1_acceptance_review_decision",
@@ -29139,10 +30000,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/milestone-1-acceptance-review.md",
-      "source_location": "L40",
+      "source_location": "L41",
       "weight": 1.0,
       "source": "docs_milestone_1_acceptance_review_milestone_1_acceptance_review",
-      "target": "docs_milestone_1_acceptance_review_remaining_milestone_1_gaps",
+      "target": "docs_milestone_1_acceptance_review_remaining_roadmap_handoff_items",
       "confidence_score": 1.0
     },
     {
@@ -31761,5 +32622,5 @@
       "source_file": "docs/implementation-progress.md"
     }
   ],
-  "built_at_commit": "b90777a893ae8e8d0c012c991ddf10be19dc2ff2"
+  "built_at_commit": "eca405b9a9adadd8eb8d1076e9d78eccebafdd74"
 }

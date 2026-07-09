@@ -3599,11 +3599,11 @@
       "label": "PostgreSqlReadyHealthCheckTests",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs",
-      "source_location": "L8",
+      "source_location": "L10",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
-          "s138"
+          "s250"
         ]
       },
       "_origin": "ast",
@@ -3615,11 +3615,11 @@
       "label": ".ReadyHealthEndpointIsHealthyWhenPostgreSqlIsMigrated()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs",
-      "source_location": "L10",
+      "source_location": "L12",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
-          "s138"
+          "s250"
         ]
       },
       "_origin": "ast",
@@ -6892,7 +6892,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_001_product_shape_and_operating_model",
-      "community": 29,
+      "community": 30,
       "norm_label": "001-product-shape-and-operating-model.md"
     },
     {
@@ -7052,7 +7052,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_003_ui_rendering_and_interaction_model",
-      "community": 30,
+      "community": 31,
       "norm_label": "003-ui-rendering-and-interaction-model.md"
     },
     {
@@ -7532,7 +7532,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_009_backup_restore_and_operational_recovery",
-      "community": 30,
+      "community": 37,
       "norm_label": "009-backup-restore-and-operational-recovery.md"
     },
     {
@@ -7692,7 +7692,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_011_membership_type_lifecycle",
-      "community": 39,
+      "community": 30,
       "norm_label": "011-membership-type-lifecycle.md"
     },
     {
@@ -10306,10 +10306,20 @@
       "norm_label": "step 10 - milestone 1 acceptance review"
     },
     {
-      "label": "Step 11 - Local Docker PostgreSQL setup",
+      "label": "Step 12 - CI PostgreSQL readiness test fix",
       "file_type": "document",
       "source_file": "docs/implementation-progress.md",
       "source_location": "L310",
+      "_origin": "ast",
+      "id": "docs_implementation_progress_step_12_ci_postgresql_readiness_test_fix",
+      "community": 82,
+      "norm_label": "step 12 - ci postgresql readiness test fix"
+    },
+    {
+      "label": "Step 11 - Local Docker PostgreSQL setup",
+      "file_type": "document",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L333",
       "_origin": "ast",
       "id": "docs_implementation_progress_step_11_local_docker_postgresql_setup",
       "community": 82,
@@ -13779,20 +13789,6 @@
       "community_name": "Implementation Roadmap",
       "norm_label": "reports audit consistency",
       "id": "codex_skills_bodylife_reports_audit_history_skill_reports_audit_consistency"
-    },
-    {
-      "label": "Openai",
-      "file_type": "document",
-      "source_file": ".codex/skills/bodylife-reports-audit-history/agents/openai.yaml",
-      "source_location": "L1",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 69,
-      "community_name": "Openai Codex 7",
-      "norm_label": "openai",
-      "id": "codex_skills_bodylife_reports_audit_history_agents_openai_openai"
     },
     {
       "label": "Choose Technology Stack Skill",
@@ -18671,6 +18667,22 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs",
+      "source_location": "L2",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Infrastructure.Persistence",
+        "scope_kind": "file"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests",
+      "target": "csharp_namespace:a35cf01376c2536a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlTestDatabase.cs",
       "source_location": "L1",
       "weight": 1.0,
@@ -21328,7 +21340,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs",
-      "source_location": "L6",
+      "source_location": "L8",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests",
       "target": "csharp_namespace:105df1079acd785a",
@@ -21409,7 +21421,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs",
-      "source_location": "L8",
+      "source_location": "L10",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests",
@@ -21419,7 +21431,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs",
-      "source_location": "L10",
+      "source_location": "L12",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_readyhealthendpointishealthywhenpostgresqlismigrated",
@@ -21429,7 +21441,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs",
-      "source_location": "L10",
+      "source_location": "L12",
       "weight": 1.0,
       "context": "attribute",
       "metadata": {
@@ -21443,7 +21455,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs",
-      "source_location": "L10",
+      "source_location": "L12",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -27577,10 +27589,20 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/implementation-progress.md",
-      "source_location": "L310",
+      "source_location": "L333",
       "weight": 1.0,
       "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
       "target": "docs_implementation_progress_step_11_local_docker_postgresql_setup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L310",
+      "weight": 1.0,
+      "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
+      "target": "docs_implementation_progress_step_12_ci_postgresql_readiness_test_fix",
       "confidence_score": 1.0
     },
     {
@@ -31739,5 +31761,5 @@
       "source_file": "docs/implementation-progress.md"
     }
   ],
-  "built_at_commit": "36245cb4b3f5a275dfc35672b96dc3f7246992d1"
+  "built_at_commit": "b90777a893ae8e8d0c012c991ddf10be19dc2ff2"
 }

@@ -1,16 +1,16 @@
 # Graph Report - BodyLife-CRM  (2026-07-09)
 
 ## Corpus Check
-- 147 files · ~97,482 words
+- 147 files · ~97,615 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1546 nodes · 1283 edges · 391 communities (122 shown, 269 thin omitted)
+- 1546 nodes · 1285 edges · 390 communities (122 shown, 268 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 13 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `36245cb4`
+- Built from commit: `b90777a8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -84,7 +84,6 @@
 - [[_COMMUNITY_Openai Codex 4|Openai Codex 4]]
 - [[_COMMUNITY_Openai Codex 5|Openai Codex 5]]
 - [[_COMMUNITY_Openai Codex 6|Openai Codex 6]]
-- [[_COMMUNITY_Openai Codex 7|Openai Codex 7]]
 - [[_COMMUNITY_Initial Context|Initial Context]]
 - [[_COMMUNITY_Initial Context 2|Initial Context 2]]
 - [[_COMMUNITY_Initial Context 3|Initial Context 3]]
@@ -414,7 +413,7 @@
 7. `План роботи після прийнятих ADR` - 15 edges
 8. `BodyLife CRM Agent Instructions` - 14 edges
 9. `Архітектурне дослідження для першої веб-версії BodyLife CRM` - 14 edges
-10. `5. Queries and read actions` - 14 edges
+10. `BodyLife CRM implementation progress` - 14 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Architecture Research Options HTML Preview` --semantically_similar_to--> `Architecture Research Options Markdown Brief`  [INFERRED] [semantically similar]
@@ -457,7 +456,7 @@
 - **ADR-guided Milestone 1 sequence** — docs_adr_readme_accepted_adr_package, docs_adr_readme_recommended_implementation_order, docs_implementation_progress_milestone_1_plan, docs_implementation_progress_step_1_solution_project_scaffold, docs_implementation_progress_step_2_module_folder_structure, docs_implementation_progress_step_6_analyzer_build_gates_and_ci [INFERRED 0.90]
 - **Reception-first foundation** — docs_adr_readme_adr_003_reception_first_workflow_boundary, docs_adr_readme_adr_008_server_rendered_ui_with_htmx_islands, docs_implementation_progress_playwright_smoke_harness, docs_implementation_progress_milestone_1_plan [INFERRED 0.90]
 
-## Communities (391 total, 269 thin omitted)
+## Communities (390 total, 268 thin omitted)
 
 ### Community 0 - "ADR Index"
 Cohesion: 0.22
@@ -556,7 +555,7 @@ Cohesion: 0.25
 Nodes (5): BodyLife.Crm.Web.Pages, BodyLife.Crm.Web.Pages.Reception, PageModel, ErrorModel, IndexModel
 
 ### Community 29 - "ADR Decisions 3"
-Cohesion: 0.25
+Cohesion: 0.29
 Nodes (7): ADR-001: Product shape and operating model v1, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
 
 ### Community 30 - "ADR Decisions 4"
@@ -564,7 +563,7 @@ Cohesion: 0.25
 Nodes (5): Accepted ADR package for BodyLife CRM, ADR, Джерела, Рекомендований порядок реалізації, Статус пакета
 
 ### Community 31 - "ADR Decisions 5"
-Cohesion: 0.29
+Cohesion: 0.25
 Nodes (7): ADR-003: UI rendering and interaction model, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
 
 ### Community 32 - "ADR Decisions 6"
@@ -588,7 +587,7 @@ Cohesion: 0.25
 Nodes (7): ADR-008: Search identity, card rules and duplicate warnings, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
 
 ### Community 37 - "ADR Decisions 11"
-Cohesion: 0.29
+Cohesion: 0.25
 Nodes (7): ADR-009: Backup, restore and operational recovery, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
 
 ### Community 38 - "ADR Decisions 12"
@@ -596,7 +595,7 @@ Cohesion: 0.25
 Nodes (7): ADR-010: Migration, manual backfill and paper fallback entries, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
 
 ### Community 39 - "ADR Decisions 13"
-Cohesion: 0.25
+Cohesion: 0.29
 Nodes (7): ADR-011: Membership type lifecycle, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
 
 ### Community 40 - "ADR Decisions 14"
@@ -680,8 +679,8 @@ Cohesion: 0.18
 Nodes (11): 5.10. Клієнти, які давно не ходили, 5.1. Клієнт прийшов у зал з карткою, 5.2. Клієнт прийшов без картки, 5.3. Новий клієнт, 5.4. Видача абонемента, 5.5. Відмітка візиту, 5.6. Скасування помилкового візиту, 5.7. Оплата (+3 more)
 
 ### Community 82 - "BodyLife CRM implementation progress"
-Cohesion: 0.14
-Nodes (13): BodyLife CRM implementation progress, Milestone 1 plan, Step 10 - Milestone 1 acceptance review, Step 11 - Local Docker PostgreSQL setup, Step 1 - Solution/project scaffold, Step 2 - Module folder structure, Step 3 - EF Core/Npgsql/PostgreSQL setup, Step 4 - Baseline migration and reviewable SQL workflow (+5 more)
+Cohesion: 0.13
+Nodes (14): BodyLife CRM implementation progress, Milestone 1 plan, Step 10 - Milestone 1 acceptance review, Step 11 - Local Docker PostgreSQL setup, Step 12 - CI PostgreSQL readiness test fix, Step 1 - Solution/project scaffold, Step 2 - Module folder structure, Step 3 - EF Core/Npgsql/PostgreSQL setup (+6 more)
 
 ### Community 83 - "6. Дані, які треба зберігати"
 Cohesion: 0.20
@@ -938,7 +937,7 @@ Nodes (4): 4.1. Власник, 4.2. Адміністратор, 4.3. Трене
 ## Knowledge Gaps
 - **1005 isolated node(s):** `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)`, `Microsoft.Extensions.Configuration.Abstractions (10.0.9)`, `Microsoft.Extensions.DependencyInjection.Abstractions (10.0.9)` (+1000 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **269 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **268 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

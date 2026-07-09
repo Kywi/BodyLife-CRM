@@ -765,9 +765,9 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs": {
-    "mtime": 1783522886.5411668,
-    "ast_hash": "8e237bf41fc6dd9599718b84471f8330",
-    "semantic_hash": "8e237bf41fc6dd9599718b84471f8330"
+    "mtime": 1783592540.5262074,
+    "ast_hash": "f1ac58dcbcbb231fc2c503ef1c784f11",
+    "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlTestDatabase.cs": {
     "mtime": 1783522941.0331614,
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783590177.8419275,
-    "ast_hash": "541c46f95f2633d05dd9df5e26939c25",
+    "mtime": 1783592595.7434793,
+    "ast_hash": "87938ea02d74f1d8c042c9a268e71101",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
