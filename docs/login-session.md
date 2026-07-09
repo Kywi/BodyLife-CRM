@@ -59,6 +59,18 @@ Authenticated pages render the shared app shell with the current account display
 
 This lifecycle foundation does not create credentials, default passwords, sessions, account-management UI or business audit entries yet. Named Admin/shared Reception/Admin credentials must be added through a later explicit setup/reset workflow without default secrets.
 
+## Staff credential setup and reset
+
+`StaffCredentialsService` is the Owner-guarded backend path for setting or resetting credentials on named Admin and shared Reception/Admin accounts. It accepts the common `CommandEnvelope`, rejects non-Owner actors, protects the Owner account and returns stable validation, not-found and duplicate-login results.
+
+- Login names are trimmed, normalized case-insensitively and remain unique through the PostgreSQL constraint.
+- Passwords must be at least 12 characters and only the derived password hash is stored.
+- No default staff credentials are generated or seeded.
+- A credential reset atomically replaces the login/hash and ends active sessions for that staff account.
+- Credentials may be prepared while an account is inactive, but login remains rejected until the Owner activates the account.
+
+PostgreSQL integration tests authenticate both named Admin and shared Reception/Admin sessions through the normal `AccountLoginService` path. This backend foundation does not yet expose an Owner-facing command/UI surface or add business audit; those remain required before Milestone 2 acceptance.
+
 ## Query permission results
 
 Query responses can include `QueryPermissionSet` / `QueryPermissionResult` so Razor pages and htmx fragments can show allowed, disabled or hidden actions consistently. Each result carries an action key, the policy name that should be enforced for the real command, and an optional denied reason code/message.
