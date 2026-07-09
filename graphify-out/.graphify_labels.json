@@ -409,5 +409,8 @@
   "407": "CommandErrorCode.cs",
   "408": "CommandStatus.cs",
   "409": "OwnerCredentialsBootstrapStatus.cs",
-  "410": "Money.cs"
+  "410": "Money.cs",
+  "411": "BodyLife.Crm.Web.Pages.Owner.StaffAccountsModel",
+  "412": "AccessDenied.cshtml",
+  "413": "site.js"
 }
