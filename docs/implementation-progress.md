@@ -337,3 +337,26 @@ Commit:
 Next recommended step:
 
 - Add the Milestone 1 idempotency key storage foundation before starting Milestone 2.
+
+## Step 12 - CI PostgreSQL readiness test fix
+
+Status: completed.
+
+Scope:
+
+- Fix `PostgreSqlReadyHealthCheckTests` so the test web host replaces the already-registered `BodyLifeDbContext` with the disposable migrated PostgreSQL database.
+- Avoid relying on `ConfigureAppConfiguration` for this test because the app reads the connection string during service registration.
+- Add the health response body to the readiness assertion failure message for future diagnostics.
+
+Validation:
+
+- `ConnectionStrings__BodyLife='Host=localhost;Port=1;Database=wrong;Username=wrong;Password=wrong' BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo --filter FullyQualifiedName~PostgreSqlReadyHealthCheckTests` passed.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed with 5 unit tests, 2 PostgreSQL infrastructure tests, 2 Playwright smoke tests and EF migration listing.
+
+Commit:
+
+- `test(infra): fix ready health check database override`.
+
+Next recommended step:
+
+- Add the Milestone 1 idempotency key storage foundation before starting Milestone 2.
