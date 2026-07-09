@@ -635,3 +635,28 @@ Commit:
 Next recommended step:
 
 - Run Milestone 2 acceptance review and progress cleanup.
+
+## Step 22 - Milestone 2 acceptance review
+
+Status: completed.
+
+Scope:
+
+- Review Milestone 2 implementation against `docs/implementation-roadmap.md` acceptance criteria and test requirements.
+- Create `docs/milestone-2-acceptance-review.md` with completed foundation, acceptance status, test coverage and follow-up gaps.
+- Keep the review honest: Milestone 2 is not accepted as complete because Owner-managed named Admin/shared Reception/Admin account lifecycle and credentials are not implemented yet.
+- Keep Milestone 3 blocked until those Milestone 2 gaps are closed.
+
+Validation:
+
+- `git diff --check` passed for the documentation changes.
+- `graphify . --update` was attempted for markdown acceptance/progress updates but stopped because no semantic extraction API key/backend is configured.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, 11 core tests, 34 web tests, 17 PostgreSQL infrastructure tests, 2 authenticated Playwright smoke tests and EF migration listing through `20260709143654_AddAccountCredentials`.
+
+Commit:
+
+- `docs(users): review milestone 2 acceptance`.
+
+Next recommended step:
+
+- Add Owner-managed account lifecycle foundation for named Admin and shared Reception/Admin accounts.
