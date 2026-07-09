@@ -695,8 +695,8 @@
     "semantic_hash": "37de2868fc0c6ec5932c3d64fbbfa6df"
   },
   "scripts/validate.sh": {
-    "mtime": 1783527031.5847251,
-    "ast_hash": "3a09d79ef63ba1fc79ff2308135a04cc",
+    "mtime": 1783588303.9370985,
+    "ast_hash": "30b3dab8a7e29468c3f284b8eaf7063c",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260708140900_InitialBaseline.Designer.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783527351.2566924,
-    "ast_hash": "d9caf60e46b1501303d34b673203d665",
+    "mtime": 1783588318.085097,
+    "ast_hash": "dbe90bb0a8b482b1b6cc129f3e09a0bd",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {

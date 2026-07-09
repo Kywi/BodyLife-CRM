@@ -496,6 +496,20 @@
       "norm_label": "validate.sh script"
     },
     {
+      "label": "configure_local_postgres_test_connection()",
+      "file_type": "code",
+      "source_file": "scripts/validate.sh",
+      "source_location": "L8",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "scripts_validate_configure_local_postgres_test_connection",
+      "community": 62,
+      "norm_label": "configure_local_postgres_test_connection()"
+    },
+    {
       "label": "net10.0",
       "file_type": "concept",
       "source_file": "src/BodyLife.Crm.Infrastructure/BodyLife.Crm.Infrastructure.csproj",
@@ -975,7 +989,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:997b1edef514343e",
-      "community": 7,
+      "community": 64,
       "norm_label": "bodylife.crm.infrastructure"
     },
     {
@@ -1730,7 +1744,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_program",
-      "community": 7,
+      "community": 64,
       "norm_label": "program.cs"
     },
     {
@@ -1740,7 +1754,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_program_program",
-      "community": 7,
+      "community": 64,
       "norm_label": "program"
     },
     {
@@ -6888,7 +6902,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_002_application_architecture",
-      "community": 30,
+      "community": 107,
       "norm_label": "002-application-architecture.md"
     },
     {
@@ -7688,7 +7702,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_012_permissions_session_accountability_and_corrections",
-      "community": 40,
+      "community": 30,
       "norm_label": "012-permissions-session-accountability-and-corrections.md"
     },
     {
@@ -9158,7 +9172,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_\u043c\u0435\u0436\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
-      "community": 76,
+      "community": 67,
       "norm_label": "3. \u043c\u0435\u0436\u0456 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
     },
     {
@@ -9168,7 +9182,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_1_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
-      "community": 76,
+      "community": 67,
       "norm_label": "3.1. \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
     },
     {
@@ -9178,7 +9192,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_2_\u043d\u0435_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
-      "community": 76,
+      "community": 67,
       "norm_label": "3.2. \u043d\u0435 \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
     },
     {
@@ -10200,6 +10214,16 @@
       "id": "docs_implementation_progress_step_8_playwright_smoke_harness_for_tablet_phone_reception_entry",
       "community": 82,
       "norm_label": "step 8 - playwright smoke harness for tablet/phone reception entry"
+    },
+    {
+      "label": "Step 9 - Local PostgreSQL validation configuration fallback",
+      "file_type": "document",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L258",
+      "_origin": "ast",
+      "id": "docs_implementation_progress_step_9_local_postgresql_validation_configuration_fallback",
+      "community": 82,
+      "norm_label": "step 9 - local postgresql validation configuration fallback"
     },
     {
       "label": "implementation-roadmap.md",
@@ -13547,20 +13571,6 @@
       "community_name": "Implementation Roadmap",
       "norm_label": "risk boundary tests",
       "id": "codex_skills_bodylife_quality_gates_skill_risk_boundary_tests"
-    },
-    {
-      "label": "Openai",
-      "file_type": "document",
-      "source_file": ".codex/skills/bodylife-quality-gates/agents/openai.yaml",
-      "source_location": "L1",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 67,
-      "community_name": "Openai Codex 5",
-      "norm_label": "openai",
-      "id": "codex_skills_bodylife_quality_gates_agents_openai_openai"
     },
     {
       "label": "Reception Dashboard htmx",
@@ -18257,6 +18267,16 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/validate.sh",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "scripts_validate",
+      "target": "scripts_validate_configure_local_postgres_test_connection",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate.sh",
@@ -18264,6 +18284,17 @@
       "weight": 1.0,
       "source": "scripts_validate",
       "target": "scripts_validate_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/validate.sh",
+      "source_location": "L70",
+      "weight": 1.0,
+      "context": "call",
+      "source": "scripts_validate_sh__entry",
+      "target": "scripts_validate_configure_local_postgres_test_connection",
       "confidence_score": 1.0
     },
     {
@@ -27365,6 +27396,16 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L258",
+      "weight": 1.0,
+      "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
+      "target": "docs_implementation_progress_step_9_local_postgresql_validation_configuration_fallback",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "docs/implementation-roadmap.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -31358,5 +31399,5 @@
       "source_file": "docs/implementation-progress.md"
     }
   ],
-  "built_at_commit": "a816da700eda4a8cf10d8c64af88794461ac751e"
+  "built_at_commit": "dd5df911f31609bd0390e4fdb736b31ead041480"
 }

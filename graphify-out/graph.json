@@ -440,6 +440,76 @@
       "norm_label": "bodylife.crm.ui.smoketests.csproj"
     },
     {
+      "label": "dev-postgres.sh",
+      "file_type": "code",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "scripts_dev_postgres",
+      "community": 67,
+      "norm_label": "dev-postgres.sh"
+    },
+    {
+      "label": "dev-postgres.sh script",
+      "file_type": "code",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "scripts_dev_postgres_sh__entry",
+      "community": 67,
+      "norm_label": "dev-postgres.sh script"
+    },
+    {
+      "label": "usage()",
+      "file_type": "code",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L10",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "scripts_dev_postgres_usage",
+      "community": 67,
+      "norm_label": "usage()"
+    },
+    {
+      "label": "compose()",
+      "file_type": "code",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L31",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "scripts_dev_postgres_compose",
+      "community": 67,
+      "norm_label": "compose()"
+    },
+    {
+      "label": "wait_for_postgres()",
+      "file_type": "code",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L35",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "scripts_dev_postgres_wait_for_postgres",
+      "community": 67,
+      "norm_label": "wait_for_postgres()"
+    },
+    {
       "label": "generate-migration-sql.sh",
       "file_type": "code",
       "source_file": "scripts/generate-migration-sql.sh",
@@ -576,7 +646,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontext",
-      "community": 25,
+      "community": 64,
       "norm_label": "bodylifedbcontext.cs"
     },
     {
@@ -591,7 +661,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:a35cf01376c2536a",
-      "community": 25,
+      "community": 64,
       "norm_label": "bodylife.crm.infrastructure.persistence"
     },
     {
@@ -767,7 +837,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer",
-      "community": 48,
+      "community": 64,
       "norm_label": "20260708140900_initialbaseline.designer.cs"
     },
     {
@@ -782,7 +852,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:40698925b3951abb",
-      "community": 48,
+      "community": 64,
       "norm_label": "bodylife.crm.infrastructure.persistence.migrations"
     },
     {
@@ -798,7 +868,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_bodylife_crm_infrastructure_persistence_migrations_initialbaseline",
-      "community": 48,
+      "community": 64,
       "norm_label": "initialbaseline"
     },
     {
@@ -814,7 +884,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_bodylife_crm_infrastructure_persistence_migrations_initialbaseline_buildtargetmodel",
-      "community": 48,
+      "community": 64,
       "norm_label": ".buildtargetmodel()"
     },
     {
@@ -824,7 +894,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_cs_modelbuilder",
-      "community": 48,
+      "community": 64,
       "norm_label": "modelbuilder"
     },
     {
@@ -912,7 +982,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot",
-      "community": 27,
+      "community": 64,
       "norm_label": "bodylifedbcontextmodelsnapshot.cs"
     },
     {
@@ -974,7 +1044,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_servicecollectionextensions",
-      "community": 64,
+      "community": 7,
       "norm_label": "servicecollectionextensions.cs"
     },
     {
@@ -989,7 +1059,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:997b1edef514343e",
-      "community": 64,
+      "community": 7,
       "norm_label": "bodylife.crm.infrastructure"
     },
     {
@@ -1005,7 +1075,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions",
-      "community": 64,
+      "community": 7,
       "norm_label": "servicecollectionextensions"
     },
     {
@@ -1021,7 +1091,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions_addbodylifepersistence",
-      "community": 64,
+      "community": 7,
       "norm_label": ".addbodylifepersistence()"
     },
     {
@@ -1031,7 +1101,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "iservicecollection",
-      "community": 64,
+      "community": 7,
       "norm_label": "iservicecollection"
     },
     {
@@ -1041,7 +1111,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "iconfiguration",
-      "community": 64,
+      "community": 7,
       "norm_label": "iconfiguration"
     },
     {
@@ -1744,7 +1814,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_program",
-      "community": 64,
+      "community": 7,
       "norm_label": "program.cs"
     },
     {
@@ -1754,7 +1824,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_program_program",
-      "community": 64,
+      "community": 7,
       "norm_label": "program"
     },
     {
@@ -6982,7 +7052,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_003_ui_rendering_and_interaction_model",
-      "community": 31,
+      "community": 30,
       "norm_label": "003-ui-rendering-and-interaction-model.md"
     },
     {
@@ -7462,7 +7532,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_009_backup_restore_and_operational_recovery",
-      "community": 37,
+      "community": 30,
       "norm_label": "009-backup-restore-and-operational-recovery.md"
     },
     {
@@ -7702,7 +7772,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_012_permissions_session_accountability_and_corrections",
-      "community": 30,
+      "community": 40,
       "norm_label": "012-permissions-session-accountability-and-corrections.md"
     },
     {
@@ -9172,7 +9242,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_\u043c\u0435\u0436\u0456_\u043f\u0435\u0440\u0448\u043e\u0457_\u0432\u0435\u0440\u0441\u0456\u0457",
-      "community": 67,
+      "community": 76,
       "norm_label": "3. \u043c\u0435\u0436\u0456 \u043f\u0435\u0440\u0448\u043e\u0456 \u0432\u0435\u0440\u0441\u0456\u0456"
     },
     {
@@ -9182,7 +9252,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_1_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
-      "community": 67,
+      "community": 76,
       "norm_label": "3.1. \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
     },
     {
@@ -9192,7 +9262,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "docs_first_version_requirements_3_2_\u043d\u0435_\u0432\u0445\u043e\u0434\u0438\u0442\u044c_\u0443_\u043f\u0435\u0440\u0448\u0443_\u0432\u0435\u0440\u0441\u0456\u044e",
-      "community": 67,
+      "community": 76,
       "norm_label": "3.2. \u043d\u0435 \u0432\u0445\u043e\u0434\u0438\u0442\u044c \u0443 \u043f\u0435\u0440\u0448\u0443 \u0432\u0435\u0440\u0441\u0456\u044e"
     },
     {
@@ -10224,6 +10294,26 @@
       "id": "docs_implementation_progress_step_9_local_postgresql_validation_configuration_fallback",
       "community": 82,
       "norm_label": "step 9 - local postgresql validation configuration fallback"
+    },
+    {
+      "label": "Step 10 - Milestone 1 acceptance review",
+      "file_type": "document",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L285",
+      "_origin": "ast",
+      "id": "docs_implementation_progress_step_10_milestone_1_acceptance_review",
+      "community": 82,
+      "norm_label": "step 10 - milestone 1 acceptance review"
+    },
+    {
+      "label": "Step 11 - Local Docker PostgreSQL setup",
+      "file_type": "document",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L310",
+      "_origin": "ast",
+      "id": "docs_implementation_progress_step_11_local_docker_postgresql_setup",
+      "community": 82,
+      "norm_label": "step 11 - local docker postgresql setup"
     },
     {
       "label": "implementation-roadmap.md",
@@ -11624,6 +11714,96 @@
       "id": "docs_interaction_contracts_8_open_questions_and_adr_candidates",
       "community": 4,
       "norm_label": "8. open questions and adr candidates"
+    },
+    {
+      "label": "local-development.md",
+      "file_type": "document",
+      "source_file": "docs/local-development.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_local_development",
+      "community": 145,
+      "norm_label": "local-development.md"
+    },
+    {
+      "label": "Local development",
+      "file_type": "document",
+      "source_file": "docs/local-development.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_local_development_local_development",
+      "community": 145,
+      "norm_label": "local development"
+    },
+    {
+      "label": "PostgreSQL in Docker",
+      "file_type": "document",
+      "source_file": "docs/local-development.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "docs_local_development_postgresql_in_docker",
+      "community": 145,
+      "norm_label": "postgresql in docker"
+    },
+    {
+      "label": "milestone-1-acceptance-review.md",
+      "file_type": "document",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_milestone_1_acceptance_review",
+      "community": 66,
+      "norm_label": "milestone-1-acceptance-review.md"
+    },
+    {
+      "label": "Milestone 1 acceptance review",
+      "file_type": "document",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_milestone_1_acceptance_review_milestone_1_acceptance_review",
+      "community": 66,
+      "norm_label": "milestone 1 acceptance review"
+    },
+    {
+      "label": "Completed foundation",
+      "file_type": "document",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "docs_milestone_1_acceptance_review_completed_foundation",
+      "community": 66,
+      "norm_label": "completed foundation"
+    },
+    {
+      "label": "Acceptance criteria check",
+      "file_type": "document",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "docs_milestone_1_acceptance_review_acceptance_criteria_check",
+      "community": 66,
+      "norm_label": "acceptance criteria check"
+    },
+    {
+      "label": "Remaining Milestone 1 gaps",
+      "file_type": "document",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "docs_milestone_1_acceptance_review_remaining_milestone_1_gaps",
+      "community": 66,
+      "norm_label": "remaining milestone 1 gaps"
+    },
+    {
+      "label": "Decision",
+      "file_type": "document",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L54",
+      "_origin": "ast",
+      "id": "docs_milestone_1_acceptance_review_decision",
+      "community": 66,
+      "norm_label": "decision"
     },
     {
       "label": "operations-design.md",
@@ -13543,20 +13723,6 @@
       "community_name": "Implementation Roadmap",
       "norm_label": "postgresql source facts constraints",
       "id": "codex_skills_bodylife_postgres_data_access_skill_postgresql_source_facts_constraints"
-    },
-    {
-      "label": "Openai",
-      "file_type": "document",
-      "source_file": ".codex/skills/bodylife-postgres-data-access/agents/openai.yaml",
-      "source_location": "L1",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 66,
-      "community_name": "Openai Codex 4",
-      "norm_label": "openai",
-      "id": "codex_skills_bodylife_postgres_data_access_agents_openai_openai"
     },
     {
       "label": "Risk Boundary Tests",
@@ -18254,6 +18420,90 @@
       "weight": 1.0,
       "source": "tests_bodylife_crm_ui_smoketests_bodylife_crm_ui_smoketests",
       "target": "tests_bodylife_crm_ui_smoketests_bodylife_crm_ui_smoketests_csproj_sdk_microsoft_net_sdk",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "scripts_dev_postgres",
+      "target": "scripts_dev_postgres_compose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "scripts_dev_postgres",
+      "target": "scripts_dev_postgres_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "scripts_dev_postgres",
+      "target": "scripts_dev_postgres_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "scripts_dev_postgres",
+      "target": "scripts_dev_postgres_wait_for_postgres",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L55",
+      "weight": 1.0,
+      "context": "call",
+      "source": "scripts_dev_postgres_sh__entry",
+      "target": "scripts_dev_postgres_compose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L76",
+      "weight": 1.0,
+      "context": "call",
+      "source": "scripts_dev_postgres_sh__entry",
+      "target": "scripts_dev_postgres_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L56",
+      "weight": 1.0,
+      "context": "call",
+      "source": "scripts_dev_postgres_sh__entry",
+      "target": "scripts_dev_postgres_wait_for_postgres",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/dev-postgres.sh",
+      "source_location": "L39",
+      "weight": 1.0,
+      "context": "call",
+      "source": "scripts_dev_postgres_wait_for_postgres",
+      "target": "scripts_dev_postgres_compose",
       "confidence_score": 1.0
     },
     {
@@ -27317,6 +27567,26 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/implementation-progress.md",
+      "source_location": "L285",
+      "weight": 1.0,
+      "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
+      "target": "docs_implementation_progress_step_10_milestone_1_acceptance_review",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L310",
+      "weight": 1.0,
+      "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
+      "target": "docs_implementation_progress_step_11_local_docker_postgresql_setup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/implementation-progress.md",
       "source_location": "L17",
       "weight": 1.0,
       "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
@@ -28781,6 +29051,76 @@
       "weight": 1.0,
       "source": "docs_interaction_contracts_5_queries_and_read_actions",
       "target": "docs_interaction_contracts_searchclients",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/local-development.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_local_development",
+      "target": "docs_local_development_local_development",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/local-development.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "docs_local_development_local_development",
+      "target": "docs_local_development_postgresql_in_docker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_milestone_1_acceptance_review",
+      "target": "docs_milestone_1_acceptance_review_milestone_1_acceptance_review",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "docs_milestone_1_acceptance_review_milestone_1_acceptance_review",
+      "target": "docs_milestone_1_acceptance_review_acceptance_criteria_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "docs_milestone_1_acceptance_review_milestone_1_acceptance_review",
+      "target": "docs_milestone_1_acceptance_review_completed_foundation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "docs_milestone_1_acceptance_review_milestone_1_acceptance_review",
+      "target": "docs_milestone_1_acceptance_review_decision",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/milestone-1-acceptance-review.md",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "docs_milestone_1_acceptance_review_milestone_1_acceptance_review",
+      "target": "docs_milestone_1_acceptance_review_remaining_milestone_1_gaps",
       "confidence_score": 1.0
     },
     {
@@ -31399,5 +31739,5 @@
       "source_file": "docs/implementation-progress.md"
     }
   ],
-  "built_at_commit": "dd5df911f31609bd0390e4fdb736b31ead041480"
+  "built_at_commit": "36245cb4b3f5a275dfc35672b96dc3f7246992d1"
 }
