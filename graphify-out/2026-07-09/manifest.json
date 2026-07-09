@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783617444.829603,
-    "ast_hash": "f1154b998781404db1c7152aebdcd72c",
+    "mtime": 1783622277.0264044,
+    "ast_hash": "58d443de01a1302552fa1cbcaa33b66e",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1055,8 +1055,8 @@
     "semantic_hash": ""
   },
   "docs/login-session.md": {
-    "mtime": 1783617388.9678166,
-    "ast_hash": "7ebf07a886f4dc58c0b65b531d2abdd6",
+    "mtime": 1783622196.6941335,
+    "ast_hash": "4dadf51ba10c69838c86d35982d8ceca",
     "semantic_hash": ""
   },
   "docs/ui-design-foundation.md": {
@@ -1065,8 +1065,8 @@
     "semantic_hash": "8dc32b653e7dc88cc9d2aabb3a677347"
   },
   "src/BodyLife.Crm.Web/Operations/BodyLifeRequestContextResolver.cs": {
-    "mtime": 1783614888.4914927,
-    "ast_hash": "9eb1255184152394d466a29eaa5db66d",
+    "mtime": 1783622119.7945518,
+    "ast_hash": "3cb17c12dbaf9df7dcf1461d51b69192",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeRequestContextResolverTests.cs": {
@@ -1077,6 +1077,36 @@
   "src/BodyLife.Crm.Web/Pages/Shared/_CurrentSession.cshtml": {
     "mtime": 1783617249.5385141,
     "ast_hash": "148d70bf2af2a956001d70ff5298d561",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Web/Operations/QueryPermissionResolver.cs": {
+    "mtime": 1783622119.7945518,
+    "ast_hash": "caebdec6a40c2c63830cd1067837f48a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Application/Queries/QueryPermissionDeniedReasonCodes.cs": {
+    "mtime": 1783622119.7945518,
+    "ast_hash": "f5600d36fe24f2b6e6bda6479eedb306",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Application/Queries/QueryPermissionResult.cs": {
+    "mtime": 1783622119.790551,
+    "ast_hash": "690bb5ced58c5fbf388bf00b575e794e",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Application/Queries/QueryPermissionSet.cs": {
+    "mtime": 1783622119.790551,
+    "ast_hash": "02e906349dc3d3309ba41bd2a8311c93",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Application/QueryPermissionResultTests.cs": {
+    "mtime": 1783622161.0163195,
+    "ast_hash": "e8d5261d2d3247912332ffc51073046e",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Web.Tests/Operations/QueryPermissionResolverTests.cs": {
+    "mtime": 1783622161.0163195,
+    "ast_hash": "ce03bf58beb5cb814f07035aaf80356d",
     "semantic_hash": ""
   }
 }

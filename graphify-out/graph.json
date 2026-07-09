@@ -667,7 +667,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontext",
-      "community": 10,
+      "community": 40,
       "norm_label": "bodylifedbcontext.cs"
     },
     {
@@ -682,7 +682,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:a35cf01376c2536a",
-      "community": 10,
+      "community": 40,
       "norm_label": "bodylife.crm.infrastructure.persistence"
     },
     {
@@ -698,7 +698,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontext_bodylife_crm_infrastructure_persistence_bodylifedbcontext",
-      "community": 10,
+      "community": 40,
       "norm_label": "bodylifedbcontext"
     },
     {
@@ -708,7 +708,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "dbcontext",
-      "community": 10,
+      "community": 40,
       "norm_label": "dbcontext"
     },
     {
@@ -724,7 +724,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontext_bodylife_crm_infrastructure_persistence_bodylifedbcontext_onmodelcreating",
-      "community": 10,
+      "community": 40,
       "norm_label": ".onmodelcreating()"
     },
     {
@@ -734,7 +734,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontext_cs_modelbuilder",
-      "community": 10,
+      "community": 40,
       "norm_label": "modelbuilder"
     },
     {
@@ -744,7 +744,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontextfactory",
-      "community": 10,
+      "community": 40,
       "norm_label": "bodylifedbcontextfactory.cs"
     },
     {
@@ -760,7 +760,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontextfactory_bodylife_crm_infrastructure_persistence_bodylifedbcontextfactory",
-      "community": 10,
+      "community": 40,
       "norm_label": "bodylifedbcontextfactory"
     },
     {
@@ -770,7 +770,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "idesigntimedbcontextfactory",
-      "community": 10,
+      "community": 40,
       "norm_label": "idesigntimedbcontextfactory"
     },
     {
@@ -786,7 +786,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontextfactory_bodylife_crm_infrastructure_persistence_bodylifedbcontextfactory_createdbcontext",
-      "community": 10,
+      "community": 40,
       "norm_label": ".createdbcontext()"
     },
     {
@@ -796,7 +796,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontextoptions",
-      "community": 10,
+      "community": 65,
       "norm_label": "bodylifedbcontextoptions.cs"
     },
     {
@@ -812,7 +812,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontextoptions_bodylife_crm_infrastructure_persistence_bodylifedbcontextoptions",
-      "community": 10,
+      "community": 65,
       "norm_label": "bodylifedbcontextoptions"
     },
     {
@@ -822,7 +822,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontextoptions_cs_string",
-      "community": 10,
+      "community": 65,
       "norm_label": "string"
     },
     {
@@ -838,7 +838,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_bodylifedbcontextoptions_bodylife_crm_infrastructure_persistence_bodylifedbcontextoptions_configure",
-      "community": 10,
+      "community": 65,
       "norm_label": ".configure()"
     },
     {
@@ -848,7 +848,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "dbcontextoptionsbuilder",
-      "community": 10,
+      "community": 65,
       "norm_label": "dbcontextoptionsbuilder"
     },
     {
@@ -858,7 +858,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
-      "community": 40,
+      "community": 67,
       "norm_label": "commandidempotencyrecord.cs"
     },
     {
@@ -873,7 +873,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:c7ebe20e2d7b2dd4",
-      "community": 40,
+      "community": 67,
       "norm_label": "bodylife.crm.infrastructure.persistence.idempotency"
     },
     {
@@ -889,7 +889,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
-      "community": 40,
+      "community": 67,
       "norm_label": "commandidempotencyrecord"
     },
     {
@@ -899,7 +899,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_guid",
-      "community": 40,
+      "community": 67,
       "norm_label": "guid"
     },
     {
@@ -909,7 +909,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_datetimeoffset",
-      "community": 40,
+      "community": 67,
       "norm_label": "datetimeoffset"
     },
     {
@@ -919,7 +919,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
-      "community": 40,
+      "community": 67,
       "norm_label": "commandidempotencyrecordconfiguration.cs"
     },
     {
@@ -935,7 +935,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
-      "community": 40,
+      "community": 67,
       "norm_label": "commandidempotencyrecordconfiguration"
     },
     {
@@ -961,7 +961,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_configure",
-      "community": 40,
+      "community": 67,
       "norm_label": ".configure()"
     },
     {
@@ -971,7 +971,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_cs_entitytypebuilder",
-      "community": 40,
+      "community": 67,
       "norm_label": "entitytypebuilder"
     },
     {
@@ -981,7 +981,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer",
-      "community": 42,
+      "community": 78,
       "norm_label": "20260708140900_initialbaseline.designer.cs"
     },
     {
@@ -1012,7 +1012,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_bodylife_crm_infrastructure_persistence_migrations_initialbaseline",
-      "community": 42,
+      "community": 78,
       "norm_label": "initialbaseline"
     },
     {
@@ -1028,7 +1028,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_bodylife_crm_infrastructure_persistence_migrations_initialbaseline_buildtargetmodel",
-      "community": 42,
+      "community": 78,
       "norm_label": ".buildtargetmodel()"
     },
     {
@@ -1038,7 +1038,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_cs_modelbuilder",
-      "community": 42,
+      "community": 78,
       "norm_label": "modelbuilder"
     },
     {
@@ -1126,7 +1126,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer",
-      "community": 42,
+      "community": 79,
       "norm_label": "20260709113419_addcommandidempotencykeys.designer.cs"
     },
     {
@@ -1142,7 +1142,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
-      "community": 42,
+      "community": 79,
       "norm_label": "addcommandidempotencykeys"
     },
     {
@@ -1158,7 +1158,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_buildtargetmodel",
-      "community": 42,
+      "community": 79,
       "norm_label": ".buildtargetmodel()"
     },
     {
@@ -1168,7 +1168,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_designer_cs_modelbuilder",
-      "community": 42,
+      "community": 79,
       "norm_label": "modelbuilder"
     },
     {
@@ -1178,7 +1178,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys",
-      "community": 42,
+      "community": 70,
       "norm_label": "20260709113419_addcommandidempotencykeys.cs"
     },
     {
@@ -1194,7 +1194,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys",
-      "community": 42,
+      "community": 70,
       "norm_label": "addcommandidempotencykeys"
     },
     {
@@ -1210,7 +1210,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_up",
-      "community": 42,
+      "community": 70,
       "norm_label": ".up()"
     },
     {
@@ -1220,7 +1220,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_cs_migrationbuilder",
-      "community": 42,
+      "community": 70,
       "norm_label": "migrationbuilder"
     },
     {
@@ -1236,7 +1236,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709113419_addcommandidempotencykeys_bodylife_crm_infrastructure_persistence_migrations_addcommandidempotencykeys_down",
-      "community": 42,
+      "community": 70,
       "norm_label": ".down()"
     },
     {
@@ -1246,7 +1246,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_designer",
-      "community": 42,
+      "community": 86,
       "norm_label": "20260709120305_addusersrolesaccountssessions.designer.cs"
     },
     {
@@ -1262,7 +1262,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_designer_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions",
-      "community": 42,
+      "community": 86,
       "norm_label": "addusersrolesaccountssessions"
     },
     {
@@ -1278,7 +1278,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_designer_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions_buildtargetmodel",
-      "community": 42,
+      "community": 86,
       "norm_label": ".buildtargetmodel()"
     },
     {
@@ -1288,7 +1288,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_designer_cs_modelbuilder",
-      "community": 42,
+      "community": 86,
       "norm_label": "modelbuilder"
     },
     {
@@ -1298,7 +1298,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions",
-      "community": 42,
+      "community": 72,
       "norm_label": "20260709120305_addusersrolesaccountssessions.cs"
     },
     {
@@ -1314,7 +1314,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions",
-      "community": 42,
+      "community": 72,
       "norm_label": "addusersrolesaccountssessions"
     },
     {
@@ -1330,7 +1330,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions_up",
-      "community": 42,
+      "community": 72,
       "norm_label": ".up()"
     },
     {
@@ -1340,7 +1340,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_cs_migrationbuilder",
-      "community": 42,
+      "community": 72,
       "norm_label": "migrationbuilder"
     },
     {
@@ -1356,7 +1356,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions_down",
-      "community": 42,
+      "community": 72,
       "norm_label": ".down()"
     },
     {
@@ -1366,7 +1366,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709143654_addaccountcredentials_designer",
-      "community": 42,
+      "community": 87,
       "norm_label": "20260709143654_addaccountcredentials.designer.cs"
     },
     {
@@ -1382,7 +1382,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709143654_addaccountcredentials_designer_bodylife_crm_infrastructure_persistence_migrations_addaccountcredentials",
-      "community": 42,
+      "community": 87,
       "norm_label": "addaccountcredentials"
     },
     {
@@ -1398,7 +1398,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709143654_addaccountcredentials_designer_bodylife_crm_infrastructure_persistence_migrations_addaccountcredentials_buildtargetmodel",
-      "community": 42,
+      "community": 87,
       "norm_label": ".buildtargetmodel()"
     },
     {
@@ -1408,7 +1408,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709143654_addaccountcredentials_designer_cs_modelbuilder",
-      "community": 42,
+      "community": 87,
       "norm_label": "modelbuilder"
     },
     {
@@ -1486,7 +1486,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot",
-      "community": 42,
+      "community": 68,
       "norm_label": "bodylifedbcontextmodelsnapshot.cs"
     },
     {
@@ -1502,7 +1502,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot",
-      "community": 42,
+      "community": 68,
       "norm_label": "bodylifedbcontextmodelsnapshot"
     },
     {
@@ -1512,7 +1512,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "modelsnapshot",
-      "community": 42,
+      "community": 68,
       "norm_label": "modelsnapshot"
     },
     {
@@ -1528,7 +1528,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot_buildmodel",
-      "community": 42,
+      "community": 68,
       "norm_label": ".buildmodel()"
     },
     {
@@ -1538,7 +1538,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_bodylifedbcontextmodelsnapshot_cs_modelbuilder",
-      "community": 42,
+      "community": 68,
       "norm_label": "modelbuilder"
     },
     {
@@ -1548,7 +1548,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecord",
-      "community": 65,
+      "community": 67,
       "norm_label": "accountcredentialrecord.cs"
     },
     {
@@ -1579,7 +1579,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecord_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecord",
-      "community": 65,
+      "community": 67,
       "norm_label": "accountcredentialrecord"
     },
     {
@@ -1589,7 +1589,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecord_cs_guid",
-      "community": 65,
+      "community": 67,
       "norm_label": "guid"
     },
     {
@@ -1599,7 +1599,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecord_cs_datetimeoffset",
-      "community": 65,
+      "community": 67,
       "norm_label": "datetimeoffset"
     },
     {
@@ -1609,7 +1609,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecordconfiguration",
-      "community": 65,
+      "community": 67,
       "norm_label": "accountcredentialrecordconfiguration.cs"
     },
     {
@@ -1625,7 +1625,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecordconfiguration_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecordconfiguration",
-      "community": 65,
+      "community": 67,
       "norm_label": "accountcredentialrecordconfiguration"
     },
     {
@@ -1641,7 +1641,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecordconfiguration_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecordconfiguration_configure",
-      "community": 65,
+      "community": 67,
       "norm_label": ".configure()"
     },
     {
@@ -1651,7 +1651,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountcredentialrecordconfiguration_cs_entitytypebuilder",
-      "community": 65,
+      "community": 67,
       "norm_label": "entitytypebuilder"
     },
     {
@@ -1661,7 +1661,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult",
-      "community": 16,
+      "community": 66,
       "norm_label": "accountloginresult.cs"
     },
     {
@@ -1677,7 +1677,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult",
-      "community": 16,
+      "community": 66,
       "norm_label": "accountloginresult"
     },
     {
@@ -1693,7 +1693,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult_success",
-      "community": 16,
+      "community": 23,
       "norm_label": ".success()"
     },
     {
@@ -1709,7 +1709,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult_invalidcredentials",
-      "community": 16,
+      "community": 66,
       "norm_label": ".invalidcredentials()"
     },
     {
@@ -1719,7 +1719,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice",
-      "community": 66,
+      "community": 16,
       "norm_label": "accountloginservice.cs"
     },
     {
@@ -1839,7 +1839,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginstatus_bodylife_crm_infrastructure_persistence_usersroles_accountloginstatus",
-      "community": 16,
+      "community": 23,
       "norm_label": "accountloginstatus"
     },
     {
@@ -1947,7 +1947,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot",
-      "community": 16,
+      "community": 23,
       "norm_label": "accountsessionsnapshot.cs"
     },
     {
@@ -1963,7 +1963,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot",
-      "community": 16,
+      "community": 23,
       "norm_label": "accountsessionsnapshot"
     },
     {
@@ -2307,7 +2307,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper",
-      "community": 92,
+      "community": 7,
       "norm_label": "ownercredentialsbootstrapper.cs"
     },
     {
@@ -2323,7 +2323,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper",
-      "community": 92,
+      "community": 7,
       "norm_label": "ownercredentialsbootstrapper"
     },
     {
@@ -2333,7 +2333,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_cs_string",
-      "community": 92,
+      "community": 7,
       "norm_label": "string"
     },
     {
@@ -2343,7 +2343,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_cs_int",
-      "community": 92,
+      "community": 7,
       "norm_label": "int"
     },
     {
@@ -2359,7 +2359,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_setownercredentialsasync",
-      "community": 92,
+      "community": 7,
       "norm_label": ".setownercredentialsasync()"
     },
     {
@@ -2369,7 +2369,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_cs_cancellationtoken",
-      "community": 92,
+      "community": 7,
       "norm_label": "cancellationtoken"
     },
     {
@@ -2379,7 +2379,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_cs_task",
-      "community": 92,
+      "community": 7,
       "norm_label": "task"
     },
     {
@@ -2395,7 +2395,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_normalizeloginname",
-      "community": 92,
+      "community": 7,
       "norm_label": ".normalizeloginname()"
     },
     {
@@ -2405,7 +2405,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "normalizedlogin",
-      "community": 92,
+      "community": 7,
       "norm_label": "normalizedlogin"
     },
     {
@@ -2422,7 +2422,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_normalizedlogin",
-      "community": 92,
+      "community": 7,
       "norm_label": "normalizedlogin"
     },
     {
@@ -2741,19 +2741,19 @@
       "norm_label": "microsoft.net.sdk.web"
     },
     {
-      "label": "BodyLifeAuthorizationExtensions.cs",
+      "label": "BodyLifeAuthTechnicalLogger.cs",
       "file_type": "code",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
-      "community": 9,
-      "norm_label": "bodylifeauthorizationextensions.cs"
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "community": 16,
+      "norm_label": "bodylifeauthtechnicallogger.cs"
     },
     {
       "label": "BodyLife.Crm.Web.Operations",
       "file_type": "code",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
       "source_location": "L6",
       "type": "namespace",
       "metadata": {
@@ -2766,14 +2766,535 @@
       "norm_label": "bodylife.crm.web.operations"
     },
     {
-      "label": "BodyLifeAuthorizationExtensions",
+      "label": "IBodyLifeAuthTechnicalLogger",
       "file_type": "code",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
       "source_location": "L8",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger",
+      "community": 23,
+      "norm_label": "ibodylifeauthtechnicallogger"
+    },
+    {
+      "label": ".LoginFailed()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L10",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_loginfailed",
+      "community": 23,
+      "norm_label": ".loginfailed()"
+    },
+    {
+      "label": "HttpContext",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "community": 23,
+      "norm_label": "httpcontext"
+    },
+    {
+      "label": ".LoginSucceeded()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L12",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_loginsucceeded",
+      "community": 23,
+      "norm_label": ".loginsucceeded()"
+    },
+    {
+      "label": ".Logout()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L14",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_logout",
+      "community": 23,
+      "norm_label": ".logout()"
+    },
+    {
+      "label": "Guid",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_guid",
+      "community": 23,
+      "norm_label": "guid"
+    },
+    {
+      "label": ".PermissionDenied()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L16",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_permissiondenied",
+      "community": 23,
+      "norm_label": ".permissiondenied()"
+    },
+    {
+      "label": "IReadOnlyCollection",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "ireadonlycollection",
+      "community": 23,
+      "norm_label": "ireadonlycollection"
+    },
+    {
+      "label": "BodyLifeAuthTechnicalLogger",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L22",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "community": 23,
+      "norm_label": "bodylifeauthtechnicallogger"
+    },
+    {
+      "label": "string",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_string",
+      "community": 23,
+      "norm_label": "string"
+    },
+    {
+      "label": ".LoginFailed()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L27",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginfailed",
+      "community": 23,
+      "norm_label": ".loginfailed()"
+    },
+    {
+      "label": ".LoginSucceeded()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L40",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginsucceeded",
+      "community": 23,
+      "norm_label": ".loginsucceeded()"
+    },
+    {
+      "label": ".Logout()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L56",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_logout",
+      "community": 23,
+      "norm_label": ".logout()"
+    },
+    {
+      "label": ".PermissionDenied()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L74",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_permissiondenied",
+      "community": 23,
+      "norm_label": ".permissiondenied()"
+    },
+    {
+      "label": ".ResolveActorContext()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L98",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolveactorcontext",
+      "community": 23,
+      "norm_label": ".resolveactorcontext()"
+    },
+    {
+      "label": "ActorLogContext",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "actorlogcontext",
+      "community": 23,
+      "norm_label": "actorlogcontext"
+    },
+    {
+      "label": ".ResolveRequestCorrelationId()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L110",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverequestcorrelationid",
+      "community": 23,
+      "norm_label": ".resolverequestcorrelationid()"
+    },
+    {
+      "label": ".ResolveRouteOrCommand()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L119",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverouteorcommand",
+      "community": 23,
+      "norm_label": ".resolverouteorcommand()"
+    },
+    {
+      "label": ".FormatRequiredPolicies()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L133",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formatrequiredpolicies",
+      "community": 23,
+      "norm_label": ".formatrequiredpolicies()"
+    },
+    {
+      "label": ".NormalizeLogToken()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L140",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_normalizelogtoken",
+      "community": 23,
+      "norm_label": ".normalizelogtoken()"
+    },
+    {
+      "label": ".FormatActorRole()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L154",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formatactorrole",
+      "community": 23,
+      "norm_label": ".formatactorrole()"
+    },
+    {
+      "label": ".FormatAccountKind()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L164",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formataccountkind",
+      "community": 23,
+      "norm_label": ".formataccountkind()"
+    },
+    {
+      "label": "ActorLogContext",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L175",
+      "metadata": {
+        "is_nested_type": true,
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_actorlogcontext",
+      "community": 16,
+      "norm_label": "actorlogcontext"
+    },
+    {
+      "label": "BodyLifeSensitiveLogValues",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L186",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues",
+      "community": 23,
+      "norm_label": "bodylifesensitivelogvalues"
+    },
+    {
+      "label": ".HasPersonalValue()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L191",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues_haspersonalvalue",
+      "community": 23,
+      "norm_label": ".haspersonalvalue()"
+    },
+    {
+      "label": ".RedactSecret()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L196",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues_redactsecret",
+      "community": 23,
+      "norm_label": ".redactsecret()"
+    },
+    {
+      "label": "BodyLifeAuthorizationMiddlewareResultHandler",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L204",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler",
+      "community": 23,
+      "norm_label": "bodylifeauthorizationmiddlewareresulthandler"
+    },
+    {
+      "label": "IAuthorizationMiddlewareResultHandler",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "iauthorizationmiddlewareresulthandler",
+      "community": 23,
+      "norm_label": "iauthorizationmiddlewareresulthandler"
+    },
+    {
+      "label": "AuthorizationMiddlewareResultHandler",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "authorizationmiddlewareresulthandler",
+      "community": 23,
+      "norm_label": "authorizationmiddlewareresulthandler"
+    },
+    {
+      "label": ".HandleAsync()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L209",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "community": 23,
+      "norm_label": ".handleasync()"
+    },
+    {
+      "label": "RequestDelegate",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "requestdelegate",
+      "community": 23,
+      "norm_label": "requestdelegate"
+    },
+    {
+      "label": "AuthorizationPolicy",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "authorizationpolicy",
+      "community": 23,
+      "norm_label": "authorizationpolicy"
+    },
+    {
+      "label": "PolicyAuthorizationResult",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "policyauthorizationresult",
+      "community": 23,
+      "norm_label": "policyauthorizationresult"
+    },
+    {
+      "label": "Task",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_task",
+      "community": 23,
+      "norm_label": "task"
+    },
+    {
+      "label": ".ResolveRequiredPolicies()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L226",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_resolverequiredpolicies",
+      "community": 23,
+      "norm_label": ".resolverequiredpolicies()"
+    },
+    {
+      "label": ".ResolveFailureReason()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L242",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s183"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_resolvefailurereason",
+      "community": 23,
+      "norm_label": ".resolvefailurereason()"
+    },
+    {
+      "label": "BodyLifeAuthorizationExtensions.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "community": 9,
+      "norm_label": "bodylifeauthorizationextensions.cs"
+    },
+    {
+      "label": "BodyLifeAuthorizationExtensions",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_location": "L9",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2785,11 +3306,11 @@
       "label": ".AddBodyLifeAuthorizationPolicies()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L10",
+      "source_location": "L11",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2811,11 +3332,11 @@
       "label": ".RequireBodyLifeSession()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L40",
+      "source_location": "L43",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2837,11 +3358,11 @@
       "label": "BodyLifeCorrectionAuthorizationContext",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L49",
+      "source_location": "L52",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2853,11 +3374,11 @@
       "label": "BodyLifeCorrectionAuthorizationRequirement",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L51",
+      "source_location": "L54",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2879,11 +3400,11 @@
       "label": "CorrectionAuthorizationScope",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L57",
+      "source_location": "L60",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2895,11 +3416,11 @@
       "label": "BodyLifeCorrectionAuthorizationHandler",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L63",
+      "source_location": "L66",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2921,11 +3442,11 @@
       "label": ".HandleRequirementAsync()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L66",
+      "source_location": "L69",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2957,11 +3478,11 @@
       "label": "BodyLifeAuthorizationClaims",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L97",
+      "source_location": "L100",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2973,11 +3494,11 @@
       "label": ".HasBodyLifeSession()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L99",
+      "source_location": "L102",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -2999,11 +3520,11 @@
       "label": ".IsAdminOrOwner()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L104",
+      "source_location": "L107",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -3015,11 +3536,11 @@
       "label": ".IsOwner()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L110",
+      "source_location": "L113",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Operations",
         "scope_chain": [
-          "s154"
+          "s203"
         ]
       },
       "_origin": "ast",
@@ -3138,7 +3659,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver",
-      "community": 89,
+      "community": 34,
       "norm_label": "bodyliferequestcontextresolver.cs"
     },
     {
@@ -3350,7 +3871,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodyliferequestcontextservicecollectionextensions",
-      "community": 89,
+      "community": 34,
       "norm_label": "bodyliferequestcontextservicecollectionextensions"
     },
     {
@@ -3366,7 +3887,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodyliferequestcontextservicecollectionextensions_addbodyliferequestcontext",
-      "community": 89,
+      "community": 34,
       "norm_label": ".addbodyliferequestcontext()"
     },
     {
@@ -3376,7 +3897,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_cs_iservicecollection",
-      "community": 89,
+      "community": 34,
       "norm_label": "iservicecollection"
     },
     {
@@ -3501,7 +4022,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "func",
+      "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_cs_func",
       "community": 119,
       "norm_label": "func"
     },
@@ -4178,7 +4699,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_requestcorrelationmiddleware",
-      "community": 18,
+      "community": 24,
       "norm_label": "requestcorrelationmiddleware.cs"
     },
     {
@@ -4485,7 +5006,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:4d4f4e66c98f84fe",
-      "community": 124,
+      "community": 25,
       "norm_label": "bodylife.crm.web.pages"
     },
     {
@@ -4557,7 +5078,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_login_cshtml",
-      "community": 124,
+      "community": 25,
       "norm_label": "login.cshtml.cs"
     },
     {
@@ -4573,14 +5094,14 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_login_cshtml_bodylife_crm_web_pages_loginmodel",
-      "community": 75,
+      "community": 25,
       "norm_label": "loginmodel"
     },
     {
       "label": ".OnPostAsync()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Pages/Login.cshtml.cs",
-      "source_location": "L25",
+      "source_location": "L27",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Pages",
         "scope_chain": [
@@ -4589,7 +5110,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_login_cshtml_bodylife_crm_web_pages_loginmodel_onpostasync",
-      "community": 75,
+      "community": 25,
       "norm_label": ".onpostasync()"
     },
     {
@@ -4599,7 +5120,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_login_cshtml_cs_cancellationtoken",
-      "community": 75,
+      "community": 25,
       "norm_label": "cancellationtoken"
     },
     {
@@ -4609,7 +5130,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_login_cshtml_cs_task",
-      "community": 75,
+      "community": 25,
       "norm_label": "task"
     },
     {
@@ -4619,14 +5140,14 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_login_cshtml_cs_iactionresult",
-      "community": 75,
+      "community": 25,
       "norm_label": "iactionresult"
     },
     {
       "label": ".ResolveReturnUrl()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Pages/Login.cshtml.cs",
-      "source_location": "L64",
+      "source_location": "L69",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Pages",
         "scope_chain": [
@@ -4635,7 +5156,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_login_cshtml_bodylife_crm_web_pages_loginmodel_resolvereturnurl",
-      "community": 75,
+      "community": 25,
       "norm_label": ".resolvereturnurl()"
     },
     {
@@ -4665,7 +5186,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml",
-      "community": 124,
+      "community": 25,
       "norm_label": "logout.cshtml.cs"
     },
     {
@@ -4681,14 +5202,14 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_bodylife_crm_web_pages_logoutmodel",
-      "community": 124,
+      "community": 25,
       "norm_label": "logoutmodel"
     },
     {
       "label": ".OnPostAsync()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Pages/Logout.cshtml.cs",
-      "source_location": "L12",
+      "source_location": "L14",
       "metadata": {
         "namespace": "BodyLife.Crm.Web.Pages",
         "scope_chain": [
@@ -4697,7 +5218,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_bodylife_crm_web_pages_logoutmodel_onpostasync",
-      "community": 34,
+      "community": 25,
       "norm_label": ".onpostasync()"
     },
     {
@@ -4707,7 +5228,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_cs_cancellationtoken",
-      "community": 34,
+      "community": 25,
       "norm_label": "cancellationtoken"
     },
     {
@@ -4717,7 +5238,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_cs_task",
-      "community": 34,
+      "community": 25,
       "norm_label": "task"
     },
     {
@@ -4727,7 +5248,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_cs_iactionresult",
-      "community": 34,
+      "community": 25,
       "norm_label": "iactionresult"
     },
     {
@@ -5008,7 +5529,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandenvelope",
-      "community": 89,
+      "community": 34,
       "norm_label": "commandenvelope.cs"
     },
     {
@@ -5023,7 +5544,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:ddb4a710de307e03",
-      "community": 89,
+      "community": 34,
       "norm_label": "bodylife.crm.application.commands"
     },
     {
@@ -5049,7 +5570,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commanderror",
-      "community": 89,
+      "community": 28,
       "norm_label": "commanderror.cs"
     },
     {
@@ -5065,7 +5586,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commanderror_bodylife_crm_application_commands_commanderror",
-      "community": 89,
+      "community": 28,
       "norm_label": "commanderror"
     },
     {
@@ -5075,7 +5596,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commanderrorcode",
-      "community": 89,
+      "community": 34,
       "norm_label": "commanderrorcode.cs"
     },
     {
@@ -5091,7 +5612,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commanderrorcode_bodylife_crm_application_commands_commanderrorcode",
-      "community": 89,
+      "community": 34,
       "norm_label": "commanderrorcode"
     },
     {
@@ -5101,7 +5622,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandresult",
-      "community": 89,
+      "community": 28,
       "norm_label": "commandresult.cs"
     },
     {
@@ -5117,7 +5638,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandresult_bodylife_crm_application_commands_commandresult",
-      "community": 89,
+      "community": 28,
       "norm_label": "commandresult"
     },
     {
@@ -5159,7 +5680,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandresult_bodylife_crm_application_commands_commandresult_error",
-      "community": 89,
+      "community": 28,
       "norm_label": ".error()"
     },
     {
@@ -5169,7 +5690,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandstatus",
-      "community": 89,
+      "community": 34,
       "norm_label": "commandstatus.cs"
     },
     {
@@ -5185,7 +5706,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandstatus_bodylife_crm_application_commands_commandstatus",
-      "community": 89,
+      "community": 34,
       "norm_label": "commandstatus"
     },
     {
@@ -5247,7 +5768,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler",
-      "community": 89,
+      "community": 34,
       "norm_label": "ibodylifecommandhandler.cs"
     },
     {
@@ -5263,7 +5784,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_bodylife_crm_application_commands_ibodylifecommandhandler",
-      "community": 89,
+      "community": 34,
       "norm_label": "ibodylifecommandhandler"
     },
     {
@@ -5279,7 +5800,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_bodylife_crm_application_commands_ibodylifecommandhandler_executeasync",
-      "community": 89,
+      "community": 34,
       "norm_label": ".executeasync()"
     },
     {
@@ -5289,7 +5810,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_cs_cancellationtoken",
-      "community": 89,
+      "community": 34,
       "norm_label": "cancellationtoken"
     },
     {
@@ -5299,7 +5820,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_cs_task",
-      "community": 89,
+      "community": 34,
       "norm_label": "task"
     },
     {
@@ -6222,7 +6743,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountid",
-      "community": 33,
+      "community": 24,
       "norm_label": "accountid.cs"
     },
     {
@@ -6253,7 +6774,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountid_bodylife_crm_sharedkernel_accountid",
-      "community": 33,
+      "community": 24,
       "norm_label": "accountid"
     },
     {
@@ -6269,7 +6790,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountid_bodylife_crm_sharedkernel_accountid_new",
-      "community": 33,
+      "community": 24,
       "norm_label": ".new()"
     },
     {
@@ -6285,7 +6806,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountid_bodylife_crm_sharedkernel_accountid_tostring",
-      "community": 33,
+      "community": 24,
       "norm_label": ".tostring()"
     },
     {
@@ -6295,7 +6816,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountkind",
-      "community": 24,
+      "community": 119,
       "norm_label": "accountkind.cs"
     },
     {
@@ -6321,7 +6842,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_actorcontext",
-      "community": 24,
+      "community": 119,
       "norm_label": "actorcontext.cs"
     },
     {
@@ -6337,7 +6858,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_actorcontext_bodylife_crm_sharedkernel_actorcontext",
-      "community": 24,
+      "community": 119,
       "norm_label": "actorcontext"
     },
     {
@@ -6347,7 +6868,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_actorrole",
-      "community": 24,
+      "community": 119,
       "norm_label": "actorrole.cs"
     },
     {
@@ -6431,7 +6952,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_daterange",
-      "community": 23,
+      "community": 24,
       "norm_label": "daterange.cs"
     },
     {
@@ -6447,7 +6968,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_daterange_bodylife_crm_sharedkernel_daterange",
-      "community": 23,
+      "community": 24,
       "norm_label": "daterange"
     },
     {
@@ -6457,7 +6978,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "dateonly",
-      "community": 23,
+      "community": 24,
       "norm_label": "dateonly"
     },
     {
@@ -6473,7 +6994,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_daterange_bodylife_crm_sharedkernel_daterange_contains",
-      "community": 23,
+      "community": 24,
       "norm_label": ".contains()"
     },
     {
@@ -6721,7 +7242,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests",
-      "community": 10,
+      "community": 40,
       "norm_label": "postgresqlaccountlogintests.cs"
     },
     {
@@ -6752,7 +7273,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests",
-      "community": 10,
+      "community": 46,
       "norm_label": "postgresqlaccountlogintests"
     },
     {
@@ -6768,7 +7289,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_ownercredentialsbootstrapperstoresloginhash",
-      "community": 10,
+      "community": 46,
       "norm_label": ".ownercredentialsbootstrapperstoresloginhash()"
     },
     {
@@ -6778,7 +7299,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_cs_task",
-      "community": 10,
+      "community": 46,
       "norm_label": "task"
     },
     {
@@ -6788,7 +7309,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_cs_postgresqlfact",
-      "community": 10,
+      "community": 46,
       "norm_label": "postgresqlfact"
     },
     {
@@ -6804,7 +7325,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_accountloginservicecreatesandendssession",
-      "community": 10,
+      "community": 46,
       "norm_label": ".accountloginservicecreatesandendssession()"
     },
     {
@@ -6820,7 +7341,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_accountloginservicerejectsinvalidpasswordwithoutsession",
-      "community": 10,
+      "community": 46,
       "norm_label": ".accountloginservicerejectsinvalidpasswordwithoutsession()"
     },
     {
@@ -6836,7 +7357,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_accountloginservicerejectsinactiveaccountwithoutsession",
-      "community": 10,
+      "community": 46,
       "norm_label": ".accountloginservicerejectsinactiveaccountwithoutsession()"
     },
     {
@@ -6852,7 +7373,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bootstrapownercredentialsasync",
-      "community": 10,
+      "community": 46,
       "norm_label": ".bootstrapownercredentialsasync()"
     },
     {
@@ -6868,7 +7389,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bootstrapownerasync",
-      "community": 10,
+      "community": 46,
       "norm_label": ".bootstrapownerasync()"
     },
     {
@@ -6884,7 +7405,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_countsessionsasync",
-      "community": 10,
+      "community": 46,
       "norm_label": ".countsessionsasync()"
     },
     {
@@ -6894,7 +7415,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
-      "community": 46,
+      "community": 10,
       "norm_label": "postgresqlcommandidempotencystoragetests.cs"
     },
     {
@@ -6910,7 +7431,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
-      "community": 46,
+      "community": 10,
       "norm_label": "postgresqlcommandidempotencystoragetests"
     },
     {
@@ -6926,7 +7447,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragemigrationcreatestableandindexes",
-      "community": 46,
+      "community": 10,
       "norm_label": ".commandidempotencystoragemigrationcreatestableandindexes()"
     },
     {
@@ -6936,7 +7457,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_task",
-      "community": 46,
+      "community": 10,
       "norm_label": "task"
     },
     {
@@ -6946,7 +7467,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_postgresqlfact",
-      "community": 46,
+      "community": 10,
       "norm_label": "postgresqlfact"
     },
     {
@@ -6962,7 +7483,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsduplicatecommandkey",
-      "community": 46,
+      "community": 10,
       "norm_label": ".commandidempotencystoragerejectsduplicatecommandkey()"
     },
     {
@@ -6978,7 +7499,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_commandidempotencystoragerejectsinvalidstatus",
-      "community": 46,
+      "community": 10,
       "norm_label": ".commandidempotencystoragerejectsinvalidstatus()"
     },
     {
@@ -6994,7 +7515,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_insertcommandidempotencyrecordasync",
-      "community": 46,
+      "community": 10,
       "norm_label": ".insertcommandidempotencyrecordasync()"
     },
     {
@@ -7004,7 +7525,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_guid",
-      "community": 46,
+      "community": 10,
       "norm_label": "guid"
     },
     {
@@ -7014,7 +7535,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests_cs_datetimeoffset",
-      "community": 46,
+      "community": 10,
       "norm_label": "datetimeoffset"
     },
     {
@@ -7122,7 +7643,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
-      "community": 16,
+      "community": 10,
       "norm_label": "postgresqlownerbootstrappertests.cs"
     },
     {
@@ -7138,7 +7659,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
-      "community": 70,
+      "community": 10,
       "norm_label": "postgresqlownerbootstrappertests"
     },
     {
@@ -7154,7 +7675,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrappercreatesowneraccount",
-      "community": 70,
+      "community": 10,
       "norm_label": ".ownerbootstrappercreatesowneraccount()"
     },
     {
@@ -7164,7 +7685,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_task",
-      "community": 70,
+      "community": 10,
       "norm_label": "task"
     },
     {
@@ -7174,7 +7695,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_postgresqlfact",
-      "community": 70,
+      "community": 10,
       "norm_label": "postgresqlfact"
     },
     {
@@ -7190,7 +7711,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperisidempotentwhenownerexists",
-      "community": 70,
+      "community": 10,
       "norm_label": ".ownerbootstrapperisidempotentwhenownerexists()"
     },
     {
@@ -7206,7 +7727,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperrejectsblankdisplaynamewithoutmutation",
-      "community": 70,
+      "community": 10,
       "norm_label": ".ownerbootstrapperrejectsblankdisplaynamewithoutmutation()"
     },
     {
@@ -7222,7 +7743,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_countowneraccountsasync",
-      "community": 70,
+      "community": 10,
       "norm_label": ".countowneraccountsasync()"
     },
     {
@@ -7372,7 +7893,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_createdbcontext",
-      "community": 10,
+      "community": 40,
       "norm_label": ".createdbcontext()"
     },
     {
@@ -7666,7 +8187,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_commandresulttests",
-      "community": 47,
+      "community": 75,
       "norm_label": "commandresulttests.cs"
     },
     {
@@ -7697,7 +8218,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_commandresulttests_bodylife_crm_tests_application_commandresulttests",
-      "community": 47,
+      "community": 75,
       "norm_label": "commandresulttests"
     },
     {
@@ -7713,7 +8234,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_commandresulttests_bodylife_crm_tests_application_commandresulttests_successcarriescanonicalrereadtarget",
-      "community": 47,
+      "community": 75,
       "norm_label": ".successcarriescanonicalrereadtarget()"
     },
     {
@@ -7723,7 +8244,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_commandresulttests_cs_fact",
-      "community": 47,
+      "community": 75,
       "norm_label": "fact"
     },
     {
@@ -7739,7 +8260,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_commandresulttests_bodylife_crm_tests_application_commandresulttests_errorcarriesnobusinessmutationids",
-      "community": 47,
+      "community": 75,
       "norm_label": ".errorcarriesnobusinessmutationids()"
     },
     {
@@ -8744,20 +9265,20 @@
       "norm_label": "microsoft.net.sdk"
     },
     {
-      "label": "BodyLifeAuthorizationPolicyTests.cs",
+      "label": "BodyLifeAuthTechnicalLoggerTests.cs",
       "file_type": "code",
-      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthorizationPolicyTests.cs",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthorizationpolicytests",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
       "community": 124,
-      "norm_label": "bodylifeauthorizationpolicytests.cs"
+      "norm_label": "bodylifeauthtechnicalloggertests.cs"
     },
     {
       "label": "BodyLife.Crm.Web.Tests.Operations",
       "file_type": "code",
-      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthorizationPolicyTests.cs",
-      "source_location": "L6",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L9",
       "type": "namespace",
       "metadata": {
         "kind": "csharp_namespace",
@@ -8767,6 +9288,411 @@
       "id": "csharp_namespace:942e12986cff02ba",
       "community": 124,
       "norm_label": "bodylife.crm.web.tests.operations"
+    },
+    {
+      "label": "BodyLifeAuthTechnicalLoggerTests",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L11",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "community": 33,
+      "norm_label": "bodylifeauthtechnicalloggertests"
+    },
+    {
+      "label": ".LoginFailureLogOmitsCredentialsLoginNameAndQueryToken()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L13",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginfailurelogomitscredentialsloginnameandquerytoken",
+      "community": 33,
+      "norm_label": ".loginfailurelogomitscredentialsloginnameandquerytoken()"
+    },
+    {
+      "label": "Fact",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_fact",
+      "community": 33,
+      "norm_label": "fact"
+    },
+    {
+      "label": ".LoginSuccessLogOmitsDisplayNameAndDeviceLabel()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L40",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginsuccesslogomitsdisplaynameanddevicelabel",
+      "community": 33,
+      "norm_label": ".loginsuccesslogomitsdisplaynameanddevicelabel()"
+    },
+    {
+      "label": ".PermissionDeniedLogIncludesActorPolicyAndNoPersonalClaimValues()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L73",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_permissiondeniedlogincludesactorpolicyandnopersonalclaimvalues",
+      "community": 33,
+      "norm_label": ".permissiondeniedlogincludesactorpolicyandnopersonalclaimvalues()"
+    },
+    {
+      "label": ".SensitiveLogValueHelperRedactsSecrets()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L114",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_sensitivelogvaluehelperredactssecrets",
+      "community": 33,
+      "norm_label": ".sensitivelogvaluehelperredactssecrets()"
+    },
+    {
+      "label": ".HttpContext()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L121",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_httpcontext",
+      "community": 33,
+      "norm_label": ".httpcontext()"
+    },
+    {
+      "label": "ClaimsPrincipal",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_claimsprincipal",
+      "community": 33,
+      "norm_label": "claimsprincipal"
+    },
+    {
+      "label": "DefaultHttpContext",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_defaulthttpcontext",
+      "community": 33,
+      "norm_label": "defaulthttpcontext"
+    },
+    {
+      "label": ".Principal()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L129",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_principal",
+      "community": 33,
+      "norm_label": ".principal()"
+    },
+    {
+      "label": "Guid",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_guid",
+      "community": 33,
+      "norm_label": "guid"
+    },
+    {
+      "label": ".AssertSensitiveTextAbsent()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L148",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_assertsensitivetextabsent",
+      "community": 33,
+      "norm_label": ".assertsensitivetextabsent()"
+    },
+    {
+      "label": "LogEntry",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "logentry",
+      "community": 33,
+      "norm_label": "logentry"
+    },
+    {
+      "label": "CapturingLogger",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L158",
+      "metadata": {
+        "is_nested_type": true,
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger",
+      "community": 33,
+      "norm_label": "capturinglogger"
+    },
+    {
+      "label": "ILogger",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "ilogger",
+      "community": 33,
+      "norm_label": "ilogger"
+    },
+    {
+      "label": "List",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "list",
+      "community": 33,
+      "norm_label": "list"
+    },
+    {
+      "label": ".BeginScope()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L162",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_beginscope",
+      "community": 33,
+      "norm_label": ".beginscope()"
+    },
+    {
+      "label": "IDisposable",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "idisposable",
+      "community": 33,
+      "norm_label": "idisposable"
+    },
+    {
+      "label": ".IsEnabled()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L168",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_isenabled",
+      "community": 33,
+      "norm_label": ".isenabled()"
+    },
+    {
+      "label": "LogLevel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "loglevel",
+      "community": 33,
+      "norm_label": "loglevel"
+    },
+    {
+      "label": ".Log()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L173",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_log",
+      "community": 33,
+      "norm_label": ".log()"
+    },
+    {
+      "label": "EventId",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "eventid",
+      "community": 33,
+      "norm_label": "eventid"
+    },
+    {
+      "label": "Exception",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "exception",
+      "community": 33,
+      "norm_label": "exception"
+    },
+    {
+      "label": "Func",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_func",
+      "community": 33,
+      "norm_label": "func"
+    },
+    {
+      "label": "LogEntry",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L188",
+      "metadata": {
+        "is_nested_type": true,
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry",
+      "community": 33,
+      "norm_label": "logentry"
+    },
+    {
+      "label": ".Property()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L193",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry_property",
+      "community": 33,
+      "norm_label": ".property()"
+    },
+    {
+      "label": ".AsText()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L200",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry_astext",
+      "community": 33,
+      "norm_label": ".astext()"
+    },
+    {
+      "label": "NullScope",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L210",
+      "metadata": {
+        "is_nested_type": true,
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_nullscope",
+      "community": 33,
+      "norm_label": "nullscope"
+    },
+    {
+      "label": ".Dispose()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L214",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Tests.Operations",
+        "scope_chain": [
+          "s268"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_nullscope_dispose",
+      "community": 33,
+      "norm_label": ".dispose()"
+    },
+    {
+      "label": "BodyLifeAuthorizationPolicyTests.cs",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthorizationPolicyTests.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_web_tests_operations_bodylifeauthorizationpolicytests",
+      "community": 124,
+      "norm_label": "bodylifeauthorizationpolicytests.cs"
     },
     {
       "label": "BodyLifeAuthorizationPolicyTests",
@@ -9240,7 +10166,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "defaulthttpcontext",
+      "id": "tests_bodylife_crm_web_tests_operations_bodyliferequestcontextresolvertests_cs_defaulthttpcontext",
       "community": 89,
       "norm_label": "defaulthttpcontext"
     },
@@ -15333,6 +16259,16 @@
       "norm_label": "step 20 - query permission result shape"
     },
     {
+      "label": "Step 21 - Auth and permission technical logs",
+      "file_type": "document",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L608",
+      "_origin": "ast",
+      "id": "docs_implementation_progress_step_21_auth_and_permission_technical_logs",
+      "community": 82,
+      "norm_label": "step 21 - auth and permission technical logs"
+    },
+    {
       "label": "implementation-roadmap.md",
       "file_type": "document",
       "source_file": "docs/implementation-roadmap.md",
@@ -16843,10 +17779,20 @@
       "norm_label": "query permission results"
     },
     {
-      "label": "Boundaries",
+      "label": "Auth and permission technical logs",
       "file_type": "document",
       "source_file": "docs/login-session.md",
       "source_location": "L62",
+      "_origin": "ast",
+      "id": "docs_login_session_auth_and_permission_technical_logs",
+      "community": 17,
+      "norm_label": "auth and permission technical logs"
+    },
+    {
+      "label": "Boundaries",
+      "file_type": "document",
+      "source_file": "docs/login-session.md",
+      "source_location": "L70",
       "_origin": "ast",
       "id": "docs_login_session_boundaries",
       "community": 17,
@@ -18807,19 +19753,6 @@
       "community": 265,
       "norm_label": "state-changing command contract",
       "id": "codex_skills_bodylife_command_workflows_skill_state_changing_command_contract"
-    },
-    {
-      "label": "Openai",
-      "file_type": "document",
-      "source_file": ".codex/skills/bodylife-command-workflows/agents/openai.yaml",
-      "source_location": "L1",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 105,
-      "norm_label": "openai",
-      "id": "codex_skills_bodylife_command_workflows_agents_openai_openai"
     },
     {
       "label": "Logical Commit Workflow",
@@ -24867,6 +25800,22 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_kind": "file"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
       "source_location": "L1",
       "weight": 1.0,
@@ -24972,6 +25921,22 @@
         "scope_kind": "file"
       },
       "source": "tests_bodylife_crm_ui_smoketests_receptionappfixture",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L2",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_kind": "file"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
       "target": "csharp_namespace:11e3fc6fa3c91f4e",
       "confidence_score": 1.0
     },
@@ -25277,6 +26242,34 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L27",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "AccountLoginStatus"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginfailed",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginstatus_bodylife_crm_infrastructure_persistence_usersroles_accountloginstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L10",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "AccountLoginStatus"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_loginfailed",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginstatus_bodylife_crm_infrastructure_persistence_usersroles_accountloginstatus",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/AccountRecord.cs",
@@ -25411,6 +26404,34 @@
       "source_location": "L3",
       "weight": 1.0,
       "source": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L40",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "AccountSessionSnapshot"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginsucceeded",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L12",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "AccountSessionSnapshot"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_loginsucceeded",
       "target": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot_bodylife_crm_infrastructure_persistence_usersroles_accountsessionsnapshot",
       "confidence_score": 1.0
     },
@@ -26222,10 +27243,10 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
       "source_location": "L6",
       "weight": 1.0,
-      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
       "target": "csharp_namespace:ef808ce6eb31719e",
       "confidence_score": 1.0
     },
@@ -26233,7 +27254,7 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
       "source_location": "L2",
       "weight": 1.0,
       "metadata": {
@@ -26241,68 +27262,68 @@
         "target_fqn": "BodyLife.Crm.SharedKernel",
         "scope_kind": "file"
       },
-      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
       "target": "csharp_namespace:ff30436268495aa4",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L97",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L175",
       "weight": 1.0,
-      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
-      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims",
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_actorlogcontext",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L204",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L186",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
       "source_location": "L8",
       "weight": 1.0,
-      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
-      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L49",
+      "source_location": "L7",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
-      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationcontext",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L63",
-      "weight": 1.0,
-      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
-      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationhandler",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L51",
-      "weight": 1.0,
-      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
-      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationrequirement",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L57",
-      "weight": 1.0,
-      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
-      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_correctionauthorizationscope",
+      "target": "csharp_namespace:ef808ce6eb31719e",
       "confidence_score": 1.0
     },
     {
@@ -26473,6 +27494,22 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Web.Operations",
+        "scope_kind": "file"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "csharp_namespace:ef808ce6eb31719e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeRequestContextResolverTests.cs",
       "source_location": "L4",
       "weight": 1.0,
@@ -26502,10 +27539,930 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L22",
+      "weight": 1.0,
+      "metadata": {
+        "ref_token": "IBodyLifeAuthTechnicalLogger"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_loginfailed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_loginsucceeded",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_logout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_permissiondenied",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L10",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_loginfailed",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L209",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L226",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_resolverequiredpolicies",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L27",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginfailed",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L40",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginsucceeded",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L56",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_logout",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L74",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_permissiondenied",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L98",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolveactorcontext",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L110",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverequestcorrelationid",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L119",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverouteorcommand",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L12",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_loginsucceeded",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_logout",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L16",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "HttpContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_permissiondenied",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_logout",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L56",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_logout",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L16",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "IReadOnlyCollection"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_ibodylifeauthtechnicallogger_permissiondenied",
+      "target": "ireadonlycollection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L226",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "IReadOnlyCollection"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_resolverequiredpolicies",
+      "target": "ireadonlycollection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L133",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "IReadOnlyCollection"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formatrequiredpolicies",
+      "target": "ireadonlycollection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L74",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "IReadOnlyCollection"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_permissiondenied",
+      "target": "ireadonlycollection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L164",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formataccountkind",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L154",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formatactorrole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L133",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formatrequiredpolicies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginfailed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginsucceeded",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_logout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L140",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_normalizelogtoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_permissiondenied",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L98",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolveactorcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L110",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverequestcorrelationid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverouteorcommand",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L25",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "string"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_string",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L189",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "string"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_string",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginfailed",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverequestcorrelationid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginfailed",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverouteorcommand",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginfailed",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues_haspersonalvalue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginsucceeded",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverequestcorrelationid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginsucceeded",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverouteorcommand",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_loginsucceeded",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues_haspersonalvalue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_logout",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolveactorcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_logout",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverequestcorrelationid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_logout",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverouteorcommand",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L217",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_permissiondenied",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_permissiondenied",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formatrequiredpolicies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_permissiondenied",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolveactorcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_permissiondenied",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverequestcorrelationid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_permissiondenied",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolverouteorcommand",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L98",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "ActorLogContext"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolveactorcontext",
+      "target": "actorlogcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L105",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolveactorcontext",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formataccountkind",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_resolveactorcontext",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formatactorrole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L154",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "ActorRole"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formatactorrole",
+      "target": "src_bodylife_crm_sharedkernel_actorrole_bodylife_crm_sharedkernel_actorrole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L164",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "AccountKind"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthtechnicallogger_formataccountkind",
+      "target": "src_bodylife_crm_sharedkernel_accountkind_bodylife_crm_sharedkernel_accountkind",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L191",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues_haspersonalvalue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L196",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifesensitivelogvalues_redactsecret",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L207",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "AuthorizationMiddlewareResultHandler"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler",
+      "target": "authorizationmiddlewareresulthandler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L204",
+      "weight": 1.0,
+      "metadata": {
+        "ref_token": "IAuthorizationMiddlewareResultHandler"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler",
+      "target": "iauthorizationmiddlewareresulthandler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L209",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L242",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_resolvefailurereason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L226",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_resolverequiredpolicies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L209",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "AuthorizationPolicy"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "target": "authorizationpolicy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L209",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "PolicyAuthorizationResult"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "target": "policyauthorizationresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L209",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "RequestDelegate"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "target": "requestdelegate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L220",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_resolvefailurereason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L219",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_resolverequiredpolicies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L209",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_handleasync",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs",
+      "source_location": "L242",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "PolicyAuthorizationResult"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthtechnicallogger_bodylife_crm_web_operations_bodylifeauthorizationmiddlewareresulthandler_resolvefailurereason",
+      "target": "policyauthorizationresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_location": "L2",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.SharedKernel",
+        "scope_kind": "file"
+      },
+      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "target": "csharp_namespace:ff30436268495aa4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_location": "L100",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationhandler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationrequirement",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions",
+      "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_correctionauthorizationscope",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions_addbodylifeauthorizationpolicies",
@@ -26515,7 +28472,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L40",
+      "source_location": "L43",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions_requirebodylifesession",
@@ -26526,7 +28483,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L24",
+      "source_location": "L27",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions_addbodylifeauthorizationpolicies",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims_isadminorowner",
@@ -26537,7 +28494,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L19",
+      "source_location": "L22",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions_addbodylifeauthorizationpolicies",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims_isowner",
@@ -26548,7 +28505,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L18",
+      "source_location": "L21",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions_addbodylifeauthorizationpolicies",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationextensions_requirebodylifesession",
@@ -26558,7 +28515,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -26572,7 +28529,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L40",
+      "source_location": "L43",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -26586,7 +28543,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L63",
+      "source_location": "L66",
       "weight": 1.0,
       "context": "generic_arg",
       "metadata": {
@@ -26600,7 +28557,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L66",
+      "source_location": "L69",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -26614,7 +28571,7 @@
       "relation": "implements",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L51",
+      "source_location": "L54",
       "weight": 1.0,
       "metadata": {
         "ref_token": "IAuthorizationRequirement"
@@ -26627,7 +28584,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L54",
+      "source_location": "L57",
       "weight": 1.0,
       "context": "field",
       "metadata": {
@@ -26641,7 +28598,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L63",
+      "source_location": "L66",
       "weight": 1.0,
       "metadata": {
         "ref_token": "AuthorizationHandler"
@@ -26654,7 +28611,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L66",
+      "source_location": "L69",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationhandler",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationhandler_handlerequirementasync",
@@ -26664,7 +28621,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L66",
+      "source_location": "L69",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -26679,7 +28636,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L70",
+      "source_location": "L73",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationhandler_handlerequirementasync",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims_hasbodylifesession",
@@ -26690,7 +28647,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L80",
+      "source_location": "L83",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationhandler_handlerequirementasync",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims_isadminorowner",
@@ -26701,7 +28658,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L88",
+      "source_location": "L91",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifecorrectionauthorizationhandler_handlerequirementasync",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims_isowner",
@@ -26711,7 +28668,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L66",
+      "source_location": "L69",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -26725,7 +28682,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L99",
+      "source_location": "L102",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims_hasbodylifesession",
@@ -26735,7 +28692,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L104",
+      "source_location": "L107",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims_isadminorowner",
@@ -26745,7 +28702,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L110",
+      "source_location": "L113",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims",
       "target": "src_bodylife_crm_web_operations_bodylifeauthorizationextensions_bodylife_crm_web_operations_bodylifeauthorizationclaims_isowner",
@@ -26755,7 +28712,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L99",
+      "source_location": "L102",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -26769,7 +28726,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L104",
+      "source_location": "L107",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -26783,7 +28740,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs",
-      "source_location": "L110",
+      "source_location": "L113",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -27655,7 +29612,7 @@
         "ref_token": "Func"
       },
       "source": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader_tryreadsinglerecognizedvalue",
-      "target": "func",
+      "target": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_cs_func",
       "confidence_score": 1.0
     },
     {
@@ -28950,7 +30907,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Login.cshtml.cs",
-      "source_location": "L25",
+      "source_location": "L27",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_pages_login_cshtml_bodylife_crm_web_pages_loginmodel",
       "target": "src_bodylife_crm_web_pages_login_cshtml_bodylife_crm_web_pages_loginmodel_onpostasync",
@@ -28960,7 +30917,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Login.cshtml.cs",
-      "source_location": "L64",
+      "source_location": "L69",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_pages_login_cshtml_bodylife_crm_web_pages_loginmodel",
       "target": "src_bodylife_crm_web_pages_login_cshtml_bodylife_crm_web_pages_loginmodel_resolvereturnurl",
@@ -28971,7 +30928,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Login.cshtml.cs",
-      "source_location": "L61",
+      "source_location": "L66",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_pages_login_cshtml_bodylife_crm_web_pages_loginmodel_onpostasync",
       "target": "src_bodylife_crm_web_pages_login_cshtml_bodylife_crm_web_pages_loginmodel_resolvereturnurl",
@@ -28981,7 +30938,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Login.cshtml.cs",
-      "source_location": "L25",
+      "source_location": "L27",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -28995,7 +30952,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Login.cshtml.cs",
-      "source_location": "L25",
+      "source_location": "L27",
       "weight": 1.0,
       "context": "generic_arg",
       "metadata": {
@@ -29009,7 +30966,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Login.cshtml.cs",
-      "source_location": "L25",
+      "source_location": "L27",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -29043,7 +31000,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Logout.cshtml.cs",
-      "source_location": "L12",
+      "source_location": "L14",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_pages_logout_cshtml_bodylife_crm_web_pages_logoutmodel",
       "target": "src_bodylife_crm_web_pages_logout_cshtml_bodylife_crm_web_pages_logoutmodel_onpostasync",
@@ -29053,7 +31010,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Logout.cshtml.cs",
-      "source_location": "L12",
+      "source_location": "L14",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -29067,7 +31024,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Logout.cshtml.cs",
-      "source_location": "L12",
+      "source_location": "L14",
       "weight": 1.0,
       "context": "generic_arg",
       "metadata": {
@@ -29081,7 +31038,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Pages/Logout.cshtml.cs",
-      "source_location": "L12",
+      "source_location": "L14",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -30699,6 +32656,22 @@
         "scope_kind": "file"
       },
       "source": "tests_bodylife_crm_tests_sharedkernel_daterangetests",
+      "target": "csharp_namespace:ff30436268495aa4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.SharedKernel",
+        "scope_kind": "file"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
       "target": "csharp_namespace:ff30436268495aa4",
       "confidence_score": 1.0
     },
@@ -33590,21 +35563,61 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthorizationPolicyTests.cs",
-      "source_location": "L6",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L9",
       "weight": 1.0,
-      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthorizationpolicytests",
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
       "target": "csharp_namespace:942e12986cff02ba",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L158",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L188",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L210",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_nullscope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthorizationPolicyTests.cs",
-      "source_location": "L8",
+      "source_location": "L6",
       "weight": 1.0,
       "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthorizationpolicytests",
-      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthorizationpolicytests_bodylife_crm_web_tests_operations_bodylifeauthorizationpolicytests",
+      "target": "csharp_namespace:942e12986cff02ba",
       "confidence_score": 1.0
     },
     {
@@ -33625,6 +35638,531 @@
       "weight": 1.0,
       "source": "tests_bodylife_crm_web_tests_operations_querypermissionresolvertests",
       "target": "csharp_namespace:942e12986cff02ba",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_assertsensitivetextabsent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L121",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginfailurelogomitscredentialsloginnameandquerytoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginsuccesslogomitsdisplaynameanddevicelabel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_permissiondeniedlogincludesactorpolicyandnopersonalclaimvalues",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L129",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_principal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_sensitivelogvaluehelperredactssecrets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginfailurelogomitscredentialsloginnameandquerytoken",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_assertsensitivetextabsent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginfailurelogomitscredentialsloginnameandquerytoken",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginfailurelogomitscredentialsloginnameandquerytoken",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry_property",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "Fact"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginfailurelogomitscredentialsloginnameandquerytoken",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_fact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L40",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "Fact"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginsuccesslogomitsdisplaynameanddevicelabel",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_fact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L73",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "Fact"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_permissiondeniedlogincludesactorpolicyandnopersonalclaimvalues",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_fact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L114",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "Fact"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_sensitivelogvaluehelperredactssecrets",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_fact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginsuccesslogomitsdisplaynameanddevicelabel",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_assertsensitivetextabsent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginsuccesslogomitsdisplaynameanddevicelabel",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_loginsuccesslogomitsdisplaynameanddevicelabel",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry_property",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L111",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_permissiondeniedlogincludesactorpolicyandnopersonalclaimvalues",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_assertsensitivetextabsent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L80",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_permissiondeniedlogincludesactorpolicyandnopersonalclaimvalues",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_httpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L80",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_permissiondeniedlogincludesactorpolicyandnopersonalclaimvalues",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_principal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_permissiondeniedlogincludesactorpolicyandnopersonalclaimvalues",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry_property",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L121",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "ClaimsPrincipal"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_httpcontext",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_claimsprincipal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L121",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "DefaultHttpContext"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_httpcontext",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_defaulthttpcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L129",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "ClaimsPrincipal"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_principal",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_claimsprincipal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L129",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_principal",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L148",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "LogEntry"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_assertsensitivetextabsent",
+      "target": "logentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_assertsensitivetextabsent",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry_astext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L160",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "metadata": {
+        "ref_token": "LogEntry"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger",
+      "target": "logentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L158",
+      "weight": 1.0,
+      "metadata": {
+        "ref_token": "ILogger"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger",
+      "target": "ilogger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L160",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "List"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger",
+      "target": "list",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L162",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_beginscope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L168",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_isenabled",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L173",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L162",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "IDisposable"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_beginscope",
+      "target": "idisposable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L210",
+      "weight": 1.0,
+      "metadata": {
+        "ref_token": "IDisposable"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_nullscope",
+      "target": "idisposable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L168",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "LogLevel"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_isenabled",
+      "target": "loglevel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L173",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "LogLevel"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_log",
+      "target": "loglevel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L173",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "EventId"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_log",
+      "target": "eventid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L173",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "metadata": {
+        "ref_token": "Exception"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_log",
+      "target": "exception",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L173",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Func"
+      },
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_capturinglogger_log",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_cs_func",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L200",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry_astext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L193",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_logentry_property",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs",
+      "source_location": "L214",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_nullscope",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthtechnicalloggertests_bodylife_crm_web_tests_operations_nullscope_dispose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthorizationPolicyTests.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_web_tests_operations_bodylifeauthorizationpolicytests",
+      "target": "tests_bodylife_crm_web_tests_operations_bodylifeauthorizationpolicytests_bodylife_crm_web_tests_operations_bodylifeauthorizationpolicytests",
       "confidence_score": 1.0
     },
     {
@@ -34624,12 +37162,12 @@
       "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeRequestContextResolverTests.cs",
       "source_location": "L126",
       "weight": 1.0,
-      "context": "return_type",
+      "context": "parameter_type",
       "metadata": {
-        "ref_token": "DefaultHttpContext"
+        "ref_token": "ClaimsPrincipal"
       },
       "source": "tests_bodylife_crm_web_tests_operations_bodyliferequestcontextresolvertests_bodylife_crm_web_tests_operations_bodyliferequestcontextresolvertests_httpcontext",
-      "target": "defaulthttpcontext",
+      "target": "tests_bodylife_crm_web_tests_operations_bodyliferequestcontextresolvertests_cs_claimsprincipal",
       "confidence_score": 1.0
     },
     {
@@ -34638,12 +37176,12 @@
       "source_file": "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeRequestContextResolverTests.cs",
       "source_location": "L126",
       "weight": 1.0,
-      "context": "parameter_type",
+      "context": "return_type",
       "metadata": {
-        "ref_token": "ClaimsPrincipal"
+        "ref_token": "DefaultHttpContext"
       },
       "source": "tests_bodylife_crm_web_tests_operations_bodyliferequestcontextresolvertests_bodylife_crm_web_tests_operations_bodyliferequestcontextresolvertests_httpcontext",
-      "target": "tests_bodylife_crm_web_tests_operations_bodyliferequestcontextresolvertests_cs_claimsprincipal",
+      "target": "tests_bodylife_crm_web_tests_operations_bodyliferequestcontextresolvertests_cs_defaulthttpcontext",
       "confidence_score": 1.0
     },
     {
@@ -40373,6 +42911,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/implementation-progress.md",
+      "source_location": "L608",
+      "weight": 1.0,
+      "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
+      "target": "docs_implementation_progress_step_21_auth_and_permission_technical_logs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/implementation-progress.md",
       "source_location": "L44",
       "weight": 1.0,
       "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
@@ -41864,6 +44412,16 @@
       "confidence": "EXTRACTED",
       "source_file": "docs/login-session.md",
       "source_location": "L62",
+      "weight": 1.0,
+      "source": "docs_login_session_login_and_session_tracking",
+      "target": "docs_login_session_auth_and_permission_technical_logs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/login-session.md",
+      "source_location": "L70",
       "weight": 1.0,
       "source": "docs_login_session_login_and_session_tracking",
       "target": "docs_login_session_boundaries",
@@ -44858,5 +47416,5 @@
       "source_file": "docs/vertical-slice-plan.md"
     }
   ],
-  "built_at_commit": "a79131aaf6267fff548e974c773a402bb95cc905"
+  "built_at_commit": "d328d8fba0f20e0db4c45685b65e312ba9b476cc"
 }
