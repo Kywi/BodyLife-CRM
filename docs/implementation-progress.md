@@ -306,3 +306,34 @@ Commit:
 Next recommended step:
 
 - Add the Milestone 1 idempotency key storage foundation before starting Milestone 2.
+
+## Step 11 - Local Docker PostgreSQL setup
+
+Status: completed.
+
+Scope:
+
+- Add `docker-compose.yml` with a local PostgreSQL 17 service, health check and named data volume.
+- Expose the development PostgreSQL container on host port `55432` to avoid collisions with existing local PostgreSQL instances on `5432`.
+- Add `scripts/dev-postgres.sh` for local `up`, `wait`, `status`, `logs`, `down` and destructive `reset` workflows.
+- Add `docs/local-development.md` with the local PostgreSQL workflow and the boundary that production should still use managed PostgreSQL.
+- Add `ConnectionStrings:BodyLifeTestAdmin` to Development settings so `scripts/validate.sh` can run disposable PostgreSQL integration tests locally.
+- Update the design-time EF fallback connection string to the Docker PostgreSQL port.
+- Harden the migration history table assertion to check `pg_class`/`pg_namespace` instead of relying on `regclass` display formatting.
+
+Validation:
+
+- `docker compose -f docker-compose.yml config` passed.
+- `bash -n scripts/dev-postgres.sh` passed.
+- `./scripts/dev-postgres.sh up` started the local PostgreSQL container and readiness passed on `localhost:55432`.
+- Host-side `psql` confirmed the `bodylife` role in the Docker PostgreSQL instance has `rolsuper` and `rolcreatedb`.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING="Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password" /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo` passed with 2 PostgreSQL tests.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed: 5 unit tests, 2 PostgreSQL infrastructure tests, 2 Playwright smoke tests and EF migration listing.
+
+Commit:
+
+- `build(infra): add local Docker PostgreSQL`.
+
+Next recommended step:
+
+- Add the Milestone 1 idempotency key storage foundation before starting Milestone 2.

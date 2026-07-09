@@ -8,8 +8,8 @@
       "applicationUrl": "http://localhost:5097",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionStrings__BodyLife": "Host=localhost;Port=5432;Database=bodylife_crm_dev;Username=bodylife;Password=bodylife_dev_password",
-        "BODYLIFE_CONNECTION_STRING": "Host=localhost;Port=5432;Database=bodylife_crm_dev;Username=bodylife;Password=bodylife_dev_password"
+        "ConnectionStrings__BodyLife": "Host=localhost;Port=55432;Database=bodylife_crm_dev;Username=bodylife;Password=bodylife_dev_password",
+        "BODYLIFE_CONNECTION_STRING": "Host=localhost;Port=55432;Database=bodylife_crm_dev;Username=bodylife;Password=bodylife_dev_password"
       }
     }
   }

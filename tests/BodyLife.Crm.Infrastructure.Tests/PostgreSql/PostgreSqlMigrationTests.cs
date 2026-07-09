@@ -17,7 +17,14 @@ public sealed class PostgreSqlMigrationTests
         var schemaExists = await database.ExecuteScalarAsync<bool>(
             "select exists (select 1 from information_schema.schemata where schema_name = 'bodylife')");
         var historyTableName = await database.ExecuteScalarAsync<string>(
-            "select to_regclass('bodylife.__ef_migrations_history')::text");
+            """
+            select n.nspname || '.' || c.relname
+            from pg_class c
+            join pg_namespace n on n.oid = c.relnamespace
+            where n.nspname = 'bodylife'
+              and c.relname = '__ef_migrations_history'
+              and c.relkind = 'r'
+            """);
 
         Assert.Contains("20260708140900_InitialBaseline", appliedMigrations);
         Assert.True(schemaExists);

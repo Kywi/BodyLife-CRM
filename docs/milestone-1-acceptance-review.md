@@ -28,13 +28,13 @@ This review checks Milestone 1 from `docs/implementation-roadmap.md` against the
 
 | Roadmap criterion | Current result |
 |---|---|
-| App starts locally with PostgreSQL rather than SQLite/EF InMemory for integration scenarios. | Partially met. The app is configured for PostgreSQL and no SQLite/EF InMemory provider is used. Local disposable PostgreSQL integration tests require `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING` or `ConnectionStrings:BodyLifeTestAdmin` with `CREATE DATABASE`; without it they skip. |
+| App starts locally with PostgreSQL rather than SQLite/EF InMemory for integration scenarios. | Met for local development via Docker Compose. `docker-compose.yml` runs PostgreSQL on `localhost:55432`; Development config provides both app and disposable-test admin connection strings. No SQLite/EF InMemory provider is used. |
 | CI runs build, formatting/analyzers, unit tests, PostgreSQL-backed integration tests and migration apply check. | Met by configuration. CI provides PostgreSQL service credentials and calls `scripts/validate.sh`. Local run cannot prove GitHub execution, but the gate is shared. |
 | Baseline migration creates technical minimum without business shortcut tables. | Met. The baseline creates schema/history table only. |
 | Top-level modules have explicit ownership boundaries and no direct cross-module writes. | Met for scaffold. Marker modules and architecture tests exist; no business writes exist yet. |
 | Common command envelope/result/error contract is represented. | Met. Command envelope includes actor, correlation id, entry origin, occurred time, idempotency key, reason and comment. Command result carries reread/audit/error shape. |
 | Structured logs include correlation id and route/command outcome for a smoke request. | Met for request route logging. Command-level logs wait for real commands. |
-| Health check works in local/staging mode. | Partially met locally. Live health works without PostgreSQL. Ready health is wired and tested when PostgreSQL test admin credentials are available. |
+| Health check works in local/staging mode. | Met locally with Docker PostgreSQL. Live health works without PostgreSQL; ready health is covered by PostgreSQL-backed infrastructure tests. |
 | No generic CRUD-first UI bypassing command/query boundary. | Met. The only UI is the reception entry shell. |
 
 ## Remaining Milestone 1 gaps
@@ -43,15 +43,11 @@ This review checks Milestone 1 from `docs/implementation-roadmap.md` against the
 
    The command envelope carries `IdempotencyKey`, but there is no PostgreSQL table or service for storing and resolving duplicate command submissions. This is still a Milestone 1 infrastructure item because later visit/payment/freeze forms require it.
 
-2. Local PostgreSQL integration proof needs an admin/test connection string.
-
-   `ConnectionStrings:BodyLife` is an application connection and may not have `CREATE DATABASE`. The integration harness deliberately creates disposable databases, so local runs need `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING` or `ConnectionStrings:BodyLifeTestAdmin` pointing to a role with database-create privileges.
-
-3. Owner/Admin/shared Reception bootstrap is not implemented.
+2. Owner/Admin/shared Reception bootstrap is not implemented.
 
    The roadmap allows this to be done in Milestone 2 if not owned by Milestone 1. Because Milestone 2 is Auth/users/roles, bootstrap should be handled there rather than adding unsafe default credentials now.
 
-4. Production backup/restore evidence is not part of Milestone 1.
+3. Production backup/restore evidence is not part of Milestone 1.
 
    Health/logging foundations exist, but backup retention, restore rehearsal and owner restore-check remain Milestones 11 and 12 work.
 

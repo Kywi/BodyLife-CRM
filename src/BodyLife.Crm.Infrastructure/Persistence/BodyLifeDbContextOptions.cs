@@ -9,7 +9,7 @@ public static class BodyLifeDbContextOptions
     public const string DefaultSchema = "bodylife";
     public const string MigrationsHistoryTable = "__ef_migrations_history";
     public const string LocalDevelopmentConnectionString =
-        "Host=localhost;Port=5432;Database=bodylife_crm_dev;Username=bodylife;Password=bodylife_dev_password";
+        "Host=localhost;Port=55432;Database=bodylife_crm_dev;Username=bodylife;Password=bodylife_dev_password";
 
     public static void Configure(DbContextOptionsBuilder builder, string connectionString)
     {
