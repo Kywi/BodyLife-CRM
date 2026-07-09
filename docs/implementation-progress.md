@@ -574,3 +574,33 @@ Commit:
 Next recommended step:
 
 - Add permission result shape for queries while server policies remain authoritative.
+
+## Step 20 - Query permission result shape
+
+Status: completed.
+
+Scope:
+
+- Add `QueryPermissionResult`, `QueryPermissionSet` and denied reason codes in the application query layer.
+- Represent query permissions with action key, required server policy, allowed/denied state and optional denied reason.
+- Add `IQueryPermissionResolver` for web query/page composition to evaluate existing ASP.NET Core policies into advisory query permission results.
+- Keep query permission results as UI hints only; command/page handlers must still enforce server policies before mutation.
+- Add tests for permission shape trimming, lookup, duplicate action-key rejection, not-authenticated results and Owner/Admin/shared policy outcomes.
+- Keep module-specific allowed action lists for later business milestones when `SearchClients`, `GetClientProfile`, report and catalog queries exist.
+- Keep auth/permission technical logs for the next Milestone 2 step.
+
+Validation:
+
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Tests/BodyLife.Crm.Tests.csproj --configuration Release --nologo` passed with 11 core tests.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Web.Tests/BodyLife.Crm.Web.Tests.csproj --configuration Release --nologo` passed with 30 web authorization/request-context/query-permission tests.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 11 core tests, 30 web authorization/request-context/query-permission tests, 17 PostgreSQL infrastructure tests, 2 authenticated Playwright smoke tests and EF migration listing through `20260709143654_AddAccountCredentials`.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for markdown progress/login documentation updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(users): add query permission results`.
+
+Next recommended step:
+
+- Add auth/permission technical logs with password/token masking.

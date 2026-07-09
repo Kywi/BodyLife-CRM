@@ -53,6 +53,12 @@ The resolver rejects unauthenticated, malformed or role/account-type inconsisten
 
 Authenticated pages render the shared app shell with the current account display name, role/account type, device label and short session id. Shared Reception/Admin sessions must remain visibly labeled as shared session accountability; the UI must not imply a named physical person when the shared account is used.
 
+## Query permission results
+
+Query responses can include `QueryPermissionSet` / `QueryPermissionResult` so Razor pages and htmx fragments can show allowed, disabled or hidden actions consistently. Each result carries an action key, the policy name that should be enforced for the real command, and an optional denied reason code/message.
+
+These query permission results are UI hints only. State-changing handlers must still call the server-side authorization policy for the command before mutation.
+
 ## Boundaries
 
 - No client accounts or public portal are introduced.

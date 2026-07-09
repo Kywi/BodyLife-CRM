@@ -102,6 +102,7 @@ public static class BodyLifeRequestContextServiceCollectionExtensions
     {
         services.AddHttpContextAccessor();
         services.AddScoped<IBodyLifeRequestContextResolver, BodyLifeRequestContextResolver>();
+        services.AddScoped<IQueryPermissionResolver, QueryPermissionResolver>();
 
         return services;
     }
