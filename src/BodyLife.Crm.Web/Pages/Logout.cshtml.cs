@@ -7,16 +7,23 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BodyLife.Crm.Web.Pages;
 
-public sealed class LogoutModel(AccountLoginService loginService) : PageModel
+public sealed class LogoutModel(
+    AccountLoginService loginService,
+    IBodyLifeAuthTechnicalLogger authTechnicalLogger) : PageModel
 {
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
         var sessionId = User.FindFirst(BodyLifeClaimTypes.SessionId)?.Value;
+        Guid? parsedSessionId = null;
+        var sessionEnded = false;
 
-        if (Guid.TryParse(sessionId, out var parsedSessionId))
+        if (Guid.TryParse(sessionId, out var resolvedSessionId))
         {
-            await loginService.LogoutAsync(parsedSessionId, cancellationToken);
+            parsedSessionId = resolvedSessionId;
+            sessionEnded = await loginService.LogoutAsync(resolvedSessionId, cancellationToken);
         }
+
+        authTechnicalLogger.Logout(HttpContext, parsedSessionId, sessionEnded);
 
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 

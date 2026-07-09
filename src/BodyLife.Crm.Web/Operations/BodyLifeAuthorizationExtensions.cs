@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BodyLife.Crm.Web.Operations;
@@ -9,7 +10,9 @@ public static class BodyLifeAuthorizationExtensions
 {
     public static IServiceCollection AddBodyLifeAuthorizationPolicies(this IServiceCollection services)
     {
+        services.AddSingleton<IBodyLifeAuthTechnicalLogger, BodyLifeAuthTechnicalLogger>();
         services.AddSingleton<IAuthorizationHandler, BodyLifeCorrectionAuthorizationHandler>();
+        services.AddSingleton<IAuthorizationMiddlewareResultHandler, BodyLifeAuthorizationMiddlewareResultHandler>();
 
         services.AddAuthorization(options =>
         {

@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BodyLife.Crm.Web.Pages;
 
-public sealed class LoginModel(AccountLoginService loginService) : PageModel
+public sealed class LoginModel(
+    AccountLoginService loginService,
+    IBodyLifeAuthTechnicalLogger authTechnicalLogger) : PageModel
 {
     [BindProperty]
     public string? LoginName { get; set; }
@@ -28,11 +30,14 @@ public sealed class LoginModel(AccountLoginService loginService) : PageModel
 
         if (loginResult is not { Status: AccountLoginStatus.Success, Session: not null })
         {
+            authTechnicalLogger.LoginFailed(HttpContext, LoginName, loginResult.Status);
             ModelState.AddModelError(string.Empty, "Login failed.");
             return Page();
         }
 
         var session = loginResult.Session;
+        authTechnicalLogger.LoginSucceeded(HttpContext, session);
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, session.AccountId.ToString()),

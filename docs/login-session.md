@@ -59,6 +59,14 @@ Query responses can include `QueryPermissionSet` / `QueryPermissionResult` so Ra
 
 These query permission results are UI hints only. State-changing handlers must still call the server-side authorization policy for the command before mutation.
 
+## Auth and permission technical logs
+
+Login failures, successful logins, logout attempts and server-side permission denials produce structured technical log events. These logs are for debugging and support correlation only; they are not business audit history and denied permission attempts stay technical-log-only unless a future Owner policy explicitly requires audit.
+
+The auth/permission log fields include `event_name`, `route_or_command`, `method`, `request_correlation_id`, `outcome`, stable result/error categories, account id, role/account type and session id when available. The logging policy omits raw passwords, tokens, login names, display names and device labels; personal fields are reduced to presence flags where useful.
+
+Query permission results are advisory UI hints and do not create permission-denied technical log events. Real state-changing handlers and protected pages must still rely on server-side authorization policies, which are the enforcement point that logs forbidden attempts.
+
 ## Boundaries
 
 - No client accounts or public portal are introduced.
