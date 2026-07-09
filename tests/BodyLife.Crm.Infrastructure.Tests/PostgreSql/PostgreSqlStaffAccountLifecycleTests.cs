@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -167,7 +168,10 @@ public sealed class PostgreSqlStaffAccountLifecycleTests
 
     private static StaffAccountLifecycleService Service(BodyLifeDbContext dbContext)
     {
-        return new StaffAccountLifecycleService(dbContext, FixedClock());
+        return new StaffAccountLifecycleService(
+            dbContext,
+            new BusinessAuditAppender(dbContext),
+            FixedClock());
     }
 
     private static CommandEnvelope OwnerEnvelope()

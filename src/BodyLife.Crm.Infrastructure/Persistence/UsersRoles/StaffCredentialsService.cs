@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -8,6 +9,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 public sealed class StaffCredentialsService(
     BodyLifeDbContext dbContext,
     PasswordHashingService passwordHashingService,
+    BusinessAuditAppender auditAppender,
     TimeProvider timeProvider)
 {
     private const int LoginNameMaxLength = 120;
@@ -112,6 +114,21 @@ public sealed class StaffCredentialsService(
             session.LastSeenAt = now;
         }
 
+        var auditEntryId = auditAppender.Append(
+            envelope,
+            isReset
+                ? StaffAccountAuditActions.CredentialsReset
+                : StaffAccountAuditActions.CredentialsConfigured,
+            StaffAccountAuditActions.EntityType,
+            account.Id,
+            now,
+            beforeSummary: new { CredentialsConfigured = isReset },
+            afterSummary: new
+            {
+                CredentialsConfigured = true,
+                EndedSessionCount = activeSessions.Count,
+            });
+
         try
         {
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -123,8 +140,8 @@ public sealed class StaffCredentialsService(
         }
 
         return isReset
-            ? StaffCredentialsResult.Reset(account.Id, activeSessions.Count)
-            : StaffCredentialsResult.Configured(account.Id);
+            ? StaffCredentialsResult.Reset(account.Id, auditEntryId, activeSessions.Count)
+            : StaffCredentialsResult.Configured(account.Id, auditEntryId);
     }
 
     private static bool TryNormalizeLoginName(
@@ -180,25 +197,31 @@ public sealed class StaffCredentialsService(
 public sealed record StaffCredentialsResult(
     StaffCredentialsStatus Status,
     Guid? AccountId,
+    AuditEntryId? AuditEntryId,
     int EndedSessionCount,
     string Message)
 {
     public bool Succeeded => Status is StaffCredentialsStatus.Configured or StaffCredentialsStatus.Reset;
 
-    public static StaffCredentialsResult Configured(Guid accountId)
+    public static StaffCredentialsResult Configured(Guid accountId, AuditEntryId auditEntryId)
     {
         return new StaffCredentialsResult(
             StaffCredentialsStatus.Configured,
             accountId,
+            auditEntryId,
             0,
             "Staff credentials configured.");
     }
 
-    public static StaffCredentialsResult Reset(Guid accountId, int endedSessionCount)
+    public static StaffCredentialsResult Reset(
+        Guid accountId,
+        AuditEntryId auditEntryId,
+        int endedSessionCount)
     {
         return new StaffCredentialsResult(
             StaffCredentialsStatus.Reset,
             accountId,
+            auditEntryId,
             endedSessionCount,
             "Staff credentials reset.");
     }
@@ -223,6 +246,7 @@ public sealed record StaffCredentialsResult(
         return new StaffCredentialsResult(
             StaffCredentialsStatus.OwnerAccountProtected,
             accountId,
+            null,
             0,
             "Owner credentials are protected by the bootstrap workflow.");
     }
@@ -236,7 +260,7 @@ public sealed record StaffCredentialsResult(
 
     private static StaffCredentialsResult Failure(StaffCredentialsStatus status, string message)
     {
-        return new StaffCredentialsResult(status, null, 0, message);
+        return new StaffCredentialsResult(status, null, null, 0, message);
     }
 }
 

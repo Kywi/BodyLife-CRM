@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +19,8 @@ public sealed class PostgreSqlStaffCredentialsTests
         await dbContext.Database.MigrateAsync();
         var clock = new MutableTimeProvider(TestNow);
         var hashingService = new PasswordHashingService();
-        var lifecycleService = new StaffAccountLifecycleService(dbContext, clock);
-        var credentialsService = new StaffCredentialsService(dbContext, hashingService, clock);
+        var lifecycleService = LifecycleService(dbContext, clock);
+        var credentialsService = CredentialsService(dbContext, hashingService, clock);
         var namedAdminId = await CreateStaffAccountAsync(
             lifecycleService,
             AccountKind.NamedAdmin,
@@ -78,8 +79,8 @@ public sealed class PostgreSqlStaffCredentialsTests
         await dbContext.Database.MigrateAsync();
         var clock = new MutableTimeProvider(TestNow);
         var hashingService = new PasswordHashingService();
-        var lifecycleService = new StaffAccountLifecycleService(dbContext, clock);
-        var credentialsService = new StaffCredentialsService(dbContext, hashingService, clock);
+        var lifecycleService = LifecycleService(dbContext, clock);
+        var credentialsService = CredentialsService(dbContext, hashingService, clock);
         var accountId = await CreateStaffAccountAsync(
             lifecycleService,
             AccountKind.NamedAdmin,
@@ -132,12 +133,12 @@ public sealed class PostgreSqlStaffCredentialsTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var clock = new MutableTimeProvider(TestNow);
-        var lifecycleService = new StaffAccountLifecycleService(dbContext, clock);
+        var lifecycleService = LifecycleService(dbContext, clock);
         var accountId = await CreateStaffAccountAsync(
             lifecycleService,
             AccountKind.NamedAdmin,
             "Main Admin");
-        var service = new StaffCredentialsService(dbContext, new PasswordHashingService(), clock);
+        var service = CredentialsService(dbContext, new PasswordHashingService(), clock);
 
         var result = await service.SetStaffCredentialsAsync(
             AdminEnvelope(),
@@ -159,7 +160,7 @@ public sealed class PostgreSqlStaffCredentialsTests
         var clock = new MutableTimeProvider(TestNow);
         var ownerResult = await new OwnerBootstrapper(dbContext, clock)
             .BootstrapOwnerAsync("BodyLife Owner");
-        var service = new StaffCredentialsService(dbContext, new PasswordHashingService(), clock);
+        var service = CredentialsService(dbContext, new PasswordHashingService(), clock);
 
         var ownerCredentialsResult = await service.SetStaffCredentialsAsync(
             OwnerEnvelope(),
@@ -184,12 +185,12 @@ public sealed class PostgreSqlStaffCredentialsTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var clock = new MutableTimeProvider(TestNow);
-        var lifecycleService = new StaffAccountLifecycleService(dbContext, clock);
+        var lifecycleService = LifecycleService(dbContext, clock);
         var accountId = await CreateStaffAccountAsync(
             lifecycleService,
             AccountKind.NamedAdmin,
             "Main Admin");
-        var service = new StaffCredentialsService(dbContext, new PasswordHashingService(), clock);
+        var service = CredentialsService(dbContext, new PasswordHashingService(), clock);
 
         var missingLogin = await service.SetStaffCredentialsAsync(
             OwnerEnvelope(),
@@ -226,8 +227,8 @@ public sealed class PostgreSqlStaffCredentialsTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var clock = new MutableTimeProvider(TestNow);
-        var lifecycleService = new StaffAccountLifecycleService(dbContext, clock);
-        var service = new StaffCredentialsService(dbContext, new PasswordHashingService(), clock);
+        var lifecycleService = LifecycleService(dbContext, clock);
+        var service = CredentialsService(dbContext, new PasswordHashingService(), clock);
         var firstAccountId = await CreateStaffAccountAsync(
             lifecycleService,
             AccountKind.NamedAdmin,
@@ -262,8 +263,8 @@ public sealed class PostgreSqlStaffCredentialsTests
         await dbContext.Database.MigrateAsync();
         var clock = new MutableTimeProvider(TestNow);
         var hashingService = new PasswordHashingService();
-        var lifecycleService = new StaffAccountLifecycleService(dbContext, clock);
-        var credentialsService = new StaffCredentialsService(dbContext, hashingService, clock);
+        var lifecycleService = LifecycleService(dbContext, clock);
+        var credentialsService = CredentialsService(dbContext, hashingService, clock);
         var accountId = await CreateStaffAccountAsync(
             lifecycleService,
             AccountKind.SharedReceptionAdmin,
@@ -299,6 +300,28 @@ public sealed class PostgreSqlStaffCredentialsTests
 
         Assert.Equal(StaffAccountLifecycleStatus.Created, result.Status);
         return result.AccountId!.Value;
+    }
+
+    private static StaffAccountLifecycleService LifecycleService(
+        BodyLifeDbContext dbContext,
+        TimeProvider timeProvider)
+    {
+        return new StaffAccountLifecycleService(
+            dbContext,
+            new BusinessAuditAppender(dbContext),
+            timeProvider);
+    }
+
+    private static StaffCredentialsService CredentialsService(
+        BodyLifeDbContext dbContext,
+        PasswordHashingService passwordHashingService,
+        TimeProvider timeProvider)
+    {
+        return new StaffCredentialsService(
+            dbContext,
+            passwordHashingService,
+            new BusinessAuditAppender(dbContext),
+            timeProvider);
     }
 
     private static CommandEnvelope OwnerEnvelope()

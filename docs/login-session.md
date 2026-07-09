@@ -57,7 +57,7 @@ Authenticated pages render the shared app shell with the current account display
 
 `StaffAccountLifecycleService` is the backend foundation for Owner-managed named Admin and shared Reception/Admin accounts. It requires an Owner `CommandEnvelope`, creates only Admin-role staff account types, updates display names, activates/deactivates staff accounts, protects the Owner account from this workflow, and ends active sessions when a staff account is deactivated.
 
-This lifecycle foundation does not create credentials, default passwords, sessions, account-management UI or business audit entries yet. Named Admin/shared Reception/Admin credentials must be added through a later explicit setup/reset workflow without default secrets.
+This lifecycle foundation does not create credentials, default passwords, sessions or account-management UI. Successful create, display-name update, activate and deactivate mutations append business audit entries in the same database commit.
 
 ## Staff credential setup and reset
 
@@ -69,7 +69,15 @@ This lifecycle foundation does not create credentials, default passwords, sessio
 - A credential reset atomically replaces the login/hash and ends active sessions for that staff account.
 - Credentials may be prepared while an account is inactive, but login remains rejected until the Owner activates the account.
 
-PostgreSQL integration tests authenticate both named Admin and shared Reception/Admin sessions through the normal `AccountLoginService` path. This backend foundation does not yet expose an Owner-facing command/UI surface or add business audit; those remain required before Milestone 2 acceptance.
+PostgreSQL integration tests authenticate both named Admin and shared Reception/Admin sessions through the normal `AccountLoginService` path. Successful setup and reset mutations append business audit entries, while denied, invalid and duplicate-login outcomes do not. This backend foundation does not yet expose an Owner-facing command/UI surface.
+
+## Account management business audit
+
+Staff account lifecycle and credential mutations append to `bodylife.business_audit_entries` through `BusinessAuditAppender`. The source mutation and audit row use one EF Core `SaveChanges` transaction, so either both persist or both roll back.
+
+Canonical actions are `staff_account.created`, `staff_account.display_name_updated`, `staff_account.activated`, `staff_account.deactivated`, `staff_credentials.configured` and `staff_credentials.reset`. Entries include actor account/type/role, session/device, entity id, occurred/recorded timestamps, entry origin, reason/comment, correlation id and compact before/after JSON summaries. Credential audit never includes login names, raw passwords or password hashes.
+
+Successful mutation results return the created `AuditEntryId`. Permission-denied, validation, not-found, duplicate-login and already-active/inactive no-op results do not create audit entries. General audit history queries/UI remain part of Milestone 10.
 
 ## Query permission results
 

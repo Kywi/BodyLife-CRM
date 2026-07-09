@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +7,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 
 public sealed class StaffAccountLifecycleService(
     BodyLifeDbContext dbContext,
+    BusinessAuditAppender auditAppender,
     TimeProvider timeProvider)
 {
     private const int DisplayNameMaxLength = 160;
@@ -38,6 +40,7 @@ public sealed class StaffAccountLifecycleService(
             return validationResult;
         }
 
+        var recordedAt = timeProvider.GetUtcNow();
         var account = new AccountRecord
         {
             Id = Guid.NewGuid(),
@@ -45,14 +48,27 @@ public sealed class StaffAccountLifecycleService(
             AccountType = accountType,
             Role = AdminRole,
             IsActive = true,
-            CreatedAt = timeProvider.GetUtcNow(),
+            CreatedAt = recordedAt,
             DeactivatedAt = null,
         };
 
         dbContext.Set<AccountRecord>().Add(account);
+        var auditEntryId = auditAppender.Append(
+            envelope,
+            StaffAccountAuditActions.Created,
+            StaffAccountAuditActions.EntityType,
+            account.Id,
+            recordedAt,
+            afterSummary: new
+            {
+                account.DisplayName,
+                account.AccountType,
+                account.Role,
+                account.IsActive,
+            });
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return StaffAccountLifecycleResult.Created(account.Id);
+        return StaffAccountLifecycleResult.Created(account.Id, auditEntryId);
     }
 
     public async Task<StaffAccountLifecycleResult> UpdateStaffAccountDisplayNameAsync(
@@ -81,10 +97,20 @@ public sealed class StaffAccountLifecycleService(
             return accountGuard;
         }
 
-        account!.DisplayName = normalizedDisplayName;
+        var previousDisplayName = account!.DisplayName;
+        var recordedAt = timeProvider.GetUtcNow();
+        account.DisplayName = normalizedDisplayName;
+        var auditEntryId = auditAppender.Append(
+            envelope,
+            StaffAccountAuditActions.DisplayNameUpdated,
+            StaffAccountAuditActions.EntityType,
+            account.Id,
+            recordedAt,
+            beforeSummary: new { DisplayName = previousDisplayName },
+            afterSummary: new { account.DisplayName });
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return StaffAccountLifecycleResult.DisplayNameUpdated(account.Id);
+        return StaffAccountLifecycleResult.DisplayNameUpdated(account.Id, auditEntryId);
     }
 
     public async Task<StaffAccountLifecycleResult> SetStaffAccountActiveStateAsync(
@@ -115,9 +141,11 @@ public sealed class StaffAccountLifecycleService(
                 : StaffAccountLifecycleResult.AlreadyInactive(account.Id);
         }
 
+        var wasActive = account.IsActive;
         var now = timeProvider.GetUtcNow();
         account.IsActive = isActive;
         account.DeactivatedAt = isActive ? null : now;
+        var endedSessionCount = 0;
 
         if (!isActive)
         {
@@ -130,13 +158,28 @@ public sealed class StaffAccountLifecycleService(
                 session.EndedAt = now;
                 session.LastSeenAt = now;
             }
+
+            endedSessionCount = activeSessions.Count;
         }
+
+        var auditEntryId = auditAppender.Append(
+            envelope,
+            isActive ? StaffAccountAuditActions.Activated : StaffAccountAuditActions.Deactivated,
+            StaffAccountAuditActions.EntityType,
+            account.Id,
+            now,
+            beforeSummary: new { IsActive = wasActive },
+            afterSummary: new
+            {
+                account.IsActive,
+                EndedSessionCount = endedSessionCount,
+            });
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return isActive
-            ? StaffAccountLifecycleResult.Activated(account.Id)
-            : StaffAccountLifecycleResult.Deactivated(account.Id);
+            ? StaffAccountLifecycleResult.Activated(account.Id, auditEntryId)
+            : StaffAccountLifecycleResult.Deactivated(account.Id, auditEntryId);
     }
 
     private Task<AccountRecord?> FindAccountAsync(Guid accountId, CancellationToken cancellationToken)
@@ -214,6 +257,7 @@ public sealed class StaffAccountLifecycleService(
 public sealed record StaffAccountLifecycleResult(
     StaffAccountLifecycleStatus Status,
     Guid? AccountId,
+    AuditEntryId? AuditEntryId,
     string Message)
 {
     public bool Succeeded => Status is
@@ -224,35 +268,39 @@ public sealed record StaffAccountLifecycleResult(
         or StaffAccountLifecycleStatus.AlreadyActive
         or StaffAccountLifecycleStatus.AlreadyInactive;
 
-    public static StaffAccountLifecycleResult Created(Guid accountId)
+    public static StaffAccountLifecycleResult Created(Guid accountId, AuditEntryId auditEntryId)
     {
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.Created,
             accountId,
+            auditEntryId,
             "Staff account created.");
     }
 
-    public static StaffAccountLifecycleResult DisplayNameUpdated(Guid accountId)
+    public static StaffAccountLifecycleResult DisplayNameUpdated(Guid accountId, AuditEntryId auditEntryId)
     {
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.DisplayNameUpdated,
             accountId,
+            auditEntryId,
             "Staff account display name updated.");
     }
 
-    public static StaffAccountLifecycleResult Activated(Guid accountId)
+    public static StaffAccountLifecycleResult Activated(Guid accountId, AuditEntryId auditEntryId)
     {
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.Activated,
             accountId,
+            auditEntryId,
             "Staff account activated.");
     }
 
-    public static StaffAccountLifecycleResult Deactivated(Guid accountId)
+    public static StaffAccountLifecycleResult Deactivated(Guid accountId, AuditEntryId auditEntryId)
     {
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.Deactivated,
             accountId,
+            auditEntryId,
             "Staff account deactivated.");
     }
 
@@ -261,6 +309,7 @@ public sealed record StaffAccountLifecycleResult(
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.AlreadyActive,
             accountId,
+            null,
             "Staff account is already active.");
     }
 
@@ -269,6 +318,7 @@ public sealed record StaffAccountLifecycleResult(
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.AlreadyInactive,
             accountId,
+            null,
             "Staff account is already inactive.");
     }
 
@@ -276,6 +326,7 @@ public sealed record StaffAccountLifecycleResult(
     {
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.PermissionDenied,
+            null,
             null,
             "Owner account is required.");
     }
@@ -285,6 +336,7 @@ public sealed record StaffAccountLifecycleResult(
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.ValidationFailed,
             null,
+            null,
             message);
     }
 
@@ -292,6 +344,7 @@ public sealed record StaffAccountLifecycleResult(
     {
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.NotFound,
+            null,
             null,
             "Account was not found.");
     }
@@ -301,6 +354,7 @@ public sealed record StaffAccountLifecycleResult(
         return new StaffAccountLifecycleResult(
             StaffAccountLifecycleStatus.OwnerAccountProtected,
             accountId,
+            null,
             "Owner account is protected by the bootstrap workflow.");
     }
 }

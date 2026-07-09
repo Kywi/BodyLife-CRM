@@ -1,4 +1,5 @@
 using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,7 @@ public static class ServiceCollectionExtensions
             options => BodyLifeDbContextOptions.Configure(options, connectionString));
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<PasswordHashingService>();
+        services.AddScoped<BusinessAuditAppender>();
         services.AddScoped<AccountLoginService>();
         services.AddScoped<OwnerCredentialsBootstrapper>();
         services.AddScoped<OwnerBootstrapper>();
