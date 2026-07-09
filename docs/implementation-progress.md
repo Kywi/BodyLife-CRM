@@ -360,3 +360,31 @@ Commit:
 Next recommended step:
 
 - Add the Milestone 1 idempotency key storage foundation before starting Milestone 2.
+
+## Step 13 - Idempotency key storage foundation
+
+Status: completed.
+
+Scope:
+
+- Add `bodylife.command_idempotency_keys` through EF Core/Npgsql migration without binding it to every business command yet.
+- Store command name, idempotency key, request correlation id, actor/session context, entry origin, lifecycle status, timestamps and reread/audit result references needed for later duplicate-submit handling.
+- Add PostgreSQL constraints for non-empty command/key/correlation/actor fields, accepted entry origins, accepted storage statuses and timestamp lifecycle consistency.
+- Add a unique PostgreSQL index on `(command_name, idempotency_key)` and an expiry index for later cleanup.
+- Add PostgreSQL-backed integration tests proving the migration creates the storage shape and rejects duplicate command keys and invalid status values.
+- Update the Milestone 1 acceptance review so idempotency storage is no longer listed as a remaining gap.
+
+Validation:
+
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo` passed with 5 PostgreSQL infrastructure tests.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 5 unit tests, 5 PostgreSQL infrastructure tests, 2 Playwright smoke tests and EF migration listing for `20260708140900_InitialBaseline` and `20260709113419_AddCommandIdempotencyKeys`.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for markdown progress/acceptance updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(infra): add idempotency key storage`.
+
+Next recommended step:
+
+- Start Milestone 2 with accountable Users/Roles and bootstrap ownership before adding reception business commands.
