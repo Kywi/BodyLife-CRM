@@ -510,9 +510,9 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1783607703.31846,
-    "ast_hash": "404e5e7c22634cd61057d4110e30dd17",
-    "semantic_hash": "404e5e7c22634cd61057d4110e30dd17"
+    "mtime": 1783627421.174028,
+    "ast_hash": "f6229e9667fe4d72fce07b9b0e5c37ab",
+    "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
     "mtime": 1783589989.9396646,
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783626112.1750195,
-    "ast_hash": "7920c583e46eb566601ff88c999ee1e2",
+    "mtime": 1783627607.7192671,
+    "ast_hash": "895ceb8dbbe153fcb79bec427791bf61",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1055,8 +1055,8 @@
     "semantic_hash": ""
   },
   "docs/login-session.md": {
-    "mtime": 1783625930.564447,
-    "ast_hash": "efcd9f2ef707e522a17e0b33d21a35ba",
+    "mtime": 1783627533.4088001,
+    "ast_hash": "91bc0b2e5f69faa9964f3ea0bbdeb146",
     "semantic_hash": ""
   },
   "docs/ui-design-foundation.md": {
@@ -1117,6 +1117,21 @@
   "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs": {
     "mtime": 1783625876.5111473,
     "ast_hash": "8e96617b74777d9def778750e18194ba",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffAccountLifecycleService.cs": {
+    "mtime": 1783627415.5495465,
+    "ast_hash": "cae53c11e655cff6fee2f4a318a3bd7b",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffAccountLifecycleTests.cs": {
+    "mtime": 1783627497.6230893,
+    "ast_hash": "df50580b8f7b2238c3e87715bdc74861",
+    "semantic_hash": ""
+  },
+  "docs/milestone-2-acceptance-review.md": {
+    "mtime": 1783627543.2176054,
+    "ast_hash": "0b0d8df8b3a18576bacd4bb3140ecb11",
     "semantic_hash": ""
   }
 }
