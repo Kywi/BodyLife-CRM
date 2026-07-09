@@ -660,3 +660,32 @@ Commit:
 Next recommended step:
 
 - Add Owner-managed account lifecycle foundation for named Admin and shared Reception/Admin accounts.
+
+## Step 23 - Staff account lifecycle foundation
+
+Status: completed.
+
+Scope:
+
+- Add `StaffAccountLifecycleService` for Owner-managed named Admin and shared Reception/Admin account lifecycle.
+- Require an Owner `CommandEnvelope` before lifecycle mutations; non-Owner actors receive permission denied results.
+- Create only Admin-role `named_admin` or `shared_reception_admin` accounts; Owner account creation remains protected by the existing bootstrap workflow.
+- Update staff account display names.
+- Activate/deactivate staff accounts without hard delete; deactivation ends active sessions for the account.
+- Add PostgreSQL-backed tests for create, permission denial, Owner protection, display-name updates, deactivate/reactivate behavior and session termination.
+- Keep named Admin/shared credential setup, account-management UI, command routing and business audit for later steps.
+
+Validation:
+
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo` passed with 23 PostgreSQL infrastructure tests.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, 11 core tests, 34 web tests, 23 PostgreSQL infrastructure tests, 2 authenticated Playwright smoke tests and EF migration listing through `20260709143654_AddAccountCredentials`.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for markdown progress/login-session/acceptance-review updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(users): add staff account lifecycle`.
+
+Next recommended step:
+
+- Add explicit credential setup/reset path for named Admin/shared Reception/Admin accounts without default credentials.

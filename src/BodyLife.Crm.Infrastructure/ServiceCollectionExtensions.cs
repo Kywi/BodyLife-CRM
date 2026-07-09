@@ -27,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccountLoginService>();
         services.AddScoped<OwnerCredentialsBootstrapper>();
         services.AddScoped<OwnerBootstrapper>();
+        services.AddScoped<StaffAccountLifecycleService>();
 
         return services;
     }

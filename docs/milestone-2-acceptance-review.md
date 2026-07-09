@@ -31,8 +31,8 @@ The implemented foundation is strong enough to keep building inside Milestone 2,
 | Acceptance criterion | Status | Notes |
 |---|---|---|
 | Owner can authenticate | Done | Owner bootstrap plus explicit credentials and UI smoke login are in place. |
-| Owner can manage/activate named Admin/shared Reception/Admin accounts | Gap | No Owner-managed account lifecycle service, command path or UI exists yet. |
-| Shared Reception/Admin actions identify shared account and session/device | Partial | Claims, context resolver, policy checks and UI indicator support it, but there is no supported path to create and authenticate a real shared account yet. |
+| Owner can manage/activate named Admin/shared Reception/Admin accounts | Partial after Step 23 | Owner-guarded lifecycle service exists for create/update/activate/deactivate, but no credential setup/reset or Owner UI/command path exists yet. |
+| Shared Reception/Admin actions identify shared account and session/device | Partial | Claims, context resolver, policy checks and UI indicator support it, and lifecycle service can create the account. There is still no supported path to authenticate a real shared account yet. |
 | Owner-only commands are rejected server-side for Admin/shared accounts | Done for policy foundation | Policy tests prove Admin/shared claims are denied by Owner-only and after-close policies. Future commands still need to call these policies. |
 | Admin+Owner reception commands receive valid actor/session context | Done for foundation | Command envelope can carry actor/session/correlation id. Business commands are not implemented yet. |
 | UI displays current account/session in reception/admin surfaces | Done for current reception shell | Tablet and phone smoke tests cover the current reception page. |
@@ -54,12 +54,10 @@ The implemented foundation is strong enough to keep building inside Milestone 2,
 
 ## Follow-up work before Milestone 3
 
-1. Add Owner-managed account lifecycle foundation for named Admin and shared Reception/Admin accounts.
-2. Add explicit credential setup/reset path for named Admin/shared accounts without default credentials.
-3. Add account activation/deactivation behavior and tests, including login rejection for deactivated accounts.
-4. Add minimal Owner-only account management surface or command path required by the roadmap acceptance criterion.
-5. Add authentication integration coverage for named Admin/shared Reception/Admin accounts.
-6. Re-run Milestone 2 acceptance review after those gaps close.
+1. Add explicit credential setup/reset path for named Admin/shared accounts without default credentials.
+2. Add minimal Owner-only account management surface or command path required by the roadmap acceptance criterion.
+3. Add authentication integration coverage for named Admin/shared Reception/Admin accounts.
+4. Re-run Milestone 2 acceptance review after those gaps close.
 
 ## Validation baseline for this review
 

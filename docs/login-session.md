@@ -53,6 +53,12 @@ The resolver rejects unauthenticated, malformed or role/account-type inconsisten
 
 Authenticated pages render the shared app shell with the current account display name, role/account type, device label and short session id. Shared Reception/Admin sessions must remain visibly labeled as shared session accountability; the UI must not imply a named physical person when the shared account is used.
 
+## Staff account lifecycle foundation
+
+`StaffAccountLifecycleService` is the backend foundation for Owner-managed named Admin and shared Reception/Admin accounts. It requires an Owner `CommandEnvelope`, creates only Admin-role staff account types, updates display names, activates/deactivates staff accounts, protects the Owner account from this workflow, and ends active sessions when a staff account is deactivated.
+
+This lifecycle foundation does not create credentials, default passwords, sessions, account-management UI or business audit entries yet. Named Admin/shared Reception/Admin credentials must be added through a later explicit setup/reset workflow without default secrets.
+
 ## Query permission results
 
 Query responses can include `QueryPermissionSet` / `QueryPermissionResult` so Razor pages and htmx fragments can show allowed, disabled or hidden actions consistently. Each result carries an action key, the policy name that should be enforced for the real command, and an optional denied reason code/message.
