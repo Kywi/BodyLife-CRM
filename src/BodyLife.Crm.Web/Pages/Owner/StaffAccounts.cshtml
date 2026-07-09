@@ -1,0 +1,145 @@
+@page
+@model BodyLife.Crm.Web.Pages.Owner.StaffAccountsModel
+@{
+    ViewData["Title"] = "Staff accounts";
+}
+
+<main class="page-shell">
+    <section class="owner-management" aria-labelledby="staff-accounts-title">
+        <header class="management-header">
+            <div>
+                <p class="eyebrow">Owner settings</p>
+                <h1 id="staff-accounts-title">Staff accounts</h1>
+            </div>
+            <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+        </header>
+
+        @if (!string.IsNullOrWhiteSpace(Model.OperationMessage))
+        {
+            <div class="operation-message @(Model.OperationSucceeded ? "operation-success" : "operation-error")"
+                 role="@(Model.OperationSucceeded ? "status" : "alert")">
+                @Model.OperationMessage
+            </div>
+        }
+
+        <section class="create-account-section" aria-labelledby="create-account-title">
+            <h2 id="create-account-title">Add staff account</h2>
+            <form id="create-account-form" method="post" asp-page-handler="Create" class="management-form" data-busy-form>
+                <div class="form-grid form-grid-create">
+                    <div class="form-field">
+                        <label for="create-account-kind">Account type</label>
+                        <select id="create-account-kind" name="accountKind" required>
+                            <option value="NamedAdmin">Named Admin</option>
+                            <option value="SharedReceptionAdmin">Shared Reception/Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="create-display-name">Display name</label>
+                        <input id="create-display-name" name="displayName" type="text" maxlength="160" required autocomplete="off" />
+                    </div>
+                    <button type="submit" data-busy-text="Creating...">Add account</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="staff-account-list" aria-labelledby="staff-account-list-title">
+            <header class="list-header">
+                <h2 id="staff-account-list-title">Current staff</h2>
+                <span class="list-count">@Model.StaffAccounts.Count accounts</span>
+            </header>
+
+            @if (Model.StaffAccounts.Count == 0)
+            {
+                <p class="empty-state">No staff accounts yet.</p>
+            }
+            else
+            {
+                @foreach (var account in Model.StaffAccounts)
+                {
+                    var accountKey = account.AccountId.ToString("N");
+                    var displayNameId = $"display-name-{accountKey}";
+                    var loginNameId = $"login-name-{accountKey}";
+                    var passwordId = $"password-{accountKey}";
+                    var resetReasonId = $"reset-reason-{accountKey}";
+                    var deactivateReasonId = $"deactivate-reason-{accountKey}";
+
+                    <article class="staff-account-row" data-account-id="@account.AccountId">
+                        <header class="staff-account-header">
+                            <div>
+                                <h3>@account.DisplayName</h3>
+                                <p>@StaffAccountsModel.AccountKindLabel(account.AccountKind)</p>
+                            </div>
+                            <span class="status-chip @(account.IsActive ? "status-active" : "status-inactive")">
+                                @(account.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </header>
+
+                        <dl class="account-meta">
+                            <div>
+                                <dt>Login</dt>
+                                <dd>@(account.HasCredentials ? account.LoginName : "Not configured")</dd>
+                            </div>
+                            <div>
+                                <dt>Active sessions</dt>
+                                <dd>@account.ActiveSessionCount</dd>
+                            </div>
+                        </dl>
+
+                        <div class="staff-account-actions">
+                            <form method="post" asp-page-handler="UpdateDisplayName" class="staff-action-form" data-busy-form>
+                                <input type="hidden" name="accountId" value="@account.AccountId" />
+                                <h4>Display name</h4>
+                                <label for="@displayNameId">Display name</label>
+                                <input id="@displayNameId" name="displayName" type="text" value="@account.DisplayName" maxlength="160" required autocomplete="off" />
+                                <button class="secondary-button" type="submit" data-busy-text="Saving...">Save name</button>
+                            </form>
+
+                            <form method="post" asp-page-handler="SetCredentials" class="staff-action-form" data-busy-form>
+                                <input type="hidden" name="accountId" value="@account.AccountId" />
+                                <h4>@(account.HasCredentials ? "Reset credentials" : "Set credentials")</h4>
+                                <label for="@loginNameId">Login</label>
+                                <input id="@loginNameId" name="loginName" type="text" value="@account.LoginName" maxlength="120" required autocomplete="username" />
+                                <label for="@passwordId">New password</label>
+                                <input id="@passwordId" name="password" type="password" minlength="12" required autocomplete="new-password" />
+                                @if (account.HasCredentials)
+                                {
+                                    <label for="@resetReasonId">Reason for reset</label>
+                                    <input id="@resetReasonId" name="reason" type="text" maxlength="1000" required autocomplete="off" />
+                                }
+                                <button type="submit" data-busy-text="Saving...">
+                                    @(account.HasCredentials ? "Reset credentials" : "Set credentials")
+                                </button>
+                            </form>
+
+                            @if (account.IsActive)
+                            {
+                                <form method="post"
+                                      asp-page-handler="SetActiveState"
+                                      class="staff-action-form"
+                                      data-busy-form
+                                      data-confirm="Deactivate this account and end its active sessions?">
+                                    <input type="hidden" name="accountId" value="@account.AccountId" />
+                                    <input type="hidden" name="isActive" value="false" />
+                                    <h4>Access</h4>
+                                    <label for="@deactivateReasonId">Reason for deactivation</label>
+                                    <input id="@deactivateReasonId" name="reason" type="text" maxlength="1000" required autocomplete="off" />
+                                    <button class="danger-button" type="submit" data-busy-text="Deactivating...">Deactivate</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" asp-page-handler="SetActiveState" class="staff-action-form" data-busy-form>
+                                    <input type="hidden" name="accountId" value="@account.AccountId" />
+                                    <input type="hidden" name="isActive" value="true" />
+                                    <h4>Access</h4>
+                                    <p class="form-note">Login remains blocked until this account is active.</p>
+                                    <button class="secondary-button" type="submit" data-busy-text="Activating...">Activate</button>
+                                </form>
+                            }
+                        </div>
+                    </article>
+                }
+            }
+        </section>
+    </section>
+</main>

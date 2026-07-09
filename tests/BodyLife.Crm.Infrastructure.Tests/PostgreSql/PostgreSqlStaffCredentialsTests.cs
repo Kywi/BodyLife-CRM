@@ -100,7 +100,7 @@ public sealed class PostgreSqlStaffCredentialsTests
         clock.Advance(TimeSpan.FromHours(1));
 
         var resetResult = await credentialsService.SetStaffCredentialsAsync(
-            OwnerEnvelope(),
+            OwnerEnvelope("Scheduled credential rotation"),
             accountId,
             "renamed.admin",
             "replacement admin password");
@@ -124,6 +124,39 @@ public sealed class PostgreSqlStaffCredentialsTests
 
         Assert.Equal(AccountLoginStatus.InvalidCredentials, oldLogin.Status);
         Assert.Equal(AccountLoginStatus.Success, newLogin.Status);
+    }
+
+    [PostgreSqlFact]
+    public async Task StaffCredentialsRequireReasonForReset()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var clock = new MutableTimeProvider(TestNow);
+        var hashingService = new PasswordHashingService();
+        var lifecycleService = LifecycleService(dbContext, clock);
+        var credentialsService = CredentialsService(dbContext, hashingService, clock);
+        var accountId = await CreateStaffAccountAsync(
+            lifecycleService,
+            AccountKind.NamedAdmin,
+            "Main Admin");
+        await credentialsService.SetStaffCredentialsAsync(
+            OwnerEnvelope(),
+            accountId,
+            "main.admin",
+            "original admin password");
+
+        var result = await credentialsService.SetStaffCredentialsAsync(
+            OwnerEnvelope(),
+            accountId,
+            "main.admin",
+            "replacement admin password");
+        var storedPasswordHash = await ReadPasswordHashAsync(database, accountId);
+
+        Assert.Equal(StaffCredentialsStatus.ValidationFailed, result.Status);
+        Assert.Null(result.AuditEntryId);
+        Assert.True(hashingService.VerifyPassword("original admin password", storedPasswordHash!));
+        Assert.False(hashingService.VerifyPassword("replacement admin password", storedPasswordHash!));
     }
 
     [PostgreSqlFact]
@@ -270,7 +303,7 @@ public sealed class PostgreSqlStaffCredentialsTests
             AccountKind.SharedReceptionAdmin,
             "Front desk shared");
         await lifecycleService.SetStaffAccountActiveStateAsync(
-            OwnerEnvelope(),
+            OwnerEnvelope("Deactivate shared access"),
             accountId,
             isActive: false);
 
@@ -324,17 +357,20 @@ public sealed class PostgreSqlStaffCredentialsTests
             timeProvider);
     }
 
-    private static CommandEnvelope OwnerEnvelope()
+    private static CommandEnvelope OwnerEnvelope(string? reason = null)
     {
-        return Envelope(ActorRole.Owner, AccountKind.Owner);
+        return Envelope(ActorRole.Owner, AccountKind.Owner, reason);
     }
 
     private static CommandEnvelope AdminEnvelope()
     {
-        return Envelope(ActorRole.Admin, AccountKind.NamedAdmin);
+        return Envelope(ActorRole.Admin, AccountKind.NamedAdmin, reason: null);
     }
 
-    private static CommandEnvelope Envelope(ActorRole role, AccountKind accountKind)
+    private static CommandEnvelope Envelope(
+        ActorRole role,
+        AccountKind accountKind,
+        string? reason)
     {
         return new CommandEnvelope(
             new ActorContext(
@@ -347,7 +383,7 @@ public sealed class PostgreSqlStaffCredentialsTests
             EntryOrigin.Normal,
             OccurredAt: null,
             IdempotencyKey: null,
-            Reason: null,
+            Reason: reason,
             Comment: null);
     }
 

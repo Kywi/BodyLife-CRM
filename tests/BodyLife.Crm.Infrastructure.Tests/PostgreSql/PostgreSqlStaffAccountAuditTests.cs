@@ -101,7 +101,7 @@ public sealed class PostgreSqlStaffAccountAuditTests
             .LoginAsync("front.desk", "initial shared password", "front desk tablet");
         Assert.Equal(AccountLoginStatus.Success, loginResult.Status);
         var resetResult = await credentialsService.SetStaffCredentialsAsync(
-            envelope,
+            OwnerEnvelope(reason: "Rotate shared credentials"),
             accountId,
             "renamed.front.desk",
             "replacement shared password");

@@ -79,6 +79,14 @@ Canonical actions are `staff_account.created`, `staff_account.display_name_updat
 
 Successful mutation results return the created `AuditEntryId`. Permission-denied, validation, not-found, duplicate-login and already-active/inactive no-op results do not create audit entries. General audit history queries/UI remain part of Milestone 10.
 
+## Owner staff account management
+
+Authenticated Owners can open `/Owner/StaffAccounts` from the shared application shell. The server-rendered Razor Page lists canonical staff account, credential and active-session state from PostgreSQL and exposes create, display-name update, credential setup/reset and activate/deactivate actions.
+
+Every POST creates a fresh `CommandEnvelope` from the authenticated Owner account/session/correlation context and calls the audited staff services. The page uses Post/Redirect/Get so the rendered list always comes from a canonical reread rather than optimistic UI state. Credential reset and account deactivation require a reason; deactivation also requires confirmation and ends active sessions. State-changing forms disable their submit button while the request is running.
+
+The entire `/Owner` folder uses the `BodyLife.OwnerOnly` policy, and the services repeat the Owner check before mutation. Named Admin and shared Reception/Admin sessions receive an explicit `Owner access required` page and cannot mutate account state.
+
 ## Query permission results
 
 Query responses can include `QueryPermissionSet` / `QueryPermissionResult` so Razor pages and htmx fragments can show allowed, disabled or hidden actions consistently. Each result carries an action key, the policy name that should be enforced for the real command, and an optional denied reason code/message.
@@ -97,5 +105,6 @@ Query permission results are advisory UI hints and do not create permission-deni
 
 - No client accounts or public portal are introduced.
 - No default credentials are seeded.
-- No account management UI is introduced.
+- No generic account CRUD or Admin-accessible staff management is introduced.
+- No general business-audit history UI is introduced yet.
 - No business command is authorized from UI-only state.

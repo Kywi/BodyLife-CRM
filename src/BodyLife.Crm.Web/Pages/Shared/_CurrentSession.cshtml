@@ -16,9 +16,15 @@
                 <span class="session-meta">@deviceLabel</span>
                 <span class="session-id">Session @sessionId</span>
             </div>
-            <form class="logout-form" asp-page="/Logout" method="post">
-                <button class="secondary-button" type="submit">Log out</button>
-            </form>
+            <nav class="shell-actions" aria-label="Session actions">
+                @if (actor is { Role: ActorRole.Owner, AccountKind: AccountKind.Owner })
+                {
+                    <a class="secondary-link" asp-page="/Owner/StaffAccounts">Staff accounts</a>
+                }
+                <form class="logout-form" asp-page="/Logout" method="post">
+                    <button class="secondary-button" type="submit">Log out</button>
+                </form>
+            </nav>
         </div>
     </header>
 }

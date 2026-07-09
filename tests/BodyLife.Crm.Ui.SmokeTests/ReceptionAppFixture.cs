@@ -3,7 +3,10 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Ui.SmokeTests;
@@ -12,6 +15,8 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 {
     public const string SmokeLoginName = "owner";
     public const string SmokePassword = "correct horse battery";
+    public const string SmokeAdminLoginName = "named.admin";
+    public const string SmokeAdminPassword = "smoke admin password";
 
     private readonly ConcurrentQueue<string> _output = new();
     private Process? _process;
@@ -23,11 +28,15 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public string Password => SmokePassword;
 
+    public string AdminLoginName => SmokeAdminLoginName;
+
+    public string AdminPassword => SmokeAdminPassword;
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");
         _database = await PostgreSqlSmokeDatabase.CreateAsync();
-        await SeedAuthenticatedOwnerAsync(_database);
+        await SeedAccountsAsync(_database);
 
         var repositoryRoot = FindRepositoryRoot();
         var webProjectPath = Path.Combine(repositoryRoot, "src", "BodyLife.Crm.Web", "BodyLife.Crm.Web.csproj");
@@ -131,7 +140,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         throw new TimeoutException($"Timed out waiting for BodyLife.Crm.Web at {BaseAddress}.{Environment.NewLine}{CapturedOutput()}");
     }
 
-    private static async Task SeedAuthenticatedOwnerAsync(PostgreSqlSmokeDatabase database)
+    private static async Task SeedAccountsAsync(PostgreSqlSmokeDatabase database)
     {
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
@@ -143,9 +152,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerResult.Status is OwnerBootstrapStatus.Created or OwnerBootstrapStatus.AlreadyExists,
             $"Owner bootstrap returned {ownerResult.Status}.");
 
+        var passwordHashingService = new PasswordHashingService();
         var credentialsBootstrapper = new OwnerCredentialsBootstrapper(
             dbContext,
-            new PasswordHashingService(),
+            passwordHashingService,
             TimeProvider.System);
 
         var credentialsResult = await credentialsBootstrapper.SetOwnerCredentialsAsync(
@@ -153,6 +163,41 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             SmokePassword);
 
         Assert.Equal(OwnerCredentialsBootstrapStatus.Updated, credentialsResult.Status);
+
+        var ownerEnvelope = new CommandEnvelope(
+            new ActorContext(
+                new AccountId(ownerResult.AccountId!.Value),
+                ActorRole.Owner,
+                AccountKind.Owner,
+                SessionId.New(),
+                "UI smoke seed"),
+            new RequestCorrelationId("ui-smoke-seed"),
+            EntryOrigin.Normal,
+            OccurredAt: null,
+            IdempotencyKey: null,
+            Reason: null,
+            Comment: null);
+        var auditAppender = new BusinessAuditAppender(dbContext);
+        var lifecycleService = new StaffAccountLifecycleService(
+            dbContext,
+            auditAppender,
+            TimeProvider.System);
+        var adminResult = await lifecycleService.CreateStaffAccountAsync(
+            ownerEnvelope,
+            AccountKind.NamedAdmin,
+            "Smoke Named Admin");
+        Assert.Equal(StaffAccountLifecycleStatus.Created, adminResult.Status);
+        var staffCredentialsService = new StaffCredentialsService(
+            dbContext,
+            passwordHashingService,
+            auditAppender,
+            TimeProvider.System);
+        var staffCredentialsResult = await staffCredentialsService.SetStaffCredentialsAsync(
+            ownerEnvelope,
+            adminResult.AccountId!.Value,
+            SmokeAdminLoginName,
+            SmokeAdminPassword);
+        Assert.Equal(StaffCredentialsStatus.Configured, staffCredentialsResult.Status);
     }
 
     private static int FindAvailablePort()

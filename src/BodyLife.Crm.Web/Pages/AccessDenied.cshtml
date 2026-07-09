@@ -1,0 +1,13 @@
+@page
+@{
+    ViewData["Title"] = "Access denied";
+}
+
+<main class="page-shell auth-shell">
+    <section class="restricted-panel" aria-labelledby="access-denied-title">
+        <p class="eyebrow">Restricted</p>
+        <h1 id="access-denied-title">Owner access required</h1>
+        <p>This account cannot manage staff accounts.</p>
+        <a class="secondary-link" asp-page="/Reception/Index">Return to reception</a>
+    </section>
+</main>

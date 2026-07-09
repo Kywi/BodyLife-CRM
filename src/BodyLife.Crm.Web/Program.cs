@@ -20,6 +20,7 @@ builder.Services.AddBodyLifeRequestContext();
 builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AddPageRoute("/Reception/Index", string.Empty);
+    options.Conventions.AuthorizeFolder("/Owner", BodyLifeAuthorizationPolicies.OwnerOnly);
     options.Conventions.AuthorizeFolder("/Reception", BodyLifeAuthorizationPolicies.AdminOrOwner);
     options.Conventions.AuthorizePage("/Logout", BodyLifeAuthorizationPolicies.AdminOrOwner);
 });
@@ -32,7 +33,7 @@ builder.Services
         options.Cookie.SameSite = SameSiteMode.Strict;
         options.LoginPath = "/Login";
         options.LogoutPath = "/Logout";
-        options.AccessDeniedPath = "/Login";
+        options.AccessDeniedPath = "/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromHours(12);
         options.SlidingExpiration = true;
     });

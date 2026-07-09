@@ -82,6 +82,13 @@ public sealed class StaffCredentialsService(
         var credential = await dbContext.Set<AccountCredentialRecord>()
             .SingleOrDefaultAsync(value => value.AccountId == account.Id, cancellationToken);
         var isReset = credential is not null;
+
+        if (isReset && string.IsNullOrWhiteSpace(envelope.Reason))
+        {
+            return StaffCredentialsResult.ValidationFailed(
+                "Reason is required to reset staff credentials.");
+        }
+
         var now = timeProvider.GetUtcNow();
 
         if (credential is null)

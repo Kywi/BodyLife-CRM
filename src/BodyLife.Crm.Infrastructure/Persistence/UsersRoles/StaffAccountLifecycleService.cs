@@ -141,6 +141,12 @@ public sealed class StaffAccountLifecycleService(
                 : StaffAccountLifecycleResult.AlreadyInactive(account.Id);
         }
 
+        if (!isActive && string.IsNullOrWhiteSpace(envelope.Reason))
+        {
+            return StaffAccountLifecycleResult.ValidationFailed(
+                "Reason is required to deactivate a staff account.");
+        }
+
         var wasActive = account.IsActive;
         var now = timeProvider.GetUtcNow();
         account.IsActive = isActive;

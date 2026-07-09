@@ -123,7 +123,7 @@ public sealed class PostgreSqlStaffAccountLifecycleTests
         await InsertActiveSessionAsync(database.ConnectionString, accountId);
 
         var deactivateResult = await service.SetStaffAccountActiveStateAsync(
-            OwnerEnvelope(),
+            OwnerEnvelope("End front desk access"),
             accountId,
             isActive: false);
         var reactivateResult = await service.SetStaffAccountActiveStateAsync(
@@ -137,6 +137,31 @@ public sealed class PostgreSqlStaffAccountLifecycleTests
         Assert.Null(await ReadAccountValueAsync<DateTimeOffset?>(database, accountId, "deactivated_at"));
         Assert.Equal(0L, await CountSessionsAsync(database, accountId, ended: false));
         Assert.Equal(1L, await CountSessionsAsync(database, accountId, ended: true));
+    }
+
+    [PostgreSqlFact]
+    public async Task StaffAccountLifecycleRequiresReasonForDeactivation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var service = Service(dbContext);
+        var createResult = await service.CreateStaffAccountAsync(
+            OwnerEnvelope(),
+            AccountKind.NamedAdmin,
+            "Main Admin");
+
+        var result = await service.SetStaffAccountActiveStateAsync(
+            OwnerEnvelope(),
+            createResult.AccountId!.Value,
+            isActive: false);
+
+        Assert.Equal(StaffAccountLifecycleStatus.ValidationFailed, result.Status);
+        Assert.Null(result.AuditEntryId);
+        Assert.True(await ReadAccountValueAsync<bool>(
+            database,
+            createResult.AccountId.Value,
+            "is_active"));
     }
 
     [PostgreSqlFact]
@@ -174,17 +199,20 @@ public sealed class PostgreSqlStaffAccountLifecycleTests
             FixedClock());
     }
 
-    private static CommandEnvelope OwnerEnvelope()
+    private static CommandEnvelope OwnerEnvelope(string? reason = null)
     {
-        return Envelope(ActorRole.Owner, AccountKind.Owner);
+        return Envelope(ActorRole.Owner, AccountKind.Owner, reason);
     }
 
     private static CommandEnvelope AdminEnvelope()
     {
-        return Envelope(ActorRole.Admin, AccountKind.NamedAdmin);
+        return Envelope(ActorRole.Admin, AccountKind.NamedAdmin, reason: null);
     }
 
-    private static CommandEnvelope Envelope(ActorRole role, AccountKind accountKind)
+    private static CommandEnvelope Envelope(
+        ActorRole role,
+        AccountKind accountKind,
+        string? reason)
     {
         return new CommandEnvelope(
             new ActorContext(
@@ -197,7 +225,7 @@ public sealed class PostgreSqlStaffAccountLifecycleTests
             EntryOrigin.Normal,
             OccurredAt: null,
             IdempotencyKey: null,
-            Reason: null,
+            Reason: reason,
             Comment: null);
     }
 
