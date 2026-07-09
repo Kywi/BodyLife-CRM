@@ -858,7 +858,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
-      "community": 72,
+      "community": 67,
       "norm_label": "commandidempotencyrecord.cs"
     },
     {
@@ -873,7 +873,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:c7ebe20e2d7b2dd4",
-      "community": 72,
+      "community": 67,
       "norm_label": "bodylife.crm.infrastructure.persistence.idempotency"
     },
     {
@@ -889,7 +889,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
-      "community": 72,
+      "community": 67,
       "norm_label": "commandidempotencyrecord"
     },
     {
@@ -899,7 +899,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_guid",
-      "community": 72,
+      "community": 67,
       "norm_label": "guid"
     },
     {
@@ -909,7 +909,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_datetimeoffset",
-      "community": 72,
+      "community": 67,
       "norm_label": "datetimeoffset"
     },
     {
@@ -919,7 +919,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
-      "community": 72,
+      "community": 67,
       "norm_label": "commandidempotencyrecordconfiguration.cs"
     },
     {
@@ -935,7 +935,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
-      "community": 72,
+      "community": 67,
       "norm_label": "commandidempotencyrecordconfiguration"
     },
     {
@@ -961,7 +961,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_configure",
-      "community": 72,
+      "community": 67,
       "norm_label": ".configure()"
     },
     {
@@ -971,7 +971,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_cs_entitytypebuilder",
-      "community": 72,
+      "community": 67,
       "norm_label": "entitytypebuilder"
     },
     {
@@ -1563,7 +1563,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:11e3fc6fa3c91f4e",
-      "community": 16,
+      "community": 10,
       "norm_label": "bodylife.crm.infrastructure.persistence.usersroles"
     },
     {
@@ -1661,7 +1661,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult",
-      "community": 66,
+      "community": 23,
       "norm_label": "accountloginresult.cs"
     },
     {
@@ -1677,7 +1677,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult",
-      "community": 66,
+      "community": 23,
       "norm_label": "accountloginresult"
     },
     {
@@ -1709,7 +1709,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult_bodylife_crm_infrastructure_persistence_usersroles_accountloginresult_invalidcredentials",
-      "community": 66,
+      "community": 23,
       "norm_label": ".invalidcredentials()"
     },
     {
@@ -1719,7 +1719,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice",
-      "community": 66,
+      "community": 23,
       "norm_label": "accountloginservice.cs"
     },
     {
@@ -1735,7 +1735,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice",
-      "community": 66,
+      "community": 23,
       "norm_label": "accountloginservice"
     },
     {
@@ -1751,7 +1751,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_loginasync",
-      "community": 66,
+      "community": 23,
       "norm_label": ".loginasync()"
     },
     {
@@ -1761,7 +1761,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_cs_cancellationtoken",
-      "community": 66,
+      "community": 23,
       "norm_label": "cancellationtoken"
     },
     {
@@ -1771,7 +1771,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_cs_task",
-      "community": 66,
+      "community": 23,
       "norm_label": "task"
     },
     {
@@ -1787,7 +1787,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_logoutasync",
-      "community": 66,
+      "community": 23,
       "norm_label": ".logoutasync()"
     },
     {
@@ -1797,7 +1797,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_cs_guid",
-      "community": 66,
+      "community": 23,
       "norm_label": "guid"
     },
     {
@@ -1813,7 +1813,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_bodylife_crm_infrastructure_persistence_usersroles_accountloginservice_normalizedevicelabel",
-      "community": 66,
+      "community": 23,
       "norm_label": ".normalizedevicelabel()"
     },
     {
@@ -1823,7 +1823,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountloginstatus",
-      "community": 16,
+      "community": 23,
       "norm_label": "accountloginstatus.cs"
     },
     {
@@ -2057,7 +2057,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus",
-      "community": 16,
+      "community": 10,
       "norm_label": "ownerbootstrapstatus.cs"
     },
     {
@@ -2073,7 +2073,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus",
-      "community": 16,
+      "community": 10,
       "norm_label": "ownerbootstrapstatus"
     },
     {
@@ -2186,7 +2186,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "dbupdateexception",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_dbupdateexception",
       "community": 8,
       "norm_label": "dbupdateexception"
     },
@@ -2281,7 +2281,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapstatus",
-      "community": 16,
+      "community": 10,
       "norm_label": "ownercredentialsbootstrapstatus.cs"
     },
     {
@@ -2297,7 +2297,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapstatus_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapstatus",
-      "community": 16,
+      "community": 10,
       "norm_label": "ownercredentialsbootstrapstatus"
     },
     {
@@ -2404,7 +2404,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "normalizedlogin",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_cs_normalizedlogin",
       "community": 7,
       "norm_label": "normalizedlogin"
     },
@@ -2542,7 +2542,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_sessionrecord",
-      "community": 86,
+      "community": 67,
       "norm_label": "sessionrecord.cs"
     },
     {
@@ -2558,7 +2558,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_sessionrecord_bodylife_crm_infrastructure_persistence_usersroles_sessionrecord",
-      "community": 86,
+      "community": 67,
       "norm_label": "sessionrecord"
     },
     {
@@ -2568,7 +2568,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_sessionrecord_cs_guid",
-      "community": 86,
+      "community": 67,
       "norm_label": "guid"
     },
     {
@@ -2578,7 +2578,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_sessionrecord_cs_datetimeoffset",
-      "community": 86,
+      "community": 67,
       "norm_label": "datetimeoffset"
     },
     {
@@ -2588,7 +2588,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_sessionrecordconfiguration",
-      "community": 86,
+      "community": 67,
       "norm_label": "sessionrecordconfiguration.cs"
     },
     {
@@ -2604,7 +2604,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_sessionrecordconfiguration_bodylife_crm_infrastructure_persistence_usersroles_sessionrecordconfiguration",
-      "community": 86,
+      "community": 67,
       "norm_label": "sessionrecordconfiguration"
     },
     {
@@ -2620,7 +2620,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_sessionrecordconfiguration_bodylife_crm_infrastructure_persistence_usersroles_sessionrecordconfiguration_configure",
-      "community": 86,
+      "community": 67,
       "norm_label": ".configure()"
     },
     {
@@ -2630,7 +2630,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_sessionrecordconfiguration_cs_entitytypebuilder",
-      "community": 86,
+      "community": 67,
       "norm_label": "entitytypebuilder"
     },
     {
@@ -2640,7 +2640,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice",
-      "community": 119,
+      "community": 34,
       "norm_label": "staffaccountlifecycleservice.cs"
     },
     {
@@ -3042,8 +3042,361 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecyclestatus",
-      "community": 119,
+      "community": 34,
       "norm_label": "staffaccountlifecyclestatus"
+    },
+    {
+      "label": "StaffCredentialsService.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "community": 34,
+      "norm_label": "staffcredentialsservice.cs"
+    },
+    {
+      "label": "StaffCredentialsService",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L8",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "community": 16,
+      "norm_label": "staffcredentialsservice"
+    },
+    {
+      "label": "int",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_int",
+      "community": 16,
+      "norm_label": "int"
+    },
+    {
+      "label": "string",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_string",
+      "community": 16,
+      "norm_label": "string"
+    },
+    {
+      "label": ".SetStaffCredentialsAsync()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L20",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "community": 16,
+      "norm_label": ".setstaffcredentialsasync()"
+    },
+    {
+      "label": "Guid",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_guid",
+      "community": 16,
+      "norm_label": "guid"
+    },
+    {
+      "label": "CancellationToken",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_cancellationtoken",
+      "community": 16,
+      "norm_label": "cancellationtoken"
+    },
+    {
+      "label": "Task",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_task",
+      "community": 16,
+      "norm_label": "task"
+    },
+    {
+      "label": ".TryNormalizeLoginName()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L130",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_trynormalizeloginname",
+      "community": 16,
+      "norm_label": ".trynormalizeloginname()"
+    },
+    {
+      "label": "NormalizedLogin",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_normalizedlogin",
+      "community": 16,
+      "norm_label": "normalizedlogin"
+    },
+    {
+      "label": ".IsLoginNameUniqueViolation()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L158",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isloginnameuniqueviolation",
+      "community": 16,
+      "norm_label": ".isloginnameuniqueviolation()"
+    },
+    {
+      "label": "DbUpdateException",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_dbupdateexception",
+      "community": 16,
+      "norm_label": "dbupdateexception"
+    },
+    {
+      "label": ".IsStaffAccountType()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L167",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isstaffaccounttype",
+      "community": 16,
+      "norm_label": ".isstaffaccounttype()"
+    },
+    {
+      "label": ".IsOwner()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L172",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isowner",
+      "community": 119,
+      "norm_label": ".isowner()"
+    },
+    {
+      "label": "NormalizedLogin",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L177",
+      "metadata": {
+        "is_nested_type": true,
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_normalizedlogin",
+      "community": 34,
+      "norm_label": "normalizedlogin"
+    },
+    {
+      "label": "StaffCredentialsResult",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L180",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "community": 16,
+      "norm_label": "staffcredentialsresult"
+    },
+    {
+      "label": ".Configured()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L188",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_configured",
+      "community": 16,
+      "norm_label": ".configured()"
+    },
+    {
+      "label": ".Reset()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L197",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_reset",
+      "community": 16,
+      "norm_label": ".reset()"
+    },
+    {
+      "label": ".PermissionDenied()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L206",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_permissiondenied",
+      "community": 16,
+      "norm_label": ".permissiondenied()"
+    },
+    {
+      "label": ".ValidationFailed()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L211",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_validationfailed",
+      "community": 16,
+      "norm_label": ".validationfailed()"
+    },
+    {
+      "label": ".NotFound()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L216",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_notfound",
+      "community": 16,
+      "norm_label": ".notfound()"
+    },
+    {
+      "label": ".OwnerAccountProtected()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L221",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_owneraccountprotected",
+      "community": 16,
+      "norm_label": ".owneraccountprotected()"
+    },
+    {
+      "label": ".LoginNameAlreadyInUse()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L230",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_loginnamealreadyinuse",
+      "community": 16,
+      "norm_label": ".loginnamealreadyinuse()"
+    },
+    {
+      "label": ".Failure()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L237",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_failure",
+      "community": 16,
+      "norm_label": ".failure()"
+    },
+    {
+      "label": "StaffCredentialsStatus",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L243",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s126"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsstatus",
+      "community": 16,
+      "norm_label": "staffcredentialsstatus"
     },
     {
       "label": "ServiceCollectionExtensions.cs",
@@ -3052,7 +3405,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_servicecollectionextensions",
-      "community": 48,
+      "community": 10,
       "norm_label": "servicecollectionextensions.cs"
     },
     {
@@ -3067,7 +3420,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:997b1edef514343e",
-      "community": 48,
+      "community": 78,
       "norm_label": "bodylife.crm.infrastructure"
     },
     {
@@ -4599,7 +4952,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand",
-      "community": 8,
+      "community": 124,
       "norm_label": "ownerbootstrapcommand.cs"
     },
     {
@@ -4749,7 +5102,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_ownercredentialscommand",
-      "community": 7,
+      "community": 124,
       "norm_label": "ownercredentialscommand.cs"
     },
     {
@@ -5418,7 +5771,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:4d4f4e66c98f84fe",
-      "community": 25,
+      "community": 124,
       "norm_label": "bodylife.crm.web.pages"
     },
     {
@@ -5490,7 +5843,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_login_cshtml",
-      "community": 25,
+      "community": 124,
       "norm_label": "login.cshtml.cs"
     },
     {
@@ -5598,7 +5951,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml",
-      "community": 25,
+      "community": 124,
       "norm_label": "logout.cshtml.cs"
     },
     {
@@ -5801,7 +6154,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_program",
-      "community": 48,
+      "community": 78,
       "norm_label": "program.cs"
     },
     {
@@ -5811,7 +6164,7 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_program_program",
-      "community": 48,
+      "community": 78,
       "norm_label": "program"
     },
     {
@@ -6154,7 +6507,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommand",
-      "community": 46,
+      "community": 34,
       "norm_label": "ibodylifecommand.cs"
     },
     {
@@ -6170,7 +6523,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommand_bodylife_crm_application_commands_ibodylifecommand",
-      "community": 46,
+      "community": 34,
       "norm_label": "ibodylifecommand"
     },
     {
@@ -6180,7 +6533,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler",
-      "community": 91,
+      "community": 28,
       "norm_label": "ibodylifecommandhandler.cs"
     },
     {
@@ -6196,7 +6549,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_bodylife_crm_application_commands_ibodylifecommandhandler",
-      "community": 91,
+      "community": 28,
       "norm_label": "ibodylifecommandhandler"
     },
     {
@@ -6212,7 +6565,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_bodylife_crm_application_commands_ibodylifecommandhandler_executeasync",
-      "community": 91,
+      "community": 28,
       "norm_label": ".executeasync()"
     },
     {
@@ -6222,7 +6575,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_cs_cancellationtoken",
-      "community": 91,
+      "community": 28,
       "norm_label": "cancellationtoken"
     },
     {
@@ -6232,7 +6585,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_cs_task",
-      "community": 91,
+      "community": 28,
       "norm_label": "task"
     },
     {
@@ -8009,7 +8362,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests",
-      "community": 10,
+      "community": 66,
       "norm_label": "postgresqlmigrationtests"
     },
     {
@@ -8025,7 +8378,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_initialbaselinemigrationappliestocleanpostgresqldatabase",
-      "community": 10,
+      "community": 66,
       "norm_label": ".initialbaselinemigrationappliestocleanpostgresqldatabase()"
     },
     {
@@ -8035,7 +8388,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_cs_task",
-      "community": 10,
+      "community": 66,
       "norm_label": "task"
     },
     {
@@ -8045,7 +8398,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_cs_postgresqlfact",
-      "community": 10,
+      "community": 66,
       "norm_label": "postgresqlfact"
     },
     {
@@ -8055,7 +8408,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
-      "community": 16,
+      "community": 10,
       "norm_label": "postgresqlownerbootstrappertests.cs"
     },
     {
@@ -8181,7 +8534,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests",
-      "community": 10,
+      "community": 72,
       "norm_label": "postgresqlreadyhealthchecktests"
     },
     {
@@ -8197,7 +8550,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_readyhealthendpointishealthywhenpostgresqlismigrated",
-      "community": 10,
+      "community": 72,
       "norm_label": ".readyhealthendpointishealthywhenpostgresqlismigrated()"
     },
     {
@@ -8207,7 +8560,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_cs_task",
-      "community": 10,
+      "community": 72,
       "norm_label": "task"
     },
     {
@@ -8217,7 +8570,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_cs_postgresqlfact",
-      "community": 10,
+      "community": 72,
       "norm_label": "postgresqlfact"
     },
     {
@@ -8458,7 +8811,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "timeprovider",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_cs_timeprovider",
       "community": 46,
       "norm_label": "timeprovider"
     },
@@ -8584,6 +8937,407 @@
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider_getutcnow",
       "community": 46,
       "norm_label": ".getutcnow()"
+    },
+    {
+      "label": "PostgreSqlStaffCredentialsTests.cs",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "community": 10,
+      "norm_label": "postgresqlstaffcredentialstests.cs"
+    },
+    {
+      "label": "PostgreSqlStaffCredentialsTests",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L9",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "community": 46,
+      "norm_label": "postgresqlstaffcredentialstests"
+    },
+    {
+      "label": "DateTimeOffset",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_datetimeoffset",
+      "community": 46,
+      "norm_label": "datetimeoffset"
+    },
+    {
+      "label": ".StaffCredentialsConfigureNamedAndSharedAccountLoginWithoutDefaultSecrets()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L13",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsconfigurenamedandsharedaccountloginwithoutdefaultsecrets",
+      "community": 46,
+      "norm_label": ".staffcredentialsconfigurenamedandsharedaccountloginwithoutdefaultsecrets()"
+    },
+    {
+      "label": "Task",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "community": 46,
+      "norm_label": "task"
+    },
+    {
+      "label": "PostgreSqlFact",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_postgresqlfact",
+      "community": 46,
+      "norm_label": "postgresqlfact"
+    },
+    {
+      "label": ".StaffCredentialsResetReplacesSecretAndEndsActiveSessions()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L73",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "community": 46,
+      "norm_label": ".staffcredentialsresetreplacessecretandendsactivesessions()"
+    },
+    {
+      "label": ".StaffCredentialsRequireOwnerActorWithoutMutation()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L128",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsrequireowneractorwithoutmutation",
+      "community": 46,
+      "norm_label": ".staffcredentialsrequireowneractorwithoutmutation()"
+    },
+    {
+      "label": ".StaffCredentialsProtectOwnerAndReportUnknownAccount()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L153",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsprotectownerandreportunknownaccount",
+      "community": 46,
+      "norm_label": ".staffcredentialsprotectownerandreportunknownaccount()"
+    },
+    {
+      "label": ".StaffCredentialsValidateLoginAndPasswordBeforeMutation()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L180",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsvalidateloginandpasswordbeforemutation",
+      "community": 46,
+      "norm_label": ".staffcredentialsvalidateloginandpasswordbeforemutation()"
+    },
+    {
+      "label": ".StaffCredentialsReturnConflictForDuplicateNormalizedLoginName()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L222",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsreturnconflictforduplicatenormalizedloginname",
+      "community": 46,
+      "norm_label": ".staffcredentialsreturnconflictforduplicatenormalizedloginname()"
+    },
+    {
+      "label": ".InactiveStaffAccountCannotLoginAfterCredentialsAreConfigured()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L257",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_inactivestaffaccountcannotloginaftercredentialsareconfigured",
+      "community": 46,
+      "norm_label": ".inactivestaffaccountcannotloginaftercredentialsareconfigured()"
+    },
+    {
+      "label": ".CreateStaffAccountAsync()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L290",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "community": 46,
+      "norm_label": ".createstaffaccountasync()"
+    },
+    {
+      "label": "Guid",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_guid",
+      "community": 46,
+      "norm_label": "guid"
+    },
+    {
+      "label": ".OwnerEnvelope()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L304",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "community": 46,
+      "norm_label": ".ownerenvelope()"
+    },
+    {
+      "label": ".AdminEnvelope()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L309",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_adminenvelope",
+      "community": 46,
+      "norm_label": ".adminenvelope()"
+    },
+    {
+      "label": ".Envelope()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L314",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_envelope",
+      "community": 46,
+      "norm_label": ".envelope()"
+    },
+    {
+      "label": ".ReadNormalizedLoginNameAsync()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L331",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readnormalizedloginnameasync",
+      "community": 46,
+      "norm_label": ".readnormalizedloginnameasync()"
+    },
+    {
+      "label": ".ReadPasswordHashAsync()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L339",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordhashasync",
+      "community": 46,
+      "norm_label": ".readpasswordhashasync()"
+    },
+    {
+      "label": ".ReadPasswordChangedAtAsync()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L345",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordchangedatasync",
+      "community": 46,
+      "norm_label": ".readpasswordchangedatasync()"
+    },
+    {
+      "label": "DateTime",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "datetime",
+      "community": 46,
+      "norm_label": "datetime"
+    },
+    {
+      "label": ".CountCredentialsAsync()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L353",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countcredentialsasync",
+      "community": 46,
+      "norm_label": ".countcredentialsasync()"
+    },
+    {
+      "label": ".CountSessionsAsync()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L358",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countsessionsasync",
+      "community": 46,
+      "norm_label": ".countsessionsasync()"
+    },
+    {
+      "label": "MutableTimeProvider",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L374",
+      "metadata": {
+        "is_nested_type": true,
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider",
+      "community": 46,
+      "norm_label": "mutabletimeprovider"
+    },
+    {
+      "label": "TimeProvider",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "timeprovider",
+      "community": 46,
+      "norm_label": "timeprovider"
+    },
+    {
+      "label": ".GetUtcNow()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L376",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider_getutcnow",
+      "community": 46,
+      "norm_label": ".getutcnow()"
+    },
+    {
+      "label": ".Advance()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L381",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s217"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider_advance",
+      "community": 46,
+      "norm_label": ".advance()"
+    },
+    {
+      "label": "TimeSpan",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "timespan",
+      "community": 46,
+      "norm_label": "timespan"
     },
     {
       "label": "PostgreSqlTestDatabase.cs",
@@ -8979,7 +9733,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:f25df189185a54f7",
-      "community": 75,
+      "community": 47,
       "norm_label": "bodylife.crm.tests.application"
     },
     {
@@ -9047,7 +9801,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests",
-      "community": 75,
+      "community": 47,
       "norm_label": "querypermissionresulttests.cs"
     },
     {
@@ -9063,7 +9817,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests_bodylife_crm_tests_application_querypermissionresulttests",
-      "community": 78,
+      "community": 47,
       "norm_label": "querypermissionresulttests"
     },
     {
@@ -9079,7 +9833,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests_bodylife_crm_tests_application_querypermissionresulttests_allowedcreatesallowedpermissionwithoutdeniedreason",
-      "community": 78,
+      "community": 47,
       "norm_label": ".allowedcreatesallowedpermissionwithoutdeniedreason()"
     },
     {
@@ -9089,7 +9843,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests_cs_fact",
-      "community": 78,
+      "community": 47,
       "norm_label": "fact"
     },
     {
@@ -9105,7 +9859,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests_bodylife_crm_tests_application_querypermissionresulttests_deniedcreatesdeniedpermissionwithreason",
-      "community": 78,
+      "community": 47,
       "norm_label": ".deniedcreatesdeniedpermissionwithreason()"
     },
     {
@@ -9121,7 +9875,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests_bodylife_crm_tests_application_querypermissionresulttests_querypermissionsetlooksupallowedactions",
-      "community": 78,
+      "community": 47,
       "norm_label": ".querypermissionsetlooksupallowedactions()"
     },
     {
@@ -9137,7 +9891,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests_bodylife_crm_tests_application_querypermissionresulttests_querypermissionsetrejectsduplicateactionkeys",
-      "community": 78,
+      "community": 47,
       "norm_label": ".querypermissionsetrejectsduplicateactionkeys()"
     },
     {
@@ -9153,7 +9907,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests_bodylife_crm_tests_application_querypermissionresulttests_permissionresultrejectsblankactionkeys",
-      "community": 78,
+      "community": 47,
       "norm_label": ".permissionresultrejectsblankactionkeys()"
     },
     {
@@ -9163,7 +9917,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests_cs_theory",
-      "community": 78,
+      "community": 47,
       "norm_label": "theory"
     },
     {
@@ -9173,7 +9927,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_tests_application_querypermissionresulttests_cs_inlinedata",
-      "community": 78,
+      "community": 47,
       "norm_label": "inlinedata"
     },
     {
@@ -9463,7 +10217,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_ui_smoketests_postgresqlsmokedatabase",
-      "community": 16,
+      "community": 10,
       "norm_label": "postgresqlsmokedatabase.cs"
     },
     {
@@ -9478,7 +10232,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:d0242d3ae7c66f27",
-      "community": 16,
+      "community": 10,
       "norm_label": "bodylife.crm.ui.smoketests"
     },
     {
@@ -9614,7 +10368,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_ui_smoketests_receptionappfixture",
-      "community": 16,
+      "community": 10,
       "norm_label": "receptionappfixture.cs"
     },
     {
@@ -9828,7 +10582,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_ui_smoketests_receptiondashboardsmoketests",
-      "community": 16,
+      "community": 10,
       "norm_label": "receptiondashboardsmoketests.cs"
     },
     {
@@ -17066,6 +17820,16 @@
       "norm_label": "step 23 - staff account lifecycle foundation"
     },
     {
+      "label": "Step 24 - Staff credential setup and reset foundation",
+      "file_type": "document",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L693",
+      "_origin": "ast",
+      "id": "docs_implementation_progress_step_24_staff_credential_setup_and_reset_foundation",
+      "community": 82,
+      "norm_label": "step 24 - staff credential setup and reset foundation"
+    },
+    {
       "label": "implementation-roadmap.md",
       "file_type": "document",
       "source_file": "docs/implementation-roadmap.md",
@@ -18576,10 +19340,20 @@
       "norm_label": "staff account lifecycle foundation"
     },
     {
-      "label": "Query permission results",
+      "label": "Staff credential setup and reset",
       "file_type": "document",
       "source_file": "docs/login-session.md",
       "source_location": "L62",
+      "_origin": "ast",
+      "id": "docs_login_session_staff_credential_setup_and_reset",
+      "community": 17,
+      "norm_label": "staff credential setup and reset"
+    },
+    {
+      "label": "Query permission results",
+      "file_type": "document",
+      "source_file": "docs/login-session.md",
+      "source_location": "L74",
       "_origin": "ast",
       "id": "docs_login_session_query_permission_results",
       "community": 17,
@@ -18589,7 +19363,7 @@
       "label": "Auth and permission technical logs",
       "file_type": "document",
       "source_file": "docs/login-session.md",
-      "source_location": "L68",
+      "source_location": "L80",
       "_origin": "ast",
       "id": "docs_login_session_auth_and_permission_technical_logs",
       "community": 17,
@@ -18599,7 +19373,7 @@
       "label": "Boundaries",
       "file_type": "document",
       "source_file": "docs/login-session.md",
-      "source_location": "L76",
+      "source_location": "L88",
       "_origin": "ast",
       "id": "docs_login_session_boundaries",
       "community": 17,
@@ -18709,7 +19483,7 @@
       "label": "Acceptance criteria",
       "file_type": "document",
       "source_file": "docs/milestone-2-acceptance-review.md",
-      "source_location": "L29",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "docs_milestone_2_acceptance_review_acceptance_criteria",
       "community": 79,
@@ -18719,7 +19493,7 @@
       "label": "Test coverage review",
       "file_type": "document",
       "source_file": "docs/milestone-2-acceptance-review.md",
-      "source_location": "L42",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "docs_milestone_2_acceptance_review_test_coverage_review",
       "community": 79,
@@ -18729,21 +19503,21 @@
       "label": "Follow-up work before Milestone 3",
       "file_type": "document",
       "source_file": "docs/milestone-2-acceptance-review.md",
-      "source_location": "L55",
+      "source_location": "L57",
       "_origin": "ast",
       "id": "docs_milestone_2_acceptance_review_follow_up_work_before_milestone_3",
       "community": 79,
       "norm_label": "follow-up work before milestone 3"
     },
     {
-      "label": "Validation baseline for this review",
+      "label": "Validation baseline after Step 24",
       "file_type": "document",
       "source_file": "docs/milestone-2-acceptance-review.md",
-      "source_location": "L62",
+      "source_location": "L64",
       "_origin": "ast",
-      "id": "docs_milestone_2_acceptance_review_validation_baseline_for_this_review",
+      "id": "docs_milestone_2_acceptance_review_validation_baseline_after_step_24",
       "community": 79,
-      "norm_label": "validation baseline for this review"
+      "norm_label": "validation baseline after step 24"
     },
     {
       "label": "operations-design.md",
@@ -20916,19 +21690,6 @@
       "community": 282,
       "norm_label": "postgresql source facts constraints",
       "id": "codex_skills_bodylife_postgres_data_access_skill_postgresql_source_facts_constraints"
-    },
-    {
-      "label": "Openai",
-      "file_type": "document",
-      "source_file": ".codex/skills/bodylife-postgres-data-access/agents/openai.yaml",
-      "source_location": "L1",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 108,
-      "norm_label": "openai",
-      "id": "codex_skills_bodylife_postgres_data_access_agents_openai_openai"
     },
     {
       "label": "Risk Boundary Tests",
@@ -25531,6 +26292,22 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L2",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Infrastructure.Persistence",
+        "scope_kind": "file"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "csharp_namespace:a35cf01376c2536a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlTestDatabase.cs",
       "source_location": "L1",
       "weight": 1.0,
@@ -26695,6 +27472,16 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -26835,6 +27622,22 @@
         "scope_kind": "file"
       },
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_kind": "file"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
       "target": "csharp_namespace:11e3fc6fa3c91f4e",
       "confidence_score": 1.0
     },
@@ -27668,7 +28471,7 @@
         "ref_token": "DbUpdateException"
       },
       "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_issingleownerconstraintviolation",
-      "target": "dbupdateexception",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_dbupdateexception",
       "confidence_score": 1.0
     },
     {
@@ -27907,7 +28710,7 @@
         "ref_token": "NormalizedLogin"
       },
       "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_normalizeloginname",
-      "target": "normalizedlogin",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownercredentialsbootstrapper_cs_normalizedlogin",
       "confidence_score": 1.0
     },
     {
@@ -28315,6 +29118,20 @@
         "ref_token": "StaffAccountLifecycleService"
       },
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_service",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L290",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "StaffAccountLifecycleService"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
       "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice",
       "confidence_score": 1.0
     },
@@ -29137,6 +29954,626 @@
       },
       "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleresult_validationfailed",
       "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Application.Commands",
+        "scope_kind": "file"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "csharp_namespace:ddb4a710de307e03",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L2",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.SharedKernel",
+        "scope_kind": "file"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "csharp_namespace:ff30436268495aa4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L177",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_normalizedlogin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L180",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L243",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L158",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isloginnameuniqueviolation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L172",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isowner",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isstaffaccounttype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L130",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_trynormalizeloginname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "int"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_int",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "string"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_string",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "CommandEnvelope"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_application_commands_commandenvelope_bodylife_crm_application_commands_commandenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L127",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_configured",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_loginnamealreadyinuse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_notfound",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_owneraccountprotected",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_permissiondenied",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L126",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_reset",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_validationfailed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isloginnameuniqueviolation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isowner",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isstaffaccounttype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_trynormalizeloginname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "CancellationToken"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_cancellationtoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L20",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_setstaffcredentialsasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L188",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_configured",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L221",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_owneraccountprotected",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L197",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_reset",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L130",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_trynormalizeloginname",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_trynormalizeloginname",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_validationfailed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L130",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "NormalizedLogin"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_trynormalizeloginname",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_normalizedlogin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L158",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "DbUpdateException"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isloginnameuniqueviolation",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_cs_dbupdateexception",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L172",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "ActorContext"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_isowner",
+      "target": "src_bodylife_crm_sharedkernel_actorcontext_bodylife_crm_sharedkernel_actorcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L188",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_configured",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L237",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_failure",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L230",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_loginnamealreadyinuse",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L216",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_notfound",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L221",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_owneraccountprotected",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L206",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_permissiondenied",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L197",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_reset",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L211",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_validationfailed",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L208",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_permissiondenied",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_failure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L213",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_validationfailed",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_failure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L218",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_notfound",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_failure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L232",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_loginnamealreadyinuse",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_failure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs",
+      "source_location": "L237",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "StaffCredentialsStatus"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsresult_failure",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsstatus",
       "confidence_score": 1.0
     },
     {
@@ -33327,6 +34764,22 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Application.Commands",
+        "scope_kind": "file"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "csharp_namespace:ddb4a710de307e03",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Tests/Application/CommandResultTests.cs",
       "source_location": "L1",
       "weight": 1.0,
@@ -33408,6 +34861,48 @@
         "ref_token": "CommandEnvelope"
       },
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_ownerenvelope",
+      "target": "src_bodylife_crm_application_commands_commandenvelope_bodylife_crm_application_commands_commandenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L309",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "CommandEnvelope"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_adminenvelope",
+      "target": "src_bodylife_crm_application_commands_commandenvelope_bodylife_crm_application_commands_commandenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L314",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "CommandEnvelope"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_envelope",
+      "target": "src_bodylife_crm_application_commands_commandenvelope_bodylife_crm_application_commands_commandenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L304",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "CommandEnvelope"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
       "target": "src_bodylife_crm_application_commands_commandenvelope_bodylife_crm_application_commands_commandenvelope",
       "confidence_score": 1.0
     },
@@ -34678,6 +36173,22 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.SharedKernel",
+        "scope_kind": "file"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "csharp_namespace:ff30436268495aa4",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Tests/Application/CommandResultTests.cs",
       "source_location": "L2",
       "weight": 1.0,
@@ -34787,6 +36298,34 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L290",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "AccountKind"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "target": "src_bodylife_crm_sharedkernel_accountkind_bodylife_crm_sharedkernel_accountkind",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L314",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "AccountKind"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_envelope",
+      "target": "src_bodylife_crm_sharedkernel_accountkind_bodylife_crm_sharedkernel_accountkind",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm/SharedKernel/ActorContext.cs",
@@ -34817,6 +36356,20 @@
         "ref_token": "ActorRole"
       },
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_envelope",
+      "target": "src_bodylife_crm_sharedkernel_actorrole_bodylife_crm_sharedkernel_actorrole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L314",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "ActorRole"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_envelope",
       "target": "src_bodylife_crm_sharedkernel_actorrole_bodylife_crm_sharedkernel_actorrole",
       "confidence_score": 1.0
     },
@@ -35063,6 +36616,16 @@
       "source_location": "L9",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests",
+      "target": "csharp_namespace:105df1079acd785a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
       "target": "csharp_namespace:105df1079acd785a",
       "confidence_score": 1.0
     },
@@ -36612,7 +38175,7 @@
         "ref_token": "TimeProvider"
       },
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_fixedclock",
-      "target": "timeprovider",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_cs_timeprovider",
       "confidence_score": 1.0
     },
     {
@@ -36625,7 +38188,7 @@
         "ref_token": "TimeProvider"
       },
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider",
-      "target": "timeprovider",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_cs_timeprovider",
       "confidence_score": 1.0
     },
     {
@@ -36734,6 +38297,1003 @@
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountlifecycletests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider_getutcnow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L374",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L309",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_adminenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L353",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countcredentialsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L358",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countsessionsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L290",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L314",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_envelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L257",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_inactivestaffaccountcannotloginaftercredentialsareconfigured",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L304",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L331",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readnormalizedloginnameasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L345",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordchangedatasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L339",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordhashasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsconfigurenamedandsharedaccountloginwithoutdefaultsecrets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L153",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsprotectownerandreportunknownaccount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L128",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsrequireowneractorwithoutmutation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L222",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsreturnconflictforduplicatenormalizedloginname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L180",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsvalidateloginandpasswordbeforemutation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "DateTimeOffset"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_datetimeoffset",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L376",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "DateTimeOffset"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider_getutcnow",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_datetimeoffset",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsconfigurenamedandsharedaccountloginwithoutdefaultsecrets",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsconfigurenamedandsharedaccountloginwithoutdefaultsecrets",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsconfigurenamedandsharedaccountloginwithoutdefaultsecrets",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readnormalizedloginnameasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsconfigurenamedandsharedaccountloginwithoutdefaultsecrets",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordhashasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsconfigurenamedandsharedaccountloginwithoutdefaultsecrets",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L13",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsconfigurenamedandsharedaccountloginwithoutdefaultsecrets",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L353",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countcredentialsasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L358",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countsessionsasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L290",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L257",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_inactivestaffaccountcannotloginaftercredentialsareconfigured",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L331",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readnormalizedloginnameasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L345",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordchangedatasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L339",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordhashasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L153",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsprotectownerandreportunknownaccount",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L128",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsrequireowneractorwithoutmutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L73",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L222",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsreturnconflictforduplicatenormalizedloginname",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L180",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsvalidateloginandpasswordbeforemutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L257",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_inactivestaffaccountcannotloginaftercredentialsareconfigured",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L153",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsprotectownerandreportunknownaccount",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L128",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsrequireowneractorwithoutmutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L73",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L222",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsreturnconflictforduplicatenormalizedloginname",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L180",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsvalidateloginandpasswordbeforemutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L99",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider_advance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L110",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider_getutcnow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L111",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countsessionsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L110",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsresetreplacessecretandendsactivesessions",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordchangedatasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L143",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsrequireowneractorwithoutmutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_adminenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsrequireowneractorwithoutmutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countcredentialsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsrequireowneractorwithoutmutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L177",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsprotectownerandreportunknownaccount",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countcredentialsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L165",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsprotectownerandreportunknownaccount",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L219",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsvalidateloginandpasswordbeforemutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countcredentialsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L188",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsvalidateloginandpasswordbeforemutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L195",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsvalidateloginandpasswordbeforemutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L253",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsreturnconflictforduplicatenormalizedloginname",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countcredentialsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L231",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsreturnconflictforduplicatenormalizedloginname",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsreturnconflictforduplicatenormalizedloginname",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L254",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_staffcredentialsreturnconflictforduplicatenormalizedloginname",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordhashasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L287",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_inactivestaffaccountcannotloginaftercredentialsareconfigured",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countsessionsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L267",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_inactivestaffaccountcannotloginaftercredentialsareconfigured",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L272",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_inactivestaffaccountcannotloginaftercredentialsareconfigured",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L296",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L290",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_createstaffaccountasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L358",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countsessionsasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L331",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readnormalizedloginnameasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L345",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordchangedatasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L339",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordhashasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L306",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_ownerenvelope",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_envelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L311",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_adminenvelope",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_envelope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L331",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "PostgreSqlTestDatabase"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readnormalizedloginnameasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L339",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "PostgreSqlTestDatabase"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordhashasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L345",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "metadata": {
+        "ref_token": "DateTime"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordchangedatasync",
+      "target": "datetime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L345",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "PostgreSqlTestDatabase"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_readpasswordchangedatasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L353",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "PostgreSqlTestDatabase"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countcredentialsasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L358",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "PostgreSqlTestDatabase"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_countsessionsasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L381",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider_advance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L376",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider_getutcnow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L374",
+      "weight": 1.0,
+      "metadata": {
+        "ref_token": "TimeProvider"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider",
+      "target": "timeprovider",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs",
+      "source_location": "L381",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "TimeSpan"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffcredentialstests_bodylife_crm_infrastructure_tests_postgresql_mutabletimeprovider_advance",
+      "target": "timespan",
       "confidence_score": 1.0
     },
     {
@@ -45838,6 +48398,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/implementation-progress.md",
+      "source_location": "L693",
+      "weight": 1.0,
+      "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
+      "target": "docs_implementation_progress_step_24_staff_credential_setup_and_reset_foundation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/implementation-progress.md",
       "source_location": "L44",
       "weight": 1.0,
       "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
@@ -47328,7 +49898,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/login-session.md",
-      "source_location": "L68",
+      "source_location": "L80",
       "weight": 1.0,
       "source": "docs_login_session_login_and_session_tracking",
       "target": "docs_login_session_auth_and_permission_technical_logs",
@@ -47338,7 +49908,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/login-session.md",
-      "source_location": "L76",
+      "source_location": "L88",
       "weight": 1.0,
       "source": "docs_login_session_login_and_session_tracking",
       "target": "docs_login_session_boundaries",
@@ -47378,7 +49948,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/login-session.md",
-      "source_location": "L62",
+      "source_location": "L74",
       "weight": 1.0,
       "source": "docs_login_session_login_and_session_tracking",
       "target": "docs_login_session_query_permission_results",
@@ -47412,6 +49982,16 @@
       "weight": 1.0,
       "source": "docs_login_session_login_and_session_tracking",
       "target": "docs_login_session_staff_account_lifecycle_foundation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/login-session.md",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "docs_login_session_login_and_session_tracking",
+      "target": "docs_login_session_staff_credential_setup_and_reset",
       "confidence_score": 1.0
     },
     {
@@ -47478,7 +50058,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/milestone-2-acceptance-review.md",
-      "source_location": "L29",
+      "source_location": "L31",
       "weight": 1.0,
       "source": "docs_milestone_2_acceptance_review_milestone_2_acceptance_review",
       "target": "docs_milestone_2_acceptance_review_acceptance_criteria",
@@ -47508,7 +50088,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/milestone-2-acceptance-review.md",
-      "source_location": "L55",
+      "source_location": "L57",
       "weight": 1.0,
       "source": "docs_milestone_2_acceptance_review_milestone_2_acceptance_review",
       "target": "docs_milestone_2_acceptance_review_follow_up_work_before_milestone_3",
@@ -47518,7 +50098,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/milestone-2-acceptance-review.md",
-      "source_location": "L42",
+      "source_location": "L44",
       "weight": 1.0,
       "source": "docs_milestone_2_acceptance_review_milestone_2_acceptance_review",
       "target": "docs_milestone_2_acceptance_review_test_coverage_review",
@@ -47528,10 +50108,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/milestone-2-acceptance-review.md",
-      "source_location": "L62",
+      "source_location": "L64",
       "weight": 1.0,
       "source": "docs_milestone_2_acceptance_review_milestone_2_acceptance_review",
-      "target": "docs_milestone_2_acceptance_review_validation_baseline_for_this_review",
+      "target": "docs_milestone_2_acceptance_review_validation_baseline_after_step_24",
       "confidence_score": 1.0
     },
     {
@@ -50413,5 +52993,5 @@
       "source_file": "docs/vertical-slice-plan.md"
     }
   ],
-  "built_at_commit": "7e775ced2c780c9346fda6468c53ea894af9d83d"
+  "built_at_commit": "b8e37622a0988e4c4bfa4a1d004c19c318067112"
 }
