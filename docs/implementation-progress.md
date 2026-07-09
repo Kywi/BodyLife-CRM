@@ -388,3 +388,43 @@ Commit:
 Next recommended step:
 
 - Start Milestone 2 with accountable Users/Roles and bootstrap ownership before adding reception business commands.
+
+## Milestone 2 plan
+
+1. Accounts/sessions persistence foundation.
+2. Safe Owner bootstrap procedure without default production credentials.
+3. Minimal login/logout/session tracking for the internal app.
+4. Server-side authorization policies for Owner-only, Admin+Owner and correction/day-close placeholders.
+5. Actor/session context resolver for commands and queries.
+6. Current account/session/device UI indicator.
+7. Permission result shape for queries while server policies remain authoritative.
+8. Auth/permission technical logs with password/token masking.
+9. Milestone 2 acceptance review and progress cleanup.
+
+## Step 14 - Accounts and sessions persistence foundation
+
+Status: completed.
+
+Scope:
+
+- Add `bodylife.accounts` and `bodylife.sessions` through EF Core/Npgsql migration.
+- Represent Owner, named Admin and shared Reception/Admin account types with role constraints.
+- Add a partial unique index so there can be only one Owner account in the one-gym v1 model.
+- Add session/device metadata storage with account foreign key, active-session partial index and timestamp consistency checks.
+- Keep login/logout, password/session secret storage, UI account indicator and default credentials out of this step.
+- Add PostgreSQL-backed integration tests proving table/index/FK creation, single-owner enforcement, account-type/role consistency and session timestamp/account integrity.
+
+Validation:
+
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo` passed with 10 PostgreSQL infrastructure tests.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 5 unit tests, 10 PostgreSQL infrastructure tests, 2 Playwright smoke tests and EF migration listing for `20260708140900_InitialBaseline`, `20260709113419_AddCommandIdempotencyKeys` and `20260709120305_AddUsersRolesAccountsSessions`.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for markdown progress updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(users): add accounts sessions storage`.
+
+Next recommended step:
+
+- Add the safe Owner bootstrap procedure without default production credentials.
