@@ -254,3 +254,30 @@ Commit:
 Next recommended step:
 
 - Do Milestone 1 documentation/progress cleanup and review remaining acceptance gaps before moving to Milestone 2.
+
+## Step 9 - Local PostgreSQL validation configuration fallback
+
+Status: completed.
+
+Scope:
+
+- Add a `scripts/validate.sh` fallback that can populate `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING` from `src/BodyLife.Crm.Web/appsettings.Development.json`.
+- Keep explicit environment variables authoritative so CI-provided PostgreSQL admin settings are not changed.
+- Read only `ConnectionStrings:BodyLifeTestAdmin` for this fallback because the integration harness creates and drops disposable test databases and therefore needs a role with `CREATE DATABASE`.
+- Do not treat the ordinary application `ConnectionStrings:BodyLife` value as an admin/test connection string.
+
+Validation:
+
+- `bash -n scripts/validate.sh` passed.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` was run.
+- A temporary attempt to derive the admin connection from `ConnectionStrings:BodyLife` proved that the current local `bodylife` role can connect but does not have `CREATE DATABASE`; PostgreSQL integration tests correctly failed with `42501: permission denied to create database`.
+- A diagnostic attempt with local `Username=postgres;Password=bodylife_dev_password` failed authentication, so no local superuser credential was assumed.
+- Final validation falls back to the existing skip behavior until `ConnectionStrings:BodyLifeTestAdmin` or `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING` points to a PostgreSQL role that can create disposable databases.
+
+Commit:
+
+- `build(infra): derive test postgres admin config`.
+
+Next recommended step:
+
+- Finish Milestone 1 documentation/progress cleanup and acceptance gap review before moving to Milestone 2.

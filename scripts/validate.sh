@@ -5,6 +5,57 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DOTNET_BIN="${DOTNET_BIN:-dotnet}"
 CONFIGURATION="${CONFIGURATION:-Release}"
 
+configure_local_postgres_test_connection() {
+  if [[ -n "${BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING:-}" ]]; then
+    return
+  fi
+
+  local appsettings_path="$ROOT_DIR/src/BodyLife.Crm.Web/appsettings.Development.json"
+  if [[ ! -f "$appsettings_path" ]] || ! command -v pwsh >/dev/null 2>&1; then
+    return
+  fi
+
+  local admin_database="${BODYLIFE_TEST_POSTGRES_ADMIN_DATABASE:-postgres}"
+  local connection_string
+  connection_string="$(APPSETTINGS_PATH="$appsettings_path" ADMIN_DATABASE="$admin_database" pwsh -NoLogo -NoProfile -NonInteractive -Command '
+$ErrorActionPreference = "Stop"
+
+$settings = Get-Content -LiteralPath $env:APPSETTINGS_PATH -Raw | ConvertFrom-Json
+$connectionString = $settings.ConnectionStrings.BodyLifeTestAdmin
+if ([string]::IsNullOrWhiteSpace($connectionString)) {
+  return
+}
+
+$parts = [System.Collections.Generic.List[string]]::new()
+$databaseWasSet = $false
+foreach ($part in $connectionString -split ";") {
+  if ([string]::IsNullOrWhiteSpace($part)) {
+    continue
+  }
+
+  $keyValue = $part -split "=", 2
+  if ($keyValue.Count -eq 2 -and $keyValue[0].Trim().Equals("Database", [System.StringComparison]::OrdinalIgnoreCase)) {
+    $parts.Add("Database=$env:ADMIN_DATABASE")
+    $databaseWasSet = $true
+    continue
+  }
+
+  $parts.Add($part.Trim())
+}
+
+if (-not $databaseWasSet) {
+  $parts.Add("Database=$env:ADMIN_DATABASE")
+}
+
+[string]::Join(";", $parts)
+')"
+
+  if [[ -n "$connection_string" ]]; then
+    export BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING="$connection_string"
+    printf 'Using local PostgreSQL test admin connection from appsettings.Development.json ConnectionStrings:BodyLifeTestAdmin with Database=%s.\n' "$admin_database"
+  fi
+}
+
 cd "$ROOT_DIR"
 
 "$DOTNET_BIN" tool restore --tool-manifest "$ROOT_DIR/.config/dotnet-tools.json"
@@ -16,6 +67,7 @@ cd "$ROOT_DIR"
   --no-build \
   --no-restore \
   --nologo
+configure_local_postgres_test_connection
 "$DOTNET_BIN" test "$ROOT_DIR/tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj" \
   --configuration "$CONFIGURATION" \
   --no-build \
