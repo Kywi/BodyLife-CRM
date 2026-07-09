@@ -3,19 +3,32 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Ui.SmokeTests;
 
 public sealed class ReceptionAppFixture : IAsyncLifetime
 {
+    public const string SmokeLoginName = "owner";
+    public const string SmokePassword = "correct horse battery";
+
     private readonly ConcurrentQueue<string> _output = new();
     private Process? _process;
+    private PostgreSqlSmokeDatabase? _database;
 
     public Uri BaseAddress { get; private set; } = null!;
+
+    public string LoginName => SmokeLoginName;
+
+    public string Password => SmokePassword;
 
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");
+        _database = await PostgreSqlSmokeDatabase.CreateAsync();
+        await SeedAuthenticatedOwnerAsync(_database);
+
         var repositoryRoot = FindRepositoryRoot();
         var webProjectPath = Path.Combine(repositoryRoot, "src", "BodyLife.Crm.Web", "BodyLife.Crm.Web.csproj");
 
@@ -37,6 +50,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         startInfo.ArgumentList.Add(webProjectPath);
         startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
         startInfo.Environment["ASPNETCORE_URLS"] = BaseAddress.ToString().TrimEnd('/');
+        startInfo.Environment["ConnectionStrings__BodyLife"] = _database.ConnectionString;
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
         startInfo.Environment["DOTNET_NOLOGO"] = "1";
 
@@ -53,6 +67,11 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     {
         if (_process is null)
         {
+            if (_database is not null)
+            {
+                await _database.DisposeAsync();
+            }
+
             return;
         }
 
@@ -63,6 +82,11 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         }
 
         _process.Dispose();
+
+        if (_database is not null)
+        {
+            await _database.DisposeAsync();
+        }
     }
 
     private async Task WaitForAppAsync()
@@ -84,7 +108,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
             try
             {
-                using var response = await client.GetAsync("/", timeout.Token);
+                using var response = await client.GetAsync("/health/live", timeout.Token);
                 if (response.IsSuccessStatusCode)
                 {
                     return;
@@ -105,6 +129,30 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         }
 
         throw new TimeoutException($"Timed out waiting for BodyLife.Crm.Web at {BaseAddress}.{Environment.NewLine}{CapturedOutput()}");
+    }
+
+    private static async Task SeedAuthenticatedOwnerAsync(PostgreSqlSmokeDatabase database)
+    {
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+
+        var ownerBootstrapper = new OwnerBootstrapper(dbContext, TimeProvider.System);
+        var ownerResult = await ownerBootstrapper.BootstrapOwnerAsync("BodyLife Owner");
+
+        Assert.True(
+            ownerResult.Status is OwnerBootstrapStatus.Created or OwnerBootstrapStatus.AlreadyExists,
+            $"Owner bootstrap returned {ownerResult.Status}.");
+
+        var credentialsBootstrapper = new OwnerCredentialsBootstrapper(
+            dbContext,
+            new PasswordHashingService(),
+            TimeProvider.System);
+
+        var credentialsResult = await credentialsBootstrapper.SetOwnerCredentialsAsync(
+            SmokeLoginName,
+            SmokePassword);
+
+        Assert.Equal(OwnerCredentialsBootstrapStatus.Updated, credentialsResult.Status);
     }
 
     private static int FindAvailablePort()

@@ -67,6 +67,11 @@ cd "$ROOT_DIR"
   --no-build \
   --no-restore \
   --nologo
+"$DOTNET_BIN" test "$ROOT_DIR/tests/BodyLife.Crm.Web.Tests/BodyLife.Crm.Web.Tests.csproj" \
+  --configuration "$CONFIGURATION" \
+  --no-build \
+  --no-restore \
+  --nologo
 configure_local_postgres_test_connection
 "$DOTNET_BIN" test "$ROOT_DIR/tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj" \
   --configuration "$CONFIGURATION" \

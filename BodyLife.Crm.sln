@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm.Infrastructure
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm.Ui.SmokeTests", "tests\BodyLife.Crm.Ui.SmokeTests\BodyLife.Crm.Ui.SmokeTests.csproj", "{A046303E-3F15-4B42-B365-CF3B9BAC052A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyLife.Crm.Web.Tests", "tests\BodyLife.Crm.Web.Tests\BodyLife.Crm.Web.Tests.csproj", "{D08A303D-E25B-469F-9926-83E5904DF27A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{A046303E-3F15-4B42-B365-CF3B9BAC052A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A046303E-3F15-4B42-B365-CF3B9BAC052A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A046303E-3F15-4B42-B365-CF3B9BAC052A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D08A303D-E25B-469F-9926-83E5904DF27A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D08A303D-E25B-469F-9926-83E5904DF27A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D08A303D-E25B-469F-9926-83E5904DF27A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D08A303D-E25B-469F-9926-83E5904DF27A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,5 +60,6 @@ Global
 		{68DBF144-CE3A-47A4-ACB2-4068993FD09B} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{E8DFFD70-DB5A-46A4-9CEB-6BEA350F2892} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{A046303E-3F15-4B42-B365-CF3B9BAC052A} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{D08A303D-E25B-469F-9926-83E5904DF27A} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

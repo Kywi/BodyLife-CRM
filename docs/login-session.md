@@ -26,7 +26,18 @@ The password must be at least 12 characters. The command stores a password hash 
 - `/Login` verifies the account credential, creates a row in `bodylife.sessions`, and issues an HTTP-only cookie.
 - `/Logout` marks the session ended and signs out the cookie.
 - Login failures use a generic user-facing error.
-- Reception pages are not globally authorization-protected yet; server-side policies and account/session indicators are later Milestone 2 steps.
+- Reception pages require an authenticated Owner, named Admin, or shared Reception/Admin session.
+
+## Server-side policies
+
+The web app registers these policy names for pages and future command handlers:
+
+- `BodyLife.OwnerOnly`: Owner role plus Owner account type and active session claims.
+- `BodyLife.AdminOrOwner`: Owner, named Admin, or shared Reception/Admin with active session claims.
+- `BodyLife.CurrentOrOpenDayCorrection`: Owner/Admin/shared Reception/Admin for current/open-day correction resources.
+- `BodyLife.AfterDayCloseCorrection`: Owner-only placeholder for after-close/reconciled-day corrections.
+
+Shared Reception/Admin is allowed for daily Admin+Owner workflows and current/open-day corrections, but not Owner-only or after-close correction policies. Policy checks require session claims so future audit/command envelopes can distinguish account and session/device context.
 
 ## Boundaries
 

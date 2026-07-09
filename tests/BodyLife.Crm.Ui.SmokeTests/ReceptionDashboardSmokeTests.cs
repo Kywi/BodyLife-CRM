@@ -58,6 +58,15 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             Assert.NotNull(response);
             Assert.True(response.Ok, $"{viewportName} request returned HTTP {response.Status}.");
+
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Login" }), viewportName, "login heading");
+            await page.GetByRole(AriaRole.Textbox, new() { Name = "Login" }).FillAsync(_app.LoginName);
+            await page.GetByLabel("Password", new() { Exact = true }).FillAsync(_app.Password);
+            await page.GetByLabel("Device", new() { Exact = true }).FillAsync($"{viewportName} smoke");
+            await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
+            await page.WaitForURLAsync("**/");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
             Assert.Equal("Reception - BodyLife CRM", await page.TitleAsync());
 
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Reception" }), viewportName, "reception heading");

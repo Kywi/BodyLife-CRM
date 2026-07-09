@@ -19,6 +19,8 @@ builder.Services.AddBodyLifePersistence(builder.Configuration);
 builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AddPageRoute("/Reception/Index", string.Empty);
+    options.Conventions.AuthorizeFolder("/Reception", BodyLifeAuthorizationPolicies.AdminOrOwner);
+    options.Conventions.AuthorizePage("/Logout", BodyLifeAuthorizationPolicies.AdminOrOwner);
 });
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -33,7 +35,7 @@ builder.Services
         options.ExpireTimeSpan = TimeSpan.FromHours(12);
         options.SlidingExpiration = true;
     });
-builder.Services.AddAuthorization();
+builder.Services.AddBodyLifeAuthorizationPolicies();
 
 builder.Services
     .AddHealthChecks()
