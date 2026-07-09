@@ -1,16 +1,16 @@
 # Graph Report - BodyLife-CRM  (2026-07-09)
 
 ## Corpus Check
-- 152 files · ~99,160 words
+- 159 files · ~101,190 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1575 nodes · 1326 edges · 394 communities (124 shown, 270 thin omitted)
+- 1618 nodes · 1400 edges · 392 communities (123 shown, 269 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 13 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `eca405b9`
+- Built from commit: `6b4dee34`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -403,18 +403,16 @@
 - [[_COMMUNITY_Hybrid Membership Model Recommendation|Hybrid Membership Model Recommendation]]
 - [[_COMMUNITY_Query Form Accepted ADR Package|Query: Form Accepted ADR Package]]
 - [[_COMMUNITY_Accepted ADR Package Creation Outcome|Accepted ADR Package Creation Outcome]]
-- [[_COMMUNITY_DateRange|DateRange]]
 - [[_COMMUNITY_20260709113419_AddCommandIdempotencyKeys.Designer.cs|20260709113419_AddCommandIdempotencyKeys.Designer.cs]]
-- [[_COMMUNITY_3. Межі першої версії|3. Межі першої версії]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `ADR backlog для BodyLife CRM` - 20 edges
 2. `Детальна специфікація першої версії системи для залу` - 19 edges
 3. `BodyLife CRM UI workflows` - 18 edges
-4. `BodyLife CRM v1 implementation roadmap` - 17 edges
-5. `4. Commands` - 16 edges
-6. `BodyLife.Crm.SharedKernel` - 15 edges
-7. `BodyLife CRM implementation progress` - 15 edges
+4. `BodyLife CRM implementation progress` - 17 edges
+5. `BodyLife CRM v1 implementation roadmap` - 17 edges
+6. `4. Commands` - 16 edges
+7. `BodyLife.Crm.SharedKernel` - 15 edges
 8. `План роботи після прийнятих ADR` - 15 edges
 9. `BodyLife CRM Agent Instructions` - 14 edges
 10. `Архітектурне дослідження для першої веб-версії BodyLife CRM` - 14 edges
@@ -460,7 +458,7 @@
 - **ADR-guided Milestone 1 sequence** — docs_adr_readme_accepted_adr_package, docs_adr_readme_recommended_implementation_order, docs_implementation_progress_milestone_1_plan, docs_implementation_progress_step_1_solution_project_scaffold, docs_implementation_progress_step_2_module_folder_structure, docs_implementation_progress_step_6_analyzer_build_gates_and_ci [INFERRED 0.90]
 - **Reception-first foundation** — docs_adr_readme_adr_003_reception_first_workflow_boundary, docs_adr_readme_adr_008_server_rendered_ui_with_htmx_islands, docs_implementation_progress_playwright_smoke_harness, docs_implementation_progress_milestone_1_plan [INFERRED 0.90]
 
-## Communities (394 total, 270 thin omitted)
+## Communities (392 total, 269 thin omitted)
 
 ### Community 0 - "ADR Index"
 Cohesion: 0.22
@@ -503,8 +501,8 @@ Cohesion: 0.05
 Nodes (40): 1. Domain overview, 2. Entities, 3. Invariants, 4. Lifecycles, 5. Calculation rules, 6. Correction and cancellation rules, 7. Edge case matrix, 8. Domain test scenarios (+32 more)
 
 ### Community 14 - "Shared Kernel"
-Cohesion: 0.22
-Nodes (5): BodyLife.Crm.SharedKernel, AccountKind, ActorContext, ActorRole, Money
+Cohesion: 0.17
+Nodes (7): BodyLife.Crm.SharedKernel, DateOnly, AccountKind, ActorContext, ActorRole, DateRange, Money
 
 ### Community 16 - "Interview Question"
 Cohesion: 0.05
@@ -531,8 +529,8 @@ Cohesion: 0.18
 Nodes (6): BodyLife.Crm.Infrastructure.Tests.PostgreSql, FactAttribute, PostgreSqlFactAttribute, PostgreSqlReadyHealthCheckTests, PostgreSqlFact, Task
 
 ### Community 22 - "Test Harness 3"
-Cohesion: 0.29
-Nodes (5): IAsyncDisposable, PostgreSqlTestDatabase, string, Task, ValueTask
+Cohesion: 0.18
+Nodes (10): IAsyncDisposable, PostgreSqlTestDatabase, string, Task, PostgreSqlUsersRolesStorageTests, DateTimeOffset, Guid, PostgreSqlFact (+2 more)
 
 ### Community 23 - "Command Contracts 2"
 Cohesion: 0.22
@@ -543,16 +541,16 @@ Cohesion: 0.17
 Nodes (11): applicationUrl, commandName, dotnetRunMessages, environmentVariables, launchBrowser, ASPNETCORE_ENVIRONMENT, BODYLIFE_CONNECTION_STRING, ConnectionStrings__BodyLife (+3 more)
 
 ### Community 25 - "Infrastructure Persistence"
-Cohesion: 0.24
-Nodes (6): BodyLife.Crm.Infrastructure.Persistence, DbContext, IDesignTimeDbContextFactory, BodyLifeDbContext, ModelBuilder, BodyLifeDbContextFactory
+Cohesion: 0.22
+Nodes (5): DbContext, IDesignTimeDbContextFactory, BodyLifeDbContext, ModelBuilder, BodyLifeDbContextFactory
 
 ### Community 26 - "Query Contracts"
 Cohesion: 0.25
 Nodes (5): BodyLife.Crm.Application.Queries, IBodyLifeQuery, IBodyLifeQueryHandler, CancellationToken, Task
 
 ### Community 27 - "Infrastructure Persistence 2"
-Cohesion: 0.40
-Nodes (3): ModelSnapshot, BodyLifeDbContextModelSnapshot, ModelBuilder
+Cohesion: 0.17
+Nodes (6): BodyLife.Crm.Infrastructure.Persistence.Migrations, ModelSnapshot, InitialBaseline, ModelBuilder, BodyLifeDbContextModelSnapshot, ModelBuilder
 
 ### Community 28 - "Reception Web UI 4"
 Cohesion: 0.25
@@ -619,12 +617,12 @@ Cohesion: 0.40
 Nodes (3): BodyLife.Crm.Tests.Application, CommandResultTests, Fact
 
 ### Community 48 - "Infrastructure Persistence 3"
-Cohesion: 0.21
-Nodes (6): BodyLife.Crm.Infrastructure.Persistence.Migrations, Migration, InitialBaseline, MigrationBuilder, AddCommandIdempotencyKeys, MigrationBuilder
+Cohesion: 0.24
+Nodes (5): Migration, AddCommandIdempotencyKeys, MigrationBuilder, AddUsersRolesAccountsSessions, MigrationBuilder
 
 ### Community 49 - "Infrastructure Persistence 4"
-Cohesion: 0.40
-Nodes (3): DbContextOptionsBuilder, BodyLifeDbContextOptions, string
+Cohesion: 0.20
+Nodes (6): BodyLife.Crm.Infrastructure.Persistence, DbContextOptionsBuilder, BodyLifeDbContextOptions, string, AddUsersRolesAccountsSessions, ModelBuilder
 
 ### Community 50 - "Command Contracts 3"
 Cohesion: 0.40
@@ -655,16 +653,16 @@ Cohesion: 0.80
 Nodes (4): compose(), dev-postgres.sh script, usage(), wait_for_postgres()
 
 ### Community 68 - "Openai Codex 6"
-Cohesion: 0.24
-Nodes (7): BodyLife.Crm.Infrastructure.Persistence.Idempotency, EntityTypeBuilder, IEntityTypeConfiguration, CommandIdempotencyRecord, DateTimeOffset, Guid, CommandIdempotencyRecordConfiguration
+Cohesion: 0.10
+Nodes (18): BodyLife.Crm.Infrastructure.Persistence.UsersRoles, BodyLife.Crm.Infrastructure.Persistence.Idempotency, IEntityTypeConfiguration, CommandIdempotencyRecord, DateTimeOffset, Guid, CommandIdempotencyRecordConfiguration, EntityTypeBuilder (+10 more)
 
 ### Community 69 - ".InsertCommandIdempotencyRecordAsync"
-Cohesion: 0.42
+Cohesion: 0.36
 Nodes (5): PostgreSqlCommandIdempotencyStorageTests, DateTimeOffset, Guid, PostgreSqlFact, Task
 
 ### Community 76 - "Детальна специфікація першої версії системи для залу"
-Cohesion: 0.18
-Nodes (11): 10. Правила пошуку, 11. Разові і пробні відвідування, 13. Повідомлення і попередження всередині системи, 15. Критерії готовності першої версії, 16. Що потрібно уточнити перед або під час реалізації, 17. Погоджена логіка після останнього уточнення, 18. Підсумок, 1. Призначення документа (+3 more)
+Cohesion: 0.14
+Nodes (14): 10. Правила пошуку, 11. Разові і пробні відвідування, 13. Повідомлення і попередження всередині системи, 15. Критерії готовності першої версії, 16. Що потрібно уточнити перед або під час реалізації, 17. Погоджена логіка після останнього уточнення, 18. Підсумок, 1. Призначення документа (+6 more)
 
 ### Community 77 - "7. Бізнес-правила і формули"
 Cohesion: 0.17
@@ -687,8 +685,8 @@ Cohesion: 0.18
 Nodes (11): 5.10. Клієнти, які давно не ходили, 5.1. Клієнт прийшов у зал з карткою, 5.2. Клієнт прийшов без картки, 5.3. Новий клієнт, 5.4. Видача абонемента, 5.5. Відмітка візиту, 5.6. Скасування помилкового візиту, 5.7. Оплата (+3 more)
 
 ### Community 82 - "BodyLife CRM implementation progress"
-Cohesion: 0.12
-Nodes (15): BodyLife CRM implementation progress, Milestone 1 plan, Step 10 - Milestone 1 acceptance review, Step 11 - Local Docker PostgreSQL setup, Step 12 - CI PostgreSQL readiness test fix, Step 13 - Idempotency key storage foundation, Step 1 - Solution/project scaffold, Step 2 - Module folder structure (+7 more)
+Cohesion: 0.11
+Nodes (17): BodyLife CRM implementation progress, Milestone 1 plan, Milestone 2 plan, Step 10 - Milestone 1 acceptance review, Step 11 - Local Docker PostgreSQL setup, Step 12 - CI PostgreSQL readiness test fix, Step 13 - Idempotency key storage foundation, Step 14 - Accounts and sessions persistence foundation (+9 more)
 
 ### Community 83 - "6. Дані, які треба зберігати"
 Cohesion: 0.20
@@ -942,24 +940,20 @@ Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphif
 Cohesion: 0.50
 Nodes (4): 4.1. Власник, 4.2. Адміністратор, 4.3. Тренер, 4. Користувачі системи
 
-### Community 393 - "3. Межі першої версії"
-Cohesion: 0.67
-Nodes (3): 3.1. Входить у першу версію, 3.2. Не входить у першу версію, 3. Межі першої версії
-
 ## Knowledge Gaps
-- **1005 isolated node(s):** `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)`, `Microsoft.Extensions.Configuration.Abstractions (10.0.9)`, `Microsoft.Extensions.DependencyInjection.Abstractions (10.0.9)` (+1000 more)
+- **1007 isolated node(s):** `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)`, `Microsoft.Extensions.Configuration.Abstractions (10.0.9)`, `Microsoft.Extensions.DependencyInjection.Abstractions (10.0.9)` (+1002 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **270 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **269 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BodyLife.Crm.Infrastructure.Persistence` connect `Infrastructure Persistence` to `Openai Codex 2`, `Reception Web UI`, `20260709113419_AddCommandIdempotencyKeys.Designer.cs`, `.ReadyHealthEndpointIsHealthyWhenPostgreSqlIsMigrated`, `Infrastructure Persistence 4`, `Test Harness 2`, `Infrastructure Persistence 2`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
-- **Why does `BodyLife.Crm.SharedKernel` connect `Shared Kernel` to `DateRange`, `Reception Web UI`, `Test Harness 4`, `Test Harness 5`, `Command Contracts`, `Command Contracts 2`, `Shared Kernel 2`, `Shared Kernel 3`, `Shared Kernel 4`?**
-  _High betweenness centrality (0.005) - this node is a cross-community bridge._
+- **Why does `BodyLife.Crm.Infrastructure.Persistence` connect `Infrastructure Persistence 4` to `Reception Web UI`, `20260709113419_AddCommandIdempotencyKeys.Designer.cs`, `.ReadyHealthEndpointIsHealthyWhenPostgreSqlIsMigrated`, `Test Harness 2`, `Infrastructure Persistence`, `Infrastructure Persistence 2`?**
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `BodyLife.Crm.SharedKernel` connect `Shared Kernel` to `Reception Web UI`, `Test Harness 4`, `Test Harness 5`, `Command Contracts`, `Command Contracts 2`, `Shared Kernel 2`, `Shared Kernel 3`, `Shared Kernel 4`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
 - **What connects `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)` to the rest of the system?**
-  _1057 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1059 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Module Boundaries` be split into smaller, more focused modules?**
   _Cohesion score 0.04081632653061224 - nodes in this community are weakly interconnected._
 - **Should `Agents Logical` be split into smaller, more focused modules?**

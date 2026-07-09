@@ -440,6 +440,34 @@
       "norm_label": "bodylife.crm.ui.smoketests.csproj"
     },
     {
+      "label": "bootstrap-owner.sh",
+      "file_type": "code",
+      "source_file": "scripts/bootstrap-owner.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "scripts_bootstrap_owner",
+      "community": 401,
+      "norm_label": "bootstrap-owner.sh"
+    },
+    {
+      "label": "bootstrap-owner.sh script",
+      "file_type": "code",
+      "source_file": "scripts/bootstrap-owner.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "scripts_bootstrap_owner_sh__entry",
+      "community": 401,
+      "norm_label": "bootstrap-owner.sh script"
+    },
+    {
       "label": "dev-postgres.sh",
       "file_type": "code",
       "source_file": "scripts/dev-postgres.sh",
@@ -661,7 +689,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:a35cf01376c2536a",
-      "community": 49,
+      "community": 25,
       "norm_label": "bodylife.crm.infrastructure.persistence"
     },
     {
@@ -837,7 +865,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
-      "community": 68,
+      "community": 391,
       "norm_label": "commandidempotencyrecord.cs"
     },
     {
@@ -852,7 +880,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:c7ebe20e2d7b2dd4",
-      "community": 68,
+      "community": 391,
       "norm_label": "bodylife.crm.infrastructure.persistence.idempotency"
     },
     {
@@ -868,7 +896,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
-      "community": 68,
+      "community": 391,
       "norm_label": "commandidempotencyrecord"
     },
     {
@@ -878,7 +906,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_guid",
-      "community": 68,
+      "community": 391,
       "norm_label": "guid"
     },
     {
@@ -888,7 +916,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_datetimeoffset",
-      "community": 68,
+      "community": 391,
       "norm_label": "datetimeoffset"
     },
     {
@@ -898,7 +926,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
-      "community": 68,
+      "community": 391,
       "norm_label": "commandidempotencyrecordconfiguration.cs"
     },
     {
@@ -914,7 +942,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
-      "community": 68,
+      "community": 391,
       "norm_label": "commandidempotencyrecordconfiguration"
     },
     {
@@ -924,7 +952,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "ientitytypeconfiguration",
-      "community": 68,
+      "community": 394,
       "norm_label": "ientitytypeconfiguration"
     },
     {
@@ -940,7 +968,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_configure",
-      "community": 68,
+      "community": 391,
       "norm_label": ".configure()"
     },
     {
@@ -950,7 +978,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_cs_entitytypebuilder",
-      "community": 68,
+      "community": 391,
       "norm_label": "entitytypebuilder"
     },
     {
@@ -960,7 +988,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer",
-      "community": 27,
+      "community": 399,
       "norm_label": "20260708140900_initialbaseline.designer.cs"
     },
     {
@@ -975,7 +1003,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:40698925b3951abb",
-      "community": 27,
+      "community": 48,
       "norm_label": "bodylife.crm.infrastructure.persistence.migrations"
     },
     {
@@ -991,7 +1019,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_bodylife_crm_infrastructure_persistence_migrations_initialbaseline",
-      "community": 27,
+      "community": 399,
       "norm_label": "initialbaseline"
     },
     {
@@ -1007,7 +1035,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_bodylife_crm_infrastructure_persistence_migrations_initialbaseline_buildtargetmodel",
-      "community": 27,
+      "community": 399,
       "norm_label": ".buildtargetmodel()"
     },
     {
@@ -1017,7 +1045,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_cs_modelbuilder",
-      "community": 27,
+      "community": 399,
       "norm_label": "modelbuilder"
     },
     {
@@ -1027,7 +1055,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline",
-      "community": 27,
+      "community": 48,
       "norm_label": "20260708140900_initialbaseline.cs"
     },
     {
@@ -1043,7 +1071,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_bodylife_crm_infrastructure_persistence_migrations_initialbaseline",
-      "community": 64,
+      "community": 48,
       "norm_label": "initialbaseline"
     },
     {
@@ -1069,7 +1097,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_bodylife_crm_infrastructure_persistence_migrations_initialbaseline_up",
-      "community": 64,
+      "community": 48,
       "norm_label": ".up()"
     },
     {
@@ -1079,7 +1107,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_cs_migrationbuilder",
-      "community": 64,
+      "community": 48,
       "norm_label": "migrationbuilder"
     },
     {
@@ -1095,7 +1123,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_bodylife_crm_infrastructure_persistence_migrations_initialbaseline_down",
-      "community": 64,
+      "community": 48,
       "norm_label": ".down()"
     },
     {
@@ -1225,7 +1253,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_designer",
-      "community": 49,
+      "community": 400,
       "norm_label": "20260709120305_addusersrolesaccountssessions.designer.cs"
     },
     {
@@ -1241,7 +1269,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_designer_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions",
-      "community": 49,
+      "community": 400,
       "norm_label": "addusersrolesaccountssessions"
     },
     {
@@ -1257,7 +1285,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_designer_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions_buildtargetmodel",
-      "community": 49,
+      "community": 400,
       "norm_label": ".buildtargetmodel()"
     },
     {
@@ -1267,7 +1295,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_designer_cs_modelbuilder",
-      "community": 49,
+      "community": 400,
       "norm_label": "modelbuilder"
     },
     {
@@ -1277,7 +1305,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions",
-      "community": 27,
+      "community": 398,
       "norm_label": "20260709120305_addusersrolesaccountssessions.cs"
     },
     {
@@ -1293,7 +1321,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions",
-      "community": 48,
+      "community": 398,
       "norm_label": "addusersrolesaccountssessions"
     },
     {
@@ -1309,7 +1337,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions_up",
-      "community": 48,
+      "community": 398,
       "norm_label": ".up()"
     },
     {
@@ -1319,7 +1347,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_cs_migrationbuilder",
-      "community": 48,
+      "community": 398,
       "norm_label": "migrationbuilder"
     },
     {
@@ -1335,7 +1363,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260709120305_addusersrolesaccountssessions_bodylife_crm_infrastructure_persistence_migrations_addusersrolesaccountssessions_down",
-      "community": 48,
+      "community": 398,
       "norm_label": ".down()"
     },
     {
@@ -1407,7 +1435,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecord",
-      "community": 68,
+      "community": 394,
       "norm_label": "accountrecord.cs"
     },
     {
@@ -1438,7 +1466,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecord_bodylife_crm_infrastructure_persistence_usersroles_accountrecord",
-      "community": 68,
+      "community": 394,
       "norm_label": "accountrecord"
     },
     {
@@ -1448,7 +1476,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecord_cs_guid",
-      "community": 68,
+      "community": 394,
       "norm_label": "guid"
     },
     {
@@ -1458,7 +1486,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecord_cs_datetimeoffset",
-      "community": 68,
+      "community": 394,
       "norm_label": "datetimeoffset"
     },
     {
@@ -1468,7 +1496,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecordconfiguration",
-      "community": 68,
+      "community": 394,
       "norm_label": "accountrecordconfiguration.cs"
     },
     {
@@ -1484,7 +1512,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecordconfiguration_bodylife_crm_infrastructure_persistence_usersroles_accountrecordconfiguration",
-      "community": 68,
+      "community": 394,
       "norm_label": "accountrecordconfiguration"
     },
     {
@@ -1500,7 +1528,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecordconfiguration_bodylife_crm_infrastructure_persistence_usersroles_accountrecordconfiguration_configure",
-      "community": 68,
+      "community": 394,
       "norm_label": ".configure()"
     },
     {
@@ -1510,8 +1538,232 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecordconfiguration_cs_entitytypebuilder",
-      "community": 68,
+      "community": 394,
       "norm_label": "entitytypebuilder"
+    },
+    {
+      "label": "OwnerBootstrapResult.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "community": 396,
+      "norm_label": "ownerbootstrapresult.cs"
+    },
+    {
+      "label": "OwnerBootstrapResult",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L3",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s0"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "community": 396,
+      "norm_label": "ownerbootstrapresult"
+    },
+    {
+      "label": ".Created()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L8",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s0"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_created",
+      "community": 396,
+      "norm_label": ".created()"
+    },
+    {
+      "label": "Guid",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_cs_guid",
+      "community": 396,
+      "norm_label": "guid"
+    },
+    {
+      "label": ".AlreadyExists()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L16",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s0"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_alreadyexists",
+      "community": 396,
+      "norm_label": ".alreadyexists()"
+    },
+    {
+      "label": ".ValidationFailed()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L24",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s0"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_validationfailed",
+      "community": 396,
+      "norm_label": ".validationfailed()"
+    },
+    {
+      "label": "OwnerBootstrapStatus.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapStatus.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus",
+      "community": 68,
+      "norm_label": "ownerbootstrapstatus.cs"
+    },
+    {
+      "label": "OwnerBootstrapStatus",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapStatus.cs",
+      "source_location": "L3",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s0"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus",
+      "community": 68,
+      "norm_label": "ownerbootstrapstatus"
+    },
+    {
+      "label": "OwnerBootstrapper.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper",
+      "community": 393,
+      "norm_label": "ownerbootstrapper.cs"
+    },
+    {
+      "label": "OwnerBootstrapper",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L6",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s52"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper",
+      "community": 393,
+      "norm_label": "ownerbootstrapper"
+    },
+    {
+      "label": "string",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_string",
+      "community": 393,
+      "norm_label": "string"
+    },
+    {
+      "label": ".BootstrapOwnerAsync()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L11",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s52"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bootstrapownerasync",
+      "community": 393,
+      "norm_label": ".bootstrapownerasync()"
+    },
+    {
+      "label": "CancellationToken",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_cancellationtoken",
+      "community": 393,
+      "norm_label": "cancellationtoken"
+    },
+    {
+      "label": "Task",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_task",
+      "community": 393,
+      "norm_label": "task"
+    },
+    {
+      "label": ".FindOwnerAsync()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L66",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s52"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_findownerasync",
+      "community": 393,
+      "norm_label": ".findownerasync()"
+    },
+    {
+      "label": ".IsSingleOwnerConstraintViolation()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L72",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_chain": [
+          "s52"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_issingleownerconstraintviolation",
+      "community": 393,
+      "norm_label": ".issingleownerconstraintviolation()"
+    },
+    {
+      "label": "DbUpdateException",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "dbupdateexception",
+      "community": 393,
+      "norm_label": "dbupdateexception"
     },
     {
       "label": "SessionRecord.cs",
@@ -1625,7 +1877,7 @@
       "label": "BodyLife.Crm.Infrastructure",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
-      "source_location": "L5",
+      "source_location": "L7",
       "type": "namespace",
       "metadata": {
         "kind": "csharp_namespace",
@@ -1640,11 +1892,11 @@
       "label": "ServiceCollectionExtensions",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
-      "source_location": "L7",
+      "source_location": "L9",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure",
         "scope_chain": [
-          "s138"
+          "s255"
         ]
       },
       "_origin": "ast",
@@ -1656,11 +1908,11 @@
       "label": ".AddBodyLifePersistence()",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
-      "source_location": "L9",
+      "source_location": "L11",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure",
         "scope_chain": [
-          "s138"
+          "s255"
         ]
       },
       "_origin": "ast",
@@ -1684,7 +1936,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "iconfiguration",
+      "id": "src_bodylife_crm_infrastructure_servicecollectionextensions_cs_iconfiguration",
       "community": 7,
       "norm_label": "iconfiguration"
     },
@@ -1838,6 +2090,156 @@
       "id": "src_bodylife_crm_web_operations_healthcheckresponsewriter_bodylife_crm_web_operations_healthcheckentryresponse",
       "community": 7,
       "norm_label": "healthcheckentryresponse"
+    },
+    {
+      "label": "OwnerBootstrapCommand.cs",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "community": 64,
+      "norm_label": "ownerbootstrapcommand.cs"
+    },
+    {
+      "label": "OwnerBootstrapCommand",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L5",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s59"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "community": 64,
+      "norm_label": "ownerbootstrapcommand"
+    },
+    {
+      "label": "string",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand_cs_string",
+      "community": 64,
+      "norm_label": "string"
+    },
+    {
+      "label": ".IsRequested()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L11",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s59"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_isrequested",
+      "community": 64,
+      "norm_label": ".isrequested()"
+    },
+    {
+      "label": ".ExecuteAsync()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L18",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s59"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_executeasync",
+      "community": 64,
+      "norm_label": ".executeasync()"
+    },
+    {
+      "label": "IServiceProvider",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "iserviceprovider",
+      "community": 64,
+      "norm_label": "iserviceprovider"
+    },
+    {
+      "label": "IConfiguration",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand_cs_iconfiguration",
+      "community": 64,
+      "norm_label": "iconfiguration"
+    },
+    {
+      "label": "ILogger",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "ilogger",
+      "community": 64,
+      "norm_label": "ilogger"
+    },
+    {
+      "label": "CancellationToken",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand_cs_cancellationtoken",
+      "community": 64,
+      "norm_label": "cancellationtoken"
+    },
+    {
+      "label": "Task",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand_cs_task",
+      "community": 64,
+      "norm_label": "task"
+    },
+    {
+      "label": ".ReportSuccess()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L44",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s59"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportsuccess",
+      "community": 64,
+      "norm_label": ".reportsuccess()"
+    },
+    {
+      "label": ".ReportValidationFailure()",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L56",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Web.Operations",
+        "scope_chain": [
+          "s59"
+        ]
+      },
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportvalidationfailure",
+      "community": 64,
+      "norm_label": ".reportvalidationfailure()"
     },
     {
       "label": "PostgreSqlHealthCheck.cs",
@@ -2395,7 +2797,7 @@
       "label": "Program",
       "file_type": "code",
       "source_file": "src/BodyLife.Crm.Web/Program.cs",
-      "source_location": "L72",
+      "source_location": "L83",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_program_program",
       "community": 7,
@@ -4053,7 +4455,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlcommandidempotencystoragetests",
-      "community": 69,
+      "community": 21,
       "norm_label": "postgresqlcommandidempotencystoragetests.cs"
     },
     {
@@ -4288,6 +4690,116 @@
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_cs_postgresqlfact",
       "community": 141,
       "norm_label": "postgresqlfact"
+    },
+    {
+      "label": "PostgreSqlOwnerBootstrapperTests.cs",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
+      "community": 68,
+      "norm_label": "postgresqlownerbootstrappertests.cs"
+    },
+    {
+      "label": "PostgreSqlOwnerBootstrapperTests",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L6",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s96"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
+      "community": 395,
+      "norm_label": "postgresqlownerbootstrappertests"
+    },
+    {
+      "label": ".OwnerBootstrapperCreatesOwnerAccount()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L8",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s96"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrappercreatesowneraccount",
+      "community": 395,
+      "norm_label": ".ownerbootstrappercreatesowneraccount()"
+    },
+    {
+      "label": "Task",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_task",
+      "community": 395,
+      "norm_label": "task"
+    },
+    {
+      "label": "PostgreSqlFact",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_postgresqlfact",
+      "community": 395,
+      "norm_label": "postgresqlfact"
+    },
+    {
+      "label": ".OwnerBootstrapperIsIdempotentWhenOwnerExists()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L32",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s96"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperisidempotentwhenownerexists",
+      "community": 395,
+      "norm_label": ".ownerbootstrapperisidempotentwhenownerexists()"
+    },
+    {
+      "label": ".OwnerBootstrapperRejectsBlankDisplayNameWithoutMutation()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L55",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s96"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperrejectsblankdisplaynamewithoutmutation",
+      "community": 395,
+      "norm_label": ".ownerbootstrapperrejectsblankdisplaynamewithoutmutation()"
+    },
+    {
+      "label": ".CountOwnerAccountsAsync()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L73",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s96"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_countowneraccountsasync",
+      "community": 395,
+      "norm_label": ".countowneraccountsasync()"
     },
     {
       "label": "PostgreSqlReadyHealthCheckTests.cs",
@@ -8606,7 +9118,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_011_membership_type_lifecycle",
-      "community": 30,
+      "community": 39,
       "norm_label": "011-membership-type-lifecycle.md"
     },
     {
@@ -11270,6 +11782,16 @@
       "norm_label": "step 14 - accounts and sessions persistence foundation"
     },
     {
+      "label": "Step 15 - Safe Owner bootstrap procedure",
+      "file_type": "document",
+      "source_file": "docs/implementation-progress.md",
+      "source_location": "L432",
+      "_origin": "ast",
+      "id": "docs_implementation_progress_step_15_safe_owner_bootstrap_procedure",
+      "community": 82,
+      "norm_label": "step 15 - safe owner bootstrap procedure"
+    },
+    {
       "label": "implementation-roadmap.md",
       "file_type": "document",
       "source_file": "docs/implementation-roadmap.md",
@@ -13048,6 +13570,56 @@
       "id": "docs_operations_design_8_risks",
       "community": 17,
       "norm_label": "8. risks"
+    },
+    {
+      "label": "owner-bootstrap.md",
+      "file_type": "document",
+      "source_file": "docs/owner-bootstrap.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_owner_bootstrap",
+      "community": 397,
+      "norm_label": "owner-bootstrap.md"
+    },
+    {
+      "label": "Owner bootstrap procedure",
+      "file_type": "document",
+      "source_file": "docs/owner-bootstrap.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_owner_bootstrap_owner_bootstrap_procedure",
+      "community": 397,
+      "norm_label": "owner bootstrap procedure"
+    },
+    {
+      "label": "Safety rules",
+      "file_type": "document",
+      "source_file": "docs/owner-bootstrap.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "docs_owner_bootstrap_safety_rules",
+      "community": 397,
+      "norm_label": "safety rules"
+    },
+    {
+      "label": "Local command",
+      "file_type": "document",
+      "source_file": "docs/owner-bootstrap.md",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "docs_owner_bootstrap_local_command",
+      "community": 397,
+      "norm_label": "local command"
+    },
+    {
+      "label": "What this step does not do",
+      "file_type": "document",
+      "source_file": "docs/owner-bootstrap.md",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "docs_owner_bootstrap_what_this_step_does_not_do",
+      "community": 397,
+      "norm_label": "what this step does not do"
     },
     {
       "label": "post-adr-implementation-plan.md",
@@ -19349,6 +19921,16 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/bootstrap-owner.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "scripts_bootstrap_owner",
+      "target": "scripts_bootstrap_owner_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "scripts/dev-postgres.sh",
@@ -20441,6 +21023,36 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapStatus.cs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/SessionRecord.cs",
       "source_location": "L1",
       "weight": 1.0,
@@ -20455,6 +21067,54 @@
       "source_location": "L4",
       "weight": 1.0,
       "source": "src_bodylife_crm_infrastructure_persistence_usersroles_sessionrecordconfiguration",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
+      "source_location": "L2",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_kind": "file"
+      },
+      "source": "src_bodylife_crm_infrastructure_servicecollectionextensions",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_kind": "file"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "target": "csharp_namespace:11e3fc6fa3c91f4e",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L1",
+      "weight": 1.0,
+      "metadata": {
+        "using_kind": "namespace",
+        "target_fqn": "BodyLife.Crm.Infrastructure.Persistence.UsersRoles",
+        "scope_kind": "file"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
       "target": "csharp_namespace:11e3fc6fa3c91f4e",
       "confidence_score": 1.0
     },
@@ -20517,6 +21177,20 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L66",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "metadata": {
+        "ref_token": "AccountRecord"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_findownerasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecord_bodylife_crm_infrastructure_persistence_usersroles_accountrecord",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/SessionRecord.cs",
       "source_location": "L9",
       "weight": 1.0,
@@ -20560,6 +21234,284 @@
       },
       "source": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecordconfiguration_bodylife_crm_infrastructure_persistence_usersroles_accountrecordconfiguration_configure",
       "target": "src_bodylife_crm_infrastructure_persistence_usersroles_accountrecordconfiguration_cs_entitytypebuilder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "metadata": {
+        "ref_token": "OwnerBootstrapResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bootstrapownerasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L16",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "OwnerBootstrapResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_alreadyexists",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "OwnerBootstrapResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_created",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L24",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "OwnerBootstrapResult"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_validationfailed",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L44",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "OwnerBootstrapResult"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportsuccess",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L56",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "OwnerBootstrapResult"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportvalidationfailure",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_created",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapResult.cs",
+      "source_location": "L16",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "Guid"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_alreadyexists",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapresult_cs_guid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapStatus.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bootstrapownerasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_findownerasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_issingleownerconstraintviolation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L9",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "string"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_string",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bootstrapownerasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_findownerasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bootstrapownerasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_issingleownerconstraintviolation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "CancellationToken"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bootstrapownerasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_cancellationtoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bootstrapownerasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L66",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "CancellationToken"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_findownerasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_cancellationtoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L66",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_findownerasync",
+      "target": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerBootstrapper.cs",
+      "source_location": "L72",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "DbUpdateException"
+      },
+      "source": "src_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_bodylife_crm_infrastructure_persistence_usersroles_ownerbootstrapper_issingleownerconstraintviolation",
+      "target": "dbupdateexception",
       "confidence_score": 1.0
     },
     {
@@ -20666,7 +21618,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
-      "source_location": "L5",
+      "source_location": "L7",
       "weight": 1.0,
       "source": "src_bodylife_crm_infrastructure_servicecollectionextensions",
       "target": "csharp_namespace:997b1edef514343e",
@@ -20676,7 +21628,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
-      "source_location": "L7",
+      "source_location": "L9",
       "weight": 1.0,
       "source": "src_bodylife_crm_infrastructure_servicecollectionextensions",
       "target": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions",
@@ -20702,7 +21654,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
-      "source_location": "L9",
+      "source_location": "L11",
       "weight": 1.0,
       "source": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions",
       "target": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions_addbodylifepersistence",
@@ -20712,21 +21664,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
-      "source_location": "L9",
-      "weight": 1.0,
-      "context": "parameter_type",
-      "metadata": {
-        "ref_token": "IConfiguration"
-      },
-      "source": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions_addbodylifepersistence",
-      "target": "iconfiguration",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
-      "source_location": "L9",
+      "source_location": "L11",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -20734,6 +21672,20 @@
       },
       "source": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions_addbodylifepersistence",
       "target": "iservicecollection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "IConfiguration"
+      },
+      "source": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions_addbodylifepersistence",
+      "target": "src_bodylife_crm_infrastructure_servicecollectionextensions_cs_iconfiguration",
       "confidence_score": 1.0
     },
     {
@@ -20774,6 +21726,16 @@
       "weight": 1.0,
       "source": "src_bodylife_crm_web_operations_healthcheckresponsewriter",
       "target": "src_bodylife_crm_web_operations_healthcheckresponsewriter_bodylife_crm_web_operations_healthcheckresponsewriter",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "target": "csharp_namespace:ef808ce6eb31719e",
       "confidence_score": 1.0
     },
     {
@@ -20872,6 +21834,190 @@
       },
       "source": "src_bodylife_crm_web_operations_healthcheckresponsewriter_bodylife_crm_web_operations_healthcheckresponsewriter_writeasync",
       "target": "src_bodylife_crm_web_operations_healthcheckresponsewriter_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_executeasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_isrequested",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportsuccess",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportvalidationfailure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L9",
+      "weight": 1.0,
+      "context": "field",
+      "metadata": {
+        "ref_token": "string"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_cs_string",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "ILogger"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_executeasync",
+      "target": "ilogger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "IServiceProvider"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_executeasync",
+      "target": "iserviceprovider",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_executeasync",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportsuccess",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_executeasync",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportvalidationfailure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "CancellationToken"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_executeasync",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_cs_cancellationtoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "IConfiguration"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_executeasync",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_cs_iconfiguration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L18",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_executeasync",
+      "target": "src_bodylife_crm_web_operations_ownerbootstrapcommand_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L44",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "ILogger"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportsuccess",
+      "target": "ilogger",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Operations/OwnerBootstrapCommand.cs",
+      "source_location": "L56",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "ILogger"
+      },
+      "source": "src_bodylife_crm_web_operations_ownerbootstrapcommand_bodylife_crm_web_operations_ownerbootstrapcommand_reportvalidationfailure",
+      "target": "ilogger",
       "confidence_score": 1.0
     },
     {
@@ -21433,7 +22579,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/BodyLife.Crm.Web/Program.cs",
-      "source_location": "L72",
+      "source_location": "L83",
       "weight": 1.0,
       "source": "src_bodylife_crm_web_program",
       "target": "src_bodylife_crm_web_program_program",
@@ -22974,6 +24120,16 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
+      "target": "csharp_namespace:105df1079acd785a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs",
       "source_location": "L8",
       "weight": 1.0,
@@ -23258,6 +24414,201 @@
       },
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_initialbaselinemigrationappliestocleanpostgresqldatabase",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_countowneraccountsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrappercreatesowneraccount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperisidempotentwhenownerexists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperrejectsblankdisplaynamewithoutmutation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrappercreatesowneraccount",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_countowneraccountsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrappercreatesowneraccount",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L8",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrappercreatesowneraccount",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L73",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_countowneraccountsasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperisidempotentwhenownerexists",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L55",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperrejectsblankdisplaynamewithoutmutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L32",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperisidempotentwhenownerexists",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L55",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperrejectsblankdisplaynamewithoutmutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperisidempotentwhenownerexists",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_countowneraccountsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperrejectsblankdisplaynamewithoutmutation",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_countowneraccountsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlOwnerBootstrapperTests.cs",
+      "source_location": "L73",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "PostgreSqlTestDatabase"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_countowneraccountsasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase",
       "confidence_score": 1.0
     },
     {
@@ -29925,6 +31276,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/implementation-progress.md",
+      "source_location": "L432",
+      "weight": 1.0,
+      "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
+      "target": "docs_implementation_progress_step_15_safe_owner_bootstrap_procedure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/implementation-progress.md",
       "source_location": "L17",
       "weight": 1.0,
       "source": "docs_implementation_progress_bodylife_crm_implementation_progress",
@@ -31739,6 +33100,46 @@
       "weight": 1.0,
       "source": "docs_operations_design_6_support_and_correction_workflow",
       "target": "docs_operations_design_support_triage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/owner-bootstrap.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_owner_bootstrap",
+      "target": "docs_owner_bootstrap_owner_bootstrap_procedure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/owner-bootstrap.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "docs_owner_bootstrap_owner_bootstrap_procedure",
+      "target": "docs_owner_bootstrap_local_command",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/owner-bootstrap.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "docs_owner_bootstrap_owner_bootstrap_procedure",
+      "target": "docs_owner_bootstrap_safety_rules",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/owner-bootstrap.md",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "docs_owner_bootstrap_owner_bootstrap_procedure",
+      "target": "docs_owner_bootstrap_what_this_step_does_not_do",
       "confidence_score": 1.0
     },
     {
@@ -34077,5 +35478,5 @@
       "source_file": "docs/implementation-progress.md"
     }
   ],
-  "built_at_commit": "6b4dee34554f9a330a6f5dcf88993e8886469e03"
+  "built_at_commit": "bb6a9f3f6017706e3d71a63c5115a2a8ee684b4e"
 }

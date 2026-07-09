@@ -390,5 +390,15 @@
   "388": "Hybrid Membership Model Recommendation",
   "389": "Query: Form Accepted ADR Package",
   "390": "Accepted ADR Package Creation Outcome",
-  "392": "20260709113419_AddCommandIdempotencyKeys.Designer.cs"
+  "391": "CommandIdempotencyRecord",
+  "392": "20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+  "393": ".BootstrapOwnerAsync",
+  "394": "AccountRecord",
+  "395": ".CountOwnerAccountsAsync",
+  "396": "OwnerBootstrapResult",
+  "397": "Owner bootstrap procedure",
+  "398": "AddUsersRolesAccountsSessions",
+  "399": "20260708140900_InitialBaseline.Designer.cs",
+  "400": "20260709120305_AddUsersRolesAccountsSessions.Designer.cs",
+  "401": "bootstrap-owner.sh"
 }
