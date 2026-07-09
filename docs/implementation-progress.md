@@ -457,3 +457,32 @@ Commit:
 Next recommended step:
 
 - Add minimal login/logout/session tracking for the internal app.
+
+## Step 16 - Minimal login/logout/session tracking
+
+Status: completed.
+
+Scope:
+
+- Add PostgreSQL-backed `bodylife.account_credentials` with one credential row per account, unique normalized login name and password-hash constraints.
+- Add password hashing and explicit Owner credential setup through `set-owner-credentials` / `scripts/set-owner-credentials.sh`.
+- Add `AccountLoginService` that verifies credentials, rejects inactive accounts, creates session rows and marks sessions ended on logout.
+- Add cookie authentication wiring plus minimal `/Login` and `/Logout` Razor Pages.
+- Add `docs/login-session.md` and update the Owner bootstrap docs to keep credentials separate from identity bootstrap.
+- Keep global page authorization, server-side role policies, account management UI and current account/session indicator for later Milestone 2 steps.
+
+Validation:
+
+- `bash -n scripts/bootstrap-owner.sh` and `bash -n scripts/set-owner-credentials.sh` passed.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo` passed with 17 PostgreSQL infrastructure tests.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 5 unit tests, 17 PostgreSQL infrastructure tests, 2 Playwright smoke tests and EF migration listing through `20260709143654_AddAccountCredentials`.
+- `graphify update .` and `graphify update . --no-cluster` were attempted for code graph maintenance but stopped with `[Errno 95] Operation not supported`.
+- `graphify . --update` was attempted for markdown progress/login documentation updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(users): add login session tracking`.
+
+Next recommended step:
+
+- Add server-side authorization policies for Owner-only, Admin+Owner and correction/day-close placeholders.

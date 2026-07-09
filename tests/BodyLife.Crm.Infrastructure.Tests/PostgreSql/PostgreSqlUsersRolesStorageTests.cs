@@ -16,7 +16,12 @@ public sealed class PostgreSqlUsersRolesStorageTests
 
         var accountsTableExists = await TableExistsAsync(database, "accounts");
         var sessionsTableExists = await TableExistsAsync(database, "sessions");
+        var accountCredentialsTableExists = await TableExistsAsync(database, "account_credentials");
         var ownerIndexExists = await IndexExistsAsync(database, "accounts", "ux_accounts_single_owner");
+        var loginNameIndexExists = await IndexExistsAsync(
+            database,
+            "account_credentials",
+            "ux_account_credentials_normalized_login_name");
         var activeSessionIndexExists = await IndexExistsAsync(
             database,
             "sessions",
@@ -35,7 +40,9 @@ public sealed class PostgreSqlUsersRolesStorageTests
 
         Assert.True(accountsTableExists);
         Assert.True(sessionsTableExists);
+        Assert.True(accountCredentialsTableExists);
         Assert.True(ownerIndexExists);
+        Assert.True(loginNameIndexExists);
         Assert.True(activeSessionIndexExists);
         Assert.True(sessionAccountForeignKeyExists);
     }

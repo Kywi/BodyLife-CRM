@@ -23,6 +23,9 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<BodyLifeDbContext>(
             options => BodyLifeDbContextOptions.Configure(options, connectionString));
         services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<PasswordHashingService>();
+        services.AddScoped<AccountLoginService>();
+        services.AddScoped<OwnerCredentialsBootstrapper>();
         services.AddScoped<OwnerBootstrapper>();
 
         return services;

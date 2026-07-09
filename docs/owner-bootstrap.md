@@ -1,6 +1,6 @@
 # Owner bootstrap procedure
 
-This procedure creates the first BodyLife Owner account identity after migrations have been applied. It does not create passwords, tokens, default credentials or a session. Login and credential handling are a later Milestone 2 step.
+This procedure creates the first BodyLife Owner account identity after migrations have been applied. It does not create passwords, tokens, default credentials or a session. See `docs/login-session.md` for the separate explicit credential setup.
 
 ## Safety rules
 

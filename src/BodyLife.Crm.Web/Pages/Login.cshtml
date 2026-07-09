@@ -1,0 +1,30 @@
+@page
+@model BodyLife.Crm.Web.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<main class="page-shell auth-shell">
+    <section class="auth-panel" aria-labelledby="login-title">
+        <header class="reception-header">
+            <p class="eyebrow">BodyLife CRM</p>
+            <h1 id="login-title">Login</h1>
+        </header>
+
+        <form method="post" class="auth-form">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+
+            <label asp-for="LoginName">Login</label>
+            <input asp-for="LoginName" type="text" autocomplete="username" />
+
+            <label asp-for="Password">Password</label>
+            <input asp-for="Password" type="password" autocomplete="current-password" />
+
+            <label asp-for="DeviceLabel">Device</label>
+            <input asp-for="DeviceLabel" type="text" autocomplete="off" placeholder="Front desk tablet" />
+
+            <button type="submit">Login</button>
+        </form>
+    </section>
+</main>

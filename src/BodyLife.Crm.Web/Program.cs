@@ -1,5 +1,6 @@
 using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Web.Operations;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -19,6 +20,20 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AddPageRoute("/Reception/Index", string.Empty);
 });
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "BodyLife.Session";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.LoginPath = "/Login";
+        options.LogoutPath = "/Logout";
+        options.AccessDeniedPath = "/Login";
+        options.ExpireTimeSpan = TimeSpan.FromHours(12);
+        options.SlidingExpiration = true;
+    });
+builder.Services.AddAuthorization();
 
 builder.Services
     .AddHealthChecks()
@@ -43,6 +58,17 @@ if (OwnerBootstrapCommand.IsRequested(args))
     return;
 }
 
+if (OwnerCredentialsCommand.IsRequested(args))
+{
+    Environment.ExitCode = await OwnerCredentialsCommand.ExecuteAsync(
+        app.Services,
+        app.Configuration,
+        app.Logger,
+        app.Lifetime.ApplicationStopping);
+
+    return;
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -54,6 +80,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseMiddleware<RequestOutcomeLoggingMiddleware>();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
 app.MapHealthChecks(

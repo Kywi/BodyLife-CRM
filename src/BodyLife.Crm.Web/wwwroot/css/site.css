@@ -94,7 +94,9 @@ h2 {
   gap: 10px;
 }
 
-input[type="search"] {
+input[type="search"],
+input[type="text"],
+input[type="password"] {
   width: 100%;
   min-height: 48px;
   border: 1px solid var(--line);
@@ -131,6 +133,34 @@ input:focus-visible {
 
 .status-panel p {
   color: var(--muted);
+}
+
+.auth-shell {
+  max-width: 560px;
+}
+
+.auth-panel {
+  display: grid;
+  gap: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 10px;
+}
+
+.auth-form label {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.validation-summary {
+  color: #8a1f11;
+  font-weight: 700;
 }
 
 @media (max-width: 640px) {
