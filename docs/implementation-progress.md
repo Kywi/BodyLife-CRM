@@ -281,3 +281,28 @@ Commit:
 Next recommended step:
 
 - Finish Milestone 1 documentation/progress cleanup and acceptance gap review before moving to Milestone 2.
+
+## Step 10 - Milestone 1 acceptance review
+
+Status: completed.
+
+Scope:
+
+- Add `docs/milestone-1-acceptance-review.md`.
+- Compare implemented foundation work against Milestone 1 acceptance criteria.
+- Record completed areas, partial local-environment gaps and remaining Milestone 1 follow-ups.
+- Keep the step documentation-only; do not start Milestone 2 or broad business workflows.
+
+Validation:
+
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed.
+- The validation gate restored tools/packages, built Release with 0 warnings and 0 errors, verified formatting, ran 5 unit tests successfully, ran 2 Playwright smoke tests successfully and listed `20260708140900_InitialBaseline`.
+- Local PostgreSQL integration tests were discovered and skipped because no `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING` or `ConnectionStrings:BodyLifeTestAdmin` is configured for a role with `CREATE DATABASE`.
+
+Commit:
+
+- `docs(infra): record milestone 1 acceptance review`.
+
+Next recommended step:
+
+- Add the Milestone 1 idempotency key storage foundation before starting Milestone 2.
