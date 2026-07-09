@@ -753,7 +753,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer",
-      "community": 27,
+      "community": 48,
       "norm_label": "20260708140900_initialbaseline.designer.cs"
     },
     {
@@ -768,7 +768,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:40698925b3951abb",
-      "community": 27,
+      "community": 48,
       "norm_label": "bodylife.crm.infrastructure.persistence.migrations"
     },
     {
@@ -784,7 +784,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_bodylife_crm_infrastructure_persistence_migrations_initialbaseline",
-      "community": 27,
+      "community": 48,
       "norm_label": "initialbaseline"
     },
     {
@@ -800,7 +800,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_bodylife_crm_infrastructure_persistence_migrations_initialbaseline_buildtargetmodel",
-      "community": 27,
+      "community": 48,
       "norm_label": ".buildtargetmodel()"
     },
     {
@@ -810,7 +810,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_migrations_20260708140900_initialbaseline_designer_cs_modelbuilder",
-      "community": 27,
+      "community": 48,
       "norm_label": "modelbuilder"
     },
     {
@@ -960,7 +960,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_servicecollectionextensions",
-      "community": 7,
+      "community": 64,
       "norm_label": "servicecollectionextensions.cs"
     },
     {
@@ -991,7 +991,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions",
-      "community": 7,
+      "community": 64,
       "norm_label": "servicecollectionextensions"
     },
     {
@@ -1007,7 +1007,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_servicecollectionextensions_bodylife_crm_infrastructure_servicecollectionextensions_addbodylifepersistence",
-      "community": 7,
+      "community": 64,
       "norm_label": ".addbodylifepersistence()"
     },
     {
@@ -1017,7 +1017,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "iservicecollection",
-      "community": 7,
+      "community": 64,
       "norm_label": "iservicecollection"
     },
     {
@@ -1027,7 +1027,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "iconfiguration",
-      "community": 7,
+      "community": 64,
       "norm_label": "iconfiguration"
     },
     {
@@ -1842,6 +1842,26 @@
       "id": "src_bodylife_crm_web_properties_launchsettings_environmentvariables_aspnetcore_environment",
       "community": 24,
       "norm_label": "aspnetcore_environment"
+    },
+    {
+      "label": "ConnectionStrings__BodyLife",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Properties/launchSettings.json",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_properties_launchsettings_environmentvariables_connectionstrings_bodylife",
+      "community": 24,
+      "norm_label": "connectionstrings__bodylife"
+    },
+    {
+      "label": "BODYLIFE_CONNECTION_STRING",
+      "file_type": "code",
+      "source_file": "src/BodyLife.Crm.Web/Properties/launchSettings.json",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "src_bodylife_crm_web_properties_launchsettings_environmentvariables_bodylife_connection_string",
+      "community": 24,
+      "norm_label": "bodylife_connection_string"
     },
     {
       "label": "CommandEnvelope.cs",
@@ -3085,7 +3105,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_daterange",
-      "community": 145,
+      "community": 14,
       "norm_label": "daterange.cs"
     },
     {
@@ -3101,7 +3121,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_daterange_bodylife_crm_sharedkernel_daterange",
-      "community": 145,
+      "community": 14,
       "norm_label": "daterange"
     },
     {
@@ -3111,7 +3131,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "dateonly",
-      "community": 145,
+      "community": 14,
       "norm_label": "dateonly"
     },
     {
@@ -3127,7 +3147,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_daterange_bodylife_crm_sharedkernel_daterange_contains",
-      "community": 145,
+      "community": 14,
       "norm_label": ".contains()"
     },
     {
@@ -3426,7 +3446,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests",
-      "community": 21,
+      "community": 141,
       "norm_label": "postgresqlmigrationtests.cs"
     },
     {
@@ -3442,7 +3462,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests",
-      "community": 21,
+      "community": 141,
       "norm_label": "postgresqlmigrationtests"
     },
     {
@@ -3458,7 +3478,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_initialbaselinemigrationappliestocleanpostgresqldatabase",
-      "community": 21,
+      "community": 141,
       "norm_label": ".initialbaselinemigrationappliestocleanpostgresqldatabase()"
     },
     {
@@ -3468,7 +3488,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_cs_task",
-      "community": 21,
+      "community": 141,
       "norm_label": "task"
     },
     {
@@ -3478,7 +3498,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlmigrationtests_cs_postgresqlfact",
-      "community": 21,
+      "community": 141,
       "norm_label": "postgresqlfact"
     },
     {
@@ -3488,7 +3508,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests",
-      "community": 141,
+      "community": 21,
       "norm_label": "postgresqlreadyhealthchecktests.cs"
     },
     {
@@ -3504,7 +3524,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests",
-      "community": 141,
+      "community": 21,
       "norm_label": "postgresqlreadyhealthchecktests"
     },
     {
@@ -3520,7 +3540,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_readyhealthendpointishealthywhenpostgresqlismigrated",
-      "community": 141,
+      "community": 21,
       "norm_label": ".readyhealthendpointishealthywhenpostgresqlismigrated()"
     },
     {
@@ -3530,7 +3550,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_cs_task",
-      "community": 141,
+      "community": 21,
       "norm_label": "task"
     },
     {
@@ -3540,7 +3560,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlreadyhealthchecktests_cs_postgresqlfact",
-      "community": 141,
+      "community": 21,
       "norm_label": "postgresqlfact"
     },
     {
@@ -6948,7 +6968,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "docs_adr_003_ui_rendering_and_interaction_model",
-      "community": 30,
+      "community": 31,
       "norm_label": "003-ui-rendering-and-interaction-model.md"
     },
     {
@@ -13473,20 +13493,6 @@
       "id": "codex_skills_bodylife_membership_rules_skill_rebuildable_membership_state"
     },
     {
-      "label": "Openai",
-      "file_type": "document",
-      "source_file": ".codex/skills/bodylife-membership-rules/agents/openai.yaml",
-      "source_location": "L1",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 64,
-      "community_name": "Openai Codex 2",
-      "norm_label": "openai",
-      "id": "codex_skills_bodylife_membership_rules_agents_openai_openai"
-    },
-    {
       "label": "Backup Restore and Fallback",
       "file_type": "rationale",
       "source_file": ".codex/skills/bodylife-operations-production-readiness/SKILL.md",
@@ -19603,6 +19609,26 @@
       "weight": 1.0,
       "source": "src_bodylife_crm_web_properties_launchsettings_bodylife_crm_web_environmentvariables",
       "target": "src_bodylife_crm_web_properties_launchsettings_environmentvariables_aspnetcore_environment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Properties/launchSettings.json",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_properties_launchsettings_bodylife_crm_web_environmentvariables",
+      "target": "src_bodylife_crm_web_properties_launchsettings_environmentvariables_bodylife_connection_string",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/BodyLife.Crm.Web/Properties/launchSettings.json",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_bodylife_crm_web_properties_launchsettings_bodylife_crm_web_environmentvariables",
+      "target": "src_bodylife_crm_web_properties_launchsettings_environmentvariables_connectionstrings_bodylife",
       "confidence_score": 1.0
     },
     {
@@ -31332,5 +31358,5 @@
       "source_file": "docs/implementation-progress.md"
     }
   ],
-  "built_at_commit": "9e4063dbe46555774e72aa62cca8c00d7bb5d336"
+  "built_at_commit": "a816da700eda4a8cf10d8c64af88794461ac751e"
 }

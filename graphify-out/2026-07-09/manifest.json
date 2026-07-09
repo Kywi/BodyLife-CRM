@@ -515,9 +515,9 @@
     "semantic_hash": "caec3939f4a17051f64434a9163e78a4"
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
-    "mtime": 1783509463.2564461,
-    "ast_hash": "89cd79895d9570829afca62d107cdd98",
-    "semantic_hash": "89cd79895d9570829afca62d107cdd98"
+    "mtime": 1783587628.4331684,
+    "ast_hash": "9445edbc41339cdbf441f4919a3b1e57",
+    "semantic_hash": ""
   },
   "src/BodyLife.Crm/Application/Commands/CommandEnvelope.cs": {
     "mtime": 1783508744.788521,
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783527325.208696,
-    "ast_hash": "7a27db21439abb1217af1804d186560f",
+    "mtime": 1783527351.2566924,
+    "ast_hash": "d9caf60e46b1501303d34b673203d665",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {

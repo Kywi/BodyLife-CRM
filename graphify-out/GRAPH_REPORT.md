@@ -1,16 +1,16 @@
 # Graph Report - BodyLife-CRM  (2026-07-09)
 
 ## Corpus Check
-- 144 files · ~95,641 words
+- 144 files · ~95,964 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1530 nodes · 1263 edges · 390 communities (120 shown, 270 thin omitted)
+- 1531 nodes · 1266 edges · 390 communities (121 shown, 269 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 13 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a816da70`
+- Built from commit: `dd5df911`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -456,7 +456,7 @@
 - **ADR-guided Milestone 1 sequence** — docs_adr_readme_accepted_adr_package, docs_adr_readme_recommended_implementation_order, docs_implementation_progress_milestone_1_plan, docs_implementation_progress_step_1_solution_project_scaffold, docs_implementation_progress_step_2_module_folder_structure, docs_implementation_progress_step_6_analyzer_build_gates_and_ci [INFERRED 0.90]
 - **Reception-first foundation** — docs_adr_readme_adr_003_reception_first_workflow_boundary, docs_adr_readme_adr_008_server_rendered_ui_with_htmx_islands, docs_implementation_progress_playwright_smoke_harness, docs_implementation_progress_milestone_1_plan [INFERRED 0.90]
 
-## Communities (390 total, 270 thin omitted)
+## Communities (390 total, 269 thin omitted)
 
 ### Community 0 - "ADR Index"
 Cohesion: 0.22
@@ -480,7 +480,7 @@ Nodes (5): BodyLife CRM v1 implementation roadmap, Cross-Cutting Rules, Dependen
 
 ### Community 7 - "Reception Web UI"
 Cohesion: 0.06
-Nodes (24): BodyLife.Crm.Infrastructure, BodyLife.Crm.Web.Operations, HealthCheckContext, HealthCheckResult, HealthReport, IHealthCheck, int, RequestCorrelationId (+16 more)
+Nodes (22): BodyLife.Crm.Web.Operations, HealthCheckContext, HealthCheckResult, HealthReport, IHealthCheck, int, RequestCorrelationId, HealthCheckEntryResponse (+14 more)
 
 ### Community 8 - "Test Harness"
 Cohesion: 0.06
@@ -599,7 +599,7 @@ Cohesion: 0.25
 Nodes (7): ADR-011: Membership type lifecycle, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
 
 ### Community 40 - "ADR Decisions 14"
-Cohesion: 0.25
+Cohesion: 0.29
 Nodes (7): ADR-012: Permissions matrix, session accountability and correction boundaries, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
 
 ### Community 41 - "ADR Decisions 15"
@@ -639,16 +639,20 @@ Cohesion: 0.11
 Nodes (18): 10. Workflow: mark visit flow, 11. Workflow: issue membership flow, 12. Workflow: add payment flow, 13. Workflow: add/cancel freeze flow, 14. Workflow: daily report flow, 15. Workflow: correction flows, 16. Workflow: owner/admin differences, 17. Acceptance checklist for v1 reception slice (+10 more)
 
 ### Community 64 - "Openai Codex 2"
-Cohesion: 0.40
-Nodes (3): IConfiguration, IServiceCollection, ServiceCollectionExtensions
+Cohesion: 0.25
+Nodes (5): BodyLife.Crm.Infrastructure, IConfiguration, IServiceCollection, ServiceCollectionExtensions, Program
 
 ### Community 65 - "Openai Codex 3"
 Cohesion: 0.12
 Nodes (16): 1. Documentation Map, 2. Implementation Strategy, 3. Milestone / Phase Plan, 4.1. Foundation and Project Scaffold, 4.2. Database Migrations, 4.3. Domain and Business Rules, 4.4. Command Workflows, 4.5. UI Workflows (+8 more)
 
+### Community 67 - "Openai Codex 5"
+Cohesion: 0.67
+Nodes (3): 3.1. Входить у першу версію, 3.2. Не входить у першу версію, 3. Межі першої версії
+
 ### Community 76 - "Детальна специфікація першої версії системи для залу"
-Cohesion: 0.14
-Nodes (14): 10. Правила пошуку, 11. Разові і пробні відвідування, 13. Повідомлення і попередження всередині системи, 15. Критерії готовності першої версії, 16. Що потрібно уточнити перед або під час реалізації, 17. Погоджена логіка після останнього уточнення, 18. Підсумок, 1. Призначення документа (+6 more)
+Cohesion: 0.18
+Nodes (11): 10. Правила пошуку, 11. Разові і пробні відвідування, 13. Повідомлення і попередження всередині системи, 15. Критерії готовності першої версії, 16. Що потрібно уточнити перед або під час реалізації, 17. Погоджена логіка після останнього уточнення, 18. Підсумок, 1. Призначення документа (+3 more)
 
 ### Community 77 - "7. Бізнес-правила і формули"
 Cohesion: 0.17
@@ -671,8 +675,8 @@ Cohesion: 0.18
 Nodes (11): 5.10. Клієнти, які давно не ходили, 5.1. Клієнт прийшов у зал з карткою, 5.2. Клієнт прийшов без картки, 5.3. Новий клієнт, 5.4. Видача абонемента, 5.5. Відмітка візиту, 5.6. Скасування помилкового візиту, 5.7. Оплата (+3 more)
 
 ### Community 82 - "BodyLife CRM implementation progress"
-Cohesion: 0.18
-Nodes (10): BodyLife CRM implementation progress, Milestone 1 plan, Step 1 - Solution/project scaffold, Step 2 - Module folder structure, Step 3 - EF Core/Npgsql/PostgreSQL setup, Step 4 - Baseline migration and reviewable SQL workflow, Step 5 - Health checks and structured logging foundation, Step 6 - Analyzer/build gates and CI (+2 more)
+Cohesion: 0.17
+Nodes (11): BodyLife CRM implementation progress, Milestone 1 plan, Step 1 - Solution/project scaffold, Step 2 - Module folder structure, Step 3 - EF Core/Npgsql/PostgreSQL setup, Step 4 - Baseline migration and reviewable SQL workflow, Step 5 - Health checks and structured logging foundation, Step 6 - Analyzer/build gates and CI (+3 more)
 
 ### Community 83 - "6. Дані, які треба зберігати"
 Cohesion: 0.20
@@ -771,7 +775,7 @@ Cohesion: 0.29
 Nodes (6): Backup And Restore, Business Audit History, Metrics, Observability And Operations Checklist, Output Template, Technical Logs
 
 ### Community 107 - "ADR-002: Application architecture and application boundary"
-Cohesion: 0.29
+Cohesion: 0.25
 Nodes (7): ADR-002: Application architecture and application boundary, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
 
 ### Community 108 - "План роботи після прийнятих ADR"
@@ -927,24 +931,24 @@ Cohesion: 0.50
 Nodes (4): 4.1. Власник, 4.2. Адміністратор, 4.3. Тренер, 4. Користувачі системи
 
 ## Knowledge Gaps
-- **1000 isolated node(s):** `generate-migration-sql.sh script`, `validate.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)`, `Microsoft.Extensions.Configuration.Abstractions (10.0.9)` (+995 more)
+- **999 isolated node(s):** `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)`, `Microsoft.Extensions.Configuration.Abstractions (10.0.9)`, `Microsoft.Extensions.DependencyInjection.Abstractions (10.0.9)` (+994 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **270 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **269 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BodyLife.Crm.SharedKernel` connect `Shared Kernel` to `Reception Web UI`, `Test Harness 4`, `Test Harness 5`, `Command Contracts`, `Command Contracts 2`, `Shared Kernel 2`, `Shared Kernel 3`, `Shared Kernel 4`?**
+- **Why does `BodyLife.Crm.Web.Operations` connect `Reception Web UI` to `Openai Codex 2`?**
   _High betweenness centrality (0.009) - this node is a cross-community bridge._
+- **Why does `BodyLife.Crm.SharedKernel` connect `Shared Kernel` to `Reception Web UI`, `Test Harness 4`, `Test Harness 5`, `Command Contracts`, `Command Contracts 2`, `Shared Kernel 2`, `Shared Kernel 3`, `Shared Kernel 4`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **Why does `BodyLife.Crm.Infrastructure.Persistence` connect `Infrastructure Persistence` to `Openai Codex 2`, `Reception Web UI`, `.ReadyHealthEndpointIsHealthyWhenPostgreSqlIsMigrated`, `Infrastructure Persistence 3`, `Infrastructure Persistence 4`, `Test Harness 2`, `Infrastructure Persistence 2`?**
-  _High betweenness centrality (0.006) - this node is a cross-community bridge._
-- **What connects `generate-migration-sql.sh script`, `validate.sh script`, `net10.0` to the rest of the system?**
-  _1052 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _High betweenness centrality (0.005) - this node is a cross-community bridge._
+- **What connects `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)` to the rest of the system?**
+  _1051 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Module Boundaries` be split into smaller, more focused modules?**
   _Cohesion score 0.04081632653061224 - nodes in this community are weakly interconnected._
 - **Should `Agents Logical` be split into smaller, more focused modules?**
   _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
 - **Should `Architecture Baseline` be split into smaller, more focused modules?**
   _Cohesion score 0.05263157894736842 - nodes in this community are weakly interconnected._
-- **Should `Reception Web UI` be split into smaller, more focused modules?**
-  _Cohesion score 0.058693244739756366 - nodes in this community are weakly interconnected._
