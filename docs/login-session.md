@@ -49,6 +49,10 @@ Future Razor Page handlers, controllers, commands and queries should use `IBodyL
 
 The resolver rejects unauthenticated, malformed or role/account-type inconsistent claims. It does not replace command-specific authorization policies and does not query PostgreSQL for active-session expiry in this step.
 
+## Current session indicator
+
+Authenticated pages render the shared app shell with the current account display name, role/account type, device label and short session id. Shared Reception/Admin sessions must remain visibly labeled as shared session accountability; the UI must not imply a named physical person when the shared account is used.
+
 ## Boundaries
 
 - No client accounts or public portal are introduced.

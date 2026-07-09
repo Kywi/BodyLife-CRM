@@ -60,15 +60,22 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.True(response.Ok, $"{viewportName} request returned HTTP {response.Status}.");
 
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Login" }), viewportName, "login heading");
+            var deviceLabel = $"{viewportName} smoke";
             await page.GetByRole(AriaRole.Textbox, new() { Name = "Login" }).FillAsync(_app.LoginName);
             await page.GetByLabel("Password", new() { Exact = true }).FillAsync(_app.Password);
-            await page.GetByLabel("Device", new() { Exact = true }).FillAsync($"{viewportName} smoke");
+            await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
             await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
             await page.WaitForURLAsync("**/");
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             Assert.Equal("Reception - BodyLife CRM", await page.TitleAsync());
 
+            await ExpectVisibleAsync(page.GetByLabel("Current session"), viewportName, "current session shell");
+            await ExpectVisibleAsync(page.GetByText("BodyLife Owner"), viewportName, "current account display name");
+            await ExpectVisibleAsync(page.GetByText("Owner account / Owner"), viewportName, "current account type and role");
+            await ExpectVisibleAsync(page.GetByText(deviceLabel), viewportName, "current device label");
+            await ExpectVisibleAsync(page.GetByText("Session"), viewportName, "current session id");
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Button, new() { Name = "Log out" }), viewportName, "logout button");
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Reception" }), viewportName, "reception heading");
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }), viewportName, "client search input");
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Button, new() { Name = "Search" }), viewportName, "search button");

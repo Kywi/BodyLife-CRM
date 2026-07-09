@@ -9,6 +9,7 @@
   --accent: #176f57;
   --accent-strong: #0f513f;
   --focus: #d99c2b;
+  --restricted: #6351a6;
 }
 
 * {
@@ -26,6 +27,62 @@ body {
 button,
 input {
   font: inherit;
+}
+
+.app-shell {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.app-shell-inner {
+  display: grid;
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding: 10px 24px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.app-brand {
+  color: var(--text);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.session-indicator {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.session-name {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.session-meta,
+.session-id {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: var(--surface-muted);
+  line-height: 1.2;
+}
+
+.session-id {
+  border-color: var(--restricted);
+  color: var(--restricted);
+  font-weight: 700;
+}
+
+.logout-form {
+  margin: 0;
 }
 
 .page-shell {
@@ -117,8 +174,18 @@ button {
   cursor: pointer;
 }
 
+.secondary-button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+}
+
 button:hover {
   background: var(--accent-strong);
+}
+
+.secondary-button:hover {
+  background: var(--surface-muted);
 }
 
 button:focus-visible,
@@ -166,6 +233,19 @@ input:focus-visible {
 @media (max-width: 640px) {
   .page-shell {
     padding: 16px;
+  }
+
+  .app-shell-inner {
+    grid-template-columns: 1fr auto;
+    padding: 10px 16px;
+  }
+
+  .app-brand {
+    grid-column: 1 / -1;
+  }
+
+  .session-indicator {
+    justify-content: flex-start;
   }
 
   .search-row {

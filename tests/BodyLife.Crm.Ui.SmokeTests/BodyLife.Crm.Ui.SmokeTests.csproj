@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\BodyLife.Crm.Infrastructure\BodyLife.Crm.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\BodyLife.Crm.Web\BodyLife.Crm.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

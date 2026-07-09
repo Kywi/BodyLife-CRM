@@ -1,0 +1,47 @@
+@inject IBodyLifeRequestContextResolver RequestContextResolver
+
+@if (RequestContextResolver.TryResolve(out var requestContext))
+{
+    var actor = requestContext.Actor;
+    var displayName = User.Identity?.Name ?? AccountTypeLabel(actor.AccountKind);
+    var deviceLabel = actor.DeviceLabel ?? "No device label";
+    var sessionId = actor.SessionId.Value.ToString("N")[..8];
+
+    <header class="app-shell" aria-label="Current session">
+        <div class="app-shell-inner">
+            <a class="app-brand" asp-page="/Reception/Index">BodyLife CRM</a>
+            <div class="session-indicator" aria-label="Current account and device">
+                <span class="session-name">@displayName</span>
+                <span class="session-meta">@AccountTypeLabel(actor.AccountKind) / @RoleLabel(actor.Role)</span>
+                <span class="session-meta">@deviceLabel</span>
+                <span class="session-id">Session @sessionId</span>
+            </div>
+            <form class="logout-form" asp-page="/Logout" method="post">
+                <button class="secondary-button" type="submit">Log out</button>
+            </form>
+        </div>
+    </header>
+}
+
+@functions {
+    private static string AccountTypeLabel(AccountKind accountKind)
+    {
+        return accountKind switch
+        {
+            AccountKind.Owner => "Owner account",
+            AccountKind.NamedAdmin => "Named Admin",
+            AccountKind.SharedReceptionAdmin => "Shared Reception/Admin",
+            _ => "Account",
+        };
+    }
+
+    private static string RoleLabel(ActorRole role)
+    {
+        return role switch
+        {
+            ActorRole.Owner => "Owner",
+            ActorRole.Admin => "Admin",
+            _ => "Role",
+        };
+    }
+}

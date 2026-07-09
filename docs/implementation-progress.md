@@ -543,3 +543,34 @@ Commit:
 Next recommended step:
 
 - Add current account/session/device UI indicator.
+
+## Step 19 - Current account/session/device UI indicator
+
+Status: completed.
+
+Scope:
+
+- Add a shared `_CurrentSession` Razor partial in the app layout for authenticated pages.
+- Display current account display name, account type/role, device label and short session id from `IBodyLifeRequestContextResolver`.
+- Add a layout-level logout action next to the session indicator.
+- Keep Login unauthenticated and indicator-free.
+- Keep the indicator honest for future shared Reception/Admin sessions by displaying account type/session/device metadata rather than implying a physical person.
+- Add responsive CSS for tablet/phone layouts without changing reception workflow behavior.
+- Update authenticated Playwright smoke tests to assert the indicator is visible on tablet and phone.
+- Add a web project reference to the UI smoke test project so focused smoke runs rebuild the app before launching with `--no-build`.
+- Keep account management UI, permission result query shapes and auth/permission technical logs for later Milestone 2 steps.
+
+Validation:
+
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj --configuration Release --nologo` passed with 2 authenticated Playwright smoke tests after adding the web project reference.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 5 core unit tests, 25 web authorization/request-context tests, 17 PostgreSQL infrastructure tests, 2 authenticated Playwright smoke tests and EF migration listing through `20260709143654_AddAccountCredentials`.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for markdown progress/login documentation updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(ui): add current session indicator`.
+
+Next recommended step:
+
+- Add permission result shape for queries while server policies remain authoritative.
