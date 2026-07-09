@@ -39,6 +39,16 @@ The web app registers these policy names for pages and future command handlers:
 
 Shared Reception/Admin is allowed for daily Admin+Owner workflows and current/open-day corrections, but not Owner-only or after-close correction policies. Policy checks require session claims so future audit/command envelopes can distinguish account and session/device context.
 
+## Request context resolver
+
+Future Razor Page handlers, controllers, commands and queries should use `IBodyLifeRequestContextResolver` instead of reading authentication claims directly. The resolver turns the signed cookie claims and request correlation id into:
+
+- `ActorContext` with account id, role, account type, session id and optional device label;
+- `RequestCorrelationId` from `RequestCorrelationMiddleware`;
+- `CommandEnvelope` for state-changing workflows.
+
+The resolver rejects unauthenticated, malformed or role/account-type inconsistent claims. It does not replace command-specific authorization policies and does not query PostgreSQL for active-session expiry in this step.
+
 ## Boundaries
 
 - No client accounts or public portal are introduced.

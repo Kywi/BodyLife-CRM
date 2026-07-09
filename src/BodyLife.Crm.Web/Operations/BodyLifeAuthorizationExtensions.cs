@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -97,42 +98,18 @@ internal static class BodyLifeAuthorizationClaims
 {
     public static bool HasBodyLifeSession(ClaimsPrincipal user)
     {
-        return user.Identity?.IsAuthenticated == true
-            && HasNonEmptyClaim(user, ClaimTypes.NameIdentifier)
-            && HasNonEmptyClaim(user, BodyLifeClaimTypes.SessionId);
+        return BodyLifeClaimsPrincipalReader.TryReadActorContext(user, out _);
     }
 
     public static bool IsAdminOrOwner(ClaimsPrincipal user)
     {
-        return HasBodyLifeSession(user) && (IsOwner(user) || IsAdmin(user));
+        return BodyLifeClaimsPrincipalReader.TryReadActorContext(user, out var actorContext)
+            && actorContext.Role is ActorRole.Owner or ActorRole.Admin;
     }
 
     public static bool IsOwner(ClaimsPrincipal user)
     {
-        return HasBodyLifeSession(user)
-            && user.IsInRole(BodyLifeRoles.Owner)
-            && HasClaimValue(user, BodyLifeClaimTypes.AccountType, BodyLifeAccountTypes.Owner);
-    }
-
-    private static bool IsAdmin(ClaimsPrincipal user)
-    {
-        return HasBodyLifeSession(user)
-            && user.IsInRole(BodyLifeRoles.Admin)
-            && (HasClaimValue(user, BodyLifeClaimTypes.AccountType, BodyLifeAccountTypes.NamedAdmin)
-                || HasClaimValue(user, BodyLifeClaimTypes.AccountType, BodyLifeAccountTypes.SharedReceptionAdmin));
-    }
-
-    private static bool HasNonEmptyClaim(ClaimsPrincipal user, string claimType)
-    {
-        return user.Claims.Any(claim =>
-            claim.Type == claimType
-            && !string.IsNullOrWhiteSpace(claim.Value));
-    }
-
-    private static bool HasClaimValue(ClaimsPrincipal user, string claimType, string claimValue)
-    {
-        return user.Claims.Any(claim =>
-            claim.Type == claimType
-            && string.Equals(claim.Value, claimValue, StringComparison.Ordinal));
+        return BodyLifeClaimsPrincipalReader.TryReadActorContext(user, out var actorContext)
+            && actorContext is { Role: ActorRole.Owner, AccountKind: AccountKind.Owner };
     }
 }

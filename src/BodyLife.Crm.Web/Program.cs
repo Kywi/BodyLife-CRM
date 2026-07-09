@@ -15,6 +15,7 @@ builder.Logging.AddJsonConsole(options =>
 });
 
 builder.Services.AddBodyLifePersistence(builder.Configuration);
+builder.Services.AddBodyLifeRequestContext();
 
 builder.Services.AddRazorPages(options =>
 {

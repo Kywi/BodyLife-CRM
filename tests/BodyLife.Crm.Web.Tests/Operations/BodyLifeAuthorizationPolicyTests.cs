@@ -95,6 +95,26 @@ public sealed class BodyLifeAuthorizationPolicyTests
     }
 
     [Fact]
+    public async Task PoliciesRequireParseableActorAndSessionClaims()
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, "not-a-guid"),
+            new(ClaimTypes.Name, "Test Account"),
+            new(ClaimTypes.Role, BodyLifeRoles.Owner),
+            new(BodyLifeClaimTypes.AccountType, BodyLifeAccountTypes.Owner),
+            new(BodyLifeClaimTypes.SessionId, Guid.NewGuid().ToString()),
+        };
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(
+            claims,
+            authenticationType: "BodyLife.Tests"));
+
+        var result = await AuthorizeAsync(principal, BodyLifeAuthorizationPolicies.OwnerOnly);
+
+        Assert.False(result.Succeeded);
+    }
+
+    [Fact]
     public async Task PoliciesRejectUnauthenticatedUsers()
     {
         var result = await AuthorizeAsync(

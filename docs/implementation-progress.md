@@ -515,3 +515,31 @@ Commit:
 Next recommended step:
 
 - Add actor/session context resolver for commands and queries.
+
+## Step 18 - Actor/session context resolver
+
+Status: completed.
+
+Scope:
+
+- Add `IBodyLifeRequestContextResolver` for web entry points to resolve the current authenticated BodyLife actor/session and request correlation id.
+- Add `BodyLifeRequestContext` and `CreateCommandEnvelope(...)` so future state-changing workflows can build the common command envelope from server-side context instead of UI-local state.
+- Share the same strict claim parser between authorization policies and the request-context resolver.
+- Reject unauthenticated, malformed or role/account-type inconsistent claims before command/query handlers receive actor context.
+- Register the resolver through DI with `IHttpContextAccessor`.
+- Keep active-session database validation, current account UI indicator, permission result query shapes and auth/permission technical logs for later Milestone 2 steps.
+
+Validation:
+
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Web.Tests/BodyLife.Crm.Web.Tests.csproj --configuration Release --nologo` passed with 25 web authorization/request-context tests.
+- `DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 5 core unit tests, 25 web authorization/request-context tests, 17 PostgreSQL infrastructure tests, 2 authenticated Playwright smoke tests and EF migration listing through `20260709143654_AddAccountCredentials`.
+- `graphify update .` completed for code graph maintenance.
+- `graphify . --update` was attempted for markdown progress/login documentation updates but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `build(users): add request context resolver`.
+
+Next recommended step:
+
+- Add current account/session/device UI indicator.

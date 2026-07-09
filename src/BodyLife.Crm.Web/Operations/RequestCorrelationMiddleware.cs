@@ -3,7 +3,7 @@ using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Web.Operations;
 
-internal sealed class RequestCorrelationMiddleware(
+public sealed class RequestCorrelationMiddleware(
     RequestDelegate next,
     IHostEnvironment environment,
     ILogger<RequestCorrelationMiddleware> logger)
