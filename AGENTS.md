@@ -18,6 +18,7 @@ Use these documents before inventing implementation details:
 - `docs/data-architecture.md` for source facts, derived state, schema direction, constraints, indexes, audit, backfill, and reporting data access.
 - `docs/interaction-contracts.md` for command/query contracts, transaction boundaries, permissions, errors, recalculation, audit, and canonical rereads.
 - `docs/ui-workflows.md` for reception dashboard, search, profile, warnings, quick actions, reports, tablet-first and phone-friendly behavior.
+- `docs/ui-design-foundation.md` for shared reception UI layout, visual language, component patterns, warning semantics, tablet/phone consistency, and first-screen exemplars.
 - `docs/operations-design.md` for audit vs logs, structured logging, metrics, backup/restore, paper fallback, and incident/recovery policy.
 - `docs/technology-stack-decision.md` for stack choice and hosting constraints.
 - `docs/vertical-slice-plan.md` for the first end-to-end proof scenario.
@@ -110,6 +111,7 @@ Shared code should stay narrow: IDs, Money, DateRange, actor/session context, re
 ## UI Rules
 
 - Tablet is the primary reception target; phone layout must preserve every critical warning and action in a usable order.
+- Follow `docs/ui-design-foundation.md` for shared layout, visual language, status colors, warning blocks, quick action groups, forms, and first-screen exemplars.
 - Touch workflows must not depend on hover-only affordances.
 - State-changing buttons must show busy/disabled states and prevent duplicate submits.
 - Exact unique current card match may auto-open a client. Partial or non-unique matches must render selectable results.

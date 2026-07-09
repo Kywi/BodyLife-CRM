@@ -3,7 +3,7 @@
 Дата: 2026-07-07
 Статус: implementation planning draft
 
-Основа: `docs/architecture-baseline.md`, `docs/domain-model.md`, `docs/data-architecture.md`, `docs/interaction-contracts.md`, `docs/ui-workflows.md`, `docs/operations-design.md` і `docs/technology-stack-decision.md`.
+Основа: `docs/architecture-baseline.md`, `docs/domain-model.md`, `docs/data-architecture.md`, `docs/interaction-contracts.md`, `docs/ui-workflows.md`, `docs/ui-design-foundation.md`, `docs/operations-design.md` і `docs/technology-stack-decision.md`.
 
 Цей документ описує перший vertical slice для перевірки архітектури BodyLife CRM v1. Slice не є повним MVP. Його ціль - довести, що selected modular monolith stack, server-side commands, Memberships recalculation, append-only audit і report consistency можуть працювати разом у мінімальному reception workflow.
 
@@ -76,6 +76,8 @@ UI screens:
 - Correction forms for cancel visit and correct payment, including reason/comment.
 - Daily report screen with payment/visit drill-down and correction/cancellation rows.
 - Audit/history timeline reachable from profile or report drill-down.
+
+UI visual/layout patterns for these screens follow `docs/ui-design-foundation.md`; the slice should prove tablet/phone usability and component consistency, not broad visual polish.
 
 Commands in scope:
 

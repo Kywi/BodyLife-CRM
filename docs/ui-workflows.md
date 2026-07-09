@@ -5,7 +5,7 @@
 
 Цей документ описує UI workflows для BodyLife CRM v1 як hybrid server-rendered web app. Він базується на `docs/interaction-contracts.md` і `docs/adr/003-ui-rendering-and-interaction-model.md`.
 
-Це не design mockup і не специфікація pixel layout. Документ визначає, які screen/state, actions, warnings, confirmations, loading states, success states і failure states потрібні, щоб reception workflow можна було пройти без читання бізнес-вимог.
+Це не design mockup і не специфікація pixel layout. Документ визначає, які screen/state, actions, warnings, confirmations, loading states, success states і failure states потрібні, щоб reception workflow можна було пройти без читання бізнес-вимог. Візуальну, layout and component consistency основу для реалізації задає `docs/ui-design-foundation.md`.
 
 ## 1. Scope and interaction principles
 

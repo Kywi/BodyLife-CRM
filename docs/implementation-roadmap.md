@@ -3,7 +3,7 @@
 Дата: 2026-07-07
 Статус: implementation planning draft після vertical slice
 
-Основа: `docs/architecture-baseline.md`, `docs/domain-model.md`, `docs/data-architecture.md`, `docs/interaction-contracts.md`, `docs/ui-workflows.md`, `docs/operations-design.md`, `docs/technology-stack-decision.md`, `docs/vertical-slice-plan.md` і accepted ADR package у `docs/adr/`.
+Основа: `docs/architecture-baseline.md`, `docs/domain-model.md`, `docs/data-architecture.md`, `docs/interaction-contracts.md`, `docs/ui-workflows.md`, `docs/ui-design-foundation.md`, `docs/operations-design.md`, `docs/technology-stack-decision.md`, `docs/vertical-slice-plan.md` і accepted ADR package у `docs/adr/`.
 
 Цей roadmap описує порядок повної реалізації BodyLife CRM v1 після успішного vertical slice. Він не замінює ADR і не додає новий scope. Якщо під час реалізації виникає конфлікт, перемагають accepted ADR і post-ADR implementation contract.
 
@@ -36,6 +36,7 @@
 - Every state-changing workflow is a server-side command/action with authorization, validation, idempotency where needed, transaction boundary, recalculation decision, audit entry and canonical reread.
 - Memberships is the only owner of membership formulas: remaining visits, negative balance, first negative visit date, extension days, effective end date and warnings.
 - Reports and UI read canonical state; they do not calculate membership truth locally.
+- UI follows `docs/ui-design-foundation.md` for shared layout/components, warning visibility, tablet-first and phone-friendly consistency.
 - Corrections and cancellations preserve source history and append audit. They do not hard-delete or silently patch business records.
 - Backdated/manual/paper fallback entries use normal domain commands with `occurred_at`, server `recorded_at`, `entry_origin`, actor/session and reason/comment.
 - PostgreSQL-backed tests are required for constraints, migrations, transactions, row locks, report queries and restore checks.
@@ -66,6 +67,7 @@
 - Додати basic structured logging foundation with `request_correlation_id`, environment, route/command, duration, outcome and error class.
 - Додати health check endpoint/page for deployment monitoring.
 - Додати idempotency key storage foundation, але без прив'язки до всіх бізнесових commands.
+- Додати shared UI foundation assets/patterns for Razor layout, CSS tokens, warning blocks, action buttons and Playwright viewport smoke entry points, without building generic CRUD.
 - Додати minimal seed/bootstrap path for initial Owner/named Admin/shared Reception/Admin accounts, якщо це не робиться в Milestone 2.
 
 ### Acceptance Criteria
@@ -77,6 +79,7 @@
 - Common command envelope/result/error contract documented or represented in application layer conventions.
 - Structured logs include correlation id and command/route outcome for at least a smoke request.
 - Health check works in local/staging mode.
+- Shared UI foundation exists for reception shell, warnings, buttons/forms and tablet/phone smoke rendering.
 - Немає generic CRUD-first UI, який обходить command/query boundary.
 
 ### Потрібні тести
@@ -180,7 +183,7 @@
 - Реалізувати `SearchClients` query with exact card priority, partial/ambiguous result list and no auto-open for non-unique matches.
 - Реалізувати client profile shell from `GetClientProfile` with identity, current card, operational status, empty/current membership area placeholder and allowed actions from server.
 - Додати audit entries for client create/update and card assign/change/clear.
-- Додати tablet-first and phone-friendly UI states for search results, exact match, no match and multiple results.
+- Додати tablet-first and phone-friendly UI states for search results, exact match, no match and multiple results using `docs/ui-design-foundation.md` patterns.
 
 ### Acceptance Criteria
 
