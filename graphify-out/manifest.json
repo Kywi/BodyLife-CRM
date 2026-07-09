@@ -710,8 +710,8 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1783596913.573746,
-    "ast_hash": "13ccc9ac8146781174df55a320d32662",
+    "mtime": 1783598606.7374291,
+    "ast_hash": "71e28bba71be35d6c43398ff72ad6c41",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783597062.322249,
-    "ast_hash": "a0ccb76c2642de0bd0ea66650ee58948",
+    "mtime": 1783598749.3519094,
+    "ast_hash": "1c75ea45cd5528dd7b339427e3de41cc",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -862,6 +862,41 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs": {
     "mtime": 1783596904.2373161,
     "ast_hash": "792df9c4f01ca133d51b25533260aaca",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709120305_AddUsersRolesAccountsSessions.Designer.cs": {
+    "mtime": 1783598606.7374291,
+    "ast_hash": "c0027465c0b4b585217a6ea48d03ba36",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709120305_AddUsersRolesAccountsSessions.cs": {
+    "mtime": 1783598606.733429,
+    "ast_hash": "244e6c8943021a22374095784abf8c26",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/AccountRecord.cs": {
+    "mtime": 1783598561.64495,
+    "ast_hash": "6e554a755989eb7ef6619c69360b22ec",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/AccountRecordConfiguration.cs": {
+    "mtime": 1783598572.5084329,
+    "ast_hash": "eb7cd995b307d00e25b3195e570c4d43",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/SessionRecord.cs": {
+    "mtime": 1783598561.64495,
+    "ast_hash": "aa7abfc3a0b906cb9f64081fa6f9daec",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/SessionRecordConfiguration.cs": {
+    "mtime": 1783598602.209219,
+    "ast_hash": "9c6e9a9a42ad71d4f21c9ee835e345c2",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlUsersRolesStorageTests.cs": {
+    "mtime": 1783598675.4188077,
+    "ast_hash": "b9ac145eb661ac60a3c4deeead18b674",
     "semantic_hash": ""
   }
 }

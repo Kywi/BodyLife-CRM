@@ -710,9 +710,9 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1783521733.3092904,
-    "ast_hash": "0fbe5af263199c8a821c8d55c15c0074",
-    "semantic_hash": "0fbe5af263199c8a821c8d55c15c0074"
+    "mtime": 1783596913.573746,
+    "ast_hash": "13ccc9ac8146781174df55a320d32662",
+    "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
     "mtime": 1783520984.885367,
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783592595.7434793,
-    "ast_hash": "87938ea02d74f1d8c042c9a268e71101",
+    "mtime": 1783597062.322249,
+    "ast_hash": "a0ccb76c2642de0bd0ea66650ee58948",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -835,8 +835,33 @@
     "semantic_hash": ""
   },
   "docs/milestone-1-acceptance-review.md": {
-    "mtime": 1783590177.8419275,
-    "ast_hash": "8303d84acc072270bbbcf710736205ee",
+    "mtime": 1783596958.1663969,
+    "ast_hash": "896fa7bad48908a658fa73ac633e0b3e",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecord.cs": {
+    "mtime": 1783596845.3710177,
+    "ast_hash": "9bae6e4a7e3e1b6843344607bd6b0e4f",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Idempotency/CommandIdempotencyRecordConfiguration.cs": {
+    "mtime": 1783596845.3710177,
+    "ast_hash": "26b6e1a6a8ee5c6b342f889ed6a9ec09",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.Designer.cs": {
+    "mtime": 1783596913.573746,
+    "ast_hash": "d8ce7528d12eaa22907c14b47952885a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709113419_AddCommandIdempotencyKeys.cs": {
+    "mtime": 1783596913.5697458,
+    "ast_hash": "d08456d968ee3a118494bc1f409c3c10",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCommandIdempotencyStorageTests.cs": {
+    "mtime": 1783596904.2373161,
+    "ast_hash": "792df9c4f01ca133d51b25533260aaca",
     "semantic_hash": ""
   }
 }
