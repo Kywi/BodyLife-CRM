@@ -1,3 +1,4 @@
+using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
@@ -32,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeQueryHandler<FindClientDuplicateCandidatesQuery, IReadOnlyList<ClientDuplicateCandidate>>,
             FindClientDuplicateCandidatesQueryHandler>();
+        services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<AccountLoginService>();
         services.AddScoped<AccountSessionValidationService>();
         services.AddScoped<OwnerCredentialsBootstrapper>();

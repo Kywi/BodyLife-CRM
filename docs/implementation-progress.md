@@ -988,3 +988,44 @@ Commit:
 Next recommended step:
 
 - Implement the server-side CreateClient command without UI: Admin/Owner authorization, canonical normalization, optional current card, duplicate-warning acknowledgement validation/persistence, idempotency, one PostgreSQL transaction, `client.created` business audit and a canonical reread target.
+
+## Step 33 - CreateClient command workflow
+
+Status: completed.
+
+Scope:
+
+- Add the typed `CreateClientCommand`, `ClientOperationalStatus` and duplicate-warning acknowledgement input contracts inside the owning Clients/Search module.
+- Enforce Owner, named Admin and shared Reception/Admin actor shapes plus canonical active account/session checks before mutation.
+- Normalize name, optional phone and optional card values with the accepted `ClientSearchNormalizer`; preserve trimmed raw display values separately.
+- Require an idempotency key and store only a SHA-256 request fingerprint, actor/session context and canonical result references in `command_idempotency_keys`.
+- Replay a completed identical request with the original client/audit ids and reject reuse of the key for a changed payload.
+- Run card availability, duplicate-candidate lookup and exact acknowledgement-set validation inside a serializable PostgreSQL transaction.
+- Return `duplicate_warning_not_acknowledged` for every missing phone/name warning, reject stale/extra/duplicate acknowledgements and persist accepted reasons as source facts.
+- Create the client, optional current card assignment, warning acknowledgements, succeeded idempotency record and `client.created` business audit through one `SaveChanges` and transaction commit.
+- Include actor/account/session, entry origin, occurred/recorded times, correlation/idempotency keys, raw identity/card summary, warning summary and related ids in audit.
+- Return the new client as both primary entity and canonical reread target; Memberships recalculation is correctly not involved.
+- Map current-card uniqueness races and nested PostgreSQL serialization/deadlock failures to stable card/concurrency command errors, clearing rolled-back tracked state.
+- Register the command handler through the existing `IBodyLifeCommandHandler` convention.
+- Keep UpdateClient, AssignOrChangeCard, client profile/search UI and all htmx work outside this step.
+
+Validation:
+
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --configuration Release --nologo` passed with 0 warnings/errors after adding the command contract and handler.
+- The first focused test attempt stopped before execution on two xUnit analyzer findings for `Where(...)+Assert.Single`; the assertions were changed to the predicate overload.
+- The next focused run passed 8 of 9 tests and exposed that Npgsql wraps a PostgreSQL `40001` serialization failure in `InvalidOperationException -> DbUpdateException`; known PostgreSQL failures are now found through the exception chain while unknown exceptions still rethrow.
+- Focused CreateClient validation then passed 9 tests covering all accepted actor kinds, denied canonical actors, optional card/phone, normalization, duplicate-warning acknowledgement sets, audit/idempotency atomicity, input validation, card conflict, replay/key reuse, concurrent card assignment and paper-fallback timestamps.
+- Full PostgreSQL infrastructure validation passed with 72 tests.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal --no-restore` passed.
+- Final `DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 72 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because the command uses the existing client, card, acknowledgement, audit and idempotency schema.
+- The structural Graphify rebuild completed with 2595 nodes and 3503 edges.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `feat(clients): add create client command`.
+
+Next recommended step:
+
+- Implement the server-side UpdateClient command without UI or card mutation: expected `updated_at` stale-state guard, canonical normalization, duplicate-warning acknowledgement validation/persistence, authorization, idempotency, one transaction, `client.updated` before/after audit and client reread target.
