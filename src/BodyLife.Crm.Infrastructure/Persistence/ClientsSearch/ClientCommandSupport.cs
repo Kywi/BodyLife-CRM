@@ -83,69 +83,17 @@ internal static class ClientCommandSupport
         out NormalizedClientIdentity? normalizedIdentity)
     {
         normalizedIdentity = null;
-        var idempotencyKey = envelope.IdempotencyKey?.Trim();
+        var envelopeValidation = ValidateAndNormalizeEnvelope(
+            envelope,
+            "client mutation",
+            out var normalizedEnvelope);
 
-        if (string.IsNullOrWhiteSpace(idempotencyKey))
+        if (envelopeValidation is not null)
         {
-            return ValidationError("Idempotency key is required.", "idempotencyKey");
+            return envelopeValidation;
         }
 
-        if (idempotencyKey.Length > IdempotencyKeyMaxLength)
-        {
-            return ValidationError(
-                $"Idempotency key must be {IdempotencyKeyMaxLength} characters or fewer.",
-                "idempotencyKey");
-        }
-
-        var requestCorrelationId = envelope.RequestCorrelationId.Value?.Trim();
-
-        if (string.IsNullOrWhiteSpace(requestCorrelationId)
-            || requestCorrelationId.Length > CorrelationIdMaxLength)
-        {
-            return ValidationError(
-                $"Request correlation id is required and must be {CorrelationIdMaxLength} characters or fewer.",
-                "requestCorrelationId");
-        }
-
-        var deviceLabel = NormalizeOptional(envelope.Actor.DeviceLabel);
-
-        if (deviceLabel?.Length > DeviceLabelMaxLength)
-        {
-            return ValidationError(
-                $"Device label must be {DeviceLabelMaxLength} characters or fewer.",
-                "deviceLabel");
-        }
-
-        if (!Enum.IsDefined(envelope.EntryOrigin))
-        {
-            return ValidationError("Entry origin is invalid.", "entryOrigin");
-        }
-
-        var envelopeReason = NormalizeOptional(envelope.Reason);
-        var envelopeComment = NormalizeOptional(envelope.Comment);
-
-        if (envelopeReason?.Length > AuditReasonMaxLength)
-        {
-            return ValidationError(
-                $"Reason must be {AuditReasonMaxLength} characters or fewer.",
-                "reason");
-        }
-
-        if (envelopeComment?.Length > AuditCommentMaxLength)
-        {
-            return ValidationError(
-                $"Envelope comment must be {AuditCommentMaxLength} characters or fewer.",
-                "envelope.comment");
-        }
-
-        if (envelope.EntryOrigin != EntryOrigin.Normal
-            && (envelope.OccurredAt is null
-                || (envelopeReason is null && envelopeComment is null)))
-        {
-            return ValidationError(
-                "Non-normal client mutation requires occurred_at and a reason or command comment.",
-                "entryOrigin");
-        }
+        var commandEnvelope = normalizedEnvelope!;
 
         if (!Enum.IsDefined(operationalStatus))
         {
@@ -232,9 +180,88 @@ internal static class ClientCommandSupport
                 .OrderBy(acknowledgement => acknowledgement.WarningType)
                 .ThenBy(acknowledgement => acknowledgement.MatchedClientId)
                 .ToArray(),
+            commandEnvelope.IdempotencyKey,
+            commandEnvelope.RequestCorrelationId,
+            commandEnvelope.DeviceLabel);
+        return null;
+    }
+
+    internal static CommandResult? ValidateAndNormalizeEnvelope(
+        CommandEnvelope envelope,
+        string mutationDescription,
+        out NormalizedClientCommandEnvelope? normalizedEnvelope)
+    {
+        normalizedEnvelope = null;
+        var idempotencyKey = envelope.IdempotencyKey?.Trim();
+
+        if (string.IsNullOrWhiteSpace(idempotencyKey))
+        {
+            return ValidationError("Idempotency key is required.", "idempotencyKey");
+        }
+
+        if (idempotencyKey.Length > IdempotencyKeyMaxLength)
+        {
+            return ValidationError(
+                $"Idempotency key must be {IdempotencyKeyMaxLength} characters or fewer.",
+                "idempotencyKey");
+        }
+
+        var requestCorrelationId = envelope.RequestCorrelationId.Value?.Trim();
+
+        if (string.IsNullOrWhiteSpace(requestCorrelationId)
+            || requestCorrelationId.Length > CorrelationIdMaxLength)
+        {
+            return ValidationError(
+                $"Request correlation id is required and must be {CorrelationIdMaxLength} characters or fewer.",
+                "requestCorrelationId");
+        }
+
+        var deviceLabel = NormalizeOptional(envelope.Actor.DeviceLabel);
+
+        if (deviceLabel?.Length > DeviceLabelMaxLength)
+        {
+            return ValidationError(
+                $"Device label must be {DeviceLabelMaxLength} characters or fewer.",
+                "deviceLabel");
+        }
+
+        if (!Enum.IsDefined(envelope.EntryOrigin))
+        {
+            return ValidationError("Entry origin is invalid.", "entryOrigin");
+        }
+
+        var envelopeReason = NormalizeOptional(envelope.Reason);
+        var envelopeComment = NormalizeOptional(envelope.Comment);
+
+        if (envelopeReason?.Length > AuditReasonMaxLength)
+        {
+            return ValidationError(
+                $"Reason must be {AuditReasonMaxLength} characters or fewer.",
+                "reason");
+        }
+
+        if (envelopeComment?.Length > AuditCommentMaxLength)
+        {
+            return ValidationError(
+                $"Envelope comment must be {AuditCommentMaxLength} characters or fewer.",
+                "envelope.comment");
+        }
+
+        if (envelope.EntryOrigin != EntryOrigin.Normal
+            && (envelope.OccurredAt is null
+                || (envelopeReason is null && envelopeComment is null)))
+        {
+            return ValidationError(
+                $"Non-normal {mutationDescription} requires occurred_at and a reason or command comment.",
+                "entryOrigin");
+        }
+
+        normalizedEnvelope = new NormalizedClientCommandEnvelope(
             idempotencyKey,
             requestCorrelationId,
-            deviceLabel);
+            deviceLabel,
+            envelopeReason,
+            envelopeComment);
         return null;
     }
 
@@ -342,6 +369,32 @@ internal static class ClientCommandSupport
         return Convert.ToHexString(SHA256.HashData(payload));
     }
 
+    internal static string CreateAssignOrChangeCardFingerprint(
+        CommandEnvelope envelope,
+        Guid clientId,
+        Guid? expectedCurrentCardAssignmentId,
+        string? newCardNumberNormalized,
+        bool clearCurrentCard)
+    {
+        var payload = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            ActorAccountId = envelope.Actor.AccountId.Value,
+            ActorRole = MapActorRole(envelope.Actor.Role),
+            ActorAccountKind = MapAccountKind(envelope.Actor.AccountKind),
+            ActorSessionId = envelope.Actor.SessionId.Value,
+            EntryOrigin = MapEntryOrigin(envelope.EntryOrigin),
+            envelope.OccurredAt,
+            EnvelopeReason = NormalizeOptional(envelope.Reason),
+            EnvelopeComment = NormalizeOptional(envelope.Comment),
+            ClientId = clientId,
+            ExpectedCurrentCardAssignmentId = expectedCurrentCardAssignmentId,
+            NewCardNumberNormalized = newCardNumberNormalized,
+            ClearCurrentCard = clearCurrentCard,
+        });
+
+        return Convert.ToHexString(SHA256.HashData(payload));
+    }
+
     internal static Task<CommandIdempotencyRecord?> FindIdempotencyAsync(
         BodyLifeDbContext dbContext,
         string commandName,
@@ -388,17 +441,61 @@ internal static class ClientCommandSupport
         AuditEntryId auditEntryId,
         string fingerprint)
     {
+        return CreateSucceededIdempotencyRecord(
+            commandName,
+            envelope,
+            identity.IdempotencyKey,
+            identity.RequestCorrelationId,
+            identity.DeviceLabel,
+            recordedAt,
+            clientId,
+            auditEntryId,
+            fingerprint);
+    }
+
+    internal static CommandIdempotencyRecord CreateSucceededIdempotencyRecord(
+        string commandName,
+        CommandEnvelope envelope,
+        NormalizedClientCommandEnvelope normalizedEnvelope,
+        DateTimeOffset recordedAt,
+        Guid clientId,
+        AuditEntryId auditEntryId,
+        string fingerprint)
+    {
+        return CreateSucceededIdempotencyRecord(
+            commandName,
+            envelope,
+            normalizedEnvelope.IdempotencyKey,
+            normalizedEnvelope.RequestCorrelationId,
+            normalizedEnvelope.DeviceLabel,
+            recordedAt,
+            clientId,
+            auditEntryId,
+            fingerprint);
+    }
+
+    private static CommandIdempotencyRecord CreateSucceededIdempotencyRecord(
+        string commandName,
+        CommandEnvelope envelope,
+        string idempotencyKey,
+        string requestCorrelationId,
+        string? deviceLabel,
+        DateTimeOffset recordedAt,
+        Guid clientId,
+        AuditEntryId auditEntryId,
+        string fingerprint)
+    {
         return new CommandIdempotencyRecord
         {
             Id = Guid.NewGuid(),
             CommandName = commandName,
-            IdempotencyKey = identity.IdempotencyKey,
-            RequestCorrelationId = identity.RequestCorrelationId,
+            IdempotencyKey = idempotencyKey,
+            RequestCorrelationId = requestCorrelationId,
             AccountId = envelope.Actor.AccountId.Value,
             ActorRole = MapActorRole(envelope.Actor.Role),
             AccountKind = MapAccountKind(envelope.Actor.AccountKind),
             SessionId = envelope.Actor.SessionId.Value,
-            DeviceLabel = identity.DeviceLabel,
+            DeviceLabel = deviceLabel,
             EntryOrigin = MapEntryOrigin(envelope.EntryOrigin),
             Status = SucceededIdempotencyStatus,
             CreatedAt = recordedAt,
@@ -557,3 +654,10 @@ internal sealed record NormalizedClientAcknowledgement(
     Guid MatchedClientId,
     ClientDuplicateWarningType WarningType,
     string Reason);
+
+internal sealed record NormalizedClientCommandEnvelope(
+    string IdempotencyKey,
+    string RequestCorrelationId,
+    string? DeviceLabel,
+    string? Reason,
+    string? Comment);

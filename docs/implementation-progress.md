@@ -1070,4 +1070,48 @@ Commit:
 
 Next recommended step:
 
-- Implement the server-side `AssignOrChangeCard` command without UI: lock the target client/current assignment, normalize and validate the requested card, require a reason when replacing or clearing, preserve assignment history, enforce current-card uniqueness under concurrency, add idempotency and `client.card_assigned`/`client.card_changed`/`client.card_cleared` audit, and return the client reread target.
+- Implement the server-side `AssignOrChangeCard` command without UI: lock the target client/current assignment, normalize and validate the requested card, require a reason when replacing or clearing, preserve assignment history, enforce current-card uniqueness under concurrency, add idempotency and `card.assigned`/`card.changed`/`card.cleared` audit, and return the client reread target.
+
+## Step 35 - AssignOrChangeCard command workflow
+
+Status: completed.
+
+Scope:
+
+- Add the typed `AssignOrChangeCardCommand` contract inside the owning Clients/Search module with client id, expected current assignment id, optional new card number and explicit clear-card intent.
+- Treat a null expected assignment id as "no current card was loaded" and require a supplied id to match the row locked from canonical PostgreSQL state; return `stale_state` instead of overwriting a newer assignment.
+- Enforce Owner, named Admin and shared Reception/Admin actor shapes plus canonical active account/session checks before mutation.
+- Extract reusable client-command envelope validation and normalized idempotency metadata without changing the accepted CreateClient/UpdateClient identity or fingerprint contracts.
+- Require an idempotency key, correlation id and valid entry-origin metadata; normalize semantic card payloads before fingerprinting so formatting-equivalent retries replay the original result.
+- Require exactly one intent: provide a non-empty normalized new card number or explicitly clear the current card.
+- Require a reason or command comment when replacing, reissuing or clearing an existing card; first assignment to a client without a card does not require a reason.
+- Reject a backdated change whose `occurred_at` precedes the current assignment time so historical lifecycle constraints remain explainable.
+- Run canonical actor validation, idempotency replay, target-client lock, current-assignment lock, stale validation, current-card conflict check, history mutation, audit and idempotency persistence in one serializable PostgreSQL transaction.
+- Use PostgreSQL `FOR UPDATE` on the target client and current assignment rows, plus the existing partial unique indexes as the final cross-client and one-current-row concurrency guard.
+- End the previous assignment with complete event time, actor and reason metadata; create a new current source row when assigning/changing and preserve history when clearing.
+- Support explicit same-normalized-number reissue by ending the old row before inserting its replacement while keeping both writes inside the same transaction.
+- Write `card.assigned`, `card.changed` or `card.cleared` business audit with old/new assignment summaries, actor/session, reason/comment and related assignment ids.
+- Return the client as both primary entity and canonical reread target; Memberships recalculation is correctly not involved.
+- Register the command handler through the existing `IBodyLifeCommandHandler` convention and keep migrations, SearchClients, profile queries and all UI outside this step.
+
+Validation:
+
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --configuration Release --nologo` passed with 0 warnings/errors after the contract, shared envelope support and handler were added.
+- Focused AssignOrChangeCard PostgreSQL validation passed 11 tests covering all accepted and denied actor kinds, assign/change/clear history, all three audit events, same-number reissue, missing/invalid/stale/reason/occurred-at failures, occupied-card rollback including a conflict after the previous row was already ended inside the transaction, replay/key reuse, paper-fallback timestamps and both same-client and cross-client concurrency.
+- Focused CreateClient and UpdateClient regression validation passed all 17 tests after extracting common envelope validation/idempotency metadata.
+- Full PostgreSQL infrastructure validation passed with 91 tests and no skips.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal --no-restore` passed.
+- The first post-review full gate passed build/analyzers, 34 core, 35 web, 91 PostgreSQL and 5 of 6 Playwright tests, then hit the existing tablet `NetworkIdle` timeout after the event had fired; no Clients/Search UI code changed in this step.
+- Immediate focused Playwright rerun passed all 6 tests in 7 seconds.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 91 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because the command uses the existing client, historical/current card, audit and idempotency schema.
+- `graphify update .` completed the structural rebuild with 2713 nodes, 3947 edges and 451 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(clients): add card assignment command`.
+
+Next recommended step:
+
+- Implement the read-only PostgreSQL `SearchClients` query without UI or profile composition: exact current-card priority and unique auto-open target, bounded partial/ambiguous card results, normalized name/phone/last-four matching, inactive-client visibility, deterministic ordering and no business-audit writes.

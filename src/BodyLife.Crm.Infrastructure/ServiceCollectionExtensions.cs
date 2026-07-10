@@ -35,6 +35,9 @@ public static class ServiceCollectionExtensions
             FindClientDuplicateCandidatesQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<IBodyLifeCommandHandler<UpdateClientCommand>, UpdateClientCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<AssignOrChangeCardCommand>,
+            AssignOrChangeCardCommandHandler>();
         services.AddScoped<AccountLoginService>();
         services.AddScoped<AccountSessionValidationService>();
         services.AddScoped<OwnerCredentialsBootstrapper>();
