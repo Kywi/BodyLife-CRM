@@ -887,3 +887,37 @@ Commit:
 Next recommended step:
 
 - Add only the PostgreSQL schema foundation for `clients` and historical/current `client_card_assignments`, including normalized fields, constraints, partial unique indexes, migration review and PostgreSQL tests; defer duplicate-warning persistence, commands, search queries and UI.
+
+## Step 30 - Clients/Search PostgreSQL storage foundation
+
+Status: completed.
+
+Scope:
+
+- Add EF Core persistence records and mappings for `bodylife.clients` and historical/current `bodylife.client_card_assignments` inside the owning Clients/Search infrastructure folder.
+- Persist raw identity values separately from the normalized full-name, phone and card values defined by the Step 29 normalization contract.
+- Allow a client to exist without a phone or card while requiring a complete, internally consistent normalized phone tuple whenever a phone is present.
+- Preserve card assignment history with explicit assignment/end actor and timestamp metadata; require complete end metadata for every historical assignment.
+- Enforce one current card per client and one current client per normalized card number with PostgreSQL partial unique indexes.
+- Add search-supporting indexes for normalized full name, normalized phone, phone last four and card history.
+- Add migration `20260710111409_AddClientsSearchStorage` and review its idempotent PostgreSQL SQL.
+- Add PostgreSQL tests for schema objects, optional phone/card behavior, phone tuple constraints, current-card uniqueness, historical reassignment, lifecycle metadata and concurrent assignment conflict.
+- Keep duplicate-warning acknowledgement persistence, commands, search queries, audit workflows and UI outside this step.
+
+Validation:
+
+- The first migration generation used stale `--no-build` startup output and produced an empty migration; it was removed with EF tooling and regenerated only after rebuilding the current model.
+- Migration review found PostgreSQL `CHECK` null semantics could admit incomplete phone or card-end metadata; the checks were made explicitly null-safe before the final migration was generated.
+- Focused `DOTNET_ROOT=/tmp/bodylife-dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo` passed with 52 PostgreSQL infrastructure tests.
+- Idempotent migration SQL from `20260710093311_AddSessionExpiry` to `20260710111409_AddClientsSearchStorage` was reviewed and contains only the expected two tables, null-safe checks, restrictive foreign keys, search/history indexes and both current-card partial unique indexes.
+- Final `DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 52 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710111409_AddClientsSearchStorage`.
+- The structural Graphify rebuild completed with 2439 nodes and 3060 edges.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `feat(clients): add identity storage foundation`.
+
+Next recommended step:
+
+- Add the optional `duplicate_warning_acknowledgements` PostgreSQL persistence and focused constraint tests needed for the later atomic CreateClient/UpdateClient warning-override workflow; continue to defer commands, search queries and UI.
