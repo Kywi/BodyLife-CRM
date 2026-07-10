@@ -5,23 +5,21 @@ using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Modules.Clients.Search;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 
-public sealed class CreateClientCommandHandler(
+public sealed class UpdateClientCommandHandler(
     BodyLifeDbContext dbContext,
     IBodyLifeQueryHandler<FindClientDuplicateCandidatesQuery, IReadOnlyList<ClientDuplicateCandidate>>
         duplicateCandidateQueryHandler,
     BusinessAuditAppender auditAppender,
     TimeProvider timeProvider)
-    : IBodyLifeCommandHandler<CreateClientCommand>
+    : IBodyLifeCommandHandler<UpdateClientCommand>
 {
-    private const string CommandName = "CreateClient";
-    private const string CurrentCardUniqueConstraint = "ux_client_card_assignments_current_card";
+    private const string CommandName = "UpdateClient";
 
     public async Task<CommandResult> ExecuteAsync(
-        CreateClientCommand command,
+        UpdateClientCommand command,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -32,6 +30,18 @@ public sealed class CreateClientCommandHandler(
             return ClientCommandSupport.Error(
                 CommandErrorCode.PermissionDenied,
                 "An active Owner, named Admin or shared Reception/Admin session is required.");
+        }
+
+        if (command.ClientId == Guid.Empty)
+        {
+            return ClientCommandSupport.ValidationError("Client id is required.", "clientId");
+        }
+
+        if (command.ExpectedUpdatedAt == default)
+        {
+            return ClientCommandSupport.ValidationError(
+                "Expected updated_at is required.",
+                "expectedUpdatedAt");
         }
 
         var validationResult = ClientCommandSupport.ValidateAndNormalizeIdentity(
@@ -50,27 +60,14 @@ public sealed class CreateClientCommandHandler(
             return validationResult;
         }
 
-        string? cardNumberRaw;
-        string? cardNumberNormalized;
-
-        try
-        {
-            cardNumberRaw = ClientCommandSupport.NormalizeOptional(command.CardNumber);
-            cardNumberNormalized = cardNumberRaw is null
-                ? null
-                : ClientSearchNormalizer.NormalizeCardNumber(cardNumberRaw);
-        }
-        catch (ArgumentException exception)
-        {
-            return ClientCommandSupport.ValidationError(exception.Message, exception.ParamName);
-        }
-
         var identity = normalizedIdentity!;
+        var expectedUpdatedAt = command.ExpectedUpdatedAt.ToUniversalTime();
         var recordedAt = timeProvider.GetUtcNow();
-        var fingerprint = ClientCommandSupport.CreateClientFingerprint(
+        var fingerprint = ClientCommandSupport.CreateUpdateClientFingerprint(
             command.Envelope,
             identity,
-            cardNumberNormalized);
+            command.ClientId,
+            expectedUpdatedAt);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.Serializable,
             cancellationToken);
@@ -102,18 +99,23 @@ public sealed class CreateClientCommandHandler(
                     fingerprint);
             }
 
-            if (cardNumberNormalized is not null
-                && await dbContext.Set<ClientCardAssignmentRecord>()
-                    .AsNoTracking()
-                    .AnyAsync(
-                        assignment => assignment.IsCurrent
-                            && assignment.CardNumberNormalized == cardNumberNormalized,
-                        cancellationToken))
+            var client = await dbContext.Set<ClientRecord>()
+                .SingleOrDefaultAsync(record => record.Id == command.ClientId, cancellationToken);
+
+            if (client is null)
             {
                 return ClientCommandSupport.Error(
-                    CommandErrorCode.CardNumberAlreadyCurrent,
-                    "Card number is already assigned to a current client.",
-                    "cardNumber");
+                    CommandErrorCode.NotFound,
+                    "Client was not found.",
+                    "clientId");
+            }
+
+            if (client.UpdatedAt != expectedUpdatedAt)
+            {
+                return ClientCommandSupport.Error(
+                    CommandErrorCode.StaleState,
+                    "Client changed after the edit form was loaded. Refresh canonical state.",
+                    "expectedUpdatedAt");
             }
 
             var duplicateCandidates = await duplicateCandidateQueryHandler.ExecuteAsync(
@@ -121,7 +123,8 @@ public sealed class CreateClientCommandHandler(
                     identity.Surname,
                     identity.Name,
                     identity.Patronymic,
-                    identity.PhoneRaw),
+                    identity.PhoneRaw,
+                    ExcludedClientId: client.Id),
                 cancellationToken);
             var acknowledgementValidation = ClientCommandSupport.ValidateAcknowledgements(
                 duplicateCandidates,
@@ -132,51 +135,32 @@ public sealed class CreateClientCommandHandler(
                 return acknowledgementValidation;
             }
 
-            var clientId = Guid.NewGuid();
-            var client = new ClientRecord
-            {
-                Id = clientId,
-                Surname = identity.Surname,
-                Name = identity.Name,
-                Patronymic = identity.Patronymic,
-                NormalizedFullName = identity.NormalizedFullName,
-                PhoneRaw = identity.PhoneRaw,
-                PhoneNormalized = identity.PhoneNormalized,
-                PhoneLastFour = identity.PhoneLastFour,
-                Comment = identity.Comment,
-                OperationalStatus = identity.OperationalStatus,
-                CreatedAt = recordedAt,
-                CreatedByAccountId = command.Envelope.Actor.AccountId.Value,
-                UpdatedAt = recordedAt,
-            };
-            dbContext.Set<ClientRecord>().Add(client);
+            var before = ClientIdentitySnapshot.From(client);
+            var hasIdentityChanges = !before.Matches(identity);
 
-            var cardAssignment = cardNumberNormalized is null
-                ? null
-                : new ClientCardAssignmentRecord
-                {
-                    Id = Guid.NewGuid(),
-                    ClientId = clientId,
-                    CardNumberRaw = cardNumberRaw!,
-                    CardNumberNormalized = cardNumberNormalized,
-                    AssignedAt = command.Envelope.OccurredAt ?? recordedAt,
-                    AssignedByAccountId = command.Envelope.Actor.AccountId.Value,
-                    EndedAt = null,
-                    EndedByAccountId = null,
-                    EndReason = null,
-                    IsCurrent = true,
-                };
-
-            if (cardAssignment is not null)
+            if (!hasIdentityChanges && identity.Acknowledgements.Count == 0)
             {
-                dbContext.Set<ClientCardAssignmentRecord>().Add(cardAssignment);
+                return ClientCommandSupport.ValidationError(
+                    "At least one client field must change.",
+                    field: null);
             }
+
+            client.Surname = identity.Surname;
+            client.Name = identity.Name;
+            client.Patronymic = identity.Patronymic;
+            client.NormalizedFullName = identity.NormalizedFullName;
+            client.PhoneRaw = identity.PhoneRaw;
+            client.PhoneNormalized = identity.PhoneNormalized;
+            client.PhoneLastFour = identity.PhoneLastFour;
+            client.Comment = identity.Comment;
+            client.OperationalStatus = identity.OperationalStatus;
+            client.UpdatedAt = NextUpdatedAt(client.UpdatedAt, recordedAt);
 
             var acknowledgementRecords = identity.Acknowledgements
                 .Select(acknowledgement => new DuplicateWarningAcknowledgementRecord
                 {
                     Id = Guid.NewGuid(),
-                    ClientId = clientId,
+                    ClientId = client.Id,
                     WarningType = ClientCommandSupport.MapWarningType(acknowledgement.WarningType),
                     MatchedClientId = acknowledgement.MatchedClientId,
                     AcknowledgedByAccountId = command.Envelope.Actor.AccountId.Value,
@@ -188,13 +172,12 @@ public sealed class CreateClientCommandHandler(
 
             var auditEntryId = auditAppender.Append(
                 command.Envelope,
-                ClientAuditActions.Created,
+                ClientAuditActions.Updated,
                 ClientAuditActions.EntityType,
-                clientId,
+                client.Id,
                 recordedAt,
                 relatedEntityRefs: new
                 {
-                    CardAssignmentId = cardAssignment?.Id,
                     DuplicateWarningAcknowledgementIds = acknowledgementRecords
                         .Select(record => record.Id)
                         .ToArray(),
@@ -203,6 +186,7 @@ public sealed class CreateClientCommandHandler(
                         .Distinct()
                         .ToArray(),
                 },
+                beforeSummary: before,
                 afterSummary: new
                 {
                     client.Surname,
@@ -211,7 +195,7 @@ public sealed class CreateClientCommandHandler(
                     Phone = client.PhoneRaw,
                     client.OperationalStatus,
                     client.Comment,
-                    CardNumber = cardAssignment?.CardNumberRaw,
+                    client.UpdatedAt,
                     DuplicateWarningAcknowledgements = acknowledgementRecords.Select(record => new
                     {
                         record.WarningType,
@@ -226,21 +210,23 @@ public sealed class CreateClientCommandHandler(
                     command.Envelope,
                     identity,
                     recordedAt,
-                    clientId,
+                    client.Id,
                     auditEntryId,
                     fingerprint));
 
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            return ClientCommandSupport.Success(clientId, auditEntryId);
+            return ClientCommandSupport.Success(client.Id, auditEntryId);
         }
         catch (Exception exception)
         {
             var postgresException = ClientCommandSupport.FindPostgresException(exception);
 
             if (postgresException is null
-                || !TryMapPostgresFailure(postgresException, out var errorResult))
+                || !ClientCommandSupport.TryMapCommonPostgresFailure(
+                    postgresException,
+                    out var errorResult))
             {
                 throw;
             }
@@ -250,20 +236,44 @@ public sealed class CreateClientCommandHandler(
         }
     }
 
-    private static bool TryMapPostgresFailure(
-        PostgresException exception,
-        out CommandResult result)
+    private static DateTimeOffset NextUpdatedAt(
+        DateTimeOffset previousUpdatedAt,
+        DateTimeOffset recordedAt)
     {
-        if (exception.SqlState == PostgresErrorCodes.UniqueViolation
-            && exception.ConstraintName == CurrentCardUniqueConstraint)
+        return recordedAt > previousUpdatedAt
+            ? recordedAt
+            : previousUpdatedAt.AddTicks(10);
+    }
+
+    private sealed record ClientIdentitySnapshot(
+        string Surname,
+        string Name,
+        string? Patronymic,
+        string? Phone,
+        string OperationalStatus,
+        string? Comment,
+        DateTimeOffset UpdatedAt)
+    {
+        internal static ClientIdentitySnapshot From(ClientRecord client)
         {
-            result = ClientCommandSupport.Error(
-                CommandErrorCode.CardNumberAlreadyCurrent,
-                "Card number became current for another client. Refresh and try again.",
-                "cardNumber");
-            return true;
+            return new ClientIdentitySnapshot(
+                client.Surname,
+                client.Name,
+                client.Patronymic,
+                client.PhoneRaw,
+                client.OperationalStatus,
+                client.Comment,
+                client.UpdatedAt);
         }
 
-        return ClientCommandSupport.TryMapCommonPostgresFailure(exception, out result);
+        internal bool Matches(NormalizedClientIdentity identity)
+        {
+            return Surname == identity.Surname
+                && Name == identity.Name
+                && Patronymic == identity.Patronymic
+                && Phone == identity.PhoneRaw
+                && OperationalStatus == identity.OperationalStatus
+                && Comment == identity.Comment;
+        }
     }
 }

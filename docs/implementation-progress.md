@@ -1029,3 +1029,45 @@ Commit:
 Next recommended step:
 
 - Implement the server-side UpdateClient command without UI or card mutation: expected `updated_at` stale-state guard, canonical normalization, duplicate-warning acknowledgement validation/persistence, authorization, idempotency, one transaction, `client.updated` before/after audit and client reread target.
+
+## Step 34 - UpdateClient command workflow
+
+Status: completed.
+
+Scope:
+
+- Add the typed `UpdateClientCommand` contract inside the owning Clients/Search module with client id, expected `updated_at`, editable identity/contact/status fields and duplicate-warning acknowledgement inputs.
+- Keep current-card assignment outside this command so profile edits cannot silently assign, replace or clear a card.
+- Enforce Owner, named Admin and shared Reception/Admin actor shapes plus canonical active account/session checks before mutation.
+- Require a non-empty client id, expected `updated_at`, idempotency key and valid canonical identity input.
+- Compare the caller's expected `updated_at` with canonical PostgreSQL state and return `stale_state` before any mutation when the profile changed after form load.
+- Normalize name and optional phone through `ClientSearchNormalizer`, preserve trimmed raw display values and support active/inactive operational status changes.
+- Exclude the edited client from duplicate detection, require the exact current phone/name warning acknowledgement set and persist accepted acknowledgement reasons.
+- Reject a no-op update unless it records valid duplicate-warning acknowledgements.
+- Run canonical actor validation, idempotency replay, client load, stale guard, duplicate checks, profile update, acknowledgement persistence, audit and idempotency persistence in one serializable PostgreSQL transaction.
+- Write one `client.updated` business audit entry with before/after identity summaries, actor/session context and related acknowledgement/matched-client ids.
+- Return the updated client as both primary entity and canonical reread target; Memberships recalculation is correctly not involved.
+- Preserve an existing current card byte-for-byte and map nested PostgreSQL serialization/deadlock failures to the stable concurrency command error.
+- Extract the shared, already-proven client command validation, normalization, authorization, idempotency, conflict mapping and result helpers from `CreateClientCommandHandler` into internal Clients/Search infrastructure support.
+- Register the UpdateClient handler through the existing `IBodyLifeCommandHandler` convention and keep UI work outside this step.
+
+Validation:
+
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --configuration Release --nologo` passed with 0 warnings/errors after adding the command contract and handler.
+- The first connected focused PostgreSQL run passed 7 of 8 tests; the only failure showed that local `067...` and international `+38...` inputs are deliberately different under the accepted no-country-code-inference normalization contract. The duplicate test fixture was corrected without changing product behavior.
+- Focused UpdateClient PostgreSQL validation then passed 8 tests covering accepted and denied actors, normalization/status update, unchanged current card, missing/stale/no-op failures, exact duplicate acknowledgements with self-exclusion, input validation, idempotent replay/key reuse and concurrent editing.
+- Focused CreateClient regression validation passed all 9 tests after extracting shared client command support.
+- Full PostgreSQL infrastructure validation passed with 80 tests and no skips.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal --no-restore` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 80 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because the command uses the existing client, acknowledgement, audit and idempotency schema.
+- `graphify update .` completed the structural rebuild with 2654 nodes, 3703 edges and 450 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(clients): add update client command`.
+
+Next recommended step:
+
+- Implement the server-side `AssignOrChangeCard` command without UI: lock the target client/current assignment, normalize and validate the requested card, require a reason when replacing or clearing, preserve assignment history, enforce current-card uniqueness under concurrency, add idempotency and `client.card_assigned`/`client.card_changed`/`client.card_cleared` audit, and return the client reread target.
