@@ -260,9 +260,9 @@
     "semantic_hash": "9d0d83d267c01a6754094b2ea41105ae"
   },
   "docs/data-architecture.md": {
-    "mtime": 1783676318.304454,
-    "ast_hash": "11bfda880bd343a2201630dd9c70bdf9",
-    "semantic_hash": "11bfda880bd343a2201630dd9c70bdf9"
+    "mtime": 1783680526.3388426,
+    "ast_hash": "9f55c8a9cdf25b7cea3e106ea1e82321",
+    "semantic_hash": ""
   },
   "docs/domain-model.md": {
     "mtime": 1783436120.5103333,
@@ -800,9 +800,9 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783677756.3164845,
-    "ast_hash": "1df086b6745e7597ad332e643087ca6b",
-    "semantic_hash": "1df086b6745e7597ad332e643087ca6b"
+    "mtime": 1783680733.6052892,
+    "ast_hash": "ab4dad8fdf5bb8f268988270d8b62edc",
+    "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
     "mtime": 1783617341.9756112,
@@ -1243,5 +1243,20 @@
     "mtime": 1783676445.1202986,
     "ast_hash": "686d8ba91b895ee5be1c38d242bc0b2f",
     "semantic_hash": "686d8ba91b895ee5be1c38d242bc0b2f"
+  },
+  "src/BodyLife.Crm/Modules/Clients/Search/ClientSearchNormalizer.cs": {
+    "mtime": 1783680526.3348422,
+    "ast_hash": "3b2dd868cb9ee98d5db99588c09d76e0",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/Clients/Search/ClientSearchNormalizerTests.cs": {
+    "mtime": 1783680526.3388426,
+    "ast_hash": "dfc7dd5a374b340cbfc60ce067cb301f",
+    "semantic_hash": ""
+  },
+  "docs/client-search-normalization.md": {
+    "mtime": 1783680526.3388426,
+    "ast_hash": "3ebaf03323bdc370a79afa97ff963906",
+    "semantic_hash": ""
   }
 }

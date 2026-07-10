@@ -434,5 +434,19 @@
   "432": "Future Command Obligations",
   "433": "Milestone 2 Acceptance Decision",
   "434": "Not a Production Readiness Claim",
-  "435": "Milestone 2 Source of Truth Citations"
+  "435": "Milestone 2 Source of Truth Citations",
+  "436": "PageModel",
+  "437": "ClientCardAssignmentRecord",
+  "438": "StaffAccountLifecycleResult",
+  "439": "CommandIdempotencyRecord",
+  "440": "QueryPermissionResultTests",
+  "441": "BusinessAuditEntryRecord",
+  "442": "SessionRecord",
+  "443": ".CountOwnerAccountsAsync",
+  "444": "BodyLifeDbContextOptions",
+  "445": "AddClientsSearchStorage",
+  "446": "20260710111409_AddClientsSearchStorage.Designer.cs",
+  "447": "PostgreSqlFactAttribute.cs",
+  "448": "StaffAccountAuditActions.cs",
+  "449": "BodyLifeRequestContextServiceCollectionExtensions"
 }
