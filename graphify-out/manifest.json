@@ -262,7 +262,7 @@
   "docs/data-architecture.md": {
     "mtime": 1783676318.304454,
     "ast_hash": "11bfda880bd343a2201630dd9c70bdf9",
-    "semantic_hash": ""
+    "semantic_hash": "11bfda880bd343a2201630dd9c70bdf9"
   },
   "docs/domain-model.md": {
     "mtime": 1783436120.5103333,
@@ -467,12 +467,12 @@
   "src/BodyLife.Crm.Web/Pages/Shared/_Layout.cshtml": {
     "mtime": 1783630563.9893422,
     "ast_hash": "e9e77961e95e7610150b269c03f3ec13",
-    "semantic_hash": ""
+    "semantic_hash": "e9e77961e95e7610150b269c03f3ec13"
   },
   "src/BodyLife.Crm.Web/Pages/_ViewImports.cshtml": {
     "mtime": 1783617249.534514,
     "ast_hash": "dc02db5855f44f642f8bb38709496903",
-    "semantic_hash": ""
+    "semantic_hash": "dc02db5855f44f642f8bb38709496903"
   },
   "src/BodyLife.Crm.Web/Pages/_ViewStart.cshtml": {
     "mtime": 1783507971.9206033,
@@ -512,7 +512,7 @@
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
     "mtime": 1783675945.8592193,
     "ast_hash": "6b66b6fb5be03bdd51e91caff67a0f25",
-    "semantic_hash": ""
+    "semantic_hash": "6b66b6fb5be03bdd51e91caff67a0f25"
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
     "mtime": 1783589989.9396646,
@@ -712,7 +712,7 @@
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
     "mtime": 1783676019.7168455,
     "ast_hash": "3a5fd26619c0712986d5e5f7984b5cc3",
-    "semantic_hash": ""
+    "semantic_hash": "3a5fd26619c0712986d5e5f7984b5cc3"
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
     "mtime": 1783520984.885367,
@@ -727,7 +727,7 @@
   "src/BodyLife.Crm.Web/Operations/RequestCorrelationMiddleware.cs": {
     "mtime": 1783614888.4914927,
     "ast_hash": "ce958a6e1c179309381501b27028adfb",
-    "semantic_hash": ""
+    "semantic_hash": "ce958a6e1c179309381501b27028adfb"
   },
   "src/BodyLife.Crm.Web/Operations/RequestOutcomeLoggingMiddleware.cs": {
     "mtime": 1783521093.4573553,
@@ -737,7 +737,7 @@
   "src/BodyLife.Crm.Web/Program.cs": {
     "mtime": 1783675956.4271557,
     "ast_hash": "351b34f3cc3d629e5c09751519c33244",
-    "semantic_hash": ""
+    "semantic_hash": "351b34f3cc3d629e5c09751519c33244"
   },
   "src/BodyLife.Crm.Web/appsettings.Development.json": {
     "mtime": 1783589989.9396646,
@@ -762,7 +762,7 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMigrationTests.cs": {
     "mtime": 1783676096.7587025,
     "ast_hash": "f36b631d040338589634bd028494785b",
-    "semantic_hash": ""
+    "semantic_hash": "f36b631d040338589634bd028494785b"
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs": {
     "mtime": 1783592540.5262074,
@@ -800,24 +800,24 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783676527.0317173,
-    "ast_hash": "508ed2710ed3f3f707217ebfdfa02a66",
-    "semantic_hash": ""
+    "mtime": 1783677756.3164845,
+    "ast_hash": "1df086b6745e7597ad332e643087ca6b",
+    "semantic_hash": "1df086b6745e7597ad332e643087ca6b"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
     "mtime": 1783617341.9756112,
     "ast_hash": "11f75986539fd0528aeff0caa711fd62",
-    "semantic_hash": ""
+    "semantic_hash": "11f75986539fd0528aeff0caa711fd62"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionAppFixture.cs": {
     "mtime": 1783676161.4687545,
     "ast_hash": "cabd8769edf30b2c3f51532aa48841a5",
-    "semantic_hash": ""
+    "semantic_hash": "cabd8769edf30b2c3f51532aa48841a5"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionDashboardSmokeTests.cs": {
     "mtime": 1783676161.4687545,
     "ast_hash": "9a4071a5703eba43e65ca70a303a7b05",
-    "semantic_hash": ""
+    "semantic_hash": "9a4071a5703eba43e65ca70a303a7b05"
   },
   "scripts/dev-postgres.sh": {
     "mtime": 1783589989.9396646,
@@ -887,17 +887,17 @@
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/SessionRecord.cs": {
     "mtime": 1783675945.8552191,
     "ast_hash": "581636ee89d1f61d45681ad824d0f75f",
-    "semantic_hash": ""
+    "semantic_hash": "581636ee89d1f61d45681ad824d0f75f"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/SessionRecordConfiguration.cs": {
     "mtime": 1783675945.8552191,
     "ast_hash": "302a04a828d48b34b4e6c96cfd1bcc8c",
-    "semantic_hash": ""
+    "semantic_hash": "302a04a828d48b34b4e6c96cfd1bcc8c"
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlUsersRolesStorageTests.cs": {
     "mtime": 1783676222.1103625,
     "ast_hash": "74560039ff976e71a3eee3ebda58fa37",
-    "semantic_hash": ""
+    "semantic_hash": "74560039ff976e71a3eee3ebda58fa37"
   },
   "scripts/bootstrap-owner.sh": {
     "mtime": 1783604045.4365487,
@@ -962,7 +962,7 @@
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/AccountLoginService.cs": {
     "mtime": 1783675945.8552191,
     "ast_hash": "7878cecf980d7412d7681d173cac5286",
-    "semantic_hash": ""
+    "semantic_hash": "7878cecf980d7412d7681d173cac5286"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/AccountLoginStatus.cs": {
     "mtime": 1783607681.0870533,
@@ -972,7 +972,7 @@
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/AccountSessionSnapshot.cs": {
     "mtime": 1783675945.8592193,
     "ast_hash": "2fa3a075e2b164a6ed2e3271564becd2",
-    "semantic_hash": ""
+    "semantic_hash": "2fa3a075e2b164a6ed2e3271564becd2"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/OwnerCredentialsBootstrapResult.cs": {
     "mtime": 1783607681.083053,
@@ -997,7 +997,7 @@
   "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationExtensions.cs": {
     "mtime": 1783625817.7670193,
     "ast_hash": "3cd31eb28c834bf8cd35b3f84cbb90c6",
-    "semantic_hash": ""
+    "semantic_hash": "3cd31eb28c834bf8cd35b3f84cbb90c6"
   },
   "src/BodyLife.Crm.Web/Operations/BodyLifeAuthorizationPolicies.cs": {
     "mtime": 1783609105.655723,
@@ -1022,7 +1022,7 @@
   "src/BodyLife.Crm.Web/Pages/Login.cshtml.cs": {
     "mtime": 1783675945.8632195,
     "ast_hash": "168c09192f7c141cd5e962e94965e6d2",
-    "semantic_hash": ""
+    "semantic_hash": "168c09192f7c141cd5e962e94965e6d2"
   },
   "src/BodyLife.Crm.Web/Pages/Logout.cshtml": {
     "mtime": 1783607737.251283,
@@ -1032,17 +1032,17 @@
   "src/BodyLife.Crm.Web/Pages/Logout.cshtml.cs": {
     "mtime": 1783625830.4483287,
     "ast_hash": "ad403519a898802cf0dc444b060a91bc",
-    "semantic_hash": ""
+    "semantic_hash": "ad403519a898802cf0dc444b060a91bc"
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAccountLoginTests.cs": {
     "mtime": 1783676096.7547023,
     "ast_hash": "b7089c5454d0a1f24c75bcaf7f4f3ca2",
-    "semantic_hash": ""
+    "semantic_hash": "b7089c5454d0a1f24c75bcaf7f4f3ca2"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/PostgreSqlSmokeDatabase.cs": {
     "mtime": 1783676161.4687545,
     "ast_hash": "42475ed56bf9821224de51e8995900b2",
-    "semantic_hash": ""
+    "semantic_hash": "42475ed56bf9821224de51e8995900b2"
   },
   "tests/BodyLife.Crm.Web.Tests/BodyLife.Crm.Web.Tests.csproj": {
     "mtime": 1783609172.5775094,
@@ -1052,12 +1052,12 @@
   "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthorizationPolicyTests.cs": {
     "mtime": 1783614929.8485787,
     "ast_hash": "4dbd7bcca93facf6e2d16e8dc1b6b676",
-    "semantic_hash": ""
+    "semantic_hash": "4dbd7bcca93facf6e2d16e8dc1b6b676"
   },
   "docs/login-session.md": {
     "mtime": 1783676318.304454,
     "ast_hash": "6f5766087e8eedd9b22f7ea9d536a1b3",
-    "semantic_hash": ""
+    "semantic_hash": "6f5766087e8eedd9b22f7ea9d536a1b3"
   },
   "docs/ui-design-foundation.md": {
     "mtime": 1783608505.1459713,
@@ -1067,181 +1067,181 @@
   "src/BodyLife.Crm.Web/Operations/BodyLifeRequestContextResolver.cs": {
     "mtime": 1783622119.7945518,
     "ast_hash": "3cb17c12dbaf9df7dcf1461d51b69192",
-    "semantic_hash": ""
+    "semantic_hash": "3cb17c12dbaf9df7dcf1461d51b69192"
   },
   "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeRequestContextResolverTests.cs": {
     "mtime": 1783614929.8485787,
     "ast_hash": "581aa007acb0cd553a4fe64fe677975a",
-    "semantic_hash": ""
+    "semantic_hash": "581aa007acb0cd553a4fe64fe677975a"
   },
   "src/BodyLife.Crm.Web/Pages/Shared/_CurrentSession.cshtml": {
     "mtime": 1783630563.9893422,
     "ast_hash": "f6c92048e313ab539b60f6b3c85f0110",
-    "semantic_hash": ""
+    "semantic_hash": "f6c92048e313ab539b60f6b3c85f0110"
   },
   "src/BodyLife.Crm.Web/Operations/QueryPermissionResolver.cs": {
     "mtime": 1783622119.7945518,
     "ast_hash": "caebdec6a40c2c63830cd1067837f48a",
-    "semantic_hash": ""
+    "semantic_hash": "caebdec6a40c2c63830cd1067837f48a"
   },
   "src/BodyLife.Crm/Application/Queries/QueryPermissionDeniedReasonCodes.cs": {
     "mtime": 1783622119.7945518,
     "ast_hash": "f5600d36fe24f2b6e6bda6479eedb306",
-    "semantic_hash": ""
+    "semantic_hash": "f5600d36fe24f2b6e6bda6479eedb306"
   },
   "src/BodyLife.Crm/Application/Queries/QueryPermissionResult.cs": {
     "mtime": 1783622119.790551,
     "ast_hash": "690bb5ced58c5fbf388bf00b575e794e",
-    "semantic_hash": ""
+    "semantic_hash": "690bb5ced58c5fbf388bf00b575e794e"
   },
   "src/BodyLife.Crm/Application/Queries/QueryPermissionSet.cs": {
     "mtime": 1783622119.790551,
     "ast_hash": "02e906349dc3d3309ba41bd2a8311c93",
-    "semantic_hash": ""
+    "semantic_hash": "02e906349dc3d3309ba41bd2a8311c93"
   },
   "tests/BodyLife.Crm.Tests/Application/QueryPermissionResultTests.cs": {
     "mtime": 1783622161.0163195,
     "ast_hash": "e8d5261d2d3247912332ffc51073046e",
-    "semantic_hash": ""
+    "semantic_hash": "e8d5261d2d3247912332ffc51073046e"
   },
   "tests/BodyLife.Crm.Web.Tests/Operations/QueryPermissionResolverTests.cs": {
     "mtime": 1783622161.0163195,
     "ast_hash": "ce03bf58beb5cb814f07035aaf80356d",
-    "semantic_hash": ""
+    "semantic_hash": "ce03bf58beb5cb814f07035aaf80356d"
   },
   "src/BodyLife.Crm.Web/Operations/BodyLifeAuthTechnicalLogger.cs": {
     "mtime": 1783675945.8632195,
     "ast_hash": "7892994e91a38cb413afd1b9ad1e353f",
-    "semantic_hash": ""
+    "semantic_hash": "7892994e91a38cb413afd1b9ad1e353f"
   },
   "tests/BodyLife.Crm.Web.Tests/Operations/BodyLifeAuthTechnicalLoggerTests.cs": {
     "mtime": 1783676161.4647543,
     "ast_hash": "697b653146d4bb05321fdae2a32e52ae",
-    "semantic_hash": ""
+    "semantic_hash": "697b653146d4bb05321fdae2a32e52ae"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffAccountLifecycleService.cs": {
     "mtime": 1783630408.6943364,
     "ast_hash": "2eb0253e8c74a1676db7affab4061f7e",
-    "semantic_hash": ""
+    "semantic_hash": "2eb0253e8c74a1676db7affab4061f7e"
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffAccountLifecycleTests.cs": {
     "mtime": 1783676096.7547023,
     "ast_hash": "5802cda931c04eaaaaf86da846674f95",
-    "semantic_hash": ""
+    "semantic_hash": "5802cda931c04eaaaaf86da846674f95"
   },
   "docs/milestone-2-acceptance-review.md": {
-    "mtime": 1783631080.3843746,
-    "ast_hash": "30b9ae9fc43f74ddb207b23ff5a27f85",
-    "semantic_hash": ""
+    "mtime": 1783677647.3059843,
+    "ast_hash": "72e4e3c207d0a181fd0fbf9f61ea3578",
+    "semantic_hash": "72e4e3c207d0a181fd0fbf9f61ea3578"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffCredentialsService.cs": {
     "mtime": 1783630408.6983368,
     "ast_hash": "4f9a3f8edf8c9e10fc6222e86114e96b",
-    "semantic_hash": ""
+    "semantic_hash": "4f9a3f8edf8c9e10fc6222e86114e96b"
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffCredentialsTests.cs": {
     "mtime": 1783630725.0290737,
     "ast_hash": "9d44e6f40554ccbb06c06d14593b86a6",
-    "semantic_hash": ""
+    "semantic_hash": "9d44e6f40554ccbb06c06d14593b86a6"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Audit/BusinessAuditAppender.cs": {
     "mtime": 1783629601.5274813,
     "ast_hash": "ea71224f5b4e2a9019b49603556474df",
-    "semantic_hash": ""
+    "semantic_hash": "ea71224f5b4e2a9019b49603556474df"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Audit/BusinessAuditEntryRecord.cs": {
     "mtime": 1783629601.5274813,
     "ast_hash": "56d35073a973184a441c5ade604ecfba",
-    "semantic_hash": ""
+    "semantic_hash": "56d35073a973184a441c5ade604ecfba"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Audit/BusinessAuditEntryRecordConfiguration.cs": {
     "mtime": 1783629601.5274813,
     "ast_hash": "90ed8d652b7bfb529ced927eb59149e3",
-    "semantic_hash": ""
+    "semantic_hash": "90ed8d652b7bfb529ced927eb59149e3"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709204232_AddBusinessAuditEntries.Designer.cs": {
     "mtime": 1783630000.5863671,
     "ast_hash": "977bcf96f6d8129ec63f00fff6e8c5f5",
-    "semantic_hash": ""
+    "semantic_hash": "977bcf96f6d8129ec63f00fff6e8c5f5"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260709204232_AddBusinessAuditEntries.cs": {
     "mtime": 1783630000.5863671,
     "ast_hash": "5b90e40a2c7aad800e9a01fd13ca0f10",
-    "semantic_hash": ""
+    "semantic_hash": "5b90e40a2c7aad800e9a01fd13ca0f10"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffAccountAuditActions.cs": {
     "mtime": 1783629601.5274813,
     "ast_hash": "7dc36e7675c6b62944b9e9a5cbf39278",
-    "semantic_hash": ""
+    "semantic_hash": "7dc36e7675c6b62944b9e9a5cbf39278"
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffAccountAuditTests.cs": {
     "mtime": 1783630433.451904,
     "ast_hash": "db043807143e1fc34fb7fa30734dcbef",
-    "semantic_hash": ""
+    "semantic_hash": "db043807143e1fc34fb7fa30734dcbef"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/StaffAccountQueryService.cs": {
     "mtime": 1783675945.8592193,
     "ast_hash": "38be942bc6dc2c4568e29aac63dc78c5",
-    "semantic_hash": ""
+    "semantic_hash": "38be942bc6dc2c4568e29aac63dc78c5"
   },
   "src/BodyLife.Crm.Web/Pages/AccessDenied.cshtml": {
     "mtime": 1783630825.4151194,
     "ast_hash": "311167407626771279159faf755540ee",
-    "semantic_hash": ""
+    "semantic_hash": "311167407626771279159faf755540ee"
   },
   "src/BodyLife.Crm.Web/Pages/Owner/StaffAccounts.cshtml": {
     "mtime": 1783630702.3286872,
     "ast_hash": "afb2b5cc935f15d860e67b4235215cf1",
-    "semantic_hash": ""
+    "semantic_hash": "afb2b5cc935f15d860e67b4235215cf1"
   },
   "src/BodyLife.Crm.Web/Pages/Owner/StaffAccounts.cshtml.cs": {
     "mtime": 1783630547.0451398,
     "ast_hash": "163e4ee656c3d3f714800fee7dd6d7d7",
-    "semantic_hash": ""
+    "semantic_hash": "163e4ee656c3d3f714800fee7dd6d7d7"
   },
   "src/BodyLife.Crm.Web/wwwroot/js/site.js": {
     "mtime": 1783630563.9933424,
     "ast_hash": "123a5dd9bcbc5a09e39475b8877dc999",
-    "semantic_hash": ""
+    "semantic_hash": "123a5dd9bcbc5a09e39475b8877dc999"
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffAccountQueryTests.cs": {
     "mtime": 1783676096.7547023,
     "ast_hash": "6d3595cdff9c7d15fca7f1112c764992",
-    "semantic_hash": ""
+    "semantic_hash": "6d3595cdff9c7d15fca7f1112c764992"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/StaffAccountManagementSmokeTests.cs": {
     "mtime": 1783630927.516492,
     "ast_hash": "45b5f8a58d2b26b0d4e135db4ea5e2cc",
-    "semantic_hash": ""
+    "semantic_hash": "45b5f8a58d2b26b0d4e135db4ea5e2cc"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260710093311_AddSessionExpiry.Designer.cs": {
     "mtime": 1783676019.7168455,
     "ast_hash": "fb0cf7c722225e0843a29e85c6e3a24b",
-    "semantic_hash": ""
+    "semantic_hash": "fb0cf7c722225e0843a29e85c6e3a24b"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260710093311_AddSessionExpiry.cs": {
     "mtime": 1783676019.7168455,
     "ast_hash": "c08f35cb30bd7b77346731af5e3fe338",
-    "semantic_hash": ""
+    "semantic_hash": "c08f35cb30bd7b77346731af5e3fe338"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/AccountSessionPolicy.cs": {
     "mtime": 1783675945.851219,
     "ast_hash": "411b5cd9378b45d68da93de412389778",
-    "semantic_hash": ""
+    "semantic_hash": "411b5cd9378b45d68da93de412389778"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/UsersRoles/AccountSessionValidationService.cs": {
     "mtime": 1783676431.2926657,
     "ast_hash": "7f8f23ad73d52cde1568151a4c85b84e",
-    "semantic_hash": ""
+    "semantic_hash": "7f8f23ad73d52cde1568151a4c85b84e"
   },
   "src/BodyLife.Crm.Web/Operations/BodyLifeCookieAuthenticationEvents.cs": {
     "mtime": 1783675945.8592193,
     "ast_hash": "99228088232c21caebc38ff92ce31918",
-    "semantic_hash": ""
+    "semantic_hash": "99228088232c21caebc38ff92ce31918"
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAccountSessionValidationTests.cs": {
     "mtime": 1783676445.1202986,
     "ast_hash": "686d8ba91b895ee5be1c38d242bc0b2f",
-    "semantic_hash": ""
+    "semantic_hash": "686d8ba91b895ee5be1c38d242bc0b2f"
   }
 }
