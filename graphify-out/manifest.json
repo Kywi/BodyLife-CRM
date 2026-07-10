@@ -510,9 +510,9 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1783675945.8592193,
-    "ast_hash": "6b66b6fb5be03bdd51e91caff67a0f25",
-    "semantic_hash": "6b66b6fb5be03bdd51e91caff67a0f25"
+    "mtime": 1783685226.0500154,
+    "ast_hash": "c16bb6b13c7f60679be34ac20e2973d6",
+    "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
     "mtime": 1783589989.9396646,
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783683791.0931842,
-    "ast_hash": "984a4532281cc8b82a6324a1d5b3ed70",
+    "mtime": 1783685467.8149161,
+    "ast_hash": "009decbef7e8f8049cc9911a2618a074",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1255,8 +1255,8 @@
     "semantic_hash": ""
   },
   "docs/client-search-normalization.md": {
-    "mtime": 1783680526.3388426,
-    "ast_hash": "3ebaf03323bdc370a79afa97ff963906",
+    "mtime": 1783685192.6383703,
+    "ast_hash": "6e53cd2a2573e6c37208d6a5e26170f7",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/ClientCardAssignmentRecord.cs": {
@@ -1317,6 +1317,31 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlDuplicateWarningAcknowledgementStorageTests.cs": {
     "mtime": 1783683612.4072013,
     "ast_hash": "dc67f168e917aaed7da8c7768051886c",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/FindClientDuplicateCandidatesQueryHandler.cs": {
+    "mtime": 1783685226.0460153,
+    "ast_hash": "ff89268a9c1c1e7abd6b4143a99c1652",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Clients/Search/ClientDuplicateCandidate.cs": {
+    "mtime": 1783685192.6343699,
+    "ast_hash": "35ff06a2950f2d639227eb2da586c9aa",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Clients/Search/ClientDuplicateWarningType.cs": {
+    "mtime": 1783685192.6343699,
+    "ast_hash": "7dda25bf11507226130089230eea81a8",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Clients/Search/FindClientDuplicateCandidatesQuery.cs": {
+    "mtime": 1783685192.6383703,
+    "ast_hash": "61722d2b3998bff6bcbc52f51580604b",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlClientDuplicateCandidateQueryTests.cs": {
+    "mtime": 1783685350.5206532,
+    "ast_hash": "a14605e3d253b59ce1bcb299081da6e3",
     "semantic_hash": ""
   }
 }
