@@ -710,8 +710,8 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1783682069.7498672,
-    "ast_hash": "83771a1c8f7f7232b271980e2fb647a3",
+    "mtime": 1783683514.5447817,
+    "ast_hash": "c098784b11ba55b4c700f77c03cfee5a",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
@@ -760,8 +760,8 @@
     "semantic_hash": "c1e80fb1c415da335a5db4ff7f2a952b"
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMigrationTests.cs": {
-    "mtime": 1783682186.9755976,
-    "ast_hash": "2a2da379e7dbef978df0821a383ccee5",
+    "mtime": 1783683519.0410473,
+    "ast_hash": "e91d60e751dec06f5bff18212921a734",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783682361.19603,
-    "ast_hash": "23ace19fbe6ead3242c4ec3b654c7cf2",
+    "mtime": 1783683791.0931842,
+    "ast_hash": "984a4532281cc8b82a6324a1d5b3ed70",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1292,6 +1292,31 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlClientsSearchStorageTests.cs": {
     "mtime": 1783682186.9755976,
     "ast_hash": "5ea990ec48320719a1126e0a21d6b72b",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/DuplicateWarningAcknowledgementRecord.cs": {
+    "mtime": 1783683475.141725,
+    "ast_hash": "8d766895d158b3966703bae06e0f68a9",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/DuplicateWarningAcknowledgementRecordConfiguration.cs": {
+    "mtime": 1783683688.1010954,
+    "ast_hash": "6abaeceaaeea3ed4ac25e787b3ccb2a4",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260710113814_AddDuplicateWarningAcknowledgements.Designer.cs": {
+    "mtime": 1783683514.5447817,
+    "ast_hash": "b795cecb07fff0fbe3f1f907c62c61f0",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260710113814_AddDuplicateWarningAcknowledgements.cs": {
+    "mtime": 1783683514.5447817,
+    "ast_hash": "0bf163c9ff19716de29985f9320525da",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlDuplicateWarningAcknowledgementStorageTests.cs": {
+    "mtime": 1783683612.4072013,
+    "ast_hash": "dc67f168e917aaed7da8c7768051886c",
     "semantic_hash": ""
   }
 }
