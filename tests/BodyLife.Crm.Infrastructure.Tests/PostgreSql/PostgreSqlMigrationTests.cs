@@ -30,6 +30,7 @@ public sealed class PostgreSqlMigrationTests
         Assert.Contains("20260709204232_AddBusinessAuditEntries", appliedMigrations);
         Assert.Contains("20260710093311_AddSessionExpiry", appliedMigrations);
         Assert.Contains("20260710111409_AddClientsSearchStorage", appliedMigrations);
+        Assert.Contains("20260710113814_AddDuplicateWarningAcknowledgements", appliedMigrations);
         Assert.True(schemaExists);
         Assert.Equal($"bodylife.{BodyLifeDbContextOptions.MigrationsHistoryTable}", historyTableName);
     }

@@ -921,3 +921,36 @@ Commit:
 Next recommended step:
 
 - Add the optional `duplicate_warning_acknowledgements` PostgreSQL persistence and focused constraint tests needed for the later atomic CreateClient/UpdateClient warning-override workflow; continue to defer commands, search queries and UI.
+
+## Step 31 - Duplicate warning acknowledgement storage
+
+Status: completed.
+
+Scope:
+
+- Add the optional `bodylife.duplicate_warning_acknowledgements` source-fact table required by the Milestone 3 CreateClient/UpdateClient transaction contract.
+- Persist the target client, matched client, warning type, acknowledging account, acknowledgement timestamp and required reason without duplicating business audit fields.
+- Restrict warning types to `duplicate_phone` and `similar_name`, require different target/matched clients and reject blank reasons at the PostgreSQL boundary.
+- Use restrictive foreign keys to both clients and the acknowledging account so acknowledgement history cannot be orphaned by deletes.
+- Add target-client and matched-client timeline indexes plus an acknowledging-account FK index; deliberately allow repeated acknowledgements for later update workflows.
+- Add migration `20260710113814_AddDuplicateWarningAcknowledgements` and review its idempotent PostgreSQL SQL.
+- Add PostgreSQL tests for schema objects, restrictive FKs, both warning types, repeated acknowledgements, unknown warning type, self-match, blank reason and matched-client deletion protection.
+- Keep duplicate candidate detection, CreateClient/UpdateClient commands, business audit composition, search queries and UI outside this step.
+
+Validation:
+
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --configuration Release --nologo` passed with 0 warnings/errors before migration generation.
+- Focused `DOTNET_ROOT=/tmp/bodylife-dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo` passed with 58 PostgreSQL infrastructure tests.
+- Idempotent migration SQL from `20260710111409_AddClientsSearchStorage` to `20260710113814_AddDuplicateWarningAcknowledgements` was reviewed and contains only the expected table, three null-safe checks, three restrictive foreign keys and three indexes.
+- The first full validation attempt stopped on formatter-only indentation findings in two composite index expressions; no build or test failed. The formatting was corrected and `dotnet format --verify-no-changes` then passed.
+- Final `DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 58 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- The structural Graphify rebuild completed with 2480 nodes and 3153 edges.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `feat(clients): persist duplicate warning acknowledgements`.
+
+Next recommended step:
+
+- Add a read-only PostgreSQL duplicate-candidate query contract for exact normalized phone and conservative normalized-name matches, including self-exclusion for future updates and focused tests; defer CreateClient/UpdateClient mutation, audit and UI to following steps.
