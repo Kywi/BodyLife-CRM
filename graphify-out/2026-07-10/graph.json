@@ -696,7 +696,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender",
-      "community": 441,
+      "community": 36,
       "norm_label": "businessauditappender.cs"
     },
     {
@@ -727,7 +727,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender_bodylife_crm_infrastructure_persistence_audit_businessauditappender",
-      "community": 447,
+      "community": 11,
       "norm_label": "businessauditappender"
     },
     {
@@ -737,7 +737,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "jsonserializeroptions",
-      "community": 447,
+      "community": 11,
       "norm_label": "jsonserializeroptions"
     },
     {
@@ -753,7 +753,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender_bodylife_crm_infrastructure_persistence_audit_businessauditappender_append",
-      "community": 447,
+      "community": 11,
       "norm_label": ".append()"
     },
     {
@@ -763,7 +763,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender_cs_guid",
-      "community": 447,
+      "community": 11,
       "norm_label": "guid"
     },
     {
@@ -773,7 +773,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender_cs_datetimeoffset",
-      "community": 447,
+      "community": 11,
       "norm_label": "datetimeoffset"
     },
     {
@@ -789,7 +789,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender_bodylife_crm_infrastructure_persistence_audit_businessauditappender_serializesummary",
-      "community": 447,
+      "community": 11,
       "norm_label": ".serializesummary()"
     },
     {
@@ -805,7 +805,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender_bodylife_crm_infrastructure_persistence_audit_businessauditappender_mapaccountkind",
-      "community": 447,
+      "community": 11,
       "norm_label": ".mapaccountkind()"
     },
     {
@@ -821,7 +821,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender_bodylife_crm_infrastructure_persistence_audit_businessauditappender_mapactorrole",
-      "community": 447,
+      "community": 11,
       "norm_label": ".mapactorrole()"
     },
     {
@@ -837,7 +837,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender_bodylife_crm_infrastructure_persistence_audit_businessauditappender_mapentryorigin",
-      "community": 447,
+      "community": 11,
       "norm_label": ".mapentryorigin()"
     },
     {
@@ -853,7 +853,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditappender_bodylife_crm_infrastructure_persistence_audit_businessauditappender_normalizeoptional",
-      "community": 447,
+      "community": 11,
       "norm_label": ".normalizeoptional()"
     },
     {
@@ -863,7 +863,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecord",
-      "community": 14,
+      "community": 158,
       "norm_label": "businessauditentryrecord.cs"
     },
     {
@@ -879,7 +879,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecord_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecord",
-      "community": 14,
+      "community": 158,
       "norm_label": "businessauditentryrecord"
     },
     {
@@ -889,7 +889,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecord_cs_guid",
-      "community": 14,
+      "community": 158,
       "norm_label": "guid"
     },
     {
@@ -899,7 +899,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecord_cs_datetimeoffset",
-      "community": 14,
+      "community": 158,
       "norm_label": "datetimeoffset"
     },
     {
@@ -909,7 +909,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecordconfiguration",
-      "community": 14,
+      "community": 158,
       "norm_label": "businessauditentryrecordconfiguration.cs"
     },
     {
@@ -925,7 +925,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecordconfiguration_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecordconfiguration",
-      "community": 14,
+      "community": 158,
       "norm_label": "businessauditentryrecordconfiguration"
     },
     {
@@ -951,7 +951,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecordconfiguration_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecordconfiguration_configure",
-      "community": 14,
+      "community": 158,
       "norm_label": ".configure()"
     },
     {
@@ -961,7 +961,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_audit_businessauditentryrecordconfiguration_cs_entitytypebuilder",
-      "community": 14,
+      "community": 158,
       "norm_label": "entitytypebuilder"
     },
     {
@@ -1340,7 +1340,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_assignorchangecardcommandhandler_bodylife_crm_infrastructure_persistence_clientssearch_cardassignmentsnapshot",
-      "community": 437,
+      "community": 449,
       "norm_label": "cardassignmentsnapshot"
     },
     {
@@ -1356,7 +1356,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_assignorchangecardcommandhandler_bodylife_crm_infrastructure_persistence_clientssearch_cardassignmentsnapshot_from",
-      "community": 437,
+      "community": 449,
       "norm_label": ".from()"
     },
     {
@@ -1366,7 +1366,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientauditactions",
-      "community": 463,
+      "community": 441,
       "norm_label": "clientauditactions.cs"
     },
     {
@@ -1382,7 +1382,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientauditactions_bodylife_crm_infrastructure_persistence_clientssearch_clientauditactions",
-      "community": 463,
+      "community": 441,
       "norm_label": "clientauditactions"
     },
     {
@@ -1392,7 +1392,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientauditactions_cs_string",
-      "community": 463,
+      "community": 441,
       "norm_label": "string"
     },
     {
@@ -1402,7 +1402,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecord",
-      "community": 437,
+      "community": 449,
       "norm_label": "clientcardassignmentrecord.cs"
     },
     {
@@ -1418,7 +1418,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecord_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecord",
-      "community": 437,
+      "community": 449,
       "norm_label": "clientcardassignmentrecord"
     },
     {
@@ -1428,7 +1428,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecord_cs_guid",
-      "community": 437,
+      "community": 449,
       "norm_label": "guid"
     },
     {
@@ -1438,7 +1438,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecord_cs_datetimeoffset",
-      "community": 437,
+      "community": 449,
       "norm_label": "datetimeoffset"
     },
     {
@@ -1464,7 +1464,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecordconfiguration_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecordconfiguration",
-      "community": 437,
+      "community": 449,
       "norm_label": "clientcardassignmentrecordconfiguration"
     },
     {
@@ -1480,7 +1480,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecordconfiguration_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecordconfiguration_configure",
-      "community": 437,
+      "community": 449,
       "norm_label": ".configure()"
     },
     {
@@ -1490,7 +1490,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcardassignmentrecordconfiguration_cs_entitytypebuilder",
-      "community": 437,
+      "community": 449,
       "norm_label": "entitytypebuilder"
     },
     {
@@ -1562,7 +1562,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_isallowedactorshape",
-      "community": 452,
+      "community": 4,
       "norm_label": ".isallowedactorshape()"
     },
     {
@@ -1578,7 +1578,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_iscanonicalactorauthorizedasync",
-      "community": 455,
+      "community": 53,
       "norm_label": ".iscanonicalactorauthorizedasync()"
     },
     {
@@ -1588,7 +1588,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_cs_bodylifedbcontext",
-      "community": 455,
+      "community": 53,
       "norm_label": "bodylifedbcontext"
     },
     {
@@ -1608,7 +1608,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_cs_cancellationtoken",
-      "community": 455,
+      "community": 53,
       "norm_label": "cancellationtoken"
     },
     {
@@ -1618,7 +1618,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_cs_task",
-      "community": 455,
+      "community": 53,
       "norm_label": "task"
     },
     {
@@ -1634,7 +1634,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_validateandnormalizeidentity",
-      "community": 450,
+      "community": 53,
       "norm_label": ".validateandnormalizeidentity()"
     },
     {
@@ -1644,7 +1644,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_cs_ireadonlylist",
-      "community": 450,
+      "community": 53,
       "norm_label": "ireadonlylist"
     },
     {
@@ -1660,7 +1660,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_validateandnormalizeenvelope",
-      "community": 450,
+      "community": 53,
       "norm_label": ".validateandnormalizeenvelope()"
     },
     {
@@ -1676,7 +1676,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_validateacknowledgements",
-      "community": 450,
+      "community": 53,
       "norm_label": ".validateacknowledgements()"
     },
     {
@@ -1750,7 +1750,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_findidempotencyasync",
-      "community": 455,
+      "community": 53,
       "norm_label": ".findidempotencyasync()"
     },
     {
@@ -1798,7 +1798,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_trymapcommonpostgresfailure",
-      "community": 458,
+      "community": 53,
       "norm_label": ".trymapcommonpostgresfailure()"
     },
     {
@@ -1808,7 +1808,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_cs_postgresexception",
-      "community": 458,
+      "community": 53,
       "norm_label": "postgresexception"
     },
     {
@@ -1824,7 +1824,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_findpostgresexception",
-      "community": 458,
+      "community": 53,
       "norm_label": ".findpostgresexception()"
     },
     {
@@ -1834,7 +1834,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_cs_exception",
-      "community": 458,
+      "community": 53,
       "norm_label": "exception"
     },
     {
@@ -1850,7 +1850,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_rollbackandclearasync",
-      "community": 455,
+      "community": 53,
       "norm_label": ".rollbackandclearasync()"
     },
     {
@@ -1860,7 +1860,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "idbcontexttransaction",
-      "community": 455,
+      "community": 53,
       "norm_label": "idbcontexttransaction"
     },
     {
@@ -1924,7 +1924,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_validationerror",
-      "community": 450,
+      "community": 53,
       "norm_label": ".validationerror()"
     },
     {
@@ -1956,7 +1956,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_mapoperationalstatus",
-      "community": 450,
+      "community": 53,
       "norm_label": ".mapoperationalstatus()"
     },
     {
@@ -2036,7 +2036,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_normalizedclientacknowledgement",
-      "community": 450,
+      "community": 53,
       "norm_label": "normalizedclientacknowledgement"
     },
     {
@@ -2052,7 +2052,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientcommandsupport_bodylife_crm_infrastructure_persistence_clientssearch_normalizedclientcommandenvelope",
-      "community": 450,
+      "community": 53,
       "norm_label": "normalizedclientcommandenvelope"
     },
     {
@@ -2108,7 +2108,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_clientrecordconfiguration",
-      "community": 441,
+      "community": 448,
       "norm_label": "clientrecordconfiguration.cs"
     },
     {
@@ -2176,7 +2176,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler",
-      "community": 4,
+      "community": 92,
       "norm_label": "createclientcommandhandler"
     },
     {
@@ -2186,7 +2186,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler_cs_string",
-      "community": 4,
+      "community": 92,
       "norm_label": "string"
     },
     {
@@ -2202,7 +2202,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler_executeasync",
-      "community": 4,
+      "community": 92,
       "norm_label": ".executeasync()"
     },
     {
@@ -2212,7 +2212,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler_cs_cancellationtoken",
-      "community": 4,
+      "community": 92,
       "norm_label": "cancellationtoken"
     },
     {
@@ -2222,7 +2222,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler_cs_task",
-      "community": 4,
+      "community": 92,
       "norm_label": "task"
     },
     {
@@ -2238,7 +2238,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler_trymappostgresfailure",
-      "community": 4,
+      "community": 92,
       "norm_label": ".trymappostgresfailure()"
     },
     {
@@ -2248,7 +2248,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_createclientcommandhandler_cs_postgresexception",
-      "community": 4,
+      "community": 92,
       "norm_label": "postgresexception"
     },
     {
@@ -2258,7 +2258,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecord",
-      "community": 14,
+      "community": 437,
       "norm_label": "duplicatewarningacknowledgementrecord.cs"
     },
     {
@@ -2274,7 +2274,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecord_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecord",
-      "community": 14,
+      "community": 437,
       "norm_label": "duplicatewarningacknowledgementrecord"
     },
     {
@@ -2284,7 +2284,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecord_cs_guid",
-      "community": 14,
+      "community": 437,
       "norm_label": "guid"
     },
     {
@@ -2294,7 +2294,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecord_cs_datetimeoffset",
-      "community": 14,
+      "community": 437,
       "norm_label": "datetimeoffset"
     },
     {
@@ -2304,7 +2304,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecordconfiguration",
-      "community": 441,
+      "community": 437,
       "norm_label": "duplicatewarningacknowledgementrecordconfiguration.cs"
     },
     {
@@ -2320,7 +2320,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecordconfiguration_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecordconfiguration",
-      "community": 14,
+      "community": 437,
       "norm_label": "duplicatewarningacknowledgementrecordconfiguration"
     },
     {
@@ -2336,7 +2336,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecordconfiguration_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecordconfiguration_configure",
-      "community": 14,
+      "community": 437,
       "norm_label": ".configure()"
     },
     {
@@ -2346,7 +2346,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_clientssearch_duplicatewarningacknowledgementrecordconfiguration_cs_entitytypebuilder",
-      "community": 14,
+      "community": 437,
       "norm_label": "entitytypebuilder"
     },
     {
@@ -2585,7 +2585,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
-      "community": 454,
+      "community": 53,
       "norm_label": "commandidempotencyrecord.cs"
     },
     {
@@ -2616,7 +2616,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord",
-      "community": 454,
+      "community": 53,
       "norm_label": "commandidempotencyrecord"
     },
     {
@@ -2626,7 +2626,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_guid",
-      "community": 454,
+      "community": 53,
       "norm_label": "guid"
     },
     {
@@ -2636,7 +2636,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecord_cs_datetimeoffset",
-      "community": 454,
+      "community": 53,
       "norm_label": "datetimeoffset"
     },
     {
@@ -2646,7 +2646,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
-      "community": 454,
+      "community": 14,
       "norm_label": "commandidempotencyrecordconfiguration.cs"
     },
     {
@@ -2662,7 +2662,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration",
-      "community": 454,
+      "community": 14,
       "norm_label": "commandidempotencyrecordconfiguration"
     },
     {
@@ -2678,7 +2678,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_configure",
-      "community": 454,
+      "community": 14,
       "norm_label": ".configure()"
     },
     {
@@ -2688,7 +2688,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_idempotency_commandidempotencyrecordconfiguration_cs_entitytypebuilder",
-      "community": 454,
+      "community": 14,
       "norm_label": "entitytypebuilder"
     },
     {
@@ -4144,7 +4144,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionpolicy",
-      "community": 464,
+      "community": 165,
       "norm_label": "accountsessionpolicy.cs"
     },
     {
@@ -4160,7 +4160,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionpolicy_bodylife_crm_infrastructure_persistence_usersroles_accountsessionpolicy",
-      "community": 464,
+      "community": 165,
       "norm_label": "accountsessionpolicy"
     },
     {
@@ -4170,7 +4170,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionpolicy_cs_timespan",
-      "community": 464,
+      "community": 165,
       "norm_label": "timespan"
     },
     {
@@ -4222,7 +4222,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice",
-      "community": 452,
+      "community": 4,
       "norm_label": "accountsessionvalidationservice"
     },
     {
@@ -4238,7 +4238,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_validateasync",
-      "community": 452,
+      "community": 4,
       "norm_label": ".validateasync()"
     },
     {
@@ -4248,7 +4248,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_cs_cancellationtoken",
-      "community": 452,
+      "community": 4,
       "norm_label": "cancellationtoken"
     },
     {
@@ -4258,7 +4258,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_cs_task",
-      "community": 452,
+      "community": 4,
       "norm_label": "task"
     },
     {
@@ -4274,7 +4274,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_claimsmatchaccount",
-      "community": 452,
+      "community": 4,
       "norm_label": ".claimsmatchaccount()"
     },
     {
@@ -4290,7 +4290,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_mapaccounttype",
-      "community": 452,
+      "community": 4,
       "norm_label": ".mapaccounttype()"
     },
     {
@@ -4306,7 +4306,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_bodylife_crm_infrastructure_persistence_usersroles_accountsessionvalidationservice_maprole",
-      "community": 452,
+      "community": 4,
       "norm_label": ".maprole()"
     },
     {
@@ -4999,7 +4999,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountauditactions",
-      "community": 465,
+      "community": 165,
       "norm_label": "staffaccountauditactions.cs"
     },
     {
@@ -5015,7 +5015,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountauditactions_bodylife_crm_infrastructure_persistence_usersroles_staffaccountauditactions",
-      "community": 465,
+      "community": 165,
       "norm_label": "staffaccountauditactions"
     },
     {
@@ -5025,7 +5025,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountauditactions_cs_string",
-      "community": 465,
+      "community": 165,
       "norm_label": "string"
     },
     {
@@ -5035,7 +5035,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice",
-      "community": 441,
+      "community": 36,
       "norm_label": "staffaccountlifecycleservice.cs"
     },
     {
@@ -5437,7 +5437,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecycleservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountlifecyclestatus",
-      "community": 441,
+      "community": 36,
       "norm_label": "staffaccountlifecyclestatus"
     },
     {
@@ -5463,7 +5463,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice",
-      "community": 451,
+      "community": 11,
       "norm_label": "staffaccountqueryservice"
     },
     {
@@ -5473,7 +5473,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_cs_string",
-      "community": 451,
+      "community": 11,
       "norm_label": "string"
     },
     {
@@ -5489,7 +5489,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_liststaffaccountsasync",
-      "community": 451,
+      "community": 11,
       "norm_label": ".liststaffaccountsasync()"
     },
     {
@@ -5499,7 +5499,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_cs_cancellationtoken",
-      "community": 451,
+      "community": 11,
       "norm_label": "cancellationtoken"
     },
     {
@@ -5509,7 +5509,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_cs_task",
-      "community": 451,
+      "community": 11,
       "norm_label": "task"
     },
     {
@@ -5519,7 +5519,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_cs_ireadonlylist",
-      "community": 451,
+      "community": 11,
       "norm_label": "ireadonlylist"
     },
     {
@@ -5535,7 +5535,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_mapaccountkind",
-      "community": 451,
+      "community": 11,
       "norm_label": ".mapaccountkind()"
     },
     {
@@ -5551,7 +5551,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffaccountqueryservice_bodylife_crm_infrastructure_persistence_usersroles_staffaccountsummary",
-      "community": 451,
+      "community": 11,
       "norm_label": "staffaccountsummary"
     },
     {
@@ -5561,7 +5561,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice",
-      "community": 441,
+      "community": 36,
       "norm_label": "staffcredentialsservice.cs"
     },
     {
@@ -5744,7 +5744,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_persistence_usersroles_staffcredentialsservice_bodylife_crm_infrastructure_persistence_usersroles_normalizedlogin",
-      "community": 441,
+      "community": 36,
       "norm_label": "normalizedlogin"
     },
     {
@@ -5914,7 +5914,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_infrastructure_servicecollectionextensions",
-      "community": 64,
+      "community": 441,
       "norm_label": "servicecollectionextensions.cs"
     },
     {
@@ -5929,7 +5929,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:997b1edef514343e",
-      "community": 64,
+      "community": 30,
       "norm_label": "bodylife.crm.infrastructure"
     },
     {
@@ -6877,7 +6877,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodylifeauthorizationpolicies",
-      "community": 456,
+      "community": 30,
       "norm_label": "bodylifeauthorizationpolicies.cs"
     },
     {
@@ -6893,7 +6893,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodylifeauthorizationpolicies_bodylife_crm_web_operations_bodylifeauthorizationpolicies",
-      "community": 456,
+      "community": 30,
       "norm_label": "bodylifeauthorizationpolicies"
     },
     {
@@ -6903,7 +6903,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodylifeauthorizationpolicies_cs_string",
-      "community": 456,
+      "community": 30,
       "norm_label": "string"
     },
     {
@@ -6919,7 +6919,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodylifeauthorizationpolicies_bodylife_crm_web_operations_bodylifeaccounttypes",
-      "community": 456,
+      "community": 30,
       "norm_label": "bodylifeaccounttypes"
     },
     {
@@ -6935,7 +6935,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodylifeauthorizationpolicies_bodylife_crm_web_operations_bodyliferoles",
-      "community": 456,
+      "community": 30,
       "norm_label": "bodyliferoles"
     },
     {
@@ -7069,7 +7069,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver",
-      "community": 30,
+      "community": 36,
       "norm_label": "bodyliferequestcontextresolver.cs"
     },
     {
@@ -7281,7 +7281,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodyliferequestcontextservicecollectionextensions",
-      "community": 30,
+      "community": 36,
       "norm_label": "bodyliferequestcontextservicecollectionextensions"
     },
     {
@@ -7297,7 +7297,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodyliferequestcontextservicecollectionextensions_addbodyliferequestcontext",
-      "community": 30,
+      "community": 36,
       "norm_label": ".addbodyliferequestcontext()"
     },
     {
@@ -7307,7 +7307,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_cs_iservicecollection",
-      "community": 30,
+      "community": 36,
       "norm_label": "iservicecollection"
     },
     {
@@ -7323,7 +7323,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader",
-      "community": 158,
+      "community": 4,
       "norm_label": "bodylifeclaimsprincipalreader"
     },
     {
@@ -7339,7 +7339,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader_tryreadactorcontext",
-      "community": 158,
+      "community": 4,
       "norm_label": ".tryreadactorcontext()"
     },
     {
@@ -7349,7 +7349,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_cs_claimsprincipal",
-      "community": 158,
+      "community": 4,
       "norm_label": "claimsprincipal"
     },
     {
@@ -7365,7 +7365,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader_tryreadguidclaim",
-      "community": 158,
+      "community": 4,
       "norm_label": ".tryreadguidclaim()"
     },
     {
@@ -7375,7 +7375,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_cs_guid",
-      "community": 158,
+      "community": 4,
       "norm_label": "guid"
     },
     {
@@ -7391,7 +7391,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader_tryreadrole",
-      "community": 158,
+      "community": 4,
       "norm_label": ".tryreadrole()"
     },
     {
@@ -7407,7 +7407,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader_tryreadaccountkind",
-      "community": 158,
+      "community": 4,
       "norm_label": ".tryreadaccountkind()"
     },
     {
@@ -7423,7 +7423,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader_tryreadsinglerecognizedvalue",
-      "community": 158,
+      "community": 4,
       "norm_label": ".tryreadsinglerecognizedvalue()"
     },
     {
@@ -7433,7 +7433,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_cs_func",
-      "community": 158,
+      "community": 4,
       "norm_label": "func"
     },
     {
@@ -7449,7 +7449,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader_isconsistent",
-      "community": 158,
+      "community": 4,
       "norm_label": ".isconsistent()"
     },
     {
@@ -7465,7 +7465,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader_readsingleclaimvalue",
-      "community": 158,
+      "community": 4,
       "norm_label": ".readsingleclaimvalue()"
     },
     {
@@ -7481,7 +7481,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_operations_bodyliferequestcontextresolver_bodylife_crm_web_operations_bodylifeclaimsprincipalreader_normalizedevicelabel",
-      "community": 158,
+      "community": 4,
       "norm_label": ".normalizedevicelabel()"
     },
     {
@@ -8426,7 +8426,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:4d4f4e66c98f84fe",
-      "community": 436,
+      "community": 30,
       "norm_label": "bodylife.crm.web.pages"
     },
     {
@@ -8498,7 +8498,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_login_cshtml",
-      "community": 436,
+      "community": 30,
       "norm_label": "login.cshtml.cs"
     },
     {
@@ -8606,7 +8606,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml",
-      "community": 436,
+      "community": 30,
       "norm_label": "logout.cshtml.cs"
     },
     {
@@ -8622,7 +8622,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_bodylife_crm_web_pages_logoutmodel",
-      "community": 436,
+      "community": 30,
       "norm_label": "logoutmodel"
     },
     {
@@ -8638,7 +8638,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_bodylife_crm_web_pages_logoutmodel_onpostasync",
-      "community": 436,
+      "community": 30,
       "norm_label": ".onpostasync()"
     },
     {
@@ -8648,7 +8648,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_cs_cancellationtoken",
-      "community": 436,
+      "community": 30,
       "norm_label": "cancellationtoken"
     },
     {
@@ -8658,7 +8658,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_cs_task",
-      "community": 436,
+      "community": 30,
       "norm_label": "task"
     },
     {
@@ -8668,7 +8668,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_logout_cshtml_cs_iactionresult",
-      "community": 436,
+      "community": 30,
       "norm_label": "iactionresult"
     },
     {
@@ -8729,7 +8729,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_bodylife_crm_web_pages_owner_staffaccountsmodel",
-      "community": 446,
+      "community": 11,
       "norm_label": "staffaccountsmodel"
     },
     {
@@ -8739,7 +8739,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_cs_ireadonlylist",
-      "community": 446,
+      "community": 11,
       "norm_label": "ireadonlylist"
     },
     {
@@ -8755,7 +8755,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_bodylife_crm_web_pages_owner_staffaccountsmodel_ongetasync",
-      "community": 446,
+      "community": 11,
       "norm_label": ".ongetasync()"
     },
     {
@@ -8765,7 +8765,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_cs_cancellationtoken",
-      "community": 446,
+      "community": 11,
       "norm_label": "cancellationtoken"
     },
     {
@@ -8775,7 +8775,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_cs_task",
-      "community": 446,
+      "community": 11,
       "norm_label": "task"
     },
     {
@@ -8791,7 +8791,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_bodylife_crm_web_pages_owner_staffaccountsmodel_onpostcreateasync",
-      "community": 446,
+      "community": 11,
       "norm_label": ".onpostcreateasync()"
     },
     {
@@ -8801,7 +8801,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_cs_iactionresult",
-      "community": 446,
+      "community": 11,
       "norm_label": "iactionresult"
     },
     {
@@ -8817,7 +8817,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_bodylife_crm_web_pages_owner_staffaccountsmodel_onpostupdatedisplaynameasync",
-      "community": 446,
+      "community": 11,
       "norm_label": ".onpostupdatedisplaynameasync()"
     },
     {
@@ -8827,7 +8827,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_cs_guid",
-      "community": 446,
+      "community": 11,
       "norm_label": "guid"
     },
     {
@@ -8843,7 +8843,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_bodylife_crm_web_pages_owner_staffaccountsmodel_onpostsetcredentialsasync",
-      "community": 446,
+      "community": 11,
       "norm_label": ".onpostsetcredentialsasync()"
     },
     {
@@ -8859,7 +8859,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_bodylife_crm_web_pages_owner_staffaccountsmodel_onpostsetactivestateasync",
-      "community": 446,
+      "community": 11,
       "norm_label": ".onpostsetactivestateasync()"
     },
     {
@@ -8875,7 +8875,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_bodylife_crm_web_pages_owner_staffaccountsmodel_accountkindlabel",
-      "community": 451,
+      "community": 11,
       "norm_label": ".accountkindlabel()"
     },
     {
@@ -8891,7 +8891,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_web_pages_owner_staffaccounts_cshtml_bodylife_crm_web_pages_owner_staffaccountsmodel_redirectwithresult",
-      "community": 446,
+      "community": 11,
       "norm_label": ".redirectwithresult()"
     },
     {
@@ -8901,7 +8901,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "redirecttopageresult",
-      "community": 446,
+      "community": 11,
       "norm_label": "redirecttopageresult"
     },
     {
@@ -9042,7 +9042,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_program",
-      "community": 64,
+      "community": 30,
       "norm_label": "program.cs"
     },
     {
@@ -9052,7 +9052,7 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "src_bodylife_crm_web_program_program",
-      "community": 64,
+      "community": 30,
       "norm_label": "program"
     },
     {
@@ -9207,7 +9207,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:ddb4a710de307e03",
-      "community": 441,
+      "community": 36,
       "norm_label": "bodylife.crm.application.commands"
     },
     {
@@ -9233,7 +9233,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commanderror",
-      "community": 453,
+      "community": 53,
       "norm_label": "commanderror.cs"
     },
     {
@@ -9249,7 +9249,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commanderror_bodylife_crm_application_commands_commanderror",
-      "community": 453,
+      "community": 53,
       "norm_label": "commanderror"
     },
     {
@@ -9259,7 +9259,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commanderrorcode",
-      "community": 18,
+      "community": 53,
       "norm_label": "commanderrorcode.cs"
     },
     {
@@ -9275,7 +9275,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commanderrorcode_bodylife_crm_application_commands_commanderrorcode",
-      "community": 18,
+      "community": 53,
       "norm_label": "commanderrorcode"
     },
     {
@@ -9301,7 +9301,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandresult_bodylife_crm_application_commands_commandresult",
-      "community": 450,
+      "community": 53,
       "norm_label": "commandresult"
     },
     {
@@ -9317,7 +9317,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandresult_bodylife_crm_application_commands_commandresult_success",
-      "community": 453,
+      "community": 53,
       "norm_label": ".success()"
     },
     {
@@ -9327,7 +9327,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandresult_cs_ireadonlylist",
-      "community": 453,
+      "community": 53,
       "norm_label": "ireadonlylist"
     },
     {
@@ -9343,7 +9343,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandresult_bodylife_crm_application_commands_commandresult_error",
-      "community": 453,
+      "community": 53,
       "norm_label": ".error()"
     },
     {
@@ -9353,7 +9353,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandstatus",
-      "community": 441,
+      "community": 36,
       "norm_label": "commandstatus.cs"
     },
     {
@@ -9369,7 +9369,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_commandstatus_bodylife_crm_application_commands_commandstatus",
-      "community": 441,
+      "community": 36,
       "norm_label": "commandstatus"
     },
     {
@@ -9379,7 +9379,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_entryorigin",
-      "community": 447,
+      "community": 2,
       "norm_label": "entryorigin.cs"
     },
     {
@@ -9395,7 +9395,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_entryorigin_bodylife_crm_application_commands_entryorigin",
-      "community": 447,
+      "community": 2,
       "norm_label": "entryorigin"
     },
     {
@@ -9463,7 +9463,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_bodylife_crm_application_commands_ibodylifecommandhandler_executeasync",
-      "community": 92,
+      "community": 53,
       "norm_label": ".executeasync()"
     },
     {
@@ -9473,7 +9473,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_cs_cancellationtoken",
-      "community": 92,
+      "community": 53,
       "norm_label": "cancellationtoken"
     },
     {
@@ -9483,7 +9483,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_commands_ibodylifecommandhandler_cs_task",
-      "community": 92,
+      "community": 53,
       "norm_label": "task"
     },
     {
@@ -9596,7 +9596,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_queries_querypermissiondeniedreasoncodes",
-      "community": 462,
+      "community": 441,
       "norm_label": "querypermissiondeniedreasoncodes.cs"
     },
     {
@@ -9612,7 +9612,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_application_queries_querypermissiondeniedreasoncodes_bodylife_crm_application_queries_querypermissiondeniedreasoncodes",
-      "community": 462,
+      "community": 441,
       "norm_label": "querypermissiondeniedreasoncodes"
     },
     {
@@ -9622,7 +9622,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_bodylife_crm_application_queries_querypermissiondeniedreasoncodes_cs_string",
-      "community": 462,
+      "community": 441,
       "norm_label": "string"
     },
     {
@@ -9896,7 +9896,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_modules_clients_search_assignorchangecardcommand",
-      "community": 441,
+      "community": 36,
       "norm_label": "assignorchangecardcommand.cs"
     },
     {
@@ -9963,7 +9963,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_modules_clients_search_clientduplicatewarningacknowledgement",
-      "community": 18,
+      "community": 53,
       "norm_label": "clientduplicatewarningacknowledgement.cs"
     },
     {
@@ -9979,7 +9979,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_modules_clients_search_clientduplicatewarningacknowledgement_bodylife_crm_modules_clients_search_clientduplicatewarningacknowledgement",
-      "community": 18,
+      "community": 53,
       "norm_label": "clientduplicatewarningacknowledgement"
     },
     {
@@ -10015,7 +10015,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_modules_clients_search_clientoperationalstatus",
-      "community": 450,
+      "community": 53,
       "norm_label": "clientoperationalstatus.cs"
     },
     {
@@ -10031,7 +10031,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_modules_clients_search_clientoperationalstatus_bodylife_crm_modules_clients_search_clientoperationalstatus",
-      "community": 450,
+      "community": 53,
       "norm_label": "clientoperationalstatus"
     },
     {
@@ -10231,7 +10231,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_modules_clients_search_createclientcommand",
-      "community": 441,
+      "community": 92,
       "norm_label": "createclientcommand.cs"
     },
     {
@@ -10247,7 +10247,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_modules_clients_search_createclientcommand_bodylife_crm_modules_clients_search_createclientcommand",
-      "community": 4,
+      "community": 92,
       "norm_label": "createclientcommand"
     },
     {
@@ -10293,7 +10293,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_modules_clients_search_updateclientcommand",
-      "community": 441,
+      "community": 92,
       "norm_label": "updateclientcommand.cs"
     },
     {
@@ -10778,7 +10778,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountid",
-      "community": 36,
+      "community": 447,
       "norm_label": "accountid.cs"
     },
     {
@@ -10809,7 +10809,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountid_bodylife_crm_sharedkernel_accountid",
-      "community": 36,
+      "community": 447,
       "norm_label": "accountid"
     },
     {
@@ -10825,7 +10825,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountid_bodylife_crm_sharedkernel_accountid_new",
-      "community": 36,
+      "community": 447,
       "norm_label": ".new()"
     },
     {
@@ -10841,7 +10841,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountid_bodylife_crm_sharedkernel_accountid_tostring",
-      "community": 36,
+      "community": 447,
       "norm_label": ".tostring()"
     },
     {
@@ -10851,7 +10851,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountkind",
-      "community": 451,
+      "community": 11,
       "norm_label": "accountkind.cs"
     },
     {
@@ -10867,7 +10867,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_accountkind_bodylife_crm_sharedkernel_accountkind",
-      "community": 451,
+      "community": 11,
       "norm_label": "accountkind"
     },
     {
@@ -10877,7 +10877,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_actorcontext",
-      "community": 452,
+      "community": 4,
       "norm_label": "actorcontext.cs"
     },
     {
@@ -10893,7 +10893,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_actorcontext_bodylife_crm_sharedkernel_actorcontext",
-      "community": 452,
+      "community": 4,
       "norm_label": "actorcontext"
     },
     {
@@ -10903,7 +10903,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_actorrole",
-      "community": 158,
+      "community": 4,
       "norm_label": "actorrole.cs"
     },
     {
@@ -10919,7 +10919,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_actorrole_bodylife_crm_sharedkernel_actorrole",
-      "community": 158,
+      "community": 4,
       "norm_label": "actorrole"
     },
     {
@@ -10929,7 +10929,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_auditentryid",
-      "community": 460,
+      "community": 11,
       "norm_label": "auditentryid.cs"
     },
     {
@@ -10945,7 +10945,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_auditentryid_bodylife_crm_sharedkernel_auditentryid",
-      "community": 460,
+      "community": 11,
       "norm_label": "auditentryid"
     },
     {
@@ -10961,7 +10961,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_auditentryid_bodylife_crm_sharedkernel_auditentryid_new",
-      "community": 460,
+      "community": 11,
       "norm_label": ".new()"
     },
     {
@@ -10977,7 +10977,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_auditentryid_bodylife_crm_sharedkernel_auditentryid_tostring",
-      "community": 460,
+      "community": 11,
       "norm_label": ".tostring()"
     },
     {
@@ -11039,7 +11039,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_entityid",
-      "community": 453,
+      "community": 53,
       "norm_label": "entityid.cs"
     },
     {
@@ -11055,7 +11055,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_entityid_bodylife_crm_sharedkernel_entityid",
-      "community": 453,
+      "community": 53,
       "norm_label": "entityid"
     },
     {
@@ -11071,7 +11071,7 @@
       },
       "_origin": "ast",
       "id": "src_bodylife_crm_sharedkernel_entityid_bodylife_crm_sharedkernel_entityid_tostring",
-      "community": 453,
+      "community": 53,
       "norm_label": ".tostring()"
     },
     {
@@ -11308,7 +11308,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests",
-      "community": 35,
+      "community": 15,
       "norm_label": "postgresqlaccountlogintests"
     },
     {
@@ -11318,7 +11318,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_cs_datetimeoffset",
-      "community": 35,
+      "community": 47,
       "norm_label": "datetimeoffset"
     },
     {
@@ -11334,7 +11334,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_ownercredentialsbootstrapperstoresloginhash",
-      "community": 35,
+      "community": 15,
       "norm_label": ".ownercredentialsbootstrapperstoresloginhash()"
     },
     {
@@ -11344,7 +11344,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_cs_task",
-      "community": 35,
+      "community": 15,
       "norm_label": "task"
     },
     {
@@ -11354,7 +11354,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_cs_postgresqlfact",
-      "community": 35,
+      "community": 15,
       "norm_label": "postgresqlfact"
     },
     {
@@ -11370,7 +11370,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_accountloginservicecreatesandendssession",
-      "community": 35,
+      "community": 15,
       "norm_label": ".accountloginservicecreatesandendssession()"
     },
     {
@@ -11386,7 +11386,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_accountloginservicerejectsinvalidpasswordwithoutsession",
-      "community": 35,
+      "community": 15,
       "norm_label": ".accountloginservicerejectsinvalidpasswordwithoutsession()"
     },
     {
@@ -11402,7 +11402,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_accountloginservicerejectsinactiveaccountwithoutsession",
-      "community": 35,
+      "community": 15,
       "norm_label": ".accountloginservicerejectsinactiveaccountwithoutsession()"
     },
     {
@@ -11418,7 +11418,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bootstrapownercredentialsasync",
-      "community": 35,
+      "community": 15,
       "norm_label": ".bootstrapownercredentialsasync()"
     },
     {
@@ -11434,7 +11434,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bootstrapownerasync",
-      "community": 35,
+      "community": 15,
       "norm_label": ".bootstrapownerasync()"
     },
     {
@@ -11450,7 +11450,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_countsessionsasync",
-      "community": 35,
+      "community": 15,
       "norm_label": ".countsessionsasync()"
     },
     {
@@ -11467,7 +11467,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider",
-      "community": 35,
+      "community": 47,
       "norm_label": "fixedtimeprovider"
     },
     {
@@ -11493,7 +11493,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlaccountlogintests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider_getutcnow",
-      "community": 35,
+      "community": 47,
       "norm_label": ".getutcnow()"
     },
     {
@@ -11870,10 +11870,26 @@
       "norm_label": ".cardcurrentonanotherclientblockschangewithoutendingtargetcard()"
     },
     {
-      "label": ".IdempotentReplayReturnsOriginalResultAndRejectsChangedPayload()",
+      "label": ".ConcurrentCardConflictRollsBackAnAlreadyEndedTargetAssignment()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
       "source_location": "L416",
+      "metadata": {
+        "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
+        "scope_chain": [
+          "s349"
+        ]
+      },
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "community": 34,
+      "norm_label": ".concurrentcardconflictrollsbackanalreadyendedtargetassignment()"
+    },
+    {
+      "label": ".IdempotentReplayReturnsOriginalResultAndRejectsChangedPayload()",
+      "file_type": "code",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L475",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -11889,7 +11905,7 @@
       "label": ".PaperFallbackUsesOccurredTimeAndPreservesRecordedTimeAndOrigin()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L457",
+      "source_location": "L516",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -11905,7 +11921,7 @@
       "label": ".ConcurrentCommandsForOneExpectedClientStateCommitOnlyOneWorkflow()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L499",
+      "source_location": "L558",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -11921,7 +11937,7 @@
       "label": ".ConcurrentCommandsForOneCardAcrossClientsCommitOnlyOneWorkflow()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L532",
+      "source_location": "L591",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -11937,7 +11953,7 @@
       "label": ".CreateHandler()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L567",
+      "source_location": "L626",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -11953,7 +11969,7 @@
       "label": ".CardCommand()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L575",
+      "source_location": "L634",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -11979,7 +11995,7 @@
       "label": ".SeedActorAsync()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L602",
+      "source_location": "L661",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -11995,7 +12011,7 @@
       "label": ".InsertClientAsync()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L689",
+      "source_location": "L748",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12011,7 +12027,7 @@
       "label": ".InsertCurrentCardAsync()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L730",
+      "source_location": "L789",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12024,10 +12040,30 @@
       "norm_label": ".insertcurrentcardasync()"
     },
     {
+      "label": "NpgsqlConnection",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cs_npgsqlconnection",
+      "community": 34,
+      "norm_label": "npgsqlconnection"
+    },
+    {
+      "label": "NpgsqlTransaction",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cs_npgsqltransaction",
+      "community": 34,
+      "norm_label": "npgsqltransaction"
+    },
+    {
       "label": ".ReadCurrentCardIdAsync()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L772",
+      "source_location": "L852",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12043,7 +12079,7 @@
       "label": ".ReadCardAsync()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L791",
+      "source_location": "L871",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12069,7 +12105,7 @@
       "label": ".ReadAuditAsync()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L823",
+      "source_location": "L903",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12095,7 +12131,7 @@
       "label": ".CountRowsAsync()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L877",
+      "source_location": "L957",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12111,7 +12147,7 @@
       "label": ".AssertSuccessfulClientResult()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L884",
+      "source_location": "L964",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12127,7 +12163,7 @@
       "label": ".AssertError()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L895",
+      "source_location": "L975",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12143,7 +12179,7 @@
       "label": ".MapAccountKind()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L904",
+      "source_location": "L984",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12159,7 +12195,7 @@
       "label": ".MapRole()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L915",
+      "source_location": "L995",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12175,7 +12211,7 @@
       "label": "CardRow",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L925",
+      "source_location": "L1005",
       "metadata": {
         "is_nested_type": true,
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
@@ -12192,7 +12228,7 @@
       "label": "AuditRow",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L934",
+      "source_location": "L1014",
       "metadata": {
         "is_nested_type": true,
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
@@ -12209,7 +12245,7 @@
       "label": "FixedTimeProvider",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L954",
+      "source_location": "L1034",
       "metadata": {
         "is_nested_type": true,
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
@@ -12226,7 +12262,7 @@
       "label": ".GetUtcNow()",
       "file_type": "code",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L956",
+      "source_location": "L1036",
       "metadata": {
         "namespace": "BodyLife.Crm.Infrastructure.Tests.PostgreSql",
         "scope_chain": [
@@ -12745,7 +12781,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "npgsqlconnection",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlclientssearchstoragetests_cs_npgsqlconnection",
       "community": 47,
       "norm_label": "npgsqlconnection"
     },
@@ -12755,7 +12791,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "id": "npgsqltransaction",
+      "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlclientssearchstoragetests_cs_npgsqltransaction",
       "community": 47,
       "norm_label": "npgsqltransaction"
     },
@@ -13816,7 +13852,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlduplicatewarningacknowledgementstoragetests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider",
-      "community": 15,
+      "community": 47,
       "norm_label": "fixedtimeprovider"
     },
     {
@@ -13832,7 +13868,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlduplicatewarningacknowledgementstoragetests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider_getutcnow",
-      "community": 15,
+      "community": 47,
       "norm_label": ".getutcnow()"
     },
     {
@@ -13842,7 +13878,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute",
-      "community": 461,
+      "community": 165,
       "norm_label": "postgresqlfactattribute.cs"
     },
     {
@@ -13858,7 +13894,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute_bodylife_crm_infrastructure_tests_postgresql_postgresqlfactattribute",
-      "community": 461,
+      "community": 165,
       "norm_label": "postgresqlfactattribute"
     },
     {
@@ -13868,7 +13904,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "factattribute",
-      "community": 461,
+      "community": 165,
       "norm_label": "factattribute"
     },
     {
@@ -13956,7 +13992,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests",
-      "community": 15,
+      "community": 446,
       "norm_label": "postgresqlownerbootstrappertests"
     },
     {
@@ -13972,7 +14008,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrappercreatesowneraccount",
-      "community": 15,
+      "community": 446,
       "norm_label": ".ownerbootstrappercreatesowneraccount()"
     },
     {
@@ -13982,7 +14018,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_task",
-      "community": 15,
+      "community": 446,
       "norm_label": "task"
     },
     {
@@ -13992,7 +14028,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_cs_postgresqlfact",
-      "community": 15,
+      "community": 446,
       "norm_label": "postgresqlfact"
     },
     {
@@ -14008,7 +14044,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperisidempotentwhenownerexists",
-      "community": 15,
+      "community": 446,
       "norm_label": ".ownerbootstrapperisidempotentwhenownerexists()"
     },
     {
@@ -14024,7 +14060,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_ownerbootstrapperrejectsblankdisplaynamewithoutmutation",
-      "community": 15,
+      "community": 446,
       "norm_label": ".ownerbootstrapperrejectsblankdisplaynamewithoutmutation()"
     },
     {
@@ -14040,7 +14076,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_bodylife_crm_infrastructure_tests_postgresql_postgresqlownerbootstrappertests_countowneraccountsasync",
-      "community": 15,
+      "community": 446,
       "norm_label": ".countowneraccountsasync()"
     },
     {
@@ -14128,7 +14164,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests",
-      "community": 15,
+      "community": 35,
       "norm_label": "postgresqlstaffaccountaudittests"
     },
     {
@@ -14138,7 +14174,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_cs_datetimeoffset",
-      "community": 15,
+      "community": 35,
       "norm_label": "datetimeoffset"
     },
     {
@@ -14154,7 +14190,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_stafflifecyclemutationsappendaccountableauditentries",
-      "community": 15,
+      "community": 35,
       "norm_label": ".stafflifecyclemutationsappendaccountableauditentries()"
     },
     {
@@ -14164,7 +14200,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_cs_task",
-      "community": 15,
+      "community": 35,
       "norm_label": "task"
     },
     {
@@ -14174,7 +14210,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_cs_postgresqlfact",
-      "community": 15,
+      "community": 35,
       "norm_label": "postgresqlfact"
     },
     {
@@ -14190,7 +14226,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_staffcredentialauditomitsloginpasswordandhash",
-      "community": 15,
+      "community": 35,
       "norm_label": ".staffcredentialauditomitsloginpasswordandhash()"
     },
     {
@@ -14206,7 +14242,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_deniednoopvalidationandconflictpathsdonotappendaudit",
-      "community": 15,
+      "community": 35,
       "norm_label": ".deniednoopvalidationandconflictpathsdonotappendaudit()"
     },
     {
@@ -14222,7 +14258,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_businessaudittablerejectsunknownaccounttype",
-      "community": 15,
+      "community": 35,
       "norm_label": ".businessaudittablerejectsunknownaccounttype()"
     },
     {
@@ -14238,7 +14274,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_staffmutationrollsbackwhenauditentrycannotbepersisted",
-      "community": 15,
+      "community": 35,
       "norm_label": ".staffmutationrollsbackwhenauditentrycannotbepersisted()"
     },
     {
@@ -14254,7 +14290,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_lifecycleservice",
-      "community": 15,
+      "community": 35,
       "norm_label": ".lifecycleservice()"
     },
     {
@@ -14270,7 +14306,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_credentialsservice",
-      "community": 15,
+      "community": 35,
       "norm_label": ".credentialsservice()"
     },
     {
@@ -14286,7 +14322,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_ownerenvelope",
-      "community": 15,
+      "community": 35,
       "norm_label": ".ownerenvelope()"
     },
     {
@@ -14302,7 +14338,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_adminenvelope",
-      "community": 15,
+      "community": 35,
       "norm_label": ".adminenvelope()"
     },
     {
@@ -14318,7 +14354,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_envelope",
-      "community": 15,
+      "community": 35,
       "norm_label": ".envelope()"
     },
     {
@@ -14334,7 +14370,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_fixedclock",
-      "community": 15,
+      "community": 35,
       "norm_label": ".fixedclock()"
     },
     {
@@ -14344,7 +14380,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_cs_timeprovider",
-      "community": 15,
+      "community": 35,
       "norm_label": "timeprovider"
     },
     {
@@ -14360,7 +14396,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_countauditentriesasync",
-      "community": 15,
+      "community": 35,
       "norm_label": ".countauditentriesasync()"
     },
     {
@@ -14376,7 +14412,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_countcredentialauditentriesasync",
-      "community": 15,
+      "community": 35,
       "norm_label": ".countcredentialauditentriesasync()"
     },
     {
@@ -14392,7 +14428,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_countauditentryasync",
-      "community": 15,
+      "community": 35,
       "norm_label": ".countauditentryasync()"
     },
     {
@@ -14408,7 +14444,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_readauditactionsasync",
-      "community": 15,
+      "community": 35,
       "norm_label": ".readauditactionsasync()"
     },
     {
@@ -14424,7 +14460,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_readauditentryasync",
-      "community": 15,
+      "community": 35,
       "norm_label": ".readauditentryasync()"
     },
     {
@@ -14434,7 +14470,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_cs_auditrow",
-      "community": 15,
+      "community": 35,
       "norm_label": "auditrow"
     },
     {
@@ -14450,7 +14486,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_readcredentialaudittextasync",
-      "community": 15,
+      "community": 35,
       "norm_label": ".readcredentialaudittextasync()"
     },
     {
@@ -14466,7 +14502,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_insertinvalidaccounttypeauditasync",
-      "community": 15,
+      "community": 35,
       "norm_label": ".insertinvalidaccounttypeauditasync()"
     },
     {
@@ -14500,7 +14536,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider",
-      "community": 15,
+      "community": 35,
       "norm_label": "fixedtimeprovider"
     },
     {
@@ -14516,7 +14552,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlstaffaccountaudittests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider_getutcnow",
-      "community": 15,
+      "community": 35,
       "norm_label": ".getutcnow()"
     },
     {
@@ -15519,7 +15555,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase",
-      "community": 15,
+      "community": 18,
       "norm_label": "postgresqltestdatabase"
     },
     {
@@ -15539,7 +15575,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_cs_string",
-      "community": 15,
+      "community": 18,
       "norm_label": "string"
     },
     {
@@ -15555,7 +15591,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_createasync",
-      "community": 15,
+      "community": 18,
       "norm_label": ".createasync()"
     },
     {
@@ -15565,7 +15601,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_cs_task",
-      "community": 15,
+      "community": 18,
       "norm_label": "task"
     },
     {
@@ -15597,7 +15633,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_executescalarasync",
-      "community": 15,
+      "community": 18,
       "norm_label": ".executescalarasync()"
     },
     {
@@ -15613,7 +15649,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_disposeasync",
-      "community": 15,
+      "community": 18,
       "norm_label": ".disposeasync()"
     },
     {
@@ -15623,7 +15659,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_cs_valuetask",
-      "community": 15,
+      "community": 18,
       "norm_label": "valuetask"
     },
     {
@@ -15639,7 +15675,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_executeadmincommandasync",
-      "community": 15,
+      "community": 18,
       "norm_label": ".executeadmincommandasync()"
     },
     {
@@ -15655,7 +15691,7 @@
       },
       "_origin": "ast",
       "id": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_bodylife_crm_infrastructure_tests_postgresql_postgresqltestdatabase_quoteidentifier",
-      "community": 15,
+      "community": 18,
       "norm_label": ".quoteidentifier()"
     },
     {
@@ -17195,7 +17231,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_ui_smoketests_postgresqlsmokedatabase",
-      "community": 457,
+      "community": 0,
       "norm_label": "postgresqlsmokedatabase.cs"
     },
     {
@@ -17210,7 +17246,7 @@
       },
       "_origin": "ast",
       "id": "csharp_namespace:d0242d3ae7c66f27",
-      "community": 457,
+      "community": 0,
       "norm_label": "bodylife.crm.ui.smoketests"
     },
     {
@@ -17378,7 +17414,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_ui_smoketests_receptionappfixture",
-      "community": 441,
+      "community": 36,
       "norm_label": "receptionappfixture.cs"
     },
     {
@@ -17624,7 +17660,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_ui_smoketests_receptiondashboardsmoketests",
-      "community": 457,
+      "community": 0,
       "norm_label": "receptiondashboardsmoketests.cs"
     },
     {
@@ -17810,7 +17846,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_bodylife_crm_ui_smoketests_staffaccountmanagementsmoketests",
-      "community": 457,
+      "community": 0,
       "norm_label": "staffaccountmanagementsmoketests.cs"
     },
     {
@@ -28944,7 +28980,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "cardassignmentsnapshot",
-      "community": 437,
+      "community": 449,
       "norm_label": "cardassignmentsnapshot"
     },
     {
@@ -35235,7 +35271,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L567",
+      "source_location": "L626",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -35899,7 +35935,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L567",
+      "source_location": "L626",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -49573,7 +49609,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L895",
+      "source_location": "L975",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -49683,7 +49719,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L895",
+      "source_location": "L975",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -49697,7 +49733,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L884",
+      "source_location": "L964",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -49843,7 +49879,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L575",
+      "source_location": "L634",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -50574,7 +50610,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L575",
+      "source_location": "L634",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -51771,7 +51807,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L904",
+      "source_location": "L984",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -51785,7 +51821,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L602",
+      "source_location": "L661",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -51935,7 +51971,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L575",
+      "source_location": "L634",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -51949,7 +51985,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L602",
+      "source_location": "L661",
       "weight": 1.0,
       "context": "generic_arg",
       "metadata": {
@@ -52029,7 +52065,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L915",
+      "source_location": "L995",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -52043,7 +52079,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L602",
+      "source_location": "L661",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -52936,7 +52972,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L954",
+      "source_location": "L1034",
       "weight": 1.0,
       "metadata": {
         "ref_token": "TimeProvider"
@@ -53468,7 +53504,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L934",
+      "source_location": "L1014",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_auditrow",
@@ -53478,7 +53514,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L925",
+      "source_location": "L1005",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_cardrow",
@@ -53488,7 +53524,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L954",
+      "source_location": "L1034",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider",
@@ -53508,7 +53544,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L895",
+      "source_location": "L975",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_asserterror",
@@ -53518,7 +53554,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L884",
+      "source_location": "L964",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_assertsuccessfulclientresult",
@@ -53538,7 +53574,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L575",
+      "source_location": "L634",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cardcommand",
@@ -53558,7 +53594,17 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L532",
+      "source_location": "L416",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L591",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforonecardacrossclientscommitonlyoneworkflow",
@@ -53568,7 +53614,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L499",
+      "source_location": "L558",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforoneexpectedclientstatecommitonlyoneworkflow",
@@ -53578,7 +53624,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L877",
+      "source_location": "L957",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_countrowsasync",
@@ -53588,7 +53634,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L567",
+      "source_location": "L626",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_createhandler",
@@ -53598,7 +53644,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L416",
+      "source_location": "L475",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_idempotentreplayreturnsoriginalresultandrejectschangedpayload",
@@ -53618,7 +53664,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L689",
+      "source_location": "L748",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertclientasync",
@@ -53628,7 +53674,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L730",
+      "source_location": "L809",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertcurrentcardasync",
@@ -53648,7 +53694,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L904",
+      "source_location": "L984",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_mapaccountkind",
@@ -53658,7 +53704,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L915",
+      "source_location": "L995",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_maprole",
@@ -53678,7 +53724,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L457",
+      "source_location": "L516",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
@@ -53688,7 +53734,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L823",
+      "source_location": "L903",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_readauditasync",
@@ -53698,7 +53744,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L791",
+      "source_location": "L871",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_readcardasync",
@@ -53708,7 +53754,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L772",
+      "source_location": "L852",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_readcurrentcardidasync",
@@ -53728,7 +53774,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L602",
+      "source_location": "L661",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_seedactorasync",
@@ -53752,7 +53798,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L956",
+      "source_location": "L1036",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -53766,7 +53812,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L575",
+      "source_location": "L634",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -53780,7 +53826,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L730",
+      "source_location": "L809",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -53794,7 +53840,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L602",
+      "source_location": "L661",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -53919,7 +53965,21 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L532",
+      "source_location": "L416",
+      "weight": 1.0,
+      "context": "return_type",
+      "metadata": {
+        "ref_token": "Task"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cs_task",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L591",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -53933,7 +53993,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L499",
+      "source_location": "L558",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -53947,7 +54007,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L877",
+      "source_location": "L957",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -53961,7 +54021,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L416",
+      "source_location": "L475",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -53989,7 +54049,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L689",
+      "source_location": "L748",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -54003,7 +54063,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L730",
+      "source_location": "L809",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -54031,7 +54091,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L457",
+      "source_location": "L516",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -54045,7 +54105,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L823",
+      "source_location": "L903",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -54059,7 +54119,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L791",
+      "source_location": "L871",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -54073,7 +54133,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L772",
+      "source_location": "L852",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -54101,7 +54161,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L602",
+      "source_location": "L661",
       "weight": 1.0,
       "context": "return_type",
       "metadata": {
@@ -54143,7 +54203,21 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L532",
+      "source_location": "L416",
+      "weight": 1.0,
+      "context": "attribute",
+      "metadata": {
+        "ref_token": "PostgreSqlFact"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cs_postgresqlfact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L591",
       "weight": 1.0,
       "context": "attribute",
       "metadata": {
@@ -54157,7 +54231,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L499",
+      "source_location": "L558",
       "weight": 1.0,
       "context": "attribute",
       "metadata": {
@@ -54171,7 +54245,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L416",
+      "source_location": "L475",
       "weight": 1.0,
       "context": "attribute",
       "metadata": {
@@ -54213,7 +54287,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L457",
+      "source_location": "L516",
       "weight": 1.0,
       "context": "attribute",
       "metadata": {
@@ -54693,7 +54767,95 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L451",
+      "source_location": "L448",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cardcommand",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L470",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_countrowsasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L447",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_createhandler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L428",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertclientasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L430",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertcurrentcardasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L465",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_readcardasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L464",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_readcurrentcardidasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L425",
+      "weight": 1.0,
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcardconflictrollsbackanalreadyendedtargetassignment",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_seedactorasync",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L510",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_idempotentreplayreturnsoriginalresultandrejectschangedpayload",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_asserterror",
@@ -54704,7 +54866,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L447",
+      "source_location": "L506",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_idempotentreplayreturnsoriginalresultandrejectschangedpayload",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_assertsuccessfulclientresult",
@@ -54715,7 +54877,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L426",
+      "source_location": "L485",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_idempotentreplayreturnsoriginalresultandrejectschangedpayload",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cardcommand",
@@ -54726,7 +54888,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L452",
+      "source_location": "L511",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_idempotentreplayreturnsoriginalresultandrejectschangedpayload",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_countrowsasync",
@@ -54737,7 +54899,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L425",
+      "source_location": "L484",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_idempotentreplayreturnsoriginalresultandrejectschangedpayload",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_createhandler",
@@ -54748,7 +54910,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L424",
+      "source_location": "L483",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_idempotentreplayreturnsoriginalresultandrejectschangedpayload",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertclientasync",
@@ -54759,7 +54921,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L422",
+      "source_location": "L481",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_idempotentreplayreturnsoriginalresultandrejectschangedpayload",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_seedactorasync",
@@ -54770,7 +54932,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L486",
+      "source_location": "L545",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_assertsuccessfulclientresult",
@@ -54781,7 +54943,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L475",
+      "source_location": "L534",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cardcommand",
@@ -54792,7 +54954,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L474",
+      "source_location": "L533",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_createhandler",
@@ -54803,7 +54965,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L465",
+      "source_location": "L524",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertclientasync",
@@ -54814,7 +54976,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L466",
+      "source_location": "L525",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertcurrentcardasync",
@@ -54825,7 +54987,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L492",
+      "source_location": "L551",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_readauditasync",
@@ -54836,7 +54998,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L487",
+      "source_location": "L546",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_readcardasync",
@@ -54847,7 +55009,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L489",
+      "source_location": "L548",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_readcurrentcardidasync",
@@ -54858,7 +55020,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L463",
+      "source_location": "L522",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_paperfallbackusesoccurredtimeandpreservesrecordedtimeandorigin",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_seedactorasync",
@@ -54869,7 +55031,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L522",
+      "source_location": "L581",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforoneexpectedclientstatecommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_assertsuccessfulclientresult",
@@ -54880,7 +55042,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L514",
+      "source_location": "L573",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforoneexpectedclientstatecommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cardcommand",
@@ -54891,7 +55053,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L527",
+      "source_location": "L586",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforoneexpectedclientstatecommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_countrowsasync",
@@ -54902,7 +55064,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L513",
+      "source_location": "L572",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforoneexpectedclientstatecommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_createhandler",
@@ -54913,7 +55075,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L510",
+      "source_location": "L569",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforoneexpectedclientstatecommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertclientasync",
@@ -54924,7 +55086,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L508",
+      "source_location": "L567",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforoneexpectedclientstatecommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_seedactorasync",
@@ -54935,7 +55097,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L557",
+      "source_location": "L616",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforonecardacrossclientscommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_assertsuccessfulclientresult",
@@ -54946,7 +55108,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L549",
+      "source_location": "L608",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforonecardacrossclientscommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cardcommand",
@@ -54957,7 +55119,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L562",
+      "source_location": "L621",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforonecardacrossclientscommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_countrowsasync",
@@ -54968,7 +55130,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L548",
+      "source_location": "L607",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforonecardacrossclientscommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_createhandler",
@@ -54979,7 +55141,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L544",
+      "source_location": "L603",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforonecardacrossclientscommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertclientasync",
@@ -54990,7 +55152,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L541",
+      "source_location": "L600",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_concurrentcommandsforonecardacrossclientscommitonlyoneworkflow",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_seedactorasync",
@@ -55000,7 +55162,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L575",
+      "source_location": "L634",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55014,7 +55176,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L689",
+      "source_location": "L748",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55028,7 +55190,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L730",
+      "source_location": "L809",
       "weight": 1.0,
       "context": "generic_arg",
       "metadata": {
@@ -55042,7 +55204,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L823",
+      "source_location": "L903",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55056,7 +55218,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L791",
+      "source_location": "L871",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55070,7 +55232,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L772",
+      "source_location": "L852",
       "weight": 1.0,
       "context": "generic_arg",
       "metadata": {
@@ -55085,7 +55247,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L637",
+      "source_location": "L696",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_seedactorasync",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_mapaccountkind",
@@ -55096,7 +55258,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L638",
+      "source_location": "L697",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_seedactorasync",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_maprole",
@@ -55106,7 +55268,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L602",
+      "source_location": "L661",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55120,7 +55282,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L689",
+      "source_location": "L748",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55134,7 +55296,35 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L730",
+      "source_location": "L809",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "NpgsqlConnection"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertcurrentcardasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cs_npgsqlconnection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L809",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "metadata": {
+        "ref_token": "NpgsqlTransaction"
+      },
+      "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_insertcurrentcardasync",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_cs_npgsqltransaction",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
+      "source_location": "L789",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55148,7 +55338,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L772",
+      "source_location": "L852",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55162,7 +55352,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L791",
+      "source_location": "L871",
       "weight": 1.0,
       "context": "generic_arg",
       "metadata": {
@@ -55176,7 +55366,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L791",
+      "source_location": "L871",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55190,7 +55380,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L823",
+      "source_location": "L903",
       "weight": 1.0,
       "context": "generic_arg",
       "metadata": {
@@ -55204,7 +55394,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L823",
+      "source_location": "L903",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55218,7 +55408,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L877",
+      "source_location": "L957",
       "weight": 1.0,
       "context": "parameter_type",
       "metadata": {
@@ -55232,7 +55422,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs",
-      "source_location": "L956",
+      "source_location": "L1036",
       "weight": 1.0,
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider",
       "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlassignorchangecardcommandtests_bodylife_crm_infrastructure_tests_postgresql_fixedtimeprovider_getutcnow",
@@ -56658,7 +56848,7 @@
         "ref_token": "NpgsqlConnection"
       },
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlclientssearchstoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlclientssearchstoragetests_insertcardasync",
-      "target": "npgsqlconnection",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlclientssearchstoragetests_cs_npgsqlconnection",
       "confidence_score": 1.0
     },
     {
@@ -56672,7 +56862,7 @@
         "ref_token": "NpgsqlTransaction"
       },
       "source": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlclientssearchstoragetests_bodylife_crm_infrastructure_tests_postgresql_postgresqlclientssearchstoragetests_insertcardasync",
-      "target": "npgsqltransaction",
+      "target": "tests_bodylife_crm_infrastructure_tests_postgresql_postgresqlclientssearchstoragetests_cs_npgsqltransaction",
       "confidence_score": 1.0
     },
     {

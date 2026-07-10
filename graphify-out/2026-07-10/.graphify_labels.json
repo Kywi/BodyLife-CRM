@@ -449,20 +449,5 @@
   "447": "SessionId",
   "448": "PostgreSqlFactAttribute.cs",
   "449": "QueryPermissionDeniedReasonCodes.cs",
-  "450": "CommandResult",
-  "451": "AccountKind",
-  "452": "ActorContext",
-  "453": ".Success",
-  "454": "CommandIdempotencyRecord",
-  "455": ".IsCanonicalActorAuthorizedAsync",
-  "456": "BodyLifeAuthorizationPolicies.cs",
-  "457": "BodyLife.Crm.Ui.SmokeTests",
-  "458": ".FindPostgresException",
-  "459": "20260710093311_AddSessionExpiry.Designer.cs",
-  "460": "AuditEntryId",
-  "461": "PostgreSqlFactAttribute.cs",
-  "462": "QueryPermissionDeniedReasonCodes.cs",
-  "463": "ClientAuditActions.cs",
-  "464": "AccountSessionPolicy.cs",
-  "465": "StaffAccountAuditActions.cs"
+  "459": "20260710093311_AddSessionExpiry.Designer.cs"
 }
