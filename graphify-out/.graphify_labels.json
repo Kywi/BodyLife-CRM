@@ -443,5 +443,10 @@
   "441": "BusinessAuditEntryRecord",
   "442": "SessionRecord",
   "443": "20260709113419_AddCommandIdempotencyKeys.Designer.cs",
-  "444": "BodyLifeDbContextOptions"
+  "444": "BodyLifeDbContextOptions",
+  "445": "20260710113814_AddDuplicateWarningAcknowledgements.Designer.cs",
+  "446": "AccountId",
+  "447": "SessionId",
+  "448": "PostgreSqlFactAttribute.cs",
+  "449": "QueryPermissionDeniedReasonCodes.cs"
 }
