@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1783688542.44181,
-    "ast_hash": "cca82ffd82ac6493888e72916795b189",
+    "mtime": 1783690835.6372151,
+    "ast_hash": "6dfef87f7a58ec8502f569d09d3a78f5",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783689247.4674306,
-    "ast_hash": "55d13a1bb7b975c49dd99837b65bf972",
+    "mtime": 1783691324.3555377,
+    "ast_hash": "dc7afd461dd3c2270b705a5b50214925",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1345,13 +1345,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/ClientAuditActions.cs": {
-    "mtime": 1783688542.44181,
-    "ast_hash": "52bdc880acebffe42e10030ac3650749",
+    "mtime": 1783690835.6372151,
+    "ast_hash": "9813c797669a07347a539a431e49fa64",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/CreateClientCommandHandler.cs": {
-    "mtime": 1783688448.9521267,
-    "ast_hash": "382a7829c7310919e184001ee822fb2e",
+    "mtime": 1783689381.2593002,
+    "ast_hash": "5bec1381e56815c1fe10407ec07040ea",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Clients/Search/ClientDuplicateWarningAcknowledgement.cs": {
@@ -1375,13 +1375,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/ClientCommandSupport.cs": {
-    "mtime": 1783688388.1496234,
-    "ast_hash": "7b7f506d5055adf487e891ac91e6abc2",
+    "mtime": 1783690718.3660648,
+    "ast_hash": "0e66fa4e3e3a0a22559d3d7095777fca",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/UpdateClientCommandHandler.cs": {
-    "mtime": 1783688542.44181,
-    "ast_hash": "182b9027e6ea035fdb6e29de6ddaa516",
+    "mtime": 1783689381.2593002,
+    "ast_hash": "105efc207bfc0ca5146972f4524126c7",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Clients/Search/UpdateClientCommand.cs": {
@@ -1392,6 +1392,21 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlUpdateClientCommandTests.cs": {
     "mtime": 1783689079.3295283,
     "ast_hash": "915baafccc025c570814ac18384c12e2",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/AssignOrChangeCardCommandHandler.cs": {
+    "mtime": 1783690894.9823172,
+    "ast_hash": "17b5b1d15025055ee22aa67a955f190c",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Clients/Search/AssignOrChangeCardCommand.cs": {
+    "mtime": 1783690718.3620646,
+    "ast_hash": "b7157f68e83edcd959196c9d2114f598",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAssignOrChangeCardCommandTests.cs": {
+    "mtime": 1783691128.857464,
+    "ast_hash": "af8a37eddd994c5a61052e8905741aa1",
     "semantic_hash": ""
   }
 }
