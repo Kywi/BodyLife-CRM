@@ -954,3 +954,37 @@ Commit:
 Next recommended step:
 
 - Add a read-only PostgreSQL duplicate-candidate query contract for exact normalized phone and conservative normalized-name matches, including self-exclusion for future updates and focused tests; defer CreateClient/UpdateClient mutation, audit and UI to following steps.
+
+## Step 32 - Client duplicate candidate query
+
+Status: completed.
+
+Scope:
+
+- Add a typed `FindClientDuplicateCandidatesQuery` public contract in the owning Clients/Search module using the established application query conventions.
+- Normalize raw proposed identity values with the canonical `ClientSearchNormalizer` before querying PostgreSQL.
+- Define `duplicate_phone` behavior as exact normalized-phone equality when a phone is present.
+- Define conservative v1 `similar_name` behavior as exact normalized-full-name equality without prefix, fuzzy, phonetic, transliteration or reordered-name matching.
+- Return one typed candidate per matched client and warning type, allowing one client to produce both phone and name warnings.
+- Include inactive clients and raw display identity in candidate summaries while keeping normalized persistence values internal.
+- Support optional target-client exclusion for future UpdateClient checks.
+- Implement the query with EF Core `AsNoTracking`, register its `IBodyLifeQueryHandler` in DI and keep it read-only with no acknowledgement or business-audit writes.
+- Add PostgreSQL integration tests for combined matches, inactive candidates, canonical raw-input normalization, self-exclusion, absent phone, exact-only names, normalizer validation and no-write behavior.
+- Keep CreateClient/UpdateClient mutation, acknowledgement persistence orchestration, audit composition and UI outside this step.
+
+Validation:
+
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --configuration Release --nologo` passed with 0 warnings/errors after adding the query contract and handler.
+- Focused `DOTNET_ROOT=/tmp/bodylife-dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Infrastructure.Tests/BodyLife.Crm.Infrastructure.Tests.csproj --configuration Release --nologo` passed with 63 PostgreSQL infrastructure tests.
+- Final `DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 63 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because this step adds only a read-only query over the existing normalized indexes.
+- The structural Graphify rebuild completed with 2514 nodes and 3237 edges.
+- `graphify . --update` was attempted for the normalization/progress documentation changes but stopped because no semantic extraction API key/backend is configured.
+
+Commit:
+
+- `feat(clients): add duplicate candidate query`.
+
+Next recommended step:
+
+- Implement the server-side CreateClient command without UI: Admin/Owner authorization, canonical normalization, optional current card, duplicate-warning acknowledgement validation/persistence, idempotency, one PostgreSQL transaction, `client.created` business audit and a canonical reread target.

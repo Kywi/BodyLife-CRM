@@ -35,6 +35,15 @@ The implementation lives in `ClientSearchNormalizer`. Commands added later must 
 - Uppercase with invariant casing and compose `normalized_full_name` in surname, name, patronymic order, omitting a blank patronymic.
 - Do not transliterate, strip diacritics, reorder identity fields or add fuzzy/phonetic matching. Structured prefix search and duplicate-warning behavior are separate later steps.
 
+## Duplicate candidate matching
+
+- `duplicate_phone` means exact equality of `phone_normalized`. It is evaluated only when the proposed client identity includes a phone.
+- `similar_name` uses exact equality of `normalized_full_name` for the conservative v1 baseline. It does not add prefix, fuzzy, phonetic, transliteration or reordered-name matching.
+- Create flows evaluate all existing clients. Update flows pass the target client id and exclude that row from its own candidates.
+- Active and inactive clients remain candidates because an inactive historical identity can still represent a duplicate person.
+- A matched client produces one candidate per warning type. The same client may therefore produce both `duplicate_phone` and `similar_name` warnings, each requiring its own later acknowledgement.
+- Candidate lookup is read-only. It does not create acknowledgement or business-audit rows; only a successful state-changing command may persist those records in its transaction.
+
 ## Persistence handoff
 
 The next persistence step may map these outputs to `card_number_normalized`, `phone_normalized`, `phone_last4` and `normalized_full_name`. PostgreSQL constraints and indexes must enforce the same representations; they must not introduce a second normalization formula.
