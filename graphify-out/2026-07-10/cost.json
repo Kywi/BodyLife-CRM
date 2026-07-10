@@ -1,0 +1,68 @@
+{
+  "runs": [
+    {
+      "date": "2026-07-06T13:16:36.301336+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 31
+    },
+    {
+      "date": "2026-07-06T20:19:52.936638+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 2
+    },
+    {
+      "date": "2026-07-07T14:24:38.022390+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 17
+    },
+    {
+      "date": "2026-07-07T20:44:05.359772+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 7
+    },
+    {
+      "date": "2026-07-07T22:12:26.887780+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 28
+    },
+    {
+      "date": "2026-07-08T10:00:07.495903+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 20
+    },
+    {
+      "date": "2026-07-08T10:29:09.823218+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 3
+    },
+    {
+      "date": "2026-07-08T11:39:11.934175+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 52
+    },
+    {
+      "date": "2026-07-08T15:46:46.554761+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 160,
+      "backend": "cache+codex-subagent",
+      "note": "Semantic cache hits plus Codex subagent fallback; provider token accounting unavailable."
+    },
+    {
+      "date": "2026-07-09T15:28:03.920300+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 212
+    }
+  ],
+  "total_input_tokens": 0,
+  "total_output_tokens": 0
+}
