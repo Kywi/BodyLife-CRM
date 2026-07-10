@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1783685226.0500154,
-    "ast_hash": "c16bb6b13c7f60679be34ac20e2973d6",
+    "mtime": 1783686895.4179633,
+    "ast_hash": "2bd14ae5c130424cdd44608e906e11d1",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783685467.8149161,
-    "ast_hash": "009decbef7e8f8049cc9911a2618a074",
+    "mtime": 1783687402.7825909,
+    "ast_hash": "c157a9648e325d30ee49a1a5eb5a5e44",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1342,6 +1342,36 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlClientDuplicateCandidateQueryTests.cs": {
     "mtime": 1783685350.5206532,
     "ast_hash": "a14605e3d253b59ce1bcb299081da6e3",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/ClientAuditActions.cs": {
+    "mtime": 1783686879.0730438,
+    "ast_hash": "e91c42763f9bbfbfb108118140fc2cc9",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/ClientsSearch/CreateClientCommandHandler.cs": {
+    "mtime": 1783687240.4198487,
+    "ast_hash": "006c0e8b68a241dfdfcbf374bd81ec03",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Clients/Search/ClientDuplicateWarningAcknowledgement.cs": {
+    "mtime": 1783686669.9940934,
+    "ast_hash": "971f4b5fa852dff7dd0d3170001a86a9",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Clients/Search/ClientOperationalStatus.cs": {
+    "mtime": 1783686669.9940934,
+    "ast_hash": "cefd777f7a5a17422026f944a4f6296a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Clients/Search/CreateClientCommand.cs": {
+    "mtime": 1783686669.9940934,
+    "ast_hash": "22371a85473272dfc3d635ce282e70bc",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCreateClientCommandTests.cs": {
+    "mtime": 1783687207.1354654,
+    "ast_hash": "051f6c983ce54614487f42022e629d02",
     "semantic_hash": ""
   }
 }
