@@ -118,6 +118,8 @@ The outline uses relational table names and column intent, not ORM classes. IDs 
 | `client_card_assignments` | `id`, `client_id`, `card_number_raw`, `card_number_normalized`, `assigned_at`, `assigned_by_account_id`, `ended_at`, `ended_by_account_id`, `end_reason`, `is_current` | `client_id -> clients.id` | Historical card assignment table. Exactly one current assignment per client and per card number. Card changes require audit. |
 | `duplicate_warning_acknowledgements` | `id`, `client_id`, `warning_type`, `matched_client_id`, `acknowledged_by_account_id`, `acknowledged_at`, `reason` | References clients/accounts. | Optional but useful to explain why phone/name duplicate warning was overridden. |
 
+The deterministic card, phone, last-four and name representation used by these fields is defined in `docs/client-search-normalization.md`. Persistence, commands and search queries must reuse that contract rather than maintaining separate normalization formulas.
+
 ### Membership catalog and issued memberships
 
 | Table | Key fields | Relationships | Notes |

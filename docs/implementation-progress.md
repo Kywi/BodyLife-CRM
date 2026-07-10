@@ -855,3 +855,35 @@ Commit:
 Next recommended step:
 
 - Start Milestone 3 with only the Clients/Search normalization contract and focused domain tests for card, phone, name and last-four phone values; defer schema, commands and UI to following steps.
+
+## Step 29 - Clients/Search normalization contract
+
+Status: completed.
+
+Scope:
+
+- Add the first Milestone 3 domain implementation inside the owning `Clients/Search` module without starting persistence, commands or UI.
+- Define one deterministic `ClientSearchNormalizer` for card number, phone, phone last four, name parts and normalized full name.
+- Normalize card values with Unicode NFKC, whitespace removal and invariant casing while preserving leading zeroes and non-whitespace punctuation.
+- Normalize phone values to ASCII digits from accepted formatting characters, preserve leading zeroes, reject unsupported content and avoid unapproved country-code inference.
+- Extract `phone_last4` as the exact final four digits and require at least four normalized digits.
+- Normalize names with Unicode NFC, collapsed whitespace, invariant casing and canonical apostrophe/dash variants without transliteration, diacritic removal or fuzzy matching.
+- Keep raw identity values separate for future display/audit and document that persistence, commands and queries must reuse this contract rather than duplicate formulas.
+- Add focused domain tests for card, phone, last-four and name edge cases, including Unicode compatibility and Ukrainian casing.
+- Link the detailed normalization contract from the data architecture.
+
+Validation:
+
+- Focused `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet test tests/BodyLife.Crm.Tests/BodyLife.Crm.Tests.csproj --configuration Release --nologo` passed with 34 domain/application tests.
+- The first full gate passed build/analyzers plus all core, web and PostgreSQL tests, then hit one existing `NetworkIdle` timeout in the tablet reception smoke after the login redirect had completed; no Clients/Search code participates in that wait.
+- Immediate focused Playwright rerun passed all 6 tests in 7 seconds, confirming a transient harness wait rather than a normalization regression.
+- Final `DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 44 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710093311_AddSessionExpiry`.
+- No migration check was added because this step intentionally introduces no persistence change.
+
+Commit:
+
+- `feat(clients): add search normalization contract`.
+
+Next recommended step:
+
+- Add only the PostgreSQL schema foundation for `clients` and historical/current `client_card_assignments`, including normalized fields, constraints, partial unique indexes, migration review and PostgreSQL tests; defer duplicate-warning persistence, commands, search queries and UI.
