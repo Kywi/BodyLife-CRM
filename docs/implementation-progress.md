@@ -1115,3 +1115,44 @@ Commit:
 Next recommended step:
 
 - Implement the read-only PostgreSQL `SearchClients` query without UI or profile composition: exact current-card priority and unique auto-open target, bounded partial/ambiguous card results, normalized name/phone/last-four matching, inactive-client visibility, deterministic ordering and no business-audit writes.
+
+## Step 36 - SearchClients query workflow
+
+Status: completed.
+
+Scope:
+
+- Add a typed `SearchClientsQuery` public contract in the owning Clients/Search module with actor/session context, search text, `auto`/`card`/`name`/`phone`/`last4` mode, inactive-client flag, bounded limit and page cursor.
+- Add a structured query result with success/permission/validation status, compact client rows, optional exact-card auto-open target, next cursor and stable error metadata.
+- Return display identity, raw phone/current-card values, typed operational status, match type/priority, Clients-owned warnings and a nullable Memberships summary placeholder without calculating membership state.
+- Enforce Owner, named Admin and shared Reception/Admin actor shapes plus canonical active account/session state before reading reception data; denied searches return no rows.
+- Keep session/account rows unchanged during search authorization and create no business audit or idempotency records for this read-only query.
+- Normalize each explicit mode with `ClientSearchNormalizer`; `auto` evaluates canonical card/name and valid phone/last-four terms together without fuzzy, transliteration or country-code inference.
+- Join only current card assignments, so historical/ended cards never match or auto-open.
+- Rank exact current card first, followed by exact phone, phone last four, exact full name, partial card, partial phone and partial name; break ties by active status, normalized full name and client id.
+- Return `auto_open_client_id` only for one exact current-card match in `auto` or `card` semantics; partial card and all name/phone/last-four matches always remain selectable lists.
+- Support conservative substring matching over normalized card/name/phone values for the small one-gym v1 dataset while retaining existing equality/search indexes; do not add trigram/fuzzy infrastructure before evidence requires it.
+- Exclude inactive clients by default, include them only when requested, and return server-owned `client_inactive` and `no_current_card` warnings where applicable.
+- Use a deterministic bounded offset cursor with limits from 1 through 50 and a maximum accepted offset of 10,000.
+- Implement the EF Core query with `AsNoTracking`, register its `IBodyLifeQueryHandler`, and keep GetClientProfile, Memberships composition, Razor Pages and htmx outside this step.
+
+Validation:
+
+- The first build stopped on a nullable analyzer finding inside the guarded phone LINQ expression; explicit null-state markers were added without changing translated SQL semantics.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --configuration Release --nologo` then passed with 0 warnings/errors.
+- The first focused PostgreSQL run passed 8 of 9 tests; the only failure was a test-only attempt to execute three actor checks concurrently through one scoped EF Core `DbContext`. Those role checks were made sequential, matching scoped request usage, without changing product behavior.
+- Focused SearchClients PostgreSQL validation then passed 9 tests covering accepted/denied actors, no session/business writes, exact/current/historical card behavior, partial ambiguity, name/phone/last-four ranking, inactive warnings, stable pagination, validation failures and empty success.
+- Full PostgreSQL infrastructure validation passed with 100 tests and no skips.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal --no-restore` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 100 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because the query reuses the existing normalized client and current-card indexes; no fuzzy/trigram index is justified for this bounded v1 search step.
+- `graphify update .` completed the structural rebuild with 2776 nodes, 4112 edges and 473 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(clients): add client search query`.
+
+Next recommended step:
+
+- Implement the read-only `GetClientProfile` shell without UI: authorized canonical client identity, current assignment id/card, operational status, `updated_at`, empty/nullable Memberships area placeholder, Clients-owned warnings and server-provided allowed-action permission results; defer history aggregation and Razor/htmx rendering.

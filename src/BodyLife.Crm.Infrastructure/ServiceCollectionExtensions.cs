@@ -33,6 +33,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeQueryHandler<FindClientDuplicateCandidatesQuery, IReadOnlyList<ClientDuplicateCandidate>>,
             FindClientDuplicateCandidatesQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<SearchClientsQuery, SearchClientsResult>,
+            SearchClientsQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<IBodyLifeCommandHandler<UpdateClientCommand>, UpdateClientCommandHandler>();
         services.AddScoped<
