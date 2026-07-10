@@ -826,3 +826,32 @@ Commit:
 Next recommended step:
 
 - Re-run the Milestone 2 acceptance review against Steps 1-27; if all roadmap criteria are satisfied, close Milestone 2 before starting Milestone 3.
+
+## Step 28 - Milestone 2 acceptance review
+
+Status: completed; Milestone 2 accepted.
+
+Scope:
+
+- Re-audit every Milestone 2 roadmap task, acceptance criterion and required test area against ADR-012 and implementation evidence from Steps 14-27.
+- Confirm that Step 27 closed the final explicit gap: PostgreSQL-backed active-session expiry and its integration coverage.
+- Resolve the former partial permission-denied criterion for Milestone 2 using query permission results, service-level no-mutation behavior and the explicit Owner-only denied UI covered by Playwright.
+- Mark account lifecycle, staff credential management, account-management audit and session validation complete for the milestone rather than backend-only foundations.
+- Preserve future command obligations for server authorization, actor/session context, business audit and canonical rereads as cross-cutting guardrails, not unfinished Milestone 2 scope.
+- Record that Milestone 2 acceptance is not a production-readiness claim; deployment hardening, backup retention evidence and restore rehearsal remain later roadmap gates.
+- Authorize transition to Milestone 3 without changing code or reopening accepted architecture decisions.
+
+Validation:
+
+- Reviewed `docs/implementation-roadmap.md` Milestone 2, ADR-012, `docs/architecture-baseline.md`, the prior acceptance review and implementation progress through Step 27.
+- Rechecked concrete policy, request-context, logging, PostgreSQL and Playwright evidence; no unresolved Milestone 2 blocker remains.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 11 core tests, 35 web tests, 44 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710093311_AddSessionExpiry`.
+- `graphify . --update` was attempted for the acceptance/progress documentation change but stopped because no semantic extraction API key/backend is configured; no graph artifact changed.
+
+Commit:
+
+- `docs(users): accept milestone 2`.
+
+Next recommended step:
+
+- Start Milestone 3 with only the Clients/Search normalization contract and focused domain tests for card, phone, name and last-four phone values; defer schema, commands and UI to following steps.
