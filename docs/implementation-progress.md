@@ -791,3 +791,38 @@ Commit:
 Next recommended step:
 
 - Add active-session expiry validation and PostgreSQL integration coverage, then rerun the Milestone 2 acceptance review.
+
+## Step 27 - PostgreSQL-backed active session expiry
+
+Status: completed.
+
+Scope:
+
+- Add canonical `expires_at` persistence to `bodylife.sessions` with a 12-hour sliding idle timeout shared by the database session and authentication cookie.
+- Add migration `20260710093311_AddSessionExpiry` with an existing-row backfill from `last_seen_at`, a required expiry column, `expires_at > started_at` check and active account/expiry partial index.
+- Validate every authenticated dynamic request against the PostgreSQL session and account before authorization.
+- Reject and clear cookies for missing, ended, expired, claim-mismatched and inactive-account sessions; close expired/inactive session rows when detected.
+- Renew `last_seen_at` and `expires_at` after successful activity while preserving the existing sliding-cookie behavior.
+- Count staff sessions as active only while they are unended and unexpired.
+- Add a structured `auth.session_rejected` technical event with stable result categories and no display name, device label, credential or token values.
+- Add PostgreSQL tests for migration upgrade/backfill, expiry schema/index/constraint, login persistence, sliding renewal, exact-boundary expiry, ended-session rejection and canonical active-session counts.
+- Add Playwright coverage proving a database-expired session returns to `/Login` and is closed in PostgreSQL.
+- Update the session implementation contract in the data architecture and login/session documentation.
+
+Validation:
+
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --configuration Release --nologo` passed with 0 warnings/errors.
+- The first focused PostgreSQL run passed 39 of 43 tests; the four failures were raw Npgsql `timestamptz` assertions expecting `DateTimeOffset` instead of the returned UTC `DateTime`. The test-only assertions were normalized without changing product behavior.
+- Focused PostgreSQL validation then passed 44 tests, including migration backfill, session expiry behavior and claim-mismatch rejection.
+- Focused web validation passed 35 tests, including secret-safe session rejection logging.
+- Focused Playwright validation passed 6 authenticated tests, including PostgreSQL-backed session expiry and login redirect.
+- Idempotent migration SQL from `20260709204232_AddBusinessAuditEntries` to `20260710093311_AddSessionExpiry` was reviewed and contains nullable add, 12-hour existing-row backfill, `not null`, expiry index and check constraint in the required order.
+- Final `DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 11 core tests, 35 web tests, 44 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710093311_AddSessionExpiry`.
+
+Commit:
+
+- `feat(users): validate active session expiry`.
+
+Next recommended step:
+
+- Re-run the Milestone 2 acceptance review against Steps 1-27; if all roadmap criteria are satisfied, close Milestone 2 before starting Milestone 3.

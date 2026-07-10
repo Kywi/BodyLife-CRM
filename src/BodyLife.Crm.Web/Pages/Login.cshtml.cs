@@ -60,6 +60,8 @@ public sealed class LoginModel(
             principal,
             new AuthenticationProperties
             {
+                AllowRefresh = true,
+                ExpiresUtc = session.ExpiresAt,
                 IsPersistent = false,
             });
 

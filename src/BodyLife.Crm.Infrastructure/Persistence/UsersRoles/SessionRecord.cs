@@ -12,6 +12,8 @@ internal sealed class SessionRecord
 
     public DateTimeOffset StartedAt { get; set; }
 
+    public DateTimeOffset ExpiresAt { get; set; }
+
     public DateTimeOffset? EndedAt { get; set; }
 
     public DateTimeOffset LastSeenAt { get; set; }

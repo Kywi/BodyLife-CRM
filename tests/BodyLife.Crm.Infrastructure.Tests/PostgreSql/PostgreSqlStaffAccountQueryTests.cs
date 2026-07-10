@@ -17,14 +17,15 @@ public sealed class PostgreSqlStaffAccountQueryTests
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
+        var clock = new MutableTimeProvider(TestNow);
         var auditAppender = new BusinessAuditAppender(dbContext);
-        var lifecycleService = new StaffAccountLifecycleService(dbContext, auditAppender, FixedClock());
+        var lifecycleService = new StaffAccountLifecycleService(dbContext, auditAppender, clock);
         var hashingService = new PasswordHashingService();
         var credentialsService = new StaffCredentialsService(
             dbContext,
             hashingService,
             auditAppender,
-            FixedClock());
+            clock);
         var namedAccountId = (await lifecycleService.CreateStaffAccountAsync(
             OwnerEnvelope(),
             AccountKind.NamedAdmin,
@@ -39,10 +40,10 @@ public sealed class PostgreSqlStaffAccountQueryTests
             " front.desk ",
             "shared desk password");
         dbContext.ChangeTracker.Clear();
-        var loginResult = await new AccountLoginService(dbContext, hashingService, FixedClock())
+        var loginResult = await new AccountLoginService(dbContext, hashingService, clock)
             .LoginAsync("front.desk", "shared desk password", "front desk tablet");
         Assert.Equal(AccountLoginStatus.Success, loginResult.Status);
-        var queryService = new StaffAccountQueryService(dbContext);
+        var queryService = new StaffAccountQueryService(dbContext, clock);
 
         var accounts = await queryService.ListStaffAccountsAsync();
 
@@ -66,6 +67,13 @@ public sealed class PostgreSqlStaffAccountQueryTests
                 Assert.Equal("front.desk", sharedAccount.LoginName);
                 Assert.Equal(1, sharedAccount.ActiveSessionCount);
             });
+
+        clock.Advance(AccountSessionPolicy.IdleTimeout);
+        var expiredAccounts = await queryService.ListStaffAccountsAsync();
+        var expiredSharedAccount = Assert.Single(
+            expiredAccounts,
+            account => account.AccountId == sharedAccountId);
+        Assert.Equal(0, expiredSharedAccount.ActiveSessionCount);
 
         await lifecycleService.SetStaffAccountActiveStateAsync(
             OwnerEnvelope("End shared access"),
@@ -98,16 +106,18 @@ public sealed class PostgreSqlStaffAccountQueryTests
             Comment: null);
     }
 
-    private static TimeProvider FixedClock()
+    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
-        return new FixedTimeProvider(TestNow);
-    }
+        private DateTimeOffset _utcNow = utcNow;
 
-    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
-    {
         public override DateTimeOffset GetUtcNow()
         {
-            return utcNow;
+            return _utcNow;
+        }
+
+        public void Advance(TimeSpan duration)
+        {
+            _utcNow = _utcNow.Add(duration);
         }
     }
 }

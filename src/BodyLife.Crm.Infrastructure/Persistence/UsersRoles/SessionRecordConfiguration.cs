@@ -17,6 +17,9 @@ internal sealed class SessionRecordConfiguration : IEntityTypeConfiguration<Sess
                 table.HasCheckConstraint(
                     "ck_sessions_ended_at_after_started",
                     "ended_at is null or ended_at >= started_at");
+                table.HasCheckConstraint(
+                    "ck_sessions_expires_after_started",
+                    "expires_at > started_at");
             });
 
         builder.HasKey(session => session.Id);
@@ -35,6 +38,9 @@ internal sealed class SessionRecordConfiguration : IEntityTypeConfiguration<Sess
         builder.Property(session => session.StartedAt)
             .HasColumnName("started_at");
 
+        builder.Property(session => session.ExpiresAt)
+            .HasColumnName("expires_at");
+
         builder.Property(session => session.EndedAt)
             .HasColumnName("ended_at");
 
@@ -46,8 +52,8 @@ internal sealed class SessionRecordConfiguration : IEntityTypeConfiguration<Sess
             .HasForeignKey(session => session.AccountId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(session => new { session.AccountId, session.StartedAt })
+        builder.HasIndex(session => new { session.AccountId, session.ExpiresAt })
             .HasFilter("ended_at is null")
-            .HasDatabaseName("ix_sessions_active_account_started_at");
+            .HasDatabaseName("ix_sessions_active_account_expires_at");
     }
 }

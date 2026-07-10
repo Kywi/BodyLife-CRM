@@ -57,7 +57,8 @@ public sealed class BodyLifeAuthTechnicalLoggerTests
                 "Owner Private Name",
                 BodyLifeAccountTypes.Owner,
                 BodyLifeRoles.Owner,
-                "Front desk tablet"));
+                "Front desk tablet",
+                new DateTimeOffset(2026, 7, 10, 21, 0, 0, TimeSpan.Zero)));
 
         var entry = Assert.Single(capture.Entries);
         Assert.Equal(LogLevel.Information, entry.LogLevel);
@@ -68,6 +69,35 @@ public sealed class BodyLifeAuthTechnicalLoggerTests
         Assert.Equal(BodyLifeAccountTypes.Owner, entry.Property("account_type"));
         Assert.Equal(true, entry.Property("device_label_present"));
         AssertSensitiveTextAbsent(entry, "Owner Private Name", "Front desk tablet");
+    }
+
+    [Fact]
+    public void SessionRejectedLogIncludesStableReasonAndOmitsPersonalClaims()
+    {
+        var capture = new CapturingLogger<BodyLifeAuthTechnicalLogger>();
+        var authLogger = new BodyLifeAuthTechnicalLogger(capture);
+        var accountId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var httpContext = HttpContext(Principal(
+            accountId,
+            sessionId,
+            "Named Admin Private",
+            "Back office browser"));
+        httpContext.Request.Path = "/";
+        httpContext.Request.Method = HttpMethods.Get;
+        httpContext.Items[RequestCorrelationMiddleware.ContextItemName] = new RequestCorrelationId("corr-expired");
+
+        authLogger.SessionRejected(httpContext, AccountSessionValidationStatus.Expired);
+
+        var entry = Assert.Single(capture.Entries);
+        Assert.Equal(LogLevel.Warning, entry.LogLevel);
+        Assert.Equal("auth.session_rejected", entry.Property("event_name"));
+        Assert.Equal("authentication_failed", entry.Property("outcome"));
+        Assert.Equal("inactive_session", entry.Property("error_class"));
+        Assert.Equal("expired", entry.Property("session_validation_result"));
+        Assert.Equal(accountId, entry.Property("actor_account_id"));
+        Assert.Equal(sessionId, entry.Property("session_id"));
+        AssertSensitiveTextAbsent(entry, "Named Admin Private", "Back office browser");
     }
 
     [Fact]

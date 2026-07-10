@@ -33,6 +33,7 @@ public sealed class AccountLoginService(
         }
 
         var now = timeProvider.GetUtcNow();
+        var expiresAt = now.Add(AccountSessionPolicy.IdleTimeout);
         var normalizedDeviceLabel = NormalizeDeviceLabel(deviceLabel);
         var session = new SessionRecord
         {
@@ -40,6 +41,7 @@ public sealed class AccountLoginService(
             AccountId = credential.AccountId,
             DeviceLabel = normalizedDeviceLabel,
             StartedAt = now,
+            ExpiresAt = expiresAt,
             LastSeenAt = now,
             EndedAt = null,
         };
@@ -53,7 +55,8 @@ public sealed class AccountLoginService(
             credential.Account.DisplayName,
             credential.Account.AccountType,
             credential.Account.Role,
-            normalizedDeviceLabel));
+            normalizedDeviceLabel,
+            expiresAt));
     }
 
     public async Task<bool> LogoutAsync(Guid sessionId, CancellationToken cancellationToken = default)

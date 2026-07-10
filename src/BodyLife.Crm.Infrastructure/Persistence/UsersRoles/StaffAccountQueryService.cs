@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 
-public sealed class StaffAccountQueryService(BodyLifeDbContext dbContext)
+public sealed class StaffAccountQueryService(
+    BodyLifeDbContext dbContext,
+    TimeProvider timeProvider)
 {
     private const string NamedAdminAccountType = "named_admin";
     private const string SharedReceptionAdminAccountType = "shared_reception_admin";
@@ -11,6 +13,7 @@ public sealed class StaffAccountQueryService(BodyLifeDbContext dbContext)
     public async Task<IReadOnlyList<StaffAccountSummary>> ListStaffAccountsAsync(
         CancellationToken cancellationToken = default)
     {
+        var now = timeProvider.GetUtcNow();
         var records = await dbContext.Set<AccountRecord>()
             .AsNoTracking()
             .Where(account => account.AccountType == NamedAdminAccountType
@@ -28,7 +31,9 @@ public sealed class StaffAccountQueryService(BodyLifeDbContext dbContext)
                     .Select(credential => credential.LoginName)
                     .SingleOrDefault(),
                 ActiveSessionCount = dbContext.Set<SessionRecord>()
-                    .Count(session => session.AccountId == account.Id && session.EndedAt == null),
+                    .Count(session => session.AccountId == account.Id
+                        && session.EndedAt == null
+                        && session.ExpiresAt > now),
             })
             .ToListAsync(cancellationToken);
 

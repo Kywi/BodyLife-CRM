@@ -290,6 +290,7 @@ public sealed class PostgreSqlStaffAccountLifecycleTests
                 account_id,
                 device_label,
                 started_at,
+                expires_at,
                 ended_at,
                 last_seen_at)
             values (
@@ -297,6 +298,7 @@ public sealed class PostgreSqlStaffAccountLifecycleTests
                 @account_id,
                 @device_label,
                 @started_at,
+                @expires_at,
                 @ended_at,
                 @last_seen_at)
             """;
@@ -305,6 +307,7 @@ public sealed class PostgreSqlStaffAccountLifecycleTests
         command.Parameters.AddWithValue("account_id", accountId);
         command.Parameters.AddWithValue("device_label", "front desk tablet");
         command.Parameters.AddWithValue("started_at", TestNow);
+        command.Parameters.AddWithValue("expires_at", TestNow.Add(AccountSessionPolicy.IdleTimeout));
         command.Parameters.Add("ended_at", NpgsqlDbType.TimestampTz).Value = DBNull.Value;
         command.Parameters.AddWithValue("last_seen_at", TestNow);
 

@@ -25,8 +25,17 @@ The password must be at least 12 characters. The command stores a password hash 
 
 - `/Login` verifies the account credential, creates a row in `bodylife.sessions`, and issues an HTTP-only cookie.
 - `/Logout` marks the session ended and signs out the cookie.
+- Each session has a PostgreSQL-backed 12-hour idle expiry aligned with the sliding authentication cookie.
 - Login failures use a generic user-facing error.
 - Reception pages require an authenticated Owner, named Admin, or shared Reception/Admin session.
+
+## Database-backed session validation
+
+Every authenticated dynamic request validates the signed cookie's account/session identity against `bodylife.sessions` and `bodylife.accounts` before authorization runs. Validation requires the session row to exist, match the claimed account type and role, remain unended and unexpired, and belong to an active account.
+
+Successful activity updates `last_seen_at` and renews `expires_at` by 12 hours. At the expiry boundary the session is rejected and closed in PostgreSQL. Missing, ended, expired, claim-mismatched and inactive-account sessions fail closed, clear the authentication cookie and return protected navigation to `/Login`.
+
+Canonical active-session queries require both `ended_at is null` and `expires_at > now()`, so expired rows are not shown as active before a later request detects and closes them. Session rejection writes a structured `auth.session_rejected` technical event with a stable reason and account/session identifiers, without display names, device labels, credentials or tokens.
 
 ## Server-side policies
 
@@ -47,7 +56,7 @@ Future Razor Page handlers, controllers, commands and queries should use `IBodyL
 - `RequestCorrelationId` from `RequestCorrelationMiddleware`;
 - `CommandEnvelope` for state-changing workflows.
 
-The resolver rejects unauthenticated, malformed or role/account-type inconsistent claims. It does not replace command-specific authorization policies and does not query PostgreSQL for active-session expiry in this step.
+The resolver rejects unauthenticated, malformed or role/account-type inconsistent claims. It does not replace command-specific authorization policies; PostgreSQL session validation is performed earlier by cookie authentication.
 
 ## Current session indicator
 

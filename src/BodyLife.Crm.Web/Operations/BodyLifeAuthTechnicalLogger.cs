@@ -13,6 +13,10 @@ public interface IBodyLifeAuthTechnicalLogger
 
     void Logout(HttpContext httpContext, Guid? sessionId, bool sessionEnded);
 
+    void SessionRejected(
+        HttpContext httpContext,
+        AccountSessionValidationStatus validationStatus);
+
     void PermissionDenied(
         HttpContext httpContext,
         IReadOnlyCollection<string> requiredPolicies,
@@ -69,6 +73,28 @@ public sealed class BodyLifeAuthTechnicalLogger(
             actorContext.AccountType,
             sessionId,
             sessionEnded);
+    }
+
+    public void SessionRejected(
+        HttpContext httpContext,
+        AccountSessionValidationStatus validationStatus)
+    {
+        var actorContext = ResolveActorContext(httpContext);
+
+        logger.LogWarning(
+            "BodyLife auth technical event event_name={event_name} route_or_command={route_or_command} method={method} request_correlation_id={request_correlation_id} outcome={outcome} error_class={error_class} actor_context_valid={actor_context_valid} actor_account_id={actor_account_id} actor_role={actor_role} account_type={account_type} session_id={session_id} session_validation_result={session_validation_result}",
+            "auth.session_rejected",
+            ResolveRouteOrCommand(httpContext),
+            httpContext.Request.Method,
+            ResolveRequestCorrelationId(httpContext),
+            "authentication_failed",
+            "inactive_session",
+            actorContext.IsValid,
+            actorContext.AccountId,
+            actorContext.ActorRole,
+            actorContext.AccountType,
+            actorContext.SessionId,
+            FormatSessionValidationStatus(validationStatus));
     }
 
     public void PermissionDenied(
@@ -169,6 +195,22 @@ public sealed class BodyLifeAuthTechnicalLogger(
             AccountKind.NamedAdmin => BodyLifeAccountTypes.NamedAdmin,
             AccountKind.SharedReceptionAdmin => BodyLifeAccountTypes.SharedReceptionAdmin,
             _ => Unknown,
+        };
+    }
+
+    private static string FormatSessionValidationStatus(
+        AccountSessionValidationStatus validationStatus)
+    {
+        return validationStatus switch
+        {
+            AccountSessionValidationStatus.Active => "active",
+            AccountSessionValidationStatus.Missing => "missing",
+            AccountSessionValidationStatus.Ended => "ended",
+            AccountSessionValidationStatus.Expired => "expired",
+            AccountSessionValidationStatus.AccountInactive => "account_inactive",
+            AccountSessionValidationStatus.ClaimsMismatch => "claims_mismatch",
+            AccountSessionValidationStatus.InvalidClaims => "invalid_claims",
+            _ => "unknown",
         };
     }
 

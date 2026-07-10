@@ -108,7 +108,7 @@ The outline uses relational table names and column intent, not ORM classes. IDs 
 | Table | Key fields | Relationships | Notes |
 |---|---|---|---|
 | `accounts` | `id`, `display_name`, `account_type`, `role`, `is_active`, `created_at` | Referenced by source facts and audit. | `account_type`: `owner`, `named_admin`, `shared_reception_admin`. Do not model client accounts in v1. |
-| `sessions` | `id`, `account_id`, `device_label`, `started_at`, `ended_at`, `last_seen_at` | `account_id -> accounts.id` | Captures session/device for audit. Shared account audit is honest about shared identity. |
+| `sessions` | `id`, `account_id`, `device_label`, `started_at`, `expires_at`, `ended_at`, `last_seen_at` | `account_id -> accounts.id` | Captures session/device for audit. Active sessions require `ended_at is null` and `expires_at > now()`; authenticated activity renews the 12-hour idle expiry. Shared account audit is honest about shared identity. |
 
 ### Clients and search
 

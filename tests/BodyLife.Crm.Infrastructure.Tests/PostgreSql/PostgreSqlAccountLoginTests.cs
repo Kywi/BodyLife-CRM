@@ -6,6 +6,8 @@ namespace BodyLife.Crm.Infrastructure.Tests.PostgreSql;
 
 public sealed class PostgreSqlAccountLoginTests
 {
+    private static readonly DateTimeOffset TestNow = new(2026, 7, 10, 9, 0, 0, TimeSpan.Zero);
+
     [PostgreSqlFact]
     public async Task OwnerCredentialsBootstrapperStoresLoginHash()
     {
@@ -47,7 +49,10 @@ public sealed class PostgreSqlAccountLoginTests
 
         var passwordHashingService = new PasswordHashingService();
         await BootstrapOwnerCredentialsAsync(dbContext, passwordHashingService);
-        var loginService = new AccountLoginService(dbContext, passwordHashingService, TimeProvider.System);
+        var loginService = new AccountLoginService(
+            dbContext,
+            passwordHashingService,
+            new FixedTimeProvider(TestNow));
 
         var loginResult = await loginService.LoginAsync(
             "owner",
@@ -59,6 +64,7 @@ public sealed class PostgreSqlAccountLoginTests
         Assert.Equal(AccountLoginStatus.Success, loginResult.Status);
         Assert.NotNull(loginResult.Session);
         Assert.Equal("front desk tablet", loginResult.Session.DeviceLabel);
+        Assert.Equal(TestNow.Add(AccountSessionPolicy.IdleTimeout), loginResult.Session.ExpiresAt);
         Assert.Equal(1L, activeSessionCount);
 
         var logoutResult = await loginService.LogoutAsync(loginResult.Session.SessionId);
@@ -153,5 +159,13 @@ public sealed class PostgreSqlAccountLoginTests
         };
 
         return database.ExecuteScalarAsync<long>($"select count(*) from bodylife.sessions where {predicate}");
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow()
+        {
+            return utcNow;
+        }
     }
 }

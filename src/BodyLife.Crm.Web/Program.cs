@@ -1,4 +1,5 @@
 using BodyLife.Crm.Infrastructure;
+using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -16,6 +17,7 @@ builder.Logging.AddJsonConsole(options =>
 
 builder.Services.AddBodyLifePersistence(builder.Configuration);
 builder.Services.AddBodyLifeRequestContext();
+builder.Services.AddScoped<BodyLifeCookieAuthenticationEvents>();
 
 builder.Services.AddRazorPages(options =>
 {
@@ -34,8 +36,9 @@ builder.Services
         options.LoginPath = "/Login";
         options.LogoutPath = "/Logout";
         options.AccessDeniedPath = "/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromHours(12);
+        options.ExpireTimeSpan = AccountSessionPolicy.IdleTimeout;
         options.SlidingExpiration = true;
+        options.EventsType = typeof(BodyLifeCookieAuthenticationEvents);
     });
 builder.Services.AddBodyLifeAuthorizationPolicies();
 

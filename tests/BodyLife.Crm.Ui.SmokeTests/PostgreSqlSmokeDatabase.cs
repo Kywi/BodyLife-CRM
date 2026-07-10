@@ -48,6 +48,40 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return new BodyLifeDbContext(optionsBuilder.Options);
     }
 
+    public async Task<int> ExpireSessionAsync(string deviceLabel)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.sessions
+            set expires_at = started_at + interval '1 millisecond'
+            where device_label = @device_label
+              and ended_at is null
+            """;
+        command.Parameters.AddWithValue("device_label", deviceLabel);
+        return await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task<bool> IsSessionEndedAsync(string deviceLabel)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select ended_at is not null
+            from bodylife.sessions
+            where device_label = @device_label
+            order by started_at desc
+            limit 1
+            """;
+        command.Parameters.AddWithValue("device_label", deviceLabel);
+        return (bool)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("The smoke session was not found."));
+    }
+
     public async ValueTask DisposeAsync()
     {
         await ExecuteAdminCommandAsync(

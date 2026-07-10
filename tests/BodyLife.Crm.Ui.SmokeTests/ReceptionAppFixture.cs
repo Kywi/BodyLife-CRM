@@ -32,6 +32,21 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public string AdminPassword => SmokeAdminPassword;
 
+    public async Task ExpireSessionAsync(string deviceLabel)
+    {
+        var database = _database
+            ?? throw new InvalidOperationException("The UI smoke database is not initialized.");
+        var updatedRows = await database.ExpireSessionAsync(deviceLabel);
+        Assert.Equal(1, updatedRows);
+    }
+
+    public async Task<bool> IsSessionEndedAsync(string deviceLabel)
+    {
+        var database = _database
+            ?? throw new InvalidOperationException("The UI smoke database is not initialized.");
+        return await database.IsSessionEndedAsync(deviceLabel);
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");

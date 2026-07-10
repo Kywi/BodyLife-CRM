@@ -98,6 +98,50 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         }
     }
 
+    [Fact]
+    public async Task ExpiredDatabaseSessionRequiresLoginAgain()
+    {
+        Assert.NotNull(_browser);
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = 1024,
+                Height = 768,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            var deviceLabel = $"expiry-{Guid.NewGuid():N}";
+            await page.GotoAsync(_app.BaseAddress.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+            await page.GetByRole(AriaRole.Textbox, new() { Name = "Login" }).FillAsync(_app.LoginName);
+            await page.GetByLabel("Password", new() { Exact = true }).FillAsync(_app.Password);
+            await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
+            await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
+            await page.WaitForURLAsync("**/");
+            await _app.ExpireSessionAsync(deviceLabel);
+
+            await page.ReloadAsync();
+            await page.WaitForURLAsync("**/Login**");
+
+            await ExpectVisibleAsync(
+                page.GetByRole(AriaRole.Heading, new() { Name = "Login" }),
+                "tablet",
+                "login after session expiry");
+            Assert.Contains("ReturnUrl=%2F", page.Url, StringComparison.Ordinal);
+            Assert.True(await _app.IsSessionEndedAsync(deviceLabel));
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     private static async Task ExpectVisibleAsync(ILocator locator, string viewportName, string label)
     {
         await locator.WaitForAsync(new LocatorWaitForOptions

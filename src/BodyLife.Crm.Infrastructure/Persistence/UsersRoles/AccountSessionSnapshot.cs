@@ -6,4 +6,5 @@ public sealed record AccountSessionSnapshot(
     string DisplayName,
     string AccountType,
     string Role,
-    string? DeviceLabel);
+    string? DeviceLabel,
+    DateTimeOffset ExpiresAt);

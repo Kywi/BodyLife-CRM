@@ -27,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<PasswordHashingService>();
         services.AddScoped<BusinessAuditAppender>();
         services.AddScoped<AccountLoginService>();
+        services.AddScoped<AccountSessionValidationService>();
         services.AddScoped<OwnerCredentialsBootstrapper>();
         services.AddScoped<OwnerBootstrapper>();
         services.AddScoped<StaffAccountLifecycleService>();
