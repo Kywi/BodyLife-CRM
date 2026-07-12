@@ -478,5 +478,8 @@
   "476": ".FindPostgresException",
   "477": "20260709113419_AddCommandIdempotencyKeys.Designer.cs",
   "478": "ClientAuditActions.cs",
-  "479": "_CardAssignmentForm.cshtml"
+  "479": "_CardAssignmentForm.cshtml",
+  "480": "StaffAccountAuditActions.cs",
+  "481": "ClientSearchActionKeys.cs",
+  "482": "_CreateClientForm.cshtml"
 }

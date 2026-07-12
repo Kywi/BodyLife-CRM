@@ -460,8 +460,8 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Reception/Index.cshtml.cs": {
-    "mtime": 1783865600.1712146,
-    "ast_hash": "5bd917cda786dbc39ad821fdc37eb72a",
+    "mtime": 1783872074.3928204,
+    "ast_hash": "7a47d181e7ba0c4f1be5cab844779178",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Shared/_Layout.cshtml": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783870139.7531302,
-    "ast_hash": "4670aa972ac6dcb069f405a2aa166e18",
+    "mtime": 1783872281.9434977,
+    "ast_hash": "5ecbe6183db8d401de02ac54283e701e",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -810,13 +810,13 @@
     "semantic_hash": "11f75986539fd0528aeff0caa711fd62"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionAppFixture.cs": {
-    "mtime": 1783865986.421667,
-    "ast_hash": "0aa5abd5f638ce55e7bb807e6c0f91cb",
+    "mtime": 1783871508.638899,
+    "ast_hash": "ecf01d3389e1baf5b60e31e77bfe8183",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionDashboardSmokeTests.cs": {
-    "mtime": 1783866262.6380336,
-    "ast_hash": "2bf42132d3959fc7c5a8e6244fc813ac",
+    "mtime": 1783871831.3819475,
+    "ast_hash": "4b9cff085a51bbd23fb014ffebd1e972",
     "semantic_hash": ""
   },
   "scripts/dev-postgres.sh": {
@@ -1040,8 +1040,8 @@
     "semantic_hash": "b7089c5454d0a1f24c75bcaf7f4f3ca2"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/PostgreSqlSmokeDatabase.cs": {
-    "mtime": 1783865854.754174,
-    "ast_hash": "cf78edd8a14f669d927801c230206b8b",
+    "mtime": 1783871627.589802,
+    "ast_hash": "0d1c8854d21a6794d9951c699096b3cd",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Web.Tests/BodyLife.Crm.Web.Tests.csproj": {
@@ -1200,8 +1200,8 @@
     "semantic_hash": "163e4ee656c3d3f714800fee7dd6d7d7"
   },
   "src/BodyLife.Crm.Web/wwwroot/js/site.js": {
-    "mtime": 1783865761.7818592,
-    "ast_hash": "8a30c4f3dd4e265cdab9b0d1fef11356",
+    "mtime": 1783871412.718839,
+    "ast_hash": "aa4d4ed8df78da4222452b71febc5faa",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffAccountQueryTests.cs": {
@@ -1510,13 +1510,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Reception/ReceptionWorkspaceViewModel.cs": {
-    "mtime": 1783865600.1672142,
-    "ast_hash": "d870c156f92ad166f5a6b4367eaf0773",
+    "mtime": 1783871290.8940213,
+    "ast_hash": "a1360dc16e90c4bfa86c4c2d6e212a8d",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Reception/_ClientProfile.cshtml": {
-    "mtime": 1783865702.6225574,
-    "ast_hash": "85cc5901aed7433ba3e3dad74606c43d",
+    "mtime": 1783871319.9586916,
+    "ast_hash": "65a99cf976deae0f5e9b8d3fddd0b882",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Reception/_ReceptionWorkspace.cshtml": {
@@ -1547,6 +1547,16 @@
   "scripts/apply-migrations.sh": {
     "mtime": 1783869860.9718091,
     "ast_hash": "3133999c81af04827ef4cf642ddffdbc",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Web/Pages/Reception/CardAssignmentFormViewModel.cs": {
+    "mtime": 1783871942.758683,
+    "ast_hash": "40a86db83d35d31d1eebbaad6c167def",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Web/Pages/Reception/_CardAssignmentForm.cshtml": {
+    "mtime": 1783871319.9546914,
+    "ast_hash": "93d8541d52000b0e06dad3da7415bf3f",
     "semantic_hash": ""
   }
 }
