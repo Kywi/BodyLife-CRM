@@ -17,6 +17,7 @@ internal static class HealthCheckResponseWriter
                     entry.Key,
                     entry.Value.Status.ToString(),
                     (long)entry.Value.Duration.TotalMilliseconds,
+                    entry.Value.Description,
                     entry.Value.Exception?.GetType().Name))
                 .ToArray());
 
@@ -32,5 +33,6 @@ internal static class HealthCheckResponseWriter
         string Name,
         string Status,
         long DurationMs,
+        string? Description,
         string? ErrorClass);
 }

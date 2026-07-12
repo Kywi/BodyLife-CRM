@@ -8,7 +8,10 @@ Start the local database:
 
 ```bash
 ./scripts/dev-postgres.sh up
+./scripts/apply-migrations.sh
 ```
+
+Run `apply-migrations.sh` after pulling changes that add EF Core migrations. The command uses the normal application configuration and defaults to the Development environment; it preserves existing development data while applying only pending forward migrations.
 
 The default container exposes PostgreSQL on `localhost:55432`. Using a nonstandard host port avoids collisions with developer machines that already have PostgreSQL on `5432`.
 
@@ -33,9 +36,12 @@ Useful local database commands:
 ./scripts/dev-postgres.sh logs
 ./scripts/dev-postgres.sh down
 ./scripts/dev-postgres.sh reset
+./scripts/apply-migrations.sh
 ```
 
 `reset` deletes the local Docker volume. Use it only for disposable development data.
+
+`/health/ready` returns `503 Service Unavailable` while the configured database is unreachable or has pending EF Core migrations. Apply migrations before using login or other database-backed workflows.
 
 If port `55432` is already taken, start the container on another host port and override the app/test connection strings for that shell:
 

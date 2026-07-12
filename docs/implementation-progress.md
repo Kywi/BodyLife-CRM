@@ -1288,3 +1288,42 @@ Commit:
 Next recommended step:
 
 - Add the permission-aware `AssignOrChangeCard` Razor/htmx action from the profile: post the expected current assignment id, use explicit assign/change/clear intent, require a reason for replacement or clearing, render occupied-card/stale errors inline, and reread the complete workspace so exact-card search and profile state agree after commit. Keep CreateClient UI as a separate following step.
+
+## Step 40 - Local migration drift guard
+
+Status: completed.
+
+Scope:
+
+- Diagnose the local Owner login failure against the actual Docker development database instead of changing authentication or session business logic.
+- Confirm that the database had stopped at `20260709143654_AddAccountCredentials` while four later migrations were pending, including `20260710093311_AddSessionExpiry`, which owns the missing `sessions.expires_at` column.
+- Stop the web process and apply all four existing forward EF Core migrations to the development database without reset, direct schema patches or loss of the existing Owner credential.
+- Extend PostgreSQL readiness beyond connectivity so `/health/ready` reports unhealthy whenever the configured database has pending EF Core migrations.
+- Include the stable health-check description in the JSON response so connection failure and schema drift are distinguishable without exposing connection strings or secrets.
+- Add a PostgreSQL-backed readiness regression that migrates a disposable database only to the pre-session-expiry state and expects `503 Service Unavailable`, while preserving the existing fully migrated `200 OK` case.
+- Add `scripts/apply-migrations.sh` as the explicit local/development EF Core migration command using normal application configuration and environment overrides.
+- Document the local `Docker up -> apply migrations -> run app` order and the requirement to rerun migrations after pulling schema changes.
+- Keep application startup migration-free and retain the accepted explicit/reviewable migration discipline for non-development deployment.
+
+Validation:
+
+- Connected EF migration listing initially showed `AddBusinessAuditEntries`, `AddSessionExpiry`, `AddClientsSearchStorage` and `AddDuplicateWarningAcknowledgements` as pending.
+- `dotnet-ef database update` applied those four existing migrations successfully to `bodylife_crm_dev`; a second connected migration listing showed all eight migrations applied.
+- PostgreSQL metadata confirmed `bodylife.sessions.expires_at` is non-nullable `timestamp with time zone` after the update.
+- The active Owner credential count remained unchanged after migration; no password or credential material was read or modified.
+- `bash -n scripts/apply-migrations.sh` passed.
+- An immediate idempotency run of `CONFIGURATION=Release DOTNET_BIN=/tmp/bodylife-dotnet/dotnet DOTNET_ROOT=/tmp/bodylife-dotnet ./scripts/apply-migrations.sh` built successfully and reported that the database was already up to date.
+- Focused PostgreSQL readiness validation passed 2 tests covering fully migrated healthy state and connected-but-pending unhealthy state.
+- The restarted Development app returned `200 OK` from `/health/ready` with explicit current-schema status for PostgreSQL.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 107 PostgreSQL infrastructure tests, 10 Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because the failure was local migration drift and the required forward migration already existed.
+- `graphify update .` completed the structural rebuild with 3019 nodes, 4938 edges and 469 communities.
+- `graphify . --update` was attempted for the progress/local-development documentation changes but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `fix(infra): guard against pending migrations`.
+
+Next recommended step:
+
+- Resume the planned permission-aware `AssignOrChangeCard` Razor/htmx profile action with expected current assignment id, explicit assign/change/clear intent, replacement/clear reason, inline occupied-card/stale errors and canonical workspace reread.
