@@ -474,7 +474,12 @@
   "472": "StaffAccountAuditActions.cs",
   "473": ".Append",
   "474": "AccountRecord",
+  "475": "BodyLife.Crm.Ui.SmokeTests",
   "476": ".FindPostgresException",
+  "477": "20260709143654_AddAccountCredentials.Designer.cs",
+  "478": "FixedTimeProvider",
   "479": "_CardAssignmentForm.cshtml",
+  "480": "PostgreSqlFactAttribute.cs",
+  "481": "AccountSessionPolicy.cs",
   "482": "_CreateClientForm.cshtml"
 }

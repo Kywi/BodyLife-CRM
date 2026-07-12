@@ -710,8 +710,8 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1783683514.5447817,
-    "ast_hash": "c098784b11ba55b4c700f77c03cfee5a",
+    "mtime": 1783884392.0769918,
+    "ast_hash": "5314ece6f63557c85c26105194f90774",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783883709.7324545,
-    "ast_hash": "ab848019a94cc82e92c5407f6910ece6",
+    "mtime": 1783883797.3996336,
+    "ast_hash": "4cff918cfed235a64aad268863912e86",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1637,6 +1637,31 @@
   "tests/BodyLife.Crm.Tests/Modules/MembershipTypes/MembershipTypeContractsTests.cs": {
     "mtime": 1783883746.389834,
     "ast_hash": "c995c230b687c1dec27d509087ff9773",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/MembershipTypes/MembershipTypeRecord.cs": {
+    "mtime": 1783884209.8926237,
+    "ast_hash": "18cecf4b81ca5bbf68453e8a40603856",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/MembershipTypes/MembershipTypeRecordConfiguration.cs": {
+    "mtime": 1783884209.8926237,
+    "ast_hash": "57b7f1c0b16fb60c66016f16f34f518a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260712192355_AddMembershipTypesCatalog.Designer.cs": {
+    "mtime": 1783884392.0769918,
+    "ast_hash": "249a7558aa334046b148b8c884bc312e",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260712192355_AddMembershipTypesCatalog.cs": {
+    "mtime": 1783884392.0729916,
+    "ast_hash": "fa7371a2b604a83bafe0b6ff8ad77471",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipTypesStorageTests.cs": {
+    "mtime": 1783884334.5026243,
+    "ast_hash": "6fb579207217eb0939d2c2057f54b3fd",
     "semantic_hash": ""
   }
 }
