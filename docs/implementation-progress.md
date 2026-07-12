@@ -1686,3 +1686,47 @@ Commit:
 Next recommended step:
 
 - Implement only the persistence-backed `GetMembershipTypesForIssue` query: active types for ordinary issue flow, inactive inclusion only for canonical Owner catalog context, deterministic ordering, allowed-action metadata and PostgreSQL query tests. Keep Owner UI for the following step.
+
+## Step 49 - GetMembershipTypesForIssue query
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 4 after all three catalog mutations with the canonical read path required by future issue flow and Owner catalog UI.
+- Keep ordinary issue reads active-only while retaining inactive rows only for an explicit Owner catalog context.
+- Implement no UI, issued-membership snapshot, Memberships recalculation or business mutation in this query-only step.
+
+Scope:
+
+- Add and register a scoped persistence-backed `IBodyLifeQueryHandler<GetMembershipTypesForIssueQuery, GetMembershipTypesForIssueResult>`.
+- Add MembershipTypes-local query authorization that accepts only canonical active Owner, named Admin or shared Reception/Admin accounts with matching unexpired, unended sessions.
+- Deny `IncludeInactive` for Admin/shared Reception rather than silently returning a privileged catalog shape; denied results contain no rows or actions.
+- Query `membership_types` with `AsNoTracking` and map every canonical catalog, Money, active-state and lifecycle field into `MembershipTypeCatalogItem`.
+- For ordinary issue context, filter `is_active` before projection and order by `name, id`, matching the existing partial active-issue index.
+- For Owner catalog context, include active and inactive rows with deterministic active-first, then `name, id` ordering.
+- Return explicit allowed create/edit/deactivate metadata for Owner and explicit Owner-policy denials for Admin/shared Reception ordinary issue reads.
+- Keep queries side-effect free: no business audit, idempotency record or tracked catalog state is created.
+- Add seven disposable PostgreSQL tests covering all operational roles, active-only filtering, duplicate-name/id ordering, full field mapping, Owner inactive visibility/lifecycle, Admin privilege denial, forged/inactive/expired/ended/unknown actor denial, empty catalog and canonical reread after lifecycle change.
+
+Validation:
+
+- Release Infrastructure build passed with 0 warnings and 0 errors.
+- The first focused PostgreSQL run exposed two real issues: EF could not translate filtering/ordering after constructing a private projection record, and the actor-denial fixture violated the database's single-Owner constraint.
+- Filtering/ordering was moved to `MembershipTypeRecord` before projection; session-denial coverage now uses one Owner account with multiple sessions, while inactive-owner denial uses a separate disposable database.
+- Repeated focused `PostgreSqlGetMembershipTypesForIssueQueryTests` validation then passed all 7 tests against Docker PostgreSQL.
+- Focused MembershipTypes regression validation passed 20 core tests and 38 PostgreSQL tests across contracts/storage/create/edit/deactivate/query.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 145 PostgreSQL infrastructure tests, 15 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- The restarted Development app loaded the query-handler DI registration and returned `200 OK` from `/health/ready` with PostgreSQL schema current.
+- `graphify update .` completed the structural rebuild with 3430 nodes, 6239 edges and 495 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): implement catalog query`.
+
+Next recommended step:
+
+- Add only the Owner-only read surface for the MembershipType catalog/settings page, backed by `GetMembershipTypesForIssue(IncludeInactive: true)`, with active/inactive status, lifecycle/catalog fields, permission-safe action affordances and tablet/phone rendering tests. Keep create/edit/deactivate form submissions as following UI steps.
