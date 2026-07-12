@@ -1465,3 +1465,45 @@ Commits:
 Next recommended step:
 
 - Start Milestone 4 with a small MembershipTypes domain/application contract step: reconcile ADR-011 and interaction contracts, define the typed create/edit/deactivate/query shapes, and add focused validation/lifecycle tests before adding PostgreSQL schema or Owner catalog UI.
+
+## Step 44 - MembershipTypes catalog contracts and rules
+
+Status: completed.
+
+Plan alignment:
+
+- Start Milestone 4 only after the accepted Milestone 3 handoff and keep MembershipTypes as the sole owner of future-sale catalog values.
+- Implement the public domain/application contract before persistence so later handlers, schema and UI share one typed validation and lifecycle vocabulary.
+- Keep PostgreSQL records/mapping/migration, command handlers, audit writes, query implementation and Owner catalog UI outside this step.
+- Keep issued Membership snapshot persistence and immutability tests in Milestone 5, where the issued-membership source fact exists.
+
+Scope:
+
+- Add `MembershipTypeCatalogValues` and `MembershipTypeCatalogRules` for required display name, normalized whitespace/comment, positive `duration_days`, non-negative `visits_limit` and canonical non-negative `Money`.
+- Preserve catalog display casing and avoid inventing a duplicate/similar-name block while the roadmap still identifies that policy as an open product risk.
+- Add typed `CreateMembershipTypeCommand`, `EditMembershipTypeCommand` and `DeactivateMembershipTypeCommand` records using the common operational envelope.
+- Default create to active while retaining the interaction contract's explicit inactive-create option.
+- Keep active-state changes out of Edit; Deactivate is a separate workflow carrying membership type id and expected `updated_at` version, with reason/comment supplied by the common envelope.
+- Expose no hard-delete command or mutable issued-membership API.
+- Add `MembershipTypeCatalogItem` as the future catalog/issue read shape with catalog values, active state and lifecycle timestamps.
+- Add `GetMembershipTypesForIssueQuery` with ordinary active-only default and optional inactive inclusion for the future Owner catalog context.
+- Add `GetMembershipTypesForIssueResult` with permission/result shape and a contract guard that rejects inactive rows from an ordinary issue result.
+- Add stable Owner-only create/edit/deactivate action keys matching the existing `BodyLife.OwnerOnly` policy name.
+- Add focused pure tests for normalization, control/blank names, duration, visit and price boundaries, command shapes/defaults/versioning, hard-delete absence, query defaults, inactive-result rejection, Owner catalog visibility, denied results and action keys.
+
+Validation:
+
+- Focused `FullyQualifiedName~MembershipType` core validation passed all 20 test cases.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 107 PostgreSQL infrastructure tests, 15 Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because this step intentionally defines only public contracts and pure rules.
+- `graphify update .` completed the structural rebuild with 3154 nodes, 5342 edges and 478 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): define catalog contracts`.
+
+Next recommended step:
+
+- Add only the `membership_types` EF Core/Npgsql storage slice: record/configuration, DbContext registration, reviewable migration and PostgreSQL tests for lifecycle/check/index constraints. Keep command handlers, audit workflows, query implementation and Owner UI for following steps.
