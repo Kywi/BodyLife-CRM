@@ -1594,3 +1594,49 @@ Commit:
 Next recommended step:
 
 - Implement only the persistence-backed `EditMembershipType` command with Owner-only canonical authorization, expected `updated_at` stale-state protection, normalized future catalog fields, required reason/comment policy for meaningful changes, idempotency, before/after `membership_type.edited` audit and canonical reread. Keep deactivate/query/UI for later steps.
+
+## Step 47 - EditMembershipType command workflow
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 4 with the second catalog mutation after create, without starting deactivate, catalog queries or Owner UI.
+- Change only future-sale catalog values; no issued membership, issued snapshot or Memberships recalculation path is read or mutated.
+- Preserve `is_active` and `deactivated_at` exactly so lifecycle changes remain owned by the separate `DeactivateMembershipType` command.
+- Keep duplicate/similar names allowed until the roadmap's open product policy is resolved.
+
+Scope:
+
+- Add and register a scoped `IBodyLifeCommandHandler<EditMembershipTypeCommand>`.
+- Reject non-Owner actor shapes before persistence and revalidate the canonical active Owner account plus unexpired matching session inside the transaction.
+- Validate membership type id, expected `updated_at`, normalized catalog values, operational envelope and a required audit reason or command comment for every meaningful edit.
+- Lock the target `membership_types` row with PostgreSQL `FOR UPDATE` in one `ReadCommitted` transaction before checking idempotency and stale state.
+- Compare the locked row with the expected UTC version, return stable `not_found`/`stale_state`, reject normalized no-op edits and advance `updated_at` monotonically.
+- Update only name, duration, visit limit, price and catalog comment while retaining created/active/deactivation lifecycle fields.
+- Fingerprint normalized target/version/catalog and actor/session/envelope semantics; exact replay returns the original entity/audit ids while changed key reuse returns `duplicate_submission`.
+- Check idempotency after obtaining the row lock so concurrent exact retries wait for and replay the one committed workflow instead of failing as stale.
+- Append `membership_type.edited` with full before/after catalog and lifecycle summaries plus normalized reason/comment, then persist edit, audit and idempotency in the same transaction.
+- Return `membership_type` as both primary entity and canonical reread target; no migration or schema change is required.
+- Add nine disposable PostgreSQL tests covering canonical edit/audit, permissions, canonical session denial, validation/reason policy, missing/stale/no-op behavior, inactive lifecycle preservation, replay/change rejection, row-lock concurrency, concurrent exact replay and atomic rollback on audit failure.
+
+Validation:
+
+- Release Infrastructure build passed with 0 warnings and 0 errors.
+- Focused `PostgreSqlEditMembershipTypeCommandTests` validation passed all 9 tests against Docker PostgreSQL.
+- Focused MembershipTypes regression validation passed 20 core tests and 22 PostgreSQL tests, including create and storage coverage.
+- Both concurrent edit tests passed five repeated runs after confirming the filter selected exactly 2 tests per run.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build/analyzers/formatting, 54 core tests, 35 web tests, 129 PostgreSQL infrastructure tests, 15 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- The restarted Development app loaded the edit-handler DI registration and returned `200 OK` from `/health/ready` with PostgreSQL schema current.
+- `graphify update .` completed the structural rebuild with 3325 nodes, 5871 edges and 479 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): implement edit workflow`.
+
+Next recommended step:
+
+- Implement only the persistence-backed `DeactivateMembershipType` command with Owner-only canonical authorization, expected `updated_at` stale-state protection, required reason/comment, row locking, idempotency, `is_active`/`deactivated_at` lifecycle mutation, before/after `membership_type.deactivated` audit and canonical reread. Keep query implementation and Owner UI for later steps.

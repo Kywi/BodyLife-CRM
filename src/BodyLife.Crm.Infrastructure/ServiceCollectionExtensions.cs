@@ -45,6 +45,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<CreateMembershipTypeCommand>,
             CreateMembershipTypeCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<EditMembershipTypeCommand>,
+            EditMembershipTypeCommandHandler>();
         services.AddScoped<IBodyLifeCommandHandler<UpdateClientCommand>, UpdateClientCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<AssignOrChangeCardCommand>,

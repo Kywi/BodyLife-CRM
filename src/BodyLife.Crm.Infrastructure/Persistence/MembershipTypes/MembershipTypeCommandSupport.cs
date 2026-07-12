@@ -102,6 +102,64 @@ internal static class MembershipTypeCommandSupport
         return null;
     }
 
+    internal static CommandResult? ValidateAndNormalizeEdit(
+        EditMembershipTypeCommand command,
+        out NormalizedMembershipTypeEdit? normalizedEdit)
+    {
+        normalizedEdit = null;
+
+        if (command.MembershipTypeId == Guid.Empty)
+        {
+            return ValidationError("Membership type id is required.", "membershipTypeId");
+        }
+
+        if (command.ExpectedUpdatedAt == default)
+        {
+            return ValidationError(
+                "Expected updated_at is required.",
+                "expectedUpdatedAt");
+        }
+
+        var envelopeValidation = ValidateAndNormalizeEnvelope(
+            command.Envelope,
+            out var normalizedEnvelope);
+
+        if (envelopeValidation is not null)
+        {
+            return envelopeValidation;
+        }
+
+        if (normalizedEnvelope!.Reason is null && normalizedEnvelope.Comment is null)
+        {
+            return ValidationError(
+                "Reason or command comment is required to edit a membership type.",
+                "reason");
+        }
+
+        MembershipTypeCatalogValues catalogValues;
+
+        try
+        {
+            catalogValues = MembershipTypeCatalogRules.NormalizeAndValidate(
+                command.Name,
+                command.DurationDays,
+                command.VisitsLimit,
+                command.Price,
+                command.Comment);
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationError(exception.Message, exception.ParamName);
+        }
+
+        normalizedEdit = new NormalizedMembershipTypeEdit(
+            command.MembershipTypeId,
+            command.ExpectedUpdatedAt.ToUniversalTime(),
+            catalogValues,
+            normalizedEnvelope);
+        return null;
+    }
+
     internal static string CreateFingerprint(
         CommandEnvelope envelope,
         NormalizedMembershipTypeCreate normalizedCreate)
@@ -123,6 +181,33 @@ internal static class MembershipTypeCommandSupport
             PriceCurrency = normalizedCreate.CatalogValues.Price.Currency,
             normalizedCreate.CatalogValues.Comment,
             normalizedCreate.IsActive,
+        });
+
+        return Convert.ToHexString(SHA256.HashData(payload));
+    }
+
+    internal static string CreateEditFingerprint(
+        CommandEnvelope envelope,
+        NormalizedMembershipTypeEdit normalizedEdit)
+    {
+        var payload = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            ActorAccountId = envelope.Actor.AccountId.Value,
+            ActorRole = MapActorRole(envelope.Actor.Role),
+            ActorAccountKind = MapAccountKind(envelope.Actor.AccountKind),
+            ActorSessionId = envelope.Actor.SessionId.Value,
+            EntryOrigin = MapEntryOrigin(envelope.EntryOrigin),
+            envelope.OccurredAt,
+            EnvelopeReason = normalizedEdit.Envelope.Reason,
+            EnvelopeComment = normalizedEdit.Envelope.Comment,
+            normalizedEdit.MembershipTypeId,
+            normalizedEdit.ExpectedUpdatedAt,
+            normalizedEdit.CatalogValues.Name,
+            normalizedEdit.CatalogValues.DurationDays,
+            normalizedEdit.CatalogValues.VisitsLimit,
+            PriceAmount = normalizedEdit.CatalogValues.Price.Amount,
+            PriceCurrency = normalizedEdit.CatalogValues.Price.Currency,
+            normalizedEdit.CatalogValues.Comment,
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));
@@ -174,17 +259,36 @@ internal static class MembershipTypeCommandSupport
         AuditEntryId auditEntryId,
         string fingerprint)
     {
+        return CreateSucceededIdempotencyRecord(
+            commandName,
+            envelope,
+            normalizedCreate.Envelope,
+            recordedAt,
+            membershipTypeId,
+            auditEntryId,
+            fingerprint);
+    }
+
+    internal static CommandIdempotencyRecord CreateSucceededIdempotencyRecord(
+        string commandName,
+        CommandEnvelope envelope,
+        NormalizedMembershipTypeCommandEnvelope normalizedEnvelope,
+        DateTimeOffset recordedAt,
+        Guid membershipTypeId,
+        AuditEntryId auditEntryId,
+        string fingerprint)
+    {
         return new CommandIdempotencyRecord
         {
             Id = Guid.NewGuid(),
             CommandName = commandName,
-            IdempotencyKey = normalizedCreate.Envelope.IdempotencyKey,
-            RequestCorrelationId = normalizedCreate.Envelope.RequestCorrelationId,
+            IdempotencyKey = normalizedEnvelope.IdempotencyKey,
+            RequestCorrelationId = normalizedEnvelope.RequestCorrelationId,
             AccountId = envelope.Actor.AccountId.Value,
             ActorRole = MapActorRole(envelope.Actor.Role),
             AccountKind = MapAccountKind(envelope.Actor.AccountKind),
             SessionId = envelope.Actor.SessionId.Value,
-            DeviceLabel = normalizedCreate.Envelope.DeviceLabel,
+            DeviceLabel = normalizedEnvelope.DeviceLabel,
             EntryOrigin = MapEntryOrigin(envelope.EntryOrigin),
             Status = SucceededIdempotencyStatus,
             CreatedAt = recordedAt,
@@ -384,6 +488,12 @@ internal static class MembershipTypeCommandSupport
 internal sealed record NormalizedMembershipTypeCreate(
     MembershipTypeCatalogValues CatalogValues,
     bool IsActive,
+    NormalizedMembershipTypeCommandEnvelope Envelope);
+
+internal sealed record NormalizedMembershipTypeEdit(
+    Guid MembershipTypeId,
+    DateTimeOffset ExpectedUpdatedAt,
+    MembershipTypeCatalogValues CatalogValues,
     NormalizedMembershipTypeCommandEnvelope Envelope);
 
 internal sealed record NormalizedMembershipTypeCommandEnvelope(
