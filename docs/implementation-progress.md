@@ -1548,3 +1548,49 @@ Commit:
 Next recommended step:
 
 - Implement only the persistence-backed `CreateMembershipType` command workflow with Owner-only authorization, catalog normalization, idempotency, one PostgreSQL transaction, append-only `membership_type.created` audit and canonical reread target. Keep edit/deactivate/query/UI as following steps.
+
+## Step 46 - CreateMembershipType command workflow
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 4 after the catalog contracts and PostgreSQL storage foundation without starting the broader Owner settings UI.
+- Implement only `CreateMembershipType`; keep edit, deactivate, catalog/issue queries and UI as separate following steps.
+- Preserve MembershipTypes ownership of future-sale catalog values and create no issued membership or Memberships recalculation side effect.
+- Keep duplicate/similar type names allowed until the roadmap's open product policy is resolved.
+
+Scope:
+
+- Add a scoped `IBodyLifeCommandHandler<CreateMembershipTypeCommand>` registration and persistence-backed handler.
+- Reject non-Owner actor shapes before mutation and revalidate the canonical active Owner account plus unexpired matching session inside the transaction.
+- Reuse `MembershipTypeCatalogRules` so the persisted name, comment, duration, visits and Money values follow the public contract rather than duplicating catalog rules in persistence.
+- Validate and normalize the operational envelope, including idempotency key, correlation id, device label, entry origin and required context for non-normal origins.
+- Fingerprint normalized business input and actor/session context; exact replay returns the original entity/audit ids, while changed or concurrent reuse returns stable `duplicate_submission` without duplicate rows.
+- Create the catalog row, append `membership_type.created` with the complete catalog summary and store the succeeded idempotency record in one PostgreSQL `ReadCommitted` transaction.
+- Use the server clock for `created_at`, `updated_at`, `deactivated_at` and audit `recorded_at`; preserve envelope `occurred_at` separately in audit.
+- Support the contract's default active creation and explicit inactive creation with a complete deactivation lifecycle timestamp.
+- Return `membership_type` as both primary entity and canonical reread target together with the audit entry id.
+- Map idempotency uniqueness, serialization and deadlock failures to stable command errors while allowing unexpected persistence failures to surface after transaction rollback.
+- Add stable MembershipType audit action constants for later edit/deactivate workflows without implementing those workflows now.
+- Add eight disposable PostgreSQL command tests for successful normalization/audit/idempotency, Owner-only permissions, canonical account/session denial, validation, inactive lifecycle, replay/change rejection, concurrent same-key protection and atomic rollback when audit persistence fails.
+
+Validation:
+
+- Focused `PostgreSqlCreateMembershipTypeCommandTests` validation passed all 8 tests against Docker PostgreSQL.
+- The concurrent changed-payload/same-key PostgreSQL test passed five repeated runs, each committing one complete catalog/audit/idempotency workflow and rejecting the competing payload.
+- Focused MembershipTypes regression validation passed 20 core tests and 13 PostgreSQL tests, including the five storage tests from Step 45.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed after correcting two xUnit predicate-overload analyzer findings in the new concurrency test.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated because the workflow uses the existing membership type, audit and idempotency schema.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 120 PostgreSQL infrastructure tests, 15 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- The restarted Development app loaded the new DI registration and returned `200 OK` from `/health/ready` with PostgreSQL schema current.
+- `graphify update .` completed the structural rebuild with 3268 nodes, 5660 edges and 482 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): implement create workflow`.
+
+Next recommended step:
+
+- Implement only the persistence-backed `EditMembershipType` command with Owner-only canonical authorization, expected `updated_at` stale-state protection, normalized future catalog fields, required reason/comment policy for meaningful changes, idempotency, before/after `membership_type.edited` audit and canonical reread. Keep deactivate/query/UI for later steps.
