@@ -468,6 +468,8 @@
   "466": "IBodyLifeQueryHandler",
   "467": "BodyLife.Crm.Ui.SmokeTests",
   "468": "20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+  "469": "FixedTimeProvider",
   "470": "AccountSessionPolicy.cs",
-  "471": "StaffAccountAuditActions.cs"
+  "471": "StaffAccountAuditActions.cs",
+  "472": "MutableTimeProvider"
 }
