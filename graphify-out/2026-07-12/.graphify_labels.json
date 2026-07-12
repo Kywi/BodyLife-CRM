@@ -462,8 +462,10 @@
   "460": ".Success",
   "461": "ClientProfileActionKeys.cs",
   "462": "_UpdateClientForm.cshtml",
+  "463": "7. Реалістичний shortlist",
+  "464": "20260710113814_AddDuplicateWarningAcknowledgements.Designer.cs",
   "465": "IBodyLifeCommandHandler",
   "466": "IBodyLifeQueryHandler",
-  "468": "20260709113419_AddCommandIdempotencyKeys.Designer.cs",
+  "467": "apply-migrations.sh",
   "470": "AccountSessionPolicy.cs"
 }

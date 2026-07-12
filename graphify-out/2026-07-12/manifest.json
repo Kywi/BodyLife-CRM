@@ -715,14 +715,14 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
-    "mtime": 1783520984.885367,
-    "ast_hash": "601831827aae5f75e9104b417140c38c",
-    "semantic_hash": "601831827aae5f75e9104b417140c38c"
+    "mtime": 1783869860.9718091,
+    "ast_hash": "cf8c335142ed75d24cc1a5f9d517fcce",
+    "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/PostgreSqlHealthCheck.cs": {
-    "mtime": 1783520984.8893669,
-    "ast_hash": "5022f7787994ef1559d68ce0c6cbb294",
-    "semantic_hash": "5022f7787994ef1559d68ce0c6cbb294"
+    "mtime": 1783869860.9718091,
+    "ast_hash": "b618544e97126e9fa6648b904075feea",
+    "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/RequestCorrelationMiddleware.cs": {
     "mtime": 1783614888.4914927,
@@ -765,9 +765,9 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlReadyHealthCheckTests.cs": {
-    "mtime": 1783592540.5262074,
-    "ast_hash": "f1ac58dcbcbb231fc2c503ef1c784f11",
-    "semantic_hash": "f1ac58dcbcbb231fc2c503ef1c784f11"
+    "mtime": 1783869909.2173393,
+    "ast_hash": "f9bae3800eb4cbb49e2a00a354a2d894",
+    "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlTestDatabase.cs": {
     "mtime": 1783522941.0331614,
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783866577.8481853,
-    "ast_hash": "781c8be30ac9386d14c1e3565aad2c1e",
+    "mtime": 1783870139.7531302,
+    "ast_hash": "4670aa972ac6dcb069f405a2aa166e18",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -830,9 +830,9 @@
     "semantic_hash": "071126ff049c9665171927bb872c5ee0"
   },
   "docs/local-development.md": {
-    "mtime": 1783589989.9436646,
-    "ast_hash": "fac45021a2043e7ab1b26f2ce12b3a04",
-    "semantic_hash": "fac45021a2043e7ab1b26f2ce12b3a04"
+    "mtime": 1783869860.975809,
+    "ast_hash": "cf10b410325eeeb005593a9a0f3e3389",
+    "semantic_hash": ""
   },
   "docs/milestone-1-acceptance-review.md": {
     "mtime": 1783596958.1663969,
@@ -1542,6 +1542,11 @@
   "src/BodyLife.Crm.Web/Pages/Reception/_UpdateClientForm.cshtml": {
     "mtime": 1783865702.6225574,
     "ast_hash": "7198c7e0ea3eca57cb95b6a98922c73c",
+    "semantic_hash": ""
+  },
+  "scripts/apply-migrations.sh": {
+    "mtime": 1783869860.9718091,
+    "ast_hash": "3133999c81af04827ef4cf642ddffdbc",
     "semantic_hash": ""
   }
 }
