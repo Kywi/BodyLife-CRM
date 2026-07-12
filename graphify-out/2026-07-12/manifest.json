@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783872356.9130566,
-    "ast_hash": "21fbe452d126ce12d902059c20b95ef0",
+    "mtime": 1783878801.9327278,
+    "ast_hash": "7083030465cd9c6539e2ee89a6da3949",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -815,8 +815,8 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionDashboardSmokeTests.cs": {
-    "mtime": 1783877002.7987165,
-    "ast_hash": "4cfacc16a1e9fc79fcc686d16f12adc3",
+    "mtime": 1783878510.736545,
+    "ast_hash": "48e1f5cdb9f849a107a06b17623b6bf6",
     "semantic_hash": ""
   },
   "scripts/dev-postgres.sh": {
@@ -1572,6 +1572,71 @@
   "src/BodyLife.Crm/Modules/Clients/Search/ClientSearchActionKeys.cs": {
     "mtime": 1783876520.7701418,
     "ast_hash": "227db7c9ee3ea6dbc642ab7ee34f7584",
+    "semantic_hash": ""
+  },
+  "docs/milestone-3-acceptance-review.md": {
+    "mtime": 1783878826.4570513,
+    "ast_hash": "3da48754ee60e03ba840a0471a02bb7e",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/CreateMembershipTypeCommand.cs": {
+    "mtime": 1783883334.889799,
+    "ast_hash": "df8e5756a28e680641e5a927f5b2d3b1",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/DeactivateMembershipTypeCommand.cs": {
+    "mtime": 1783883334.889799,
+    "ast_hash": "344db5bb172eac501e998a99b908a79d",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/EditMembershipTypeCommand.cs": {
+    "mtime": 1783883334.889799,
+    "ast_hash": "64c9f565298c71f35e0c5374848c2113",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/GetMembershipTypesForIssueQuery.cs": {
+    "mtime": 1783883334.889799,
+    "ast_hash": "4e735040652dd94102a12372e6d570ab",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/GetMembershipTypesForIssueResult.cs": {
+    "mtime": 1783883334.8937993,
+    "ast_hash": "c87bff8b78427e59c8606c0da8e1c832",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/GetMembershipTypesForIssueStatus.cs": {
+    "mtime": 1783883334.889799,
+    "ast_hash": "2beffccc84a4455567a83559857a02a9",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/MembershipTypeCatalogActionKeys.cs": {
+    "mtime": 1783883334.889799,
+    "ast_hash": "849eb53f854ae47ebbc435612800e284",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/MembershipTypeCatalogItem.cs": {
+    "mtime": 1783883334.889799,
+    "ast_hash": "ca22aa3f4d687be67388ee5614698115",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/MembershipTypeCatalogRules.cs": {
+    "mtime": 1783883334.889799,
+    "ast_hash": "b79abb56f90f48b84e027a838d65888f",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/MembershipTypes/MembershipTypeCatalogValues.cs": {
+    "mtime": 1783883334.889799,
+    "ast_hash": "cf05c34383479a8dcaef70d2ef6a3194",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/MembershipTypes/MembershipTypeCatalogRulesTests.cs": {
+    "mtime": 1783883414.911704,
+    "ast_hash": "6571d21eeb996dc577837c25c8720758",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/MembershipTypes/MembershipTypeContractsTests.cs": {
+    "mtime": 1783883526.3905764,
+    "ast_hash": "b8366d48339b4ec108c3f55455036b50",
     "semantic_hash": ""
   }
 }
