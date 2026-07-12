@@ -458,11 +458,12 @@
   "456": "BodyLife.Crm.Modules.Clients.Search",
   "457": "MutableTimeProvider",
   "458": "ActorContext",
+  "459": "20260710093311_AddSessionExpiry.Designer.cs",
   "460": ".Success",
+  "461": "ClientProfileActionKeys.cs",
+  "462": "_UpdateClientForm.cshtml",
   "465": "IBodyLifeCommandHandler",
   "466": "IBodyLifeQueryHandler",
-  "467": "BodyLife.Crm.Ui.SmokeTests",
   "468": "20260709113419_AddCommandIdempotencyKeys.Designer.cs",
-  "470": "AccountSessionPolicy.cs",
-  "471": "StaffAccountAuditActions.cs"
+  "470": "AccountSessionPolicy.cs"
 }
