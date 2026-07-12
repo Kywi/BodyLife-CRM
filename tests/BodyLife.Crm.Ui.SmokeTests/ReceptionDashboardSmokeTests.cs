@@ -84,6 +84,26 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await ExpectVisibleAsync(searchResults, viewportName, "search results region");
             await ExpectVisibleAsync(clientProfile, viewportName, "client profile region");
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "No client selected" }), viewportName, "initial profile state");
+            await AssertMinimumTouchTargetAsync(
+                page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }),
+                viewportName,
+                "client search input");
+            await AssertMinimumTouchTargetAsync(
+                page.GetByRole(AriaRole.Button, new() { Name = "Search" }),
+                viewportName,
+                "search button");
+            await AssertMinimumTouchTargetAsync(
+                page.GetByRole(AriaRole.Link, new() { Name = "Clear", Exact = true }),
+                viewportName,
+                "clear search link");
+            await AssertMinimumTouchTargetsAsync(
+                page.Locator(".search-mode-segments span"),
+                viewportName,
+                "search mode option");
+            await AssertMinimumTouchTargetAsync(
+                page.Locator(".checkbox-control"),
+                viewportName,
+                "include inactive control");
             await AssertFitsViewportAsync(page, viewportName, "initial dashboard");
 
             await SubmitHtmxSearchAsync(page, "BL-1001");
@@ -100,6 +120,10 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 viewportName,
                 "exact-card profile number");
             await ExpectVisibleAsync(clientProfile.GetByText("No current membership", new() { Exact = true }), viewportName, "membership placeholder");
+            await AssertMinimumTouchTargetsAsync(
+                clientProfile.Locator(".profile-action-panel summary"),
+                viewportName,
+                "profile action");
             await AssertFitsViewportAsync(page, viewportName, "exact-card profile");
             await CaptureVisualAsync(page, viewportName, "exact-profile");
 
@@ -110,6 +134,10 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await ExpectVisibleAsync(searchResults.GetByRole(AriaRole.Link, new() { Name = "Open Kovalenko Marta", Exact = true }), viewportName, "Marta result");
             await ExpectVisibleAsync(searchResults.GetByRole(AriaRole.Link, new() { Name = "Open Kovalenko Olena", Exact = true }), viewportName, "Olena result");
             await ExpectVisibleAsync(searchResults.GetByRole(AriaRole.Link, new() { Name = "Open Kovalenko Taras", Exact = true }), viewportName, "Taras result");
+            await AssertMinimumTouchTargetsAsync(
+                searchResults.Locator(".client-result-row"),
+                viewportName,
+                "client result row");
             await AssertFitsViewportAsync(page, viewportName, "multiple results");
             await CaptureVisualAsync(page, viewportName, "multiple-results");
 
@@ -1047,6 +1075,38 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         Assert.True(
             fitsViewport,
             $"{viewportName} {state} should not require horizontal scrolling.");
+    }
+
+    private static async Task AssertMinimumTouchTargetsAsync(
+        ILocator locators,
+        string viewportName,
+        string label)
+    {
+        var count = await locators.CountAsync();
+        Assert.True(count > 0, $"At least one {label} should exist on {viewportName} viewport.");
+
+        for (var index = 0; index < count; index++)
+        {
+            await AssertMinimumTouchTargetAsync(
+                locators.Nth(index),
+                viewportName,
+                $"{label} {index + 1}");
+        }
+    }
+
+    private static async Task AssertMinimumTouchTargetAsync(
+        ILocator locator,
+        string viewportName,
+        string label)
+    {
+        var bounds = await locator.BoundingBoxAsync();
+        Assert.NotNull(bounds);
+        Assert.True(
+            bounds.Width >= 44,
+            $"{label} should be at least 44px wide on {viewportName}, but was {bounds.Width:F1}px.");
+        Assert.True(
+            bounds.Height >= 44,
+            $"{label} should be at least 44px high on {viewportName}, but was {bounds.Height:F1}px.");
     }
 
     private static async Task CaptureVisualAsync(
