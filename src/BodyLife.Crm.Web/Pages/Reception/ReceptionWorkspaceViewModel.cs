@@ -8,7 +8,7 @@ public sealed record ReceptionWorkspaceViewModel(
     bool IncludeInactive,
     string? PageCursor,
     SearchClientsResult? SearchResult,
-    GetClientProfileResult? ProfileResult)
+    ClientProfileViewModel Profile)
 {
     public static ReceptionWorkspaceViewModel Empty { get; } = new(
         Query: null,
@@ -16,5 +16,45 @@ public sealed record ReceptionWorkspaceViewModel(
         IncludeInactive: false,
         PageCursor: null,
         SearchResult: null,
-        ProfileResult: null);
+        ClientProfileViewModel.Empty);
+}
+
+public sealed record ReceptionSearchContext(
+    string? Query,
+    ClientSearchMode Mode,
+    bool IncludeInactive,
+    string? PageCursor);
+
+public sealed record ClientProfileViewModel(
+    GetClientProfileResult? Result,
+    UpdateClientFormViewModel? UpdateClientForm,
+    string? OperationMessage,
+    bool OperationSucceeded)
+{
+    public static ClientProfileViewModel Empty { get; } = new(
+        Result: null,
+        UpdateClientForm: null,
+        OperationMessage: null,
+        OperationSucceeded: false);
+
+    public static ClientProfileViewModel FromResult(
+        GetClientProfileResult? result,
+        ReceptionSearchContext searchContext,
+        string? operationMessage = null,
+        bool operationSucceeded = false,
+        UpdateClientFormViewModel? updateClientForm = null)
+    {
+        if (updateClientForm is null
+            && result?.Profile is { } profile
+            && profile.AllowedActions.IsAllowed(ClientProfileActionKeys.UpdateClient))
+        {
+            updateClientForm = UpdateClientFormViewModel.FromProfile(profile, searchContext);
+        }
+
+        return new ClientProfileViewModel(
+            result,
+            updateClientForm,
+            operationMessage,
+            operationSucceeded);
+    }
 }

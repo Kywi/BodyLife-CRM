@@ -32,6 +32,12 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public string AdminPassword => SmokeAdminPassword;
 
+    public Guid TabletEditableClientId { get; private set; }
+
+    public Guid PhoneEditableClientId { get; private set; }
+
+    public Guid StaleEditableClientId { get; private set; }
+
     public async Task ExpireSessionAsync(string deviceLabel)
     {
         var database = _database
@@ -45,6 +51,26 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         var database = _database
             ?? throw new InvalidOperationException("The UI smoke database is not initialized.");
         return await database.IsSessionEndedAsync(deviceLabel);
+    }
+
+    public Task AdvanceClientUpdatedAtAsync(Guid clientId)
+    {
+        return RequireDatabase().AdvanceClientUpdatedAtAsync(clientId);
+    }
+
+    public Task<long> CountClientUpdateAuditEntriesAsync(Guid clientId)
+    {
+        return RequireDatabase().CountClientUpdateAuditEntriesAsync(clientId);
+    }
+
+    public Task<long> CountUpdateClientIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountUpdateClientIdempotencyKeysAsync(clientId);
+    }
+
+    public Task<long> CountDuplicateAcknowledgementsAsync(Guid clientId)
+    {
+        return RequireDatabase().CountDuplicateAcknowledgementsAsync(clientId);
     }
 
     public async Task InitializeAsync()
@@ -155,7 +181,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         throw new TimeoutException($"Timed out waiting for BodyLife.Crm.Web at {BaseAddress}.{Environment.NewLine}{CapturedOutput()}");
     }
 
-    private static async Task SeedAccountsAsync(PostgreSqlSmokeDatabase database)
+    private async Task SeedAccountsAsync(PostgreSqlSmokeDatabase database)
     {
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
@@ -217,7 +243,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         Assert.Equal(StaffCredentialsStatus.Configured, staffCredentialsResult.Status);
     }
 
-    private static async Task SeedReceptionClientsAsync(
+    private async Task SeedReceptionClientsAsync(
         PostgreSqlSmokeDatabase database,
         Guid ownerAccountId)
     {
@@ -247,6 +273,45 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "+380 67 444 88 99",
             cardNumber: null,
             operationalStatus: "inactive");
+        TabletEditableClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Edit",
+            "Tablet",
+            "+380 67 555 01 01",
+            "BL-EDIT-TABLET",
+            "Tablet source.");
+        PhoneEditableClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Edit",
+            "Phone",
+            "+380 67 555 02 02",
+            "BL-EDIT-PHONE",
+            "Phone source.");
+        StaleEditableClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Stale",
+            "Target",
+            "+380 67 555 03 03",
+            "BL-EDIT-STALE",
+            "Stale source.");
+        await database.SeedClientAsync(
+            ownerAccountId,
+            "Duplicate",
+            "TabletMatch",
+            "+380 67 777 88 91",
+            "BL-DUP-TABLET");
+        await database.SeedClientAsync(
+            ownerAccountId,
+            "Duplicate",
+            "PhoneMatch",
+            "+380 67 777 88 92",
+            "BL-DUP-PHONE");
+    }
+
+    private PostgreSqlSmokeDatabase RequireDatabase()
+    {
+        return _database
+            ?? throw new InvalidOperationException("The UI smoke database is not initialized.");
     }
 
     private static int FindAvailablePort()

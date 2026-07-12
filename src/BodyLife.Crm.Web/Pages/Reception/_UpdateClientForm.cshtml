@@ -1,0 +1,187 @@
+@model UpdateClientFormViewModel
+@{
+    var input = Model.Input;
+    var clientKey = input.ClientId.ToString("N");
+}
+
+<details id="profile-action-panel" class="profile-action-panel" open="@(Model.IsOpen ? "open" : null)">
+    <summary>Edit client</summary>
+    <div class="profile-action-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Client not updated</strong>
+                <ul>
+                    @foreach (var message in Model.Errors.Select(DisplayError).Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form id="update-client-form-@clientKey"
+              class="update-client-form"
+              method="post"
+              asp-page="/Reception/Index"
+              asp-page-handler="UpdateClient"
+              data-busy-form
+              hx-post="@Url.Page("/Reception/Index", "UpdateClient")"
+              hx-target="#profile-action-panel"
+              hx-swap="outerHTML"
+              hx-sync="this:drop"
+              hx-indicator="#update-client-loading"
+              hx-disabled-elt="find button">
+            <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+            <input type="hidden" name="form.ExpectedUpdatedAt" value="@input.ExpectedUpdatedAt.ToString("O")" />
+            <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+            <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+            <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+            <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+            <div class="action-form-grid">
+                <div class="form-field">
+                    <label for="update-surname-@clientKey">Surname</label>
+                    <input id="update-surname-@clientKey"
+                           name="form.Surname"
+                           type="text"
+                           value="@input.Surname"
+                           required
+                           autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="update-name-@clientKey">Name</label>
+                    <input id="update-name-@clientKey"
+                           name="form.Name"
+                           type="text"
+                           value="@input.Name"
+                           required
+                           autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="update-patronymic-@clientKey">Patronymic</label>
+                    <input id="update-patronymic-@clientKey"
+                           name="form.Patronymic"
+                           type="text"
+                           value="@input.Patronymic"
+                           autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="update-phone-@clientKey">Phone</label>
+                    <input id="update-phone-@clientKey"
+                           name="form.Phone"
+                           type="text"
+                           value="@input.Phone"
+                           inputmode="tel"
+                           autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="update-status-@clientKey">Operational status</label>
+                    <select id="update-status-@clientKey" name="form.OperationalStatus" required>
+                        <option value="Active" selected="@(input.OperationalStatus == ClientOperationalStatus.Active ? "selected" : null)">Active</option>
+                        <option value="Inactive" selected="@(input.OperationalStatus == ClientOperationalStatus.Inactive ? "selected" : null)">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-field form-field-wide">
+                    <label for="update-comment-@clientKey">Reception note</label>
+                    <textarea id="update-comment-@clientKey"
+                              name="form.Comment"
+                              rows="3">@input.Comment</textarea>
+                </div>
+            </div>
+
+            @if (Model.DuplicateWarnings.Count > 0)
+            {
+                <section class="duplicate-warning-section" aria-labelledby="duplicate-warning-title-@clientKey">
+                    <header>
+                        <h3 id="duplicate-warning-title-@clientKey">Duplicate review</h3>
+                    </header>
+
+                    @for (var index = 0; index < Model.DuplicateWarnings.Count; index++)
+                    {
+                        var warning = Model.DuplicateWarnings[index];
+                        var candidate = warning.Candidate;
+                        var acknowledgementId = $"duplicate-ack-{clientKey}-{index}";
+                        var reasonId = $"duplicate-reason-{clientKey}-{index}";
+
+                        <div class="duplicate-warning-item">
+                            <input type="hidden"
+                                   name="form.DuplicateAcknowledgements[@index].MatchedClientId"
+                                   value="@candidate.MatchedClientId" />
+                            <input type="hidden"
+                                   name="form.DuplicateAcknowledgements[@index].WarningType"
+                                   value="@candidate.WarningType" />
+                            <header class="duplicate-client-header">
+                                <div>
+                                    <strong>@DuplicateWarningLabel(candidate.WarningType)</strong>
+                                    <span>@CandidateDisplayName(candidate)</span>
+                                </div>
+                                <span class="status-chip @(candidate.IsActive ? "status-active" : "status-inactive")">
+                                    @(candidate.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </header>
+                            <p>@(candidate.Phone ?? "No phone")</p>
+                            <label class="acknowledgement-control" for="@acknowledgementId">
+                                <input id="@acknowledgementId"
+                                       name="form.DuplicateAcknowledgements[@index].Acknowledged"
+                                       type="checkbox"
+                                       value="true"
+                                       checked="@(warning.Acknowledged ? "checked" : null)"
+                                       required />
+                                <span>I verified this is the correct client update</span>
+                            </label>
+                            <label for="@reasonId">Acknowledgement reason</label>
+                            <input id="@reasonId"
+                                   name="form.DuplicateAcknowledgements[@index].Reason"
+                                   type="text"
+                                   value="@warning.Reason"
+                                   maxlength="1000"
+                                   required
+                                   autocomplete="off" />
+                        </div>
+                    }
+                </section>
+            }
+
+            <div class="action-form-footer">
+                <span id="update-client-loading"
+                      class="request-indicator htmx-indicator"
+                      role="status"
+                      aria-live="polite">Saving client...</span>
+                <button type="submit" data-busy-text="Saving...">Save changes</button>
+            </div>
+        </form>
+    </div>
+</details>
+
+@functions {
+    private static string CandidateDisplayName(ClientDuplicateCandidate candidate)
+    {
+        return candidate.Patronymic is null
+            ? $"{candidate.Surname} {candidate.Name}"
+            : $"{candidate.Surname} {candidate.Name} {candidate.Patronymic}";
+    }
+
+    private static string DuplicateWarningLabel(ClientDuplicateWarningType warningType)
+    {
+        return warningType switch
+        {
+            ClientDuplicateWarningType.DuplicatePhone => "Duplicate phone",
+            ClientDuplicateWarningType.SimilarName => "Similar name",
+            _ => "Duplicate warning",
+        };
+    }
+
+    private static string DisplayError(CommandError error)
+    {
+        return error.Code switch
+        {
+            CommandErrorCode.DuplicateWarningNotAcknowledged =>
+                "Review and acknowledge every current duplicate warning.",
+            CommandErrorCode.ConcurrencyConflict =>
+                "Client changed while the update was being saved. Canonical fields were refreshed.",
+            _ => error.Message,
+        };
+    }
+}

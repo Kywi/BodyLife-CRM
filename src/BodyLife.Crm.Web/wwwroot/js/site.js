@@ -12,6 +12,7 @@ document.addEventListener("submit", (event) => {
   }
 
   for (const button of form.querySelectorAll("button[type='submit']")) {
+    button.dataset.idleText ??= button.textContent ?? "";
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
 
@@ -20,3 +21,25 @@ document.addEventListener("submit", (event) => {
     }
   }
 });
+
+for (const eventName of ["htmx:responseError", "htmx:sendError", "htmx:timeout"]) {
+  document.addEventListener(eventName, (event) => {
+    const requestElement = event.detail?.elt;
+    const form = requestElement instanceof HTMLFormElement
+      ? requestElement
+      : requestElement?.closest?.("form[data-busy-form]");
+
+    if (!(form instanceof HTMLFormElement)) {
+      return;
+    }
+
+    for (const button of form.querySelectorAll("button[type='submit']")) {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+
+      if (button.dataset.idleText) {
+        button.textContent = button.dataset.idleText;
+      }
+    }
+  });
+}

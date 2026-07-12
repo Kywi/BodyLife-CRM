@@ -1,3 +1,4 @@
+using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Web.Operations;
@@ -9,7 +10,11 @@ namespace BodyLife.Crm.Web.Pages.Reception;
 public sealed class IndexModel(
     IBodyLifeRequestContextResolver requestContextResolver,
     IBodyLifeQueryHandler<SearchClientsQuery, SearchClientsResult> searchClients,
-    IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult> getClientProfile)
+    IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult> getClientProfile,
+    IBodyLifeQueryHandler<
+        FindClientDuplicateCandidatesQuery,
+        IReadOnlyList<ClientDuplicateCandidate>> findDuplicateCandidates,
+    IBodyLifeCommandHandler<UpdateClientCommand> updateClient)
     : PageModel
 {
     private const int SearchPageSize = 20;
@@ -29,6 +34,12 @@ public sealed class IndexModel(
     [BindProperty(SupportsGet = true, Name = "clientId")]
     public Guid? ClientId { get; set; }
 
+    [TempData]
+    public string? ClientOperationMessage { get; set; }
+
+    [TempData]
+    public string? ClientOperationTone { get; set; }
+
     public ReceptionWorkspaceViewModel Workspace { get; private set; }
         = ReceptionWorkspaceViewModel.Empty;
 
@@ -46,7 +57,7 @@ public sealed class IndexModel(
 
         ClientId = null;
         Workspace = await BuildWorkspaceAsync(cancellationToken);
-        var selectedClientId = Workspace.ProfileResult?.Profile?.ClientId;
+        var selectedClientId = Workspace.Profile.Result?.Profile?.ClientId;
         SetHtmxPushUrl(selectedClientId);
 
         return Partial("_ReceptionWorkspace", Workspace);
@@ -65,7 +76,166 @@ public sealed class IndexModel(
             cancellationToken);
         SetHtmxPushUrl(result.Profile?.ClientId ?? ClientId);
 
-        return Partial("_ClientProfile", result);
+        return Partial(
+            "_ClientProfile",
+            ClientProfileViewModel.FromResult(result, CurrentSearchContext()));
+    }
+
+    public async Task<IActionResult> OnPostUpdateClientAsync(
+        UpdateClientFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        var acknowledgements = (form.DuplicateAcknowledgements ?? [])
+            .Where(acknowledgement => acknowledgement.Acknowledged)
+            .Select(acknowledgement => new ClientDuplicateWarningAcknowledgement(
+                acknowledgement.MatchedClientId,
+                acknowledgement.WarningType,
+                acknowledgement.Reason ?? string.Empty))
+            .ToArray();
+        var command = new UpdateClientCommand(
+            requestContextResolver.CreateCommandEnvelope(
+                idempotencyKey: form.IdempotencyKey),
+            form.ClientId,
+            form.ExpectedUpdatedAt,
+            form.Surname ?? string.Empty,
+            form.Name ?? string.Empty,
+            form.Patronymic,
+            form.Phone,
+            form.Comment,
+            form.OperationalStatus,
+            acknowledgements);
+        var result = await updateClient.ExecuteAsync(command, cancellationToken);
+
+        if (result.Status == CommandStatus.Success)
+        {
+            return await RenderSuccessfulUpdateAsync(form, result, cancellationToken);
+        }
+
+        var updateForm = await BuildErrorFormAsync(form, result.Errors, cancellationToken);
+
+        if (result.Errors.Any(error => error.Code is
+                CommandErrorCode.StaleState or CommandErrorCode.ConcurrencyConflict))
+        {
+            return await RenderCanonicalConflictAsync(form, result.Errors, cancellationToken);
+        }
+
+        if (IsHtmxRequest())
+        {
+            return Partial("_UpdateClientForm", updateForm);
+        }
+
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with { UpdateClientForm = updateForm },
+        };
+
+        return Page();
+    }
+
+    private async Task<IActionResult> RenderSuccessfulUpdateAsync(
+        UpdateClientFormInput form,
+        CommandResult result,
+        CancellationToken cancellationToken)
+    {
+        if (result.RereadTargetId is not { } rereadTarget
+            || rereadTarget.Value != form.ClientId)
+        {
+            throw new InvalidOperationException(
+                "UpdateClient did not return the expected canonical client reread target.");
+        }
+
+        ApplySearchContext(form);
+        ClientId = rereadTarget.Value;
+        var message = result.AuditEntryId is { } auditEntryId
+            ? $"Client updated. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
+            : "Client updated.";
+
+        if (!IsHtmxRequest())
+        {
+            ClientOperationMessage = message;
+            ClientOperationTone = "success";
+            return RedirectToCanonicalPage(ClientId);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with
+            {
+                OperationMessage = message,
+                OperationSucceeded = true,
+            },
+        };
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
+    private async Task<IActionResult> RenderCanonicalConflictAsync(
+        UpdateClientFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+
+        if (Workspace.Profile.Result?.Profile is { } profile)
+        {
+            var freshForm = UpdateClientFormViewModel.FromProfile(
+                profile,
+                CurrentSearchContext(),
+                errors,
+                isOpen: true);
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with { UpdateClientForm = freshForm },
+            };
+        }
+
+        if (!IsHtmxRequest())
+        {
+            return Page();
+        }
+
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
+    private async Task<UpdateClientFormViewModel> BuildErrorFormAsync(
+        UpdateClientFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyList<ClientDuplicateCandidate> candidates = [];
+
+        if (errors.Any(error =>
+                error.Code == CommandErrorCode.DuplicateWarningNotAcknowledged
+                || error.Field?.StartsWith(
+                    "duplicateWarningAcknowledgements",
+                    StringComparison.Ordinal) == true))
+        {
+            candidates = await findDuplicateCandidates.ExecuteAsync(
+                new FindClientDuplicateCandidatesQuery(
+                    form.Surname ?? string.Empty,
+                    form.Name ?? string.Empty,
+                    form.Patronymic,
+                    form.Phone,
+                    ExcludedClientId: form.ClientId),
+                cancellationToken);
+        }
+
+        return UpdateClientFormViewModel.FromSubmission(form, candidates, errors);
     }
 
     private async Task<ReceptionWorkspaceViewModel> BuildWorkspaceAsync(
@@ -104,13 +274,40 @@ public sealed class IndexModel(
                 cancellationToken);
         }
 
+        var operationMessage = ClientOperationMessage;
+        var operationSucceeded = string.Equals(
+            ClientOperationTone,
+            "success",
+            StringComparison.Ordinal);
+
         return new ReceptionWorkspaceViewModel(
             Query?.Trim(),
             Mode,
             IncludeInactive,
             PageCursor,
             searchResult,
-            profileResult);
+            ClientProfileViewModel.FromResult(
+                profileResult,
+                CurrentSearchContext(),
+                operationMessage,
+                operationSucceeded));
+    }
+
+    private ReceptionSearchContext CurrentSearchContext()
+    {
+        return new ReceptionSearchContext(
+            Query?.Trim(),
+            Mode,
+            IncludeInactive,
+            PageCursor);
+    }
+
+    private void ApplySearchContext(UpdateClientFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
     }
 
     private bool IsHtmxRequest()

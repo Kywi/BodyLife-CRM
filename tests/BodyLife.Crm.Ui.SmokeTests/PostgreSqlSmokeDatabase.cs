@@ -84,7 +84,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             ?? throw new InvalidOperationException("The smoke session was not found."));
     }
 
-    public async Task SeedClientAsync(
+    public async Task<Guid> SeedClientAsync(
         Guid createdByAccountId,
         string surname,
         string name,
@@ -200,6 +200,63 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         }
 
         await transaction.CommitAsync();
+        return clientId;
+    }
+
+    public async Task AdvanceClientUpdatedAtAsync(Guid clientId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.clients
+            set updated_at = updated_at + interval '1 hour'
+            where id = @client_id
+            """;
+        command.Parameters.AddWithValue("client_id", clientId);
+        var updatedRows = await command.ExecuteNonQueryAsync();
+
+        if (updatedRows != 1)
+        {
+            throw new InvalidOperationException(
+                $"Expected to advance one smoke client, but updated {updatedRows} rows.");
+        }
+    }
+
+    public Task<long> CountClientUpdateAuditEntriesAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries
+            where action_type = 'client.updated'
+              and entity_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountUpdateClientIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'UpdateClient'
+              and primary_entity_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountDuplicateAcknowledgementsAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.duplicate_warning_acknowledgements
+            where client_id = @client_id
+            """,
+            clientId);
     }
 
     public async ValueTask DisposeAsync()
@@ -215,6 +272,17 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         await connection.OpenAsync();
         await using var command = new NpgsqlCommand(commandText, connection);
         await command.ExecuteNonQueryAsync();
+    }
+
+    private async Task<long> CountRowsAsync(string commandText, Guid clientId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = commandText;
+        command.Parameters.AddWithValue("client_id", clientId);
+        return (long)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("The smoke evidence query returned no value."));
     }
 
     private static string QuoteIdentifier(string identifier)

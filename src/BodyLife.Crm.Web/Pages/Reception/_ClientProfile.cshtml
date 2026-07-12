@@ -1,6 +1,7 @@
-@model GetClientProfileResult?
+@model ClientProfileViewModel
 @{
-    var profile = Model?.Profile;
+    var result = Model.Result;
+    var profile = result?.Profile;
 }
 
 <section id="client-profile" class="client-profile-region" aria-label="Client profile" aria-live="polite">
@@ -9,17 +10,17 @@
           role="status"
           aria-live="polite">Loading client...</span>
 
-    @if (Model is null)
+    @if (result is null)
     {
         <div class="operational-empty profile-empty">
             <h2>No client selected</h2>
         </div>
     }
-    else if (Model.Status != GetClientProfileStatus.Success || profile is null)
+    else if (result.Status != GetClientProfileStatus.Success || profile is null)
     {
         <div class="warning-block warning-danger" role="alert">
             <strong>Client unavailable</strong>
-            <span>@Model.ErrorMessage</span>
+            <span>@result.ErrorMessage</span>
         </div>
     }
     else
@@ -33,6 +34,14 @@
                 @(profile.OperationalStatus == ClientOperationalStatus.Active ? "Active" : "Inactive")
             </span>
         </header>
+
+        @if (!string.IsNullOrWhiteSpace(Model.OperationMessage))
+        {
+            <div class="operation-message profile-operation-message @(Model.OperationSucceeded ? "operation-success" : "operation-error")"
+                 role="@(Model.OperationSucceeded ? "status" : "alert")">
+                @Model.OperationMessage
+            </div>
+        }
 
         @if (profile.Warnings.Count > 0)
         {
@@ -118,6 +127,11 @@
                 </div>
             }
         </section>
+
+        @if (Model.UpdateClientForm is not null)
+        {
+            <partial name="_UpdateClientForm" model="Model.UpdateClientForm" />
+        }
     }
 </section>
 

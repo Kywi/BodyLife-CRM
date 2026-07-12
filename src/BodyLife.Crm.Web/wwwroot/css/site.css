@@ -35,7 +35,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -276,6 +277,17 @@ select {
   color: var(--text);
 }
 
+textarea {
+  width: 100%;
+  min-height: 96px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px 14px;
+  resize: vertical;
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
 select {
   padding-right: 36px;
 }
@@ -339,6 +351,7 @@ button:disabled {
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 .secondary-link:focus-visible,
 .client-result-row:focus-visible {
   outline: 3px solid var(--focus);
@@ -591,6 +604,149 @@ select:focus-visible,
 
 .membership-summary-grid {
   margin-top: 14px;
+}
+
+.profile-operation-message {
+  margin-top: 14px;
+}
+
+.profile-action-panel {
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.profile-action-panel summary {
+  display: flex;
+  min-height: 48px;
+  padding: 0 16px;
+  align-items: center;
+  color: var(--info);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.profile-action-panel summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.profile-action-panel[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.profile-action-content {
+  padding: 16px;
+}
+
+.update-client-form {
+  display: grid;
+  gap: 16px;
+}
+
+.action-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.form-field-wide {
+  grid-column: 1 / -1;
+}
+
+.command-error-summary {
+  border: 1px solid var(--danger);
+  border-left-width: 4px;
+  border-radius: 6px;
+  padding: 12px;
+  background: var(--danger-soft);
+  color: var(--danger-strong);
+}
+
+.command-error-summary ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.duplicate-warning-section {
+  display: grid;
+  gap: 10px;
+}
+
+.duplicate-warning-section h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.duplicate-warning-item {
+  display: grid;
+  border: 1px solid var(--warning);
+  border-left-width: 4px;
+  padding: 12px;
+  gap: 9px;
+  background: var(--warning-soft);
+  color: var(--text);
+}
+
+.duplicate-client-header {
+  display: flex;
+  min-width: 0;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.duplicate-client-header div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.duplicate-client-header span,
+.duplicate-warning-item p {
+  overflow-wrap: anywhere;
+}
+
+.duplicate-warning-item p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.duplicate-warning-item > label:not(.acknowledgement-control) {
+  color: var(--warning);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.acknowledgement-control {
+  display: flex;
+  min-height: 44px;
+  gap: 9px;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.acknowledgement-control input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--warning);
+}
+
+.action-form-footer {
+  display: flex;
+  min-height: 48px;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.action-form-footer .request-indicator {
+  margin-right: auto;
 }
 
 .profile-warning-list {
@@ -924,8 +1080,17 @@ select:focus-visible,
 
   .client-result-meta,
   .client-profile-meta,
-  .membership-summary-grid {
+  .membership-summary-grid,
+  .action-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .form-field-wide {
+    grid-column: auto;
+  }
+
+  .profile-action-content {
+    padding: 14px;
   }
 
   .management-header,

@@ -1244,3 +1244,47 @@ Commit:
 Next recommended step:
 
 - Add the permission-aware `UpdateClient` Razor/htmx action from the profile: expected-`updated_at` stale guard, duplicate-candidate warning review and exact acknowledgement inputs, command execution, inline errors and canonical `GetClientProfile` reread; keep card management and create-client UI for separate following steps.
+
+## Step 39 - Reception UpdateClient UI workflow
+
+Status: completed.
+
+Scope:
+
+- Add a permission-aware `UpdateClient` action to the existing server-rendered client profile only when `GetClientProfile` returns the `clients.update` allowed action.
+- Keep card assignment outside the identity form so card lifecycle changes continue exclusively through the separate audited `AssignOrChangeCard` command.
+- Post the canonical client id and expected `updated_at` version together with a fresh idempotency key and the preserved reception search context.
+- Resolve the authenticated actor/session through the existing request-context service and invoke the typed `UpdateClient` command handler without adding direct persistence or business rules to the PageModel.
+- Re-query duplicate candidates only after the command reports a duplicate acknowledgement error; render only the current server candidates and bind acknowledgements to exact matched-client/warning-type pairs.
+- Require an explicit checkbox and reason for every duplicate warning while relying on the command to revalidate the full warning set inside its PostgreSQL transaction.
+- Render command validation and duplicate errors inside the edit action without replacing the canonical profile shown above it.
+- On stale/concurrency errors, discard submitted business fields, reread the canonical profile, regenerate the expected version/idempotency key and reopen the form with the conflict message.
+- After success, reread the complete reception workspace so the client header, profile details, warnings, allowed actions and current search-result row all reflect committed canonical state.
+- Preserve progressive non-htmx POST/redirect behavior while using stable htmx targets, canonical `HX-Push-Url`, in-flight request dropping and busy/disabled submission states for the interactive path.
+- Add tablet and phone styling for identity fields, duplicate review blocks, acknowledgement controls, inline errors and action footer without hiding warnings or introducing horizontal overflow.
+- Extend the isolated Playwright PostgreSQL fixture with distinct tablet, phone, stale-target and duplicate-candidate clients plus direct evidence queries for `client.updated` audit, UpdateClient idempotency and duplicate acknowledgement records.
+- Add Playwright coverage for tablet/phone duplicate-warning rejection and exact acknowledgement, canonical workspace reread, audit/idempotency evidence, stale-form canonical refresh and retry, and observed disabled submit state during the htmx request.
+- Keep CreateClient UI, card management UI, Memberships composition and database migrations outside this step.
+
+Validation:
+
+- Release UI smoke project build passed with 0 warnings/errors.
+- The first focused reception run passed 5 of 7 tests; the two failures exposed shared duplicate fixture data and an over-broad strict locator. Distinct candidates and a scoped locator fixed only the test setup, after which all 7 reception tests passed.
+- A later busy-state assertion sampled the button after the response DOM swap and failed the three mutation cases; the test now begins observing the disabled transition before click while delaying only intercepted UpdateClient requests. The final focused reception run passed all 7 tests in 19 seconds.
+- Opt-in visual capture produced tablet and phone duplicate-review and success screenshots. Inspection confirmed readable warning/action order, canonical result/profile updates, no clipped controls and no horizontal overflow at 1024x768 and 390x844.
+- Full Playwright smoke validation passed all 10 tests, including existing authentication, authorization, reception search/profile and JavaScript-disabled fallback regressions.
+- Focused PostgreSQL UpdateClient command regression validation passed all 8 tests.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity diagnostic --no-restore` passed and formatted 0 of 204 files.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 106 PostgreSQL infrastructure tests, 10 Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- Chromium installation was skipped only because the browser was already installed; the full Playwright suite itself ran successfully.
+- No migration was generated because this step adds only Razor/htmx UI composition, client-side busy-state recovery and isolated smoke-test evidence data.
+- `graphify update .` completed the structural rebuild with 3013 nodes, 4928 edges and 467 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(ui): add client update workflow`.
+
+Next recommended step:
+
+- Add the permission-aware `AssignOrChangeCard` Razor/htmx action from the profile: post the expected current assignment id, use explicit assign/change/clear intent, require a reason for replacement or clearing, render occupied-card/stale errors inline, and reread the complete workspace so exact-card search and profile state agree after commit. Keep CreateClient UI as a separate following step.
