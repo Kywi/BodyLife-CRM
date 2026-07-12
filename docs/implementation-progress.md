@@ -1507,3 +1507,44 @@ Commit:
 Next recommended step:
 
 - Add only the `membership_types` EF Core/Npgsql storage slice: record/configuration, DbContext registration, reviewable migration and PostgreSQL tests for lifecycle/check/index constraints. Keep command handlers, audit workflows, query implementation and Owner UI for following steps.
+
+## Step 45 - MembershipTypes PostgreSQL storage
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 4 with its first persistence task after the public catalog contract was fixed in Step 44.
+- Keep the table as the canonical catalog for future sales while leaving immutable issued-membership snapshots in Milestone 5.
+- Keep command handlers, authorization, idempotency, audit writes, query implementation and Owner UI outside this storage-only step.
+- Do not introduce a unique membership-type name rule while duplicate/similar-name policy remains an explicit roadmap risk.
+
+Scope:
+
+- Add the internal `MembershipTypeRecord` with the accepted `membership_types` fields: id, name, duration, visit limit, money amount/currency, active state, comment and lifecycle timestamps.
+- Add an assembly-discovered EF Core configuration under the MembershipTypes persistence boundary; the existing `BodyLifeDbContext` configuration scan required no manual registration change.
+- Map price to PostgreSQL `numeric` without inventing a precision/scale restriction that is absent from the accepted Money contract.
+- Add database checks for non-empty name/comment semantics, positive duration, non-negative visits/price, trimmed uppercase non-empty currency, monotonic timestamps and complete active/deactivated lifecycle state.
+- Add a non-unique partial `(name, id) where is_active` index for the future ordinary issue selector while retaining inactive rows for owner/history/report reads.
+- Generate and review `20260712192355_AddMembershipTypesCatalog`, including model snapshot and reversible table creation/drop operations.
+- Add five disposable PostgreSQL tests proving migration metadata, the active-selector index, valid active/inactive rows, zero boundaries, duplicate-name allowance, all required value checks, lifecycle rejection and row-preserving deactivation.
+
+Validation:
+
+- Focused PostgreSQL `PostgreSqlMembershipTypesStorageTests` validation passed all 5 tests against Docker PostgreSQL.
+- Generated idempotent migration SQL was reviewed from `/tmp/bodylife-membership-types.sql`; it contains the expected table, eight checks, partial active index and migration-history write.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift after the generated migration.
+- `scripts/apply-migrations.sh` applied `20260712192355_AddMembershipTypesCatalog` to the local Docker development database through the normal forward EF workflow.
+- The running Development app returned `200 OK` from `/health/ready`, with PostgreSQL reporting that the schema is current.
+- The first format check found UTF-8 BOM emitted by `dotnet-ef`; the three generated files were normalized to the repository UTF-8-without-BOM convention and the repeated format/analyzer gate passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 112 PostgreSQL infrastructure tests, 15 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- `graphify update .` completed the structural rebuild with 3190 nodes, 5413 edges and 483 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): add catalog storage`.
+
+Next recommended step:
+
+- Implement only the persistence-backed `CreateMembershipType` command workflow with Owner-only authorization, catalog normalization, idempotency, one PostgreSQL transaction, append-only `membership_type.created` audit and canonical reread target. Keep edit/deactivate/query/UI as following steps.
