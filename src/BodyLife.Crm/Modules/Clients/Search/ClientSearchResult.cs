@@ -8,5 +8,5 @@ public sealed record ClientSearchResult(
     ClientOperationalStatus OperationalStatus,
     ClientSearchMatchType MatchType,
     int MatchPriority,
-    ClientSearchMembershipSummary? CurrentMembership,
-    IReadOnlyList<ClientSearchWarning> Warnings);
+    ClientMembershipSummary? CurrentMembership,
+    IReadOnlyList<ClientWarning> Warnings);

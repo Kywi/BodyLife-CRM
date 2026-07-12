@@ -36,6 +36,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeQueryHandler<SearchClientsQuery, SearchClientsResult>,
             SearchClientsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult>,
+            GetClientProfileQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<IBodyLifeCommandHandler<UpdateClientCommand>, UpdateClientCommandHandler>();
         services.AddScoped<

@@ -10,7 +10,6 @@ public sealed class SearchClientsQueryHandler(
     TimeProvider timeProvider)
     : IBodyLifeQueryHandler<SearchClientsQuery, SearchClientsResult>
 {
-    private const string ActiveOperationalStatus = "active";
     private const int MaxLimit = 50;
     private const int MaxCursorOffset = 10_000;
     private const int MaxSearchTextLength = 200;
@@ -28,9 +27,7 @@ public sealed class SearchClientsQueryHandler(
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        if (query.Actor is null
-            || !ClientCommandSupport.IsAllowedActorShape(query.Actor)
-            || !await ClientCommandSupport.IsCanonicalActorAuthorizedAsync(
+        if (!await ClientQuerySupport.IsActorAuthorizedAsync(
                 dbContext,
                 query.Actor,
                 timeProvider.GetUtcNow(),
@@ -53,7 +50,7 @@ public sealed class SearchClientsQueryHandler(
         var clients = dbContext.Set<ClientRecord>()
             .AsNoTracking()
             .Where(client => criteria.IncludeInactive
-                || client.OperationalStatus == ActiveOperationalStatus);
+                || client.OperationalStatus == ClientQuerySupport.ActiveOperationalStatus);
         var candidates =
             from client in clients
             join card in currentCards on client.Id equals card.ClientId into currentCardGroup
@@ -126,7 +123,7 @@ public sealed class SearchClientsQueryHandler(
 
         var page = await candidates
             .OrderBy(candidate => candidate.MatchPriority)
-            .ThenBy(candidate => candidate.OperationalStatus == ActiveOperationalStatus ? 0 : 1)
+            .ThenBy(candidate => candidate.OperationalStatus == ClientQuerySupport.ActiveOperationalStatus ? 0 : 1)
             .ThenBy(candidate => candidate.NormalizedFullName)
             .ThenBy(candidate => candidate.ClientId)
             .Skip(criteria.Offset)
@@ -137,14 +134,19 @@ public sealed class SearchClientsQueryHandler(
             .Take(criteria.Limit)
             .Select(candidate => new ClientSearchResult(
                 candidate.ClientId,
-                BuildDisplayName(candidate.Surname, candidate.Name, candidate.Patronymic),
+                ClientQuerySupport.BuildDisplayName(
+                    candidate.Surname,
+                    candidate.Name,
+                    candidate.Patronymic),
                 candidate.Phone,
                 candidate.CurrentCardNumber,
-                MapOperationalStatus(candidate.OperationalStatus),
+                ClientQuerySupport.MapOperationalStatus(candidate.OperationalStatus),
                 MapMatchType(candidate.MatchPriority),
                 candidate.MatchPriority,
                 CurrentMembership: null,
-                BuildWarnings(candidate.OperationalStatus, candidate.CurrentCardNumber)))
+                ClientQuerySupport.BuildWarnings(
+                    candidate.OperationalStatus,
+                    candidate.CurrentCardNumber)))
             .ToArray();
         var nextPageCursor = hasNextPage
             ? (criteria.Offset + criteria.Limit).ToString(CultureInfo.InvariantCulture)
@@ -270,50 +272,6 @@ public sealed class SearchClientsQueryHandler(
             limit,
             offset);
         return null;
-    }
-
-    private static string BuildDisplayName(
-        string surname,
-        string name,
-        string? patronymic)
-    {
-        return patronymic is null
-            ? $"{surname} {name}"
-            : $"{surname} {name} {patronymic}";
-    }
-
-    private static IReadOnlyList<ClientSearchWarning> BuildWarnings(
-        string operationalStatus,
-        string? currentCardNumber)
-    {
-        var warnings = new List<ClientSearchWarning>(2);
-
-        if (operationalStatus != ActiveOperationalStatus)
-        {
-            warnings.Add(new ClientSearchWarning(
-                "client_inactive",
-                "Client is operationally inactive."));
-        }
-
-        if (currentCardNumber is null)
-        {
-            warnings.Add(new ClientSearchWarning(
-                "no_current_card",
-                "Client has no current card."));
-        }
-
-        return warnings;
-    }
-
-    private static ClientOperationalStatus MapOperationalStatus(string operationalStatus)
-    {
-        return operationalStatus switch
-        {
-            ActiveOperationalStatus => ClientOperationalStatus.Active,
-            "inactive" => ClientOperationalStatus.Inactive,
-            _ => throw new InvalidOperationException(
-                $"Unsupported client operational status '{operationalStatus}'."),
-        };
     }
 
     private static ClientSearchMatchType MapMatchType(int matchPriority)

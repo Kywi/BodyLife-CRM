@@ -1156,3 +1156,44 @@ Commit:
 Next recommended step:
 
 - Implement the read-only `GetClientProfile` shell without UI: authorized canonical client identity, current assignment id/card, operational status, `updated_at`, empty/nullable Memberships area placeholder, Clients-owned warnings and server-provided allowed-action permission results; defer history aggregation and Razor/htmx rendering.
+
+## Step 37 - GetClientProfile query shell
+
+Status: completed.
+
+Scope:
+
+- Add a typed `GetClientProfileQuery` public contract in the owning Clients/Search module with actor/session context, client id, optional membership as-of date and explicit future history/drill-down composition flags.
+- Add a structured query result with success, permission, not-found and validation statuses plus stable error metadata.
+- Return canonical raw identity fields, display name, optional phone/comment, typed operational status, creation time and `updated_at` version for later stale-form protection.
+- Return only the current card assignment id, raw card number and assignment time; historical card rows are deliberately excluded from current profile state.
+- Add an explicit empty Memberships-owned area with nullable current summary, timeline and warning placeholders without calculating active status, remaining visits, dates or any other Memberships formula.
+- Reuse Clients-owned `client_inactive` and `no_current_card` warnings between SearchClients and GetClientProfile through narrow shared query support.
+- Generalize the compact membership and warning DTO names so both Clients queries can expose the same future Memberships composition contract without duplicating types.
+- Return server-provided permission results only for the two implemented profile mutations, `clients.update` and `clients.assign_or_change_card`, under the accepted Admin-or-Owner policy; mutation handlers still reauthorize canonical actor/session state.
+- Enforce Owner, named Admin and shared Reception/Admin actor shapes plus canonical active account/session state before reading profile data.
+- Reject unsupported history and drill-down composition flags explicitly until the owning modules expose those reads.
+- Implement the EF Core query with `AsNoTracking`, register its `IBodyLifeQueryHandler`, and keep it read-only with no session touch, business audit or idempotency writes.
+- Add a canonical reread integration test that executes the real UpdateClient and AssignOrChangeCard commands and then proves the profile returns committed identity, version and current-card state.
+- Keep Memberships composition, recent activity/history aggregation, Razor Pages, htmx and mutation forms outside this step.
+
+Validation:
+
+- The first build stopped on a local LINQ range-variable name collision in the profile projection; the projected card variable was renamed without changing query semantics.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet build BodyLife.Crm.sln --configuration Release --nologo` passed with 0 warnings/errors.
+- Focused GetClientProfile PostgreSQL validation passed 6 tests covering all accepted actor kinds, denied canonical actors, canonical identity/card/version reads, Clients warnings, exclusion of historical cards, stable validation/not-found results, command-to-profile canonical reread and no query writes.
+- Focused SearchClients regression validation passed all 9 tests after extracting shared query support and generalizing the compact DTO names.
+- Full PostgreSQL infrastructure validation passed with 106 tests and no skips.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity diagnostic` passed and formatted 0 files.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 106 PostgreSQL infrastructure tests, 6 authenticated Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because the profile query reads the existing client and current-card schema.
+- `graphify update .` completed the structural rebuild with 2834 nodes, 4260 edges and 471 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(clients): add client profile query`.
+
+Next recommended step:
+
+- Add the first server-rendered reception UI read path: a tablet-first/phone-safe search form and htmx result states backed by `SearchClients`, with exact-card auto-open into the read-only `GetClientProfile` shell; defer profile mutation forms and broader visual polish.
