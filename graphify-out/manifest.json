@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783872356.9130566,
-    "ast_hash": "21fbe452d126ce12d902059c20b95ef0",
+    "mtime": 1783878745.638849,
+    "ast_hash": "1178cd5e6721ac6a19f8a0a7d15103d1",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -815,8 +815,8 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionDashboardSmokeTests.cs": {
-    "mtime": 1783877002.7987165,
-    "ast_hash": "4cfacc16a1e9fc79fcc686d16f12adc3",
+    "mtime": 1783878510.736545,
+    "ast_hash": "48e1f5cdb9f849a107a06b17623b6bf6",
     "semantic_hash": ""
   },
   "scripts/dev-postgres.sh": {
@@ -1572,6 +1572,11 @@
   "src/BodyLife.Crm/Modules/Clients/Search/ClientSearchActionKeys.cs": {
     "mtime": 1783876520.7701418,
     "ast_hash": "227db7c9ee3ea6dbc642ab7ee34f7584",
+    "semantic_hash": ""
+  },
+  "docs/milestone-3-acceptance-review.md": {
+    "mtime": 1783878708.8935547,
+    "ast_hash": "4454b44d81d14af928f469864599a8e0",
     "semantic_hash": ""
   }
 }
