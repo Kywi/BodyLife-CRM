@@ -1,3 +1,5 @@
+using BodyLife.Crm.Application.Queries;
+
 namespace BodyLife.Crm.Modules.Clients.Search;
 
 public sealed record SearchClientsResult(
@@ -5,6 +7,7 @@ public sealed record SearchClientsResult(
     IReadOnlyList<ClientSearchResult> Items,
     Guid? AutoOpenClientId,
     string? NextPageCursor,
+    QueryPermissionSet AllowedActions,
     string? ErrorCode,
     string? ErrorMessage,
     string? ErrorField)
@@ -12,13 +15,15 @@ public sealed record SearchClientsResult(
     public static SearchClientsResult Succeeded(
         IReadOnlyList<ClientSearchResult> items,
         Guid? autoOpenClientId,
-        string? nextPageCursor)
+        string? nextPageCursor,
+        QueryPermissionSet allowedActions)
     {
         return new SearchClientsResult(
             SearchClientsStatus.Success,
             items,
             autoOpenClientId,
             nextPageCursor,
+            allowedActions,
             ErrorCode: null,
             ErrorMessage: null,
             ErrorField: null);
@@ -55,6 +60,7 @@ public sealed record SearchClientsResult(
             [],
             AutoOpenClientId: null,
             NextPageCursor: null,
+            QueryPermissionSet.Empty,
             errorCode,
             errorMessage,
             field);

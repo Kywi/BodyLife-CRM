@@ -259,6 +259,63 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             clientId);
     }
 
+    public async Task<long> CountClientsAsync()
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = "select count(*) from bodylife.clients";
+        return (long)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("The client count query returned no value."));
+    }
+
+    public Task<Guid?> FindClientIdByCurrentCardAsync(string cardNumber)
+    {
+        return FindClientIdAsync(
+            """
+            select client_id
+            from bodylife.client_card_assignments
+            where card_number_normalized = @value
+              and is_current
+            """,
+            ClientSearchNormalizer.NormalizeCardNumber(cardNumber));
+    }
+
+    public Task<Guid?> FindClientIdByPhoneAsync(string phone)
+    {
+        return FindClientIdAsync(
+            """
+            select id
+            from bodylife.clients
+            where phone_normalized = @value
+            """,
+            ClientSearchNormalizer.NormalizePhone(phone));
+    }
+
+    public Task<long> CountClientCreateAuditEntriesAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries
+            where action_type = 'client.created'
+              and entity_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountCreateClientIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'CreateClient'
+              and primary_entity_id = @client_id
+            """,
+            clientId);
+    }
+
     public async Task ReplaceCurrentCardForStaleTestAsync(
         Guid clientId,
         string newCardNumber)
@@ -449,6 +506,17 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         return (long)(await command.ExecuteScalarAsync()
             ?? throw new InvalidOperationException("The smoke evidence query returned no value."));
+    }
+
+    private async Task<Guid?> FindClientIdAsync(string commandText, string value)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = commandText;
+        command.Parameters.AddWithValue("value", value);
+        var result = await command.ExecuteScalarAsync();
+        return result is Guid clientId ? clientId : null;
     }
 
     private static string QuoteIdentifier(string identifier)

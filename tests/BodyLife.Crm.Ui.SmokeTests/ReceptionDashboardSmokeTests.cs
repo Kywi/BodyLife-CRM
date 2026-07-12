@@ -143,6 +143,208 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         }
     }
 
+    [Fact]
+    public async Task CreateClientRequiresCardAndDuplicateReviewBeforeCanonicalTabletReread()
+    {
+        Assert.NotNull(_browser);
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = 1024,
+                Height = 768,
+            },
+        });
+
+        try
+        {
+            var initialClientCount = await _app.CountClientsAsync();
+            var page = await context.NewPageAsync();
+            await DelayCreateClientRequestsAsync(page);
+            await page.GotoAsync(_app.BaseAddress.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+            await LoginAsync(page, _app.LoginName, _app.Password, "tablet create smoke");
+            await SubmitHtmxSearchAsync(page, "BL-CREATE-TABLET");
+
+            var results = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
+            var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            var createPanel = results.Locator("#create-client-action-panel");
+            await ExpectVisibleAsync(
+                createPanel.Locator("summary"),
+                "tablet",
+                "create-client action");
+            Assert.NotNull(await createPanel.GetAttributeAsync("open"));
+            await createPanel.GetByLabel("Surname", new() { Exact = true })
+                .FillAsync("CreateDuplicate");
+            await createPanel.GetByLabel("Name", new() { Exact = true })
+                .FillAsync("Tablet");
+            await createPanel.GetByLabel("Phone", new() { Exact = true })
+                .FillAsync("+380 67 777 88 93");
+            await createPanel.GetByLabel("Card number", new() { Exact = true })
+                .FillAsync("BL-CREATE-TAKEN");
+            await createPanel.GetByLabel("Reception note", new() { Exact = true })
+                .FillAsync("Created from the tablet workflow.");
+
+            await SubmitHtmxCreateClientAsync(page);
+
+            await ExpectVisibleAsync(
+                createPanel.GetByText(
+                    "That card is already assigned to a current client. Enter another card or leave it blank.",
+                    new() { Exact = true }),
+                "tablet",
+                "occupied create-card error");
+            Assert.Equal(
+                "CreateDuplicate",
+                await createPanel.GetByLabel("Surname", new() { Exact = true }).InputValueAsync());
+            Assert.Equal(initialClientCount, await _app.CountClientsAsync());
+            await createPanel.GetByLabel("Card number", new() { Exact = true })
+                .FillAsync("BL-CREATE-TABLET");
+
+            await SubmitHtmxCreateClientAsync(page);
+
+            await ExpectVisibleAsync(
+                createPanel.GetByRole(AriaRole.Alert),
+                "tablet",
+                "create duplicate acknowledgement error");
+            await ExpectVisibleAsync(
+                createPanel.GetByRole(AriaRole.Heading, new() { Name = "Duplicate review" }),
+                "tablet",
+                "create duplicate review heading");
+            Assert.Equal(2, await createPanel.Locator(".duplicate-warning-item").CountAsync());
+            Assert.Equal(initialClientCount, await _app.CountClientsAsync());
+            await AssertFitsViewportAsync(page, "tablet", "create duplicate review form");
+            await CaptureVisualAsync(page, "tablet", "create-client-duplicate-review");
+
+            var acknowledgementControls = createPanel.GetByRole(
+                AriaRole.Checkbox,
+                new() { Name = "I reviewed this match and confirmed a new client is required" });
+            var reasonInputs = createPanel.GetByLabel(
+                "Acknowledgement reason",
+                new() { Exact = true });
+            Assert.Equal(2, await acknowledgementControls.CountAsync());
+            Assert.Equal(2, await reasonInputs.CountAsync());
+
+            for (var index = 0; index < 2; index++)
+            {
+                await acknowledgementControls.Nth(index).CheckAsync();
+                await reasonInputs.Nth(index).FillAsync($"Verified new client {index + 1}");
+            }
+
+            await SubmitHtmxCreateClientAsync(page);
+
+            await ExpectVisibleAsync(
+                profile.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "CreateDuplicate Tablet" }),
+                "tablet",
+                "canonical created profile");
+            await ExpectVisibleAsync(
+                profile.GetByText("Client created."),
+                "tablet",
+                "create success message");
+            await ExpectVisibleAsync(
+                results.GetByRole(
+                    AriaRole.Link,
+                    new() { Name = "Open CreateDuplicate Tablet", Exact = true }),
+                "tablet",
+                "canonical created search row");
+            Assert.Equal(0, await page.Locator("#create-client-action-panel").CountAsync());
+            Assert.Contains("clientId=", page.Url, StringComparison.Ordinal);
+            var clientId = await _app.FindClientIdByCurrentCardAsync("BL-CREATE-TABLET");
+            Assert.NotNull(clientId);
+            Assert.Equal(initialClientCount + 1, await _app.CountClientsAsync());
+            Assert.Equal(1L, await _app.CountClientCreateAuditEntriesAsync(clientId.Value));
+            Assert.Equal(1L, await _app.CountCreateClientIdempotencyKeysAsync(clientId.Value));
+            Assert.Equal(2L, await _app.CountDuplicateAcknowledgementsAsync(clientId.Value));
+            Assert.Equal(1L, await _app.CountCardAssignmentsAsync(clientId.Value));
+            await AssertFitsViewportAsync(page, "tablet", "created client profile");
+            await CaptureVisualAsync(page, "tablet", "create-client-success");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task CreateClientWithoutCardRereadsCanonicalPhoneProfile()
+    {
+        Assert.NotNull(_browser);
+        const string phone = "+380 67 900 90 95";
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = 390,
+                Height = 844,
+            },
+        });
+
+        try
+        {
+            var initialClientCount = await _app.CountClientsAsync();
+            var page = await context.NewPageAsync();
+            await DelayCreateClientRequestsAsync(page);
+            await page.GotoAsync(_app.BaseAddress.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+            await LoginAsync(page, _app.LoginName, _app.Password, "phone create smoke");
+            await SubmitHtmxSearchAsync(page, "Brandnew Phone");
+
+            var results = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
+            var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            var createPanel = results.Locator("#create-client-action-panel");
+            await ExpectVisibleAsync(
+                createPanel.Locator("summary"),
+                "phone",
+                "phone create-client action");
+            await createPanel.GetByLabel("Surname", new() { Exact = true }).FillAsync("Brandnew");
+            await createPanel.GetByLabel("Name", new() { Exact = true }).FillAsync("Phone");
+            await createPanel.GetByLabel("Phone", new() { Exact = true }).FillAsync(phone);
+            await createPanel.GetByLabel("Reception note", new() { Exact = true })
+                .FillAsync("Created without a card.");
+            Assert.Equal(
+                string.Empty,
+                await createPanel.GetByLabel("Card number", new() { Exact = true }).InputValueAsync());
+            await AssertFitsViewportAsync(page, "phone", "create client form");
+            await CaptureVisualAsync(page, "phone", "create-client-form");
+
+            await SubmitHtmxCreateClientAsync(page);
+
+            await ExpectVisibleAsync(
+                profile.GetByRole(AriaRole.Heading, new() { Name = "Brandnew Phone" }),
+                "phone",
+                "canonical cardless profile");
+            await ExpectVisibleAsync(
+                profile.GetByLabel("Profile warnings")
+                    .GetByText("No current card", new() { Exact = true }),
+                "phone",
+                "created no-card warning");
+            await ExpectVisibleAsync(
+                results.GetByRole(
+                    AriaRole.Link,
+                    new() { Name = "Open Brandnew Phone", Exact = true }),
+                "phone",
+                "canonical phone create search row");
+            var clientId = await _app.FindClientIdByPhoneAsync(phone);
+            Assert.NotNull(clientId);
+            Assert.Equal(initialClientCount + 1, await _app.CountClientsAsync());
+            Assert.Equal(1L, await _app.CountClientCreateAuditEntriesAsync(clientId.Value));
+            Assert.Equal(1L, await _app.CountCreateClientIdempotencyKeysAsync(clientId.Value));
+            Assert.Equal(0L, await _app.CountDuplicateAcknowledgementsAsync(clientId.Value));
+            Assert.Equal(0L, await _app.CountCardAssignmentsAsync(clientId.Value));
+            await AssertFitsViewportAsync(page, "phone", "created cardless profile");
+            await CaptureVisualAsync(page, "phone", "create-client-success");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Theory]
     [InlineData("tablet", 1024, 768, "BL-EDIT-TABLET")]
     [InlineData("phone", 390, 844, "BL-EDIT-PHONE")]
@@ -756,6 +958,35 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
     {
         return page.RouteAsync(
             "**/*handler=UpdateClient*",
+            async route =>
+            {
+                await Task.Delay(500);
+                await route.ContinueAsync();
+            });
+    }
+
+    private static async Task SubmitHtmxCreateClientAsync(IPage page)
+    {
+        var createPanel = page.Locator("#create-client-action-panel");
+        var form = createPanel.Locator("form");
+        Assert.Equal("this:drop", await form.GetAttributeAsync("hx-sync"));
+        Assert.NotNull(await form.GetAttributeAsync("data-busy-form"));
+        var responseTask = page.WaitForResponseAsync(response =>
+            response.Request.Method == "POST"
+            && response.Url.Contains("handler=CreateClient", StringComparison.OrdinalIgnoreCase));
+        var disabledTask = page.WaitForFunctionAsync(
+            "() => document.querySelector('#create-client-action-panel button[type=\"submit\"]')?.disabled === true");
+        await createPanel.GetByRole(AriaRole.Button, new() { Name = "Create client" })
+            .ClickAsync();
+        await disabledTask;
+        AssertHtmxResponse(await responseTask);
+        await WaitForHtmxSettleAsync(page);
+    }
+
+    private static Task DelayCreateClientRequestsAsync(IPage page)
+    {
+        return page.RouteAsync(
+            "**/*handler=CreateClient*",
             async route =>
             {
                 await Task.Delay(500);

@@ -1,0 +1,198 @@
+@model CreateClientFormViewModel
+@{
+    var input = Model.Input;
+}
+
+<details id="create-client-action-panel"
+         class="profile-action-panel search-create-panel"
+         open="@(Model.IsOpen ? "open" : null)">
+    <summary>Create client</summary>
+    <div class="profile-action-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Client not created</strong>
+                <ul>
+                    @foreach (var message in Model.Errors.Select(DisplayError).Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form id="create-client-form"
+              class="create-client-form"
+              method="post"
+              asp-page="/Reception/Index"
+              asp-page-handler="CreateClient"
+              data-busy-form
+              hx-post="@Url.Page("/Reception/Index", "CreateClient")"
+              hx-target="#create-client-action-panel"
+              hx-swap="outerHTML"
+              hx-sync="this:drop"
+              hx-indicator="#create-client-loading"
+              hx-disabled-elt="find button">
+            <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+            <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+            <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+            <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+            <div class="action-form-grid">
+                <div class="form-field">
+                    <label for="create-surname">Surname</label>
+                    <input id="create-surname"
+                           name="form.Surname"
+                           type="text"
+                           value="@input.Surname"
+                           required
+                           autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="create-name">Name</label>
+                    <input id="create-name"
+                           name="form.Name"
+                           type="text"
+                           value="@input.Name"
+                           required
+                           autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="create-patronymic">Patronymic</label>
+                    <input id="create-patronymic"
+                           name="form.Patronymic"
+                           type="text"
+                           value="@input.Patronymic"
+                           autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="create-phone">Phone</label>
+                    <input id="create-phone"
+                           name="form.Phone"
+                           type="text"
+                           value="@input.Phone"
+                           inputmode="tel"
+                           autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="create-card-number">Card number</label>
+                    <input id="create-card-number"
+                           name="form.CardNumber"
+                           type="text"
+                           value="@input.CardNumber"
+                           autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="create-status">Operational status</label>
+                    <select id="create-status" name="form.OperationalStatus" required>
+                        <option value="Active" selected="@(input.OperationalStatus == ClientOperationalStatus.Active ? "selected" : null)">Active</option>
+                        <option value="Inactive" selected="@(input.OperationalStatus == ClientOperationalStatus.Inactive ? "selected" : null)">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-field form-field-wide">
+                    <label for="create-comment">Reception note</label>
+                    <textarea id="create-comment"
+                              name="form.Comment"
+                              rows="3">@input.Comment</textarea>
+                </div>
+            </div>
+
+            @if (Model.DuplicateWarnings.Count > 0)
+            {
+                <section class="duplicate-warning-section" aria-labelledby="create-duplicate-warning-title">
+                    <header>
+                        <h3 id="create-duplicate-warning-title">Duplicate review</h3>
+                    </header>
+
+                    @for (var index = 0; index < Model.DuplicateWarnings.Count; index++)
+                    {
+                        var warning = Model.DuplicateWarnings[index];
+                        var candidate = warning.Candidate;
+                        var acknowledgementId = $"create-duplicate-ack-{index}";
+                        var reasonId = $"create-duplicate-reason-{index}";
+
+                        <div class="duplicate-warning-item">
+                            <input type="hidden"
+                                   name="form.DuplicateAcknowledgements[@index].MatchedClientId"
+                                   value="@candidate.MatchedClientId" />
+                            <input type="hidden"
+                                   name="form.DuplicateAcknowledgements[@index].WarningType"
+                                   value="@candidate.WarningType" />
+                            <header class="duplicate-client-header">
+                                <div>
+                                    <strong>@DuplicateWarningLabel(candidate.WarningType)</strong>
+                                    <span>@CandidateDisplayName(candidate)</span>
+                                </div>
+                                <span class="status-chip @(candidate.IsActive ? "status-active" : "status-inactive")">
+                                    @(candidate.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </header>
+                            <p>@(candidate.Phone ?? "No phone")</p>
+                            <label class="acknowledgement-control" for="@acknowledgementId">
+                                <input id="@acknowledgementId"
+                                       name="form.DuplicateAcknowledgements[@index].Acknowledged"
+                                       type="checkbox"
+                                       value="true"
+                                       checked="@(warning.Acknowledged ? "checked" : null)"
+                                       required />
+                                <span>I reviewed this match and confirmed a new client is required</span>
+                            </label>
+                            <label for="@reasonId">Acknowledgement reason</label>
+                            <input id="@reasonId"
+                                   name="form.DuplicateAcknowledgements[@index].Reason"
+                                   type="text"
+                                   value="@warning.Reason"
+                                   maxlength="1000"
+                                   required
+                                   autocomplete="off" />
+                        </div>
+                    }
+                </section>
+            }
+
+            <div class="action-form-footer">
+                <span id="create-client-loading"
+                      class="request-indicator htmx-indicator"
+                      role="status"
+                      aria-live="polite">Creating client...</span>
+                <button type="submit" data-busy-text="Creating...">Create client</button>
+            </div>
+        </form>
+    </div>
+</details>
+
+@functions {
+    private static string CandidateDisplayName(ClientDuplicateCandidate candidate)
+    {
+        return candidate.Patronymic is null
+            ? $"{candidate.Surname} {candidate.Name}"
+            : $"{candidate.Surname} {candidate.Name} {candidate.Patronymic}";
+    }
+
+    private static string DuplicateWarningLabel(ClientDuplicateWarningType warningType)
+    {
+        return warningType switch
+        {
+            ClientDuplicateWarningType.DuplicatePhone => "Duplicate phone",
+            ClientDuplicateWarningType.SimilarName => "Similar name",
+            _ => "Duplicate warning",
+        };
+    }
+
+    private static string DisplayError(CommandError error)
+    {
+        return error.Code switch
+        {
+            CommandErrorCode.DuplicateWarningNotAcknowledged =>
+                "Review and acknowledge every current duplicate warning.",
+            CommandErrorCode.CardNumberAlreadyCurrent =>
+                "That card is already assigned to a current client. Enter another card or leave it blank.",
+            CommandErrorCode.ConcurrencyConflict =>
+                "Client creation conflicted with another change. Review the form and try again.",
+            CommandErrorCode.DuplicateSubmission =>
+                "This submission key was already used for different client data. Run the search again before retrying.",
+            _ => error.Message,
+        };
+    }
+}

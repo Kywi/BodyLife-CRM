@@ -79,6 +79,31 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().CountDuplicateAcknowledgementsAsync(clientId);
     }
 
+    public Task<long> CountClientsAsync()
+    {
+        return RequireDatabase().CountClientsAsync();
+    }
+
+    public Task<Guid?> FindClientIdByCurrentCardAsync(string cardNumber)
+    {
+        return RequireDatabase().FindClientIdByCurrentCardAsync(cardNumber);
+    }
+
+    public Task<Guid?> FindClientIdByPhoneAsync(string phone)
+    {
+        return RequireDatabase().FindClientIdByPhoneAsync(phone);
+    }
+
+    public Task<long> CountClientCreateAuditEntriesAsync(Guid clientId)
+    {
+        return RequireDatabase().CountClientCreateAuditEntriesAsync(clientId);
+    }
+
+    public Task<long> CountCreateClientIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCreateClientIdempotencyKeysAsync(clientId);
+    }
+
     public Task ReplaceCurrentCardForStaleTestAsync(Guid clientId, string newCardNumber)
     {
         return RequireDatabase().ReplaceCurrentCardForStaleTestAsync(clientId, newCardNumber);
@@ -337,6 +362,18 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "PhoneMatch",
             "+380 67 777 88 92",
             "BL-DUP-PHONE");
+        await database.SeedClientAsync(
+            ownerAccountId,
+            "CreateDuplicate",
+            "Tablet",
+            "+380 67 777 88 93",
+            "BL-CREATE-DUP");
+        await database.SeedClientAsync(
+            ownerAccountId,
+            "Create",
+            "Occupied",
+            "+380 67 777 88 94",
+            "BL-CREATE-TAKEN");
         CardChangeClientId = await database.SeedClientAsync(
             ownerAccountId,
             "Card",

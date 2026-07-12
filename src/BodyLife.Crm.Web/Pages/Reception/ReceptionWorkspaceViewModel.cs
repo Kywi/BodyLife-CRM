@@ -8,6 +8,7 @@ public sealed record ReceptionWorkspaceViewModel(
     bool IncludeInactive,
     string? PageCursor,
     SearchClientsResult? SearchResult,
+    CreateClientFormViewModel? CreateClientForm,
     ClientProfileViewModel Profile)
 {
     public static ReceptionWorkspaceViewModel Empty { get; } = new(
@@ -16,6 +17,7 @@ public sealed record ReceptionWorkspaceViewModel(
         IncludeInactive: false,
         PageCursor: null,
         SearchResult: null,
+        CreateClientForm: null,
         ClientProfileViewModel.Empty);
 }
 

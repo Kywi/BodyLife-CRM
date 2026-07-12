@@ -58,6 +58,7 @@ public sealed class PostgreSqlSearchClientsQueryTests
             Assert.Equal(SearchClientsStatus.Success, result.Status);
             Assert.Single(result.Items);
             Assert.Null(result.ErrorCode);
+            Assert.True(result.AllowedActions.IsAllowed(ClientSearchActionKeys.CreateClient));
         });
         Assert.All(deniedResults, result =>
         {
@@ -65,6 +66,7 @@ public sealed class PostgreSqlSearchClientsQueryTests
             Assert.Equal("permission_denied", result.ErrorCode);
             Assert.Empty(result.Items);
             Assert.Null(result.AutoOpenClientId);
+            Assert.Empty(result.AllowedActions.Items);
         });
         Assert.Equal(
             TestNow.AddMinutes(-5).UtcDateTime,

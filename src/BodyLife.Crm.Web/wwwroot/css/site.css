@@ -640,10 +640,15 @@ textarea:focus-visible,
   padding: 16px;
 }
 
+.create-client-form,
 .update-client-form,
 .card-assignment-form {
   display: grid;
   gap: 16px;
+}
+
+.search-create-panel {
+  margin-top: 14px;
 }
 
 .card-current-state {

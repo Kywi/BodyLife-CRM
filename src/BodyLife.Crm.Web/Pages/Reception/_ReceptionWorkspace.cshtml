@@ -32,6 +32,11 @@
             <div class="operational-empty no-search-results">
                 <strong>No clients found</strong>
             </div>
+
+            @if (Model.CreateClientForm is not null)
+            {
+                <partial name="_CreateClientForm" model="Model.CreateClientForm" />
+            }
         }
         else
         {

@@ -20,6 +20,12 @@ public sealed class SearchClientsQueryHandler(
     private const int PartialCardPriority = 40;
     private const int PartialPhonePriority = 50;
     private const int PartialNamePriority = 60;
+    private static readonly QueryPermissionSet ImplementedActionPermissions = new(
+    [
+        QueryPermissionResult.Allowed(
+            ClientSearchActionKeys.CreateClient,
+            ClientSearchActionKeys.AdminOrOwnerPolicy),
+    ]);
 
     public async Task<SearchClientsResult> ExecuteAsync(
         SearchClientsQuery query,
@@ -152,7 +158,11 @@ public sealed class SearchClientsQueryHandler(
             ? (criteria.Offset + criteria.Limit).ToString(CultureInfo.InvariantCulture)
             : null;
 
-        return SearchClientsResult.Succeeded(items, autoOpenClientId, nextPageCursor);
+        return SearchClientsResult.Succeeded(
+            items,
+            autoOpenClientId,
+            nextPageCursor,
+            ImplementedActionPermissions);
     }
 
     private static SearchClientsResult? ValidateAndNormalize(

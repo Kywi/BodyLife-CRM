@@ -1378,3 +1378,51 @@ Commit:
 Next recommended step:
 
 - Add the permission-aware CreateClient Razor/htmx workflow from the reception no-match/search context with optional initial card, duplicate-candidate review and exact acknowledgements, busy/idempotent submission, inline card-conflict/stale-safe errors and canonical open of the newly created profile. Keep the Milestone 3 acceptance review as the following documentation/verification step.
+
+## Step 42 - Reception client creation UI workflow
+
+Status: completed.
+
+Plan alignment:
+
+- Reconfirm that Milestones 1 and 2 remain complete and that Milestone 3 Clients/Search is still the active roadmap milestone.
+- Complete the remaining `CreateClient` reception workflow listed by Milestone 3 using the existing command, duplicate query, audit, idempotency and PostgreSQL constraints rather than adding another write path.
+- Keep the next step limited to a Milestone 3 acceptance review; MembershipTypes, Memberships and later vertical-slice modules remain outside this step.
+
+Scope:
+
+- Extend successful `SearchClients` results with a server-owned `clients.create` allowed action while keeping denied and invalid results permission-empty.
+- Show the create action only after a successful zero-result search with no selected or auto-opened profile and a server-granted create permission.
+- Add a dedicated create form model that carries identity, optional initial card, operational status, note, idempotency key and the complete reception search context.
+- Prefill the optional initial card only for explicit card-mode no-match searches so ambiguous auto/name/phone terms are never guessed into business fields.
+- Resolve the authenticated actor/session/correlation context in the PageModel and invoke the existing typed `CreateClient` command without direct persistence or duplicate/card rules in Razor code.
+- Preserve submitted values and the idempotency key across validation, current-card conflict, duplicate-review and retry responses.
+- Query duplicate candidates only after the command reports a duplicate acknowledgement error, then render only the current server candidate set.
+- Require an explicit checkbox and reason for every exact matched-client/warning-type pair while the command revalidates the complete acknowledgement set inside its PostgreSQL transaction.
+- On canonical permission loss, rebuild the entire workspace so the server-owned create action disappears together with the denied search result.
+- After success, verify the command reread target, reread the full reception workspace, open the canonical new profile, update the search row and show the business-audit reference.
+- Preserve ordinary non-JavaScript POST/redirect behavior while using stable htmx targets, canonical `HX-Push-Url`, in-flight request dropping and visible busy/disabled submit state.
+- Add tablet/phone styling for the no-match create panel, identity/card fields, duplicate warnings, inline errors and action footer without hiding the profile placeholder or causing horizontal overflow.
+- Extend the isolated UI smoke PostgreSQL fixture with dedicated duplicate and occupied-card clients plus direct evidence queries for client rows, current card, normalized phone, `client.created` audit, CreateClient idempotency and duplicate acknowledgements.
+- Add tablet Playwright coverage for occupied-card rollback, exact duplicate-warning rejection, exact acknowledgements, successful creation with initial card and canonical exact-card profile/search reread.
+- Add phone Playwright coverage for creation without a card, the canonical no-card warning and persisted audit/idempotency evidence.
+
+Validation:
+
+- Release Web and UI smoke project builds passed with 0 warnings/errors after product and test wiring.
+- Focused PostgreSQL `CreateClient` command plus `SearchClients` query regression validation passed all 18 tests.
+- Focused PostgreSQL-backed Playwright validation passed both new CreateClient workflows in 9 seconds.
+- Opt-in visual capture produced tablet duplicate-review/success and phone create-form/success screenshots. Inspection confirmed readable warning/action order, reachable touch controls, canonical result/profile state and no horizontal overflow or incoherent overlap at 1024x768 and 390x844.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 107 PostgreSQL infrastructure tests, 15 Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because this UI uses the existing clients, card assignment, duplicate acknowledgement, audit and idempotency schema.
+- `graphify update .` completed the structural rebuild with 3085 nodes, 5217 edges and 483 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(ui): add client creation workflow`.
+
+Next recommended step:
+
+- Run the Milestone 3 acceptance review against every roadmap criterion and required test category, record objective evidence and close only discovered Clients/Search gaps before starting Milestone 4 MembershipTypes.
