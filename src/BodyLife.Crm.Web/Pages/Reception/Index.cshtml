@@ -4,23 +4,103 @@
     ViewData["Title"] = "Reception";
 }
 
-<main class="page-shell">
+<main class="page-shell reception-page">
     <section class="reception-layout" aria-labelledby="reception-title">
         <header class="reception-header">
-            <p class="eyebrow">BodyLife CRM</p>
-            <h1 id="reception-title">Reception</h1>
+            <div>
+                <p class="eyebrow">BodyLife CRM</p>
+                <h1 id="reception-title">Reception</h1>
+            </div>
         </header>
 
-        <form class="search-panel" method="get" role="search">
-            <label for="query">Client search</label>
-            <div class="search-row">
-                <input id="query" name="q" type="search" value="@Model.Query" autocomplete="off" placeholder="Card, name, phone" />
-                <button type="submit">Search</button>
-            </div>
-        </form>
+        <section class="search-island" aria-labelledby="client-search-label">
+            <form id="reception-search"
+                  class="search-panel"
+                  method="get"
+                  asp-page="/Reception/Index"
+                  role="search"
+                  hx-get="@Url.Page("/Reception/Index", "Search")"
+                  hx-target="#reception-workspace"
+                  hx-swap="outerHTML"
+                  hx-sync="this:replace"
+                  hx-indicator="#search-loading"
+                  hx-disabled-elt="find button">
+                <div class="search-primary-row">
+                    <div class="search-field">
+                        <label id="client-search-label" for="client-search">Client search</label>
+                        <input id="client-search"
+                               name="q"
+                               type="search"
+                               value="@Model.Query"
+                               autocomplete="off"
+                               maxlength="200"
+                               placeholder="Card, name, phone or last 4"
+                               required />
+                    </div>
+                    <div class="search-command-group">
+                        <button type="submit">Search</button>
+                        <a class="secondary-link" asp-page="/Reception/Index">Clear</a>
+                    </div>
+                </div>
 
-        <section class="status-panel" aria-label="Client status">
-            <h2>No client selected</h2>
+                <div class="search-options">
+                    <fieldset class="search-mode-control">
+                        <legend>Search mode</legend>
+                        <div class="search-mode-segments">
+                            <label>
+                                <input type="radio"
+                                       name="mode"
+                                       value="Auto"
+                                       checked="@(Model.Mode == ClientSearchMode.Auto ? "checked" : null)" />
+                                <span>Auto</span>
+                            </label>
+                            <label>
+                                <input type="radio"
+                                       name="mode"
+                                       value="Card"
+                                       checked="@(Model.Mode == ClientSearchMode.Card ? "checked" : null)" />
+                                <span>Card</span>
+                            </label>
+                            <label>
+                                <input type="radio"
+                                       name="mode"
+                                       value="Name"
+                                       checked="@(Model.Mode == ClientSearchMode.Name ? "checked" : null)" />
+                                <span>Name</span>
+                            </label>
+                            <label>
+                                <input type="radio"
+                                       name="mode"
+                                       value="Phone"
+                                       checked="@(Model.Mode == ClientSearchMode.Phone ? "checked" : null)" />
+                                <span>Phone</span>
+                            </label>
+                            <label>
+                                <input type="radio"
+                                       name="mode"
+                                       value="LastFour"
+                                       checked="@(Model.Mode == ClientSearchMode.LastFour ? "checked" : null)" />
+                                <span>Last 4</span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <label class="checkbox-control">
+                        <input type="checkbox"
+                               name="includeInactive"
+                               value="true"
+                               checked="@(Model.IncludeInactive ? "checked" : null)" />
+                        <span>Include inactive</span>
+                    </label>
+
+                    <span id="search-loading"
+                          class="request-indicator htmx-indicator"
+                          role="status"
+                          aria-live="polite">Searching...</span>
+                </div>
+            </form>
         </section>
+
+        <partial name="_ReceptionWorkspace" model="Model.Workspace" />
     </section>
 </main>

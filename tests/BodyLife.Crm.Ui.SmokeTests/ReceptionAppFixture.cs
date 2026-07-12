@@ -179,6 +179,8 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
         Assert.Equal(OwnerCredentialsBootstrapStatus.Updated, credentialsResult.Status);
 
+        await SeedReceptionClientsAsync(database, ownerResult.AccountId!.Value);
+
         var ownerEnvelope = new CommandEnvelope(
             new ActorContext(
                 new AccountId(ownerResult.AccountId!.Value),
@@ -213,6 +215,38 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             SmokeAdminLoginName,
             SmokeAdminPassword);
         Assert.Equal(StaffCredentialsStatus.Configured, staffCredentialsResult.Status);
+    }
+
+    private static async Task SeedReceptionClientsAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId)
+    {
+        await database.SeedClientAsync(
+            ownerAccountId,
+            "Kovalenko",
+            "Olena",
+            "+380 67 111 22 33",
+            "BL-1001",
+            "Prefers morning visits.");
+        await database.SeedClientAsync(
+            ownerAccountId,
+            "Kovalenko",
+            "Marta",
+            "+380 67 222 44 55",
+            "BL-2001");
+        await database.SeedClientAsync(
+            ownerAccountId,
+            "Kovalenko",
+            "Taras",
+            "+380 67 333 66 77",
+            cardNumber: null);
+        await database.SeedClientAsync(
+            ownerAccountId,
+            "Dormant",
+            "Client",
+            "+380 67 444 88 99",
+            cardNumber: null,
+            operationalStatus: "inactive");
     }
 
     private static int FindAvailablePort()

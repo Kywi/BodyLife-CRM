@@ -1,6 +1,8 @@
 using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Modules.Clients.Search;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace BodyLife.Crm.Ui.SmokeTests;
 
@@ -80,6 +82,124 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue("device_label", deviceLabel);
         return (bool)(await command.ExecuteScalarAsync()
             ?? throw new InvalidOperationException("The smoke session was not found."));
+    }
+
+    public async Task SeedClientAsync(
+        Guid createdByAccountId,
+        string surname,
+        string name,
+        string? phone,
+        string? cardNumber,
+        string? comment = null,
+        string operationalStatus = "active")
+    {
+        var clientId = Guid.NewGuid();
+        var createdAt = new DateTimeOffset(2026, 7, 1, 8, 0, 0, TimeSpan.Zero);
+        var normalizedPhone = phone is null
+            ? null
+            : ClientSearchNormalizer.NormalizePhone(phone);
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using (var clientCommand = connection.CreateCommand())
+        {
+            clientCommand.Transaction = transaction;
+            clientCommand.CommandText =
+                """
+                insert into bodylife.clients (
+                    id,
+                    surname,
+                    name,
+                    patronymic,
+                    normalized_full_name,
+                    phone_raw,
+                    phone_normalized,
+                    phone_last4,
+                    comment,
+                    operational_status,
+                    created_at,
+                    created_by_account_id,
+                    updated_at)
+                values (
+                    @id,
+                    @surname,
+                    @name,
+                    null,
+                    @normalized_full_name,
+                    @phone_raw,
+                    @phone_normalized,
+                    @phone_last4,
+                    @comment,
+                    @operational_status,
+                    @created_at,
+                    @created_by_account_id,
+                    @updated_at)
+                """;
+            clientCommand.Parameters.AddWithValue("id", clientId);
+            clientCommand.Parameters.AddWithValue("surname", surname);
+            clientCommand.Parameters.AddWithValue("name", name);
+            clientCommand.Parameters.AddWithValue(
+                "normalized_full_name",
+                ClientSearchNormalizer.NormalizeFullName(surname, name, patronymic: null));
+            clientCommand.Parameters.Add("phone_raw", NpgsqlDbType.Text).Value =
+                phone ?? (object)DBNull.Value;
+            clientCommand.Parameters.Add("phone_normalized", NpgsqlDbType.Text).Value =
+                normalizedPhone ?? (object)DBNull.Value;
+            clientCommand.Parameters.Add("phone_last4", NpgsqlDbType.Text).Value =
+                normalizedPhone is null
+                    ? DBNull.Value
+                    : ClientSearchNormalizer.ExtractPhoneLastFour(normalizedPhone);
+            clientCommand.Parameters.Add("comment", NpgsqlDbType.Text).Value =
+                comment ?? (object)DBNull.Value;
+            clientCommand.Parameters.AddWithValue("operational_status", operationalStatus);
+            clientCommand.Parameters.AddWithValue("created_at", createdAt);
+            clientCommand.Parameters.AddWithValue("created_by_account_id", createdByAccountId);
+            clientCommand.Parameters.AddWithValue("updated_at", createdAt);
+            await clientCommand.ExecuteNonQueryAsync();
+        }
+
+        if (cardNumber is not null)
+        {
+            await using var cardCommand = connection.CreateCommand();
+            cardCommand.Transaction = transaction;
+            cardCommand.CommandText =
+                """
+                insert into bodylife.client_card_assignments (
+                    id,
+                    client_id,
+                    card_number_raw,
+                    card_number_normalized,
+                    assigned_at,
+                    assigned_by_account_id,
+                    ended_at,
+                    ended_by_account_id,
+                    end_reason,
+                    is_current)
+                values (
+                    @id,
+                    @client_id,
+                    @card_number_raw,
+                    @card_number_normalized,
+                    @assigned_at,
+                    @assigned_by_account_id,
+                    null,
+                    null,
+                    null,
+                    true)
+                """;
+            cardCommand.Parameters.AddWithValue("id", Guid.NewGuid());
+            cardCommand.Parameters.AddWithValue("client_id", clientId);
+            cardCommand.Parameters.AddWithValue("card_number_raw", cardNumber);
+            cardCommand.Parameters.AddWithValue(
+                "card_number_normalized",
+                ClientSearchNormalizer.NormalizeCardNumber(cardNumber));
+            cardCommand.Parameters.AddWithValue("assigned_at", createdAt);
+            cardCommand.Parameters.AddWithValue("assigned_by_account_id", createdByAccountId);
+            await cardCommand.ExecuteNonQueryAsync();
+        }
+
+        await transaction.CommitAsync();
     }
 
     public async ValueTask DisposeAsync()

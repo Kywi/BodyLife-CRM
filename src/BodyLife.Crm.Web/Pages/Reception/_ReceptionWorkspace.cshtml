@@ -1,0 +1,182 @@
+@model ReceptionWorkspaceViewModel
+@{
+    var searchResult = Model.SearchResult;
+}
+
+<section id="reception-workspace" class="reception-workspace">
+    <section class="search-results-region" aria-label="Search results" aria-live="polite">
+        <header class="region-header">
+            <h2>Search results</h2>
+            @if (searchResult is { Status: SearchClientsStatus.Success })
+            {
+                var matchCount = searchResult.Items.Count;
+                <span class="result-count">@(matchCount == 1 ? "1 match" : $"{matchCount} matches")</span>
+            }
+        </header>
+
+        @if (searchResult is null)
+        {
+            <div class="operational-empty">
+                <strong>Ready for search</strong>
+            </div>
+        }
+        else if (searchResult.Status != SearchClientsStatus.Success)
+        {
+            <div class="warning-block warning-danger" role="alert">
+                <strong>Search unavailable</strong>
+                <span>@searchResult.ErrorMessage</span>
+            </div>
+        }
+        else if (searchResult.Items.Count == 0)
+        {
+            <div class="operational-empty no-search-results">
+                <strong>No clients found</strong>
+            </div>
+        }
+        else
+        {
+            <div class="client-result-list">
+                @foreach (var item in searchResult.Items)
+                {
+                    var fullProfileUrl = Url.Page(
+                        "/Reception/Index",
+                        values: new
+                        {
+                            q = Model.Query,
+                            mode = Model.Mode,
+                            includeInactive = Model.IncludeInactive,
+                            pageCursor = Model.PageCursor,
+                            clientId = item.ClientId,
+                        });
+                    var htmxProfileUrl = Url.Page(
+                        "/Reception/Index",
+                        "Profile",
+                        new
+                        {
+                            q = Model.Query,
+                            mode = Model.Mode,
+                            includeInactive = Model.IncludeInactive,
+                            pageCursor = Model.PageCursor,
+                            clientId = item.ClientId,
+                        });
+
+                    <a class="client-result-row"
+                       href="@fullProfileUrl"
+                       aria-label="Open @item.DisplayName"
+                       hx-get="@htmxProfileUrl"
+                       hx-target="#client-profile"
+                       hx-swap="outerHTML show:top"
+                       hx-sync="#client-profile:replace"
+                       hx-indicator="#profile-loading">
+                        <header class="client-result-header">
+                            <h3>@item.DisplayName</h3>
+                            <span class="status-chip @OperationalStatusClass(item.OperationalStatus)">
+                                @OperationalStatusLabel(item.OperationalStatus)
+                            </span>
+                        </header>
+
+                        <dl class="client-result-meta">
+                            <div>
+                                <dt>Card</dt>
+                                <dd>@(item.CurrentCardNumber ?? "No current card")</dd>
+                            </div>
+                            <div>
+                                <dt>Phone</dt>
+                                <dd>@(item.Phone ?? "No phone")</dd>
+                            </div>
+                        </dl>
+
+                        <div class="client-result-summary">
+                            <span class="match-chip">@MatchTypeLabel(item.MatchType)</span>
+                            @if (item.CurrentMembership is null)
+                            {
+                                <span class="membership-compact">No current membership</span>
+                            }
+                            else
+                            {
+                                <span class="membership-compact">
+                                    @item.CurrentMembership.Status / @item.CurrentMembership.RemainingVisits visits /
+                                    through @item.CurrentMembership.EffectiveEndDate.ToString("yyyy-MM-dd")
+                                </span>
+                            }
+                        </div>
+
+                        @if (item.Warnings.Count > 0)
+                        {
+                            <ul class="warning-chip-list" aria-label="Client warnings">
+                                @foreach (var warning in item.Warnings)
+                                {
+                                    <li>@warning.Message</li>
+                                }
+                            </ul>
+                        }
+                    </a>
+                }
+            </div>
+
+            @if (searchResult.NextPageCursor is not null)
+            {
+                var nextPageUrl = Url.Page(
+                    "/Reception/Index",
+                    values: new
+                    {
+                        q = Model.Query,
+                        mode = Model.Mode,
+                        includeInactive = Model.IncludeInactive,
+                        pageCursor = searchResult.NextPageCursor,
+                    });
+                var nextPageHtmxUrl = Url.Page(
+                    "/Reception/Index",
+                    "Search",
+                    new
+                    {
+                        q = Model.Query,
+                        mode = Model.Mode,
+                        includeInactive = Model.IncludeInactive,
+                        pageCursor = searchResult.NextPageCursor,
+                    });
+
+                <a class="secondary-link result-page-link"
+                   href="@nextPageUrl"
+                   hx-get="@nextPageHtmxUrl"
+                   hx-target="#reception-workspace"
+                   hx-swap="outerHTML"
+                   hx-sync="#reception-search:replace"
+                   hx-indicator="#search-loading">More results</a>
+            }
+        }
+    </section>
+
+    <partial name="_ClientProfile" model="Model.ProfileResult" />
+</section>
+
+@functions {
+    private static string OperationalStatusClass(ClientOperationalStatus status)
+    {
+        return status == ClientOperationalStatus.Active
+            ? "status-active"
+            : "status-inactive";
+    }
+
+    private static string OperationalStatusLabel(ClientOperationalStatus status)
+    {
+        return status == ClientOperationalStatus.Active
+            ? "Active"
+            : "Inactive";
+    }
+
+    private static string MatchTypeLabel(ClientSearchMatchType matchType)
+    {
+        return matchType switch
+        {
+            ClientSearchMatchType.ExactCard => "Exact card",
+            ClientSearchMatchType.ExactPhone => "Exact phone",
+            ClientSearchMatchType.PhoneLastFour => "Phone last 4",
+            ClientSearchMatchType.ExactName => "Exact name",
+            ClientSearchMatchType.PartialCard => "Partial card",
+            ClientSearchMatchType.PartialPhone => "Partial phone",
+            ClientSearchMatchType.PartialName => "Partial name",
+            _ => "Match",
+        };
+    }
+}

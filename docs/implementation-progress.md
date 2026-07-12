@@ -1197,3 +1197,50 @@ Commit:
 Next recommended step:
 
 - Add the first server-rendered reception UI read path: a tablet-first/phone-safe search form and htmx result states backed by `SearchClients`, with exact-card auto-open into the read-only `GetClientProfile` shell; defer profile mutation forms and broader visual polish.
+
+## Step 38 - Reception search and profile read UI
+
+Status: completed.
+
+Scope:
+
+- Replace the placeholder Reception Razor Page with the first operational Milestone 3 UI exemplar instead of a landing page or generic CRUD screen.
+- Resolve the authenticated actor/session through the existing request-context service and invoke the typed `SearchClients` and `GetClientProfile` query handlers directly from the Razor PageModel.
+- Keep a progressive full-page GET path for search/profile reads while adding dedicated htmx handlers that return only the stable reception workspace or profile fragment.
+- Return canonical `HX-Push-Url` values after htmx reads so browser history and hard refreshes use ordinary full-page URLs rather than fragment-handler URLs.
+- Add one compact search form for card, name, phone and phone-last-four modes, plus the optional inactive-client checkbox and a canonical clear action.
+- Add visible search loading state, request synchronization with `hx-sync=replace`, disabled in-flight search submission and stable outerHTML targets for stale-response protection.
+- Render initial, validation/permission error, no-match, exact-card and multiple-result states from server query results.
+- Render compact touch-selectable result rows with raw identity/card/phone values, typed match/status labels, nullable server membership summaries and server-provided Clients warnings.
+- Auto-open a profile only from canonical `auto_open_client_id`; partial/ambiguous searches keep the profile empty until the user selects a result.
+- Render the read-only canonical profile identity, current card, phone, `updated_at`, optional reception note, Clients warnings and empty/current server membership area without adding formulas to Razor or JavaScript.
+- Use a two-area tablet layout and one-column phone layout with visible warnings, at least 44px controls and no horizontal overflow; keep profile mutation forms, recent history, reports and broad visual polish outside this step.
+- Self-host pinned `htmx.org` 2.0.10 and its 0BSD license under Web static assets so the reception workflow does not depend on a production CDN or frontend build system.
+- Preserve the existing Owner/named Admin/shared Reception authorization boundary on the `/Reception` Razor folder; query handlers continue to revalidate canonical account/session state.
+- Seed deterministic test-only clients in each isolated UI smoke PostgreSQL database, including exact-card, ambiguous-name, no-card and inactive cases.
+- Extend Playwright coverage across 1024x768 tablet and 390x844 phone viewports for real htmx search/profile requests, canonical URLs, exact-card auto-open, ambiguous no-auto-open, explicit profile selection, visible warnings, no-match state and horizontal-overflow checks.
+- Add a JavaScript-disabled Playwright case proving the same exact-card search/profile path works through ordinary server-rendered GET navigation.
+- Add an opt-in `BODYLIFE_UI_SCREENSHOT_DIR` hook for local visual QA without creating CI artifacts by default.
+
+Validation:
+
+- The first PageModel build stopped on C# inference between `null` and an enum in optional route values; explicit nullable casts fixed the compile-only issue.
+- Release solution build passed with 0 warnings/errors after the PageModel, Razor partials, CSS, self-hosted htmx and smoke fixtures were added.
+- The self-hosted htmx file matches the official 2.0.10 npm package with SHA-384 `1f94ab71fca01e602e4c366984c1ea0492dcdc586cb0a8c6ef0fc2782a4545e49fc015834caa64ccf3fc73e70bb0af95`.
+- The first focused Playwright run passed JavaScript-disabled fallback and session-expiry cases but both htmx viewport cases asserted browser history before htmx settled; the test now waits for `.htmx-request` completion without changing product behavior.
+- Focused Reception Playwright validation then passed 4 tests: tablet and phone search/profile workflows, JavaScript-disabled full-page fallback and expired-session enforcement.
+- Opt-in visual capture passed both viewport workflows and produced four full-page screenshots for exact-profile and multiple-results states; visual inspection found no clipped text, incoherent overlap or horizontal overflow. A too-tall phone empty-profile state was tightened and rechecked.
+- Full UI smoke validation passed 7 tests, including the existing Owner staff-management and named-Admin denial regressions.
+- `DOTNET_ROOT=/tmp/bodylife-dotnet /tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity diagnostic` passed and formatted 0 files.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 106 PostgreSQL infrastructure tests, 7 authenticated/progressive-fallback Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because the step adds only server-rendered UI, htmx static assets and isolated smoke-test seed data.
+- `graphify update .` completed the structural rebuild with 2974 nodes, 4781 edges and 466 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(ui): add reception search and profile read path`.
+
+Next recommended step:
+
+- Add the permission-aware `UpdateClient` Razor/htmx action from the profile: expected-`updated_at` stale guard, duplicate-candidate warning review and exact acknowledgement inputs, command execution, inline errors and canonical `GetClientProfile` reread; keep card management and create-client UI for separate following steps.
