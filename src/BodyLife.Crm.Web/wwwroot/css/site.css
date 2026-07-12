@@ -640,9 +640,56 @@ textarea:focus-visible,
   padding: 16px;
 }
 
-.update-client-form {
+.update-client-form,
+.card-assignment-form {
   display: grid;
   gap: 16px;
+}
+
+.card-current-state {
+  display: grid;
+  margin: 0 0 16px;
+}
+
+.card-current-state div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.card-current-state dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.card-current-state dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.card-clear-control {
+  display: flex;
+  min-height: 44px;
+  gap: 9px;
+  align-items: center;
+  color: var(--danger-strong);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.card-clear-control input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--danger);
+}
+
+.card-assignment-form input:disabled {
+  opacity: 0.6;
 }
 
 .action-form-grid {

@@ -94,7 +94,11 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "BL-1001",
                 await page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }).InputValueAsync());
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "Kovalenko Olena" }), viewportName, "exact-card profile");
-            await ExpectVisibleAsync(clientProfile.GetByText("BL-1001", new() { Exact = true }), viewportName, "exact-card profile number");
+            await ExpectVisibleAsync(
+                clientProfile.Locator(".client-profile-meta")
+                    .GetByText("BL-1001", new() { Exact = true }),
+                viewportName,
+                "exact-card profile number");
             await ExpectVisibleAsync(clientProfile.GetByText("No current membership", new() { Exact = true }), viewportName, "membership placeholder");
             await AssertFitsViewportAsync(page, viewportName, "exact-card profile");
             await CaptureVisualAsync(page, viewportName, "exact-profile");
@@ -244,6 +248,288 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.Equal(2L, await _app.CountDuplicateAcknowledgementsAsync(clientId));
             await AssertFitsViewportAsync(page, viewportName, "updated client profile");
             await CaptureVisualAsync(page, viewportName, "update-client-success");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ChangeAndClearCardRereadsProfileAndExactSearchOnTablet()
+    {
+        Assert.NotNull(_browser);
+        var clientId = _app.CardChangeClientId;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = 1024,
+                Height = 768,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await DelayCardAssignmentRequestsAsync(page);
+            await page.GotoAsync(_app.BaseAddress.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+            await LoginAsync(page, _app.LoginName, _app.Password, "tablet card smoke");
+            await SubmitHtmxSearchAsync(page, "BL-CARD-OLD");
+
+            var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            var results = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
+            var cardPanel = profile.Locator("#card-action-panel");
+            await ExpectVisibleAsync(cardPanel.Locator("summary"), "tablet", "manage-card action");
+            await cardPanel.Locator("summary").ClickAsync();
+            Assert.NotNull(await cardPanel.GetByLabel("Reason", new() { Exact = true })
+                .GetAttributeAsync("required"));
+            await cardPanel.GetByLabel("New card number", new() { Exact = true })
+                .FillAsync("BL-CARD-TAKEN");
+            await cardPanel.GetByLabel("Reason", new() { Exact = true })
+                .FillAsync("Occupied-card validation");
+
+            await SubmitHtmxCardAssignmentAsync(page);
+
+            await ExpectVisibleAsync(
+                cardPanel.GetByText(
+                    "Card number is already assigned to another current client.",
+                    new() { Exact = true }),
+                "tablet",
+                "occupied-card error");
+            Assert.Equal("BL-CARD-OLD", await _app.ReadCurrentCardNumberAsync(clientId));
+            Assert.Equal(1L, await _app.CountCardAssignmentsAsync(clientId));
+            Assert.Equal(0L, await _app.CountCardAuditEntriesAsync(clientId, "card.changed"));
+            Assert.Equal(0L, await _app.CountCardCommandIdempotencyKeysAsync(clientId));
+            await AssertFitsViewportAsync(page, "tablet", "occupied-card error");
+            await CaptureVisualAsync(page, "tablet", "card-occupied-error");
+
+            await cardPanel.GetByLabel("New card number", new() { Exact = true })
+                .FillAsync("BL-CARD-NEW");
+            await cardPanel.GetByLabel("Reason", new() { Exact = true })
+                .FillAsync("Replace worn card");
+            await SubmitHtmxCardAssignmentAsync(page);
+
+            await ExpectVisibleAsync(
+                profile.GetByText("Card changed."),
+                "tablet",
+                "card-change success message");
+            Assert.Equal(
+                "BL-CARD-NEW",
+                await profile.Locator(".client-profile-meta dd").First.TextContentAsync());
+            await ExpectVisibleAsync(
+                results.GetByText("No clients found", new() { Exact = true }),
+                "tablet",
+                "old-card canonical no-match");
+            Assert.Equal("BL-CARD-NEW", await _app.ReadCurrentCardNumberAsync(clientId));
+            Assert.Equal(2L, await _app.CountCardAssignmentsAsync(clientId));
+            Assert.Equal(1L, await _app.CountCardAuditEntriesAsync(clientId, "card.changed"));
+            Assert.Equal(1L, await _app.CountCardCommandIdempotencyKeysAsync(clientId));
+            await AssertFitsViewportAsync(page, "tablet", "changed-card profile");
+            await CaptureVisualAsync(page, "tablet", "card-change-success");
+
+            await SubmitHtmxSearchAsync(page, "BL-CARD-NEW");
+            await ExpectVisibleAsync(
+                profile.GetByRole(AriaRole.Heading, new() { Name = "Card Change" }),
+                "tablet",
+                "new exact-card profile");
+            await cardPanel.Locator("summary").ClickAsync();
+            await cardPanel.GetByLabel("Reason", new() { Exact = true })
+                .FillAsync("Card returned");
+            await cardPanel.GetByRole(AriaRole.Checkbox, new() { Name = "Clear current card" })
+                .CheckAsync();
+            Assert.True(await cardPanel.GetByLabel("New card number", new() { Exact = true })
+                .IsDisabledAsync());
+
+            await SubmitHtmxCardAssignmentAsync(page);
+
+            await ExpectVisibleAsync(
+                profile.GetByText("Card cleared."),
+                "tablet",
+                "card-clear success message");
+            Assert.Equal(
+                "No current card",
+                await profile.Locator(".client-profile-meta dd").First.TextContentAsync());
+            await ExpectVisibleAsync(
+                profile.GetByLabel("Profile warnings")
+                    .GetByText("No current card", new() { Exact = true }),
+                "tablet",
+                "no-current-card warning");
+            await ExpectVisibleAsync(
+                results.GetByText("No clients found", new() { Exact = true }),
+                "tablet",
+                "cleared-card canonical no-match");
+            Assert.Null(await _app.ReadCurrentCardNumberAsync(clientId));
+            Assert.Equal(2L, await _app.CountCardAssignmentsAsync(clientId));
+            Assert.Equal(1L, await _app.CountCardAuditEntriesAsync(clientId, "card.cleared"));
+            Assert.Equal(2L, await _app.CountCardCommandIdempotencyKeysAsync(clientId));
+            await AssertFitsViewportAsync(page, "tablet", "cleared-card profile");
+            await CaptureVisualAsync(page, "tablet", "card-clear-success");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task AssignFirstCardWithoutReasonWorksOnPhone()
+    {
+        Assert.NotNull(_browser);
+        var clientId = _app.CardAssignClientId;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = 390,
+                Height = 844,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await DelayCardAssignmentRequestsAsync(page);
+            await page.GotoAsync(_app.BaseAddress.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+            await LoginAsync(page, _app.LoginName, _app.Password, "phone card smoke");
+            await SubmitHtmxSearchAsync(page, "Cardless Phone");
+
+            var results = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
+            await ClickHtmxProfileAsync(
+                page,
+                results.GetByRole(
+                    AriaRole.Link,
+                    new() { Name = "Open Cardless Phone", Exact = true }));
+
+            var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            var cardPanel = profile.Locator("#card-action-panel");
+            await cardPanel.Locator("summary").ClickAsync();
+            Assert.Equal(0, await cardPanel.GetByLabel("Reason", new() { Exact = true }).CountAsync());
+            Assert.Equal(0, await cardPanel.GetByRole(
+                AriaRole.Checkbox,
+                new() { Name = "Clear current card" }).CountAsync());
+            Assert.NotNull(await cardPanel.GetByLabel("New card number", new() { Exact = true })
+                .GetAttributeAsync("required"));
+            await cardPanel.GetByLabel("New card number", new() { Exact = true })
+                .FillAsync("BL-CARD-PHONE");
+            await AssertFitsViewportAsync(page, "phone", "first-card form");
+            await CaptureVisualAsync(page, "phone", "card-assign-form");
+
+            await SubmitHtmxCardAssignmentAsync(page);
+
+            await ExpectVisibleAsync(
+                profile.GetByText("Card assigned."),
+                "phone",
+                "first-card success message");
+            Assert.Equal(
+                "BL-CARD-PHONE",
+                await profile.Locator(".client-profile-meta dd").First.TextContentAsync());
+            await ExpectVisibleAsync(
+                results.GetByRole(
+                    AriaRole.Link,
+                    new() { Name = "Open Cardless Phone", Exact = true })
+                    .GetByText("BL-CARD-PHONE", new() { Exact = true }),
+                "phone",
+                "canonical phone search row");
+            Assert.Equal("BL-CARD-PHONE", await _app.ReadCurrentCardNumberAsync(clientId));
+            Assert.Equal(1L, await _app.CountCardAssignmentsAsync(clientId));
+            Assert.Equal(1L, await _app.CountCardAuditEntriesAsync(clientId, "card.assigned"));
+            Assert.Equal(1L, await _app.CountCardCommandIdempotencyKeysAsync(clientId));
+
+            await SubmitHtmxSearchAsync(page, "BL-CARD-PHONE");
+            await ExpectVisibleAsync(
+                profile.GetByRole(AriaRole.Heading, new() { Name = "Cardless Phone" }),
+                "phone",
+                "assigned exact-card profile");
+            await AssertFitsViewportAsync(page, "phone", "first-card profile");
+            await CaptureVisualAsync(page, "phone", "card-assign-success");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task StaleCardAssignmentRefreshesCanonicalFormBeforeRetry()
+    {
+        Assert.NotNull(_browser);
+        var clientId = _app.CardStaleClientId;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = 1024,
+                Height = 768,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await DelayCardAssignmentRequestsAsync(page);
+            await page.GotoAsync(_app.BaseAddress.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+            await LoginAsync(page, _app.LoginName, _app.Password, "stale card smoke");
+            await SubmitHtmxSearchAsync(page, "BL-CARD-STALE");
+
+            var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            var cardPanel = profile.Locator("#card-action-panel");
+            await cardPanel.Locator("summary").ClickAsync();
+            await cardPanel.GetByLabel("New card number", new() { Exact = true })
+                .FillAsync("BL-CARD-AFTER-STALE");
+            await cardPanel.GetByLabel("Reason", new() { Exact = true })
+                .FillAsync("Attempted stale replacement");
+            await _app.ReplaceCurrentCardForStaleTestAsync(clientId, "BL-CARD-CANONICAL");
+
+            await SubmitHtmxCardAssignmentAsync(page);
+
+            await ExpectVisibleAsync(
+                cardPanel.GetByText(
+                    "Current card assignment changed after the form was loaded. Refresh canonical state.",
+                    new() { Exact = true }),
+                "tablet",
+                "stale-card error");
+            Assert.NotNull(await cardPanel.GetAttributeAsync("open"));
+            Assert.Equal(
+                "BL-CARD-CANONICAL",
+                await cardPanel.Locator(".card-current-state dd").TextContentAsync());
+            Assert.Equal(
+                string.Empty,
+                await cardPanel.GetByLabel("New card number", new() { Exact = true }).InputValueAsync());
+            Assert.Equal(
+                string.Empty,
+                await cardPanel.GetByLabel("Reason", new() { Exact = true }).InputValueAsync());
+            Assert.Equal(0L, await _app.CountCardAuditEntriesAsync(clientId, "card.changed"));
+            Assert.Equal(0L, await _app.CountCardCommandIdempotencyKeysAsync(clientId));
+            Assert.Equal(2L, await _app.CountCardAssignmentsAsync(clientId));
+
+            await cardPanel.GetByLabel("New card number", new() { Exact = true })
+                .FillAsync("BL-CARD-AFTER-STALE");
+            await cardPanel.GetByLabel("Reason", new() { Exact = true })
+                .FillAsync("Saved after canonical refresh");
+            await SubmitHtmxCardAssignmentAsync(page);
+
+            await ExpectVisibleAsync(
+                profile.GetByText("Card changed."),
+                "tablet",
+                "stale-card retry success");
+            Assert.Equal(
+                "BL-CARD-AFTER-STALE",
+                await profile.Locator(".client-profile-meta dd").First.TextContentAsync());
+            Assert.Equal("BL-CARD-AFTER-STALE", await _app.ReadCurrentCardNumberAsync(clientId));
+            Assert.Equal(3L, await _app.CountCardAssignmentsAsync(clientId));
+            Assert.Equal(1L, await _app.CountCardAuditEntriesAsync(clientId, "card.changed"));
+            Assert.Equal(1L, await _app.CountCardCommandIdempotencyKeysAsync(clientId));
+            await AssertFitsViewportAsync(page, "tablet", "stale-card retry");
         }
         finally
         {
@@ -470,6 +756,36 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
     {
         return page.RouteAsync(
             "**/*handler=UpdateClient*",
+            async route =>
+            {
+                await Task.Delay(500);
+                await route.ContinueAsync();
+            });
+    }
+
+    private static async Task SubmitHtmxCardAssignmentAsync(IPage page)
+    {
+        var cardPanel = page.Locator("#card-action-panel");
+        var form = cardPanel.Locator("form");
+        Assert.Equal("this:drop", await form.GetAttributeAsync("hx-sync"));
+        Assert.NotNull(await form.GetAttributeAsync("data-busy-form"));
+        var responseTask = page.WaitForResponseAsync(response =>
+            response.Request.Method == "POST"
+            && response.Url.Contains(
+                "handler=AssignOrChangeCard",
+                StringComparison.OrdinalIgnoreCase));
+        var disabledTask = page.WaitForFunctionAsync(
+            "() => document.querySelector('#card-action-panel button[type=\"submit\"]')?.disabled === true");
+        await cardPanel.GetByRole(AriaRole.Button, new() { Name = "Save card" }).ClickAsync();
+        await disabledTask;
+        AssertHtmxResponse(await responseTask);
+        await WaitForHtmxSettleAsync(page);
+    }
+
+    private static Task DelayCardAssignmentRequestsAsync(IPage page)
+    {
+        return page.RouteAsync(
+            "**/*handler=AssignOrChangeCard*",
             async route =>
             {
                 await Task.Delay(500);

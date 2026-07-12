@@ -1327,3 +1327,54 @@ Commit:
 Next recommended step:
 
 - Resume the planned permission-aware `AssignOrChangeCard` Razor/htmx profile action with expected current assignment id, explicit assign/change/clear intent, replacement/clear reason, inline occupied-card/stale errors and canonical workspace reread.
+
+## Step 41 - Reception card assignment UI workflow
+
+Status: completed.
+
+Plan alignment:
+
+- Reconfirm that Milestones 1 and 2 are complete and accepted, while Milestone 3 Clients/Search remains the active roadmap milestone.
+- Treat Step 40 as a corrective Milestone 1 readiness guard, not a roadmap reorder or a move into a later business module.
+- Continue with the already implemented `AssignOrChangeCard` public command instead of adding card mutation to `UpdateClient` or introducing another persistence path.
+- Keep CreateClient UI, Milestone 3 acceptance review, MembershipTypes and Memberships outside this step.
+
+Scope:
+
+- Add a permission-aware card action to the canonical client profile only when `GetClientProfile` returns the `clients.assign_or_change_card` allowed action.
+- Add a dedicated card form model with client id, expected current assignment id, new card number, explicit clear intent, reason, idempotency key and preserved reception search context.
+- Keep first assignment compact: require a new card number, omit clear/reason controls and rely on the command to authorize and normalize the submitted card.
+- For an existing assignment, show the canonical current card, a binary clear-card checkbox, a replacement/reissue card input and a required reason shared by replace/reissue/clear semantics.
+- Add a small progressive enhancement that disables the new-card field when clear intent is selected; the server command remains authoritative and the ordinary non-JavaScript POST path remains valid.
+- Invoke the existing typed `AssignOrChangeCard` command with the authenticated actor/session/correlation context and reason in the command envelope; add no direct business writes or card rules to Razor/PageModel code.
+- Return validation and occupied-card errors inside the card action while preserving the submitted expected assignment id, intent and idempotency key so a concurrent card change cannot be silently accepted on retry.
+- On stale, concurrency, permission or not-found outcomes, reread the entire canonical workspace, discard submitted mutation fields, generate a fresh form/version/key and reopen the action with the command error.
+- After assign/change/clear success, verify the command reread target, reread the complete reception workspace, show the audit reference and keep the original search query canonical: an old or cleared exact card becomes no-match while the selected profile shows current state.
+- Reuse the existing htmx outerHTML workspace/form targets, request dropping, busy text, disabled submit behavior, progressive POST/redirect path and operation-message treatment.
+- Add restrained tablet/phone styling for the current-card summary, destructive clear control, fields and footer without nesting cards or hiding warnings/actions.
+- Seed isolated UI smoke clients for existing-card change/clear, first card assignment, stale replacement and an occupied card owned by another client.
+- Add test-only PostgreSQL evidence reads for current card, assignment history rows, action-specific audit and command idempotency; add a test-only canonical replacement helper solely to create an external stale state.
+- Add Playwright workflows for tablet occupied conflict/rollback, change, exact-card lookup and clear; phone first assignment without reason; stale canonical refresh and successful retry.
+- Prove current/old/new exact-card search behavior, server warnings, action-specific `card.assigned`/`card.changed`/`card.cleared` audit, preserved assignment history, idempotency and observed busy/disabled submission.
+
+Validation:
+
+- Release solution and UI smoke project builds passed with 0 warnings/errors after the product and test wiring.
+- The first focused reception run passed 8 of 10 tests; all three new card workflows passed, while the existing tablet/phone exact-profile cases found the card number twice after the new closed action panel was added. Scoping that old assertion to canonical profile metadata fixed only the strict locator.
+- Final focused reception validation passed all 10 tests in 30 seconds.
+- Opt-in visual capture produced tablet occupied-error, change-success and clear-success states plus phone first-assignment form/success states. Inspection confirmed readable action order, reason only for replace/clear, reachable touch controls, visible warnings/errors and no horizontal overflow at 1024x768 or 390x844.
+- Focused PostgreSQL `AssignOrChangeCard` command regression validation passed all 11 tests covering accepted/denied actors, history, all audit actions, validation, stale state, replay, rollback and concurrency.
+- Full Playwright smoke validation passed all 13 tests, including existing authentication, authorization, search/profile, UpdateClient and JavaScript-disabled regressions.
+- The first format verification reported only four indentation spaces in one C# property pattern; the mechanical whitespace was corrected and the repeated formatter/analyzer gate passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 107 PostgreSQL infrastructure tests, 13 Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration was generated because the UI uses the existing clients, assignment history, audit and idempotency schema.
+- `graphify update .` completed the structural rebuild with 3051 nodes, 5083 edges and 480 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(ui): add card assignment workflow`.
+
+Next recommended step:
+
+- Add the permission-aware CreateClient Razor/htmx workflow from the reception no-match/search context with optional initial card, duplicate-candidate review and exact acknowledgements, busy/idempotent submission, inline card-conflict/stale-safe errors and canonical open of the newly created profile. Keep the Milestone 3 acceptance review as the following documentation/verification step.

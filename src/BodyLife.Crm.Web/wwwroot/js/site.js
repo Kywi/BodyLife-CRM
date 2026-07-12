@@ -43,3 +43,44 @@ for (const eventName of ["htmx:responseError", "htmx:sendError", "htmx:timeout"]
     }
   });
 }
+
+const syncCardIntentForm = (form) => {
+  const clearCardInput = form.querySelector("[data-clear-card-input]");
+  const cardNumberInput = form.querySelector("[data-card-number-input]");
+
+  if (!(clearCardInput instanceof HTMLInputElement)
+    || !(cardNumberInput instanceof HTMLInputElement)) {
+    return;
+  }
+
+  cardNumberInput.disabled = clearCardInput.checked;
+  cardNumberInput.required = !clearCardInput.checked;
+};
+
+const syncCardIntentForms = (root) => {
+  if (root instanceof HTMLFormElement && root.matches("[data-card-intent-form]")) {
+    syncCardIntentForm(root);
+  }
+
+  for (const form of root.querySelectorAll?.("form[data-card-intent-form]") ?? []) {
+    syncCardIntentForm(form);
+  }
+};
+
+document.addEventListener("change", (event) => {
+  if (!(event.target instanceof HTMLInputElement)
+    || !event.target.matches("[data-clear-card-input]")) {
+    return;
+  }
+
+  const form = event.target.closest("form[data-card-intent-form]");
+  if (form instanceof HTMLFormElement) {
+    syncCardIntentForm(form);
+  }
+});
+
+document.addEventListener("htmx:load", (event) => {
+  syncCardIntentForms(event.detail?.elt ?? document);
+});
+
+syncCardIntentForms(document);

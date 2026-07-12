@@ -38,6 +38,12 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid StaleEditableClientId { get; private set; }
 
+    public Guid CardChangeClientId { get; private set; }
+
+    public Guid CardAssignClientId { get; private set; }
+
+    public Guid CardStaleClientId { get; private set; }
+
     public async Task ExpireSessionAsync(string deviceLabel)
     {
         var database = _database
@@ -71,6 +77,31 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public Task<long> CountDuplicateAcknowledgementsAsync(Guid clientId)
     {
         return RequireDatabase().CountDuplicateAcknowledgementsAsync(clientId);
+    }
+
+    public Task ReplaceCurrentCardForStaleTestAsync(Guid clientId, string newCardNumber)
+    {
+        return RequireDatabase().ReplaceCurrentCardForStaleTestAsync(clientId, newCardNumber);
+    }
+
+    public Task<long> CountCardAuditEntriesAsync(Guid clientId, string actionType)
+    {
+        return RequireDatabase().CountCardAuditEntriesAsync(clientId, actionType);
+    }
+
+    public Task<long> CountCardCommandIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCardCommandIdempotencyKeysAsync(clientId);
+    }
+
+    public Task<long> CountCardAssignmentsAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCardAssignmentsAsync(clientId);
+    }
+
+    public Task<string?> ReadCurrentCardNumberAsync(Guid clientId)
+    {
+        return RequireDatabase().ReadCurrentCardNumberAsync(clientId);
     }
 
     public async Task InitializeAsync()
@@ -306,6 +337,30 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "PhoneMatch",
             "+380 67 777 88 92",
             "BL-DUP-PHONE");
+        CardChangeClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Card",
+            "Change",
+            "+380 67 555 04 04",
+            "BL-CARD-OLD");
+        CardAssignClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Cardless",
+            "Phone",
+            "+380 67 555 05 05",
+            cardNumber: null);
+        CardStaleClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Card",
+            "Stale",
+            "+380 67 555 06 06",
+            "BL-CARD-STALE");
+        await database.SeedClientAsync(
+            ownerAccountId,
+            "Card",
+            "Occupied",
+            "+380 67 555 07 07",
+            "BL-CARD-TAKEN");
     }
 
     private PostgreSqlSmokeDatabase RequireDatabase()

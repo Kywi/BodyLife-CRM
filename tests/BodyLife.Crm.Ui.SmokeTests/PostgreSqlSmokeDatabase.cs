@@ -259,6 +259,163 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             clientId);
     }
 
+    public async Task ReplaceCurrentCardForStaleTestAsync(
+        Guid clientId,
+        string newCardNumber)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        Guid currentAssignmentId;
+        Guid assignedByAccountId;
+        DateTimeOffset assignedAt;
+
+        await using (var readCommand = connection.CreateCommand())
+        {
+            readCommand.Transaction = transaction;
+            readCommand.CommandText =
+                """
+                select id, assigned_by_account_id, assigned_at
+                from bodylife.client_card_assignments
+                where client_id = @client_id
+                  and is_current
+                for update
+                """;
+            readCommand.Parameters.AddWithValue("client_id", clientId);
+            await using var reader = await readCommand.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+            {
+                throw new InvalidOperationException("The stale-card smoke client has no current assignment.");
+            }
+
+            currentAssignmentId = reader.GetGuid(0);
+            assignedByAccountId = reader.GetGuid(1);
+            assignedAt = new DateTimeOffset(reader.GetDateTime(2));
+
+            if (await reader.ReadAsync())
+            {
+                throw new InvalidOperationException("The stale-card smoke client has multiple current assignments.");
+            }
+        }
+
+        var changedAt = assignedAt.AddMinutes(1);
+        await using (var endCommand = connection.CreateCommand())
+        {
+            endCommand.Transaction = transaction;
+            endCommand.CommandText =
+                """
+                update bodylife.client_card_assignments
+                set ended_at = @changed_at,
+                    ended_by_account_id = @assigned_by_account_id,
+                    end_reason = 'UI smoke stale replacement',
+                    is_current = false
+                where id = @assignment_id
+                """;
+            endCommand.Parameters.AddWithValue("changed_at", changedAt);
+            endCommand.Parameters.AddWithValue("assigned_by_account_id", assignedByAccountId);
+            endCommand.Parameters.AddWithValue("assignment_id", currentAssignmentId);
+
+            if (await endCommand.ExecuteNonQueryAsync() != 1)
+            {
+                throw new InvalidOperationException("The stale-card smoke assignment was not ended.");
+            }
+        }
+
+        await using (var insertCommand = connection.CreateCommand())
+        {
+            insertCommand.Transaction = transaction;
+            insertCommand.CommandText =
+                """
+                insert into bodylife.client_card_assignments (
+                    id,
+                    client_id,
+                    card_number_raw,
+                    card_number_normalized,
+                    assigned_at,
+                    assigned_by_account_id,
+                    ended_at,
+                    ended_by_account_id,
+                    end_reason,
+                    is_current)
+                values (
+                    @id,
+                    @client_id,
+                    @card_number_raw,
+                    @card_number_normalized,
+                    @assigned_at,
+                    @assigned_by_account_id,
+                    null,
+                    null,
+                    null,
+                    true)
+                """;
+            insertCommand.Parameters.AddWithValue("id", Guid.NewGuid());
+            insertCommand.Parameters.AddWithValue("client_id", clientId);
+            insertCommand.Parameters.AddWithValue("card_number_raw", newCardNumber);
+            insertCommand.Parameters.AddWithValue(
+                "card_number_normalized",
+                ClientSearchNormalizer.NormalizeCardNumber(newCardNumber));
+            insertCommand.Parameters.AddWithValue("assigned_at", changedAt);
+            insertCommand.Parameters.AddWithValue("assigned_by_account_id", assignedByAccountId);
+            await insertCommand.ExecuteNonQueryAsync();
+        }
+
+        await transaction.CommitAsync();
+    }
+
+    public Task<long> CountCardAuditEntriesAsync(Guid clientId, string actionType)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries
+            where action_type = @action_type
+              and entity_id = @client_id
+            """,
+            clientId,
+            actionType);
+    }
+
+    public Task<long> CountCardCommandIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'AssignOrChangeCard'
+              and primary_entity_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountCardAssignmentsAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.client_card_assignments
+            where client_id = @client_id
+            """,
+            clientId);
+    }
+
+    public async Task<string?> ReadCurrentCardNumberAsync(Guid clientId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select card_number_raw
+            from bodylife.client_card_assignments
+            where client_id = @client_id
+              and is_current
+            """;
+        command.Parameters.AddWithValue("client_id", clientId);
+        return await command.ExecuteScalarAsync() as string;
+    }
+
     public async ValueTask DisposeAsync()
     {
         await ExecuteAdminCommandAsync(
@@ -274,13 +431,22 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         await command.ExecuteNonQueryAsync();
     }
 
-    private async Task<long> CountRowsAsync(string commandText, Guid clientId)
+    private async Task<long> CountRowsAsync(
+        string commandText,
+        Guid clientId,
+        string? actionType = null)
     {
         await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
         command.CommandText = commandText;
         command.Parameters.AddWithValue("client_id", clientId);
+
+        if (actionType is not null)
+        {
+            command.Parameters.AddWithValue("action_type", actionType);
+        }
+
         return (long)(await command.ExecuteScalarAsync()
             ?? throw new InvalidOperationException("The smoke evidence query returned no value."));
     }

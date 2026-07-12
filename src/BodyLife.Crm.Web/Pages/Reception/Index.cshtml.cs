@@ -14,7 +14,8 @@ public sealed class IndexModel(
     IBodyLifeQueryHandler<
         FindClientDuplicateCandidatesQuery,
         IReadOnlyList<ClientDuplicateCandidate>> findDuplicateCandidates,
-    IBodyLifeCommandHandler<UpdateClientCommand> updateClient)
+    IBodyLifeCommandHandler<UpdateClientCommand> updateClient,
+    IBodyLifeCommandHandler<AssignOrChangeCardCommand> assignOrChangeCard)
     : PageModel
 {
     private const int SearchPageSize = 20;
@@ -137,6 +138,61 @@ public sealed class IndexModel(
         return Page();
     }
 
+    public async Task<IActionResult> OnPostAssignOrChangeCardAsync(
+        CardAssignmentFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        var command = new AssignOrChangeCardCommand(
+            requestContextResolver.CreateCommandEnvelope(
+                idempotencyKey: form.IdempotencyKey,
+                reason: form.Reason),
+            form.ClientId,
+            form.ExpectedCurrentCardAssignmentId,
+            form.NewCardNumber,
+            form.ClearCurrentCard);
+        var result = await assignOrChangeCard.ExecuteAsync(command, cancellationToken);
+
+        if (result.Status == CommandStatus.Success)
+        {
+            return await RenderSuccessfulCardAssignmentAsync(form, result, cancellationToken);
+        }
+
+        if (RequiresCanonicalCardRefresh(result.Errors))
+        {
+            return await RenderCanonicalCardConflictAsync(
+                form,
+                result.Errors,
+                cancellationToken);
+        }
+
+        var cardForm = await BuildCardErrorFormAsync(form, result.Errors, cancellationToken);
+
+        if (cardForm is null)
+        {
+            return await RenderCanonicalCardConflictAsync(
+                form,
+                result.Errors,
+                cancellationToken);
+        }
+
+        if (IsHtmxRequest())
+        {
+            return Partial("_CardAssignmentForm", cardForm);
+        }
+
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with { CardAssignmentForm = cardForm },
+        };
+
+        return Page();
+    }
+
     private async Task<IActionResult> RenderSuccessfulUpdateAsync(
         UpdateClientFormInput form,
         CommandResult result,
@@ -154,6 +210,52 @@ public sealed class IndexModel(
         var message = result.AuditEntryId is { } auditEntryId
             ? $"Client updated. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
             : "Client updated.";
+
+        if (!IsHtmxRequest())
+        {
+            ClientOperationMessage = message;
+            ClientOperationTone = "success";
+            return RedirectToCanonicalPage(ClientId);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with
+            {
+                OperationMessage = message,
+                OperationSucceeded = true,
+            },
+        };
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
+    private async Task<IActionResult> RenderSuccessfulCardAssignmentAsync(
+        CardAssignmentFormInput form,
+        CommandResult result,
+        CancellationToken cancellationToken)
+    {
+        if (result.RereadTargetId is not { } rereadTarget
+            || rereadTarget.Value != form.ClientId)
+        {
+            throw new InvalidOperationException(
+                "AssignOrChangeCard did not return the expected canonical client reread target.");
+        }
+
+        ApplySearchContext(form);
+        ClientId = rereadTarget.Value;
+        var outcome = form.ClearCurrentCard
+            ? "Card cleared"
+            : form.ExpectedCurrentCardAssignmentId.HasValue
+                ? "Card changed"
+                : "Card assigned";
+        var message = result.AuditEntryId is { } auditEntryId
+            ? $"{outcome}. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
+            : $"{outcome}.";
 
         if (!IsHtmxRequest())
         {
@@ -212,6 +314,41 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IActionResult> RenderCanonicalCardConflictAsync(
+        CardAssignmentFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+
+        if (Workspace.Profile.Result?.Profile is { } profile
+            && profile.AllowedActions.IsAllowed(ClientProfileActionKeys.AssignOrChangeCard))
+        {
+            var freshForm = CardAssignmentFormViewModel.FromProfile(
+                profile,
+                CurrentSearchContext(),
+                errors,
+                isOpen: true);
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with { CardAssignmentForm = freshForm },
+            };
+        }
+
+        if (!IsHtmxRequest())
+        {
+            return Page();
+        }
+
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
     private async Task<UpdateClientFormViewModel> BuildErrorFormAsync(
         UpdateClientFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -236,6 +373,35 @@ public sealed class IndexModel(
         }
 
         return UpdateClientFormViewModel.FromSubmission(form, candidates, errors);
+    }
+
+    private async Task<CardAssignmentFormViewModel?> BuildCardErrorFormAsync(
+        CardAssignmentFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        var actor = requestContextResolver.Require().Actor;
+        var result = await getClientProfile.ExecuteAsync(
+            new GetClientProfileQuery(actor, form.ClientId),
+            cancellationToken);
+
+        return result is
+        {
+            Status: GetClientProfileStatus.Success,
+            Profile: { } profile,
+        }
+            && profile.AllowedActions.IsAllowed(ClientProfileActionKeys.AssignOrChangeCard)
+                ? CardAssignmentFormViewModel.FromSubmission(form, profile, errors)
+                : null;
+    }
+
+    private static bool RequiresCanonicalCardRefresh(IReadOnlyList<CommandError> errors)
+    {
+        return errors.Any(error => error.Code is
+            CommandErrorCode.StaleState
+            or CommandErrorCode.ConcurrencyConflict
+            or CommandErrorCode.NotFound
+            or CommandErrorCode.PermissionDenied);
     }
 
     private async Task<ReceptionWorkspaceViewModel> BuildWorkspaceAsync(
@@ -303,6 +469,14 @@ public sealed class IndexModel(
     }
 
     private void ApplySearchContext(UpdateClientFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
+    }
+
+    private void ApplySearchContext(CardAssignmentFormInput form)
     {
         Query = form.SearchQuery;
         Mode = form.SearchMode;

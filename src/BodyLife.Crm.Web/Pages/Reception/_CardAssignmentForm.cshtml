@@ -1,0 +1,112 @@
+@model CardAssignmentFormViewModel
+@{
+    var input = Model.Input;
+    var clientKey = input.ClientId.ToString("N");
+}
+
+<details id="card-action-panel" class="profile-action-panel" open="@(Model.IsOpen ? "open" : null)">
+    <summary>Manage card</summary>
+    <div class="profile-action-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Card not updated</strong>
+                <ul>
+                    @foreach (var message in Model.Errors.Select(DisplayError).Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <dl class="card-current-state">
+            <div>
+                <dt>Current card</dt>
+                <dd>@(Model.CurrentCardNumber ?? "No current card")</dd>
+            </div>
+        </dl>
+
+        <form id="card-assignment-form-@clientKey"
+              class="card-assignment-form"
+              method="post"
+              asp-page="/Reception/Index"
+              asp-page-handler="AssignOrChangeCard"
+              data-busy-form
+              data-card-intent-form
+              hx-post="@Url.Page("/Reception/Index", "AssignOrChangeCard")"
+              hx-target="#card-action-panel"
+              hx-swap="outerHTML"
+              hx-sync="this:drop"
+              hx-indicator="#card-action-loading"
+              hx-disabled-elt="find button">
+            <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+            <input type="hidden" name="form.ExpectedCurrentCardAssignmentId" value="@input.ExpectedCurrentCardAssignmentId" />
+            <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+            <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+            <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+            <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+            @if (Model.HasCurrentCard)
+            {
+                <label class="card-clear-control" for="clear-card-@clientKey">
+                    <input id="clear-card-@clientKey"
+                           name="form.ClearCurrentCard"
+                           type="checkbox"
+                           value="true"
+                           data-clear-card-input
+                           checked="@(input.ClearCurrentCard ? "checked" : null)" />
+                    <span>Clear current card</span>
+                </label>
+            }
+
+            <div class="form-field">
+                <label for="new-card-number-@clientKey">New card number</label>
+                <input id="new-card-number-@clientKey"
+                       name="form.NewCardNumber"
+                       type="text"
+                       value="@input.NewCardNumber"
+                       data-card-number-input
+                       required="@(!Model.HasCurrentCard ? "required" : null)"
+                       autocomplete="off" />
+            </div>
+
+            @if (Model.HasCurrentCard)
+            {
+                <div class="form-field">
+                    <label for="card-change-reason-@clientKey">Reason</label>
+                    <input id="card-change-reason-@clientKey"
+                           name="form.Reason"
+                           type="text"
+                           value="@input.Reason"
+                           maxlength="1000"
+                           required
+                           autocomplete="off" />
+                </div>
+            }
+
+            <div class="action-form-footer">
+                <span id="card-action-loading"
+                      class="request-indicator htmx-indicator"
+                      role="status"
+                      aria-live="polite">Saving card...</span>
+                <button type="submit" data-busy-text="Saving...">Save card</button>
+            </div>
+        </form>
+    </div>
+</details>
+
+@functions {
+    private static string DisplayError(CommandError error)
+    {
+        return error.Code switch
+        {
+            CommandErrorCode.CardNumberAlreadyCurrent =>
+                "Card number is already assigned to another current client.",
+            CommandErrorCode.ConcurrencyConflict =>
+                "Card assignment changed while the update was being saved. Canonical state was refreshed.",
+            _ => error.Message,
+        };
+    }
+}

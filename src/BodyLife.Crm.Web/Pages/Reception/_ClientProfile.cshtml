@@ -132,6 +132,11 @@
         {
             <partial name="_UpdateClientForm" model="Model.UpdateClientForm" />
         }
+
+        @if (Model.CardAssignmentForm is not null)
+        {
+            <partial name="_CardAssignmentForm" model="Model.CardAssignmentForm" />
+        }
     }
 </section>
 

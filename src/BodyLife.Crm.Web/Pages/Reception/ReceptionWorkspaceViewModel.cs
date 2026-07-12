@@ -28,12 +28,14 @@ public sealed record ReceptionSearchContext(
 public sealed record ClientProfileViewModel(
     GetClientProfileResult? Result,
     UpdateClientFormViewModel? UpdateClientForm,
+    CardAssignmentFormViewModel? CardAssignmentForm,
     string? OperationMessage,
     bool OperationSucceeded)
 {
     public static ClientProfileViewModel Empty { get; } = new(
         Result: null,
         UpdateClientForm: null,
+        CardAssignmentForm: null,
         OperationMessage: null,
         OperationSucceeded: false);
 
@@ -42,7 +44,8 @@ public sealed record ClientProfileViewModel(
         ReceptionSearchContext searchContext,
         string? operationMessage = null,
         bool operationSucceeded = false,
-        UpdateClientFormViewModel? updateClientForm = null)
+        UpdateClientFormViewModel? updateClientForm = null,
+        CardAssignmentFormViewModel? cardAssignmentForm = null)
     {
         if (updateClientForm is null
             && result?.Profile is { } profile
@@ -51,9 +54,19 @@ public sealed record ClientProfileViewModel(
             updateClientForm = UpdateClientFormViewModel.FromProfile(profile, searchContext);
         }
 
+        if (cardAssignmentForm is null
+            && result?.Profile is { } cardProfile
+            && cardProfile.AllowedActions.IsAllowed(ClientProfileActionKeys.AssignOrChangeCard))
+        {
+            cardAssignmentForm = CardAssignmentFormViewModel.FromProfile(
+                cardProfile,
+                searchContext);
+        }
+
         return new ClientProfileViewModel(
             result,
             updateClientForm,
+            cardAssignmentForm,
             operationMessage,
             operationSucceeded);
     }
