@@ -1640,3 +1640,49 @@ Commit:
 Next recommended step:
 
 - Implement only the persistence-backed `DeactivateMembershipType` command with Owner-only canonical authorization, expected `updated_at` stale-state protection, required reason/comment, row locking, idempotency, `is_active`/`deactivated_at` lifecycle mutation, before/after `membership_type.deactivated` audit and canonical reread. Keep query implementation and Owner UI for later steps.
+
+## Step 48 - DeactivateMembershipType command workflow
+
+Status: completed.
+
+Plan alignment:
+
+- Complete Milestone 4's third catalog mutation after create/edit without starting catalog queries or Owner UI.
+- Remove a type only from future ordinary issue availability by lifecycle state; retain the canonical row, catalog values and history/report readability.
+- Create no issued-membership mutation or Memberships recalculation side effect, preserving immutable issue-time snapshots.
+
+Scope:
+
+- Add the contract-defined stable `AlreadyInactive` command error without changing existing enum values.
+- Add and register a scoped `IBodyLifeCommandHandler<DeactivateMembershipTypeCommand>`.
+- Reject non-Owner actor shapes before persistence and revalidate the canonical active Owner account plus unexpired matching session inside the transaction.
+- Validate membership type id, expected `updated_at`, normalized operational envelope and a required audit reason or command comment.
+- Lock the target `membership_types` row with PostgreSQL `FOR UPDATE` in one `ReadCommitted` transaction before checking idempotency and lifecycle state.
+- Check exact idempotency after the row lock so a concurrent retry replays the original entity/audit ids; changed key reuse returns `duplicate_submission`.
+- Return `not_found` for a missing row, `stale_state` for an outdated expected version and `already_inactive` only for a new request against the current inactive state.
+- Set `is_active = false`, advance `updated_at` monotonically and set `deactivated_at` to the same lifecycle timestamp while retaining every catalog field and the row itself.
+- Append `membership_type.deactivated` with full before/after catalog/lifecycle summaries and normalized reason/comment, then persist lifecycle, audit and idempotency in one transaction.
+- Return `membership_type` as both primary entity and canonical reread target; no migration or Memberships recalculation is required.
+- Generalize the non-normal envelope validation message from creation-specific wording to all MembershipType commands.
+- Add nine disposable PostgreSQL tests for successful lifecycle/audit/idempotency, Owner-only permissions, canonical session denial, validation/reason policy, missing/stale/already-inactive behavior, replay/change rejection, row-lock concurrency, concurrent exact replay, monotonic timestamps and atomic rollback on audit failure.
+
+Validation:
+
+- Release Infrastructure build passed with 0 warnings and 0 errors.
+- Focused `PostgreSqlDeactivateMembershipTypeCommandTests` validation passed all 9 tests against Docker PostgreSQL.
+- Focused MembershipTypes regression validation passed 20 core tests and 31 PostgreSQL tests across storage/create/edit/deactivate.
+- Both concurrent deactivation tests passed five repeated runs after confirming the filter selected exactly 2 tests per run.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 138 PostgreSQL infrastructure tests, 15 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- The restarted Development app loaded the deactivation-handler DI registration and returned `200 OK` from `/health/ready` with PostgreSQL schema current.
+- `graphify update .` completed the structural rebuild with 3381 nodes, 6076 edges and 490 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): implement deactivation workflow`.
+
+Next recommended step:
+
+- Implement only the persistence-backed `GetMembershipTypesForIssue` query: active types for ordinary issue flow, inactive inclusion only for canonical Owner catalog context, deterministic ordering, allowed-action metadata and PostgreSQL query tests. Keep Owner UI for the following step.

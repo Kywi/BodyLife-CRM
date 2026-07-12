@@ -14,5 +14,6 @@ public enum CommandErrorCode
     MembershipTypeInactive,
     AlreadyCanceled,
     RecalculationFailed,
-    ConcurrencyConflict
+    ConcurrencyConflict,
+    AlreadyInactive
 }

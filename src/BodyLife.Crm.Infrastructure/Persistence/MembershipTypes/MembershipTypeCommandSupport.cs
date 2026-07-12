@@ -160,6 +160,47 @@ internal static class MembershipTypeCommandSupport
         return null;
     }
 
+    internal static CommandResult? ValidateAndNormalizeDeactivate(
+        DeactivateMembershipTypeCommand command,
+        out NormalizedMembershipTypeDeactivation? normalizedDeactivation)
+    {
+        normalizedDeactivation = null;
+
+        if (command.MembershipTypeId == Guid.Empty)
+        {
+            return ValidationError("Membership type id is required.", "membershipTypeId");
+        }
+
+        if (command.ExpectedUpdatedAt == default)
+        {
+            return ValidationError(
+                "Expected updated_at is required.",
+                "expectedUpdatedAt");
+        }
+
+        var envelopeValidation = ValidateAndNormalizeEnvelope(
+            command.Envelope,
+            out var normalizedEnvelope);
+
+        if (envelopeValidation is not null)
+        {
+            return envelopeValidation;
+        }
+
+        if (normalizedEnvelope!.Reason is null && normalizedEnvelope.Comment is null)
+        {
+            return ValidationError(
+                "Reason or command comment is required to deactivate a membership type.",
+                "reason");
+        }
+
+        normalizedDeactivation = new NormalizedMembershipTypeDeactivation(
+            command.MembershipTypeId,
+            command.ExpectedUpdatedAt.ToUniversalTime(),
+            normalizedEnvelope);
+        return null;
+    }
+
     internal static string CreateFingerprint(
         CommandEnvelope envelope,
         NormalizedMembershipTypeCreate normalizedCreate)
@@ -208,6 +249,27 @@ internal static class MembershipTypeCommandSupport
             PriceAmount = normalizedEdit.CatalogValues.Price.Amount,
             PriceCurrency = normalizedEdit.CatalogValues.Price.Currency,
             normalizedEdit.CatalogValues.Comment,
+        });
+
+        return Convert.ToHexString(SHA256.HashData(payload));
+    }
+
+    internal static string CreateDeactivateFingerprint(
+        CommandEnvelope envelope,
+        NormalizedMembershipTypeDeactivation normalizedDeactivation)
+    {
+        var payload = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            ActorAccountId = envelope.Actor.AccountId.Value,
+            ActorRole = MapActorRole(envelope.Actor.Role),
+            ActorAccountKind = MapAccountKind(envelope.Actor.AccountKind),
+            ActorSessionId = envelope.Actor.SessionId.Value,
+            EntryOrigin = MapEntryOrigin(envelope.EntryOrigin),
+            envelope.OccurredAt,
+            EnvelopeReason = normalizedDeactivation.Envelope.Reason,
+            EnvelopeComment = normalizedDeactivation.Envelope.Comment,
+            normalizedDeactivation.MembershipTypeId,
+            normalizedDeactivation.ExpectedUpdatedAt,
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));
@@ -432,7 +494,7 @@ internal static class MembershipTypeCommandSupport
             && (envelope.OccurredAt is null || (reason is null && comment is null)))
         {
             return ValidationError(
-                "Non-normal membership type creation requires occurred_at and a reason or command comment.",
+                "Non-normal membership type command requires occurred_at and a reason or command comment.",
                 "entryOrigin");
         }
 
@@ -494,6 +556,11 @@ internal sealed record NormalizedMembershipTypeEdit(
     Guid MembershipTypeId,
     DateTimeOffset ExpectedUpdatedAt,
     MembershipTypeCatalogValues CatalogValues,
+    NormalizedMembershipTypeCommandEnvelope Envelope);
+
+internal sealed record NormalizedMembershipTypeDeactivation(
+    Guid MembershipTypeId,
+    DateTimeOffset ExpectedUpdatedAt,
     NormalizedMembershipTypeCommandEnvelope Envelope);
 
 internal sealed record NormalizedMembershipTypeCommandEnvelope(
