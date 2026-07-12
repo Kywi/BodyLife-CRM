@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1783887403.108414,
-    "ast_hash": "c40cf23a586de216f151183d3e3dffb3",
+    "mtime": 1783888496.897553,
+    "ast_hash": "e37aa86e21a69fd0b110f7ccdb037b74",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -530,9 +530,9 @@
     "semantic_hash": "67153cd15a65f5520c9418997e1fe216"
   },
   "src/BodyLife.Crm/Application/Commands/CommandErrorCode.cs": {
-    "mtime": 1783508744.788521,
-    "ast_hash": "00190c856f1bc83e66489dc3acbbd031",
-    "semantic_hash": "00190c856f1bc83e66489dc3acbbd031"
+    "mtime": 1783888496.897553,
+    "ast_hash": "ed8d95a4ddb10e526da9c558f474c934",
+    "semantic_hash": ""
   },
   "src/BodyLife.Crm/Application/Commands/CommandResult.cs": {
     "mtime": 1783508744.788521,
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783886653.9118283,
-    "ast_hash": "2bf4011f95bd551828a17bea9a9c5bf5",
+    "mtime": 1783887978.3703985,
+    "ast_hash": "d8d6db383ac66fdbfadca185a6205fd3",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1670,13 +1670,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/MembershipTypes/MembershipTypeAuditActions.cs": {
-    "mtime": 1783887403.108414,
-    "ast_hash": "d354483ea8d74c2a5f14a819f9d8ef5d",
+    "mtime": 1783888496.897553,
+    "ast_hash": "63856a483007cdc4f5eae9794f347fa5",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/MembershipTypes/MembershipTypeCommandSupport.cs": {
-    "mtime": 1783887363.639943,
-    "ast_hash": "78a33795202c242615c109a35f4b6e68",
+    "mtime": 1783888496.897553,
+    "ast_hash": "594a85f702f5054274c179a5d1887975",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCreateMembershipTypeCommandTests.cs": {
@@ -1692,6 +1692,16 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlEditMembershipTypeCommandTests.cs": {
     "mtime": 1783887620.066345,
     "ast_hash": "7a03039f3f118814c6ae47463210c1d7",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/MembershipTypes/DeactivateMembershipTypeCommandHandler.cs": {
+    "mtime": 1783888496.9015532,
+    "ast_hash": "c31221ead1680d8ac2b2c000f97f3753",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlDeactivateMembershipTypeCommandTests.cs": {
+    "mtime": 1783888854.2249966,
+    "ast_hash": "54e66d30d7b1bdd49f735abfea2bf4a0",
     "semantic_hash": ""
   }
 }

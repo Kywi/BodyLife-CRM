@@ -488,5 +488,10 @@
   "486": "BodyLifeAuthTechnicalLogger.cs",
   "487": "ClientAuditActions.cs",
   "488": "AccountSessionPolicy.cs",
-  "489": "StaffAccountAuditActions.cs"
+  "489": "StaffAccountAuditActions.cs",
+  "490": "PostgreSqlDeactivateMembershipTypeCommandTests.cs",
+  "491": "PostgreSqlEditMembershipTypeCommandTests.cs",
+  "492": "PostgreSqlUpdateClientCommandTests.cs",
+  "493": ".AddBodyLifePersistence",
+  "494": "MembershipTypeAuditActions.cs"
 }
