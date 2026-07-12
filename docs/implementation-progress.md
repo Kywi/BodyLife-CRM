@@ -1426,3 +1426,42 @@ Commit:
 Next recommended step:
 
 - Run the Milestone 3 acceptance review against every roadmap criterion and required test category, record objective evidence and close only discovered Clients/Search gaps before starting Milestone 4 MembershipTypes.
+
+## Step 43 - Milestone 3 acceptance review
+
+Status: completed.
+
+Plan alignment:
+
+- Keep Milestone 3 Clients/Search active until every roadmap task, acceptance criterion and required test category has direct repository evidence.
+- Treat missing later Memberships state, client history, reports and audit timeline composition as dependencies of their owning roadmap milestones rather than pulling those modules into Clients/Search.
+- Start no MembershipTypes implementation inside this review step.
+
+Scope:
+
+- Create `docs/milestone-3-acceptance-review.md` with a decision, completed-foundation matrix, all eight acceptance criteria, all six required test areas, scope/risk checks and the Milestone 4 handoff.
+- Verify the clients/card/duplicate migrations, normalized identity contract, all three command handlers, search/profile queries, business-audit context, canonical rereads and reception UI against their governing docs.
+- Confirm partial unique current-card indexes and raw/command-level concurrency tests prove one current card per client, one current client per card and one complete committed workflow under races.
+- Confirm CreateClient, UpdateClient and AssignOrChangeCard tests cover accepted/denied actors, validation, exact duplicate acknowledgements, idempotent replay/change rejection, stale/concurrency behavior, transaction rollback, audit and reread targets.
+- Confirm search tests cover exact/partial card, name, normalized phone, last four, inactive visibility, stable pagination, permission denial, validation and no-match behavior.
+- Confirm Playwright covers exact-card auto-open, ambiguous selection, no-match/create, profile, update, card lifecycle, duplicate review, stale refresh, busy/disabled submission and progressive search fallback on the target viewports.
+- Identify one acceptance-evidence gap: role-based Playwright interactions existed, but the documented 44x44 px touch-target minimum was not measured automatically.
+- Add tablet/phone Playwright assertions for the rendered search input/button/clear link, all mode segments, inactive control, profile action summaries and every client result row; no product CSS change was required.
+- Record Milestone 3 as accepted and keep fuzzy search, merge, scanner-specific identity, import cleanup, client portal/API/offline/multi-tenant scope absent.
+
+Validation:
+
+- Focused `ReceptionSearchAndProfileReadPathWorksOnTargetViewport` Playwright validation passed both tablet and phone cases with the new rendered 44x44 px touch-target assertions.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 34 core tests, 35 web tests, 107 PostgreSQL infrastructure tests, 15 Playwright smoke tests and EF migration listing through `20260710113814_AddDuplicateWarningAcknowledgements`.
+- No migration or product behavior change was required; this step adds acceptance documentation and closes one automated UI quality-gate gap.
+- `graphify update .` completed the structural rebuild with 3098 nodes, 5236 edges and 475 communities.
+- `graphify . --update` was attempted for the acceptance/progress documentation changes but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `test(ui): verify reception touch targets`.
+- `docs(clients): accept milestone 3`.
+
+Next recommended step:
+
+- Start Milestone 4 with a small MembershipTypes domain/application contract step: reconcile ADR-011 and interaction contracts, define the typed create/edit/deactivate/query shapes, and add focused validation/lifecycle tests before adding PostgreSQL schema or Owner catalog UI.
