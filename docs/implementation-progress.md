@@ -2635,3 +2635,45 @@ Commits:
 Next recommended step:
 
 - Add only the Memberships-owned domain contract and deterministic union calculator for active extension source dates, with focused tests for inclusive ranges, overlapping Freeze/NonWorkingDay/adjustment sources, inactive sources and stable explanation attribution. Keep PostgreSQL row generation, cache rebuild integration, source-module persistence, query projection and UI outside that domain-only step.
+
+## Step 70 - Membership extension date union rules
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the Memberships-owned domain contract and deterministic union calculation required by the Step 69 derived extension-day storage.
+- Expand every source range with the accepted inclusive `DateRange` semantics and count extension days as the union of distinct active calendar dates, never as a naive sum of overlapping ranges.
+- Preserve one explanation entry per source and date so overlapping Freeze, NonWorkingDay and future adjustment projections remain attributable.
+- Retain inactive source attribution in the calculation result while excluding those dates from the active union count, allowing later rebuilds to explain canceled or corrected source projections.
+- Keep source types extensible until their owning modules define canonical literals and reject duplicate `(source_type, source_id)` projections before calculation.
+- Produce immutable, deterministically ordered output so persistence and query boundaries do not need to recreate Memberships formulas or ordering rules.
+- Keep PostgreSQL row replacement, cache rebuild integration, source-module persistence, `GetMembershipState` explanation projection, profile composition and UI outside this domain-only step.
+
+Scope:
+
+- Add validated `MembershipExtensionSourceRange` projections with stable source identity, trimmed bounded metadata, an inclusive date range and active state.
+- Add immutable `MembershipExtensionDay` explanation values and `MembershipExtensionCalculation` results with a defensive read-only collection.
+- Add `MembershipExtensionCalculator.Calculate` to expand inclusive ranges, retain every source/date attribution, count unique active dates and order rows by date, active state, source type, source id and label.
+- Reject missing source collections/items, empty source ids, missing or oversized source metadata and duplicate source type/id identities.
+- Add 13 focused core cases covering inclusive edges, three-way overlap, inactive attribution, empty input, metadata validation and trimming, duplicate identities, extensible source types, immutability and the `DateOnly.MaxValue` boundary.
+- Add no EF record/configuration/migration, PostgreSQL writer/rebuilder, state-cache integration, query/read-model property, source-module contract, profile integration or UI change.
+
+Validation:
+
+- Focused `MembershipExtensionCalculatorTests` validation passed all 13 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 83 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this domain-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 137 core tests, 35 web tests, 194 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713144951_AddMembershipExtensionDays`.
+- `graphify update .` completed the structural rebuild with 4254 nodes, 8199 edges and 560 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): calculate extension date union`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only a Memberships persistence boundary that atomically replaces one membership's derived `membership_extension_days` rows from a supplied canonical `MembershipExtensionCalculation`, with focused PostgreSQL tests for replacement, overlap attribution, idempotent retry and rollback behavior. Keep source loading, state-cache integration, query projection, Freezes/NonWorkingDays persistence and UI outside that step.
