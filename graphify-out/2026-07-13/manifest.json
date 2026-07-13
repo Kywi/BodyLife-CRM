@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783954834.5678775,
-    "ast_hash": "ad6b0a77c8b1290a7b8acf53986cd4ed",
+    "mtime": 1783958224.4375803,
+    "ast_hash": "c5d233dbcf4850156a7098248a9a326f",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2042,6 +2042,31 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipExtensionDaysStorageTests.cs": {
     "mtime": 1783954485.2274964,
     "ast_hash": "55c0e2f380b2f255c5e11d043b99c8cf",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipExtensionCalculation.cs": {
+    "mtime": 1783957918.2673326,
+    "ast_hash": "1eaff6a6f758c26a73cadd89140e4beb",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipExtensionCalculator.cs": {
+    "mtime": 1783957918.2673326,
+    "ast_hash": "d73b25589e1ad4a87a820ae52327c93a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipExtensionDay.cs": {
+    "mtime": 1783957918.2673326,
+    "ast_hash": "dd8dcc0bb2d9c7784f077a951c7e535f",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipExtensionSourceRange.cs": {
+    "mtime": 1783957918.2673326,
+    "ast_hash": "40084958f22556e495cc53d338c1f0fb",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipExtensionCalculatorTests.cs": {
+    "mtime": 1783957918.2673326,
+    "ast_hash": "3f1e470513a54beccc1fb388afac8a5f",
     "semantic_hash": ""
   }
 }
