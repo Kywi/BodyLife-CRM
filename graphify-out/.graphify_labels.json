@@ -484,12 +484,8 @@
   "482": "_CreateClientForm.cshtml",
   "483": ".RejectAsync",
   "484": ".IsCanonicalActorAuthorizedAsync",
-  "485": "AccountSessionSnapshot",
-  "486": "BodyLifeAuthTechnicalLogger.cs",
   "487": "ClientAuditActions.cs",
-  "488": "AccountSessionPolicy.cs",
   "489": "StaffAccountAuditActions.cs",
-  "490": "PostgreSqlDeactivateMembershipTypeCommandTests.cs",
   "491": "PostgreSqlEditMembershipTypeCommandTests.cs",
   "493": ".AddBodyLifePersistence"
 }
