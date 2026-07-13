@@ -142,7 +142,7 @@ public sealed class MembershipStateCacheRebuilder(
             && cache.RecalculationVersion == CurrentRecalculationVersion;
     }
 
-    private static void ApplyCalculatedState(
+    internal static void ApplyCalculatedState(
         MembershipStateCacheRecord cache,
         MembershipCalculatedState calculatedState,
         DateTimeOffset recalculatedAt)

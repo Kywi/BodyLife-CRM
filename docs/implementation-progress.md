@@ -2849,3 +2849,50 @@ Commits:
 Next recommended step:
 
 - Add only the Memberships persistence coordinator that atomically writes one already-canonical `MembershipCalculatedState` and matching `MembershipExtensionCalculation` to `membership_state_cache` plus `membership_extension_days`, with consistency validation, one parent lock, one recalculation timestamp and rollback-focused PostgreSQL tests. Keep source-fact loading, opening-state cutover policy, command/audit orchestration, client/profile composition and UI outside that write-boundary step.
+
+## Step 75 - Atomic membership derived-state persistence coordinator
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 central recalculation infrastructure with only the write boundary between already-canonical Memberships calculations and the two rebuildable PostgreSQL projections.
+- Accept a `MembershipCalculatedState` and its matching `MembershipExtensionCalculation`; do not load or reinterpret Visits, Freezes, NonWorkingDays, adjustments or opening-state cutover rules in Infrastructure.
+- Reject aggregate/explanation mismatches before touching PostgreSQL and rehydrate the supplied state through Memberships domain validation against the locked issued snapshot and base end date.
+- Lock the parent issued membership once, then upsert `membership_state_cache` and delete/rebuild `membership_extension_days` inside one read-committed transaction.
+- Join an existing command transaction without committing it, or own and commit a transaction for standalone persistence.
+- Stamp the cache and every explanation row with one `TimeProvider` value and the current recalculation version so readers cannot observe mixed derived batches after commit.
+- Keep all formulas in the Memberships domain objects; the coordinator only validates, maps and persists canonical values.
+- Keep source-fact loading, opening-state cutover policy, recalculation orchestration, business audit, client/profile composition and UI outside this persistence-only step.
+
+Scope:
+
+- Add scoped `MembershipStatePersistenceCoordinator.PersistAsync` with required input validation, stable missing-membership result and immutable success metadata.
+- Add `MembershipStatePersistenceStatus` and `MembershipStatePersistenceResult` with canonical state, persisted explanation-row count, shared recalculation timestamp and recalculation version.
+- Reuse the extension writer's replacement mapping through an internal after-lock primitive, preserving the standalone writer's existing public transaction behavior.
+- Reuse the cache rebuilder's field mapping so both persistence paths stamp every stable cache field and version identically.
+- Register the coordinator as scoped through `AddBodyLifePersistence` for later same-transaction recalculation orchestration.
+- Add seven focused cases covering invalid/missing input, aggregate/explanation mismatch, full cache plus overlapping/inactive explanation persistence, state-to-issued-terms validation, same-scope clearing, caller-owned rollback, concurrent batch serialization and scoped DI registration.
+- Add no EF record/configuration/migration, source provider, recalculation source loader, opening-state behavior, command/audit event, profile query or UI change.
+
+Validation:
+
+- The first focused test attempt stopped only on xUnit analyzer `xUnit2031` for a filtered `Assert.Single`; the assertion was changed to the predicate overload and no product behavior failed.
+- Focused `PostgreSqlMembershipStatePersistenceCoordinatorTests` validation then passed all 7 cases against Docker PostgreSQL.
+- Focused extension-writer and state-cache-rebuilder compatibility regression passed all 19 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 94 tests.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 102 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this persistence-service step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 148 core tests, 35 web tests, 209 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713144951_AddMembershipExtensionDays`.
+- `graphify update .` completed the structural rebuild with 4382 nodes, 8560 edges and 553 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): persist derived state atomically`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the remaining Milestone 5 `membership_adjustments` PostgreSQL source-fact storage: EF record/configuration, reviewable migration and focused constraint/index/migration tests for explicit dated adjustments with reason, actor and retained status history. Keep adjustment commands, recalculation source loading, audit orchestration, profile/history projection and UI outside that storage-only step.

@@ -64,6 +64,34 @@ public sealed class MembershipExtensionDayWriter(
             return MembershipExtensionDayWriteResult.MissingMembership(membershipId);
         }
 
+        var recalculatedAt = timeProvider.GetUtcNow();
+        var persistedRowCount = await ReplaceAfterMembershipLockAsync(
+            dbContext,
+            membershipId,
+            calculation,
+            recalculatedAt,
+            cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        if (ownedTransaction is not null)
+        {
+            await ownedTransaction.CommitAsync(cancellationToken);
+        }
+
+        return MembershipExtensionDayWriteResult.Replaced(
+            membershipId,
+            calculation.ExtensionDays,
+            persistedRowCount,
+            recalculatedAt);
+    }
+
+    internal static async Task<int> ReplaceAfterMembershipLockAsync(
+        BodyLifeDbContext dbContext,
+        Guid membershipId,
+        MembershipExtensionCalculation calculation,
+        DateTimeOffset recalculatedAt,
+        CancellationToken cancellationToken)
+    {
         foreach (var entry in dbContext.ChangeTracker
                      .Entries<MembershipExtensionDayRecord>()
                      .Where(entry => entry.Entity.MembershipId == membershipId)
@@ -76,7 +104,6 @@ public sealed class MembershipExtensionDayWriter(
             .Where(extensionDay => extensionDay.MembershipId == membershipId)
             .ExecuteDeleteAsync(cancellationToken);
 
-        var recalculatedAt = timeProvider.GetUtcNow();
         var replacementRows = calculation.ExplanationDays
             .Select(extensionDay => new MembershipExtensionDayRecord
             {
@@ -91,17 +118,7 @@ public sealed class MembershipExtensionDayWriter(
             })
             .ToArray();
         dbContext.Set<MembershipExtensionDayRecord>().AddRange(replacementRows);
-        await dbContext.SaveChangesAsync(cancellationToken);
 
-        if (ownedTransaction is not null)
-        {
-            await ownedTransaction.CommitAsync(cancellationToken);
-        }
-
-        return MembershipExtensionDayWriteResult.Replaced(
-            membershipId,
-            calculation.ExtensionDays,
-            replacementRows.Length,
-            recalculatedAt);
+        return replacementRows.Length;
     }
 }
