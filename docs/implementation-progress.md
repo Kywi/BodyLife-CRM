@@ -1925,3 +1925,42 @@ Commit:
 Next recommended step:
 
 - Run a small Milestone 4 acceptance checkpoint against the roadmap and record any intentionally deferred criterion, especially the issued-membership snapshot contract that depends on Milestone 5. If the checkpoint is clean, the following implementation step should start only Milestone 5's domain contract for immutable issue-time snapshots and inclusive base-end-date behavior, without persistence or UI yet.
+
+## Step 54 - Milestone 4 acceptance checkpoint
+
+Status: completed.
+
+Plan alignment:
+
+- Review every Milestone 4 roadmap task, acceptance criterion and required test category before starting Memberships work.
+- Accept only behavior owned by the MembershipTypes boundary and do not pull issued-membership persistence, calculations, reports or history UI forward from their owning milestones.
+- Treat the issued-membership snapshot-after-catalog-edit proof as an explicit cross-milestone gate because the roadmap creates that source fact in Milestone 5 and asks Milestone 4 to add the contract test once it exists.
+
+Scope:
+
+- Add `docs/milestone-4-acceptance-review.md` with the checkpoint decision, completed-foundation matrix, all six acceptance criteria, all five required test areas, scope/risk checks and the constrained Milestone 5 handoff.
+- Confirm the catalog migration, domain rules, create/edit/deactivate contracts and handlers, active-only issue query, retained inactive rows, Owner UI and business-audit paths against ADR-011 and the architecture/interaction/data contracts.
+- Confirm command suites prove Owner-only authorization, validation, idempotency, stale/concurrency behavior, transaction rollback, audit and canonical reread targets against PostgreSQL.
+- Confirm query tests prove active-only ordinary output for every operational role, Owner-only inactive inclusion and query-only behavior.
+- Confirm Playwright covers Owner catalog/read/create/edit/deactivate behavior on tablet and phone plus named Admin route/navigation denial.
+- Record the Milestone 4 catalog slice as accepted for Milestone 5 handoff while leaving final snapshot immutability acceptance open until the first issued-membership persistence slice can prove it.
+- Add no product code, schema, migration or UI change in this checkpoint.
+
+Validation:
+
+- The acceptance review found no missing behavior or test category owned solely by MembershipTypes; issued snapshot immutability remains the one explicit dependency gate for Milestone 5.
+- Focused `FullyQualifiedName~MembershipType` core validation passed all 20 catalog contract/rule tests.
+- Focused `FullyQualifiedName~MembershipType` PostgreSQL validation passed all 38 storage/create/edit/deactivate/query tests against Docker PostgreSQL.
+- Focused `FullyQualifiedName~MembershipType` Playwright validation passed all 9 catalog/create/edit/deactivate tests across their configured tablet/phone cases, including named Admin denial.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 145 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- The running Development app returned `200 OK` from `/health/ready` against the current PostgreSQL schema.
+- `graphify . --update` was attempted for the acceptance/progress documentation changes but stopped because no semantic extraction LLM backend is configured; no tracked graph artifact changed.
+
+Commit:
+
+- `docs(membership-types): record milestone 4 acceptance`.
+
+Next recommended step:
+
+- Start only Milestone 5's domain/application contract for immutable issue-time MembershipType snapshots and inclusive `base_end_date = start_date + duration_days - 1 day`, with focused domain tests and no persistence, recalculation cache or UI yet.
