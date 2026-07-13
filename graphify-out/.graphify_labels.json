@@ -539,5 +539,6 @@
   "537": "AccountSessionPolicy.cs",
   "538": "StaffAccountAuditActions.cs",
   "539": "AccountSessionSnapshot",
-  "540": "ClientAuditActions.cs"
+  "540": "ClientAuditActions.cs",
+  "541": "ClientSearchActionKeys.cs"
 }
