@@ -493,5 +493,21 @@
   "491": "PostgreSqlEditMembershipTypeCommandTests.cs",
   "492": ".AddBodyLifePersistence",
   "493": "SessionId",
-  "494": ".InitialBaselineMigrationAppliesToCleanPostgreSqlDatabase"
+  "494": ".InitialBaselineMigrationAppliesToCleanPostgreSqlDatabase",
+  "495": ".TryReadActorContext",
+  "496": "ActorRole",
+  "497": ".Append",
+  "498": ".ResolveAsync",
+  "499": "Money",
+  "500": "DuplicateWarningAcknowledgementRecord",
+  "501": "GetMembershipTypesForIssueResult",
+  "502": ".CountOwnerAccountsAsync",
+  "503": "AddIssuedMemberships",
+  "504": "20260712192355_AddMembershipTypesCatalog.Designer.cs",
+  "505": "20260713091512_AddIssuedMemberships.Designer.cs",
+  "506": "AccountId",
+  "507": "CreateMembershipTypeFormViewModel",
+  "508": "PostgreSqlFactAttribute.cs",
+  "509": "AccountSessionPolicy.cs",
+  "510": "StaffAccountAuditActions.cs"
 }

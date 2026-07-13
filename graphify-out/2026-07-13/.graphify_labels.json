@@ -493,7 +493,5 @@
   "491": "PostgreSqlEditMembershipTypeCommandTests.cs",
   "492": ".AddBodyLifePersistence",
   "493": "SessionId",
-  "494": ".InitialBaselineMigrationAppliesToCleanPostgreSqlDatabase",
-  "495": "MembershipTypeCatalogActionKeys.cs",
-  "496": "ClientDuplicateWarningAcknowledgement"
+  "494": ".InitialBaselineMigrationAppliesToCleanPostgreSqlDatabase"
 }
