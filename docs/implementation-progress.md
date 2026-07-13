@@ -3076,3 +3076,53 @@ Commits:
 Next recommended step:
 
 - Implement only the PostgreSQL `IssueMembership` handler for the currently accepted no-payment path: canonical Admin/Owner authorization, envelope/idempotency validation, client and affected-membership locking, active MembershipType reload, canonical negative-state recheck through the Step 79 preparation policy, one transaction for issued snapshot plus initial cache, append-only `membership.issued` audit and common client reread result. Add focused PostgreSQL tests for permissions, inactive/missing selectors, required/deferred negative decisions, replay/payload mismatch, concurrency and rollback. Keep payment/closure facts, manual opening-state orchestration, profile composition and UI outside that handler-only step.
+
+## Step 80 - Transactional PostgreSQL membership issue command
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 by implementing only the persistence-backed ordinary `IssueMembership` workflow after the Step 79 public command and pure preparation boundary.
+- Accept only `normal` entry origin in this handler. Reject entry-batch/manual-backfill/fallback orchestration explicitly so the already accepted opening-state command remains the honest historical-state path and this step does not invent migration behavior.
+- Require the common command accountability fields needed by the quick action: canonical actor/session shape, request correlation id and idempotency key; normalize bounded reason/comment/device metadata while keeping server `recorded_at` under `TimeProvider` control.
+- Authorize Owner, named Admin and shared Reception/Admin against canonical active account and unexpired session rows before any business mutation.
+- Serialize issue workflows per client with a PostgreSQL client `FOR UPDATE` lock, protect the selected MembershipType snapshot against concurrent edit/deactivation with `FOR SHARE`, then lock every active issued membership before rereading its cache-derived negative state.
+- Recheck idempotency after the client lock so concurrent identical submits return the original membership/audit/client-reread result and cannot create duplicate source/cache/audit rows.
+- Require a present, current-version and domain-rehydratable cache for every active existing membership. Missing, stale or inconsistent derived state fails with `recalculation_failed` and is not repaired as an issue side effect.
+- Preserve the accepted ambiguity boundary: zero or one existing negative candidate can proceed through the Step 79 preparation policy, while multiple negative candidates return validation failure until an explicit selection policy is accepted.
+- Reload the active MembershipType inside the transaction and copy its immutable snapshot through `MembershipIssuePreparationPolicy`; never accept snapshot, base end date or calculated state from the caller.
+- Enforce explicit negative handling in the transaction: missing decision returns `NegativeDecisionRequired`, deferred coverage/closure returns `MembershipNotEligible`, and only `LeaveVisible` currently succeeds while preserving the old cache and returning the negative warning.
+- Commit the issued source, Memberships-owned initial cache rebuild, append-only `membership.issued` audit and successful idempotency result in one `ReadCommitted` transaction. Recalculation mismatch/missing source and later audit failure roll back the entire workflow.
+- Return the issued membership as primary entity and the client as canonical reread target, with warning codes only; do not return optimistic profile or calculated UI state.
+- Keep payment/negative-closure facts, manual opening-state orchestration, client-profile composition, controller/page and reception UI outside this handler-only step.
+
+Scope:
+
+- Add `IssueMembershipCommandHandler` with canonical authorization, deliberate PostgreSQL locks, canonical catalog/negative-state reload, Step 79 preparation, issued source persistence, synchronous cache rebuild, audit, idempotency and common command result.
+- Add narrow `IssueMembershipCommandSupport` for ordinary issue validation/normalization, SHA-256 request fingerprints, deterministic replay/payload mismatch, successful idempotency storage, warning replay, stable negative-decision labels and result identities.
+- Add `membership` / `membership.issued` audit constants and scoped `IBodyLifeCommandHandler<IssueMembershipCommand>` registration through `AddBodyLifePersistence`.
+- Add 14 focused infrastructure cases, including 13 PostgreSQL-backed workflows plus one scoped DI registration case, covering complete Named Admin persistence/audit metadata, Owner/shared-account access, forged/inactive/expired/unknown denial, selector/envelope/origin/batch/enum validation, missing/inactive catalog rows, unnecessary/required/deferred/leave-visible negative decisions, old-negative preservation, missing/stale/inconsistent caches without repair, multiple-negative ambiguity, calendar overflow, replay/payload mismatch, concurrent same-key serialization, recalculation rollback and audit rollback.
+- Add no EF record/configuration/migration, schema/index change, payment or closure record, opening-state write, profile query composition, page/controller or UI test.
+
+Validation:
+
+- The first focused attempt stopped before test execution because the new test used a nonexistent `JsonElement.GetDateOnly`; assertions were changed to canonical ISO JSON strings and no product behavior failed.
+- The next focused run passed 11 cases and failed two audit-read assertions because the test helper used EF property-style JSON column names instead of the existing PostgreSQL `related_entity_refs`, `before_summary` and `after_summary` columns; the helper was corrected without a product-code change.
+- Final focused `PostgreSqlIssueMembershipCommandTests` validation passed all 14 cases: 13 PostgreSQL-backed workflows against Docker PostgreSQL and one DI registration check.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 130 tests.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 120 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this handler uses the existing issued/cache/audit/idempotency schema and generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 174 core tests, 35 web tests, 237 PostgreSQL infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `graphify update .` completed the structural rebuild with 4674 nodes, 9441 edges and 558 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): issue memberships transactionally`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the public client-scoped Memberships collection query contract and pure active-candidate selection outcome needed by `GetClientProfile`: actor, client id and required `as_of`; deterministic membership timeline; explicit `none`, `single` or `ambiguous` active-candidate status; and no arbitrary current-membership choice when multiple candidates exist. Reuse `MembershipStateReadModel` as the canonical state shape and add focused core tests. Keep the PostgreSQL collection handler, profile composition and UI outside that contract-only step.

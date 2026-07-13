@@ -69,6 +69,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<CreateMembershipOpeningStateCommand>,
             CreateMembershipOpeningStateCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<IssueMembershipCommand>,
+            IssueMembershipCommandHandler>();
         services.AddScoped<MembershipExtensionDayWriter>();
         services.AddScoped<MembershipStatePersistenceCoordinator>();
         services.AddScoped<MembershipStateCacheRebuilder>();
