@@ -2677,3 +2677,47 @@ Commits:
 Next recommended step:
 
 - Add only a Memberships persistence boundary that atomically replaces one membership's derived `membership_extension_days` rows from a supplied canonical `MembershipExtensionCalculation`, with focused PostgreSQL tests for replacement, overlap attribution, idempotent retry and rollback behavior. Keep source loading, state-cache integration, query projection, Freezes/NonWorkingDays persistence and UI outside that step.
+
+## Step 71 - Transactional membership extension-day writer
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 by connecting the Step 70 canonical extension calculation only to the Step 69 derived PostgreSQL storage boundary.
+- Treat `membership_extension_days` as replaceable derived state: delete the prior batch and insert the supplied immutable explanation rows atomically instead of patching individual rows as business facts.
+- Lock the parent issued membership before replacement so concurrent rebuilds serialize and cannot leave a mixed explanation batch.
+- Join an existing caller transaction when recalculation is already part of a command, while owning and committing a read-committed transaction for standalone replacement.
+- Persist every overlapping and inactive explanation attribution from Memberships unchanged, while using the calculation's distinct active-date count only as result metadata.
+- Keep formulas in the Memberships domain calculator; Infrastructure maps canonical values and does not count, merge or reinterpret extension dates.
+- Keep source loading, opening-state/cache interaction, `GetMembershipState` explanation projection, Freezes/NonWorkingDays persistence, business audit and UI outside this persistence-only step.
+
+Scope:
+
+- Add scoped `MembershipExtensionDayWriter.ReplaceAsync` with required membership/calculation validation, parent membership row locking, tracked-row detachment for same-scope retries, set-based deletion and one-batch insertion.
+- Add immutable `MembershipExtensionDayWriteResult` and stable `MembershipExtensionDayWriteStatus` values for missing membership and successful replacement outcomes.
+- Stamp every row in one replacement with the same `TimeProvider` value and return canonical extension-day and persisted-row counts without exposing EF records.
+- Return a non-success missing-membership result without creating derived rows; allow an empty canonical calculation to clear stale rows successfully.
+- Register the writer as a scoped dependency through `AddBodyLifePersistence` for later same-transaction Memberships recalculation orchestration.
+- Add seven focused cases covering input/missing-membership behavior, stale-row replacement, overlapping active and inactive attribution, empty clearing, same-context retry, caller-owned rollback, concurrent batch serialization and scoped DI registration.
+- Add no EF record/configuration/migration, source projection loader, state-cache write, recalculation orchestration, query/read-model property, audit entry or UI change.
+
+Validation:
+
+- Focused `PostgreSqlMembershipExtensionDayWriterTests` validation passed all 7 cases against Docker PostgreSQL.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 83 tests.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 94 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this writer-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 137 core tests, 35 web tests, 201 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713144951_AddMembershipExtensionDays`.
+- `graphify update .` completed the structural rebuild with 4299 nodes, 8316 edges and 549 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): replace derived extension days`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the Memberships-owned domain operation that applies a canonical `MembershipExtensionCalculation` to an already calculated membership baseline and derives `extension_days` plus `effective_end_date` with calendar-overflow checks, with focused tests. Keep opening-state cutover policy, PostgreSQL/cache orchestration, source loading, query explanation projection and UI outside that domain-only step.
