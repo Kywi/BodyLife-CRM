@@ -557,5 +557,14 @@
   "555": "MutableTimeProvider",
   "556": ".InitialBaselineMigrationAppliesToCleanPostgreSqlDatabase",
   "557": "MembershipTypeCatalogActionKeys.cs",
-  "558": ".PersistenceRegistrationExposesScopedExtensionDayWriter"
+  "558": ".PersistenceRegistrationExposesScopedExtensionDayWriter",
+  "559": "PostgreSqlTestDatabase",
+  "560": "MembershipAdjustmentRecord",
+  "561": "MembershipOpeningStateRecord",
+  "562": "SessionRecord",
+  "563": "PostgreSqlCreateMembershipOpeningStateCommandTests.cs",
+  "564": "PostgreSqlEditMembershipTypeCommandTests.cs",
+  "565": "InitialBaseline",
+  "566": "PostgreSqlCreateClientCommandTests.cs",
+  "567": "SessionId"
 }

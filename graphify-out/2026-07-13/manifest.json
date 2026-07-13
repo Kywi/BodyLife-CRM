@@ -710,8 +710,8 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1783954191.6116605,
-    "ast_hash": "4c53df4f43734b96964e7cd0befbc4a1",
+    "mtime": 1783971605.3876143,
+    "ast_hash": "c80e2766de50baf32050c1e1988497e9",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783969626.9590006,
-    "ast_hash": "556c50c2dd5bc5a4fae3243bae1540ee",
+    "mtime": 1783971135.8591835,
+    "ast_hash": "8cc2f2678e1b6d7bdaeb759eb0ce796c",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2112,6 +2112,31 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipStatePersistenceCoordinatorTests.cs": {
     "mtime": 1783970827.3071332,
     "ast_hash": "1745d98ae11ac6228cba4482beeca1d1",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipAdjustmentRecord.cs": {
+    "mtime": 1783971583.4118686,
+    "ast_hash": "fde395d81a6a8be901ada6504e39090b",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipAdjustmentRecordConfiguration.cs": {
+    "mtime": 1783971583.4118686,
+    "ast_hash": "b36b212bb83581fb5de128851fcf1393",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713194005_AddMembershipAdjustments.Designer.cs": {
+    "mtime": 1783971605.3876143,
+    "ast_hash": "918c60452cf6d3382ce2c53e1a59db20",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713194005_AddMembershipAdjustments.cs": {
+    "mtime": 1783971937.504044,
+    "ast_hash": "6dc534b5fa8a8bd130df26a6f9b23a74",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipAdjustmentsStorageTests.cs": {
+    "mtime": 1783971864.610938,
+    "ast_hash": "7d3eb7b7a89e048d8b359e265684bca2",
     "semantic_hash": ""
   }
 }
