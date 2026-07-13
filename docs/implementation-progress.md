@@ -2503,3 +2503,48 @@ Commits:
 Next recommended step:
 
 - Add only the Memberships-owned warning code/read-model contract and deterministic warning derivation for negative, zero, expired-by-date, ending-soon and low-remaining state using the accepted `as_of`, `days_left <= 7` and `remaining_visits <= 2` rules, with focused core tests. Keep PostgreSQL warning projection, extension explanation rows, client/profile composition and UI outside that step.
+
+## Step 67 - Membership state warning rules
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the Memberships-owned warning contract and deterministic domain derivation needed by the canonical state query.
+- Keep warnings as read-time state derived from `membership_state_cache` values plus the requested `as_of` date; do not persist warnings or let UI/Reports recreate thresholds.
+- Apply the accepted ending-soon threshold on the inclusive date axis: 0 through 7 days left is `ending_soon`, while a negative day count is the distinct `expired_by_date` danger state.
+- Apply the accepted visit threshold with specialized states: negative balance takes precedence over low remaining, zero remaining is explicit, and low remaining means the stated 1-2 positive visits.
+- Allow one date-axis and one visit-axis warning to coexist so an expired membership can still expose low, zero or negative visit state independently.
+- Order danger warnings before warning-severity states for deterministic reception rendering while leaving command-specific acknowledgement policy to later workflows.
+- Derive from `MembershipCalculatedState` so warning logic consumes Memberships-owned canonical calculations rather than accepting caller formulas.
+- Keep `GetMembershipState` read-model/handler projection, PostgreSQL changes, extension explanation rows, client/profile composition and UI outside this domain-only step.
+
+Scope:
+
+- Add stable `MembershipWarningCodes` for negative balance, expired by date, zero remaining, ending soon and low remaining.
+- Add `MembershipWarningSeverity` with the accepted `warning` and `danger` semantics from the UI design foundation.
+- Add immutable `MembershipWarning` read-model values with stable code, severity and server-provided message.
+- Add `MembershipWarningRules.Derive` with fixed `EndingSoonDaysThreshold = 7` and `LowRemainingVisitsThreshold = 2`, required state/as-of validation and deterministic warning ordering.
+- Suppress redundant `low_remaining` when the stronger zero/negative visit state applies and suppress `ending_soon` after expiry, without suppressing independent date-versus-visit warnings.
+- Add 13 focused domain cases covering negative/zero/1/2/3 visit boundaries, 8/7/0/-1 date boundaries, danger ordering, expired-plus-low coexistence, stable contracts/messages, immutable properties and invalid inputs.
+- Add no public query/read-model property, handler/DI change, EF record/configuration/migration, profile integration or UI change.
+
+Validation:
+
+- Focused `MembershipWarningRulesTests` validation passed all 13 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 62 tests.
+- Release solution build passed with 0 warnings and 0 errors.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this domain-only warning step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 116 core tests, 35 web tests, 189 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713111435_AddMembershipOpeningStates`.
+- `graphify update .` completed the structural rebuild with 4147 nodes, 7963 edges and 553 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): derive state warnings`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Project the Step 67 warnings through only the public `GetMembershipState` read path: add Memberships-owned canonical cache-state rehydration/factory support, expose immutable `Warnings` on `MembershipStateReadModel`, and update the PostgreSQL handler plus focused core/infrastructure tests. Keep extension explanation rows, client/current selection, profile composition and UI outside that step.
