@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1783949860.1821513,
-    "ast_hash": "3f1ad8b0f97826bb7ec1e825785eefd3",
+    "mtime": 1783959236.6659877,
+    "ast_hash": "aaa305d1add00e9123c98ebc62f230e0",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783958224.4375803,
-    "ast_hash": "c5d233dbcf4850156a7098248a9a326f",
+    "mtime": 1783959696.5200033,
+    "ast_hash": "38a8019189f29afed128d355128d58dc",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2067,6 +2067,26 @@
   "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipExtensionCalculatorTests.cs": {
     "mtime": 1783957918.2673326,
     "ast_hash": "3f1e470513a54beccc1fb388afac8a5f",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipExtensionDayWriteResult.cs": {
+    "mtime": 1783959236.6659877,
+    "ast_hash": "6619039e39eb9e6b888b0ecdadae8440",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipExtensionDayWriteStatus.cs": {
+    "mtime": 1783959236.6659877,
+    "ast_hash": "c1a5ec22d285be4ebeb2a8c7a956409a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipExtensionDayWriter.cs": {
+    "mtime": 1783959236.6659877,
+    "ast_hash": "2d994040c60735f5de28e72b29470b7f",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipExtensionDayWriterTests.cs": {
+    "mtime": 1783959357.3342588,
+    "ast_hash": "fb9c1ac5f7fe6b846cb7512cf845a500",
     "semantic_hash": ""
   }
 }
