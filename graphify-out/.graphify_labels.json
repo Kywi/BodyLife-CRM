@@ -568,5 +568,8 @@
   "566": "PostgreSqlCreateClientCommandTests.cs",
   "567": "SessionId",
   "568": ".SourceMetadataRejectsMissingValues",
-  "569": ".DeclarationDerivesNegativeBalanceFromSignedRemainingVisits"
+  "569": ".DeclarationDerivesNegativeBalanceFromSignedRemainingVisits",
+  "570": "ClientSearchActionKeys.cs",
+  "571": "FixedTimeProvider",
+  "572": ".PersistenceRegistrationExposesScopedExtensionDayWriter"
 }

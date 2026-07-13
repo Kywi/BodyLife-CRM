@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1783970628.5319567,
-    "ast_hash": "e57926962cd8554b3c89d294cea36a93",
+    "mtime": 1783973981.9329183,
+    "ast_hash": "2a5fde6db1ef303359b1dc1cc6627d18",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783972263.2279453,
-    "ast_hash": "0c56aef927cf0ae9721556dd37d5f027",
+    "mtime": 1783973323.370104,
+    "ast_hash": "d94d97a1b3e54b2cbf61a67978006af4",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1980,8 +1980,8 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipQuerySupport.cs": {
-    "mtime": 1783949860.1781511,
-    "ast_hash": "59a0a297b1d17f7a1a40a385cb362735",
+    "mtime": 1783973981.9289181,
+    "ast_hash": "06a269bf8ffdef39600d84b8326db415",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlGetMembershipStateQueryTests.cs": {
@@ -2182,6 +2182,16 @@
   "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipIssuePreviewContractsTests.cs": {
     "mtime": 1783973002.1924033,
     "ast_hash": "26c812c2f20a0dc1e65afde8cba85e33",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/PreviewIssueMembershipQueryHandler.cs": {
+    "mtime": 1783973981.9329183,
+    "ast_hash": "84f24f8ea76c36f128000ac0bc95738a",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlPreviewIssueMembershipQueryTests.cs": {
+    "mtime": 1783974188.8220546,
+    "ast_hash": "de372f628352144a437444ca920d9cd5",
     "semantic_hash": ""
   }
 }
