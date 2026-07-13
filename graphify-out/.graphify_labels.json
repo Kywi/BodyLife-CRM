@@ -540,7 +540,9 @@
   "538": ".FindPostgresException",
   "539": ".HandleAsync",
   "540": "GetMembershipTypesForIssueResult",
+  "541": "MembershipTypeAuditActions.cs",
   "542": ".CheckHealthAsync",
+  "543": "MembershipTypeCatalogActionKeys.cs",
   "544": ".Derive",
   "545": "PostgreSqlCreateMembershipTypeCommandTests.cs",
   "546": "20260709113419_AddCommandIdempotencyKeys.Designer.cs",
@@ -548,10 +550,7 @@
   "548": "20260713144951_AddMembershipExtensionDays.Designer.cs",
   "549": "BusinessAuditEntryRecord",
   "550": "AccountId",
-  "551": ".LoginAsync",
   "554": ".IsCanonicalOwnerAuthorizedAsync",
-  "555": ".RejectAsync",
   "558": "BodyLifeAuthorizationPolicies.cs",
-  "564": "BodyLifeAuthTechnicalLogger.cs",
   "565": "SessionId"
 }
