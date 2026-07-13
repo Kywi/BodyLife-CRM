@@ -1876,3 +1876,52 @@ Commit:
 Next recommended step:
 
 - Add only the Owner `DeactivateMembershipType` interaction for active catalog rows, using the existing command handler, canonical expected `updated_at`, required reason, fresh idempotency key, explicit confirmation, busy/duplicate-submit protection, stale/already-inactive canonical refresh, Post/Redirect/Get canonical reread and tablet/phone Playwright coverage. Do not add hard delete or start Milestone 5 in that step.
+
+## Step 53 - Owner DeactivateMembershipType interaction
+
+Status: completed.
+
+Plan alignment:
+
+- Complete Milestone 4's Owner catalog mutation UI with only the deactivation interaction, reusing the existing `DeactivateMembershipType` command and canonical Owner catalog query.
+- Keep Owner authorization, reason/idempotency validation, row locking, stale/lifecycle checks, transaction and before/after audit in the command handler; the Razor Page only submits command input and renders canonical outcomes.
+- Remove a type only from future ordinary issue availability by setting its existing lifecycle state; retain the row, catalog fields, history/report visibility and edit surface.
+- Create no hard-delete path, issued-membership mutation, immutable snapshot change or Memberships recalculation side effect.
+
+Scope:
+
+- Add a deactivation-form view model that can be created only from a canonical active catalog row and carries membership type id, expected `updated_at`, required reason and a fresh idempotency key.
+- Add the Owner-only `OnPostDeactivate` Razor Page handler and invoke the existing `DeactivateMembershipTypeCommand` with the authenticated request envelope.
+- Verify successful command entity/reread ids, show the returned business-audit reference and use Post/Redirect/Get to reread the canonical catalog.
+- Return `Forbid` for command permission denial.
+- Preserve posted input/key for ordinary validation rejection; for stale state, concurrency, not-found, changed duplicate-key or already-inactive outcomes, reread canonical state and require review before another action.
+- Keep deactivation forms only for active rows; when a concurrent canonical refresh finds the row inactive, remove the form and show page-level lifecycle guidance.
+- Refactor edit/deactivate error rendering into narrow typed render-state records so each mutation can rebuild its own canonical form without mixing errors.
+- Render an accessible expandable destructive panel below edit controls with required reason, antiforgery, explicit browser confirmation and the shared busy/disabled duplicate-submit behavior.
+- Add responsive two-column tablet/desktop and one-column phone deactivation layout with distinct destructive semantics and no nested card surface.
+- Add test-only active MembershipType seeding, controlled concurrent lifecycle transition, canonical row reads, deactivation audit/idempotency counts and persisted audit-reason evidence.
+- Add two PostgreSQL-backed Playwright cases covering tablet and phone busy/confirmation state, server reason validation, stale refresh, successful deactivation, catalog-value preservation, one lifecycle audit/idempotency result, PRG key refresh, active-only form removal, already-inactive canonical refresh without a second audit/idempotency record and no horizontal overflow.
+- Update existing catalog/edit smoke expectations for one hidden active-row deactivation control while retaining Admin route denial.
+- No schema or migration change is required.
+
+Validation:
+
+- Release UI smoke project build passed with 0 warnings and 0 errors.
+- Focused `MembershipTypeDeactivationSmokeTests` passed both PostgreSQL-backed tablet (`1024x768`) and phone (`390x844`) workflows.
+- The first combined MembershipType regression run exposed four test-only assertions that used an accessibility-role locator for buttons hidden inside closed `<details>` elements; structural selectors now prove the hidden forms/buttons exist without treating them as currently visible controls.
+- Focused MembershipType catalog/create/edit/deactivate regression validation then passed all 9 tests, and the full Playwright suite passed all 24 tests.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 145 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- Full-page Playwright screenshots were inspected in stale-warning state at both target viewports: destructive panel, warning, reason and action remained readable without overlap or horizontal scrolling; temporary screenshots stayed outside the repository.
+- The restarted Development app loaded the new PageModel dependency and returned `200 OK` from `/health/ready` with PostgreSQL schema current.
+- `graphify update .` completed the structural rebuild with 3604 nodes, 6671 edges and 497 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): add owner deactivation forms`.
+
+Next recommended step:
+
+- Run a small Milestone 4 acceptance checkpoint against the roadmap and record any intentionally deferred criterion, especially the issued-membership snapshot contract that depends on Milestone 5. If the checkpoint is clean, the following implementation step should start only Milestone 5's domain contract for immutable issue-time snapshots and inclusive base-end-date behavior, without persistence or UI yet.

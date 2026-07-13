@@ -956,12 +956,14 @@ textarea:focus-visible,
   justify-content: flex-end;
 }
 
-.membership-type-edit-panel {
+.membership-type-edit-panel,
+.membership-type-deactivate-panel {
   border-top: 1px solid var(--line);
   padding-top: 12px;
 }
 
-.membership-type-edit-panel summary {
+.membership-type-edit-panel summary,
+.membership-type-deactivate-panel summary {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
@@ -970,18 +972,25 @@ textarea:focus-visible,
   font-weight: 800;
 }
 
-.membership-type-edit-panel summary:focus-visible {
+.membership-type-deactivate-panel summary {
+  color: var(--danger-strong);
+}
+
+.membership-type-edit-panel summary:focus-visible,
+.membership-type-deactivate-panel summary:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
-.membership-type-edit-content {
+.membership-type-edit-content,
+.membership-type-deactivate-content {
   display: grid;
   padding-top: 14px;
   gap: 14px;
 }
 
-.membership-type-edit-form {
+.membership-type-edit-form,
+.membership-type-deactivate-form {
   margin: 0;
 }
 
@@ -1000,6 +1009,13 @@ textarea:focus-visible,
 .catalog-edit-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.membership-type-deactivate-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
 }
 
 .create-account-section {
@@ -1346,6 +1362,10 @@ textarea:focus-visible,
     grid-template-columns: 1fr;
   }
 
+  .membership-type-deactivate-grid {
+    grid-template-columns: 1fr;
+  }
+
   .form-field-span-2,
   .form-field-span-full,
   .catalog-create-actions,
@@ -1354,7 +1374,8 @@ textarea:focus-visible,
   }
 
   .catalog-create-actions button,
-  .catalog-edit-actions button {
+  .catalog-edit-actions button,
+  .membership-type-deactivate-grid button {
     width: 100%;
   }
 

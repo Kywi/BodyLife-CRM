@@ -276,6 +276,76 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return await command.ExecuteScalarAsync() as string;
     }
 
+    public async Task<DateTime> DeactivateMembershipTypeForAlreadyInactiveTestAsync(
+        Guid membershipTypeId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.membership_types
+            set is_active = false,
+                updated_at = updated_at + interval '2 hours',
+                deactivated_at = updated_at + interval '2 hours'
+            where id = @membership_type_id
+              and is_active
+            returning updated_at
+            """;
+        command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+        var result = await command.ExecuteScalarAsync();
+
+        return result is DateTime updatedAt
+            ? updatedAt
+            : throw new InvalidOperationException(
+                "Expected to deactivate one active smoke membership type.");
+    }
+
+    public Task<long> CountMembershipTypeDeactivateAuditEntriesAsync(Guid membershipTypeId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries
+            where action_type = 'membership_type.deactivated'
+              and entity_id = @membership_type_id
+            """,
+            "membership_type_id",
+            membershipTypeId);
+    }
+
+    public Task<long> CountDeactivateMembershipTypeIdempotencyKeysAsync(Guid membershipTypeId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'DeactivateMembershipType'
+              and primary_entity_id = @membership_type_id
+            """,
+            "membership_type_id",
+            membershipTypeId);
+    }
+
+    public async Task<string?> ReadLatestMembershipTypeDeactivateReasonAsync(
+        Guid membershipTypeId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select reason
+            from bodylife.business_audit_entries
+            where action_type = 'membership_type.deactivated'
+              and entity_id = @membership_type_id
+            order by recorded_at desc, id desc
+            limit 1
+            """;
+        command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+        return await command.ExecuteScalarAsync() as string;
+    }
+
     public async Task<int> ExpireSessionAsync(string deviceLabel)
     {
         await using var connection = new NpgsqlConnection(ConnectionString);

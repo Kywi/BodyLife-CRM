@@ -182,8 +182,10 @@ public sealed class MembershipTypeEditingSmokeTests : IClassFixture<ReceptionApp
                 page.Locator(EditFormSelector(membershipTypeId)));
             Assert.NotEqual(successfulIdempotencyKey, freshIdempotencyKey);
             Assert.Equal(
-                0,
-                await page.GetByRole(AriaRole.Button, new() { Name = "Deactivate" }).CountAsync());
+                1,
+                await page.Locator(
+                    ".membership-type-deactivate-panel button[type='submit']")
+                    .CountAsync());
             var fitsViewport = await page.EvaluateAsync<bool>(
                 "() => document.documentElement.scrollWidth <= window.innerWidth + 1");
             Assert.True(fitsViewport, $"{viewportName} edit workflow should not require horizontal scrolling.");

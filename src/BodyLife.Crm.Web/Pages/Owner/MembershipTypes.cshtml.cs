@@ -15,7 +15,8 @@ public sealed class MembershipTypesModel(
         GetMembershipTypesForIssueQuery,
         GetMembershipTypesForIssueResult> getMembershipTypes,
     IBodyLifeCommandHandler<CreateMembershipTypeCommand> createMembershipType,
-    IBodyLifeCommandHandler<EditMembershipTypeCommand> editMembershipType)
+    IBodyLifeCommandHandler<EditMembershipTypeCommand> editMembershipType,
+    IBodyLifeCommandHandler<DeactivateMembershipTypeCommand> deactivateMembershipType)
     : PageModel
 {
     [TempData]
@@ -31,6 +32,9 @@ public sealed class MembershipTypesModel(
     public IReadOnlyDictionary<Guid, EditMembershipTypeFormViewModel> EditForms { get; private set; }
         = new Dictionary<Guid, EditMembershipTypeFormViewModel>();
 
+    public IReadOnlyDictionary<Guid, DeactivateMembershipTypeFormViewModel> DeactivateForms { get; private set; }
+        = new Dictionary<Guid, DeactivateMembershipTypeFormViewModel>();
+
     public IReadOnlyList<CommandError> CatalogErrors { get; private set; } = [];
 
     public int ActiveCount => MembershipTypes.Count(membershipType => membershipType.IsActive);
@@ -43,10 +47,13 @@ public sealed class MembershipTypesModel(
     public bool CanEditCatalog =>
         AllowedActions.IsAllowed(MembershipTypeCatalogActionKeys.Edit);
 
+    public bool CanDeactivateCatalog =>
+        AllowedActions.IsAllowed(MembershipTypeCatalogActionKeys.Deactivate);
+
     public bool CanManageCatalog =>
         CanCreateCatalog
-        && AllowedActions.IsAllowed(MembershipTypeCatalogActionKeys.Edit)
-        && AllowedActions.IsAllowed(MembershipTypeCatalogActionKeys.Deactivate);
+        && CanEditCatalog
+        && CanDeactivateCatalog;
 
     public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
     {
@@ -169,11 +176,54 @@ public sealed class MembershipTypesModel(
             cancellationToken);
     }
 
+    public async Task<IActionResult> OnPostDeactivateAsync(
+        DeactivateMembershipTypeFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        var command = new DeactivateMembershipTypeCommand(
+            requestContextResolver.CreateCommandEnvelope(
+                idempotencyKey: form.IdempotencyKey,
+                reason: form.Reason),
+            form.MembershipTypeId,
+            form.ExpectedUpdatedAt);
+        var result = await deactivateMembershipType.ExecuteAsync(command, cancellationToken);
+
+        if (result.Status == CommandStatus.Success)
+        {
+            if (result.PrimaryEntityId is not { } primaryEntity
+                || result.RereadTargetId is not { } rereadTarget
+                || primaryEntity != rereadTarget
+                || primaryEntity.Value != form.MembershipTypeId)
+            {
+                throw new InvalidOperationException(
+                    "DeactivateMembershipType did not return the expected canonical reread target.");
+            }
+
+            OperationMessage = result.AuditEntryId is { } auditEntryId
+                ? $"Membership type deactivated. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
+                : "Membership type deactivated.";
+
+            return RedirectToPage();
+        }
+
+        if (result.Errors.Any(error => error.Code == CommandErrorCode.PermissionDenied))
+        {
+            return Forbid();
+        }
+
+        return await RenderDeactivateErrorsAsync(
+            form,
+            result.Errors,
+            RequiresCanonicalDeactivateRefresh(result.Errors),
+            cancellationToken);
+    }
+
     private async Task<IActionResult> LoadCatalogAsync(
         CancellationToken cancellationToken,
-        EditMembershipTypeFormInput? editSubmission = null,
-        IReadOnlyList<CommandError>? editErrors = null,
-        bool useCanonicalEditValues = false)
+        EditFormRenderState? editState = null,
+        DeactivateFormRenderState? deactivateState = null)
     {
         var actor = requestContextResolver.Require().Actor;
         var result = await getMembershipTypes.ExecuteAsync(
@@ -187,7 +237,9 @@ public sealed class MembershipTypesModel(
 
         MembershipTypes = result.Items;
         AllowedActions = result.AllowedActions;
-        BuildEditForms(editSubmission, editErrors, useCanonicalEditValues);
+        CatalogErrors = [];
+        BuildEditForms(editState);
+        BuildDeactivateForms(deactivateState);
 
         return Page();
     }
@@ -209,18 +261,22 @@ public sealed class MembershipTypesModel(
     {
         return LoadCatalogAsync(
             cancellationToken,
-            form,
-            errors,
-            useCanonicalValues);
+            editState: new EditFormRenderState(form, errors, useCanonicalValues));
     }
 
-    private void BuildEditForms(
-        EditMembershipTypeFormInput? editSubmission,
-        IReadOnlyList<CommandError>? editErrors,
-        bool useCanonicalValues)
+    private Task<IActionResult> RenderDeactivateErrorsAsync(
+        DeactivateMembershipTypeFormInput form,
+        IReadOnlyList<CommandError> errors,
+        bool useCanonicalValues,
+        CancellationToken cancellationToken)
     {
-        CatalogErrors = [];
+        return LoadCatalogAsync(
+            cancellationToken,
+            deactivateState: new DeactivateFormRenderState(form, errors, useCanonicalValues));
+    }
 
+    private void BuildEditForms(EditFormRenderState? state)
+    {
         if (!CanEditCatalog)
         {
             EditForms = new Dictionary<Guid, EditMembershipTypeFormViewModel>();
@@ -231,27 +287,64 @@ public sealed class MembershipTypesModel(
             membershipType => membershipType.MembershipTypeId,
             membershipType => EditMembershipTypeFormViewModel.FromCatalog(membershipType));
 
-        if (editSubmission is not null && editErrors is not null)
+        if (state is not null)
         {
             var canonicalMembershipType = MembershipTypes.SingleOrDefault(
-                membershipType => membershipType.MembershipTypeId == editSubmission.MembershipTypeId);
+                membershipType => membershipType.MembershipTypeId == state.Form.MembershipTypeId);
 
             if (canonicalMembershipType is null)
             {
-                CatalogErrors = editErrors.ToArray();
+                CatalogErrors = state.Errors.ToArray();
             }
             else
             {
-                forms[editSubmission.MembershipTypeId] = useCanonicalValues
+                forms[state.Form.MembershipTypeId] = state.UseCanonicalValues
                     ? EditMembershipTypeFormViewModel.FromCatalog(
                         canonicalMembershipType,
-                        editErrors,
+                        state.Errors,
                         isOpen: true)
-                    : EditMembershipTypeFormViewModel.FromSubmission(editSubmission, editErrors);
+                    : EditMembershipTypeFormViewModel.FromSubmission(state.Form, state.Errors);
             }
         }
 
         EditForms = forms;
+    }
+
+    private void BuildDeactivateForms(DeactivateFormRenderState? state)
+    {
+        if (!CanDeactivateCatalog)
+        {
+            DeactivateForms = new Dictionary<Guid, DeactivateMembershipTypeFormViewModel>();
+            return;
+        }
+
+        var forms = MembershipTypes
+            .Where(membershipType => membershipType.IsActive)
+            .ToDictionary(
+                membershipType => membershipType.MembershipTypeId,
+                membershipType => DeactivateMembershipTypeFormViewModel.FromCatalog(membershipType));
+
+        if (state is not null)
+        {
+            var canonicalMembershipType = MembershipTypes.SingleOrDefault(
+                membershipType => membershipType.MembershipTypeId == state.Form.MembershipTypeId);
+
+            if (canonicalMembershipType is null || !canonicalMembershipType.IsActive)
+            {
+                CatalogErrors = state.Errors.ToArray();
+            }
+            else
+            {
+                forms[state.Form.MembershipTypeId] = state.UseCanonicalValues
+                    ? DeactivateMembershipTypeFormViewModel.FromCatalog(
+                        canonicalMembershipType,
+                        state.Errors,
+                        isOpen: true)
+                    : DeactivateMembershipTypeFormViewModel.FromSubmission(state.Form, state.Errors);
+            }
+        }
+
+        DeactivateForms = forms;
     }
 
     private static bool RequiresCanonicalEditRefresh(IReadOnlyList<CommandError> errors)
@@ -261,6 +354,16 @@ public sealed class MembershipTypesModel(
             or CommandErrorCode.ConcurrencyConflict
             or CommandErrorCode.NotFound
             or CommandErrorCode.DuplicateSubmission);
+    }
+
+    private static bool RequiresCanonicalDeactivateRefresh(IReadOnlyList<CommandError> errors)
+    {
+        return errors.Any(error => error.Code is
+            CommandErrorCode.StaleState
+            or CommandErrorCode.ConcurrencyConflict
+            or CommandErrorCode.NotFound
+            or CommandErrorCode.DuplicateSubmission
+            or CommandErrorCode.AlreadyInactive);
     }
 
     private static IReadOnlyList<CommandError> ValidateRepresentableInput(
@@ -335,4 +438,14 @@ public sealed class MembershipTypesModel(
     {
         return amount?.ToString("0.##", CultureInfo.InvariantCulture);
     }
+
+    private sealed record EditFormRenderState(
+        EditMembershipTypeFormInput Form,
+        IReadOnlyList<CommandError> Errors,
+        bool UseCanonicalValues);
+
+    private sealed record DeactivateFormRenderState(
+        DeactivateMembershipTypeFormInput Form,
+        IReadOnlyList<CommandError> Errors,
+        bool UseCanonicalValues);
 }

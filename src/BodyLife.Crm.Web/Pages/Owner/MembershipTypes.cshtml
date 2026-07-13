@@ -141,7 +141,7 @@
                 <div class="command-error-summary" role="alert">
                     <strong>Catalog not updated</strong>
                     <ul>
-                        @foreach (var message in Model.CatalogErrors.Select(DisplayEditError).Distinct(StringComparer.Ordinal))
+                        @foreach (var message in Model.CatalogErrors.Select(DisplayCatalogError).Distinct(StringComparer.Ordinal))
                         {
                             <li>@message</li>
                         }
@@ -310,6 +310,60 @@
                                 </div>
                             </details>
                         }
+
+                        @if (Model.CanDeactivateCatalog
+                            && membershipType.IsActive
+                            && Model.DeactivateForms.TryGetValue(
+                                membershipType.MembershipTypeId,
+                                out var deactivateForm))
+                        {
+                            var deactivateInput = deactivateForm.Input;
+
+                            <details class="membership-type-deactivate-panel"
+                                     open="@(deactivateForm.IsOpen ? "open" : null)">
+                                <summary>Deactivate membership type</summary>
+                                <div class="membership-type-deactivate-content">
+                                    @if (deactivateForm.Errors.Count > 0)
+                                    {
+                                        <div class="command-error-summary" role="alert">
+                                            <strong>Membership type not deactivated</strong>
+                                            <ul>
+                                                @foreach (var message in deactivateForm.Errors.Select(DisplayDeactivateError).Distinct(StringComparer.Ordinal))
+                                                {
+                                                    <li>@message</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+
+                                    <form id="deactivate-membership-type-form-@membershipTypeKey"
+                                          class="membership-type-deactivate-form"
+                                          method="post"
+                                          asp-page="/Owner/MembershipTypes"
+                                          asp-page-handler="Deactivate"
+                                          data-busy-form
+                                          data-confirm="Deactivate this membership type for future sales?">
+                                        <input type="hidden" name="form.MembershipTypeId" value="@deactivateInput.MembershipTypeId" />
+                                        <input type="hidden" name="form.ExpectedUpdatedAt" value="@deactivateInput.ExpectedUpdatedAt.ToString("O")" />
+                                        <input type="hidden" name="form.IdempotencyKey" value="@deactivateInput.IdempotencyKey" />
+
+                                        <div class="membership-type-deactivate-grid">
+                                            <div class="form-field">
+                                                <label for="deactivate-membership-type-reason-@membershipTypeKey">Reason for deactivation</label>
+                                                <textarea id="deactivate-membership-type-reason-@membershipTypeKey"
+                                                          name="form.Reason"
+                                                          rows="2"
+                                                          maxlength="1000"
+                                                          required>@deactivateInput.Reason</textarea>
+                                            </div>
+                                            <button class="danger-button"
+                                                    type="submit"
+                                                    data-busy-text="Deactivating...">Deactivate</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </details>
+                        }
                     </article>
                 }
             }
@@ -340,6 +394,40 @@
                 "The catalog changed concurrently. Canonical values were reloaded; review them before saving again.",
             CommandErrorCode.DuplicateSubmission =>
                 "This submission key was already used. Canonical values and a fresh key were loaded; review them before saving again.",
+            CommandErrorCode.NotFound =>
+                "The membership type was not found. The canonical catalog was refreshed.",
+            _ => RemoveParameterSuffix(error.Message),
+        };
+    }
+
+    private static string DisplayDeactivateError(CommandError error)
+    {
+        return error.Code switch
+        {
+            CommandErrorCode.StaleState =>
+                "This membership type changed after the deactivation form was opened. Canonical state was reloaded; review it before trying again.",
+            CommandErrorCode.ConcurrencyConflict =>
+                "The catalog changed concurrently. Canonical state was reloaded; review it before trying again.",
+            CommandErrorCode.DuplicateSubmission =>
+                "This submission key was already used. Canonical state and a fresh key were loaded; review them before trying again.",
+            CommandErrorCode.AlreadyInactive =>
+                "This membership type is already inactive. The canonical catalog was refreshed.",
+            CommandErrorCode.NotFound =>
+                "The membership type was not found. The canonical catalog was refreshed.",
+            _ => RemoveParameterSuffix(error.Message),
+        };
+    }
+
+    private static string DisplayCatalogError(CommandError error)
+    {
+        return error.Code switch
+        {
+            CommandErrorCode.AlreadyInactive =>
+                "This membership type is already inactive. The canonical catalog was refreshed.",
+            CommandErrorCode.StaleState or CommandErrorCode.ConcurrencyConflict =>
+                "The catalog item changed concurrently. The canonical catalog was refreshed.",
+            CommandErrorCode.DuplicateSubmission =>
+                "This submission key was already used. The canonical catalog was refreshed.",
             CommandErrorCode.NotFound =>
                 "The membership type was not found. The canonical catalog was refreshed.",
             _ => RemoveParameterSuffix(error.Message),

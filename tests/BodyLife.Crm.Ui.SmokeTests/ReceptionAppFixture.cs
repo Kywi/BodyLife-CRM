@@ -178,6 +178,43 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadLatestMembershipTypeEditReasonAsync(membershipTypeId);
     }
 
+    public Task<Guid> SeedActiveMembershipTypeForDeactivationAsync(string name)
+    {
+        return RequireDatabase().SeedMembershipTypeAsync(
+            name,
+            durationDays: 21,
+            visitsLimit: 6,
+            priceAmount: 725.00m,
+            isActive: true,
+            comment: "Lifecycle smoke target.",
+            createdAt: new DateTimeOffset(2026, 7, 6, 9, 0, 0, TimeSpan.Zero),
+            updatedAt: new DateTimeOffset(2026, 7, 7, 10, 0, 0, TimeSpan.Zero),
+            deactivatedAt: null);
+    }
+
+    public Task<DateTime> DeactivateMembershipTypeForAlreadyInactiveTestAsync(
+        Guid membershipTypeId)
+    {
+        return RequireDatabase().DeactivateMembershipTypeForAlreadyInactiveTestAsync(
+            membershipTypeId);
+    }
+
+    public Task<long> CountMembershipTypeDeactivateAuditEntriesAsync(Guid membershipTypeId)
+    {
+        return RequireDatabase().CountMembershipTypeDeactivateAuditEntriesAsync(membershipTypeId);
+    }
+
+    public Task<long> CountDeactivateMembershipTypeIdempotencyKeysAsync(Guid membershipTypeId)
+    {
+        return RequireDatabase().CountDeactivateMembershipTypeIdempotencyKeysAsync(
+            membershipTypeId);
+    }
+
+    public Task<string?> ReadLatestMembershipTypeDeactivateReasonAsync(Guid membershipTypeId)
+    {
+        return RequireDatabase().ReadLatestMembershipTypeDeactivateReasonAsync(membershipTypeId);
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");
