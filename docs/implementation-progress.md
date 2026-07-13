@@ -2896,3 +2896,47 @@ Commits:
 Next recommended step:
 
 - Add only the remaining Milestone 5 `membership_adjustments` PostgreSQL source-fact storage: EF record/configuration, reviewable migration and focused constraint/index/migration tests for explicit dated adjustments with reason, actor and retained status history. Keep adjustment commands, recalculation source loading, audit orchestration, profile/history projection and UI outside that storage-only step.
+
+## Step 76 - Membership adjustment source-fact storage
+
+Status: completed.
+
+Plan alignment:
+
+- Complete the remaining Milestone 5 source-fact table named by the roadmap without adding an adjustment workflow that is not yet defined by a stable command contract.
+- Store explicit dated membership adjustments separately from the rebuildable `membership_state_cache` and `membership_extension_days` projections; derived state remains replaceable while adjustment history remains canonical.
+- Preserve signed optional day, visit and money deltas while requiring at least one non-zero delta, so PostgreSQL rejects empty correction facts without prematurely restricting a future domain-specific adjustment policy.
+- Require adjustment type, effective date, reason, actor account, session, entry origin, recorded time and retained `active`, `canceled` or `corrected` status history.
+- Keep the active lookup index non-unique because multiple legitimate adjustments can affect the same membership, date and adjustment type; idempotency belongs to the future command boundary.
+- Use `RESTRICT` relationships to protect source history from deletion of the issued membership, actor account or recording session.
+- Keep adjustment commands, type-policy semantics, recalculation source loading, business audit orchestration, profile/history projection and UI outside this storage-only step.
+
+Scope:
+
+- Add `MembershipAdjustmentRecord` with accepted roadmap fields plus the existing command-accountability convention for recording session, entry origin and optional entry batch.
+- Add EF Core mapping for `bodylife.membership_adjustments`, bounded metadata, signed nullable deltas, PostgreSQL checks, retained status values and restrictive foreign keys.
+- Add a filtered active recalculation lookup index, deterministic membership timeline index and actor/session support indexes.
+- Add migration `20260713194005_AddMembershipAdjustments` and update the EF model snapshot.
+- Add five focused PostgreSQL cases covering the exact migration shape, signed delta/accountability persistence, non-zero and metadata constraints, coexisting active/history facts and protected relationships.
+- Add no public adjustment command, handler, domain adjustment-type enum, recalculation source reader, audit entry, query projection or UI change.
+
+Validation:
+
+- Focused `PostgreSqlMembershipAdjustmentsStorageTests` validation passed all 5 cases against Docker PostgreSQL.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 107 tests.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 94 tests.
+- Solution formatting/analyzer verification passed after removing the UTF-8 BOM emitted by the EF migration generator.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+- The generated SQL from `20260713144951_AddMembershipExtensionDays` to `20260713194005_AddMembershipAdjustments` was reviewed and contains only the expected table, checks, restrictive foreign keys, four indexes and migration-history insert.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 148 core tests, 35 web tests, 214 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `graphify update .` completed the structural rebuild with 4434 nodes, 8678 edges and 559 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): store membership adjustments`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the immutable `PreviewIssueMembership` public query contract and Memberships-owned pure preview policy for snapshot/base-end-date output, permission outcome and explicit existing-negative-state decision requirements, with focused core tests. Keep PostgreSQL loading, `IssueMembership`, payment integration, idempotency, audit, profile composition and UI outside that contract-only step.
