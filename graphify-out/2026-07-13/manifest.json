@@ -710,8 +710,8 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1783884392.0769918,
-    "ast_hash": "5314ece6f63557c85c26105194f90774",
+    "mtime": 1783934112.1458316,
+    "ast_hash": "9e863e58d2cd85ca321be4f05d0d4a29",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783931928.2623625,
-    "ast_hash": "b32365974b163dc6b9e527001a1f2f52",
+    "mtime": 1783932959.4666173,
+    "ast_hash": "c00b10a6f9b678f39c760862b99df025",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1792,6 +1792,31 @@
   "docs/milestone-4-acceptance-review.md": {
     "mtime": 1783931859.5655558,
     "ast_hash": "70ab5b283251f1c23c9bb2ce809681be",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/IssuedMembershipRecord.cs": {
+    "mtime": 1783934085.5891333,
+    "ast_hash": "8a6404f3cf035401bbd2bc495ebb1f19",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/IssuedMembershipRecordConfiguration.cs": {
+    "mtime": 1783934487.7313235,
+    "ast_hash": "898e6423be1b393ef0e771dfe815bdf3",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713091512_AddIssuedMemberships.Designer.cs": {
+    "mtime": 1783934112.1418316,
+    "ast_hash": "ff23817dff1ceb0e645b746c9aa3f532",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713091512_AddIssuedMemberships.cs": {
+    "mtime": 1783934487.7353237,
+    "ast_hash": "60fd08ffaca545dd1a8c43ed7a42cf9c",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlIssuedMembershipsStorageTests.cs": {
+    "mtime": 1783934406.5541613,
+    "ast_hash": "7eae9094f0950d26b511c338e52c02ff",
     "semantic_hash": ""
   }
 }
