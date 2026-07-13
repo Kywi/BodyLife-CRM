@@ -710,8 +710,8 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1783941275.1191561,
-    "ast_hash": "e022317ea122048bed10e593bb78db7b",
+    "mtime": 1783954191.6116605,
+    "ast_hash": "4c53df4f43734b96964e7cd0befbc4a1",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783953192.6532948,
-    "ast_hash": "1d655acb0628f02bd5ffe4936c1ce274",
+    "mtime": 1783954834.5678775,
+    "ast_hash": "ad6b0a77c8b1290a7b8acf53986cd4ed",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2017,6 +2017,31 @@
   "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipCalculatedStateStoredCacheTests.cs": {
     "mtime": 1783952801.3006303,
     "ast_hash": "02335963d8c147b6f604a2043fdb9864",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipExtensionDayRecord.cs": {
+    "mtime": 1783954167.174158,
+    "ast_hash": "cf39fd45c295146cd4d9fe44d520cb2e",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipExtensionDayRecordConfiguration.cs": {
+    "mtime": 1783954167.174158,
+    "ast_hash": "2890ec9ef79faf40454cea13c13d708b",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713144951_AddMembershipExtensionDays.Designer.cs": {
+    "mtime": 1783954191.6076603,
+    "ast_hash": "0dd20850e6db1263d0f688ee2032b132",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713144951_AddMembershipExtensionDays.cs": {
+    "mtime": 1783954538.0565965,
+    "ast_hash": "c6e54f4f11fe3d8e3838b45a751f0fc7",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipExtensionDaysStorageTests.cs": {
+    "mtime": 1783954485.2274964,
+    "ast_hash": "55c0e2f380b2f255c5e11d043b99c8cf",
     "semantic_hash": ""
   }
 }
