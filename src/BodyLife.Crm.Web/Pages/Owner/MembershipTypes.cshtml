@@ -14,6 +14,108 @@
             <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
         </header>
 
+        @if (!string.IsNullOrWhiteSpace(Model.OperationMessage))
+        {
+            <div class="operation-message operation-success" role="status">
+                @Model.OperationMessage
+            </div>
+        }
+
+        @if (Model.CanCreateCatalog)
+        {
+            var createInput = Model.CreateForm.Input;
+
+            <section class="catalog-create-section" aria-labelledby="create-membership-type-title">
+                <header class="catalog-create-header">
+                    <h2 id="create-membership-type-title">Add membership type</h2>
+                    <span class="status-chip status-owner">Owner only</span>
+                </header>
+
+                @if (Model.CreateForm.Errors.Count > 0)
+                {
+                    <div class="command-error-summary" role="alert">
+                        <strong>Membership type not created</strong>
+                        <ul>
+                            @foreach (var message in Model.CreateForm.Errors.Select(DisplayCreateError).Distinct(StringComparer.Ordinal))
+                            {
+                                <li>@message</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <form id="create-membership-type-form"
+                      class="membership-type-create-form"
+                      method="post"
+                      asp-page="/Owner/MembershipTypes"
+                      asp-page-handler="Create"
+                      data-busy-form>
+                    <input type="hidden" name="form.IdempotencyKey" value="@createInput.IdempotencyKey" />
+
+                    <div class="membership-type-create-grid">
+                        <div class="form-field form-field-span-2">
+                            <label for="membership-type-name">Name</label>
+                            <input id="membership-type-name"
+                                   name="form.Name"
+                                   type="text"
+                                   value="@createInput.Name"
+                                   required
+                                   autocomplete="off" />
+                        </div>
+                        <div class="form-field">
+                            <label for="membership-type-duration">Duration (days)</label>
+                            <input id="membership-type-duration"
+                                   name="form.DurationDays"
+                                   type="number"
+                                   value="@createInput.DurationDays"
+                                   min="1"
+                                   step="1"
+                                   required />
+                        </div>
+                        <div class="form-field">
+                            <label for="membership-type-visits">Visit limit</label>
+                            <input id="membership-type-visits"
+                                   name="form.VisitsLimit"
+                                   type="number"
+                                   value="@createInput.VisitsLimit"
+                                   min="0"
+                                   step="1"
+                                   required />
+                        </div>
+                        <div class="form-field">
+                            <label for="membership-type-price">Price amount</label>
+                            <input id="membership-type-price"
+                                   name="form.PriceAmount"
+                                   type="number"
+                                   value="@MembershipTypesModel.FormatPriceInput(createInput.PriceAmount)"
+                                   min="0"
+                                   step="0.01"
+                                   required />
+                        </div>
+                        <div class="form-field">
+                            <label for="membership-type-currency">Currency</label>
+                            <input id="membership-type-currency"
+                                   name="form.PriceCurrency"
+                                   type="text"
+                                   value="@createInput.PriceCurrency"
+                                   maxlength="12"
+                                   required
+                                   autocomplete="off" />
+                        </div>
+                        <div class="form-field form-field-span-2">
+                            <label for="membership-type-comment">Comment</label>
+                            <textarea id="membership-type-comment"
+                                      name="form.Comment"
+                                      rows="3">@createInput.Comment</textarea>
+                        </div>
+                        <div class="catalog-create-actions">
+                            <button type="submit" data-busy-text="Adding...">Add membership type</button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        }
+
         <section class="membership-type-list" aria-labelledby="membership-type-list-title">
             <header class="list-header">
                 <div>
@@ -92,3 +194,25 @@
         </section>
     </section>
 </main>
+
+@functions {
+    private static string DisplayCreateError(CommandError error)
+    {
+        return error.Code switch
+        {
+            CommandErrorCode.DuplicateSubmission =>
+                "This submission key was already used. Refresh the catalog before creating another type.",
+            CommandErrorCode.ConcurrencyConflict =>
+                "The catalog changed concurrently. Review the refreshed catalog before trying again.",
+            _ => RemoveParameterSuffix(error.Message),
+        };
+    }
+
+    private static string RemoveParameterSuffix(string message)
+    {
+        var parameterIndex = message.IndexOf("(Parameter '", StringComparison.Ordinal);
+        return parameterIndex > 0
+            ? message[..parameterIndex].TrimEnd()
+            : message;
+    }
+}

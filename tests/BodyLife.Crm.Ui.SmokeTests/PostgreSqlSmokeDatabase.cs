@@ -110,6 +110,60 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return membershipTypeId;
     }
 
+    public async Task<long> CountMembershipTypesByNameAsync(string name)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select count(*)
+            from bodylife.membership_types
+            where name = @name
+            """;
+        command.Parameters.AddWithValue("name", name);
+        return (long)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("The membership type count query returned no value."));
+    }
+
+    public async Task<Guid?> FindMembershipTypeIdByNameAsync(string name)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select id
+            from bodylife.membership_types
+            where name = @name
+            order by id
+            limit 1
+            """;
+        command.Parameters.AddWithValue("name", name);
+        var result = await command.ExecuteScalarAsync();
+        return result is Guid membershipTypeId ? membershipTypeId : null;
+    }
+
+    public Task<long> CountMembershipTypeCreateAuditEntriesAsync()
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries
+            where action_type = 'membership_type.created'
+            """);
+    }
+
+    public Task<long> CountCreateMembershipTypeIdempotencyKeysAsync()
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'CreateMembershipType'
+            """);
+    }
+
     public async Task<int> ExpireSessionAsync(string deviceLabel)
     {
         await using var connection = new NpgsqlConnection(ConnectionString);
@@ -564,6 +618,16 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             command.Parameters.AddWithValue("action_type", actionType);
         }
 
+        return (long)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("The smoke evidence query returned no value."));
+    }
+
+    private async Task<long> CountRowsAsync(string commandText)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = commandText;
         return (long)(await command.ExecuteScalarAsync()
             ?? throw new InvalidOperationException("The smoke evidence query returned no value."));
     }

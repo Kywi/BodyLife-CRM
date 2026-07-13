@@ -129,6 +129,26 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadCurrentCardNumberAsync(clientId);
     }
 
+    public Task<long> CountMembershipTypesByNameAsync(string name)
+    {
+        return RequireDatabase().CountMembershipTypesByNameAsync(name);
+    }
+
+    public Task<Guid?> FindMembershipTypeIdByNameAsync(string name)
+    {
+        return RequireDatabase().FindMembershipTypeIdByNameAsync(name);
+    }
+
+    public Task<long> CountMembershipTypeCreateAuditEntriesAsync()
+    {
+        return RequireDatabase().CountMembershipTypeCreateAuditEntriesAsync();
+    }
+
+    public Task<long> CountCreateMembershipTypeIdempotencyKeysAsync()
+    {
+        return RequireDatabase().CountCreateMembershipTypeIdempotencyKeysAsync();
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");

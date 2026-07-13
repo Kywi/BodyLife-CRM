@@ -1776,3 +1776,52 @@ Commit:
 Next recommended step:
 
 - Add only the Owner `CreateMembershipType` form submission to the catalog page, using the existing command handler, a fresh idempotency key, busy/duplicate-submit protection, server validation/error rendering, Post/Redirect/Get canonical reread and tablet/phone Playwright coverage. Keep edit and deactivate UI for separate following steps.
+
+## Step 51 - Owner CreateMembershipType form
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 4 with only the Owner create interaction after the read-only catalog surface, using the already implemented `CreateMembershipType` command and canonical catalog query.
+- Keep validation, authorization, normalization, idempotency, transaction, audit and persistence ownership in the server-side command; the Razor Page only adapts representable form input and renders command outcomes.
+- Keep edit and deactivate controls out of this step so each remaining catalog mutation receives its own stale-state, reason and lifecycle UI evidence.
+- Create future-sale catalog data only; no issued membership, immutable snapshot or Memberships recalculation path is involved.
+
+Scope:
+
+- Add a dedicated create-form view model with blank initial values, default `UAH` currency, a fresh idempotency key and preservation of submitted input/errors after a rejected command.
+- Add the Owner-only `OnPostCreate` Razor Page handler and invoke the existing `CreateMembershipTypeCommand` through the authenticated request-context envelope.
+- Adapt missing or unrepresentable numeric/Money input into stable command-shaped validation errors without duplicating catalog business rules.
+- Return `Forbid` for command permission denial and verify a successful command supplies matching primary/canonical reread ids.
+- Use Post/Redirect/Get after success, issue a new form idempotency key on the canonical GET and show the returned business-audit reference.
+- Reread the canonical catalog query after rejected submissions while retaining the posted form values and idempotency key for correction.
+- Render a compact, unframed create section only when the query allows the create action, with antiforgery, required accessible fields and the shared busy/disabled duplicate-submit behavior.
+- Map duplicate/concurrency outcomes to safe operational guidance and remove runtime parameter suffixes from otherwise user-facing validation text.
+- Add responsive four-, two- and one-column layouts for desktop/tablet/phone without introducing edit or deactivate affordances.
+- Add PostgreSQL smoke-evidence helpers and two Playwright cases proving busy state, server rejection without side effects, corrected resubmission with the same key, normalization, one catalog row, one audit/idempotency result, PRG canonical reread, fresh key and no horizontal overflow.
+- Update the existing catalog smoke assertions to expect exactly the create form while continuing to prove edit/deactivate controls are absent.
+- No schema or migration change is required.
+
+Validation:
+
+- Release Web and UI smoke project builds passed with 0 warnings and 0 errors.
+- The first focused creation run exposed a test-only unstable role locator after the busy script changed button text; the test now uses the stable submit-button selector for that immediate state assertion.
+- The next focused run exposed the runtime parameter-name suffix in a command validation message; the Razor error mapper now removes that implementation detail before display.
+- Focused `MembershipTypeCreationSmokeTests` then passed both PostgreSQL-backed tablet (`1024x768`) and phone (`390x844`) workflows.
+- Focused MembershipType UI regression validation passed all 5 catalog/create tests, and the full Playwright suite passed all 20 tests.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 145 PostgreSQL infrastructure tests, 20 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- Full-page Playwright screenshots were inspected at both target viewports: the form, validation/success state and catalog remained readable without overlap or horizontal scrolling; temporary screenshots stayed outside the repository.
+- The restarted Development app returned `200 OK` from `/health/ready` with PostgreSQL schema current.
+- `graphify update .` completed the structural rebuild with 3505 nodes, 6406 edges and 489 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): add owner create form`.
+
+Next recommended step:
+
+- Add only the Owner `EditMembershipType` interaction to each catalog row, using the existing command handler, canonical row values plus expected `updated_at`, a required reason/comment, a fresh idempotency key, busy/duplicate-submit protection, stale/concurrency guidance, Post/Redirect/Get canonical reread and tablet/phone Playwright coverage. Keep deactivate UI for the following step.

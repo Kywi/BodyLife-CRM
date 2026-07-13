@@ -267,6 +267,7 @@ h2 {
 input[type="search"],
 input[type="text"],
 input[type="password"],
+input[type="number"],
 select {
   width: 100%;
   min-height: 48px;
@@ -915,6 +916,46 @@ textarea:focus-visible,
   color: var(--danger-strong);
 }
 
+.catalog-create-section {
+  display: grid;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+  gap: 16px;
+}
+
+.catalog-create-header {
+  display: flex;
+  min-height: 32px;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.catalog-create-header h2 {
+  margin: 0;
+}
+
+.membership-type-create-form {
+  margin: 0;
+}
+
+.membership-type-create-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.form-field-span-2 {
+  grid-column: span 2;
+}
+
+.catalog-create-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
 .create-account-section {
   padding-bottom: 24px;
   border-bottom: 1px solid var(--line);
@@ -1139,6 +1180,10 @@ textarea:focus-visible,
   .staff-account-actions {
     grid-template-columns: 1fr;
   }
+
+  .membership-type-create-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
@@ -1237,6 +1282,23 @@ textarea:focus-visible,
 
   .membership-type-meta .membership-type-comment {
     grid-column: auto;
+  }
+
+  .catalog-create-header {
+    align-items: flex-start;
+  }
+
+  .membership-type-create-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-field-span-2,
+  .catalog-create-actions {
+    grid-column: auto;
+  }
+
+  .catalog-create-actions button {
+    width: 100%;
   }
 
   h1 {
