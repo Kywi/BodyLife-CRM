@@ -5,5 +5,6 @@ public enum GetMembershipStateStatus
     Success = 1,
     PermissionDenied,
     NotFound,
-    ValidationFailed
+    ValidationFailed,
+    RecalculationFailed
 }

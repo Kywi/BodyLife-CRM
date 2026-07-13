@@ -2456,3 +2456,50 @@ Commits:
 Next recommended step:
 
 - Implement only the PostgreSQL-backed direct-id `GetMembershipState` query handler with canonical Admin/Owner actor/session authorization, input validation, issued snapshot plus current stable cache loading, Memberships-owned active-date mapping, allowed-action projection and focused PostgreSQL query tests. Keep client/current selection, warnings, extension explanation rows, history/profile composition and UI outside that step.
+
+## Step 66 - PostgreSQL membership state query handler
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 by implementing only the persistence-backed direct-id handler for the Step 65 public `GetMembershipState` contract.
+- Enforce query access for canonical active Owner, named Admin and shared Reception/Admin account/session rows before validating selectors or reading membership data.
+- Keep the query read-only: do not rebuild/repair cache state, update source facts, append business audit or create command idempotency rows while serving a read.
+- Read immutable issued snapshot fields and the current stable `membership_state_cache` row through the owning Memberships persistence boundary.
+- Require the cache recalculation contract version to match `MembershipStateCacheRebuilder.CurrentRecalculationVersion`; distinguish a missing membership from missing/stale derived state.
+- Rehydrate snapshot/base-date invariants through existing Memberships domain contracts and derive active-by-date only in the public read model for the requested `as_of` date.
+- Project `CreateMembershipOpeningState` only for an active issued membership without an existing active opening source; do not let UI infer action eligibility.
+- Keep client/current-membership selector resolution, warnings, extension explanation rows, history/profile composition and UI outside this handler-only step.
+
+Scope:
+
+- Add `GetMembershipStateQueryHandler` with canonical actor/session authorization, required membership-id/as-of validation and no-tracking PostgreSQL reads.
+- Join `issued_memberships` to `membership_state_cache`, map all Step 65 stable fields and use an active-opening existence check solely for allowed-action projection.
+- Add narrow `MembershipQuerySupport`, reusing the established Memberships command actor-shape/canonical-session checks in the same pattern as existing Clients query support.
+- Add `RecalculationFailed` query status/result with stable `recalculation_failed` error semantics when the issued membership exists but its cache is missing, stale-versioned or cannot be safely rehydrated.
+- Register the handler as scoped `IBodyLifeQueryHandler<GetMembershipStateQuery, GetMembershipStateResult>` through `AddBodyLifePersistence`.
+- Add one core result-contract case and six focused infrastructure cases covering all accepted operational roles, complete opening-derived state, inclusive date behavior, action eligibility, denied actor/session shapes, validation/not-found errors, missing/stale cache without read-time repair, no audit/idempotency side effects and scoped DI registration.
+- Add no EF record/configuration/migration, cache write/rebuild-on-read behavior, warning/history/extension-row type, profile composition or UI change.
+
+Validation:
+
+- Focused `MembershipStateQueryContractsTests` validation passed all 8 cases.
+- Focused `PostgreSqlGetMembershipStateQueryTests` validation passed all 6 cases against Docker PostgreSQL.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 49 tests.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 82 tests.
+- Release infrastructure-project build passed with 0 warnings and 0 errors.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this read-only handler step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 103 core tests, 35 web tests, 189 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713111435_AddMembershipOpeningStates`.
+- `graphify update .` completed the structural rebuild with 4119 nodes, 7918 edges and 525 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): query canonical membership state`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the Memberships-owned warning code/read-model contract and deterministic warning derivation for negative, zero, expired-by-date, ending-soon and low-remaining state using the accepted `as_of`, `days_left <= 7` and `remaining_visits <= 2` rules, with focused core tests. Keep PostgreSQL warning projection, extension explanation rows, client/profile composition and UI outside that step.

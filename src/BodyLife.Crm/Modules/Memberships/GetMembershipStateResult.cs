@@ -53,6 +53,15 @@ public sealed record GetMembershipStateResult(
             field);
     }
 
+    public static GetMembershipStateResult RecalculationFailed()
+    {
+        return Failure(
+            GetMembershipStateStatus.RecalculationFailed,
+            "recalculation_failed",
+            "Membership state is unavailable because recalculation has not completed successfully.",
+            field: null);
+    }
+
     private static GetMembershipStateResult Failure(
         GetMembershipStateStatus status,
         string errorCode,

@@ -120,6 +120,18 @@ public sealed class MembershipStateQueryContractsTests
     }
 
     [Fact]
+    public void RecalculationFailureContainsNoStateOrActions()
+    {
+        var result = GetMembershipStateResult.RecalculationFailed();
+
+        Assert.Equal(GetMembershipStateStatus.RecalculationFailed, result.Status);
+        Assert.Equal("recalculation_failed", result.ErrorCode);
+        Assert.Null(result.ErrorField);
+        Assert.Null(result.State);
+        Assert.Empty(result.AllowedActions.Items);
+    }
+
+    [Fact]
     public void QueryPermissionIntentUsesStableAdminOrOwnerContract()
     {
         Assert.Equal(

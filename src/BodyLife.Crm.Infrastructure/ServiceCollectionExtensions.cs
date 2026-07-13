@@ -46,6 +46,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeQueryHandler<GetMembershipTypesForIssueQuery, GetMembershipTypesForIssueResult>,
             GetMembershipTypesForIssueQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<GetMembershipStateQuery, GetMembershipStateResult>,
+            GetMembershipStateQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<CreateMembershipTypeCommand>,
