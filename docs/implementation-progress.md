@@ -1730,3 +1730,49 @@ Commit:
 Next recommended step:
 
 - Add only the Owner-only read surface for the MembershipType catalog/settings page, backed by `GetMembershipTypesForIssue(IncludeInactive: true)`, with active/inactive status, lifecycle/catalog fields, permission-safe action affordances and tablet/phone rendering tests. Keep create/edit/deactivate form submissions as following UI steps.
+
+## Step 50 - Owner MembershipType catalog read surface
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 4 with only the Owner catalog read surface after the catalog query, without combining create, edit or deactivate form submissions into this step.
+- Render the complete canonical catalog/lifecycle state returned by `GetMembershipTypesForIssue(IncludeInactive: true)`; the Razor page contains no duplicated business rules or direct persistence access.
+- Keep the screen a compact operational Owner settings view rather than expanding it into a broad settings area or generic table-first CRUD.
+
+Scope:
+
+- Add an Owner-authorized `/Owner/MembershipTypes` Razor Page backed by the registered `GetMembershipTypesForIssue` handler and the authenticated request actor.
+- Return `Forbid` if the persistence-backed query denies the canonical actor/session even after route authorization.
+- Render active-first catalog rows with name, duration, visit limit, price/currency, comment, created/updated timestamps and inactive deactivation timestamp.
+- Consume query action metadata to show the restrained `Owner managed` state only when create, edit and deactivate permissions are all allowed; no mutation control is rendered before its server workflow is wired.
+- Add active/inactive counts, explicit status labels and a stable empty state without hiding inactive historical catalog rows.
+- Add the Owner-only shell navigation link while keeping it absent for named/shared Admin sessions.
+- Add responsive catalog row styling for tablet and phone, including stable status badges, single-column phone metadata and long-name wrapping.
+- Seed one active and one inactive MembershipType in each disposable UI smoke database.
+- Add three PostgreSQL-backed Playwright tests for Owner rendering at `1024x768` and `390x844`, active-first/full-field mapping, read-only form absence, no horizontal overflow and Named Admin navigation/direct-route denial.
+- Serialize only the MembershipType and StaffAccounts Owner UI test classes in one xUnit collection so their independent app/database fixtures do not compete during the full suite.
+- No schema or migration change is required.
+
+Validation:
+
+- Release Web and UI smoke project builds passed with 0 warnings and 0 errors.
+- Focused `MembershipTypeCatalogSmokeTests` passed all 3 PostgreSQL-backed Playwright tests after final catalog-value assertions.
+- The first full UI suite run exposed two simultaneous 30-second login timeouts in the new catalog class and existing StaffAccounts class while their independent app/database fixtures started in parallel; the remaining 16 tests passed.
+- Grouping only those two Owner UI classes into `Owner UI smoke` removed the fixture contention; the full smoke suite then passed all 18 tests.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 145 PostgreSQL infrastructure tests, 18 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- Full-page Playwright screenshots were inspected at both target viewports: navigation, counts, badges, rows and lifecycle metadata remained readable without overlap or horizontal scrolling; temporary screenshots stayed outside the repository.
+- The restarted Development app loaded the new Razor page and returned `200 OK` from `/health/ready` with PostgreSQL schema current.
+- `graphify update .` completed the structural rebuild with 3466 nodes, 6305 edges and 493 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): add owner catalog page`.
+
+Next recommended step:
+
+- Add only the Owner `CreateMembershipType` form submission to the catalog page, using the existing command handler, a fresh idempotency key, busy/duplicate-submit protection, server validation/error rendering, Post/Redirect/Get canonical reread and tablet/phone Playwright coverage. Keep edit and deactivate UI for separate following steps.

@@ -19,6 +19,7 @@
             <nav class="shell-actions" aria-label="Session actions">
                 @if (actor is { Role: ActorRole.Owner, AccountKind: AccountKind.Owner })
                 {
+                    <a class="secondary-link" asp-page="/Owner/MembershipTypes">Membership types</a>
                     <a class="secondary-link" asp-page="/Owner/StaffAccounts">Staff accounts</a>
                 }
                 <form class="logout-form" asp-page="/Logout" method="post">

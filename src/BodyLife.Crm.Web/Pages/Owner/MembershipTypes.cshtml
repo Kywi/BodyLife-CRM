@@ -1,0 +1,94 @@
+@page
+@model BodyLife.Crm.Web.Pages.Owner.MembershipTypesModel
+@{
+    ViewData["Title"] = "Membership types";
+}
+
+<main class="page-shell">
+    <section class="owner-management" aria-labelledby="membership-types-title">
+        <header class="management-header">
+            <div>
+                <p class="eyebrow">Owner settings</p>
+                <h1 id="membership-types-title">Membership types</h1>
+            </div>
+            <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+        </header>
+
+        <section class="membership-type-list" aria-labelledby="membership-type-list-title">
+            <header class="list-header">
+                <div>
+                    <h2 id="membership-type-list-title">Future sales catalog</h2>
+                    <p class="list-breakdown">
+                        <span>@Model.ActiveCount active</span>
+                        <span>@Model.InactiveCount inactive</span>
+                    </p>
+                </div>
+                <div class="catalog-list-summary">
+                    @if (Model.CanManageCatalog)
+                    {
+                        <span class="status-chip status-owner">Owner managed</span>
+                    }
+                    <span class="list-count">
+                        @Model.MembershipTypes.Count @(Model.MembershipTypes.Count == 1 ? "type" : "types")
+                    </span>
+                </div>
+            </header>
+
+            @if (Model.MembershipTypes.Count == 0)
+            {
+                <p class="empty-state">No membership types yet.</p>
+            }
+            else
+            {
+                @foreach (var membershipType in Model.MembershipTypes)
+                {
+                    <article class="membership-type-row"
+                             data-membership-type-id="@membershipType.MembershipTypeId"
+                             data-membership-type-status="@(membershipType.IsActive ? "active" : "inactive")">
+                        <header class="membership-type-header">
+                            <h3>@membershipType.Name</h3>
+                            <span class="status-chip @(membershipType.IsActive ? "status-active" : "status-inactive")">
+                                @(membershipType.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </header>
+
+                        <dl class="membership-type-meta">
+                            <div>
+                                <dt>Duration</dt>
+                                <dd>@membershipType.DurationDays days</dd>
+                            </div>
+                            <div>
+                                <dt>Visit limit</dt>
+                                <dd>@membershipType.VisitsLimit</dd>
+                            </div>
+                            <div>
+                                <dt>Price</dt>
+                                <dd>@MembershipTypesModel.FormatPrice(membershipType.Price)</dd>
+                            </div>
+                            <div>
+                                <dt>Created</dt>
+                                <dd>@MembershipTypesModel.FormatTimestamp(membershipType.CreatedAt)</dd>
+                            </div>
+                            <div>
+                                <dt>Updated</dt>
+                                <dd>@MembershipTypesModel.FormatTimestamp(membershipType.UpdatedAt)</dd>
+                            </div>
+                            <div>
+                                <dt>Deactivated</dt>
+                                <dd>
+                                    @(membershipType.DeactivatedAt is { } deactivatedAt
+                                        ? MembershipTypesModel.FormatTimestamp(deactivatedAt)
+                                        : "Not deactivated")
+                                </dd>
+                            </div>
+                            <div class="membership-type-comment">
+                                <dt>Comment</dt>
+                                <dd>@(membershipType.Comment ?? "No comment")</dd>
+                            </div>
+                        </dl>
+                    </article>
+                }
+            }
+        </section>
+    </section>
+</main>

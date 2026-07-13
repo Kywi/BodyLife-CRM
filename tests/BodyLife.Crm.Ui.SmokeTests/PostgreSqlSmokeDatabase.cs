@@ -50,6 +50,66 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return new BodyLifeDbContext(optionsBuilder.Options);
     }
 
+    public async Task<Guid> SeedMembershipTypeAsync(
+        string name,
+        int durationDays,
+        int visitsLimit,
+        decimal priceAmount,
+        bool isActive,
+        string? comment,
+        DateTimeOffset createdAt,
+        DateTimeOffset updatedAt,
+        DateTimeOffset? deactivatedAt)
+    {
+        var membershipTypeId = Guid.NewGuid();
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.membership_types (
+                id,
+                name,
+                duration_days,
+                visits_limit,
+                price_amount,
+                price_currency,
+                is_active,
+                comment,
+                created_at,
+                updated_at,
+                deactivated_at)
+            values (
+                @id,
+                @name,
+                @duration_days,
+                @visits_limit,
+                @price_amount,
+                'UAH',
+                @is_active,
+                @comment,
+                @created_at,
+                @updated_at,
+                @deactivated_at)
+            """;
+        command.Parameters.AddWithValue("id", membershipTypeId);
+        command.Parameters.AddWithValue("name", name);
+        command.Parameters.AddWithValue("duration_days", durationDays);
+        command.Parameters.AddWithValue("visits_limit", visitsLimit);
+        command.Parameters.AddWithValue("price_amount", priceAmount);
+        command.Parameters.AddWithValue("is_active", isActive);
+        command.Parameters.Add("comment", NpgsqlDbType.Text).Value =
+            comment ?? (object)DBNull.Value;
+        command.Parameters.AddWithValue("created_at", createdAt);
+        command.Parameters.AddWithValue("updated_at", updatedAt);
+        command.Parameters.Add("deactivated_at", NpgsqlDbType.TimestampTz).Value =
+            deactivatedAt ?? (object)DBNull.Value;
+        await command.ExecuteNonQueryAsync();
+
+        return membershipTypeId;
+    }
+
     public async Task<int> ExpireSessionAsync(string deviceLabel)
     {
         await using var connection = new NpgsqlConnection(ConnectionString);

@@ -883,7 +883,8 @@ textarea:focus-visible,
 
 .management-header,
 .list-header,
-.staff-account-header {
+.staff-account-header,
+.membership-type-header {
   display: flex;
   gap: 16px;
   align-items: center;
@@ -947,15 +948,36 @@ textarea:focus-visible,
   font-weight: 700;
 }
 
-.staff-account-list {
+.staff-account-list,
+.membership-type-list {
   display: grid;
   gap: 12px;
 }
 
 .list-header h2,
 .staff-account-header h3,
+.membership-type-header h3,
 .staff-action-form h4 {
   margin: 0;
+}
+
+.list-breakdown {
+  display: flex;
+  margin: 6px 0 0;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.catalog-list-summary {
+  display: flex;
+  min-height: 32px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .list-count {
@@ -969,7 +991,8 @@ textarea:focus-visible,
   color: var(--muted);
 }
 
-.staff-account-row {
+.staff-account-row,
+.membership-type-row {
   display: grid;
   gap: 16px;
   border: 1px solid var(--line);
@@ -984,12 +1007,18 @@ textarea:focus-visible,
 }
 
 .status-chip {
+  flex: 0 0 auto;
   border: 1px solid;
   border-radius: 999px;
   padding: 5px 9px;
   font-size: 0.85rem;
   font-weight: 800;
   line-height: 1.2;
+}
+
+.membership-type-header h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .status-active {
@@ -1002,6 +1031,12 @@ textarea:focus-visible,
   border-color: var(--danger);
   background: var(--danger-soft);
   color: var(--danger-strong);
+}
+
+.status-owner {
+  border-color: var(--restricted);
+  background: #f0edfb;
+  color: var(--restricted);
 }
 
 .account-meta {
@@ -1027,6 +1062,38 @@ textarea:focus-visible,
   margin: 0;
   overflow-wrap: anywhere;
   font-weight: 700;
+}
+
+.membership-type-meta {
+  display: grid;
+  margin: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 20px;
+}
+
+.membership-type-meta div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.membership-type-meta dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.membership-type-meta dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.membership-type-meta .membership-type-comment {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
 }
 
 .staff-account-actions {
@@ -1147,12 +1214,29 @@ textarea:focus-visible,
 
   .management-header,
   .list-header,
-  .staff-account-header {
+  .staff-account-header,
+  .membership-type-header {
     align-items: flex-start;
   }
 
   .management-header {
     flex-direction: column;
+  }
+
+  .list-header {
+    gap: 10px;
+  }
+
+  .catalog-list-summary {
+    justify-content: flex-start;
+  }
+
+  .membership-type-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .membership-type-meta .membership-type-comment {
+    grid-column: auto;
   }
 
   h1 {

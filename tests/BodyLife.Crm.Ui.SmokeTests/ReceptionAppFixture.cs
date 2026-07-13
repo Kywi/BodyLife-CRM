@@ -262,6 +262,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         Assert.Equal(OwnerCredentialsBootstrapStatus.Updated, credentialsResult.Status);
 
         await SeedReceptionClientsAsync(database, ownerResult.AccountId!.Value);
+        await SeedMembershipTypesAsync(database);
 
         var ownerEnvelope = new CommandEnvelope(
             new ActorContext(
@@ -297,6 +298,30 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             SmokeAdminLoginName,
             SmokeAdminPassword);
         Assert.Equal(StaffCredentialsStatus.Configured, staffCredentialsResult.Status);
+    }
+
+    private static async Task SeedMembershipTypesAsync(PostgreSqlSmokeDatabase database)
+    {
+        await database.SeedMembershipTypeAsync(
+            "Eight visits / 30 days",
+            durationDays: 30,
+            visitsLimit: 8,
+            priceAmount: 950.00m,
+            isActive: true,
+            comment: "Standard reception offer.",
+            createdAt: new DateTimeOffset(2026, 7, 1, 9, 0, 0, TimeSpan.Zero),
+            updatedAt: new DateTimeOffset(2026, 7, 2, 10, 0, 0, TimeSpan.Zero),
+            deactivatedAt: null);
+        await database.SeedMembershipTypeAsync(
+            "Legacy 12 visits / 45 days",
+            durationDays: 45,
+            visitsLimit: 12,
+            priceAmount: 1200.00m,
+            isActive: false,
+            comment: "Retained for catalog history.",
+            createdAt: new DateTimeOffset(2026, 6, 1, 8, 0, 0, TimeSpan.Zero),
+            updatedAt: new DateTimeOffset(2026, 7, 5, 11, 0, 0, TimeSpan.Zero),
+            deactivatedAt: new DateTimeOffset(2026, 7, 5, 11, 0, 0, TimeSpan.Zero));
     }
 
     private async Task SeedReceptionClientsAsync(

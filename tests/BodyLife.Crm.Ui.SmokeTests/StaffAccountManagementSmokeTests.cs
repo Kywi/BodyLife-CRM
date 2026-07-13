@@ -2,6 +2,7 @@ using Microsoft.Playwright;
 
 namespace BodyLife.Crm.Ui.SmokeTests;
 
+[Collection("Owner UI smoke")]
 public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAppFixture>, IAsyncLifetime
 {
     private readonly ReceptionAppFixture _app;
