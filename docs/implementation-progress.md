@@ -2320,3 +2320,46 @@ Commits:
 Next recommended step:
 
 - Add only the public `CreateMembershipOpeningState` command contract and focused core tests for required common envelope/backfill metadata, declared state, permission intent, idempotency key and canonical reread target. Keep the persistence handler, transaction, source/cache writes, audit entry, entry-batch storage and UI outside that step.
+
+## Step 63 - Membership opening-state command contract
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the public application command contract after the opening-state storage, domain calculation and cache-rebuild foundations from Steps 60-62.
+- Reuse the accepted common `CommandEnvelope` for actor/account/role, session/device, request correlation, entry origin, business occurrence time, idempotency key, reason and comment instead of introducing duplicate opening-state metadata.
+- Carry the honest opening declaration separately: target membership, opening as-of date, signed remaining visits, optional known effective end/extension, source reference and optional future batch reference.
+- Keep declared negative balance out of command input because Memberships derives it centrally from signed remaining visits and the source writer will persist the validated result.
+- Declare Admin + Owner permission intent in line with the accepted active-membership manual-backfill boundary and ADR-012; enforcement remains a server-side handler responsibility.
+- Target the canonical Memberships reread after success rather than a source-row-shaped UI result or optimistic client-side state.
+- Keep handler validation/authorization, PostgreSQL transaction and row locks, source/cache writes, idempotency persistence, business audit, entry-batch storage and UI outside this contract-only step.
+
+Scope:
+
+- Add public `CreateMembershipOpeningStateCommand` implementing `IBodyLifeCommand` with the common envelope and opening-state declaration/source fields.
+- Keep known effective end, known extension days and `EntryBatchId` nullable so incomplete historical knowledge stays explicit and the future batch table is not pulled forward.
+- Expose deterministic `CanonicalRereadTargetId` as the target `membership` identity for the future handler's common `CommandResult`.
+- Add stable `MembershipActionKeys.CreateOpeningState` and `BodyLife.AdminOrOwner` policy constants for future query/UI permission projection and handler tests.
+- Add five focused core contract tests covering the operational envelope/backfill metadata, idempotency key, declared signed state without duplicated negative balance, optional known/batch fields, permission intent and canonical reread target.
+- Add no EF record/configuration/migration, infrastructure handler, dependency registration, audit row, source/cache mutation or UI change.
+
+Validation:
+
+- Focused `MembershipOpeningStateCommandContractsTests` validation passed all 5 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 41 tests.
+- Solution formatting verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this contract-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 95 core tests, 35 web tests, 174 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713111435_AddMembershipOpeningStates`.
+- The Development app was restarted from the validated Release build and `/health/ready` returned `200 OK` against Docker PostgreSQL.
+- `graphify update .` completed the structural rebuild with 3950 nodes, 7435 edges and 543 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): define opening state command`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Implement only the persistence-backed `CreateMembershipOpeningState` handler with canonical Admin/Owner authorization, backfill-envelope/source validation, active-membership row locking, idempotency, one PostgreSQL transaction for the opening source, Memberships cache rebuild and append-only business audit, then return the command's canonical membership reread target. Add focused PostgreSQL command tests; keep entry-batch storage and UI outside that step.
