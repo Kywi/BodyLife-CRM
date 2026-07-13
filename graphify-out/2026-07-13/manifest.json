@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783971135.8591835,
-    "ast_hash": "8cc2f2678e1b6d7bdaeb759eb0ce796c",
+    "mtime": 1783972263.2279453,
+    "ast_hash": "0c56aef927cf0ae9721556dd37d5f027",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1920,8 +1920,8 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Memberships/MembershipActionKeys.cs": {
-    "mtime": 1783946068.514353,
-    "ast_hash": "f49b400b53f92fdb48ebd2fc0e01dedd",
+    "mtime": 1783972964.2518983,
+    "ast_hash": "2ac9dd7804fc2861eef671565d04fc5c",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipOpeningStateCommandContractsTests.cs": {
@@ -2137,6 +2137,51 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipAdjustmentsStorageTests.cs": {
     "mtime": 1783971864.610938,
     "ast_hash": "7d3eb7b7a89e048d8b359e265684bca2",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipIssueNegativeContext.cs": {
+    "mtime": 1783972964.2558985,
+    "ast_hash": "99e97607ed8ba8210d0cf61cd73b13c0",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipIssuePreview.cs": {
+    "mtime": 1783972964.2558985,
+    "ast_hash": "a2575e0879d6a0258c0332e8d7b824ba",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipIssuePreviewPolicy.cs": {
+    "mtime": 1783972964.2558985,
+    "ast_hash": "7ec4309cc99ff9131b0f7918d0252b37",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipNegativeHandlingDecision.cs": {
+    "mtime": 1783972964.2558985,
+    "ast_hash": "de2daca9fa4cf47cf73d26fc7cb5e526",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipNegativeHandlingOption.cs": {
+    "mtime": 1783972964.2558985,
+    "ast_hash": "b7099d0e8f661abf3b5a6a675c4d5f69",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/PreviewIssueMembershipQuery.cs": {
+    "mtime": 1783972964.2558985,
+    "ast_hash": "20d69483c6fb75a8055cefacaf973f19",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/PreviewIssueMembershipResult.cs": {
+    "mtime": 1783972964.2558985,
+    "ast_hash": "3b85f7fa8cf3a515706edbcfd7c92c54",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/PreviewIssueMembershipStatus.cs": {
+    "mtime": 1783972964.2558985,
+    "ast_hash": "45126948bdf6f54fbc2f04c594e5ae06",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipIssuePreviewContractsTests.cs": {
+    "mtime": 1783973002.1924033,
+    "ast_hash": "26c812c2f20a0dc1e65afde8cba85e33",
     "semantic_hash": ""
   }
 }

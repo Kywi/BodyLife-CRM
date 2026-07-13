@@ -566,5 +566,7 @@
   "564": "PostgreSqlEditMembershipTypeCommandTests.cs",
   "565": "InitialBaseline",
   "566": "PostgreSqlCreateClientCommandTests.cs",
-  "567": "SessionId"
+  "567": "SessionId",
+  "568": ".SourceMetadataRejectsMissingValues",
+  "569": ".DeclarationDerivesNegativeBalanceFromSignedRemainingVisits"
 }
