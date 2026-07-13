@@ -55,4 +55,34 @@ public sealed class MembershipIssueTerms
             snapshot,
             startDate);
     }
+
+    public static MembershipIssueTerms FromIssuedSnapshot(
+        Guid membershipTypeId,
+        IssuedMembershipSnapshot? snapshot,
+        DateOnly startDate,
+        DateOnly baseEndDate)
+    {
+        if (membershipTypeId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Membership type id is required.",
+                nameof(membershipTypeId));
+        }
+
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        var terms = new MembershipIssueTerms(
+            membershipTypeId,
+            snapshot,
+            startDate);
+
+        if (terms.BaseEndDate != baseEndDate)
+        {
+            throw new ArgumentException(
+                "Base end date must match the issued snapshot and inclusive duration.",
+                nameof(baseEndDate));
+        }
+
+        return terms;
+    }
 }

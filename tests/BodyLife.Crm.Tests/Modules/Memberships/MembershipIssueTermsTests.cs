@@ -95,6 +95,47 @@ public sealed class MembershipIssueTermsTests
     }
 
     [Fact]
+    public void IssuedSnapshotRehydratesWithoutReadingCurrentCatalogLifecycle()
+    {
+        var membershipTypeId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var snapshot = new IssuedMembershipSnapshot(
+            "Historical 2 visits / 30 days",
+            durationDays: 30,
+            visitsLimit: 2,
+            new Money(1000m, "UAH"));
+
+        var terms = MembershipIssueTerms.FromIssuedSnapshot(
+            membershipTypeId,
+            snapshot,
+            new DateOnly(2026, 7, 1),
+            new DateOnly(2026, 7, 30));
+
+        Assert.Equal(membershipTypeId, terms.MembershipTypeId);
+        Assert.Same(snapshot, terms.Snapshot);
+        Assert.Equal(new DateOnly(2026, 7, 1), terms.StartDate);
+        Assert.Equal(new DateOnly(2026, 7, 30), terms.BaseEndDate);
+    }
+
+    [Fact]
+    public void IssuedSnapshotRehydrationRejectsMismatchedBaseEndDate()
+    {
+        var snapshot = new IssuedMembershipSnapshot(
+            "Historical 2 visits / 30 days",
+            durationDays: 30,
+            visitsLimit: 2,
+            new Money(1000m, "UAH"));
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            MembershipIssueTerms.FromIssuedSnapshot(
+                Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                snapshot,
+                new DateOnly(2026, 7, 1),
+                new DateOnly(2026, 7, 31)));
+
+        Assert.Equal("baseEndDate", exception.ParamName);
+    }
+
+    [Fact]
     public void SnapshotValuesUseCatalogValidation()
     {
         var snapshot = new IssuedMembershipSnapshot(

@@ -2136,3 +2136,49 @@ Commits:
 Next recommended step:
 
 - Add only a Memberships-owned initial cache rebuild/write service that rehydrates issued snapshot source facts, recalculates their initial state and upserts/compares `membership_state_cache` inside an explicit transaction. Keep `IssueMembership`, opening states, adjustments, visit/freeze/non-working inputs, public queries and UI outside that step.
+
+## Step 59 - Initial membership state cache rebuild service
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only a Memberships-owned rebuild path for the source facts currently implemented: immutable `issued_memberships` snapshots.
+- Rehydrate through the Memberships domain contract and recalculate with `MembershipStateCalculator`; infrastructure maps values but does not duplicate formulas.
+- Validate persisted `base_end_date` against the snapshot duration and inclusive date rule instead of trusting an editable end-date input.
+- Serialize rebuilds for the same membership by locking the issued source row with PostgreSQL `FOR UPDATE`; open an explicit `ReadCommitted` transaction when standalone and join, without committing, an existing command-owned transaction.
+- Treat `recalculation_version = 1` as the current deterministic calculation-contract version; compare it with every stable derived field while excluding `recalculated_at` metadata from drift detection.
+- Create no business audit entry because rebuilding derived cache changes no canonical business fact.
+- Keep opening states, adjustments, extension explanation rows, visits/freezes/non-working inputs, `IssueMembership`, public queries and UI outside this initial-only service.
+
+Scope:
+
+- Add `MembershipIssueTerms.FromIssuedSnapshot` for immutable source rehydration with required MembershipType identity and canonical base-end-date verification.
+- Add `MembershipStateCacheRebuilder.RebuildInitialAsync` with typed `MissingSource`, `Created`, `Repaired` and `Verified` outcomes.
+- Create a missing cache row, repair drift across every stable field, verify matching state and refresh `recalculated_at` metadata using the injected `TimeProvider`.
+- Let an existing EF transaction retain commit ownership so a future source-fact command can roll back the cache write atomically.
+- Compare and persist counted visits, signed remaining visits, negative balance, first-negative metadata, extension days, effective end date, last-counted-visit time and the calculation version.
+- Register the scoped rebuilder in `AddBodyLifePersistence`; no schema or migration change is required.
+- Add two domain tests for issued-snapshot rehydration and mismatched base-end rejection.
+- Add seven PostgreSQL-backed tests for missing source, immutable snapshot use after catalog edit, full drift repair, verified metadata refresh, version drift, concurrent rebuild serialization with one cache row and outer-transaction rollback ownership.
+
+Validation:
+
+- Focused `FullyQualifiedName~Memberships` core validation passed all 20 tests, including the 2 new source-rehydration cases.
+- Release infrastructure-test project build passed with 0 warnings and 0 errors after adding the service and DI registration.
+- Focused `PostgreSqlMembershipStateCacheRebuildTests` validation passed all 7 tests against Docker PostgreSQL, including concurrent create/verify serialization and command-owned transaction rollback.
+- Solution formatting verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 74 core tests, 35 web tests, 163 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713100046_AddMembershipStateCache`.
+- The Development app was restarted from the validated Release build and `/health/ready` returned `200 OK` against Docker PostgreSQL.
+- `graphify update .` completed the final structural rebuild with 3837 nodes, 7145 edges and 527 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): add initial cache rebuild`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the canonical `membership_opening_states` PostgreSQL source-fact schema, active-row partial uniqueness, metadata/check constraints, migration and storage tests. Keep backfill commands, recalculation integration, adjustments and UI outside that step.
