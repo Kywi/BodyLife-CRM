@@ -2363,3 +2363,52 @@ Commits:
 Next recommended step:
 
 - Implement only the persistence-backed `CreateMembershipOpeningState` handler with canonical Admin/Owner authorization, backfill-envelope/source validation, active-membership row locking, idempotency, one PostgreSQL transaction for the opening source, Memberships cache rebuild and append-only business audit, then return the command's canonical membership reread target. Add focused PostgreSQL command tests; keep entry-batch storage and UI outside that step.
+
+## Step 64 - Transactional membership opening-state command
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 by implementing only the persistence-backed workflow for the Step 63 `CreateMembershipOpeningState` public contract.
+- Enforce the accepted ADR-010 boundary: this command accepts only explicit `manual_backfill` opening state for an existing active issued membership and never generates synthetic visits or patches derived cache values directly.
+- Require the common command accountability fields before database work: canonical actor/session shape, request correlation id, idempotency key, `occurred_at`, non-empty reason and source reference; keep server `recorded_at` under `TimeProvider` control.
+- Authorize Owner, named Admin and shared Reception/Admin through both command actor shape and canonical active account/unexpired-session rows, preserving honest shared-session accountability.
+- Serialize competing writers with PostgreSQL `FOR UPDATE` on the issued membership and recheck idempotency after the lock, so concurrent same-key replays remain deterministic and different-key attempts cannot create two active opening sources.
+- Commit the opening source, Memberships-owned synchronous cache rebuild, append-only business audit and successful idempotency result in one `ReadCommitted` transaction; any later failure rolls back earlier source/cache writes.
+- Return the opening source as primary entity and the affected membership as the canonical reread target, without returning optimistic calculated UI state.
+- Keep entry-batch table/FK storage, opening-state correction/cancellation, public membership queries and UI outside this command-handler step.
+
+Scope:
+
+- Add `CreateMembershipOpeningStateCommandHandler` and register it through `AddBodyLifePersistence` as the public command handler implementation.
+- Add narrow `MembershipCommandSupport` for Admin/Owner actor authorization, normalized backfill validation, domain declaration construction, SHA-256 request fingerprinting, idempotent replay, PostgreSQL conflict mapping and common command results.
+- Reject `normal`, `paper_fallback` and reserved `future_import` origins for this v1 opening workflow; require `manual_backfill`, `occurred_at`, reason, source reference and a non-empty optional batch UUID.
+- Reuse `MembershipOpeningState.FromDeclaration`, issued snapshot/date contracts and `MembershipStateCalculator.CalculateFromOpeningState` for cross-source validation before mutation.
+- Lock and require `issued_memberships.status = active`; return stable `not_found`, `membership_not_eligible`, `validation_failed`, `stale_state`, `duplicate_submission` or `concurrency_conflict` results where applicable.
+- Persist the normalized opening source, derive negative balance centrally, call `MembershipStateCacheRebuilder` inside the existing transaction and write `membership_opening_state.created` audit with client/membership refs plus declared/recalculated summaries.
+- Store successful idempotency with distinct primary opening-state id and canonical membership reread id; replay reconstructs the same common `CommandResult`.
+- Add nine PostgreSQL-backed command tests covering canonical Named Admin creation and metadata, Owner/shared-account access, forged/expired/inactive/unknown denial, envelope/source/domain validation, missing/non-active/cross-source invalid membership cases, existing-active stale state, replay/payload mismatch, concurrent writers and rollback after audit failure.
+- Add no EF model/configuration/migration, `entry_batches` table, page/controller or Playwright workflow.
+
+Validation:
+
+- Release infrastructure-project build passed with 0 warnings and 0 errors after adding the handler foundation.
+- Focused `PostgreSqlCreateMembershipOpeningStateCommandTests` validation passed all 9 cases against Docker PostgreSQL.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 76 tests, including storage, cache rebuild and MembershipType workflows.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 41 tests.
+- Solution formatting verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this workflow uses the existing opening/cache/audit/idempotency schema.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 95 core tests, 35 web tests, 183 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713111435_AddMembershipOpeningStates`.
+- The Development app was restarted from the validated Release build and `/health/ready` returned `200 OK` against Docker PostgreSQL.
+- `graphify update .` completed the structural rebuild with 4040 nodes, 7731 edges and 541 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): create opening states transactionally`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the public `GetMembershipState` query/read-model contract with actor context, membership selector, `as_of` date, complete Memberships-owned stable state fields, permission intent and focused core contract tests. Keep the PostgreSQL query handler, warnings/history/extension rows, profile composition and UI outside that step.

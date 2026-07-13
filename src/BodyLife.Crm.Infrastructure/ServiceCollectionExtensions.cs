@@ -7,6 +7,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,6 +60,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<AssignOrChangeCardCommand>,
             AssignOrChangeCardCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<CreateMembershipOpeningStateCommand>,
+            CreateMembershipOpeningStateCommandHandler>();
         services.AddScoped<MembershipStateCacheRebuilder>();
         services.AddScoped<AccountLoginService>();
         services.AddScoped<AccountSessionValidationService>();
