@@ -9,9 +9,9 @@ public sealed class MembershipStateCacheRebuilder(
     BodyLifeDbContext dbContext,
     TimeProvider timeProvider)
 {
-    public const int CurrentRecalculationVersion = 1;
+    public const int CurrentRecalculationVersion = 2;
 
-    public async Task<MembershipStateCacheRebuildResult> RebuildInitialAsync(
+    public async Task<MembershipStateCacheRebuildResult> RebuildAsync(
         Guid membershipId,
         CancellationToken cancellationToken = default)
     {
@@ -74,7 +74,22 @@ public sealed class MembershipStateCacheRebuilder(
             snapshot,
             source.StartDate,
             source.BaseEndDate);
-        var calculatedState = MembershipStateCalculator.CalculateInitial(issueTerms);
+        var openingStateSource = await dbContext.Set<MembershipOpeningStateRecord>()
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                openingState => openingState.MembershipId == membershipId
+                    && openingState.Status == "active",
+                cancellationToken);
+        var calculatedState = openingStateSource is null
+            ? MembershipStateCalculator.CalculateInitial(issueTerms)
+            : MembershipStateCalculator.CalculateFromOpeningState(
+                issueTerms,
+                MembershipOpeningState.FromStoredSource(
+                    openingStateSource.OpeningAsOfDate,
+                    openingStateSource.DeclaredRemainingVisits,
+                    openingStateSource.DeclaredNegativeBalance,
+                    openingStateSource.KnownEffectiveEndDate,
+                    openingStateSource.KnownExtensionDays));
         var cache = await dbContext.Set<MembershipStateCacheRecord>()
             .SingleOrDefaultAsync(
                 state => state.MembershipId == membershipId,

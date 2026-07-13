@@ -2274,3 +2274,49 @@ Commits:
 Next recommended step:
 
 - Extend only `MembershipStateCacheRebuilder` to load the single active `membership_opening_states` source row, rehydrate the new domain contract and create/verify/repair cache state from that baseline inside its existing transaction and row lock. Keep opening-state commands, authorization, idempotency, audit, adjustments, later visit/extension inputs, public queries and UI outside that step.
+
+## Step 62 - Opening-state-aware membership cache rebuild
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 by extending only the existing Memberships-owned cache rebuild path with the active opening-state source fact implemented in Steps 60-61.
+- Acquire PostgreSQL `FOR UPDATE` on the canonical issued membership before reading the active opening state, preserving one parent lock order for source-writing commands and concurrent rebuilds.
+- Read only `status = 'active'`; the existing partial unique index guarantees at most one applicable source while canceled/corrected rows remain historical facts.
+- Rehydrate persisted opening values through `MembershipOpeningState.FromStoredSource` and calculate through Memberships domain ownership rather than mapping formulas in infrastructure.
+- Preserve initial issue calculation when no active opening state exists and repair cache back to that state when an opening row is retired.
+- Keep standalone `ReadCommitted` transaction ownership and existing outer-transaction participation/rollback behavior unchanged.
+- Bump `CurrentRecalculationVersion` from 1 to 2 because the deterministic source-input contract now includes opening states; old-version cache rows become explicit repair candidates.
+- Keep opening-state source-writing commands, authorization, idempotency, audit, adjustments, later visit/extension inputs, public queries and UI outside this rebuild-only step.
+
+Scope:
+
+- Rename the no-longer-initial-only entry point from `RebuildInitialAsync` to `RebuildAsync`; no application caller existed outside the PostgreSQL rebuild suite.
+- Query the active `MembershipOpeningStateRecord` without tracker reuse after locking and rehydrate opening date, declared signed balance and optional known end/extension values.
+- Select `CalculateInitial` when no active opening source exists or `CalculateFromOpeningState` when one does, then reuse the existing all-field compare/create/verify/repair write path.
+- Leave source/accountability metadata out of formulas while retaining it in the canonical opening-state row for future command/audit/history workflows.
+- Expand the PostgreSQL rebuild suite from 7 to 12 tests with active positive baseline creation, negative baseline repair without synthetic visit metadata, ignored historical rows, cross-source domain-invalid rollback and retirement back to issued initial state.
+- Run existing concurrency and outer-transaction rollback tests with an active opening source, proving one cache row and declared baseline state under the same transaction behavior.
+- Update version-drift coverage to repair version 1 into current calculation contract version 2.
+- Add no EF model or migration change.
+
+Validation:
+
+- Release infrastructure-project build passed with 0 warnings and 0 errors after adding the active-source query and calculator selection.
+- Focused `PostgreSqlMembershipStateCacheRebuildTests` validation passed all 12 tests against Docker PostgreSQL.
+- Solution formatting verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 90 core tests, 35 web tests, 174 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713111435_AddMembershipOpeningStates`.
+- The Development app was restarted from the validated Release build and `/health/ready` returned `200 OK` against Docker PostgreSQL.
+- `graphify update .` completed the structural rebuild with 3930 nodes, 7395 edges and 539 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): rebuild cache from opening state`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the public `CreateMembershipOpeningState` command contract and focused core tests for required common envelope/backfill metadata, declared state, permission intent, idempotency key and canonical reread target. Keep the persistence handler, transaction, source/cache writes, audit entry, entry-batch storage and UI outside that step.
