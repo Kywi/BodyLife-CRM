@@ -2091,3 +2091,48 @@ Commits:
 Next recommended step:
 
 - Add only the rebuildable `membership_state_cache` PostgreSQL storage, EF mapping, migration and constraint/storage tests for this calculated-state contract. Keep `IssueMembership` handling, visit/freeze/non-working-day inputs, general recalculation and UI outside that step.
+
+## Step 58 - Membership state cache PostgreSQL storage
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the rebuildable PostgreSQL storage for the initial calculated-state contract from Step 57.
+- Keep `membership_state_cache` as a dependent derived table with exactly one row per canonical `issued_memberships` source fact; deleting/replacing a cache row does not alter the source membership.
+- Persist only stable derived values. Date-dependent `is_active`/`active_status`, `days_left` and warning flags remain query-time Memberships behavior and are intentionally absent from the table.
+- Preserve signed `remaining_visits` and enforce `negative_balance = max(0, -remaining_visits)` as a database consistency guard without moving the formula outside Memberships ownership.
+- Keep `first_negative_visit_id` as a nullable UUID without a premature foreign key because the Visits source schema does not exist yet.
+- Add no cache writer/rebuild application service, `IssueMembership` handling, opening state, adjustments, extension explanation rows, visits/freezes/non-working inputs, public query or UI.
+
+Scope:
+
+- Add internal `MembershipStateCacheRecord` and assembly-discovered EF configuration under the Memberships persistence boundary.
+- Use `membership_id` as both primary key and cascading foreign key to `issued_memberships.id`, enforcing one cache row per known membership while keeping the cache disposable.
+- Store counted visits, signed remaining visits, negative balance, optional first-negative visit metadata, extension days, effective end date, optional last-counted-visit time, recalculation time and positive recalculation version.
+- Add PostgreSQL checks for non-negative counted visits and extension days, formula-consistent negative balance and positive recalculation version.
+- Add the planned report/read indexes for effective end date, remaining visits, open negative balance and last counted visit; the negative index is partial on `negative_balance > 0`.
+- Generate reversible migration `20260713100046_AddMembershipStateCache` and update the EF model snapshot.
+- Add five PostgreSQL-backed tests for migration shape and forbidden date-dependent columns, initial state storage, signed negative state metadata, constraint enforcement, FK/one-row uniqueness and delete/reinsert rebuild behavior without source-fact loss.
+
+Validation:
+
+- Release infrastructure-test project build passed with 0 warnings and 0 errors before migration generation.
+- Focused `PostgreSqlMembershipStateCacheStorageTests` validation passed all 5 tests against Docker PostgreSQL.
+- Idempotent migration SQL was generated to `/tmp/bodylife-add-membership-state-cache.sql` and reviewed for the expected table, checks, cascading source FK, partial/report indexes and migration-history transaction.
+- The first formatting verification found only the EF-generated migration BOM; targeted `dotnet format whitespace` corrected the encoding, and the final solution formatting verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+- `scripts/apply-migrations.sh` applied `20260713100046_AddMembershipStateCache` to the local Docker development database through the normal forward EF workflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 72 core tests, 35 web tests, 156 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713100046_AddMembershipStateCache`.
+- The Development app was restarted from the validated Release build and `/health/ready` returned `200 OK` against the migrated Docker PostgreSQL schema.
+- `graphify update .` completed the structural rebuild with 3764 nodes, 7011 edges and 508 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): add state cache storage`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only a Memberships-owned initial cache rebuild/write service that rehydrates issued snapshot source facts, recalculates their initial state and upserts/compares `membership_state_cache` inside an explicit transaction. Keep `IssueMembership`, opening states, adjustments, visit/freeze/non-working inputs, public queries and UI outside that step.
