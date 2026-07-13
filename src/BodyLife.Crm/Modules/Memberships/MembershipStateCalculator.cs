@@ -16,4 +16,92 @@ public static class MembershipStateCalculator
             effectiveEndDate: issueTerms.BaseEndDate,
             lastCountedVisitAt: null);
     }
+
+    public static MembershipCalculatedState CalculateFromOpeningState(
+        MembershipIssueTerms? issueTerms,
+        MembershipOpeningState? openingState)
+    {
+        ArgumentNullException.ThrowIfNull(issueTerms);
+        ArgumentNullException.ThrowIfNull(openingState);
+
+        if (openingState.OpeningAsOfDate < issueTerms.StartDate)
+        {
+            throw new ArgumentException(
+                "Opening date cannot precede the issued membership start date.",
+                nameof(openingState));
+        }
+
+        var extensionDays = ResolveExtensionDays(issueTerms, openingState);
+        var effectiveEndDate = CalculateEffectiveEndDate(
+            issueTerms.BaseEndDate,
+            extensionDays,
+            openingState);
+
+        if (openingState.KnownEffectiveEndDate is { } knownEffectiveEndDate
+            && knownEffectiveEndDate != effectiveEndDate)
+        {
+            throw new ArgumentException(
+                "Known effective end date and extension days must describe the same state.",
+                nameof(openingState));
+        }
+
+        if (openingState.OpeningAsOfDate > effectiveEndDate)
+        {
+            throw new ArgumentException(
+                "Opening state must describe a membership active on its opening date.",
+                nameof(openingState));
+        }
+
+        // Missing historical visits stay unknown instead of becoming synthetic source facts.
+        return new MembershipCalculatedState(
+            countedVisits: 0,
+            remainingVisits: openingState.DeclaredRemainingVisits,
+            negativeBalance: openingState.DeclaredNegativeBalance,
+            firstNegativeVisitId: null,
+            firstNegativeVisitDate: null,
+            extensionDays,
+            effectiveEndDate,
+            lastCountedVisitAt: null);
+    }
+
+    private static int ResolveExtensionDays(
+        MembershipIssueTerms issueTerms,
+        MembershipOpeningState openingState)
+    {
+        if (openingState.KnownExtensionDays is { } knownExtensionDays)
+        {
+            return knownExtensionDays;
+        }
+
+        if (openingState.KnownEffectiveEndDate is not { } knownEffectiveEndDate)
+        {
+            return 0;
+        }
+
+        var extensionDays = knownEffectiveEndDate.DayNumber - issueTerms.BaseEndDate.DayNumber;
+        if (extensionDays < 0)
+        {
+            throw new ArgumentException(
+                "Known effective end date cannot precede the canonical base end date.",
+                nameof(openingState));
+        }
+
+        return extensionDays;
+    }
+
+    private static DateOnly CalculateEffectiveEndDate(
+        DateOnly baseEndDate,
+        int extensionDays,
+        MembershipOpeningState openingState)
+    {
+        var effectiveEndDayNumber = (long)baseEndDate.DayNumber + extensionDays;
+        if (effectiveEndDayNumber > DateOnly.MaxValue.DayNumber)
+        {
+            throw new ArgumentException(
+                "Known extension days exceed the supported calendar range.",
+                nameof(openingState));
+        }
+
+        return DateOnly.FromDayNumber((int)effectiveEndDayNumber);
+    }
 }

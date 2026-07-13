@@ -2229,3 +2229,48 @@ Commits:
 Next recommended step:
 
 - Add only the Memberships-owned opening-state domain contract and calculation behavior for starting from a declared as-of state, with focused domain tests. Keep the command/persistence writer, authorization, idempotency, audit, cache rebuild integration, adjustments and UI outside that step.
+
+## Step 61 - Membership opening-state domain baseline
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the Memberships-owned domain contract and deterministic calculation for an already-authorized active opening-state source fact.
+- Treat declared remaining visits as the honest as-of baseline when earlier history is incomplete; do not infer or generate synthetic historical visit facts to make the catalog limit reconcile.
+- Derive and validate negative balance centrally from signed remaining visits while preserving negative opening states as normal Memberships state.
+- Keep first-negative visit id/date and last-counted-visit time unknown when no canonical visit source establishes them, even when the declared baseline is negative.
+- Resolve known effective end and known extension days against the immutable issued base end: derive the missing value when only one is known, require consistency when both are known and retain the base end/zero extension when neither is known.
+- Require the opening date to be on or after membership start and on or before the resolved effective end, preserving the accepted inclusive active-date rule and active-membership-only backfill boundary.
+- Keep persistence loading/writing, cache rebuild integration, command permissions/idempotency, business audit, adjustments, later visits/extensions and UI outside this domain-only step.
+
+Scope:
+
+- Add immutable `MembershipOpeningState` with `FromDeclaration` for command-side construction and `FromStoredSource` for drift-detecting source rehydration.
+- Store only calculation inputs: opening as-of date, declared signed remaining/negative values and optional known effective-end/extension state; actor/session/source/reason remain command/source-fact metadata rather than formula inputs.
+- Reject inconsistent persisted negative balance, unrepresentable `int.MinValue` negative state, negative known extension and a known end before the opening date.
+- Add `MembershipStateCalculator.CalculateFromOpeningState` without changing the existing new-issue initial calculation path.
+- Resolve effective end with overflow protection and reject shortening the canonical base term, mismatched known end/extension or an opening date outside the resolved active interval.
+- Initialize calculated counted visits to zero without inventing old visits; copy declared signed balance and leave first-negative/last-visit metadata null until canonical visit facts exist.
+- Add 16 focused domain cases covering declaration/source rehydration, negative consistency, metadata validation, honest positive/negative baselines, known date/extension derivation, mismatch/shortening/overflow rejection, inclusive interval checks, null inputs and immutability.
+
+Validation:
+
+- Release domain-project build passed with 0 warnings and 0 errors after adding the contract and calculator path.
+- Focused `MembershipOpeningStateTests` validation passed all 16 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 36 tests.
+- Solution formatting verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this domain-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 90 core tests, 35 web tests, 169 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713111435_AddMembershipOpeningStates`.
+- The Development app was restarted from the validated Release build and `/health/ready` returned `200 OK` against Docker PostgreSQL.
+- `graphify update .` completed the structural rebuild with 3921 nodes, 7338 edges and 533 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): calculate opening state baseline`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Extend only `MembershipStateCacheRebuilder` to load the single active `membership_opening_states` source row, rehydrate the new domain contract and create/verify/repair cache state from that baseline inside its existing transaction and row lock. Keep opening-state commands, authorization, idempotency, audit, adjustments, later visit/extension inputs, public queries and UI outside that step.
