@@ -800,9 +800,9 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783937289.56793,
-    "ast_hash": "c09b4ca392cc65c33be4b62ac0ace926",
-    "semantic_hash": "c09b4ca392cc65c33be4b62ac0ace926"
+    "mtime": 1783940398.7801867,
+    "ast_hash": "43c9cb90fefe7c33a5ca7b48f639d5fc",
+    "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
     "mtime": 1783617341.9756112,
@@ -1870,13 +1870,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipStateCacheRebuilder.cs": {
-    "mtime": 1783939980.6525536,
-    "ast_hash": "58b9d23768df5dd6c7fd97c6e44f5c61",
+    "mtime": 1783940502.235437,
+    "ast_hash": "07939786e62265104d9cd7298325ead0",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipStateCacheRebuildTests.cs": {
-    "mtime": 1783940100.5060818,
-    "ast_hash": "49ad5baea6982ebd60f2ff5618501dcd",
+    "mtime": 1783940502.2394369,
+    "ast_hash": "f65be6afc40c51f1f8530938afc6b347",
     "semantic_hash": ""
   }
 }

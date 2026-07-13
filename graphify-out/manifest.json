@@ -710,9 +710,9 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1783936846.2613482,
-    "ast_hash": "05dd194ed0521769f020703e329dadc7",
-    "semantic_hash": "05dd194ed0521769f020703e329dadc7"
+    "mtime": 1783941275.1191561,
+    "ast_hash": "e022317ea122048bed10e593bb78db7b",
+    "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
     "mtime": 1783869860.9718091,
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783940398.7801867,
-    "ast_hash": "43c9cb90fefe7c33a5ca7b48f639d5fc",
+    "mtime": 1783940730.940897,
+    "ast_hash": "3a2a7a1bac724e974b4b39dc2e3624fa",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1877,6 +1877,31 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipStateCacheRebuildTests.cs": {
     "mtime": 1783940502.2394369,
     "ast_hash": "f65be6afc40c51f1f8530938afc6b347",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipOpeningStateRecord.cs": {
+    "mtime": 1783941233.6303856,
+    "ast_hash": "476dd2d1f9646868466e3be272fe5911",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipOpeningStateRecordConfiguration.cs": {
+    "mtime": 1783941233.6343858,
+    "ast_hash": "6d2e650ac97d634b6f425c6e6893ca73",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713111435_AddMembershipOpeningStates.Designer.cs": {
+    "mtime": 1783941275.1191561,
+    "ast_hash": "83a2f94ee91be85b685a25aec31019c1",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713111435_AddMembershipOpeningStates.cs": {
+    "mtime": 1783941511.9415195,
+    "ast_hash": "28dc71de4942ead2769795e0110ce5c9",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipOpeningStatesStorageTests.cs": {
+    "mtime": 1783941495.7488225,
+    "ast_hash": "25e8009bbc8f37fdc2f3752238151e9a",
     "semantic_hash": ""
   }
 }
