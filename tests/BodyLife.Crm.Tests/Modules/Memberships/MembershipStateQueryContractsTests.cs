@@ -55,6 +55,21 @@ public sealed class MembershipStateQueryContractsTests
             state.LastCountedVisitAt);
         Assert.Equal(new DateOnly(2026, 8, 4), state.AsOfDate);
         Assert.False(state.IsActiveByDate);
+        Assert.Collection(
+            state.Warnings,
+            warning =>
+            {
+                Assert.Equal(MembershipWarningCodes.NegativeBalance, warning.Code);
+                Assert.Equal(MembershipWarningSeverity.Danger, warning.Severity);
+            },
+            warning =>
+            {
+                Assert.Equal(MembershipWarningCodes.ExpiredByDate, warning.Code);
+                Assert.Equal(MembershipWarningSeverity.Danger, warning.Severity);
+            });
+        var warningList = Assert.IsAssignableFrom<IList<MembershipWarning>>(state.Warnings);
+        Assert.True(warningList.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => warningList.Add(state.Warnings[0]));
         Assert.All(
             typeof(MembershipStateReadModel).GetProperties(),
             property => Assert.Null(property.SetMethod));
@@ -142,24 +157,25 @@ public sealed class MembershipStateQueryContractsTests
 
     private static MembershipStateReadModel CreateState(DateOnly? asOfDate = null)
     {
-        return new MembershipStateReadModel(
-            MembershipId,
-            ClientId,
+        var snapshot = new IssuedMembershipSnapshot(
+            "Eight visits",
+            durationDays: 30,
+            visitsLimit: 8,
+            new Money(1000m, "UAH"));
+        var issueTerms = MembershipIssueTerms.FromIssuedSnapshot(
             MembershipTypeId,
-            new IssuedMembershipSnapshot(
-                "Eight visits",
-                durationDays: 30,
-                visitsLimit: 8,
-                new Money(1000m, "UAH")),
+            snapshot,
             startDate: new DateOnly(2026, 7, 1),
-            baseEndDate: new DateOnly(2026, 7, 30),
-            effectiveEndDate: new DateOnly(2026, 8, 3),
+            baseEndDate: new DateOnly(2026, 7, 30));
+        var calculatedState = MembershipCalculatedState.FromStoredCache(
+            issueTerms,
             countedVisits: 10,
             remainingVisits: -2,
             negativeBalance: 2,
             firstNegativeVisitId: FirstNegativeVisitId,
             firstNegativeVisitDate: new DateOnly(2026, 7, 12),
             extensionDays: 4,
+            effectiveEndDate: new DateOnly(2026, 8, 3),
             lastCountedVisitAt: new DateTimeOffset(
                 2026,
                 7,
@@ -167,7 +183,13 @@ public sealed class MembershipStateQueryContractsTests
                 8,
                 30,
                 0,
-                TimeSpan.Zero),
+                TimeSpan.Zero));
+
+        return new MembershipStateReadModel(
+            MembershipId,
+            ClientId,
+            issueTerms,
+            calculatedState,
             asOfDate: asOfDate ?? AsOfDate);
     }
 

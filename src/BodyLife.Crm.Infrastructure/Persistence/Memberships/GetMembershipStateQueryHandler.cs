@@ -97,26 +97,26 @@ public sealed class GetMembershipStateQueryHandler(
                 row.DurationDaysSnapshot,
                 row.VisitsLimitSnapshot,
                 new Money(row.PriceAmountSnapshot, row.PriceCurrencySnapshot));
-            _ = MembershipIssueTerms.FromIssuedSnapshot(
+            var issueTerms = MembershipIssueTerms.FromIssuedSnapshot(
                 row.MembershipTypeId,
                 snapshot,
                 row.StartDate,
                 row.BaseEndDate);
-            readModel = new MembershipStateReadModel(
-                row.MembershipId,
-                row.ClientId,
-                row.MembershipTypeId,
-                snapshot,
-                row.StartDate,
-                row.BaseEndDate,
-                row.EffectiveEndDate,
+            var calculatedState = MembershipCalculatedState.FromStoredCache(
+                issueTerms,
                 row.CountedVisits,
                 row.RemainingVisits,
                 row.NegativeBalance,
                 row.FirstNegativeVisitId,
                 row.FirstNegativeVisitDate,
                 row.ExtensionDays,
-                row.LastCountedVisitAt,
+                row.EffectiveEndDate,
+                row.LastCountedVisitAt);
+            readModel = new MembershipStateReadModel(
+                row.MembershipId,
+                row.ClientId,
+                issueTerms,
+                calculatedState,
                 query.AsOfDate);
         }
         catch (ArgumentException)

@@ -5,35 +5,30 @@ public sealed record MembershipStateReadModel
     public MembershipStateReadModel(
         Guid membershipId,
         Guid clientId,
-        Guid membershipTypeId,
-        IssuedMembershipSnapshot snapshot,
-        DateOnly startDate,
-        DateOnly baseEndDate,
-        DateOnly effectiveEndDate,
-        int countedVisits,
-        int remainingVisits,
-        int negativeBalance,
-        Guid? firstNegativeVisitId,
-        DateOnly? firstNegativeVisitDate,
-        int extensionDays,
-        DateTimeOffset? lastCountedVisitAt,
+        MembershipIssueTerms issueTerms,
+        MembershipCalculatedState calculatedState,
         DateOnly asOfDate)
     {
+        ArgumentNullException.ThrowIfNull(issueTerms);
+        ArgumentNullException.ThrowIfNull(calculatedState);
+
         MembershipId = membershipId;
         ClientId = clientId;
-        MembershipTypeId = membershipTypeId;
-        Snapshot = snapshot;
-        StartDate = startDate;
-        BaseEndDate = baseEndDate;
-        EffectiveEndDate = effectiveEndDate;
-        CountedVisits = countedVisits;
-        RemainingVisits = remainingVisits;
-        NegativeBalance = negativeBalance;
-        FirstNegativeVisitId = firstNegativeVisitId;
-        FirstNegativeVisitDate = firstNegativeVisitDate;
-        ExtensionDays = extensionDays;
-        LastCountedVisitAt = lastCountedVisitAt;
+        MembershipTypeId = issueTerms.MembershipTypeId;
+        Snapshot = issueTerms.Snapshot;
+        StartDate = issueTerms.StartDate;
+        BaseEndDate = issueTerms.BaseEndDate;
+        EffectiveEndDate = calculatedState.EffectiveEndDate;
+        CountedVisits = calculatedState.CountedVisits;
+        RemainingVisits = calculatedState.RemainingVisits;
+        NegativeBalance = calculatedState.NegativeBalance;
+        FirstNegativeVisitId = calculatedState.FirstNegativeVisitId;
+        FirstNegativeVisitDate = calculatedState.FirstNegativeVisitDate;
+        ExtensionDays = calculatedState.ExtensionDays;
+        LastCountedVisitAt = calculatedState.LastCountedVisitAt;
         AsOfDate = asOfDate;
+        Warnings = Array.AsReadOnly(
+            MembershipWarningRules.Derive(calculatedState, asOfDate).ToArray());
     }
 
     public Guid MembershipId { get; }
@@ -65,6 +60,8 @@ public sealed record MembershipStateReadModel
     public DateTimeOffset? LastCountedVisitAt { get; }
 
     public DateOnly AsOfDate { get; }
+
+    public IReadOnlyList<MembershipWarning> Warnings { get; }
 
     public bool IsActiveByDate => MembershipDateRules.IsActiveByDate(
         AsOfDate,

@@ -85,6 +85,20 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
         Assert.Null(state.LastCountedVisitAt);
         Assert.Equal(ExtendedEndDate, state.AsOfDate);
         Assert.True(state.IsActiveByDate);
+        Assert.All(
+            results,
+            result => Assert.Collection(
+                result.State!.Warnings,
+                warning =>
+                {
+                    Assert.Equal(MembershipWarningCodes.NegativeBalance, warning.Code);
+                    Assert.Equal(MembershipWarningSeverity.Danger, warning.Severity);
+                },
+                warning =>
+                {
+                    Assert.Equal(MembershipWarningCodes.EndingSoon, warning.Code);
+                    Assert.Equal(MembershipWarningSeverity.Warning, warning.Severity);
+                }));
         Assert.All(results, result => Assert.Empty(result.AllowedActions.Items));
         Assert.Equal(
             cacheBefore,
@@ -97,6 +111,56 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
             0L,
             await database.ExecuteScalarAsync<long>(
                 "select count(*) from bodylife.command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task WarningsUseCanonicalCacheStateAndRequestedAsOfDate()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var owner = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
+        var membership = await SeedMembershipAsync(database, owner.AccountId.Value);
+        await new MembershipStateCacheRebuilder(
+            dbContext,
+            new FixedTimeProvider(TestNow)).RebuildAsync(membership.MembershipId);
+        var cacheBefore = await ReadCacheMetadataAsync(database, membership.MembershipId);
+        var handler = CreateHandler(dbContext);
+
+        var outsideEndingSoon = await handler.ExecuteAsync(
+            new GetMembershipStateQuery(
+                owner,
+                membership.MembershipId,
+                TestBaseEndDate.AddDays(-8)),
+            CancellationToken.None);
+        var endingSoon = await handler.ExecuteAsync(
+            new GetMembershipStateQuery(
+                owner,
+                membership.MembershipId,
+                TestBaseEndDate.AddDays(-7)),
+            CancellationToken.None);
+        var expired = await handler.ExecuteAsync(
+            new GetMembershipStateQuery(
+                owner,
+                membership.MembershipId,
+                TestBaseEndDate.AddDays(1)),
+            CancellationToken.None);
+
+        AssertSuccessful(outsideEndingSoon);
+        Assert.Equal(
+            [MembershipWarningCodes.LowRemaining],
+            outsideEndingSoon.State!.Warnings.Select(warning => warning.Code));
+        AssertSuccessful(endingSoon);
+        Assert.Equal(
+            [MembershipWarningCodes.LowRemaining, MembershipWarningCodes.EndingSoon],
+            endingSoon.State!.Warnings.Select(warning => warning.Code));
+        AssertSuccessful(expired);
+        Assert.Equal(
+            [MembershipWarningCodes.ExpiredByDate, MembershipWarningCodes.LowRemaining],
+            expired.State!.Warnings.Select(warning => warning.Code));
+        Assert.Equal(
+            cacheBefore,
+            await ReadCacheMetadataAsync(database, membership.MembershipId));
     }
 
     [PostgreSqlFact]
@@ -216,7 +280,7 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task MissingAndStaleCacheReturnRecalculationFailureWithoutRepairingOnRead()
+    public async Task MissingStaleAndInconsistentCacheFailWithoutRepairingOnRead()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -261,6 +325,30 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
             0L,
             await database.ExecuteScalarAsync<long>(
                 "select count(*) from bodylife.command_idempotency_keys"));
+
+        await SetCacheVersionAsync(
+            database,
+            membership.MembershipId,
+            MembershipStateCacheRebuilder.CurrentRecalculationVersion);
+        await SetCacheEffectiveEndDateAsync(
+            database,
+            membership.MembershipId,
+            TestBaseEndDate.AddDays(1));
+        var inconsistentCacheBefore = await ReadCacheMetadataAsync(
+            database,
+            membership.MembershipId);
+
+        var inconsistentCache = await handler.ExecuteAsync(
+            new GetMembershipStateQuery(owner, membership.MembershipId, TestBaseEndDate),
+            CancellationToken.None);
+
+        Assert.Equal(GetMembershipStateStatus.RecalculationFailed, inconsistentCache.Status);
+        Assert.Equal("recalculation_failed", inconsistentCache.ErrorCode);
+        Assert.Null(inconsistentCache.State);
+        Assert.Empty(inconsistentCache.AllowedActions.Items);
+        Assert.Equal(
+            inconsistentCacheBefore,
+            await ReadCacheMetadataAsync(database, membership.MembershipId));
     }
 
     [Fact]
@@ -596,6 +684,28 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
 
+    private static async Task SetCacheEffectiveEndDateAsync(
+        PostgreSqlTestDatabase database,
+        Guid membershipId,
+        DateOnly effectiveEndDate)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.membership_state_cache
+            set effective_end_date = @effective_end_date
+            where membership_id = @membership_id
+            """;
+        command.Parameters.AddWithValue(
+            "effective_end_date",
+            NpgsqlDbType.Date,
+            effectiveEndDate);
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
     private static async Task<CacheMetadata> ReadCacheMetadataAsync(
         PostgreSqlTestDatabase database,
         Guid membershipId)
@@ -606,7 +716,8 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
         command.CommandText =
             """
             select recalculated_at,
-                   recalculation_version
+                   recalculation_version,
+                   effective_end_date
             from bodylife.membership_state_cache
             where membership_id = @membership_id
             """;
@@ -615,7 +726,8 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
         Assert.True(await reader.ReadAsync());
         return new CacheMetadata(
             reader.GetFieldValue<DateTimeOffset>(0),
-            reader.GetInt32(1));
+            reader.GetInt32(1),
+            reader.GetFieldValue<DateOnly>(2));
     }
 
     private static string MapAccountKind(AccountKind accountKind)
@@ -646,7 +758,8 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
 
     private sealed record CacheMetadata(
         DateTimeOffset RecalculatedAt,
-        int RecalculationVersion);
+        int RecalculationVersion,
+        DateOnly EffectiveEndDate);
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {

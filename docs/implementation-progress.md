@@ -2548,3 +2548,47 @@ Commits:
 Next recommended step:
 
 - Project the Step 67 warnings through only the public `GetMembershipState` read path: add Memberships-owned canonical cache-state rehydration/factory support, expose immutable `Warnings` on `MembershipStateReadModel`, and update the PostgreSQL handler plus focused core/infrastructure tests. Keep extension explanation rows, client/current selection, profile composition and UI outside that step.
+
+## Step 68 - Membership warning projection through canonical state query
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 by projecting the Step 67 Memberships-owned warnings through only the existing direct-id `GetMembershipState` read path.
+- Rehydrate `membership_state_cache` values through a Memberships domain factory before constructing a public read model, so Infrastructure does not recreate balance or date invariants.
+- Use validated `MembershipIssueTerms` as the single source for membership type identity, immutable snapshot and inclusive start/base-end dates in the read model.
+- Derive warnings at read time from the rehydrated canonical state plus the explicit query `as_of` date; do not persist warnings or derive thresholds in Infrastructure, profile, UI or Reports.
+- Keep the query read-only and return the existing `recalculation_failed` result when a current-version cache row is internally inconsistent instead of repairing it during a read.
+- Keep extension explanation rows, client/current-membership selection, profile composition, IssueMembership behavior and UI outside this step.
+
+Scope:
+
+- Add `MembershipCalculatedState.FromStoredCache` with required issue terms and validation for non-negative counted visits, signed remaining/negative balance consistency, non-negative extension days, supported calendar range and effective-end-date consistency.
+- Refactor `MembershipStateReadModel` to consume canonical `MembershipIssueTerms` plus `MembershipCalculatedState` and expose a defensive read-only `Warnings` collection.
+- Update `GetMembershipStateQueryHandler` to rehydrate cache values through the Memberships factory and project server-owned warnings without adding a query write or dependency-registration change.
+- Add eight focused core stored-cache factory cases covering complete rehydration, numeric invariant failures, effective-end drift, calendar overflow and missing issue terms.
+- Extend the public query contract tests to prove warning projection, danger ordering, immutable warning values/collection and unchanged stable state fields.
+- Extend the PostgreSQL query suite to prove accepted actors receive warnings, `as_of` changes ending/expired warnings without cache writes, and an inconsistent current-version cache returns `recalculation_failed` without repair.
+- Add no EF record/configuration/migration, persisted warning field, extension explanation row, client/profile composition or UI change.
+
+Validation:
+
+- Focused `MembershipCalculatedStateStoredCacheTests|MembershipStateQueryContractsTests` validation passed all 16 cases.
+- Focused `PostgreSqlGetMembershipStateQueryTests` validation passed all 7 cases against Docker PostgreSQL.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 70 tests.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 83 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this read-only projection step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 124 core tests, 35 web tests, 190 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713111435_AddMembershipOpeningStates`.
+- `graphify update .` completed the structural rebuild with 4166 nodes, 8008 edges and 545 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): project state warnings`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the derived `membership_extension_days` PostgreSQL storage foundation required by Milestone 5: EF record/configuration, reviewable migration and focused PostgreSQL constraint/index/storage tests. Do not generate explanation rows, change recalculation/query behavior, add source-module rules or build profile/UI in that storage-only step.
