@@ -491,7 +491,5 @@
   "489": "StaffAccountAuditActions.cs",
   "490": "PostgreSqlDeactivateMembershipTypeCommandTests.cs",
   "491": "PostgreSqlEditMembershipTypeCommandTests.cs",
-  "492": "PostgreSqlUpdateClientCommandTests.cs",
-  "493": ".AddBodyLifePersistence",
-  "494": "MembershipTypeAuditActions.cs"
+  "493": ".AddBodyLifePersistence"
 }
