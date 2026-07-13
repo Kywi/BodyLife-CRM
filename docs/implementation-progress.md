@@ -2721,3 +2721,45 @@ Commits:
 Next recommended step:
 
 - Add only the Memberships-owned domain operation that applies a canonical `MembershipExtensionCalculation` to an already calculated membership baseline and derives `extension_days` plus `effective_end_date` with calendar-overflow checks, with focused tests. Keep opening-state cutover policy, PostgreSQL/cache orchestration, source loading, query explanation projection and UI outside that domain-only step.
+
+## Step 72 - Membership extension state derivation
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the Memberships-owned state transition between the Step 70 canonical extension calculation and a future central recalculation orchestrator.
+- Derive `extension_days` from the calculation's distinct active-date union and derive `effective_end_date` from the immutable issued `base_end_date`; never accept a caller-edited effective date.
+- Preserve counted visits, signed remaining visits, negative balance, first-negative metadata and last-counted-visit metadata from the already calculated baseline without moving those formulas into extension processing.
+- Require an extension-free baseline that still matches the issued base end date, preventing accidental compounding, stale-cache reuse or silent replacement of opening-state extension knowledge.
+- Keep overlapping and inactive explanation-row semantics inside the canonical `MembershipExtensionCalculation`; the state operation consumes only its accepted union count.
+- Protect the supported `DateOnly` calendar boundary and reject overflow rather than wrapping or truncating an effective end date.
+- Keep opening-state cutover policy, PostgreSQL/cache orchestration, source loading, query explanation projection and UI outside this domain-only step.
+
+Scope:
+
+- Add `MembershipStateCalculator.ApplyExtensionCalculation` with required issue terms, baseline and calculation inputs.
+- Validate that the baseline has zero extension days and an effective end matching the supplied issue terms before applying the canonical calculation.
+- Return a new immutable `MembershipCalculatedState` that preserves all non-extension fields and sets only canonical extension days and derived effective end date.
+- Reject calendar overflow with stable `extensionCalculation` parameter metadata while allowing an extension to reach `DateOnly.MaxValue` exactly.
+- Add eight focused core cases covering overlapping active and inactive attribution, preservation of visit/negative metadata, baseline immutability, empty and inactive-only calculations, inclusive active-end behavior, exact calendar boundary, overflow, missing inputs, already-extended baseline and mismatched issue terms.
+- Add no new contract type, EF record/configuration/migration, PostgreSQL/cache writer integration, opening-state policy, query/read-model property, source-module behavior or UI change.
+
+Validation:
+
+- Focused `MembershipStateExtensionCalculationTests` validation passed all 8 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 91 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` built successfully and reported no model drift; this domain-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 145 core tests, 35 web tests, 201 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713144951_AddMembershipExtensionDays`.
+- `graphify update .` completed the structural rebuild with 4317 nodes, 8362 edges and 569 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): apply extension calculations`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the immutable Memberships-owned extension explanation item and collection to the public `GetMembershipState` read-model contract, with focused core contract tests for overlapping/inactive attribution shape, defensive collection copying and failure-result non-leakage. Keep PostgreSQL loading, cache/explanation consistency policy, client/profile composition and UI outside that contract-only step.

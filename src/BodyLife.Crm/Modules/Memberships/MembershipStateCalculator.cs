@@ -64,6 +64,44 @@ public static class MembershipStateCalculator
             lastCountedVisitAt: null);
     }
 
+    public static MembershipCalculatedState ApplyExtensionCalculation(
+        MembershipIssueTerms? issueTerms,
+        MembershipCalculatedState? baseline,
+        MembershipExtensionCalculation? extensionCalculation)
+    {
+        ArgumentNullException.ThrowIfNull(issueTerms);
+        ArgumentNullException.ThrowIfNull(baseline);
+        ArgumentNullException.ThrowIfNull(extensionCalculation);
+
+        if (baseline.ExtensionDays != 0
+            || baseline.EffectiveEndDate != issueTerms.BaseEndDate)
+        {
+            throw new ArgumentException(
+                "Membership baseline must be extension-free and match the issued base end date.",
+                nameof(baseline));
+        }
+
+        var effectiveEndDayNumber = (long)issueTerms.BaseEndDate.DayNumber
+            + extensionCalculation.ExtensionDays;
+        if (effectiveEndDayNumber > DateOnly.MaxValue.DayNumber)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(extensionCalculation),
+                extensionCalculation.ExtensionDays,
+                "Extension days exceed the supported calendar range.");
+        }
+
+        return new MembershipCalculatedState(
+            baseline.CountedVisits,
+            baseline.RemainingVisits,
+            baseline.NegativeBalance,
+            baseline.FirstNegativeVisitId,
+            baseline.FirstNegativeVisitDate,
+            extensionCalculation.ExtensionDays,
+            DateOnly.FromDayNumber((int)effectiveEndDayNumber),
+            baseline.LastCountedVisitAt);
+    }
+
     private static int ResolveExtensionDays(
         MembershipIssueTerms issueTerms,
         MembershipOpeningState openingState)
