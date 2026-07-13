@@ -2182,3 +2182,50 @@ Commits:
 Next recommended step:
 
 - Add only the canonical `membership_opening_states` PostgreSQL source-fact schema, active-row partial uniqueness, metadata/check constraints, migration and storage tests. Keep backfill commands, recalculation integration, adjustments and UI outside that step.
+
+## Step 60 - Membership opening-state PostgreSQL storage
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the canonical PostgreSQL source-fact storage for honest membership opening states when active historical data is incomplete.
+- Preserve the accepted backfill boundary: store declared state and its source/accountability metadata instead of generating synthetic visits or directly patching `membership_state_cache`.
+- Keep signed declared remaining visits and enforce a formula-consistent declared negative balance without moving broader recalculation formulas into persistence.
+- Allow known effective-end and extension values to remain nullable when the source cannot honestly establish them; when supplied, constrain extension days to non-negative values and the known end to the opening date or later.
+- Require a non-empty source reference and reason, recorded actor/session, recorded time, explicit backfill/fallback/import origin and lifecycle status.
+- Permit historical canceled/corrected rows while enforcing at most one active opening state per membership with a PostgreSQL partial unique index.
+- Keep opening-state commands, permissions, idempotency, business audit, cache recalculation integration, adjustments, entry-batch storage and UI outside this storage-only step.
+
+Scope:
+
+- Add internal `MembershipOpeningStateRecord` and assembly-discovered EF configuration under the Memberships persistence boundary.
+- Store `opening_as_of_date`, signed `declared_remaining_visits`, consistent `declared_negative_balance`, optional known effective end/extension, source reference, reason, actor/session, `recorded_at`, entry origin, optional future batch id and status.
+- Restrict entry origin to `manual_backfill`, `paper_fallback` or reserved `future_import`; ordinary `normal` facts cannot masquerade as opening states.
+- Add restrictive foreign keys to `issued_memberships`, `accounts` and `sessions`; leave `entry_batch_id` without a premature foreign key until canonical batch storage exists.
+- Add checks for declared negative consistency, optional extension/date validity, non-empty source/reason and narrow origin/status values.
+- Add partial unique index `ux_membership_opening_states_active_membership` and a descending membership timeline index, plus actor/session FK indexes.
+- Generate reversible migration `20260713111435_AddMembershipOpeningStates` and update the EF model snapshot.
+- Add six PostgreSQL-backed tests covering migration shape, metadata round-trip, optional known state, checks, active-row lifecycle uniqueness and restrictive relationships.
+
+Validation:
+
+- Release infrastructure build passed with 0 warnings and 0 errors after adding the EF record/configuration.
+- Focused `PostgreSqlMembershipOpeningStatesStorageTests` validation passed all 6 tests against Docker PostgreSQL.
+- Idempotent migration SQL from `20260713100046_AddMembershipStateCache` through `20260713111435_AddMembershipOpeningStates` was generated at `/tmp/bodylife-membership-opening-states.sql` and reviewed for the expected table, seven checks, three restrictive foreign keys, timeline/FK indexes, active partial uniqueness and migration-history transaction.
+- Targeted whitespace formatting normalized the EF-generated migration files; final solution formatting/analyzer validation passed.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+- `scripts/apply-migrations.sh` applied `20260713111435_AddMembershipOpeningStates` to the local Docker Development database through the normal forward EF workflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 74 core tests, 35 web tests, 169 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713111435_AddMembershipOpeningStates`.
+- The Development app was restarted from the validated Release build and `/health/ready` returned `200 OK` against Docker PostgreSQL.
+- `graphify update .` completed the structural rebuild with 3889 nodes, 7271 edges and 532 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): add opening state storage`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the Memberships-owned opening-state domain contract and calculation behavior for starting from a declared as-of state, with focused domain tests. Keep the command/persistence writer, authorization, idempotency, audit, cache rebuild integration, adjustments and UI outside that step.
