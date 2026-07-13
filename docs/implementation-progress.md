@@ -2940,3 +2940,48 @@ Commits:
 Next recommended step:
 
 - Add only the immutable `PreviewIssueMembership` public query contract and Memberships-owned pure preview policy for snapshot/base-end-date output, permission outcome and explicit existing-negative-state decision requirements, with focused core tests. Keep PostgreSQL loading, `IssueMembership`, payment integration, idempotency, audit, profile composition and UI outside that contract-only step.
+
+## Step 77 - Membership issue preview contract and policy
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the public advisory `PreviewIssueMembership` shape and Memberships-owned pure policy required before implementing its PostgreSQL handler or the state-changing issue command.
+- Build the proposed snapshot through `MembershipIssueTerms.FromActiveMembershipType`, preserving the immutable MembershipType copy and accepted inclusive `base_end_date = start_date + duration_days - 1 day` rule.
+- Build expected initial state through `MembershipStateCalculator.CalculateInitial`; the preview does not reproduce Memberships formulas or edit effective end date directly.
+- Keep existing negative state independently visible from the new membership's expected initial state, so a payment or fresh snapshot cannot silently hide old negative visits.
+- Require an explicit decision whenever existing negative state is present; a missing decision returns a successful advisory preview that cannot proceed to issue.
+- Expose `leave visible`, `cover with new membership` and `record explicit closure` as the three documented concepts while marking only `leave visible` available now. The vertical slice explicitly defers negative coverage and one-off closure, so selecting either deferred option cannot proceed.
+- Allow an unknown first-negative date for honest opening-state/backfill history while preserving the positive negative balance and warning.
+- Keep authorization execution, PostgreSQL reads, multiple-active-membership resolution, `IssueMembership`, payment integration, idempotency, audit, profile composition and UI outside this contract-only step.
+
+Scope:
+
+- Add `PreviewIssueMembershipQuery`, result/status contracts and stable failure factories for permission, missing client/type, inactive type, validation and unavailable canonical state.
+- Add immutable `MembershipIssuePreview` output with snapshot, proposed/base dates, expected initial state, existing negative context, server-owned warning, decision options and explicit `RequiresNegativeHandlingDecision`/`CanProceedToIssue` outcomes.
+- Add validated `MembershipIssueNegativeContext`, `MembershipNegativeHandlingDecision` and immutable option metadata.
+- Add `MembershipIssuePreviewPolicy.Create` to copy active catalog terms, derive initial state and enforce the currently accepted negative-decision capability boundary.
+- Add stable `memberships.issue` Admin/Owner permission intent to `MembershipActionKeys` for future handler projection.
+- Add 14 focused core cases covering query shape, immutable snapshot/date/initial-state output, catalog independence, negative warning/decision requirements, deferred options, unknown first-negative date, validation/calendar boundaries, permission projection and failure non-leakage.
+- Add no query handler/DI registration, EF record/configuration/migration, PostgreSQL read, issue command, payment/closure fact, idempotency row, business audit event, profile integration or UI change.
+
+Validation:
+
+- The first focused attempt stopped before test execution on nullable analysis in one test assertion; the assertion was changed to a typed non-null capture and no product behavior failed.
+- Focused `MembershipIssuePreviewContractsTests` validation then passed all 14 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 108 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this contract/domain-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 162 core tests, 35 web tests, 214 PostgreSQL infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `graphify update .` completed the structural rebuild with 4489 nodes, 8787 edges and 568 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): define issue preview policy`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the PostgreSQL `PreviewIssueMembership` query handler: authorize the canonical actor/session, validate and load the client plus active MembershipType, project zero or one unambiguous existing negative membership state into the Step 77 policy, and fail clearly when multiple negative candidates require a product selection rule. Add focused PostgreSQL tests and scoped DI registration. Keep `IssueMembership`, payments/closure, idempotency, audit, profile composition and UI outside that handler-only step.
