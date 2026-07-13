@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783942898.1626449,
-    "ast_hash": "691b3e57abbc8c3e2f98c82b689eb3f7",
+    "mtime": 1783944523.7674818,
+    "ast_hash": "b734d5aa31768389bdd6fe5ccb9f5acd",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1912,6 +1912,21 @@
   "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipOpeningStateTests.cs": {
     "mtime": 1783942617.8601356,
     "ast_hash": "ca1d472dd9efc346ed7dcbbcf9fad810",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/CreateMembershipOpeningStateCommand.cs": {
+    "mtime": 1783946068.514353,
+    "ast_hash": "e63feafbe0f81144e6d1ceb36b7edb86",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipActionKeys.cs": {
+    "mtime": 1783946068.514353,
+    "ast_hash": "f49b400b53f92fdb48ebd2fc0e01dedd",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipOpeningStateCommandContractsTests.cs": {
+    "mtime": 1783946068.514353,
+    "ast_hash": "9fa7b58fc1e0f11bbda7edc5e8fbfe44",
     "semantic_hash": ""
   }
 }
