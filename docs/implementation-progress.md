@@ -2592,3 +2592,46 @@ Commits:
 Next recommended step:
 
 - Add only the derived `membership_extension_days` PostgreSQL storage foundation required by Milestone 5: EF record/configuration, reviewable migration and focused PostgreSQL constraint/index/storage tests. Do not generate explanation rows, change recalculation/query behavior, add source-module rules or build profile/UI in that storage-only step.
+
+## Step 69 - Membership extension-day PostgreSQL storage
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the accepted `membership_extension_days` derived-storage foundation needed for explainable extension recalculation.
+- Preserve source attribution per calendar date so overlapping sources remain visible while later Memberships recalculation counts unique active dates instead of summing rows.
+- Treat extension rows like `membership_state_cache`: rebuildable derived data that can be deleted/recreated independently and cascades with its issued membership, not a new source-of-truth workflow.
+- Keep source-type values extensible until the owning Freezes, NonWorkingDays and adjustment source contracts define canonical storage literals; require only non-empty source metadata in this storage step.
+- Add indexes for active membership/date union reads and source lookup without adding report formulas or a persisted aggregate beside the existing Memberships-owned cache.
+- Keep row generation/rebuild behavior, domain union calculation, `GetMembershipState` explanation projection, source-module tables/commands, profile composition and UI outside this step.
+
+Scope:
+
+- Add `MembershipExtensionDayRecord` with id, membership id, extension date, source type/id/label, active marker and recalculation timestamp.
+- Add EF configuration for required date/source metadata, 64-character source type, 500-character source label and non-empty source type/label checks.
+- Add a cascade FK to `issued_memberships`, a unique `(membership_id, extension_date, source_type, source_id)` source-day identity, a partial active `(membership_id, extension_date)` index and a `(source_type, source_id)` lookup index.
+- Generate and review migration `20260713144951_AddMembershipExtensionDays` plus its designer and model snapshot update; the migration creates only the expected derived table, checks, FK and indexes.
+- Add four PostgreSQL storage cases covering exact schema/index shape, overlapping sources with distinct active-date counting, metadata/identity constraint failures, unknown membership rejection, independent delete/rebuild and membership cascade behavior.
+- Add no domain calculator, cache recalculation write, source-type allowlist, query/read-model property, business audit entry, profile integration or UI change.
+
+Validation:
+
+- Focused `PostgreSqlMembershipExtensionDaysStorageTests` validation passed all 4 cases against Docker PostgreSQL.
+- Wider `FullyQualifiedName~Membership|FullyQualifiedName~PostgreSqlMigrationTests` PostgreSQL regression passed all 88 tests.
+- Generated migration SQL was reviewed and contains only the expected table, two checks, cascade FK, two ordinary indexes, one unique index and migration-history row.
+- Solution formatting/analyzer verification passed after removing the BOM emitted by `dotnet-ef` from the non-generated migration class.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 124 core tests, 35 web tests, 194 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713144951_AddMembershipExtensionDays`.
+- `dotnet-ef database update 20260713144951_AddMembershipExtensionDays` applied the migration successfully to the local Docker development database `bodylife_crm_dev`.
+- `graphify update .` completed the structural rebuild with 4218 nodes, 8139 edges and 551 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): add extension day storage`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the Memberships-owned domain contract and deterministic union calculator for active extension source dates, with focused tests for inclusive ranges, overlapping Freeze/NonWorkingDay/adjustment sources, inactive sources and stable explanation attribution. Keep PostgreSQL row generation, cache rebuild integration, source-module persistence, query projection and UI outside that domain-only step.
