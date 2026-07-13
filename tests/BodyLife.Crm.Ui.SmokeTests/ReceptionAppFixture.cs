@@ -149,6 +149,35 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().CountCreateMembershipTypeIdempotencyKeysAsync();
     }
 
+    public Task<MembershipTypeSmokeSnapshot> ReadMembershipTypeAsync(Guid membershipTypeId)
+    {
+        return RequireDatabase().ReadMembershipTypeAsync(membershipTypeId);
+    }
+
+    public Task AdvanceMembershipTypeForStaleTestAsync(
+        Guid membershipTypeId,
+        string canonicalName)
+    {
+        return RequireDatabase().AdvanceMembershipTypeForStaleTestAsync(
+            membershipTypeId,
+            canonicalName);
+    }
+
+    public Task<long> CountMembershipTypeEditAuditEntriesAsync(Guid membershipTypeId)
+    {
+        return RequireDatabase().CountMembershipTypeEditAuditEntriesAsync(membershipTypeId);
+    }
+
+    public Task<long> CountEditMembershipTypeIdempotencyKeysAsync(Guid membershipTypeId)
+    {
+        return RequireDatabase().CountEditMembershipTypeIdempotencyKeysAsync(membershipTypeId);
+    }
+
+    public Task<string?> ReadLatestMembershipTypeEditReasonAsync(Guid membershipTypeId)
+    {
+        return RequireDatabase().ReadLatestMembershipTypeEditReasonAsync(membershipTypeId);
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");

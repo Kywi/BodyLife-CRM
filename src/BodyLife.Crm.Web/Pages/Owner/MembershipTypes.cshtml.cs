@@ -14,7 +14,8 @@ public sealed class MembershipTypesModel(
     IBodyLifeQueryHandler<
         GetMembershipTypesForIssueQuery,
         GetMembershipTypesForIssueResult> getMembershipTypes,
-    IBodyLifeCommandHandler<CreateMembershipTypeCommand> createMembershipType)
+    IBodyLifeCommandHandler<CreateMembershipTypeCommand> createMembershipType,
+    IBodyLifeCommandHandler<EditMembershipTypeCommand> editMembershipType)
     : PageModel
 {
     [TempData]
@@ -27,12 +28,20 @@ public sealed class MembershipTypesModel(
     public CreateMembershipTypeFormViewModel CreateForm { get; private set; }
         = CreateMembershipTypeFormViewModel.New();
 
+    public IReadOnlyDictionary<Guid, EditMembershipTypeFormViewModel> EditForms { get; private set; }
+        = new Dictionary<Guid, EditMembershipTypeFormViewModel>();
+
+    public IReadOnlyList<CommandError> CatalogErrors { get; private set; } = [];
+
     public int ActiveCount => MembershipTypes.Count(membershipType => membershipType.IsActive);
 
     public int InactiveCount => MembershipTypes.Count - ActiveCount;
 
     public bool CanCreateCatalog =>
         AllowedActions.IsAllowed(MembershipTypeCatalogActionKeys.Create);
+
+    public bool CanEditCatalog =>
+        AllowedActions.IsAllowed(MembershipTypeCatalogActionKeys.Edit);
 
     public bool CanManageCatalog =>
         CanCreateCatalog
@@ -51,7 +60,12 @@ public sealed class MembershipTypesModel(
     {
         ArgumentNullException.ThrowIfNull(form);
 
-        var inputErrors = ValidateRepresentableInput(form, out var price);
+        var inputErrors = ValidateRepresentableInput(
+            form.DurationDays,
+            form.VisitsLimit,
+            form.PriceAmount,
+            form.PriceCurrency,
+            out var price);
         if (inputErrors.Count > 0)
         {
             return await RenderCreateErrorsAsync(form, inputErrors, cancellationToken);
@@ -91,7 +105,75 @@ public sealed class MembershipTypesModel(
         return await RenderCreateErrorsAsync(form, result.Errors, cancellationToken);
     }
 
-    private async Task<IActionResult> LoadCatalogAsync(CancellationToken cancellationToken)
+    public async Task<IActionResult> OnPostEditAsync(
+        EditMembershipTypeFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        var inputErrors = ValidateRepresentableInput(
+            form.DurationDays,
+            form.VisitsLimit,
+            form.PriceAmount,
+            form.PriceCurrency,
+            out var price);
+        if (inputErrors.Count > 0)
+        {
+            return await RenderEditErrorsAsync(
+                form,
+                inputErrors,
+                useCanonicalValues: false,
+                cancellationToken);
+        }
+
+        var command = new EditMembershipTypeCommand(
+            requestContextResolver.CreateCommandEnvelope(
+                idempotencyKey: form.IdempotencyKey,
+                reason: form.Reason),
+            form.MembershipTypeId,
+            form.ExpectedUpdatedAt,
+            form.Name ?? string.Empty,
+            form.DurationDays!.Value,
+            form.VisitsLimit!.Value,
+            price,
+            form.Comment);
+        var result = await editMembershipType.ExecuteAsync(command, cancellationToken);
+
+        if (result.Status == CommandStatus.Success)
+        {
+            if (result.PrimaryEntityId is not { } primaryEntity
+                || result.RereadTargetId is not { } rereadTarget
+                || primaryEntity != rereadTarget
+                || primaryEntity.Value != form.MembershipTypeId)
+            {
+                throw new InvalidOperationException(
+                    "EditMembershipType did not return the expected canonical reread target.");
+            }
+
+            OperationMessage = result.AuditEntryId is { } auditEntryId
+                ? $"Membership type updated. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
+                : "Membership type updated.";
+
+            return RedirectToPage();
+        }
+
+        if (result.Errors.Any(error => error.Code == CommandErrorCode.PermissionDenied))
+        {
+            return Forbid();
+        }
+
+        return await RenderEditErrorsAsync(
+            form,
+            result.Errors,
+            RequiresCanonicalEditRefresh(result.Errors),
+            cancellationToken);
+    }
+
+    private async Task<IActionResult> LoadCatalogAsync(
+        CancellationToken cancellationToken,
+        EditMembershipTypeFormInput? editSubmission = null,
+        IReadOnlyList<CommandError>? editErrors = null,
+        bool useCanonicalEditValues = false)
     {
         var actor = requestContextResolver.Require().Actor;
         var result = await getMembershipTypes.ExecuteAsync(
@@ -105,6 +187,7 @@ public sealed class MembershipTypesModel(
 
         MembershipTypes = result.Items;
         AllowedActions = result.AllowedActions;
+        BuildEditForms(editSubmission, editErrors, useCanonicalEditValues);
 
         return Page();
     }
@@ -118,13 +201,78 @@ public sealed class MembershipTypesModel(
         return await LoadCatalogAsync(cancellationToken);
     }
 
+    private Task<IActionResult> RenderEditErrorsAsync(
+        EditMembershipTypeFormInput form,
+        IReadOnlyList<CommandError> errors,
+        bool useCanonicalValues,
+        CancellationToken cancellationToken)
+    {
+        return LoadCatalogAsync(
+            cancellationToken,
+            form,
+            errors,
+            useCanonicalValues);
+    }
+
+    private void BuildEditForms(
+        EditMembershipTypeFormInput? editSubmission,
+        IReadOnlyList<CommandError>? editErrors,
+        bool useCanonicalValues)
+    {
+        CatalogErrors = [];
+
+        if (!CanEditCatalog)
+        {
+            EditForms = new Dictionary<Guid, EditMembershipTypeFormViewModel>();
+            return;
+        }
+
+        var forms = MembershipTypes.ToDictionary(
+            membershipType => membershipType.MembershipTypeId,
+            membershipType => EditMembershipTypeFormViewModel.FromCatalog(membershipType));
+
+        if (editSubmission is not null && editErrors is not null)
+        {
+            var canonicalMembershipType = MembershipTypes.SingleOrDefault(
+                membershipType => membershipType.MembershipTypeId == editSubmission.MembershipTypeId);
+
+            if (canonicalMembershipType is null)
+            {
+                CatalogErrors = editErrors.ToArray();
+            }
+            else
+            {
+                forms[editSubmission.MembershipTypeId] = useCanonicalValues
+                    ? EditMembershipTypeFormViewModel.FromCatalog(
+                        canonicalMembershipType,
+                        editErrors,
+                        isOpen: true)
+                    : EditMembershipTypeFormViewModel.FromSubmission(editSubmission, editErrors);
+            }
+        }
+
+        EditForms = forms;
+    }
+
+    private static bool RequiresCanonicalEditRefresh(IReadOnlyList<CommandError> errors)
+    {
+        return errors.Any(error => error.Code is
+            CommandErrorCode.StaleState
+            or CommandErrorCode.ConcurrencyConflict
+            or CommandErrorCode.NotFound
+            or CommandErrorCode.DuplicateSubmission);
+    }
+
     private static IReadOnlyList<CommandError> ValidateRepresentableInput(
-        CreateMembershipTypeFormInput form,
+        int? durationDays,
+        int? visitsLimit,
+        decimal? priceAmount,
+        string? priceCurrency,
         out Money price)
     {
         var errors = new List<CommandError>();
 
-        if (form.DurationDays is null)
+        if (durationDays is null)
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
@@ -132,7 +280,7 @@ public sealed class MembershipTypesModel(
                 "durationDays"));
         }
 
-        if (form.VisitsLimit is null)
+        if (visitsLimit is null)
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
@@ -140,14 +288,14 @@ public sealed class MembershipTypesModel(
                 "visitsLimit"));
         }
 
-        if (form.PriceAmount is null)
+        if (priceAmount is null)
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
                 "Price amount must be a valid number.",
                 "price.amount"));
         }
-        else if (form.PriceAmount < 0)
+        else if (priceAmount < 0)
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
@@ -155,7 +303,7 @@ public sealed class MembershipTypesModel(
                 "price.amount"));
         }
 
-        if (string.IsNullOrWhiteSpace(form.PriceCurrency))
+        if (string.IsNullOrWhiteSpace(priceCurrency))
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
@@ -169,7 +317,7 @@ public sealed class MembershipTypesModel(
             return errors;
         }
 
-        price = new Money(form.PriceAmount!.Value, form.PriceCurrency!);
+        price = new Money(priceAmount!.Value, priceCurrency!);
         return [];
     }
 

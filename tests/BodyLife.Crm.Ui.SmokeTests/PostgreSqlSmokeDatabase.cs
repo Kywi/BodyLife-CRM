@@ -164,6 +164,118 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             """);
     }
 
+    public async Task<MembershipTypeSmokeSnapshot> ReadMembershipTypeAsync(
+        Guid membershipTypeId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                name,
+                duration_days,
+                visits_limit,
+                price_amount,
+                price_currency,
+                is_active,
+                comment,
+                created_at,
+                updated_at,
+                deactivated_at
+            from bodylife.membership_types
+            where id = @membership_type_id
+            """;
+        command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException("The smoke membership type was not found.");
+        }
+
+        return new MembershipTypeSmokeSnapshot(
+            reader.GetString(0),
+            reader.GetInt32(1),
+            reader.GetInt32(2),
+            reader.GetDecimal(3),
+            reader.GetString(4),
+            reader.GetBoolean(5),
+            reader.IsDBNull(6) ? null : reader.GetString(6),
+            reader.GetFieldValue<DateTime>(7),
+            reader.GetFieldValue<DateTime>(8),
+            reader.IsDBNull(9) ? null : reader.GetFieldValue<DateTime>(9));
+    }
+
+    public async Task AdvanceMembershipTypeForStaleTestAsync(
+        Guid membershipTypeId,
+        string canonicalName)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.membership_types
+            set name = @name,
+                updated_at = updated_at + interval '1 hour'
+            where id = @membership_type_id
+            """;
+        command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+        command.Parameters.AddWithValue("name", canonicalName);
+        var updatedRows = await command.ExecuteNonQueryAsync();
+
+        if (updatedRows != 1)
+        {
+            throw new InvalidOperationException(
+                $"Expected to advance one smoke membership type, but updated {updatedRows} rows.");
+        }
+    }
+
+    public Task<long> CountMembershipTypeEditAuditEntriesAsync(Guid membershipTypeId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries
+            where action_type = 'membership_type.edited'
+              and entity_id = @membership_type_id
+            """,
+            "membership_type_id",
+            membershipTypeId);
+    }
+
+    public Task<long> CountEditMembershipTypeIdempotencyKeysAsync(Guid membershipTypeId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'EditMembershipType'
+              and primary_entity_id = @membership_type_id
+            """,
+            "membership_type_id",
+            membershipTypeId);
+    }
+
+    public async Task<string?> ReadLatestMembershipTypeEditReasonAsync(Guid membershipTypeId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select reason
+            from bodylife.business_audit_entries
+            where action_type = 'membership_type.edited'
+              and entity_id = @membership_type_id
+            order by recorded_at desc, id desc
+            limit 1
+            """;
+        command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+        return await command.ExecuteScalarAsync() as string;
+    }
+
     public async Task<int> ExpireSessionAsync(string deviceLabel)
     {
         await using var connection = new NpgsqlConnection(ConnectionString);
@@ -632,6 +744,20 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             ?? throw new InvalidOperationException("The smoke evidence query returned no value."));
     }
 
+    private async Task<long> CountRowsAsync(
+        string commandText,
+        string parameterName,
+        Guid entityId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = commandText;
+        command.Parameters.AddWithValue(parameterName, entityId);
+        return (long)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("The smoke evidence query returned no value."));
+    }
+
     private async Task<Guid?> FindClientIdAsync(string commandText, string value)
     {
         await using var connection = new NpgsqlConnection(ConnectionString);
@@ -648,3 +774,15 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return "\"" + identifier.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
     }
 }
+
+public sealed record MembershipTypeSmokeSnapshot(
+    string Name,
+    int DurationDays,
+    int VisitsLimit,
+    decimal PriceAmount,
+    string PriceCurrency,
+    bool IsActive,
+    string? Comment,
+    DateTime CreatedAt,
+    DateTime UpdatedAt,
+    DateTime? DeactivatedAt);

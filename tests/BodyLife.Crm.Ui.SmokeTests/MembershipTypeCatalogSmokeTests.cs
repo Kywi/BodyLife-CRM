@@ -102,14 +102,14 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
             Assert.Contains("Retained for catalog history.", await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
             Assert.Contains("2026-07-05 11:00 UTC", await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
 
-            Assert.Equal(1, await page.Locator("main form").CountAsync());
+            Assert.Equal(3, await page.Locator("main form").CountAsync());
             await ExpectVisibleAsync(
                 page.Locator("#create-membership-type-form"),
                 viewportName,
                 "owner create form");
             Assert.Equal(
-                0,
-                await page.GetByRole(AriaRole.Button, new() { Name = "Edit" }).CountAsync());
+                2,
+                await page.Locator(".membership-type-edit-panel").CountAsync());
             Assert.Equal(
                 0,
                 await page.GetByRole(AriaRole.Button, new() { Name = "Deactivate" }).CountAsync());

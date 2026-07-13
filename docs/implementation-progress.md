@@ -1825,3 +1825,54 @@ Commit:
 Next recommended step:
 
 - Add only the Owner `EditMembershipType` interaction to each catalog row, using the existing command handler, canonical row values plus expected `updated_at`, a required reason/comment, a fresh idempotency key, busy/duplicate-submit protection, stale/concurrency guidance, Post/Redirect/Get canonical reread and tablet/phone Playwright coverage. Keep deactivate UI for the following step.
+
+## Step 52 - Owner EditMembershipType interaction
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 4 with only the Owner edit interaction after create, using the already implemented `EditMembershipType` command and canonical Owner catalog query.
+- Keep Owner authorization, catalog normalization, no-op/stale checks, row locking, idempotency, transaction and before/after audit in the command handler; the Razor Page only adapts representable form values and renders command outcomes.
+- Edit only future-sale catalog fields and preserve active/deactivated lifecycle state; no issued membership, immutable issue-time snapshot or Memberships recalculation path is read or mutated.
+- Keep deactivation controls out of this step so lifecycle mutation receives a separate confirmation, stale-state and audit UI proof.
+
+Scope:
+
+- Add a per-row edit-form view model initialized from canonical query values with membership type id, expected `updated_at`, catalog fields and a fresh idempotency key.
+- Preserve posted values, expected version and idempotency key after ordinary validation/no-op rejection so the Owner can correct the same uncommitted request.
+- Add the Owner-only `OnPostEdit` Razor Page handler and invoke the existing `EditMembershipTypeCommand` with the authenticated request envelope and required audit reason.
+- Adapt missing or unrepresentable numeric/Money input into stable command-shaped validation errors without duplicating catalog business rules.
+- Verify successful command entity/reread ids, show the returned business-audit reference and use Post/Redirect/Get to reread the canonical catalog with fresh edit keys.
+- Return `Forbid` for command permission denial.
+- Treat stale state, concurrency, not-found and changed duplicate-key outcomes as canonical-refresh conditions: discard attempted values, load current catalog values plus a fresh key and require the Owner to review before resubmitting.
+- Render an accessible, unframed expandable edit surface inside every canonical active or inactive catalog row only when the query allows edit.
+- Include expected version/idempotency hidden values, required reason, catalog fields, antiforgery and the shared busy/disabled duplicate-submit behavior; render no deactivate control.
+- Add responsive four-, two- and one-column edit layouts for desktop/tablet/phone while preserving compact catalog scanning when forms are closed.
+- Add test-only PostgreSQL evidence helpers for canonical row reads, controlled stale-version advancement, edit audit/idempotency counts and persisted audit reason.
+- Add two Playwright cases covering active tablet and inactive phone rows, busy state, no-op rejection without side effects, stale canonical refresh, normalized successful edit, one audit/idempotency result, required reason, lifecycle preservation, PRG fresh key and no horizontal overflow.
+- Update catalog smoke expectations to include the two edit panels while continuing to prove deactivate controls are absent and Admin access remains denied.
+- No schema or migration change is required.
+
+Validation:
+
+- Release UI smoke project build passed with 0 warnings and 0 errors.
+- The first focused invocation stopped before app startup because the standalone command omitted `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING`; rerunning with the Docker PostgreSQL connection reached the workflow normally.
+- The first browser execution then exposed a test-only busy probe blocked by the required empty reason field; filling a valid probe reason before the prevented submit made the assertion exercise the shared busy handler correctly.
+- Focused `MembershipTypeEditingSmokeTests` passed both PostgreSQL-backed tablet (`1024x768`) and phone (`390x844`) workflows.
+- Focused MembershipType catalog/create/edit regression validation passed all 7 tests, and the full Playwright suite passed all 22 tests.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 54 core tests, 35 web tests, 145 PostgreSQL infrastructure tests, 22 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- Full-page Playwright screenshots were inspected at both target viewports with an edited row expanded: fields, lifecycle status, reason and actions remained readable without overlap or horizontal scrolling; temporary screenshots stayed outside the repository.
+- The restarted Development app loaded the new PageModel dependency and returned `200 OK` from `/health/ready` with PostgreSQL schema current.
+- `graphify update .` completed the structural rebuild with 3554 nodes, 6547 edges and 482 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(membership-types): add owner edit forms`.
+
+Next recommended step:
+
+- Add only the Owner `DeactivateMembershipType` interaction for active catalog rows, using the existing command handler, canonical expected `updated_at`, required reason, fresh idempotency key, explicit confirmation, busy/duplicate-submit protection, stale/already-inactive canonical refresh, Post/Redirect/Get canonical reread and tablet/phone Playwright coverage. Do not add hard delete or start Milestone 5 in that step.

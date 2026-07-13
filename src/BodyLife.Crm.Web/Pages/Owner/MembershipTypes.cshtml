@@ -136,6 +136,19 @@
                 </div>
             </header>
 
+            @if (Model.CatalogErrors.Count > 0)
+            {
+                <div class="command-error-summary" role="alert">
+                    <strong>Catalog not updated</strong>
+                    <ul>
+                        @foreach (var message in Model.CatalogErrors.Select(DisplayEditError).Distinct(StringComparer.Ordinal))
+                        {
+                            <li>@message</li>
+                        }
+                    </ul>
+                </div>
+            }
+
             @if (Model.MembershipTypes.Count == 0)
             {
                 <p class="empty-state">No membership types yet.</p>
@@ -144,7 +157,10 @@
             {
                 @foreach (var membershipType in Model.MembershipTypes)
                 {
-                    <article class="membership-type-row"
+                    var membershipTypeKey = membershipType.MembershipTypeId.ToString("N");
+
+                    <article id="membership-type-@membershipTypeKey"
+                             class="membership-type-row"
                              data-membership-type-id="@membershipType.MembershipTypeId"
                              data-membership-type-status="@(membershipType.IsActive ? "active" : "inactive")">
                         <header class="membership-type-header">
@@ -188,6 +204,112 @@
                                 <dd>@(membershipType.Comment ?? "No comment")</dd>
                             </div>
                         </dl>
+
+                        @if (Model.CanEditCatalog
+                            && Model.EditForms.TryGetValue(membershipType.MembershipTypeId, out var editForm))
+                        {
+                            var editInput = editForm.Input;
+
+                            <details class="membership-type-edit-panel" open="@(editForm.IsOpen ? "open" : null)">
+                                <summary>Edit catalog values</summary>
+                                <div class="membership-type-edit-content">
+                                    @if (editForm.Errors.Count > 0)
+                                    {
+                                        <div class="command-error-summary" role="alert">
+                                            <strong>Membership type not updated</strong>
+                                            <ul>
+                                                @foreach (var message in editForm.Errors.Select(DisplayEditError).Distinct(StringComparer.Ordinal))
+                                                {
+                                                    <li>@message</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+
+                                    <form id="edit-membership-type-form-@membershipTypeKey"
+                                          class="membership-type-edit-form"
+                                          method="post"
+                                          asp-page="/Owner/MembershipTypes"
+                                          asp-page-handler="Edit"
+                                          data-busy-form>
+                                        <input type="hidden" name="form.MembershipTypeId" value="@editInput.MembershipTypeId" />
+                                        <input type="hidden" name="form.ExpectedUpdatedAt" value="@editInput.ExpectedUpdatedAt.ToString("O")" />
+                                        <input type="hidden" name="form.IdempotencyKey" value="@editInput.IdempotencyKey" />
+
+                                        <div class="membership-type-edit-grid">
+                                            <div class="form-field form-field-span-2">
+                                                <label for="edit-membership-type-name-@membershipTypeKey">Name</label>
+                                                <input id="edit-membership-type-name-@membershipTypeKey"
+                                                       name="form.Name"
+                                                       type="text"
+                                                       value="@editInput.Name"
+                                                       required
+                                                       autocomplete="off" />
+                                            </div>
+                                            <div class="form-field">
+                                                <label for="edit-membership-type-duration-@membershipTypeKey">Duration (days)</label>
+                                                <input id="edit-membership-type-duration-@membershipTypeKey"
+                                                       name="form.DurationDays"
+                                                       type="number"
+                                                       value="@editInput.DurationDays"
+                                                       min="1"
+                                                       step="1"
+                                                       required />
+                                            </div>
+                                            <div class="form-field">
+                                                <label for="edit-membership-type-visits-@membershipTypeKey">Visit limit</label>
+                                                <input id="edit-membership-type-visits-@membershipTypeKey"
+                                                       name="form.VisitsLimit"
+                                                       type="number"
+                                                       value="@editInput.VisitsLimit"
+                                                       min="0"
+                                                       step="1"
+                                                       required />
+                                            </div>
+                                            <div class="form-field">
+                                                <label for="edit-membership-type-price-@membershipTypeKey">Price amount</label>
+                                                <input id="edit-membership-type-price-@membershipTypeKey"
+                                                       name="form.PriceAmount"
+                                                       type="number"
+                                                       value="@MembershipTypesModel.FormatPriceInput(editInput.PriceAmount)"
+                                                       min="0"
+                                                       step="0.01"
+                                                       required />
+                                            </div>
+                                            <div class="form-field">
+                                                <label for="edit-membership-type-currency-@membershipTypeKey">Currency</label>
+                                                <input id="edit-membership-type-currency-@membershipTypeKey"
+                                                       name="form.PriceCurrency"
+                                                       type="text"
+                                                       value="@editInput.PriceCurrency"
+                                                       maxlength="12"
+                                                       required
+                                                       autocomplete="off" />
+                                            </div>
+                                            <div class="form-field form-field-span-2">
+                                                <label for="edit-membership-type-comment-@membershipTypeKey">Catalog comment</label>
+                                                <textarea id="edit-membership-type-comment-@membershipTypeKey"
+                                                          name="form.Comment"
+                                                          rows="2">@editInput.Comment</textarea>
+                                            </div>
+                                            <div class="form-field form-field-span-full">
+                                                <label for="edit-membership-type-reason-@membershipTypeKey">Reason for change</label>
+                                                <textarea id="edit-membership-type-reason-@membershipTypeKey"
+                                                          name="form.Reason"
+                                                          rows="2"
+                                                          maxlength="1000"
+                                                          required>@editInput.Reason</textarea>
+                                            </div>
+                                            <div class="catalog-edit-actions">
+                                                <button class="secondary-button"
+                                                        type="submit"
+                                                        data-busy-text="Saving...">Save changes</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </details>
+                        }
                     </article>
                 }
             }
@@ -204,6 +326,22 @@
                 "This submission key was already used. Refresh the catalog before creating another type.",
             CommandErrorCode.ConcurrencyConflict =>
                 "The catalog changed concurrently. Review the refreshed catalog before trying again.",
+            _ => RemoveParameterSuffix(error.Message),
+        };
+    }
+
+    private static string DisplayEditError(CommandError error)
+    {
+        return error.Code switch
+        {
+            CommandErrorCode.StaleState =>
+                "This membership type changed after the form was opened. Canonical values were reloaded; review them before saving again.",
+            CommandErrorCode.ConcurrencyConflict =>
+                "The catalog changed concurrently. Canonical values were reloaded; review them before saving again.",
+            CommandErrorCode.DuplicateSubmission =>
+                "This submission key was already used. Canonical values and a fresh key were loaded; review them before saving again.",
+            CommandErrorCode.NotFound =>
+                "The membership type was not found. The canonical catalog was refreshed.",
             _ => RemoveParameterSuffix(error.Message),
         };
     }
