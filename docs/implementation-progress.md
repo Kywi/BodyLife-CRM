@@ -2985,3 +2985,48 @@ Commits:
 Next recommended step:
 
 - Add only the PostgreSQL `PreviewIssueMembership` query handler: authorize the canonical actor/session, validate and load the client plus active MembershipType, project zero or one unambiguous existing negative membership state into the Step 77 policy, and fail clearly when multiple negative candidates require a product selection rule. Add focused PostgreSQL tests and scoped DI registration. Keep `IssueMembership`, payments/closure, idempotency, audit, profile composition and UI outside that handler-only step.
+
+## Step 78 - PostgreSQL membership issue preview handler
+
+Status: completed.
+
+Plan alignment:
+
+- Complete the Milestone 5 advisory `PreviewIssueMembership` boundary by connecting the Step 77 public contract and pure policy to canonical PostgreSQL reads only.
+- Reuse `MembershipQuerySupport` for the established Owner, named Admin and shared Reception/Admin actor-shape plus active account/session authorization; forged, inactive, expired, ended and unknown sessions are denied before business data is returned.
+- Validate required client/type selectors, proposed start date and negative-decision enum before loading preview data.
+- Load the Client and current MembershipType without tracking, distinguish missing from inactive catalog rows and map the live catalog value only into the Step 77 immutable issue snapshot policy.
+- Inspect every `active` issued membership for the selected client and require a present, current-version, domain-rehydratable `membership_state_cache`; missing, stale or inconsistent derived state returns `recalculation_failed` without repair-on-read.
+- Build negative context only from a domain-validated cache state. Zero negative candidates produces ordinary preview, one produces the explicit decision/warning flow and multiple candidates return `validation_failed` instead of aggregating balances or inventing the unresolved multiple-membership policy.
+- Ignore canceled historical memberships when resolving the current negative candidate while retaining their source/cache rows unchanged.
+- Keep the query read-only with no audit or idempotency writes and expose `memberships.issue` only as permission intent; eligibility remains in the preview's decision outcome.
+- Keep `IssueMembership`, payments/closure, source-fact mutation, recalculation writes, business audit, profile composition and UI outside this handler-only step.
+
+Scope:
+
+- Add `PreviewIssueMembershipQueryHandler` with canonical authorization, stable selector/catalog failures, no-tracking PostgreSQL reads and Memberships domain rehydration before preview policy execution.
+- Add one all-active-membership cache integrity check so preview cannot silently miss a negative state because a derived row is absent or stale.
+- Extend `MembershipQuerySupport` with immutable Admin/Owner issue-action permission projection.
+- Register the public preview handler as scoped `IBodyLifeQueryHandler<PreviewIssueMembershipQuery, PreviewIssueMembershipResult>` through `AddBodyLifePersistence`.
+- Add nine focused cases covering all accepted operational roles, canonical catalog snapshot output, single-negative decisions, unknown first-negative date, multiple-negative ambiguity and canceled-history exclusion, missing/stale/inconsistent cache without repair, stable selector/catalog/calendar failures, denied actor/session shapes, no query side effects and scoped DI registration.
+- Add no EF record/configuration/migration, schema/index change, state mutation, issue command, payment/closure fact, idempotency row, audit entry, page/controller or UI test.
+
+Validation:
+
+- Focused `PostgreSqlPreviewIssueMembershipQueryTests` validation passed all 9 cases against Docker PostgreSQL.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 116 tests.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 108 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this handler-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 162 core tests, 35 web tests, 223 PostgreSQL infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `graphify update .` completed the structural rebuild with 4541 nodes, 8976 edges and 570 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): handle issue previews`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the public `IssueMembership` command/result contract and Memberships-owned pure preparation policy for immutable snapshot copying, inclusive base end date, explicit negative decision enforcement and expected initial state, with focused core tests. Keep the PostgreSQL command handler, payment/closure integration, transaction/idempotency/audit orchestration, profile reread and UI outside that contract-only step.

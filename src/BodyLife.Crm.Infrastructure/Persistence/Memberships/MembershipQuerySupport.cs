@@ -14,6 +14,12 @@ internal static class MembershipQuerySupport
             MembershipActionKeys.CreateOpeningState,
             MembershipActionKeys.AdminOrOwnerPolicy),
     ]);
+    private static readonly QueryPermissionSet IssueActionPermissions = new(
+    [
+        QueryPermissionResult.Allowed(
+            MembershipActionKeys.Issue,
+            MembershipActionKeys.AdminOrOwnerPolicy),
+    ]);
 
     internal static Task<bool> IsActorAuthorizedAsync(
         BodyLifeDbContext dbContext,
@@ -37,5 +43,10 @@ internal static class MembershipQuerySupport
         return membershipStatus == ActiveMembershipStatus && !hasActiveOpeningState
             ? OpeningStateActionPermissions
             : QueryPermissionSet.Empty;
+    }
+
+    internal static QueryPermissionSet BuildIssueActionPermissions()
+    {
+        return IssueActionPermissions;
     }
 }
