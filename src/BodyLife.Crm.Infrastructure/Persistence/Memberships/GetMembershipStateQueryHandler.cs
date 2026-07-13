@@ -88,6 +88,22 @@ public sealed class GetMembershipStateQueryHandler(
             return GetMembershipStateResult.RecalculationFailed();
         }
 
+        var extensionRows = await dbContext.Set<MembershipExtensionDayRecord>()
+            .AsNoTracking()
+            .Where(extensionDay => extensionDay.MembershipId == query.MembershipId)
+            .OrderBy(extensionDay => extensionDay.ExtensionDate)
+            .ThenByDescending(extensionDay => extensionDay.IsActive)
+            .ThenBy(extensionDay => extensionDay.SourceType)
+            .ThenBy(extensionDay => extensionDay.SourceId)
+            .ThenBy(extensionDay => extensionDay.SourceLabel)
+            .Select(extensionDay => new MembershipExtensionRow(
+                extensionDay.ExtensionDate,
+                extensionDay.SourceType,
+                extensionDay.SourceId,
+                extensionDay.SourceLabel,
+                extensionDay.IsActive))
+            .ToArrayAsync(cancellationToken);
+
         MembershipStateReadModel readModel;
 
         try
@@ -112,12 +128,21 @@ public sealed class GetMembershipStateQueryHandler(
                 row.ExtensionDays,
                 row.EffectiveEndDate,
                 row.LastCountedVisitAt);
+            var extensionExplanation = extensionRows
+                .Select(extensionDay => MembershipExtensionDay.FromStoredExplanation(
+                    extensionDay.ExtensionDate,
+                    extensionDay.SourceType,
+                    extensionDay.SourceId,
+                    extensionDay.SourceLabel,
+                    extensionDay.IsActive))
+                .ToArray();
             readModel = new MembershipStateReadModel(
                 row.MembershipId,
                 row.ClientId,
                 issueTerms,
                 calculatedState,
-                query.AsOfDate);
+                query.AsOfDate,
+                extensionExplanation);
         }
         catch (ArgumentException)
         {
@@ -153,4 +178,11 @@ public sealed class GetMembershipStateQueryHandler(
         DateTimeOffset? LastCountedVisitAt,
         int RecalculationVersion,
         bool HasActiveOpeningState);
+
+    private sealed record MembershipExtensionRow(
+        DateOnly ExtensionDate,
+        string SourceType,
+        Guid SourceId,
+        string SourceLabel,
+        bool IsActive);
 }

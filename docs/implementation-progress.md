@@ -2806,3 +2806,46 @@ Commits:
 Next recommended step:
 
 - Project stored `membership_extension_days` through only the PostgreSQL `GetMembershipState` handler: load rows without tracking, order deterministically by date/active/source identity, hydrate canonical explanation items and add focused infrastructure tests for overlap, inactive attribution, empty rows and read-only query behavior. Keep cache/explanation consistency enforcement, client/profile composition, recalculation orchestration and UI outside that projection-only step.
+
+## Step 74 - PostgreSQL membership extension explanation projection
+
+Status: completed.
+
+Plan alignment:
+
+- Complete the Milestone 5 `GetMembershipState` output shape by projecting the Step 69 derived `membership_extension_days` rows through the Step 73 public explanation contract.
+- Keep Memberships as the owner of explanation semantics by hydrating the existing immutable `MembershipExtensionDay` value instead of adding an Infrastructure DTO or recalculating extension dates in the query.
+- Load explanation rows only after actor authorization, membership/cache lookup and recalculation-version validation have succeeded.
+- Preserve every overlapping and inactive attribution row and order results deterministically by extension date, active rows first, source type, source id and source label.
+- Keep the aggregate `ExtensionDays` sourced from `membership_state_cache`; this projection does not impose cache/explanation equality because an honest opening state can carry known extension state without reconstructed historical explanation rows.
+- Keep the query read-only with no tracking, no repair-on-read, no business audit and no idempotency writes.
+- Keep client/profile composition, central recalculation orchestration, source loading, cache/explanation write consistency and UI outside this projection-only step.
+
+Scope:
+
+- Extend `GetMembershipStateQueryHandler` with one no-tracking projection over the selected membership's stored extension-day rows.
+- Rehydrate each stored date/source tuple through `MembershipExtensionDay.FromStoredExplanation`; invalid stored metadata follows the existing stable `recalculation_failed` path instead of leaking malformed canonical state.
+- Pass the ordered immutable explanation collection into `MembershipStateReadModel` without changing its contract or persistence registration.
+- Extend the opening-state query case to prove that a valid cache can still return an empty explanation collection.
+- Add one focused PostgreSQL case with overlapping active freezes, a non-working period and an inactive adjustment inserted out of order; verify canonical ordering, all source metadata, the read-only collection wrapper and absence of query side effects.
+- Add no EF record/configuration/migration, cache writer, source provider, transaction coordinator, profile/UI projection or new authorization behavior.
+
+Validation:
+
+- Focused `PostgreSqlGetMembershipStateQueryTests` validation passed all 8 cases against Docker PostgreSQL.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 94 tests.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 95 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this projection-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 148 core tests, 35 web tests, 202 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713144951_AddMembershipExtensionDays`.
+- `graphify update .` completed the structural rebuild with 4328 nodes, 8405 edges and 554 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): project extension explanations`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the Memberships persistence coordinator that atomically writes one already-canonical `MembershipCalculatedState` and matching `MembershipExtensionCalculation` to `membership_state_cache` plus `membership_extension_days`, with consistency validation, one parent lock, one recalculation timestamp and rollback-focused PostgreSQL tests. Keep source-fact loading, opening-state cutover policy, command/audit orchestration, client/profile composition and UI outside that write-boundary step.
