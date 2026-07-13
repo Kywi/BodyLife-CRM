@@ -7,10 +7,19 @@ public sealed record MembershipStateReadModel
         Guid clientId,
         MembershipIssueTerms issueTerms,
         MembershipCalculatedState calculatedState,
-        DateOnly asOfDate)
+        DateOnly asOfDate,
+        IEnumerable<MembershipExtensionDay>? extensionExplanation = null)
     {
         ArgumentNullException.ThrowIfNull(issueTerms);
         ArgumentNullException.ThrowIfNull(calculatedState);
+
+        MembershipExtensionDay[] explanationItems = extensionExplanation?.ToArray() ?? [];
+        if (explanationItems.Any(item => item is null))
+        {
+            throw new ArgumentException(
+                "Extension explanation cannot contain a missing item.",
+                nameof(extensionExplanation));
+        }
 
         MembershipId = membershipId;
         ClientId = clientId;
@@ -25,6 +34,7 @@ public sealed record MembershipStateReadModel
         FirstNegativeVisitId = calculatedState.FirstNegativeVisitId;
         FirstNegativeVisitDate = calculatedState.FirstNegativeVisitDate;
         ExtensionDays = calculatedState.ExtensionDays;
+        ExtensionExplanation = Array.AsReadOnly(explanationItems);
         LastCountedVisitAt = calculatedState.LastCountedVisitAt;
         AsOfDate = asOfDate;
         Warnings = Array.AsReadOnly(
@@ -56,6 +66,8 @@ public sealed record MembershipStateReadModel
     public DateOnly? FirstNegativeVisitDate { get; }
 
     public int ExtensionDays { get; }
+
+    public IReadOnlyList<MembershipExtensionDay> ExtensionExplanation { get; }
 
     public DateTimeOffset? LastCountedVisitAt { get; }
 

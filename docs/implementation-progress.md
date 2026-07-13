@@ -2763,3 +2763,46 @@ Commits:
 Next recommended step:
 
 - Add only the immutable Memberships-owned extension explanation item and collection to the public `GetMembershipState` read-model contract, with focused core contract tests for overlapping/inactive attribution shape, defensive collection copying and failure-result non-leakage. Keep PostgreSQL loading, cache/explanation consistency policy, client/profile composition and UI outside that contract-only step.
+
+## Step 73 - Membership extension explanation query contract
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the public Memberships read-model shape required to expose explainable extension rows through canonical `GetMembershipState` queries.
+- Reuse the Step 70 immutable `MembershipExtensionDay` value instead of creating a second DTO with duplicated source/date semantics.
+- Expose extension date, stable source type/id/label and active state so overlapping sources and canceled/inactive attribution remain independently visible.
+- Copy explanation rows defensively into an immutable collection owned by `MembershipStateReadModel`; caller collection mutation cannot change canonical query output.
+- Default the collection to empty for the existing handler until the separate PostgreSQL projection step, preserving deployable behavior without pretending persistence loading already exists.
+- Keep explanation rows separate from the aggregate `ExtensionDays`; this contract step does not add cache/explanation consistency policy or reinterpret imported opening-state extension knowledge.
+- Preserve failure-result non-leakage: permission, validation, not-found and recalculation failures carry neither state/explanations nor allowed actions.
+
+Scope:
+
+- Add `MembershipExtensionDay.FromStoredExplanation` to hydrate one validated immutable item from stored date/source metadata while reusing existing source validation and normalization.
+- Add `MembershipStateReadModel.ExtensionExplanation` as `IReadOnlyList<MembershipExtensionDay>` with defensive copying, a read-only wrapper and rejection of missing collection items.
+- Keep the constructor compatible with the existing handler by treating an omitted explanation collection as empty until persistence projection is implemented.
+- Extend `MembershipStateQueryContractsTests` from 8 to 11 cases with overlapping Freeze/NonWorkingDay attribution, inactive adjustment attribution, defensive source-list copying, read-only enforcement, stored metadata normalization/validation and failure-result non-leakage.
+- Verify the successful result preserves its canonical explanation state while every established failure factory returns null state and empty action permissions.
+- Add no PostgreSQL query, handler/DI change, EF record/configuration/migration, cache consistency rule, client/profile composition or UI rendering.
+
+Validation:
+
+- Focused `MembershipStateQueryContractsTests` validation passed all 11 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 94 tests.
+- Focused `PostgreSqlGetMembershipStateQueryTests` compatibility regression passed all 7 cases against Docker PostgreSQL without changing the handler.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this contract-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 148 core tests, 35 web tests, 201 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713144951_AddMembershipExtensionDays`.
+- `graphify update .` completed the structural rebuild with 4324 nodes, 8383 edges and 555 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): expose extension explanations`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Project stored `membership_extension_days` through only the PostgreSQL `GetMembershipState` handler: load rows without tracking, order deterministically by date/active/source identity, hydrate canonical explanation items and add focused infrastructure tests for overlap, inactive attribution, empty rows and read-only query behavior. Keep cache/explanation consistency enforcement, client/profile composition, recalculation orchestration and UI outside that projection-only step.

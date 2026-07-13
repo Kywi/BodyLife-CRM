@@ -1,3 +1,5 @@
+using BodyLife.Crm.SharedKernel;
+
 namespace BodyLife.Crm.Modules.Memberships;
 
 public sealed record MembershipExtensionDay
@@ -22,4 +24,21 @@ public sealed record MembershipExtensionDay
     public string SourceLabel { get; }
 
     public bool IsActive { get; }
+
+    public static MembershipExtensionDay FromStoredExplanation(
+        DateOnly extensionDate,
+        string? sourceType,
+        Guid sourceId,
+        string? sourceLabel,
+        bool isActive)
+    {
+        var source = new MembershipExtensionSourceRange(
+            sourceType,
+            sourceId,
+            sourceLabel,
+            new DateRange(extensionDate, extensionDate),
+            isActive);
+
+        return new MembershipExtensionDay(extensionDate, source);
+    }
 }
