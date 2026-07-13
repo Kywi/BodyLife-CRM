@@ -23,4 +23,9 @@ public static class MembershipDateRules
 
         return DateOnly.FromDayNumber((int)endDayNumber);
     }
+
+    public static bool IsActiveByDate(DateOnly asOfDate, DateOnly effectiveEndDate)
+    {
+        return asOfDate <= effectiveEndDate;
+    }
 }

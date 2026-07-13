@@ -2051,3 +2051,43 @@ Commits:
 Next recommended step:
 
 - Add only the initial Memberships calculated-state domain contract for a newly issued snapshot: zero counted visits/extensions, signed remaining visits from the snapshot, zero negative balance, base effective end date and inclusive active-by-date behavior. Keep persistence cache, `IssueMembership` handling, later visit/freeze inputs and UI outside that step.
+
+## Step 57 - Initial membership calculated-state contract
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the initial Memberships-owned derived state for the issued snapshot established in Steps 55-56.
+- Keep `remaining_visits`, negative balance, first-negative metadata, extension days and effective end date under the Memberships boundary; expose no duplicated formulas to UI, reports or other modules.
+- Treat date activity as an inclusive query-time calculation (`as_of_date <= effective_end_date`) that is distinct from visit balance and lifecycle cancellation/correction status.
+- Do not persist an `is_active` flag or make `effective_end_date` directly mutable.
+- Keep lifecycle composition, PostgreSQL cache persistence, `IssueMembership` handling, visits, freezes, non-working days, adjustments, opening states, queries and UI outside this step.
+
+Scope:
+
+- Add immutable `MembershipCalculatedState` output with counted visits, signed remaining visits, negative balance, first-negative visit metadata, extension days, effective end date and last-counted-visit time.
+- Add `MembershipStateCalculator.CalculateInitial` as the narrow initial-state calculation from `MembershipIssueTerms`.
+- Initialize a new issue with zero counted visits, the snapshot visit limit as remaining visits, zero negative balance, no first-negative metadata, zero extension days, the inclusive base end date as effective end date and no last counted visit.
+- Add `MembershipDateRules.IsActiveByDate`; the effective end date is included and the following day is inactive by date.
+- Keep calculated-state construction internal and every exposed property get-only so callers cannot manufacture or edit derived truth.
+- Add five focused tests for canonical initialization, a zero-visit snapshot, inclusive date activity, null input and the immutable/public API boundary.
+
+Validation:
+
+- Focused `FullyQualifiedName~Memberships` core validation passed all 18 tests, including the 5 new initial-state cases.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 72 core tests, 35 web tests, 151 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713091512_AddIssuedMemberships`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- The previous Development process was no longer listening on the first readiness probe; the app was restarted from the validated Release build and `/health/ready` returned `200 OK` against Docker PostgreSQL.
+- `graphify update .` completed the structural rebuild with 3716 nodes, 6897 edges and 508 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): add initial calculated state`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the rebuildable `membership_state_cache` PostgreSQL storage, EF mapping, migration and constraint/storage tests for this calculated-state contract. Keep `IssueMembership` handling, visit/freeze/non-working-day inputs, general recalculation and UI outside that step.
