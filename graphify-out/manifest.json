@@ -710,8 +710,8 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1783934112.1458316,
-    "ast_hash": "9e863e58d2cd85ca321be4f05d0d4a29",
+    "mtime": 1783936846.2613482,
+    "ast_hash": "05dd194ed0521769f020703e329dadc7",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783934760.80264,
-    "ast_hash": "a83c261b845c77612ad1af180f4d66f9",
+    "mtime": 1783936178.1041136,
+    "ast_hash": "6eeeec444eb020865781968d4f9d3fbb",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1832,6 +1832,31 @@
   "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipInitialStateTests.cs": {
     "mtime": 1783935835.3759394,
     "ast_hash": "1c8a10702ffcc37e5ce4329384974d45",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipStateCacheRecord.cs": {
+    "mtime": 1783936808.9642987,
+    "ast_hash": "f42110c9f574467b6d1d791dfe4ef7ce",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipStateCacheRecordConfiguration.cs": {
+    "mtime": 1783936808.972299,
+    "ast_hash": "4abe45b9f5c9eb93ebc4b85a649af8e1",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713100046_AddMembershipStateCache.Designer.cs": {
+    "mtime": 1783936846.2613482,
+    "ast_hash": "2a0e00c146ccf54252ff2eb9b280d6a0",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260713100046_AddMembershipStateCache.cs": {
+    "mtime": 1783936944.5231676,
+    "ast_hash": "e5bcb654cb9895ef670a617bf2395a2c",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipStateCacheStorageTests.cs": {
+    "mtime": 1783936808.9923,
+    "ast_hash": "aa4895aedf68c7339943da9ca514ed42",
     "semantic_hash": ""
   }
 }
