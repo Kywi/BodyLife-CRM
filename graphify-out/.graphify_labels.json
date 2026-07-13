@@ -549,5 +549,14 @@
   "547": "20260709120305_AddUsersRolesAccountsSessions.Designer.cs",
   "548": "20260713144951_AddMembershipExtensionDays.Designer.cs",
   "549": "BodyLifeAuthTechnicalLogger.cs",
-  "550": "AccountId"
+  "550": "AccountId",
+  "551": "BusinessAuditEntryRecord",
+  "552": "IssuedMembershipRecord",
+  "553": "MembershipOpeningStateRecord",
+  "554": ".IsCanonicalOwnerAuthorizedAsync",
+  "555": "AccountCredentialRecord",
+  "556": "AccountRecord",
+  "557": "MembershipStateCacheRebuildResult",
+  "558": "BodyLifeAuthorizationPolicies.cs",
+  "559": "SessionId"
 }
