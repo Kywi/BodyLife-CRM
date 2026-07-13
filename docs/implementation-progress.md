@@ -2412,3 +2412,47 @@ Commits:
 Next recommended step:
 
 - Add only the public `GetMembershipState` query/read-model contract with actor context, membership selector, `as_of` date, complete Memberships-owned stable state fields, permission intent and focused core contract tests. Keep the PostgreSQL query handler, warnings/history/extension rows, profile composition and UI outside that step.
+
+## Step 65 - Membership state public query contract
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the public Memberships query/read-model boundary after the issued-membership, derived-cache and opening-state command foundations from Steps 57-64.
+- Use a direct membership id selector in this first query path; defer client/current-membership selection until the accepted multiple-active-memberships product decision can define ambiguity honestly.
+- Require an explicit `as_of` date so date-dependent state is deterministic and does not become an independent stored fact.
+- Expose the immutable issue snapshot, start/base/effective dates and every currently available stable Memberships-owned derived field without moving formulas into profile, Reports or UI contracts.
+- Derive active-by-date inside the Memberships read model through the existing inclusive `MembershipDateRules` rather than accepting a caller-computed boolean.
+- Project allowed Memberships actions through the established `QueryPermissionSet` and stable Admin/Owner policy contract; handler-side actor/session enforcement remains the next persistence step.
+- Keep PostgreSQL loading/registration, client/current selector resolution, warnings, extension explanation rows, history/drill-down composition, profile integration and UI outside this contract-only step.
+
+Scope:
+
+- Add `GetMembershipStateQuery` implementing `IBodyLifeQuery<GetMembershipStateResult>` with actor context, direct membership id and required `AsOfDate`.
+- Add immutable `MembershipStateReadModel` fields for membership/client/type identity, issued snapshot, start/base/effective dates, counted/remaining/negative visits, first-negative visit id/date, extension days and last counted visit.
+- Add Memberships-owned `IsActiveByDate`, computed from `AsOfDate` and `EffectiveEndDate` with the accepted inclusive date rule.
+- Add `GetMembershipStateStatus` and result factories for success, permission denial, missing membership and validation failure, with no state or allowed actions leaked on failures.
+- Carry `QueryPermissionSet` on successful results so the future handler can project the existing `memberships.create_opening_state` action under `BodyLife.AdminOrOwner` without embedding permission logic in UI.
+- Add seven focused core contract cases covering actor/selector/date input, complete stable state shape, immutable properties, inclusive active-date behavior, successful permission projection and stable failure contracts.
+- Add no EF record/configuration/migration, query handler, dependency registration, warning/history/extension-row type, profile composition or UI change.
+
+Validation:
+
+- Focused `MembershipStateQueryContractsTests` validation passed all 7 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 48 tests.
+- Release solution build passed with 0 warnings and 0 errors.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this public-contract step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 102 core tests, 35 web tests, 183 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713111435_AddMembershipOpeningStates`.
+- `graphify update .` completed the structural rebuild with 4071 nodes, 7790 edges and 542 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): define state query contract`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Implement only the PostgreSQL-backed direct-id `GetMembershipState` query handler with canonical Admin/Owner actor/session authorization, input validation, issued snapshot plus current stable cache loading, Memberships-owned active-date mapping, allowed-action projection and focused PostgreSQL query tests. Keep client/current selection, warnings, extension explanation rows, history/profile composition and UI outside that step.
