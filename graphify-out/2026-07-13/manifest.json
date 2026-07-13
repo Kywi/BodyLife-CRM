@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783927249.1237824,
-    "ast_hash": "5309ff003f8dd20e02dba62dc6637691",
+    "mtime": 1783930416.8190908,
+    "ast_hash": "699e76d9b9bc6099530cf1d577ddf2ce",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -810,8 +810,8 @@
     "semantic_hash": "11f75986539fd0528aeff0caa711fd62"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionAppFixture.cs": {
-    "mtime": 1783926398.4568865,
-    "ast_hash": "070b44eb8173fdfce9c992ba2cc1415b",
+    "mtime": 1783929597.1796489,
+    "ast_hash": "2cfb0904ff970efd07b209697c452ed5",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionDashboardSmokeTests.cs": {
@@ -1040,8 +1040,8 @@
     "semantic_hash": "b7089c5454d0a1f24c75bcaf7f4f3ca2"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/PostgreSqlSmokeDatabase.cs": {
-    "mtime": 1783926589.5927832,
-    "ast_hash": "e33a152e5626c82735ee8c605285b66c",
+    "mtime": 1783929574.7469225,
+    "ast_hash": "45dc95937ddcddead759c5e45438b82a",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Web.Tests/BodyLife.Crm.Web.Tests.csproj": {
@@ -1720,18 +1720,18 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Owner/MembershipTypes.cshtml": {
-    "mtime": 1783926303.2230027,
-    "ast_hash": "ef0a48b7edd622d38d266fce02ffcd29",
+    "mtime": 1783929503.1379147,
+    "ast_hash": "6d288ea9d0109c59cf7683c47e8a40dc",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Owner/MembershipTypes.cshtml.cs": {
-    "mtime": 1783926589.5927832,
-    "ast_hash": "bc6085d211a0ef145f9c0d2afe381125",
+    "mtime": 1783929470.9096107,
+    "ast_hash": "51f3ae61b6bc4f7c8774babc60c3382c",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/MembershipTypeCatalogSmokeTests.cs": {
-    "mtime": 1783926558.971772,
-    "ast_hash": "127c2500f74ad0176d6050b9fbdd825f",
+    "mtime": 1783929878.3147197,
+    "ast_hash": "71e72e3fad9357dc0bd1cd1a41b86890",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Owner/CreateMembershipTypeFormViewModel.cs": {
@@ -1750,8 +1750,18 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/MembershipTypeEditingSmokeTests.cs": {
-    "mtime": 1783926899.491503,
-    "ast_hash": "302e9e183a87bf32865f85274f94fc14",
+    "mtime": 1783929878.3187199,
+    "ast_hash": "eaf6951aae5df9a031152c42c3a0a926",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Web/Pages/Owner/DeactivateMembershipTypeFormViewModel.cs": {
+    "mtime": 1783929423.0518625,
+    "ast_hash": "194318d570108ef5b3c00d1c45863731",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Ui.SmokeTests/MembershipTypeDeactivationSmokeTests.cs": {
+    "mtime": 1783930068.789192,
+    "ast_hash": "5ded453e37d8c4c7da3aeedc0df4d03d",
     "semantic_hash": ""
   }
 }

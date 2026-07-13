@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1783930416.8190908,
-    "ast_hash": "699e76d9b9bc6099530cf1d577ddf2ce",
+    "mtime": 1783931928.2623625,
+    "ast_hash": "b32365974b163dc6b9e527001a1f2f52",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1762,6 +1762,36 @@
   "tests/BodyLife.Crm.Ui.SmokeTests/MembershipTypeDeactivationSmokeTests.cs": {
     "mtime": 1783930068.789192,
     "ast_hash": "5ded453e37d8c4c7da3aeedc0df4d03d",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/IssuedMembershipSnapshot.cs": {
+    "mtime": 1783932673.8393195,
+    "ast_hash": "4c63ec2ad15e71ddd2d670c7a5fc9ecc",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipDateRules.cs": {
+    "mtime": 1783932673.8393195,
+    "ast_hash": "071877a44e572524c1fe645e9473470e",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Memberships/MembershipIssueTerms.cs": {
+    "mtime": 1783932673.8393195,
+    "ast_hash": "0d2e95184d39eb1e5960683384a07712",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipDateRulesTests.cs": {
+    "mtime": 1783932673.8433197,
+    "ast_hash": "ab8483d0bc75c0e0077b68fac5056903",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipIssueTermsTests.cs": {
+    "mtime": 1783932673.8433197,
+    "ast_hash": "f34b22ea16682c9e8b65d69141fe9cfe",
+    "semantic_hash": ""
+  },
+  "docs/milestone-4-acceptance-review.md": {
+    "mtime": 1783931859.5655558,
+    "ast_hash": "70ab5b283251f1c23c9bb2ce809681be",
     "semantic_hash": ""
   }
 }
