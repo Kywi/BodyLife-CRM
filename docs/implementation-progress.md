@@ -1964,3 +1964,43 @@ Commit:
 Next recommended step:
 
 - Start only Milestone 5's domain/application contract for immutable issue-time MembershipType snapshots and inclusive `base_end_date = start_date + duration_days - 1 day`, with focused domain tests and no persistence, recalculation cache or UI yet.
+
+## Step 55 - Membership issue snapshot and inclusive-date contracts
+
+Status: completed.
+
+Plan alignment:
+
+- Start Milestone 5 only after the Step 54 handoff and keep this first slice inside the Memberships domain/application boundary.
+- Lock the accepted inclusive formula from the roadmap, data architecture and vertical slice: `base_end_date = start_date + duration_days - 1 day`; this supersedes the older unresolved wording in the first-version requirements.
+- Copy future issued-membership values from the public MembershipTypes catalog contract into a separate immutable value rather than retaining a live mutable catalog reference.
+- Keep effective end date, active state, remaining/negative visits, recalculation, source-fact persistence, opening state, cache tables, commands and UI outside this step.
+- Avoid fixing the still-open multiple-active-membership, visit-allocation and negative-closure product decisions while they are irrelevant to snapshot/date arithmetic.
+
+Scope:
+
+- Add `IssuedMembershipSnapshot` with get-only type name, duration days, visits limit and Money values; construction reuses MembershipTypes-owned canonical catalog validation.
+- Add `MembershipDateRules.CalculateBaseEndDate` with positive-duration validation, inclusive day-number arithmetic and an explicit supported-calendar range guard.
+- Add `MembershipIssueTerms.FromActiveMembershipType` as the narrow cross-module issue boundary: require a non-empty MembershipType identity, reject inactive ordinary-issue types, copy a standalone snapshot and calculate the base end date from the copied duration.
+- Expose only the MembershipType reference id, immutable snapshot, start date and derived base end date; expose no `MembershipTypeCatalogItem`, editable setters or `EffectiveEndDate` field.
+- Add focused domain tests for the vertical-slice `2026-07-01 + 30 days = 2026-07-30` case, one-day duration, year/leap-day boundaries, invalid/overflowing duration, canonical snapshot validation, active/inactive catalog eligibility, required identity, copied values after a later catalog replacement and the absence of mutable/end-date contracts.
+- Add no `IssueMembership` command/handler, persistence record, migration, recalculation/cache behavior or UI.
+
+Validation:
+
+- Focused `FullyQualifiedName~Memberships` core validation passed all 13 new snapshot/date contract cases.
+- `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 67 core tests, 35 web tests, 145 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260712192355_AddMembershipTypesCatalog`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; no migration was generated.
+- The running Development app returned `200 OK` from `/health/ready`; this domain-only step requires no app restart.
+- `graphify update .` completed the structural rebuild with 3645 nodes, 6733 edges and 495 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): add issue snapshot contracts`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the `issued_memberships` canonical source-fact PostgreSQL schema, EF mapping, migration and constraint/storage tests using these immutable snapshot and inclusive base-end-date contracts. Keep `IssueMembership` handling, recalculation/cache tables, opening states and UI for later steps.
