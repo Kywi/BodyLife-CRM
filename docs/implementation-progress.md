@@ -2004,3 +2004,50 @@ Commits:
 Next recommended step:
 
 - Add only the `issued_memberships` canonical source-fact PostgreSQL schema, EF mapping, migration and constraint/storage tests using these immutable snapshot and inclusive base-end-date contracts. Keep `IssueMembership` handling, recalculation/cache tables, opening states and UI for later steps.
+
+## Step 56 - Issued membership PostgreSQL source-fact storage
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the canonical `issued_memberships` source fact after the snapshot/date contracts from Step 55.
+- Store copied issue-time values separately from the mutable MembershipType catalog and keep `effective_end_date`, visits, negative state, extensions and warnings out of this source table.
+- Preserve the roadmap's still-open multiple-active-memberships decision by adding no unique/current-membership constraint or index in this step.
+- Keep `entry_batch_id` as a nullable source metadata UUID without a premature foreign key; the `entry_batches` source table belongs to the later backfill/paper-fallback slice.
+- Add no `IssueMembership` command/handler, audit workflow, opening state, adjustment, recalculation/cache table, query or UI.
+
+Scope:
+
+- Add the internal `IssuedMembershipRecord` with client and MembershipType references, immutable snapshot columns, start/base-end dates, issue actor/time, lifecycle status, entry origin/batch and optional comment.
+- Add an assembly-discovered EF Core configuration under the Memberships persistence boundary; no manual `BodyLifeDbContext` registration change is required.
+- Map `DateOnly` start/base-end values to PostgreSQL `date` and enforce `base_end_date = start_date + duration_days_snapshot - 1` with a database check.
+- Add checks for non-empty snapshot name, positive snapshot duration, non-negative visit limit and price, canonical uppercase currency, non-empty optional comment, accepted lifecycle status and accepted entry origin.
+- Keep expiration as derived Memberships state rather than a source lifecycle status; the source status accepts only `active`, `canceled` and `corrected`.
+- Add `Restrict` foreign keys to `clients`, `membership_types` and issuing `accounts` so historical source facts cannot be removed through principal deletion.
+- Add a non-unique client timeline index on `(client_id, start_date desc, issued_at desc)` plus supporting MembershipType and issuer indexes.
+- Generate and review reversible migration `20260713091512_AddIssuedMemberships`, including the updated model snapshot and idempotent SQL kept outside the repository.
+- Add six PostgreSQL-backed tests covering migration shape, complete source metadata, snapshot/date/text/lifecycle/origin constraints, all three foreign keys, retained snapshot values after catalog edit and blocked deletion of a referenced MembershipType.
+
+Validation:
+
+- The first infrastructure-test build found two test-only compile issues: one out-of-position named argument and a missing local fixed-time helper; both were corrected before any test run.
+- Release infrastructure-test project build then passed with 0 warnings and 0 errors.
+- Focused `PostgreSqlIssuedMembershipsStorageTests` validation passed all 6 tests against Docker PostgreSQL.
+- Idempotent SQL from `20260712192355_AddMembershipTypesCatalog` through `20260713091512_AddIssuedMemberships` was generated to `/tmp/bodylife-add-issued-memberships.sql` and reviewed for the expected table, checks, `Restrict` foreign keys, indexes and migration-history transaction.
+- The first formatting verification found only a composite-index indentation issue and the EF-generated migration BOM; targeted whitespace formatting fixed both, and final `/tmp/bodylife-dotnet/dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore --verbosity minimal` passed.
+- `ASPNETCORE_ENVIRONMENT=Development CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet ./scripts/apply-migrations.sh` applied `20260713091512_AddIssuedMemberships` to the local Docker development database through the normal forward EF workflow.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 67 core tests, 35 web tests, 151 PostgreSQL infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260713091512_AddIssuedMemberships`.
+- The restarted Development app loaded the new EF model/migration assembly and returned `200 OK` from `/health/ready` against the migrated PostgreSQL schema.
+- `graphify update .` completed the structural rebuild with 3695 nodes, 6861 edges and 511 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): add issued membership storage`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the initial Memberships calculated-state domain contract for a newly issued snapshot: zero counted visits/extensions, signed remaining visits from the snapshot, zero negative balance, base effective end date and inclusive active-by-date behavior. Keep persistence cache, `IssueMembership` handling, later visit/freeze inputs and UI outside that step.
