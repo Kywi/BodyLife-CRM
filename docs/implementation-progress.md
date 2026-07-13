@@ -3030,3 +3030,49 @@ Commits:
 Next recommended step:
 
 - Add only the public `IssueMembership` command/result contract and Memberships-owned pure preparation policy for immutable snapshot copying, inclusive base end date, explicit negative decision enforcement and expected initial state, with focused core tests. Keep the PostgreSQL command handler, payment/closure integration, transaction/idempotency/audit orchestration, profile reread and UI outside that contract-only step.
+
+## Step 79 - Membership issue command contract and preparation policy
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the public state-changing `IssueMembership` boundary and Memberships-owned pure preparation required before PostgreSQL orchestration.
+- Reuse the common `CommandEnvelope` for actor/session accountability, request correlation, entry origin, business occurrence time, idempotency, reason and comment; carry only the client/type/start selectors, explicit negative decision and optional future batch reference on the command.
+- Keep snapshot, base end date and calculated state out of client input. The future handler must reload the canonical active MembershipType and create these values through Memberships at execution time.
+- Use the existing common `CommandResult`: the newly issued membership is the primary entity and the client is the canonical reread target, so UI state must come from a post-commit client/profile query rather than optimistic command output.
+- Add the documented `NegativeDecisionRequired` command error contract for the future handler instead of collapsing this distinct blocking condition into a generic validation error.
+- Reuse `MembershipIssuePreviewPolicy` inside the preparation path so preview and mutation preparation cannot drift on immutable snapshot copying, inclusive base-end-date arithmetic, expected initial state, warning semantics or negative-decision availability.
+- Permit ordinary issue without a negative decision when no existing negative state is present. When negative state exists, require an explicit decision and currently permit only `LeaveVisible`, preserving the old negative context and warning separately from the new membership's zero-negative initial state.
+- Continue to expose cover-with-new-membership and explicit closure only in advisory preview metadata; both remain rejected by mutation preparation because the vertical slice defers those source-fact workflows.
+- Keep payment/closure input and orchestration for the later Payments boundary, and keep authorization execution, canonical PostgreSQL reloads, transactions, row locks, idempotency storage, issued/cache writes, audit and UI outside this contract-only step.
+
+Scope:
+
+- Add public `IssueMembershipCommand` implementing `IBodyLifeCommand` with common envelope, client and MembershipType selectors, start date, optional negative decision, optional entry-batch reference and deterministic client canonical reread target.
+- Declare stable `membership` primary-entity and `client` canonical-reread entity types for the future common command result.
+- Add immutable `MembershipIssuePreparation` with canonical snapshot, inclusive base date, expected initial state, retained existing-negative context, selected decision and read-only warnings.
+- Add `MembershipIssuePreparationPolicy.Prepare`, delegating canonical calculations to the accepted preview policy and rejecting missing or currently unavailable negative decisions.
+- Add `CommandErrorCode.NegativeDecisionRequired` without renumbering existing command errors.
+- Add 12 focused core cases covering command envelope/selectors/defaults/batch shape, absence of client-supplied derived state, common result identities, stable negative-decision error, immutable catalog snapshot, inclusive initial state, catalog independence, required/leave-visible/deferred decision behavior, read-only warnings and reused validation/calendar guards.
+- Add no command handler/DI registration, EF record/configuration/migration, PostgreSQL mutation, payment/closure fact, idempotency row, business audit entry, profile composition, controller/page or UI change.
+
+Validation:
+
+- The first focused attempt stopped before test execution because a new test fixture used the wrong `DateTimeOffset` constructor arity; the fixture was corrected and no product behavior failed.
+- Focused `IssueMembershipCommandContractsTests` validation passed all 12 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 120 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this contract/domain-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 174 core tests, 35 web tests, 223 PostgreSQL infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `graphify update .` completed the structural rebuild with 4577 nodes, 9057 edges and 573 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): define issue command preparation`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Implement only the PostgreSQL `IssueMembership` handler for the currently accepted no-payment path: canonical Admin/Owner authorization, envelope/idempotency validation, client and affected-membership locking, active MembershipType reload, canonical negative-state recheck through the Step 79 preparation policy, one transaction for issued snapshot plus initial cache, append-only `membership.issued` audit and common client reread result. Add focused PostgreSQL tests for permissions, inactive/missing selectors, required/deferred negative decisions, replay/payload mismatch, concurrency and rollback. Keep payment/closure facts, manual opening-state orchestration, profile composition and UI outside that handler-only step.

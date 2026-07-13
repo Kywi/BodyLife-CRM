@@ -15,5 +15,6 @@ public enum CommandErrorCode
     AlreadyCanceled,
     RecalculationFailed,
     ConcurrencyConflict,
-    AlreadyInactive
+    AlreadyInactive,
+    NegativeDecisionRequired
 }
