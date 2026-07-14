@@ -64,6 +64,31 @@ public static class MembershipStateCalculator
             lastCountedVisitAt: null);
     }
 
+    public static MembershipCalculatedState CalculateFromVisitFacts(
+        Guid membershipId,
+        MembershipIssueTerms? issueTerms,
+        IEnumerable<MembershipVisitSourceFact>? visitFacts)
+    {
+        return ApplyVisitFacts(
+            membershipId,
+            CalculateInitial(issueTerms),
+            visitFacts,
+            nameof(visitFacts));
+    }
+
+    public static MembershipCalculatedState CalculateFromOpeningStateAndVisitFacts(
+        Guid membershipId,
+        MembershipIssueTerms? issueTerms,
+        MembershipOpeningState? openingState,
+        IEnumerable<MembershipVisitSourceFact>? visitFactsNotIncludedInOpeningState)
+    {
+        return ApplyVisitFacts(
+            membershipId,
+            CalculateFromOpeningState(issueTerms, openingState),
+            visitFactsNotIncludedInOpeningState,
+            nameof(visitFactsNotIncludedInOpeningState));
+    }
+
     public static MembershipCalculatedState ApplyExtensionCalculation(
         MembershipIssueTerms? issueTerms,
         MembershipCalculatedState? baseline,
@@ -141,5 +166,103 @@ public static class MembershipStateCalculator
         }
 
         return DateOnly.FromDayNumber((int)effectiveEndDayNumber);
+    }
+
+    private static MembershipCalculatedState ApplyVisitFacts(
+        Guid membershipId,
+        MembershipCalculatedState baseline,
+        IEnumerable<MembershipVisitSourceFact>? visitFacts,
+        string parameterName)
+    {
+        if (membershipId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Membership id is required.",
+                nameof(membershipId));
+        }
+
+        ArgumentNullException.ThrowIfNull(visitFacts, parameterName);
+
+        var facts = visitFacts.ToArray();
+        var visitIds = new HashSet<Guid>();
+        foreach (var fact in facts)
+        {
+            if (fact is null)
+            {
+                throw new ArgumentException(
+                    "Membership Visit facts cannot contain a missing item.",
+                    parameterName);
+            }
+
+            if (fact.MembershipId != membershipId)
+            {
+                throw new ArgumentException(
+                    "Membership Visit facts must belong to the selected membership.",
+                    parameterName);
+            }
+
+            if (!visitIds.Add(fact.VisitId))
+            {
+                throw new ArgumentException(
+                    "Each Membership Visit source id must be unique.",
+                    parameterName);
+            }
+        }
+
+        var activeFacts = facts
+            .Where(fact => fact.IsActiveCounted)
+            .OrderBy(fact => fact.OccurredAt)
+            .ThenBy(fact => fact.RecordedAt)
+            .ThenBy(fact => fact.VisitId)
+            .ToArray();
+        var countedVisits = (long)baseline.CountedVisits + activeFacts.Length;
+        var remainingVisits = (long)baseline.RemainingVisits - activeFacts.Length;
+        var negativeBalance = Math.Max(0L, -remainingVisits);
+
+        if (countedVisits > int.MaxValue
+            || remainingVisits < int.MinValue
+            || remainingVisits > int.MaxValue
+            || negativeBalance > int.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(
+                parameterName,
+                "Membership Visit facts exceed the supported calculated-state range.");
+        }
+
+        var firstNegativeVisitId = baseline.FirstNegativeVisitId;
+        var firstNegativeVisitDate = baseline.FirstNegativeVisitDate;
+        var runningRemainingVisits = (long)baseline.RemainingVisits;
+        foreach (var fact in activeFacts)
+        {
+            var previousRemainingVisits = runningRemainingVisits;
+            runningRemainingVisits--;
+
+            if (firstNegativeVisitId is null
+                && firstNegativeVisitDate is null
+                && previousRemainingVisits >= 0
+                && runningRemainingVisits < 0)
+            {
+                firstNegativeVisitId = fact.VisitId;
+                firstNegativeVisitDate = fact.BusinessDate;
+            }
+        }
+
+        var lastCountedVisitAt = baseline.LastCountedVisitAt;
+        if (activeFacts.Length > 0
+            && (lastCountedVisitAt is null
+                || activeFacts[^1].OccurredAt > lastCountedVisitAt.Value))
+        {
+            lastCountedVisitAt = activeFacts[^1].OccurredAt;
+        }
+
+        return new MembershipCalculatedState(
+            (int)countedVisits,
+            (int)remainingVisits,
+            (int)negativeBalance,
+            firstNegativeVisitId,
+            firstNegativeVisitDate,
+            baseline.ExtensionDays,
+            baseline.EffectiveEndDate,
+            lastCountedVisitAt);
     }
 }

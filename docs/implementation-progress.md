@@ -3346,3 +3346,46 @@ Commits:
 Next recommended step:
 
 - Continue Milestone 5 with only a Memberships-owned pure Visit source-fact/eligibility calculation contract and focused domain tests for explicit selection, start/expiry eligibility, deterministic counted ordering, native vs honest opening-state baselines, signed remaining/negative state, known/unknown first-negative identity/date, cancellation exclusion and ADR-014 Freeze blocking inputs. Keep PostgreSQL Visit tables/commands, idempotency/audit orchestration, Razor/htmx UI and adjustment-rebuild handling outside that calculation-only step.
+
+## Step 86 - Pure Memberships Visit eligibility and source-fact calculation
+
+Status: completed.
+
+Plan alignment:
+
+- Close only the pure Visit-calculation test gap still recorded by the Milestone 5 acceptance review; do not start Milestone 6 persistence or commands.
+- Keep one explicit selected Membership id at the boundary and reject Visit/Freeze inputs from another Membership instead of inferring or reallocating a candidate.
+- Keep Visits as the future source owner while Memberships owns Visit-date eligibility, required warning acknowledgements, counted/remaining/negative formulas and first-negative identity/date.
+- Treat lifecycle-active Memberships on or after `start_date` as selectable; expired selection remains eligible with typed acknowledgement, while future-start/canceled/corrected Memberships remain ineligible.
+- Block a membership Visit on either inclusive endpoint of an active Freeze with stable `visit_during_freeze`; canceled Freeze sources do not block.
+- Recalculate active counted Visit facts by `occurred_at`, server `recorded_at`, then stable Visit id; retain canceled facts in the input contract but exclude them from every calculated value.
+- Start native history from the issue-time visit limit. Start incomplete history from the signed opening declaration and accept only facts not already represented in that baseline, without inventing historical Visits or first-negative metadata.
+- Keep `membership_adjustments` rebuild participation as the next separate Milestone 5 closure step.
+
+Scope:
+
+- Add immutable `MembershipVisitSourceFact`/status and `MembershipVisitFreezeSource` inputs with explicit Membership ownership and source identity validation.
+- Add `MembershipVisitEligibilityPolicy`, immutable result/status, stable error codes and typed expired/zero/negative acknowledgement requirements.
+- Extend `MembershipStateCalculator` with native and opening-baseline Visit-fact entry points, deterministic ordering, signed state, first-negative transition, cancellation exclusion, last-counted Visit and representable-range checks.
+- Add 17 focused domain cases across `MembershipVisitCalculationTests` and `MembershipVisitEligibilityPolicyTests`.
+- Update the Milestone 5 acceptance review; add no EF record/configuration/migration, PostgreSQL Visit table/index/constraint, command handler, DI, idempotency, audit, Razor/htmx or UI change.
+
+Validation:
+
+- Focused `MembershipVisit*` validation passed all 17 new cases.
+- Full core test validation passed all 210 cases.
+- Focused `MembershipFormulaOwnershipTests` validation passed both cases, so the new formula-bearing types remain owned by Memberships.
+- The first standalone format invocation used a nonexistent `.slnx` filename and stopped before analysis; rerunning against the repository's `BodyLife.Crm.sln` passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 210 core tests, 35 web tests, 250 PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this pure domain step generated no migration.
+- The standard `graphify update .` attempt reached Python's unavailable forkserver and failed with `Errno 95`; the same full structural rebuild was rerun sequentially and completed with 4951 nodes, 10122 edges and 575 communities.
+- `graphify . --update` was attempted for the acceptance/progress documentation changes but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): calculate visit eligibility and state`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Finish the last Milestone 5 closure gate by defining the controlled `membership_adjustments` calculation contract and making active visit/day adjustments participate in `MembershipStateCacheRebuilder` with focused domain and PostgreSQL rebuild/repair tests. Preserve inactive adjustment history, reject unsupported money semantics until Payments owns them, and add no Visit schema/commands or reception UI in that adjustment-only step.
