@@ -4402,3 +4402,114 @@ Next recommended step:
   Register only the handler/query dependencies needed by that boundary and
   cover PostgreSQL ownership/status ordering. Keep the Razor cancel form,
   Playwright mutation flow and report-source projection for following steps.
+
+## Step 98 - Canonical Client Visit rows query
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the next unfinished Milestone 6 read-side prerequisite after the
+  transactional `CancelVisit` handler. This step exposes Visits-owned source
+  rows needed by profile/history composition without implementing the Razor
+  correction form or report query.
+- Keep `GetClientProfile` as the future composition boundary while Visits owns
+  the canonical Visit, consumption and cancellation projection. The query does
+  not calculate Membership state or reinterpret report totals.
+- Preserve retained history: active and canceled Visits remain queryable;
+  membership Visits include their counted consumption and issue-time Membership
+  type name snapshot; canceled Visits require their explicit retained
+  cancellation fact.
+- Return server-authoritative row actions. Open-day active Visits expose the
+  Admin/Owner cancel action, reconciled-day active Visits expose Owner-only
+  permission or an explicit Admin denial, and canceled rows expose no cancel
+  action.
+- Since a day reconciliation workflow/table is still outside current Milestone
+  6 scope, register an explicit open-day provider behind the public status
+  boundary. A future reconciliation implementation can replace that provider
+  without changing the query or command contracts.
+- Keep profile composition/rendering, the Razor/htmx cancel form, Playwright
+  cancellation mutation and Reports-owned daily source projection for later
+  bounded steps.
+
+Scope:
+
+- Add `GetClientVisitRowsQuery`, result/status types and a bounded page contract
+  with default limit 20, maximum limit 100 and `HasMore` indication.
+- Add immutable public Visit row, counted-consumption and cancellation models.
+  Rows retain Visit actor/session, occurred/recorded times, kind, entry origin,
+  batch/comment, active/canceled status, Membership id/type snapshot and full
+  cancellation reason/actor/session/origin metadata.
+- Extend `VisitActionKeys` with `visits.cancel` and the accepted Owner-only
+  policy name alongside the existing Admin/Owner policy.
+- Implement `GetClientVisitRowsQueryHandler` with canonical account/session
+  authorization, Client existence and limit validation, Client ownership
+  filtering and deterministic `occurred_at DESC, recorded_at DESC, id DESC`
+  ordering.
+- Load selected Visit, consumption/Membership snapshot and cancellation source
+  rows without tracking. Fail closed on duplicate/missing/mismatched source
+  shapes, unknown enum-like values, canceled Visit without retained
+  cancellation, membership Visit without exactly one counted consumption or
+  Visit/consumption lifecycle disagreement.
+- Cache day status once per distinct active Visit business date and attach a
+  row-level `QueryPermissionSet`; reads create no business audit entry.
+- Add `VisitQuerySupport` for module-local actor authorization, source mapping
+  and cancel permission construction, plus a stateless
+  `OpenVisitDayReconciliationStatusProvider` implementation.
+- Register the new query, day-status provider and locked source preparer, and
+  make the already validated transactional `CancelVisit` command handler
+  resolvable through the application DI boundary.
+- Add six focused tests in a separate PostgreSQL fixture: owned active/canceled
+  projection and retained metadata, no read audit, deterministic tie ordering
+  and paging, Owner/Admin reconciled-day actions, empty/invalid/not-found/
+  inactive-actor responses, inconsistent retained source rejection and full DI
+  resolution of the query plus `CancelVisit` command.
+- Add no EF record/configuration/migration and no Razor, JavaScript, CSS,
+  profile model, Playwright flow or report-source change.
+
+Validation:
+
+- The first narrow build found that a primary-constructor default could not
+  reference a constant declared in the record body; using the same literal
+  default fixed the contract without behavior change. The next build found two
+  short-circuit `out` assignments in source mapping; explicit initialization
+  fixed the compile-only issue.
+- The first test build found only an assertion against the intentionally
+  internal open-day implementation type. The test now verifies interface
+  lifetime and resolved behavior without widening the production API.
+- The final focused Infrastructure project build passed with 0 warnings/errors,
+  and focused `PostgreSqlGetClientVisitRowsQueryTests` passed all 6 cases
+  against Docker PostgreSQL.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` and
+  `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 309
+  PostgreSQL/architecture infrastructure tests, 30 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714174210_AddFreezeSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this read-only query/DI step generated no migration.
+- `graphify update .` completed the structural rebuild with 5741 nodes, 12382
+  edges and 626 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): query canonical Client Visit rows`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Compose `GetClientVisitRowsQuery` into the canonical Client profile and render
+  a compact read-only recent Visits section for tablet and phone. Show active vs
+  canceled state, membership/one-off/trial context, occurred/recorded and
+  backfill/fallback labels, cancellation reason and server permission state.
+  Keep the state-changing Razor cancel form and report-source projection for
+  subsequent steps.

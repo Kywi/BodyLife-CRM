@@ -61,6 +61,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeQueryHandler<GetMarkVisitOptionsQuery, GetMarkVisitOptionsResult>,
             GetMarkVisitOptionsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<GetClientVisitRowsQuery, GetClientVisitRowsResult>,
+            GetClientVisitRowsQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<CreateMembershipTypeCommand>,
@@ -84,6 +87,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<MarkVisitCommand>,
             MarkVisitCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<CancelVisitCommand>,
+            CancelVisitCommandHandler>();
+        services.TryAddSingleton<
+            IVisitDayReconciliationStatusProvider,
+            OpenVisitDayReconciliationStatusProvider>();
+        services.AddScoped<CancelVisitSourcePreparer>();
         services.AddScoped<MembershipVisitFreezeSourceReader>();
         services.AddScoped<IMembershipVisitFreezeSourceProvider>(provider =>
             provider.GetRequiredService<MembershipVisitFreezeSourceReader>());
