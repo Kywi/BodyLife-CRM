@@ -576,14 +576,10 @@
   "574": ".SourceMetadataRejectsMissingValues",
   "575": ".SourceMetadataRejectsMissingValues",
   "576": "MutableTimeProvider",
-  "577": ".CheckHealthAsync",
   "578": "MembershipVisitSourceFact",
-  "579": "MembershipOpeningState",
   "580": "AddVisitsSourceFacts",
-  "581": "BodyLifeAuthorizationPolicies.cs",
   "582": "20260709204232_AddBusinessAuditEntries.Designer.cs",
   "583": "20260712192355_AddMembershipTypesCatalog.Designer.cs",
   "584": "20260713144951_AddMembershipExtensionDays.Designer.cs",
-  "585": ".AddBodyLifePersistence",
-  "586": ".PersistenceRegistrationExposesScopedStatePersistenceCoordinator"
+  "585": ".AddBodyLifePersistence"
 }
