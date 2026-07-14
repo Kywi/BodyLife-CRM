@@ -68,11 +68,11 @@ Membership derived state:
 
 - `base_end_date` - deterministic from `start_date + duration_days_snapshot - 1 day`.
 - `counted_visits` - active `visit_consumptions` for membership, where visit and consumption are not canceled.
-- `remaining_visits` - signed value: `visits_limit_snapshot - counted_visits`, adjusted by opening state/negative closure rules when applicable.
+- `remaining_visits` - signed value: `visits_limit_snapshot - counted_visits + active visit_balance adjustment deltas`, or the honest opening-state declaration plus adjustments recorded after that declaration; negative-closure rules apply when available.
 - `negative_balance` - `max(0, -remaining_visits)`.
 - `first_negative_visit_date` і optional `first_negative_visit_id` - earliest counted visit that makes running balance negative.
-- `extension_days` - count of unique calendar dates from active freezes, applicable non-working periods and explicit extension adjustments.
-- `effective_end_date` - `base_end_date + extension_days + active adjustment days`.
+- `extension_days` - count of unique calendar dates from active freezes/applicable non-working periods plus positive active `extension_days` adjustment deltas.
+- `effective_end_date` - `base_end_date + extension_days`.
 - `last_counted_visit_at` - last active counted visit for inactive-client reports.
 - warnings/read flags: ending soon, low remaining, zero visits, negative, expired by date.
 
@@ -83,7 +83,7 @@ Recommended derived tables:
 | Table | Purpose | Source | Rebuild policy |
 |---|---|---|---|
 | `membership_state_cache` | One row per issued membership with stable derived values. | `issued_memberships`, `membership_opening_states`, `visit_consumptions`, `visits`, `freezes`, `non_working_periods`, `non_working_period_applications`, `membership_adjustments`, negative closures. | Recalculate synchronously in the same transaction for single-membership commands; batch/job recalculation allowed after mass non-working period changes. |
-| `membership_extension_days` | Explainable extension day rows. Multiple sources may point to same calendar date; state counts distinct dates. | Active freezes, active non-working periods, active extension adjustments. | Delete/rebuild for affected memberships during recalculation. It is derived, not source truth. |
+| `membership_extension_days` | Explainable extension day rows. Multiple date-bearing sources may point to the same calendar date; state counts distinct row dates. The aggregate cache total may additionally contain honest opening-state or aggregate adjustment days without reconstructed synthetic dates. | Active freezes, active non-working periods and future adjustment contracts that identify concrete calendar days. A numeric `extension_days` adjustment remains explained by its canonical source row instead of fabricated day rows. | Delete/rebuild for affected memberships during recalculation. It is derived, not source truth. |
 | `client_search_index` or stored normalized columns | Fast search by card/name/phone/last 4. | `clients`, current `client_card_assignments`. | Updated in client/card transactions. |
 
 Recalculation trigger matrix:
@@ -96,6 +96,7 @@ Recalculation trigger matrix:
 | Add/cancel/correct freeze | Affected membership. |
 | Add/cancel/correct non-working period | All memberships in application scope, plus any later corrected memberships that overlap if policy says period should apply. |
 | Create/update opening state | Affected membership. |
+| Add/cancel/correct supported membership adjustment | Affected membership; unsupported active type/delta shape fails recalculation. |
 | Negative closure or coverage change | Source membership, covering membership and listed closure visits. |
 | Backdated/paper fallback entry | Same as normal command, using `occurred_at` for business calculation and `recorded_at` for audit/report explanation. |
 
@@ -127,7 +128,7 @@ The deterministic card, phone, last-four and name representation used by these f
 | `membership_types` | `id`, `name`, `duration_days`, `visits_limit`, `price_amount`, `price_currency`, `is_active`, `comment`, `created_at`, `updated_at`, `deactivated_at` | Referenced by issued memberships. | Owner-only create/edit/deactivate. No hard delete through app workflows. |
 | `issued_memberships` | `id`, `client_id`, `membership_type_id`, `type_name_snapshot`, `duration_days_snapshot`, `visits_limit_snapshot`, `price_amount_snapshot`, `price_currency_snapshot`, `start_date`, `base_end_date`, `issued_at`, `issued_by_account_id`, `status`, `entry_origin`, `entry_batch_id`, `comment` | `client_id -> clients.id`, `membership_type_id -> membership_types.id` | Snapshot fields are immutable after issue except explicit membership correction. `status`: active/canceled/corrected/current marker for queries. |
 | `membership_opening_states` | `id`, `membership_id`, `opening_as_of_date`, `declared_remaining_visits`, `declared_negative_balance`, `known_effective_end_date`, `known_extension_days`, `source_reference`, `reason`, `recorded_at`, `recorded_by_account_id`, `status` | `membership_id -> issued_memberships.id` | Source fact for manual backfill when old history is incomplete. At most one active opening state per membership. |
-| `membership_adjustments` | `id`, `membership_id`, `adjustment_type`, `days_delta`, `visits_delta`, `money_delta`, `effective_date`, `reason`, `recorded_at`, `recorded_by_account_id`, `status` | `membership_id -> issued_memberships.id` | Escape hatch for explicit audited corrections. Prefer domain-specific correction tables when possible. |
+| `membership_adjustments` | `id`, `membership_id`, `adjustment_type`, `days_delta`, `visits_delta`, `money_delta`, `effective_date`, `reason`, `recorded_at`, `recorded_by_account_id`, `recorded_session_id`, `entry_origin`, `entry_batch_id`, `status` | `membership_id -> issued_memberships.id` | Escape hatch for explicit audited corrections. Active v1 calculation accepts only positive day-only `extension_days` and signed non-zero visit-only `visit_balance`; unsupported active money/mixed/unknown shapes fail rebuild. Canceled/corrected history is retained. Prefer domain-specific correction tables when possible. |
 | `membership_state_cache` | `membership_id`, `counted_visits`, `remaining_visits`, `negative_balance`, `first_negative_visit_id`, `first_negative_visit_date`, `extension_days`, `effective_end_date`, `last_counted_visit_at`, `recalculated_at`, `recalculation_version` | `membership_id -> issued_memberships.id` | Derived. One row per membership. Rebuildable from source facts. |
 | `membership_extension_days` | `id`, `membership_id`, `extension_date`, `source_type`, `source_id`, `source_label`, `is_active`, `recalculated_at` | `membership_id -> issued_memberships.id` | Derived explanation rows. `extension_days` counts distinct active `extension_date`. |
 

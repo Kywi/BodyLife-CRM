@@ -3389,3 +3389,75 @@ Commits:
 Next recommended step:
 
 - Finish the last Milestone 5 closure gate by defining the controlled `membership_adjustments` calculation contract and making active visit/day adjustments participate in `MembershipStateCacheRebuilder` with focused domain and PostgreSQL rebuild/repair tests. Preserve inactive adjustment history, reject unsupported money semantics until Payments owns them, and add no Visit schema/commands or reception UI in that adjustment-only step.
+
+## Step 87 - Controlled membership adjustment calculation and rebuild
+
+Status: completed.
+
+Plan alignment:
+
+- Close only the final Milestone 5 technical gate recorded after Step 86; add no
+  Visit schema, command, audit workflow or reception UI.
+- Keep `membership_adjustments` as canonical retained source history and
+  `membership_state_cache` as replaceable derived state.
+- Accept only two active v1 calculation shapes: positive day-only
+  `extension_days` and signed non-zero visit-only `visit_balance`.
+- Make `visit_balance` adjust signed remaining/negative state without changing
+  counted Visits or inventing first-negative Visit metadata.
+- Make `extension_days` adjust the aggregate extension total and effective end
+  without exposing a direct derived-state setter or fabricating calendar-day
+  explanation rows.
+- Preserve canceled/corrected rows while excluding them from current state;
+  reject active money, unknown, mixed and negative-day semantics until their
+  owning workflow defines them.
+- Treat an active opening declaration as including facts recorded through its
+  own `recorded_at`; apply only later adjustment records so backdated entries
+  can participate without double-counting the declared baseline.
+- Raise the cache recalculation version from 2 to 3 so older derived rows are
+  detected and repaired under the adjustment-aware policy.
+
+Scope:
+
+- Add immutable `MembershipAdjustmentSourceFact`, source status and stable
+  controlled type literals in Memberships.
+- Extend `MembershipStateCalculator` with native and opening-baseline adjustment
+  entry points, identity/shape validation, signed arithmetic and overflow
+  protection.
+- Extend `MembershipStateCacheRebuilder` to load retained adjustment facts under
+  the issued-membership row lock, enforce the opening-state recording-time
+  cutover, calculate version 3 state and roll back on unsupported active facts.
+- Add 11 focused domain cases and four new PostgreSQL rebuild cases for native
+  repair, inactive-history retention, opening cutover and rollback safety.
+- Synchronize the domain model, data architecture and Milestone 5 acceptance
+  review; accept Milestone 5 as complete for Milestone 6 handoff.
+- Add no EF record/configuration/migration, adjustment writer/command,
+  idempotency/audit orchestration, Visit table/handler, Razor/htmx or UI change.
+
+Validation:
+
+- Focused `MembershipAdjustmentCalculationTests` validation passed all 11 new
+  domain cases.
+- Focused `PostgreSqlMembershipStateCacheRebuildTests` validation passed all 16
+  cases against Docker PostgreSQL, including the four new adjustment scenarios.
+- Solution formatting/analyzer verification passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 221 core tests, 35 web tests, 254 PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this
+  calculation/rebuild step generated no migration.
+- `graphify update .` completed the structural rebuild with 4993 nodes, 10252
+  edges and 576 communities.
+- `graphify . --update` was attempted for the project-knowledge documentation
+  changes but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): rebuild state from adjustments`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Start Milestone 6 with only canonical PostgreSQL source-fact storage for
+  `visits`, `visit_consumptions` and `visit_cancellations`, including ADR-014
+  membership/one-off/trial shape constraints, retained cancellation history,
+  indexes and focused migration/storage tests. Keep `MarkVisit`/`CancelVisit`
+  command orchestration, cache recalculation adapter, audit, reports and
+  Razor/htmx UI outside that storage-only step.

@@ -1,6 +1,7 @@
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.Modules.Memberships;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
@@ -235,6 +236,162 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         AssertInitialState(await ReadStateCacheAsync(
             database.ConnectionString,
             seeded.MembershipId));
+    }
+
+    [PostgreSqlFact]
+    public async Task ActiveVisitAndDayAdjustmentsRepairCacheFromIssuedBaseline()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        await InsertStateCacheAsync(database.ConnectionString, seeded.MembershipId);
+        await InsertAdjustmentAsync(
+            database.ConnectionString,
+            seeded,
+            MembershipAdjustmentTypes.VisitBalance,
+            visitsDelta: -3);
+        await InsertAdjustmentAsync(
+            database.ConnectionString,
+            seeded,
+            MembershipAdjustmentTypes.ExtensionDays,
+            daysDelta: 2,
+            recordedAt: TestNow.AddMinutes(2));
+
+        var result = await CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId);
+
+        Assert.Equal(MembershipStateCacheRebuildStatus.Repaired, result.Status);
+        Assert.True(result.DriftDetected);
+        AssertOpeningBaseline(
+            await ReadStateCacheAsync(database.ConnectionString, seeded.MembershipId),
+            remainingVisits: -1,
+            negativeBalance: 1,
+            extensionDays: 2,
+            effectiveEndDate: new DateOnly(2026, 8, 1));
+    }
+
+    [PostgreSqlFact]
+    public async Task InactiveUnsupportedAdjustmentHistoryIsRetainedAndIgnored()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        await InsertAdjustmentAsync(
+            database.ConnectionString,
+            seeded,
+            MembershipAdjustmentTypes.VisitBalance,
+            visitsDelta: 1);
+        await InsertAdjustmentAsync(
+            database.ConnectionString,
+            seeded,
+            "money_correction",
+            moneyDelta: 150m,
+            status: "canceled",
+            recordedAt: TestNow.AddMinutes(2));
+        await InsertAdjustmentAsync(
+            database.ConnectionString,
+            seeded,
+            "legacy_mixed",
+            daysDelta: -2,
+            visitsDelta: 4,
+            status: "corrected",
+            recordedAt: TestNow.AddMinutes(3));
+
+        var result = await CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId);
+
+        Assert.Equal(MembershipStateCacheRebuildStatus.Created, result.Status);
+        AssertOpeningBaseline(
+            await ReadStateCacheAsync(database.ConnectionString, seeded.MembershipId),
+            remainingVisits: 3,
+            negativeBalance: 0,
+            extensionDays: 0,
+            effectiveEndDate: TestBaseEndDate);
+        Assert.Equal(
+            3L,
+            await CountAdjustmentRowsAsync(
+                database.ConnectionString,
+                seeded.MembershipId));
+    }
+
+    [PostgreSqlFact]
+    public async Task OpeningStateAppliesOnlyAdjustmentsRecordedAfterDeclaration()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        await InsertAdjustmentAsync(
+            database.ConnectionString,
+            seeded,
+            MembershipAdjustmentTypes.VisitBalance,
+            visitsDelta: -1,
+            recordedAt: TestNow.AddMinutes(-1));
+        await InsertOpeningStateAsync(
+            database.ConnectionString,
+            seeded,
+            declaredRemainingVisits: 1,
+            declaredNegativeBalance: 0);
+        await InsertAdjustmentAsync(
+            database.ConnectionString,
+            seeded,
+            MembershipAdjustmentTypes.VisitBalance,
+            visitsDelta: 2,
+            recordedAt: TestNow.AddMinutes(1));
+        await InsertAdjustmentAsync(
+            database.ConnectionString,
+            seeded,
+            MembershipAdjustmentTypes.ExtensionDays,
+            daysDelta: 2,
+            recordedAt: TestNow.AddMinutes(2));
+
+        var result = await CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId);
+
+        Assert.Equal(MembershipStateCacheRebuildStatus.Created, result.Status);
+        AssertOpeningBaseline(
+            await ReadStateCacheAsync(database.ConnectionString, seeded.MembershipId),
+            remainingVisits: 3,
+            negativeBalance: 0,
+            extensionDays: 2,
+            effectiveEndDate: new DateOnly(2026, 8, 1));
+        Assert.Equal(
+            3L,
+            await CountAdjustmentRowsAsync(
+                database.ConnectionString,
+                seeded.MembershipId));
+    }
+
+    [PostgreSqlFact]
+    public async Task UnsupportedActiveAdjustmentRollsBackWithoutCacheMutation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        await InsertStateCacheAsync(database.ConnectionString, seeded.MembershipId);
+        await InsertAdjustmentAsync(
+            database.ConnectionString,
+            seeded,
+            "money_correction",
+            moneyDelta: 150m);
+        var before = await ReadStateCacheAsync(
+            database.ConnectionString,
+            seeded.MembershipId);
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+            CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId));
+
+        Assert.Equal("adjustmentFacts", exception.ParamName);
+        Assert.Equal(
+            before,
+            await ReadStateCacheAsync(
+                database.ConnectionString,
+                seeded.MembershipId));
+        Assert.Equal(
+            1L,
+            await CountAdjustmentRowsAsync(
+                database.ConnectionString,
+                seeded.MembershipId));
     }
 
     [PostgreSqlFact]
@@ -610,6 +767,79 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
 
+    private static async Task<Guid> InsertAdjustmentAsync(
+        string connectionString,
+        SeededMembership seeded,
+        string adjustmentType,
+        int? daysDelta = null,
+        int? visitsDelta = null,
+        decimal? moneyDelta = null,
+        string status = "active",
+        DateTimeOffset? recordedAt = null)
+    {
+        var adjustmentId = Guid.NewGuid();
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.membership_adjustments (
+                id,
+                membership_id,
+                adjustment_type,
+                days_delta,
+                visits_delta,
+                money_delta,
+                effective_date,
+                reason,
+                recorded_at,
+                recorded_by_account_id,
+                recorded_session_id,
+                entry_origin,
+                entry_batch_id,
+                status)
+            values (
+                @id,
+                @membership_id,
+                @adjustment_type,
+                @days_delta,
+                @visits_delta,
+                @money_delta,
+                @effective_date,
+                'Controlled migration adjustment',
+                @recorded_at,
+                @recorded_by_account_id,
+                @recorded_session_id,
+                'manual_backfill',
+                null,
+                @status)
+            """;
+        command.Parameters.AddWithValue("id", adjustmentId);
+        command.Parameters.AddWithValue("membership_id", seeded.MembershipId);
+        command.Parameters.AddWithValue("adjustment_type", adjustmentType);
+        command.Parameters.Add("days_delta", NpgsqlDbType.Integer).Value =
+            daysDelta ?? (object)DBNull.Value;
+        command.Parameters.Add("visits_delta", NpgsqlDbType.Integer).Value =
+            visitsDelta ?? (object)DBNull.Value;
+        command.Parameters.Add("money_delta", NpgsqlDbType.Numeric).Value =
+            moneyDelta ?? (object)DBNull.Value;
+        command.Parameters.AddWithValue(
+            "effective_date",
+            NpgsqlDbType.Date,
+            new DateOnly(2026, 7, 14));
+        command.Parameters.AddWithValue(
+            "recorded_at",
+            recordedAt ?? TestNow.AddMinutes(1));
+        command.Parameters.AddWithValue(
+            "recorded_by_account_id",
+            seeded.ActorAccountId);
+        command.Parameters.AddWithValue("recorded_session_id", seeded.SessionId);
+        command.Parameters.AddWithValue("status", status);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+
+        return adjustmentId;
+    }
+
     private static async Task InsertStateCacheAsync(
         string connectionString,
         Guid membershipId,
@@ -718,6 +948,24 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
     {
         return database.ExecuteScalarAsync<long>(
             "select count(*) from bodylife.membership_state_cache");
+    }
+
+    private static async Task<long> CountAdjustmentRowsAsync(
+        string connectionString,
+        Guid membershipId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select count(*)
+            from bodylife.membership_adjustments
+            where membership_id = @membership_id
+            """;
+        command.Parameters.AddWithValue("membership_id", membershipId);
+
+        return (long)(await command.ExecuteScalarAsync())!;
     }
 
     private static void AssertOpeningBaseline(

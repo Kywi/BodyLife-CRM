@@ -9,7 +9,7 @@ public sealed class MembershipStateCacheRebuilder(
     BodyLifeDbContext dbContext,
     TimeProvider timeProvider)
 {
-    public const int CurrentRecalculationVersion = 2;
+    public const int CurrentRecalculationVersion = 3;
 
     public async Task<MembershipStateCacheRebuildResult> RebuildAsync(
         Guid membershipId,
@@ -80,16 +80,38 @@ public sealed class MembershipStateCacheRebuilder(
                 openingState => openingState.MembershipId == membershipId
                     && openingState.Status == "active",
                 cancellationToken);
+        var adjustmentQuery = dbContext.Set<MembershipAdjustmentRecord>()
+            .AsNoTracking()
+            .Where(adjustment => adjustment.MembershipId == membershipId);
+        if (openingStateSource is not null)
+        {
+            var openingRecordedAt = openingStateSource.RecordedAt;
+            adjustmentQuery = adjustmentQuery.Where(
+                adjustment => adjustment.RecordedAt > openingRecordedAt);
+        }
+
+        var adjustmentSources = await adjustmentQuery
+            .OrderBy(adjustment => adjustment.RecordedAt)
+            .ThenBy(adjustment => adjustment.Id)
+            .ToArrayAsync(cancellationToken);
+        var adjustmentFacts = adjustmentSources
+            .Select(MapAdjustmentSource)
+            .ToArray();
         var calculatedState = openingStateSource is null
-            ? MembershipStateCalculator.CalculateInitial(issueTerms)
-            : MembershipStateCalculator.CalculateFromOpeningState(
+            ? MembershipStateCalculator.CalculateFromAdjustmentFacts(
+                membershipId,
+                issueTerms,
+                adjustmentFacts)
+            : MembershipStateCalculator.CalculateFromOpeningStateAndAdjustmentFacts(
+                membershipId,
                 issueTerms,
                 MembershipOpeningState.FromStoredSource(
                     openingStateSource.OpeningAsOfDate,
                     openingStateSource.DeclaredRemainingVisits,
                     openingStateSource.DeclaredNegativeBalance,
                     openingStateSource.KnownEffectiveEndDate,
-                    openingStateSource.KnownExtensionDays));
+                    openingStateSource.KnownExtensionDays),
+                adjustmentFacts);
         var cache = await dbContext.Set<MembershipStateCacheRecord>()
             .SingleOrDefaultAsync(
                 state => state.MembershipId == membershipId,
@@ -157,5 +179,28 @@ public sealed class MembershipStateCacheRebuilder(
         cache.LastCountedVisitAt = calculatedState.LastCountedVisitAt;
         cache.RecalculatedAt = recalculatedAt;
         cache.RecalculationVersion = CurrentRecalculationVersion;
+    }
+
+    private static MembershipAdjustmentSourceFact MapAdjustmentSource(
+        MembershipAdjustmentRecord source)
+    {
+        var status = source.Status switch
+        {
+            "active" => MembershipAdjustmentSourceStatus.Active,
+            "canceled" => MembershipAdjustmentSourceStatus.Canceled,
+            "corrected" => MembershipAdjustmentSourceStatus.Corrected,
+            _ => throw new InvalidOperationException(
+                $"Membership adjustment status '{source.Status}' is not supported."),
+        };
+
+        return new MembershipAdjustmentSourceFact(
+            source.MembershipId,
+            source.Id,
+            source.AdjustmentType,
+            source.DaysDelta,
+            source.VisitsDelta,
+            source.MoneyDelta,
+            source.EffectiveDate,
+            status);
     }
 }

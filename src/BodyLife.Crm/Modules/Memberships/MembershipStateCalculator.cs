@@ -89,6 +89,37 @@ public static class MembershipStateCalculator
             nameof(visitFactsNotIncludedInOpeningState));
     }
 
+    public static MembershipCalculatedState CalculateFromAdjustmentFacts(
+        Guid membershipId,
+        MembershipIssueTerms? issueTerms,
+        IEnumerable<MembershipAdjustmentSourceFact>? adjustmentFacts)
+    {
+        ArgumentNullException.ThrowIfNull(issueTerms);
+
+        return ApplyAdjustmentFacts(
+            membershipId,
+            issueTerms,
+            CalculateInitial(issueTerms),
+            adjustmentFacts,
+            nameof(adjustmentFacts));
+    }
+
+    public static MembershipCalculatedState CalculateFromOpeningStateAndAdjustmentFacts(
+        Guid membershipId,
+        MembershipIssueTerms? issueTerms,
+        MembershipOpeningState? openingState,
+        IEnumerable<MembershipAdjustmentSourceFact>? adjustmentFactsNotIncludedInOpeningState)
+    {
+        ArgumentNullException.ThrowIfNull(issueTerms);
+
+        return ApplyAdjustmentFacts(
+            membershipId,
+            issueTerms,
+            CalculateFromOpeningState(issueTerms, openingState),
+            adjustmentFactsNotIncludedInOpeningState,
+            nameof(adjustmentFactsNotIncludedInOpeningState));
+    }
+
     public static MembershipCalculatedState ApplyExtensionCalculation(
         MembershipIssueTerms? issueTerms,
         MembershipCalculatedState? baseline,
@@ -264,5 +295,102 @@ public static class MembershipStateCalculator
             baseline.ExtensionDays,
             baseline.EffectiveEndDate,
             lastCountedVisitAt);
+    }
+
+    private static MembershipCalculatedState ApplyAdjustmentFacts(
+        Guid membershipId,
+        MembershipIssueTerms issueTerms,
+        MembershipCalculatedState baseline,
+        IEnumerable<MembershipAdjustmentSourceFact>? adjustmentFacts,
+        string parameterName)
+    {
+        if (membershipId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Membership id is required.",
+                nameof(membershipId));
+        }
+
+        ArgumentNullException.ThrowIfNull(adjustmentFacts, parameterName);
+
+        var adjustmentIds = new HashSet<Guid>();
+        long extensionDaysDelta = 0;
+        long visitsDelta = 0;
+        foreach (var fact in adjustmentFacts)
+        {
+            if (fact is null)
+            {
+                throw new ArgumentException(
+                    "Membership adjustment facts cannot contain a missing item.",
+                    parameterName);
+            }
+
+            if (fact.MembershipId != membershipId)
+            {
+                throw new ArgumentException(
+                    "Membership adjustment facts must belong to the selected membership.",
+                    parameterName);
+            }
+
+            if (!adjustmentIds.Add(fact.AdjustmentId))
+            {
+                throw new ArgumentException(
+                    "Each Membership adjustment source id must be unique.",
+                    parameterName);
+            }
+
+            if (!fact.IsActive)
+            {
+                continue;
+            }
+
+            switch (fact.AdjustmentType)
+            {
+                case MembershipAdjustmentTypes.ExtensionDays
+                    when fact.DaysDelta is > 0
+                        && fact.VisitsDelta is null
+                        && fact.MoneyDelta is null:
+                    extensionDaysDelta += fact.DaysDelta.Value;
+                    break;
+
+                case MembershipAdjustmentTypes.VisitBalance
+                    when fact.VisitsDelta is not null and not 0
+                        && fact.DaysDelta is null
+                        && fact.MoneyDelta is null:
+                    visitsDelta += fact.VisitsDelta.Value;
+                    break;
+
+                default:
+                    throw new ArgumentException(
+                        "Active Membership adjustment type or delta shape is not supported.",
+                        parameterName);
+            }
+        }
+
+        var extensionDays = (long)baseline.ExtensionDays + extensionDaysDelta;
+        var remainingVisits = (long)baseline.RemainingVisits + visitsDelta;
+        var negativeBalance = Math.Max(0L, -remainingVisits);
+        var effectiveEndDayNumber = (long)issueTerms.BaseEndDate.DayNumber + extensionDays;
+
+        if (extensionDays > int.MaxValue
+            || remainingVisits < int.MinValue
+            || remainingVisits > int.MaxValue
+            || negativeBalance > int.MaxValue
+            || effectiveEndDayNumber > DateOnly.MaxValue.DayNumber)
+        {
+            throw new ArgumentOutOfRangeException(
+                parameterName,
+                "Membership adjustment facts exceed the supported calculated-state range.");
+        }
+
+        return new MembershipCalculatedState(
+            baseline.CountedVisits,
+            (int)remainingVisits,
+            (int)negativeBalance,
+            remainingVisits < 0 ? baseline.FirstNegativeVisitId : null,
+            remainingVisits < 0 ? baseline.FirstNegativeVisitDate : null,
+            (int)extensionDays,
+            DateOnly.FromDayNumber((int)effectiveEndDayNumber),
+            baseline.LastCountedVisitAt);
     }
 }

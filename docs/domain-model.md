@@ -384,6 +384,7 @@ counted_visits = visits linked to or explicitly covered by the membership
                  where visit is not canceled
 
 remaining_visits = visit_limit_snapshot - counted_visits
+                   + active visit_balance adjustment deltas
 
 negative_balance = max(0, -remaining_visits)
 
@@ -393,11 +394,37 @@ first_negative_visit_date =
 extension_days =
   count of unique calendar days contributed by active Freeze and
   applicable NonWorkingDay source records
+  + active extension_days adjustment deltas
 
-effective_end_date = base_end_date + extension_days + explicit_adjustment_days
+effective_end_date = base_end_date + extension_days
 ```
 
 `remaining_visits` є signed value і може показуватися як `-1`, `-2` тощо. `negative_balance` - positive size of that negative state для reports і rules.
+
+### Controlled membership adjustments
+
+`membership_adjustments` is a narrow, audited migration/correction escape hatch,
+not a generic editor for calculated state. The v1 calculation contract accepts
+only these active source shapes:
+
+- `visit_balance`: exactly one signed, non-zero `visits_delta`; it changes
+  `remaining_visits` and derived `negative_balance` without changing
+  `counted_visits` or inventing first-negative Visit metadata;
+- `extension_days`: exactly one positive `days_delta`; it changes total
+  `extension_days` and therefore `effective_end_date` without directly editing
+  either derived value.
+
+An active money delta, unknown type, mixed delta shape or negative day extension
+is invalid and must fail recalculation. Money correction meaning remains owned by
+the future Payments workflow. Canceled/corrected adjustment rows stay in source
+history but do not affect current state.
+
+For a native Membership, all retained adjustments are validated and active
+supported rows are applied to the issued snapshot baseline. For an honest active
+opening state, the declaration is treated as containing all facts recorded up to
+its own `recorded_at`; only adjustment rows recorded later are applied. This
+recording-time cutover lets later backdated corrections participate without
+double-counting facts already represented by the declaration.
 
 ### Remaining visits and cancellation
 
