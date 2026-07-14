@@ -242,6 +242,11 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().InsertExternalCountedVisitAsync(clientId, membershipId);
     }
 
+    public Task CancelVisitAsync(Guid visitId, string reason)
+    {
+        return RequireDatabase().CancelVisitAsync(visitId, reason);
+    }
+
     public Task<Guid> InsertActiveFreezeForTodayAsync(Guid clientId, Guid membershipId)
     {
         return RequireDatabase().InsertActiveFreezeForTodayAsync(clientId, membershipId);

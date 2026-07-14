@@ -37,7 +37,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
     [Theory]
     [InlineData("tablet", 1024, 768, "BL-VISIT-TABLET", 3)]
     [InlineData("phone", 390, 844, "BL-VISIT-PHONE", 2)]
-    public async Task OrdinaryMembershipVisitRereadsCanonicalProfileOnTargetViewport(
+    public async Task VisitHistoryShowsActiveThenCanceledRowOnTargetViewport(
         string viewportName,
         int width,
         int height,
@@ -95,8 +95,58 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             var state = await _app.ReadMembershipStateAsync(membershipId);
             Assert.Equal(1, state.CountedVisits);
             Assert.Equal(expectedRemainingVisits, state.RemainingVisits);
+            var activeVisit = profile.Locator("[data-visit-status='active']").First;
+            await ExpectVisibleAsync(
+                activeVisit,
+                viewportName,
+                "active canonical Visit row");
+            Assert.Equal("true", await activeVisit.GetAttributeAsync("data-can-cancel"));
+            await ExpectVisibleAsync(
+                activeVisit.GetByText("Membership visit", new() { Exact = true }).First,
+                viewportName,
+                "membership Visit kind");
+            await ExpectVisibleAsync(
+                activeVisit.GetByText(
+                    viewportName == "tablet"
+                        ? "Tablet four-visit snapshot"
+                        : "Phone three-visit snapshot",
+                    new() { Exact = true }),
+                viewportName,
+                "issued membership snapshot");
+            await ExpectVisibleAsync(
+                activeVisit.GetByText($"Marked from {viewportName} reception."),
+                viewportName,
+                "Visit comment");
             await AssertFitsViewportAsync(page, viewportName, "canonical Visit profile");
             await CaptureVisualAsync(page, viewportName, "mark-visit-success");
+
+            var visitIdValue = await activeVisit.GetAttributeAsync("data-visit-id");
+            Assert.True(Guid.TryParse(visitIdValue, out var visitId));
+            const string cancellationReason = "Reception correction for Visit history smoke.";
+            await _app.CancelVisitAsync(visitId, cancellationReason);
+            await SubmitHtmxSearchAsync(page, cardNumber);
+
+            var canceledVisit = profile.Locator(
+                $"[data-visit-id='{visitId}'][data-visit-status='canceled']");
+            await ExpectVisibleAsync(
+                canceledVisit,
+                viewportName,
+                "canceled canonical Visit row");
+            Assert.Equal("false", await canceledVisit.GetAttributeAsync("data-can-cancel"));
+            await ExpectVisibleAsync(
+                canceledVisit.GetByText("Canceled", new() { Exact = true }),
+                viewportName,
+                "canceled Visit status");
+            await ExpectVisibleAsync(
+                canceledVisit.GetByText(cancellationReason, new() { Exact = true }),
+                viewportName,
+                "Visit cancellation reason");
+            Assert.Equal(0L, await _app.CountActiveVisitsAsync(clientId, "membership"));
+            Assert.Equal(0L, await _app.CountActiveVisitConsumptionsAsync(clientId));
+            var restoredState = await _app.ReadMembershipStateAsync(membershipId);
+            Assert.Equal(0, restoredState.CountedVisits);
+            await AssertFitsViewportAsync(page, viewportName, "canceled Visit profile");
+            await CaptureVisualAsync(page, viewportName, "visit-history-canceled");
         }
         finally
         {

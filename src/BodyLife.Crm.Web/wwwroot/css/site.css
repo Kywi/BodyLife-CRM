@@ -607,6 +607,142 @@ textarea:focus-visible,
   margin-top: 14px;
 }
 
+.recent-visits {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+
+.recent-visits-header,
+.recent-visit-row-header {
+  display: flex;
+  min-width: 0;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.recent-visits-header h3,
+.recent-visit-row-header h4 {
+  margin: 0;
+}
+
+.recent-visits-header h3 {
+  font-size: 1rem;
+}
+
+.recent-visits-empty {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.recent-visit-list {
+  display: grid;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent-visit-row {
+  min-width: 0;
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+}
+
+.recent-visit-row:last-child {
+  padding-bottom: 0;
+}
+
+.recent-visit-row-header h4 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.95rem;
+}
+
+.recent-visit-kind {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.recent-visit-meta {
+  display: grid;
+  margin: 10px 0 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+.recent-visit-meta div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.recent-visit-meta dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.recent-visit-meta dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.recent-visit-comment,
+.recent-visit-permission {
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.recent-visit-comment {
+  color: var(--muted);
+}
+
+.recent-visit-permission {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.permission-allowed {
+  color: var(--success);
+}
+
+.permission-restricted {
+  color: var(--restricted);
+}
+
+.recent-visit-cancellation {
+  display: grid;
+  margin-top: 10px;
+  border-left: 3px solid var(--danger);
+  padding: 2px 0 2px 10px;
+  gap: 3px;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.recent-visit-cancellation strong {
+  color: var(--danger-strong);
+}
+
+.source-label {
+  display: inline-block;
+  border: 1px solid var(--info);
+  border-radius: 999px;
+  padding: 2px 6px;
+  background: var(--info-soft);
+  color: var(--info);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
 .profile-operation-message {
   margin-top: 14px;
 }
@@ -1317,6 +1453,12 @@ textarea:focus-visible,
   color: var(--danger-strong);
 }
 
+.status-canceled {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger-strong);
+}
+
 .status-owner {
   border-color: var(--restricted);
   background: #f0edfb;
@@ -1492,6 +1634,7 @@ textarea:focus-visible,
   .client-result-meta,
   .client-profile-meta,
   .membership-summary-grid,
+  .recent-visit-meta,
   .action-form-grid,
   .visit-business-context,
   .visit-membership-meta,

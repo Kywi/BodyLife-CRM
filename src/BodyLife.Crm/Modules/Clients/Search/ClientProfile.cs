@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Queries;
+using BodyLife.Crm.Modules.Visits;
 
 namespace BodyLife.Crm.Modules.Clients.Search;
 
@@ -16,5 +17,6 @@ public sealed record ClientProfile(
     ClientProfileCard? CurrentCard,
     DateOnly? MembershipAsOfDate,
     ClientProfileMembershipArea Membership,
+    ClientVisitRowsPage? RecentVisits,
     IReadOnlyList<ClientWarning> Warnings,
     QueryPermissionSet AllowedActions);

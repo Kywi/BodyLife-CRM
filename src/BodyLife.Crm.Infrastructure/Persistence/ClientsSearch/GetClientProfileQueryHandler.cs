@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.Visits;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
@@ -9,6 +10,8 @@ public sealed class GetClientProfileQueryHandler(
     BodyLifeDbContext dbContext,
     IBodyLifeQueryHandler<GetClientMembershipStatesQuery, GetClientMembershipStatesResult>
         getClientMembershipStates,
+    IBodyLifeQueryHandler<GetClientVisitRowsQuery, GetClientVisitRowsResult>
+        getClientVisitRows,
     TimeProvider timeProvider)
     : IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult>
 {
@@ -50,13 +53,6 @@ public sealed class GetClientProfileQueryHandler(
             return GetClientProfileResult.Invalid(
                 "Membership as-of date is required when supplied.",
                 "membershipAsOfDate");
-        }
-
-        if (query.IncludeHistory)
-        {
-            return GetClientProfileResult.Invalid(
-                "Client history composition is not available in the profile shell.",
-                "includeHistory");
         }
 
         if (query.IncludeDrillDowns)
@@ -117,6 +113,26 @@ public sealed class GetClientProfileQueryHandler(
             return GetClientProfileResult.RecalculationFailed();
         }
 
+        ClientVisitRowsPage? recentVisits = null;
+        if (query.IncludeHistory)
+        {
+            var visitRowsResult = await getClientVisitRows.ExecuteAsync(
+                new GetClientVisitRowsQuery(query.Actor, query.ClientId),
+                cancellationToken);
+            if (visitRowsResult.Status != GetClientVisitRowsStatus.Success)
+            {
+                return MapVisitRowsFailure(visitRowsResult);
+            }
+
+            if (visitRowsResult.Page is not { } visitRows
+                || visitRows.ClientId != query.ClientId)
+            {
+                return GetClientProfileResult.InconsistentSource();
+            }
+
+            recentVisits = visitRows;
+        }
+
         var currentCard = row.CurrentCardAssignmentId.HasValue
             ? new ClientProfileCard(
                 row.CurrentCardAssignmentId.Value,
@@ -137,6 +153,7 @@ public sealed class GetClientProfileQueryHandler(
             currentCard,
             membershipAsOfDate,
             ClientProfileMembershipProjection.Project(membershipStates),
+            recentVisits,
             ClientQuerySupport.BuildWarnings(row.OperationalStatus, row.CurrentCardNumber),
             MergePermissions(membershipResult.AllowedActions));
 
@@ -161,6 +178,25 @@ public sealed class GetClientProfileQueryHandler(
             GetClientMembershipStatesStatus.RecalculationFailed
                 => GetClientProfileResult.RecalculationFailed(),
             _ => GetClientProfileResult.RecalculationFailed(),
+        };
+    }
+
+    private static GetClientProfileResult MapVisitRowsFailure(
+        GetClientVisitRowsResult visitRowsResult)
+    {
+        return visitRowsResult.Status switch
+        {
+            GetClientVisitRowsStatus.PermissionDenied
+                => GetClientProfileResult.Denied(),
+            GetClientVisitRowsStatus.NotFound
+                => GetClientProfileResult.Missing(),
+            GetClientVisitRowsStatus.ValidationFailed
+                => GetClientProfileResult.Invalid(
+                    visitRowsResult.ErrorMessage ?? "Visit history request is invalid.",
+                    visitRowsResult.ErrorField),
+            GetClientVisitRowsStatus.SourceInconsistent
+                => GetClientProfileResult.InconsistentSource(),
+            _ => GetClientProfileResult.InconsistentSource(),
         };
     }
 

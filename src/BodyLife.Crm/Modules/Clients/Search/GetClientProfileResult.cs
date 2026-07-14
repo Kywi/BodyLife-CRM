@@ -53,6 +53,15 @@ public sealed record GetClientProfileResult(
             field: null);
     }
 
+    public static GetClientProfileResult InconsistentSource()
+    {
+        return Failure(
+            GetClientProfileStatus.SourceInconsistent,
+            "source_inconsistent",
+            "Client profile is unavailable because canonical source records are inconsistent.",
+            field: null);
+    }
+
     private static GetClientProfileResult Failure(
         GetClientProfileStatus status,
         string errorCode,

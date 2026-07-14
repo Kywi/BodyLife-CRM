@@ -4513,3 +4513,100 @@ Next recommended step:
   backfill/fallback labels, cancellation reason and server permission state.
   Keep the state-changing Razor cancel form and report-source projection for
   subsequent steps.
+
+## Step 99 - Recent Visit history in Client profile
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the next unfinished Milestone 6 profile/history task after the
+  Visits-owned canonical row query. This step composes and renders Visit rows;
+  it does not add a second Visit projection or move Membership formulas into
+  Clients/Search or Razor.
+- Keep `GetClientProfile` as the server composition boundary and request recent
+  Visit history only for visible reception profiles. Identity/card-only helper
+  rereads remain lightweight.
+- Preserve active and canceled history with server-owned cancellation
+  permissions. The UI displays source status and metadata but does not infer
+  whether cancellation is allowed.
+- Keep the state-changing Cancel Visit form/handler endpoint and report-facing
+  daily Visit projection for subsequent bounded Milestone 6 steps.
+
+Scope:
+
+- Extend `ClientProfile` with an optional `ClientVisitRowsPage`. When
+  `IncludeHistory` is true, `GetClientProfileQueryHandler` composes the existing
+  `GetClientVisitRowsQuery`; without it, no Visit query is required and the
+  profile contract keeps `RecentVisits` null.
+- Fail the profile atomically when Visit history is denied, missing, invalid or
+  source-inconsistent. Add a stable profile `source_inconsistent` result rather
+  than returning identity/Membership data beside untrusted Visit rows.
+- Request `IncludeHistory` from the reception profile and canonical workspace
+  paths, including the post-MarkVisit reread. The card-conflict helper query
+  remains history-free because it does not render a profile.
+- Render an unframed recent-Visits section after the primary Mark Visit action.
+  Rows show Membership snapshot or one-off/trial context, active/canceled text
+  status, occurred/recorded UTC times, non-normal entry-origin labels, retained
+  comment, cancellation reason/time/source and the server-provided cancellation
+  permission state.
+- Add responsive list/meta styles for the established tablet two-area and phone
+  one-column layouts. Status color is paired with text, long content wraps and
+  no business state is calculated in CSS, Razor or browser state.
+- Add PostgreSQL profile-composition coverage for requested Visit rows and all
+  mapped query failures. Existing profile requests assert history remains
+  opt-in.
+- Extend the existing tablet/phone Mark Visit Playwright theory: verify the
+  active history row, cancel that exact row through the real transactional
+  `CancelVisitCommandHandler`, reread by exact card search, verify retained
+  canceled history and reason, then prove active Visit/consumption counts and
+  rebuilt Membership state agree.
+- Add no EF record/configuration/migration, public cancellation endpoint,
+  report query or JavaScript change.
+
+Validation:
+
+- Focused `PostgreSqlGetClientProfileQueryTests` passed all 12 cases against
+  Docker PostgreSQL after a compile-only nullable assertion was tightened.
+- The Web project and UI smoke project each built in Release with 0
+  warnings/errors.
+- Focused tablet/phone Visit history Playwright coverage passed 2/2. A second
+  run with full-page screenshots also passed 2/2; visual review at 1024x768 and
+  390x844 confirmed readable active/canceled rows, retained cancellation detail
+  and no overlap or horizontal overflow.
+- The first full validation attempt passed build, 261 core, 35 web and 311
+  infrastructure tests, then one unrelated Staff Account smoke timed out while
+  waiting for login `NetworkIdle`. Its isolated rerun passed 3/3 in 7 seconds.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 311
+  PostgreSQL/architecture infrastructure tests, 30 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714174210_AddFreezeSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this profile/read-only UI step generated no migration.
+- `git diff --check` passed.
+- `graphify update .` completed the structural rebuild with 5755 nodes, 12449
+  edges and 615 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): render recent Visit history`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add the bounded state-changing Cancel Visit correction form to each eligible
+  active profile-history row. Require explicit confirmation plus reason/comment,
+  use a fresh idempotency key and busy/duplicate-submit protection, execute the
+  existing `CancelVisit` command, then reread the canonical Client profile.
+  Cover open-day Admin/Owner permission states, failure rendering and tablet/
+  phone Playwright mutation flow. Keep the daily report source projection for
+  the following step.

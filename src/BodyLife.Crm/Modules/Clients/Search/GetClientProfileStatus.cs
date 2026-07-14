@@ -6,5 +6,6 @@ public enum GetClientProfileStatus
     PermissionDenied,
     NotFound,
     ValidationFailed,
-    RecalculationFailed
+    RecalculationFailed,
+    SourceInconsistent
 }

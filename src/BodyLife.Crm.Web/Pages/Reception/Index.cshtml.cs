@@ -80,7 +80,10 @@ public sealed class IndexModel(
 
         var actor = requestContextResolver.Require().Actor;
         var result = await getClientProfile.ExecuteAsync(
-            new GetClientProfileQuery(actor, ClientId ?? Guid.Empty),
+            new GetClientProfileQuery(
+                actor,
+                ClientId ?? Guid.Empty,
+                IncludeHistory: true),
             cancellationToken);
         SetHtmxPushUrl(result.Profile?.ClientId ?? ClientId);
 
@@ -733,7 +736,10 @@ public sealed class IndexModel(
         if (profileClientId.HasValue)
         {
             profileResult = await getClientProfile.ExecuteAsync(
-                new GetClientProfileQuery(actor, profileClientId.Value),
+                new GetClientProfileQuery(
+                    actor,
+                    profileClientId.Value,
+                    IncludeHistory: true),
                 cancellationToken);
         }
 

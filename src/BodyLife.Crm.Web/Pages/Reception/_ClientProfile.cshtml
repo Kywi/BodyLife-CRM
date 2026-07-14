@@ -133,6 +133,97 @@
             <partial name="_MarkVisitForm" model="Model.MarkVisitForm" />
         }
 
+        @if (profile.RecentVisits is { } recentVisits)
+        {
+            <section class="recent-visits" aria-labelledby="recent-visits-title">
+                <header class="recent-visits-header">
+                    <h3 id="recent-visits-title">Recent visits</h3>
+                    @if (recentVisits.HasMore)
+                    {
+                        <span class="result-count">Latest @recentVisits.Items.Count</span>
+                    }
+                </header>
+
+                @if (recentVisits.Items.Count == 0)
+                {
+                    <p class="recent-visits-empty">No visits recorded</p>
+                }
+                else
+                {
+                    <ol class="recent-visit-list">
+                        @foreach (var visit in recentVisits.Items)
+                        {
+                            var canCancel = visit.AllowedActions.IsAllowed(VisitActionKeys.Cancel);
+                            var hasCancellationPermission = visit.AllowedActions.TryGet(
+                                VisitActionKeys.Cancel,
+                                out var cancellationPermission);
+                            <li class="recent-visit-row"
+                                data-visit-id="@visit.VisitId"
+                                data-visit-status="@visit.Status.ToString().ToLowerInvariant()"
+                                data-can-cancel="@canCancel.ToString().ToLowerInvariant()">
+                                <header class="recent-visit-row-header">
+                                    <div>
+                                        <p class="recent-visit-kind">@VisitKindLabel(visit.VisitKind)</p>
+                                        <h4>@VisitContextLabel(visit)</h4>
+                                    </div>
+                                    <span class="status-chip @(visit.Status == ClientVisitRowStatus.Active ? "status-active" : "status-canceled")">
+                                        @(visit.Status == ClientVisitRowStatus.Active ? "Active" : "Canceled")
+                                    </span>
+                                </header>
+
+                                <dl class="recent-visit-meta">
+                                    <div>
+                                        <dt>Occurred</dt>
+                                        <dd>@visit.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Recorded</dt>
+                                        <dd>@visit.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                                    </div>
+                                    @if (visit.EntryOrigin != EntryOrigin.Normal)
+                                    {
+                                        <div>
+                                            <dt>Source</dt>
+                                            <dd><span class="source-label">@EntryOriginLabel(visit.EntryOrigin)</span></dd>
+                                        </div>
+                                    }
+                                </dl>
+
+                                @if (!string.IsNullOrWhiteSpace(visit.Comment))
+                                {
+                                    <p class="recent-visit-comment">@visit.Comment</p>
+                                }
+
+                                @if (visit.Cancellation is { } cancellation)
+                                {
+                                    <div class="recent-visit-cancellation">
+                                        <strong>Cancellation</strong>
+                                        <span>@cancellation.Reason</span>
+                                        <span>
+                                            @cancellation.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC
+                                            @if (cancellation.EntryOrigin != EntryOrigin.Normal)
+                                            {
+                                                <span class="source-label">@EntryOriginLabel(cancellation.EntryOrigin)</span>
+                                            }
+                                        </span>
+                                    </div>
+                                }
+                                else if (hasCancellationPermission)
+                                {
+                                    <p class="recent-visit-permission @(canCancel ? "permission-allowed" : "permission-restricted")"
+                                       data-visit-cancel-permission>
+                                        @(canCancel
+                                            ? "Cancellation permitted"
+                                            : cancellationPermission.DeniedReason ?? "Cancellation restricted")
+                                    </p>
+                                }
+                            </li>
+                        }
+                    </ol>
+                }
+            </section>
+        }
+
         @if (Model.UpdateClientForm is not null)
         {
             <partial name="_UpdateClientForm" model="Model.UpdateClientForm" />
@@ -153,6 +244,35 @@
             "client_inactive" => "Inactive client",
             "no_current_card" => "No current card",
             _ => "Attention",
+        };
+    }
+
+    private static string VisitKindLabel(VisitKind visitKind)
+    {
+        return visitKind switch
+        {
+            VisitKind.Membership => "Membership visit",
+            VisitKind.OneOff => "One-off visit",
+            VisitKind.Trial => "Trial visit",
+            _ => "Visit",
+        };
+    }
+
+    private static string VisitContextLabel(ClientVisitRow visit)
+    {
+        return visit.Consumption?.MembershipTypeNameSnapshot
+            ?? VisitKindLabel(visit.VisitKind);
+    }
+
+    private static string EntryOriginLabel(EntryOrigin entryOrigin)
+    {
+        return entryOrigin switch
+        {
+            EntryOrigin.Normal => "Normal",
+            EntryOrigin.ManualBackfill => "Manual backfill",
+            EntryOrigin.PaperFallback => "Paper fallback",
+            EntryOrigin.FutureImport => "Future import",
+            _ => "Unknown source",
         };
     }
 }

@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.Visits;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -75,6 +76,7 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Null(profile.Membership.CurrentMembership);
         Assert.Empty(profile.Membership.Timeline);
         Assert.Empty(profile.Membership.Warnings);
+        Assert.Null(profile.RecentVisits);
         Assert.Empty(profile.Warnings);
         Assert.Equal(3, profile.AllowedActions.Items.Count);
         Assert.True(profile.AllowedActions.IsAllowed(ClientProfileActionKeys.UpdateClient));
@@ -189,7 +191,7 @@ public sealed class PostgreSqlGetClientProfileQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task EmptyMissingAndUnsupportedCompositionRequestsReturnStableErrors()
+    public async Task EmptyMissingAndUnsupportedDrillDownRequestsReturnStableErrors()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -203,9 +205,6 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         var missing = await handler.ExecuteAsync(
             new GetClientProfileQuery(actor, Guid.NewGuid()),
             CancellationToken.None);
-        var history = await handler.ExecuteAsync(
-            new GetClientProfileQuery(actor, Guid.NewGuid(), IncludeHistory: true),
-            CancellationToken.None);
         var drillDowns = await handler.ExecuteAsync(
             new GetClientProfileQuery(actor, Guid.NewGuid(), IncludeDrillDowns: true),
             CancellationToken.None);
@@ -217,17 +216,76 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Equal("clientId", emptyId.ErrorField);
         Assert.Equal(GetClientProfileStatus.NotFound, missing.Status);
         Assert.Equal("not_found", missing.ErrorCode);
-        Assert.Equal(GetClientProfileStatus.ValidationFailed, history.Status);
-        Assert.Equal("includeHistory", history.ErrorField);
         Assert.Equal(GetClientProfileStatus.ValidationFailed, drillDowns.Status);
         Assert.Equal("includeDrillDowns", drillDowns.ErrorField);
         Assert.Equal(GetClientProfileStatus.ValidationFailed, invalidAsOfDate.Status);
         Assert.Equal("membershipAsOfDate", invalidAsOfDate.ErrorField);
         Assert.All(
-            new[] { emptyId, missing, history, drillDowns, invalidAsOfDate },
+            new[] { emptyId, missing, drillDowns, invalidAsOfDate },
             result => Assert.Null(result.Profile));
         Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task RequestedHistoryComposesCanonicalVisitRowsIntoProfile()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
+        var clientId = Guid.NewGuid();
+        await InsertClientAsync(
+            database,
+            clientId,
+            actor.AccountId.Value,
+            "Visit",
+            "History");
+        var visitId = Guid.NewGuid();
+        var visitPage = new ClientVisitRowsPage(
+            clientId,
+            [
+                new ClientVisitRow(
+                    visitId,
+                    clientId,
+                    TestNow.AddHours(-2),
+                    TestNow.AddHours(-1),
+                    actor.AccountId.Value,
+                    actor.SessionId.Value,
+                    VisitKind.OneOff,
+                    EntryOrigin.PaperFallback,
+                    EntryBatchId: null,
+                    "Paper register row",
+                    ClientVisitRowStatus.Active,
+                    Consumption: null,
+                    Cancellation: null,
+                    new QueryPermissionSet(
+                    [
+                        QueryPermissionResult.Allowed(
+                            VisitActionKeys.Cancel,
+                            VisitActionKeys.AdminOrOwnerPolicy),
+                    ])),
+            ],
+            HasMore: false);
+        var visitRowsHandler = new StubClientVisitRowsQueryHandler(
+            _ => GetClientVisitRowsResult.Succeeded(visitPage));
+
+        var result = await CreateHandler(
+            dbContext,
+            visitRowsQueryHandler: visitRowsHandler).ExecuteAsync(
+                new GetClientProfileQuery(actor, clientId, IncludeHistory: true),
+                CancellationToken.None);
+
+        AssertSuccessful(result);
+        Assert.Same(visitPage, result.Profile!.RecentVisits);
+        var recentVisits = Assert.IsType<ClientVisitRowsPage>(result.Profile.RecentVisits);
+        Assert.Single(recentVisits.Items);
+        Assert.Equal(visitId, recentVisits.Items[0].VisitId);
+        var capturedQuery = Assert.IsType<GetClientVisitRowsQuery>(visitRowsHandler.LastQuery);
+        Assert.Equal(actor, capturedQuery.Actor);
+        Assert.Equal(clientId, capturedQuery.ClientId);
+        Assert.Equal(GetClientVisitRowsQuery.DefaultLimit, capturedQuery.Limit);
+        Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
     }
 
     [PostgreSqlFact]
@@ -535,10 +593,69 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
+    [PostgreSqlFact]
+    public async Task VisitHistoryFailuresNeverReturnPartialProfileData()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        var clientId = Guid.NewGuid();
+        await InsertClientAsync(
+            database,
+            clientId,
+            actor.AccountId.Value,
+            "Atomic",
+            "VisitHistory");
+        var cases = new[]
+        {
+            (
+                VisitResult: GetClientVisitRowsResult.Denied(),
+                ProfileStatus: GetClientProfileStatus.PermissionDenied,
+                ErrorCode: "permission_denied",
+                ErrorField: (string?)null),
+            (
+                VisitResult: GetClientVisitRowsResult.MissingClient(),
+                ProfileStatus: GetClientProfileStatus.NotFound,
+                ErrorCode: "not_found",
+                ErrorField: "clientId"),
+            (
+                VisitResult: GetClientVisitRowsResult.Invalid("Limit is invalid.", "limit"),
+                ProfileStatus: GetClientProfileStatus.ValidationFailed,
+                ErrorCode: "validation_failed",
+                ErrorField: "limit"),
+            (
+                VisitResult: GetClientVisitRowsResult.InconsistentSource(),
+                ProfileStatus: GetClientProfileStatus.SourceInconsistent,
+                ErrorCode: "source_inconsistent",
+                ErrorField: (string?)null),
+        };
+
+        foreach (var testCase in cases)
+        {
+            var result = await CreateHandler(
+                dbContext,
+                visitRowsQueryHandler: new StubClientVisitRowsQueryHandler(
+                    _ => testCase.VisitResult)).ExecuteAsync(
+                    new GetClientProfileQuery(actor, clientId, IncludeHistory: true),
+                    CancellationToken.None);
+
+            Assert.Equal(testCase.ProfileStatus, result.Status);
+            Assert.Equal(testCase.ErrorCode, result.ErrorCode);
+            Assert.Equal(testCase.ErrorField, result.ErrorField);
+            Assert.Null(result.Profile);
+        }
+
+        Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
     private static GetClientProfileQueryHandler CreateHandler(
         BodyLifeDbContext dbContext,
         IBodyLifeQueryHandler<GetClientMembershipStatesQuery, GetClientMembershipStatesResult>?
-            membershipStatesQueryHandler = null)
+            membershipStatesQueryHandler = null,
+        IBodyLifeQueryHandler<GetClientVisitRowsQuery, GetClientVisitRowsResult>?
+            visitRowsQueryHandler = null)
     {
         var timeProvider = new FixedTimeProvider(TestNow);
 
@@ -546,6 +663,10 @@ public sealed class PostgreSqlGetClientProfileQueryTests
             dbContext,
             membershipStatesQueryHandler
                 ?? new GetClientMembershipStatesQueryHandler(dbContext, timeProvider),
+            visitRowsQueryHandler
+                ?? new StubClientVisitRowsQueryHandler(
+                    query => GetClientVisitRowsResult.Succeeded(
+                        new ClientVisitRowsPage(query.ClientId, [], HasMore: false))),
             timeProvider);
     }
 
@@ -995,6 +1116,21 @@ public sealed class PostgreSqlGetClientProfileQueryTests
             CancellationToken cancellationToken)
         {
             return Task.FromResult(result);
+        }
+    }
+
+    private sealed class StubClientVisitRowsQueryHandler(
+        Func<GetClientVisitRowsQuery, GetClientVisitRowsResult> resultFactory)
+        : IBodyLifeQueryHandler<GetClientVisitRowsQuery, GetClientVisitRowsResult>
+    {
+        public GetClientVisitRowsQuery? LastQuery { get; private set; }
+
+        public Task<GetClientVisitRowsResult> ExecuteAsync(
+            GetClientVisitRowsQuery query,
+            CancellationToken cancellationToken)
+        {
+            LastQuery = query;
+            return Task.FromResult(resultFactory(query));
         }
     }
 
