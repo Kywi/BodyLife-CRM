@@ -284,7 +284,7 @@
 - Milestone 2 for actor/session/permissions.
 - Milestone 3 for client ownership.
 - Milestone 4 for MembershipType snapshots.
-- Product decisions needed before completion: date arithmetic, multiple active memberships policy, visit without active membership default, one-off negative closure shape or explicit deferral.
+- Accepted product decisions: inclusive date arithmetic in ADR-005; multiple Memberships, explicit Visit selection/no-active behavior and Freeze blocking in ADR-014; one-off negative closure explicitly deferred to Milestone 7.
 
 ### Задачі
 
@@ -321,7 +321,7 @@
 
 ### Ризики
 
-- Open domain questions can block stable recalculation, especially multiple active memberships and visit allocation.
+- ADR-014 selection/ordering rules can drift if Visits or UI infer a Membership instead of using the Memberships-owned public boundary.
 - Formula drift can appear early if profile/report code calculates shortcuts.
 - Opening state/backfill can become fake-history migration if boundaries are not enforced.
 - Effective end date may be patched directly under pressure unless source-reason model is strict.
@@ -345,12 +345,13 @@
 - Milestone 2.
 - Milestone 3.
 - Milestone 5.
-- Product decision for multiple active memberships and visit during active freeze policy.
+- ADR-014 accepted for multiple Memberships, explicit Visit allocation, no-active contexts, ordering and Visit-during-Freeze blocking.
 
 ### Задачі
 
 - Створити `visits`, `visit_consumptions`, `visit_cancellations`.
 - Реалізувати `MarkVisit` with selected membership or explicit one-off/trial context.
+- Apply ADR-014: never infer a Membership; require explicit selection for ambiguity/expired state; reject future-start and Visit during active Freeze; create no consumption for one-off/trial.
 - Реалізувати zero/negative/expired warning acknowledgement rules.
 - Реалізувати `CancelVisit` with reason/comment and changed-after-close marker support if day reconciliation exists.
 - Lock affected membership/source rows and recalculate synchronously in the same transaction.
@@ -363,6 +364,8 @@
 ### Acceptance Criteria
 
 - Marking a visit consumes exactly one active counted visit for the selected membership.
+- Multiple candidates never cause automatic allocation; one-off/trial creates no membership consumption or Memberships state change.
+- Visit before Membership start or during an active inclusive Freeze is rejected; expired Membership proceeds only through explicit selection and acknowledgement.
 - Recording a visit at 0 remaining visits is allowed only with explicit warning acknowledgement and produces negative state.
 - First negative visit date is recalculated by Memberships.
 - Canceling a visit preserves visible history, deactivates counted consumption, recalculates membership state and excludes the visit from active visit totals.
@@ -374,6 +377,7 @@
 ### Потрібні тести
 
 - Domain tests for remaining visits, zero-to-negative, multiple negative visits and first negative date.
+- Domain/application tests for ADR-014 single/ambiguous selection, expired/future-start eligibility, explicit one-off/trial contexts, same-date ordering and Freeze blocking.
 - Domain/application tests for canceling normal visit and canceling first negative visit.
 - Application command tests for permissions, warning acknowledgement, idempotency, concurrency conflict and rollback on recalculation/audit failure.
 - PostgreSQL tests for at most one active counted consumption per visit and FK/client-membership consistency.
@@ -382,10 +386,10 @@
 
 ### Ризики
 
-- Ambiguous membership selection can create wrong consumptions if multiple active memberships are allowed.
-- Negative visits can hide product decisions around one-off/trial visits.
+- UI or command shortcuts can still create wrong consumptions if they bypass ADR-014 explicit selection.
+- One-off/trial rows can accidentally affect Memberships if visit kind and consumption constraints are not strict.
 - Quick reception UI can double-submit without strong idempotency.
-- Visit during freeze policy may be unresolved and produce inconsistent UX.
+- Freeze checks can drift between current and backdated Visits unless every command applies ADR-014 to the Visit business date.
 
 ### Що не входить
 
@@ -757,7 +761,7 @@
 
 - Last-minute hosting constraints can invalidate backup/restore assumptions.
 - Performance issues can appear only with realistic report/search data.
-- Production hardening can uncover missing product decisions, especially day close, one-off visits or multiple active memberships.
+- Production hardening can uncover missing product decisions, especially day close, one-off negative closure or NonWorkingDay/Freeze range boundaries.
 - Logs/metrics can leak personal data if reviewed too late.
 - Scope pressure can add v2 surfaces before v1 is stable.
 

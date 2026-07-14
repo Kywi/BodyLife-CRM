@@ -13,7 +13,7 @@ Graphify was used first because `graphify-out/graph.json` exists:
 Primary sources:
 
 - `AGENTS.md`: local guardrails, module map, quality gates, forbidden shortcuts.
-- `docs/adr/README.md` and `docs/adr/001..013-*.md`: accepted architecture decisions. Any conflict requires a new ADR or explicit ADR update.
+- `docs/adr/README.md` and `docs/adr/001..014-*.md`: accepted architecture decisions. Any conflict requires a new ADR or explicit ADR update.
 - `docs/architecture-baseline.md`: concise implementation contract and non-negotiable rules.
 - `docs/technology-stack-decision.md`: selected stack: ASP.NET Core 10 LTS + Razor Pages/MVC + htmx + EF Core/Npgsql + PostgreSQL.
 - `docs/domain-model.md`: entities, invariants, lifecycle rules, Memberships formulas, edge cases, domain tests.
@@ -443,19 +443,19 @@ Risks:
 
 Open questions from the docs:
 
-1. Confirm exact date arithmetic for `duration_days`; current docs assume `start_date + duration_days - 1 day`.
-2. Define whether NonWorkingDay extends only overlapping active calendar days or the full period once any overlap exists.
-3. Define Freeze validation outside membership active range.
-4. Decide visit during active Freeze: block, warn or allow with explicit override.
-5. Decide whether multiple active memberships per client are allowed and how visits choose one.
-6. Finalize one-off/trial visit workflow: technical client, dedicated quick workflow, separate MembershipType or combination.
-7. Specify one-off negative closure behavior.
-8. Define which correction/cancellation actions always require reason/comment.
-9. Define day close/reconciliation command and changed-after-close policy if needed.
-10. Choose default inactive-client threshold while keeping 14/30/60 available.
-11. Decide whether denied permission attempts are business-audited or only technically logged.
-12. Decide how much historical card-assignment history is visible beyond current card number and audit trail.
-13. Choose hosting provider and backup/PITR plan.
+ADR-005 resolves inclusive date arithmetic. ADR-014 resolves multiple
+Memberships, Visit selection/no-active behavior, one-off/trial context,
+same-date ordering and Visit-during-Freeze blocking.
+
+1. Define whether NonWorkingDay extends only overlapping active calendar days or the full period once any overlap exists.
+2. Define Freeze validation outside membership active range.
+3. Specify one-off negative closure behavior.
+4. Define which correction/cancellation actions always require reason/comment.
+5. Define day close/reconciliation command and changed-after-close policy if needed.
+6. Choose default inactive-client threshold while keeping 14/30/60 available.
+7. Decide whether denied permission attempts are business-audited or only technically logged.
+8. Decide how much historical card-assignment history is visible beyond current card number and audit trail.
+9. Choose hosting provider and backup/PITR plan.
 
 ## 7. First Execution Sprint
 

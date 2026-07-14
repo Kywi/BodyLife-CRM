@@ -3304,3 +3304,45 @@ Commits:
 Next recommended step:
 
 - Before starting Milestone 6 persistence or commands, record an accepted product-policy decision for multiple active memberships and Visit allocation: whether multiples are allowed, how `MarkVisit` requires/selects a membership, what happens without an active membership, and how an active freeze affects marking. Preserve explicit selection/acknowledgement and the current no-arbitrary-candidate behavior. Keep Visit schema and implementation outside that decision-only step; use the following small implementation step to close the pure Memberships Visit-calculation test gap and explicitly resolve adjustment rebuild participation.
+
+## Step 85 - Visit allocation and Freeze product policy
+
+Status: completed.
+
+Plan alignment:
+
+- Complete only the product-decision gate identified by the Step 84 Milestone 5 audit; add no Visit schema, command contract implementation, persistence or UI.
+- Accept ADR-014 so the decision becomes part of the governing architecture package rather than an informal implementation assumption.
+- Permit multiple lifecycle-active issued Memberships because backdated/new-after-negative workflows must not silently retire or hide earlier source state.
+- Keep the existing Memberships `none` / `single` / `ambiguous` boundary and forbid newest/first/best automatic selection under ambiguity.
+- Require every membership `MarkVisit` command to carry an explicit `membership_id`; allow UI preselection only for one ordinary date-active candidate and require deliberate selection otherwise.
+- Define Visit-date eligibility separately from display active-by-date: selected source status is active, Visit business date is not before start, expired selection requires current-state acknowledgement, and future-start selection is rejected.
+- Define no-active behavior with no implicit default: Actor explicitly selects an expired Membership with all current warnings or chooses `one_off` / `trial` with no consumption or Memberships recalculation.
+- Block membership Visit when an active inclusive Freeze covers the Visit business date. V1 has no override; correct/cancel Freeze first or use explicit one-off/trial without consuming the frozen Membership.
+- Order active counted Visit facts by `occurred_at`, server `recorded_at`, then stable Visit id so first-negative identity/date and cancellation recalculation are deterministic.
+- Preserve module ownership: Visits owns source facts; Memberships owns eligibility, warning requirements and all calculated state.
+
+Scope:
+
+- Add accepted `docs/adr/014-visit-membership-selection-and-freeze-policy.md` and register ADR-014 in the accepted package index.
+- Synchronize the architecture baseline, domain model, data architecture, interaction contracts, UI workflows, implementation plan/roadmap, vertical-slice risk and Milestone 5 acceptance audit.
+- Update `AGENTS.md` ADR source range from 001..013 to 001..014.
+- Add stable design intent for `visit_during_freeze`, typed expired/zero/negative acknowledgements, membership vs one-off/trial consumption shape, locking/revalidation and required future tests.
+- Add no C# source/test, NuGet package, EF model/migration, PostgreSQL table/index/constraint, Razor/htmx page or business workflow implementation.
+
+Validation:
+
+- `graphify query` was run first and identified `MarkVisit`, Visit, issued Membership, Freeze and the interaction contracts as the governing decision neighborhood.
+- Cross-document consistency scans found and removed stale open-question/risk text in the interaction contracts, implementation plan/roadmap and vertical-slice plan; historical progress entries were intentionally preserved.
+- `git diff --check` passed, the ADR-014 index target exists, and no ADR-001..013-only source range or unresolved Visit-allocation wording remains in current governing docs.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 193 core tests, 35 web tests, 250 PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- This documentation-only decision generated no EF model or migration change.
+- `graphify . --update` was attempted for 13 changed project-knowledge documents but stopped because no semantic extraction LLM backend is configured; no code-only graph refresh was needed.
+
+Commits:
+
+- `docs(visits): define visit allocation policy`.
+
+Next recommended step:
+
+- Continue Milestone 5 with only a Memberships-owned pure Visit source-fact/eligibility calculation contract and focused domain tests for explicit selection, start/expiry eligibility, deterministic counted ordering, native vs honest opening-state baselines, signed remaining/negative state, known/unknown first-negative identity/date, cancellation exclusion and ADR-014 Freeze blocking inputs. Keep PostgreSQL Visit tables/commands, idempotency/audit orchestration, Razor/htmx UI and adjustment-rebuild handling outside that calculation-only step.

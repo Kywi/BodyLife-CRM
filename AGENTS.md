@@ -12,7 +12,7 @@
 
 Use these documents before inventing implementation details:
 
-- `docs/adr/README.md` and `docs/adr/001..013-*.md` for accepted decisions.
+- `docs/adr/README.md` and `docs/adr/001..014-*.md` for accepted decisions.
 - `docs/architecture-baseline.md` for the concise implementation contract.
 - `docs/domain-model.md` for business entities, invariants, lifecycle rules, and membership calculations.
 - `docs/data-architecture.md` for source facts, derived state, schema direction, constraints, indexes, audit, backfill, and reporting data access.

@@ -135,8 +135,8 @@ The deterministic card, phone, last-four and name representation used by these f
 
 | Table | Key fields | Relationships | Notes |
 |---|---|---|---|
-| `visits` | `id`, `client_id`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `visit_kind`, `entry_origin`, `entry_batch_id`, `comment`, `status` | `client_id -> clients.id` | Fact of arrival. `visit_kind`: membership, one_off, trial, other. Cancellation keeps row visible. |
-| `visit_consumptions` | `id`, `visit_id`, `membership_id`, `consumption_type`, `source_fact_type`, `source_fact_id`, `recorded_at`, `recorded_by_account_id`, `status` | `visit_id -> visits.id`, `membership_id -> issued_memberships.id` | Source fact for which membership consumes the lesson. Enables explicit negative coverage/reallocation without deleting old history. At most one active counted consumption per visit. |
+| `visits` | `id`, `client_id`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `visit_kind`, `entry_origin`, `entry_batch_id`, `comment`, `status` | `client_id -> clients.id` | Fact of arrival. ADR-014 narrows v1 `visit_kind` to membership, one_off or trial. Cancellation keeps the row visible; one_off/trial has no membership consumption. |
+| `visit_consumptions` | `id`, `visit_id`, `membership_id`, `consumption_type`, `source_fact_type`, `source_fact_id`, `recorded_at`, `recorded_by_account_id`, `status` | `visit_id -> visits.id`, `membership_id -> issued_memberships.id` | Explicit selected membership for membership kind. Enables negative coverage/reallocation without deleting old history. At most one active counted consumption per visit; no row is allowed for one_off/trial. |
 | `visit_cancellations` | `id`, `visit_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id` | `visit_id -> visits.id` | Source fact. Updates `visits.status` and related `visit_consumptions.status` in the same transaction. |
 
 ### Payments, freezes and non-working days
@@ -190,7 +190,10 @@ Core constraints:
 - `payments.amount > 0`.
 - At most one active opening state per membership.
 - At most one active counted `visit_consumption` per visit.
+- Multiple lifecycle-active issued Memberships per Client are allowed; no uniqueness constraint may silently encode a current Membership.
+- Membership-kind Visit requires exactly one active counted consumption after success; one_off/trial Visit requires none.
 - `visit_consumptions.membership_id` must belong to the same `client_id` as the visit's client, enforced by command/service or composite FK if the DB design supports it.
+- Visit before selected Membership `start_date`, consumption of canceled/corrected Membership, and membership Visit during an active Freeze covering `occurred_at` are rejected under lock by the command/domain boundary; expired selection requires current-state acknowledgement.
 - `business_audit_entries` are append-only by application policy; database permissions/triggers can harden this if available.
 
 Important indexes:
@@ -377,9 +380,12 @@ Validation scenarios:
 
 Open validation questions to settle before migrations:
 
-- Exact date arithmetic confirmation for `duration_days`: this document assumes `start_date + duration_days - 1 day`.
 - Whether NonWorkingDay applies only to overlapping active calendar days or full period once any overlap exists.
-- Whether multiple active issued memberships per client are allowed and how visit assignment is chosen.
-- Whether visit during active freeze is blocked, warned or allowed with explicit override.
-- Exact one-off/trial visit model: technical client, dedicated workflow or both.
 - Which denied permission attempts are business-audited versus technical-logged only.
+
+Resolved before Visit migrations:
+
+- ADR-005 accepts inclusive `start_date + duration_days - 1 day` arithmetic.
+- ADR-014 allows multiple lifecycle-active Memberships and requires explicit `membership_id`; no automatic allocation is permitted.
+- ADR-014 blocks membership Visit during an active Freeze covering the business date.
+- ADR-014 uses explicit one_off/trial Visit kinds without consumption and permits a dedicated technical Client for unidentified visitors.

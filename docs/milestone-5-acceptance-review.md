@@ -3,9 +3,10 @@
 Review date: 2026-07-14.
 
 Source of truth: `docs/implementation-roadmap.md` Milestone 5, ADR-004, ADR-005,
+ADR-014,
 `docs/architecture-baseline.md`, `docs/domain-model.md`,
 `docs/data-architecture.md`, `docs/interaction-contracts.md`, and implementation
-progress through Step 84.
+progress through Step 85.
 
 ## Decision
 
@@ -14,14 +15,13 @@ completed issue/opening-state/query boundaries. It is the canonical source for
 the calculated values it currently exposes, but Milestone 5 is not closed for
 handoff to Visit implementation.
 
-Two closure gates remain. First, the roadmap requires an explicit product
-decision for multiple active memberships and visit allocation. The current
-public query deliberately returns an `ambiguous` active-candidate result with
-no selected membership, so no module silently chooses one. Second, after that
-decision, Memberships still needs the required pure source-fact calculation and
-tests for counted visits, negative transition, first negative visit, and
-cancellation. The adjustment table also remains storage-only and is not yet an
-input to cache rebuilding.
+ADR-014 closes the product-decision gate: multiple lifecycle-active Memberships
+are allowed, membership Visits always identify one explicitly, no-active state
+requires an explicit expired or one-off/trial choice, and active Freeze blocks
+membership consumption. One technical closure gate remains: Memberships still
+needs the required pure source-fact calculation and tests for counted visits,
+negative transition, first negative visit, and cancellation. The adjustment
+table also remains storage-only and is not yet an input to cache rebuilding.
 
 ## Acceptance evidence
 
@@ -58,8 +58,8 @@ rehydrate and validate those values from stored cache shapes, but there is no
 Memberships-owned calculation from ordered active/canceled Visit facts yet.
 Stored-cache validation is not evidence for that missing formula.
 
-After the product policy is accepted, close this gap with a pure Memberships
-input contract and calculator tests before adding PostgreSQL Visit commands.
+With ADR-014 accepted, close this gap with a pure Memberships input contract and
+calculator tests before adding PostgreSQL Visit commands.
 Also decide whether active `membership_adjustments` participate in rebuild now
 or are explicitly deferred together with a future adjustment command; no
 workflow should create adjustment rows that rebuilding ignores.
@@ -69,16 +69,15 @@ workflow should create adjustment rows that rebuilding ignores.
 | Decision | State before Milestone 6 |
 |---|---|
 | Inclusive date convention | Resolved and locked by tests. |
-| Multiple active memberships and visit allocation | Open. Decide whether multiple active rows are allowed and, when present, require an explicit selected membership or define another deterministic policy. Current behavior is `ambiguous` with no selection. |
-| Visit without an active membership | Open. Decide whether ordinary marking is rejected or requires an explicit one-off/trial context; do not infer a membership. |
-| Visit during an active freeze | Open Milestone 6 dependency. Decide warning/block/acknowledgement behavior before `MarkVisit`. |
+| Multiple active memberships and visit allocation | Resolved by ADR-014. Multiple lifecycle-active rows are allowed; `MarkVisit` always carries explicit `membership_id`, and ambiguous candidates are never auto-selected. |
+| Visit without an active membership | Resolved by ADR-014. Actor explicitly selects an expired Membership with acknowledgements or one-off/trial without consumption; there is no default. |
+| Visit during an active freeze | Resolved by ADR-014. Membership consumption is blocked for an inclusive active Freeze range; correct/cancel Freeze or use explicit one-off/trial. |
 | One-off negative closure | Explicitly deferred to Milestone 7 Payments. Current issue workflow supports only leaving prior negative state visible. |
 
-No `visits`, `visit_consumptions`, or `visit_cancellations` schema or command
-work should begin until the first three open Visit policies are recorded in an
-accepted ADR or an explicit update to the governing domain/interaction
-contracts. The next implementation slice after that decision should close the
-pure Memberships calculation gap before Milestone 6 persistence.
+The product-policy dependency is now satisfied. No `visits`,
+`visit_consumptions`, or `visit_cancellations` schema or command work should
+begin until the next small slice closes the pure Memberships calculation gap
+and explicitly resolves adjustment participation in rebuild.
 
 ## Scope check
 
@@ -98,3 +97,9 @@ pure Memberships calculation gap before Milestone 6 persistence.
 
 The final validation result for this review is recorded in
 `docs/implementation-progress.md` Step 84.
+
+## Policy update after Step 85
+
+ADR-014 and the synchronized domain/interaction/roadmap documents resolve the
+Visit allocation and Freeze policy questions without adding Visit persistence
+or changing the remaining technical acceptance gaps above.

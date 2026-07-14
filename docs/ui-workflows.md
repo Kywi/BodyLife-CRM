@@ -85,12 +85,12 @@
 
 - User goal: see whether the client can visit today and what membership consequences an action will have.
 - Screen/state: membership status panel backed by `GetMembershipState` or the current membership state inside `GetClientProfile`; shows snapshot, start/base/effective end dates, counted visits, remaining visits, negative balance, first negative visit date, extension days/explanation, last counted visit and warnings.
-- Primary actions: select the membership for visit marking if required; mark visit; add freeze; issue new membership; open extension explanation or history drill-down.
-- Warnings: zero remaining visits; negative balance and first negative visit date; expired by date; ending soon; low remaining; active extension sources; missing/ambiguous current membership selection.
-- Confirmations: no confirmation for reading state; warning acknowledgement is required before visit marking can proceed through zero/negative/expired states; if multiple active issued memberships are possible, UI must not silently choose between them without an explicit product rule.
+- Primary actions: explicitly select the membership for visit marking when candidates are ambiguous; choose one-off/trial when no membership should be consumed; mark visit; add freeze; issue new membership; open extension explanation or history drill-down.
+- Warnings: zero remaining visits; negative balance and first negative visit date; expired by date; future-start ineligibility; Visit date covered by active Freeze; ending soon; low remaining; active extension sources; missing/ambiguous current membership selection.
+- Confirmations: no confirmation for reading state; ADR-014 requires explicit membership choice for ambiguity and current-state acknowledgement for every zero/negative/expired condition. Freeze coverage is blocking rather than acknowledgeable; one-off/trial must be an explicit non-membership choice.
 - Loading/duplicate-submit protection: membership state reads can show loading independently of profile shell; state-changing actions disable submit and reread the panel after commit.
 - Success state: panel reflects recalculated canonical state after visit/payment/membership/freeze/correction commands.
-- Failure state: `membership_not_eligible`, `not_found`, `stale_state`, `concurrency_conflict` or recalculation errors keep the previous state and ask for refresh/retry.
+- Failure state: `membership_not_eligible`, `visit_during_freeze`, `not_found`, `stale_state`, `concurrency_conflict` or recalculation errors keep the previous state and ask for refresh/retry.
 
 ## 9. Workflow: warnings
 
@@ -106,13 +106,13 @@
 ## 10. Workflow: mark visit flow
 
 - User goal: record that a client arrived and consume one counted membership visit when applicable.
-- Screen/state: quick action on reception dashboard/profile, using client id, visit kind, selected membership id or explicit non-membership context, business date/occurred_at and optional comment.
-- Primary actions: open mark visit; confirm selected client and membership; choose visit kind if needed; submit; for zero/negative/expired states, explicitly acknowledge the warning before submit.
-- Warnings: selected membership does not belong to client; no eligible membership selected; zero remaining visits; expired by date; negative visits are allowed only after explicit acknowledgement; backdated or paper fallback entry requires reason/comment; possible stale membership state.
-- Confirmations: warning acknowledgement for zero/negative/expired states; reason/comment for backdated/paper fallback entries; no destructive confirmation for a normal current visit.
+- Screen/state: quick action on reception dashboard/profile, using client id, controlled visit kind, explicit selected membership id only for membership kind, business date/occurred_at, server-derived warning requirements and optional comment. Candidate rows show snapshot/name, start/effective-end dates, remaining visits and warnings.
+- Primary actions: open mark visit; use the sole preselected date-active candidate or deliberately choose among multiple candidates; explicitly select expired membership or one-off/trial when no date-active candidate exists; acknowledge every required zero/negative/expired condition; submit.
+- Warnings: selected membership does not belong to client; no eligible membership selected; future-start membership; zero/negative remaining visits; expired by date; Visit date covered by active Freeze; backdated or paper fallback entry requires reason/comment; possible stale membership state.
+- Confirmations: typed current-state acknowledgement for zero/negative/expired states; deliberate one-off/trial choice; reason/comment for backdated/paper fallback entries. Active Freeze cannot be overridden: correct/cancel it or use one-off/trial without consuming the Membership.
 - Loading/duplicate-submit protection: `MarkVisit` uses an idempotency key; submit is disabled/busy after click/tap; repeated scan/tap should not create multiple visits; command rereads profile/membership state after commit.
-- Success state: visit appears in client history, membership panel recalculates counted visits/remaining visits/negative state/first negative visit date, and daily visit count can refresh from server.
-- Failure state: `membership_not_eligible`, `warning_acknowledgement_required`, `duplicate_submission`, `validation_failed`, `recalculation_failed` or `concurrency_conflict` are shown inline; no local membership values are applied.
+- Success state: visit appears in client history and daily visit count refreshes. Membership kind also recalculates the explicitly selected Membership; one-off/trial leaves every Membership unchanged.
+- Failure state: `membership_not_eligible`, `visit_during_freeze`, `warning_acknowledgement_required`, `duplicate_submission`, `validation_failed`, `recalculation_failed` or `concurrency_conflict` are shown inline; selected context remains editable and no local membership values are applied.
 
 ## 11. Workflow: issue membership flow
 

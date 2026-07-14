@@ -1,6 +1,8 @@
 # Accepted ADR package for BodyLife CRM
 
-Дата пакета: 2026-07-07
+Дата початкового пакета: 2026-07-07
+
+Оновлено: 2026-07-14 (ADR-014)
 
 Цей пакет фіксує ADR-кандидати з `docs/architecture-research-options.md` і `docs/adr/adr-backlog.md` як прийняті архітектурні рішення для першої web-версії BodyLife CRM.
 
@@ -31,6 +33,7 @@
 | [ADR-011](011-membership-type-lifecycle.md) | Editable MembershipType catalog плюс immutable snapshot у виданому абонементі. |
 | [ADR-012](012-permissions-session-accountability-and-corrections.md) | Owner, named Admin і shared Reception/Admin account з чіткою accountability. |
 | [ADR-013](013-future-client-self-service-boundary.md) | Client self-service не входить у v1; домен лишається придатним для майбутнього read-only view. |
+| [ADR-014](014-visit-membership-selection-and-freeze-policy.md) | Multiple Memberships дозволені, але Visit завжди має explicit selection/context; frozen Membership не споживається. |
 
 ## Джерела
 
@@ -45,7 +48,8 @@
 1. Зафіксувати skeleton modular monolith і top-level modules: ADR-001, ADR-002, ADR-004.
 2. Реалізувати домен абонементів і типів абонементів: ADR-005, ADR-011.
 3. Додати audit, actor/session model і permissions: ADR-006, ADR-012.
-4. Зібрати reception vertical slice: ADR-003, ADR-008.
-5. Підтвердити consistency reports після visits/payments/corrections: ADR-007.
-6. Закрити production readiness: ADR-009, ADR-010.
-7. Тримати майбутній client self-service як guardrail, а не scope v1: ADR-013.
+4. Перед Visits зафіксувати explicit membership/context selection і Freeze eligibility: ADR-014.
+5. Зібрати reception vertical slice: ADR-003, ADR-008.
+6. Підтвердити consistency reports після visits/payments/corrections: ADR-007.
+7. Закрити production readiness: ADR-009, ADR-010.
+8. Тримати майбутній client self-service як guardrail, а не scope v1: ADR-013.

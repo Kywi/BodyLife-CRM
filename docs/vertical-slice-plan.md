@@ -278,6 +278,6 @@ The slice is accepted when all of the following are true:
 - Correction semantics: payment replacement/cancellation and visit cancellation must stay explainable without silent history rewrites.
 - Audit noise vs audit gaps: too much audit becomes unreadable, but missing before/after summaries makes disputes hard to resolve.
 - htmx interaction risk: partial refreshes must not leave stale membership values after command success.
-- Negative visit behavior may reveal unresolved product decisions around multiple active memberships or negative closure.
+- Visit implementation may regress ADR-014 explicit allocation under ambiguous Memberships; one-off negative closure remains a separate unresolved/deferred policy.
 - Backdated metadata can be technically stored in the slice, but real paper fallback reconciliation still needs a later workflow.
 - Passing the slice does not equal production readiness; backup/restore rehearsal, hosting monitoring, full paper fallback process and owner operations checklist remain separate gates before production use.

@@ -55,8 +55,10 @@ Common errors:
 - `stale_state`;
 - `card_number_already_current`;
 - `duplicate_warning_not_acknowledged`;
+- `warning_acknowledgement_required`;
 - `day_closed_requires_owner`;
 - `membership_not_eligible`;
+- `visit_during_freeze`;
 - `membership_type_inactive`;
 - `already_canceled`;
 - `recalculation_failed`;
@@ -173,15 +175,17 @@ Common errors:
 ### MarkVisit
 
 - Purpose: зафіксувати Visit and, for membership visit, consume one counted visit from selected Membership.
-- Input: client id, visit kind, membership id or one-off/trial context, occurred_at/business date, optional comment, confirmation flags for zero/negative/expired states, common command envelope.
-- Validation: client exists; selected membership belongs to client; visit kind is valid; if membership has 0 remaining visits or is expired by date, command may proceed only with explicit warning acknowledgement because negative visits are allowed; at most one active counted consumption per visit; backdated/paper fallback entries require reason/comment.
+- Input: client id; controlled visit kind `membership`, `one_off` or `trial`; explicit membership id only for membership kind; occurred_at/business date; typed current-state acknowledgements for expired/zero/negative conditions; optional comment; common command envelope.
+- Selection: ADR-014 permits multiple lifecycle-active Memberships. Server never selects newest/first implicitly. UI may preselect only one ordinary date-active candidate, but every membership Visit command still submits explicit `membership_id`; ambiguous candidates require deliberate selection.
+- Validation: client exists; selected membership belongs to client and has lifecycle status active; Visit date is not before membership start; future-start/canceled/corrected Membership is ineligible; expired Membership requires explicit expired acknowledgement; 0 or negative remaining visits require their current server-derived acknowledgements; all simultaneous required warning conditions must be acknowledged; one-off/trial rejects membership id and creates no consumption; at most one active counted consumption per visit; backdated/paper fallback entries require reason/comment.
+- Freeze policy: an active Freeze whose inclusive range covers the Visit business date blocks membership kind with `visit_during_freeze`; v1 has no override. Actor must correct/cancel Freeze first or explicitly use one-off/trial without membership consumption.
 - Permissions: Admin + Owner.
-- Transaction boundary: one ACID transaction creates `visits`, active `visit_consumptions` for membership visit, recalculates affected membership, and appends audit. Lock selected membership state/source rows for counted membership visit.
+- Transaction boundary: one ACID transaction locks selected membership state/source and relevant Freeze rows, revalidates selection/warnings, creates `visits`, creates active `visit_consumptions` only for membership kind, recalculates affected membership, and appends audit. One-off/trial creates only the Visit/audit facts and no Memberships recalculation.
 - Affected modules: Clients, Visits, Memberships, Reports, Audit, Users/Roles.
-- Recalculation: synchronous recalculation of selected membership: counted visits, remaining visits, negative balance, first negative visit date, last counted visit, warnings. Daily report reads the visit after commit.
-- Audit event: `visit.marked`; include client, membership/visit kind, occurred_at, before/after membership summary when counted, warning acknowledgement.
-- Possible errors: `permission_denied`, `not_found`, `validation_failed`, `membership_not_eligible`, `warning_acknowledgement_required`, `duplicate_submission`, `recalculation_failed`, `concurrency_conflict`.
-- UI result: profile membership panel refreshes with new remaining/negative state; daily visit count can update; if state becomes negative, show first negative visit date and warning.
+- Recalculation: synchronous recalculation of selected membership from ordered active counted Visits (`occurred_at`, `recorded_at`, stable Visit id): counted visits, remaining visits, negative balance, first negative visit/date, last counted visit and warnings. Daily report reads every visit kind after commit.
+- Audit event: `visit.marked`; include client, explicit membership or one-off/trial context, occurred_at, before/after membership summary when counted, candidate ambiguity context and warning acknowledgements.
+- Possible errors: `permission_denied`, `not_found`, `validation_failed`, `membership_not_eligible`, `visit_during_freeze`, `warning_acknowledgement_required`, `duplicate_submission`, `recalculation_failed`, `concurrency_conflict`.
+- UI result: profile membership panel refreshes only for membership kind; daily visit count can update for every kind; if state becomes negative, show first negative visit date and warning. Ambiguous/no-active forms retain the explicit selected context after validation errors without inventing canonical state.
 
 ### CancelVisit
 
@@ -392,7 +396,8 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 ## 8. Open questions and ADR candidates
 
-- Multiple active issued memberships per client: v1 contracts require explicit membership selection for visit marking, but the product should still settle default selection behavior before implementation.
-- Visit during active Freeze: current contracts allow validation/warning policy to be decided in domain tests; a future ADR may choose block, warn or allow.
-- Exact one-off/trial model: contracts allow one-off/trial context, but product should choose dedicated workflow, technical client or separate MembershipType before UI build.
+ADR-014 resolves multiple Memberships, Visit allocation, no-active behavior,
+one-off/trial context and Visit-during-Freeze policy for v1. ADR-005 resolves
+inclusive date arithmetic.
+
 - Day close/reconciliation command is not defined here because the requested v1 command list only includes daily report generation. If day close becomes an explicit workflow, add a separate `CloseDailyReconciliation` command with Owner/Admin policy and audit.
