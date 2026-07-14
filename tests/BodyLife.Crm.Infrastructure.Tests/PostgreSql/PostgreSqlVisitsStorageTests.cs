@@ -1,0 +1,1114 @@
+using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using NpgsqlTypes;
+
+namespace BodyLife.Crm.Infrastructure.Tests.PostgreSql;
+
+public sealed class PostgreSqlVisitsStorageTests
+{
+    private static readonly DateTimeOffset TestNow = new(
+        2026,
+        7,
+        14,
+        14,
+        30,
+        0,
+        TimeSpan.Zero);
+    private static readonly DateTimeOffset VisitOccurredAt = TestNow.AddHours(-2);
+
+    [PostgreSqlFact]
+    public async Task MigrationCreatesVisitSourceTablesConstraintsAndIndexes()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+
+        await dbContext.Database.MigrateAsync();
+
+        Assert.Equal(
+            [
+                "id",
+                "client_id",
+                "occurred_at",
+                "recorded_at",
+                "recorded_by_account_id",
+                "session_id",
+                "visit_kind",
+                "entry_origin",
+                "entry_batch_id",
+                "comment",
+                "status",
+            ],
+            await ReadColumnNamesAsync(database, "visits"));
+        Assert.Equal(
+            [
+                "id",
+                "visit_id",
+                "client_id",
+                "visit_kind",
+                "membership_id",
+                "consumption_type",
+                "source_fact_type",
+                "source_fact_id",
+                "recorded_at",
+                "recorded_by_account_id",
+                "recorded_session_id",
+                "status",
+            ],
+            await ReadColumnNamesAsync(database, "visit_consumptions"));
+        Assert.Equal(
+            [
+                "id",
+                "visit_id",
+                "reason",
+                "occurred_at",
+                "recorded_at",
+                "recorded_by_account_id",
+                "session_id",
+                "entry_origin",
+                "entry_batch_id",
+            ],
+            await ReadColumnNamesAsync(database, "visit_cancellations"));
+
+        var expectedConstraints = new[]
+        {
+            "AK_issued_memberships_id_client_id",
+            "AK_visits_id_client_id_visit_kind",
+            "FK_visit_consumptions_issued_memberships_membership_client",
+            "FK_visit_consumptions_visits_visit_client_kind",
+            "ck_visit_consumptions_consumption_type",
+            "ck_visit_consumptions_source_fact_identity",
+            "ck_visit_consumptions_source_fact_type",
+            "ck_visit_consumptions_status",
+            "ck_visit_consumptions_visit_kind",
+            "ck_visit_cancellations_entry_origin",
+            "ck_visit_cancellations_reason_not_empty",
+            "ck_visits_comment_not_empty",
+            "ck_visits_entry_origin",
+            "ck_visits_status",
+            "ck_visits_visit_kind",
+        };
+        foreach (var constraint in expectedConstraints)
+        {
+            Assert.True(
+                await ConstraintExistsAsync(database, constraint),
+                $"Expected constraint '{constraint}' was not found.");
+        }
+
+        var activeConsumptionIndex = await ReadIndexDefinitionAsync(
+            database,
+            "ux_visit_consumptions_active_counted_visit");
+        Assert.Contains("UNIQUE INDEX", activeConsumptionIndex, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("(visit_id)", activeConsumptionIndex, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("WHERE", activeConsumptionIndex, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("active", activeConsumptionIndex, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("counted", activeConsumptionIndex, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Contains(
+            "(membership_id, status, recorded_at, visit_id)",
+            await ReadIndexDefinitionAsync(
+                database,
+                "ix_visit_consumptions_membership_recalculation"),
+            StringComparison.OrdinalIgnoreCase);
+
+        var dailyIndex = await ReadIndexDefinitionAsync(
+            database,
+            "ix_visits_active_daily_report");
+        Assert.Contains("(occurred_at, client_id)", dailyIndex, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("WHERE", dailyIndex, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("active", dailyIndex, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Contains(
+            "UNIQUE INDEX",
+            await ReadIndexDefinitionAsync(database, "ux_visit_cancellations_visit_id"),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [PostgreSqlFact]
+    public async Task MembershipVisitPreservesAccountabilityAndCancellationHistory()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var entryBatchId = Guid.NewGuid();
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership",
+            entryOrigin: "paper_fallback",
+            entryBatchId: entryBatchId,
+            comment: "Recovered from the reception paper sheet");
+        var consumptionId = await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            visitId,
+            fixture.ClientId,
+            fixture.MembershipId);
+        var cancellationId = await InsertCancellationAsync(
+            database.ConnectionString,
+            fixture,
+            visitId,
+            entryOrigin: "manual_backfill",
+            entryBatchId: entryBatchId);
+
+        await SetVisitAndConsumptionCanceledAsync(
+            database.ConnectionString,
+            visitId,
+            consumptionId);
+
+        var visit = await ReadVisitAsync(database.ConnectionString, visitId);
+        Assert.Equal(fixture.ClientId, visit.ClientId);
+        Assert.Equal(VisitOccurredAt, visit.OccurredAt);
+        Assert.Equal(TestNow, visit.RecordedAt);
+        Assert.Equal(fixture.ActorAccountId, visit.RecordedByAccountId);
+        Assert.Equal(fixture.SessionId, visit.SessionId);
+        Assert.Equal("membership", visit.VisitKind);
+        Assert.Equal("paper_fallback", visit.EntryOrigin);
+        Assert.Equal(entryBatchId, visit.EntryBatchId);
+        Assert.Equal("Recovered from the reception paper sheet", visit.Comment);
+        Assert.Equal("canceled", visit.Status);
+
+        var consumption = await ReadConsumptionAsync(
+            database.ConnectionString,
+            consumptionId);
+        Assert.Equal(visitId, consumption.VisitId);
+        Assert.Equal(fixture.ClientId, consumption.ClientId);
+        Assert.Equal(fixture.MembershipId, consumption.MembershipId);
+        Assert.Equal("counted", consumption.ConsumptionType);
+        Assert.Equal("visit", consumption.SourceFactType);
+        Assert.Equal(visitId, consumption.SourceFactId);
+        Assert.Equal(fixture.ActorAccountId, consumption.RecordedByAccountId);
+        Assert.Equal(fixture.SessionId, consumption.RecordedSessionId);
+        Assert.Equal("canceled", consumption.Status);
+
+        var cancellation = await ReadCancellationAsync(
+            database.ConnectionString,
+            cancellationId);
+        Assert.Equal(visitId, cancellation.VisitId);
+        Assert.Equal("Mistaken reception entry", cancellation.Reason);
+        Assert.Equal(fixture.ActorAccountId, cancellation.RecordedByAccountId);
+        Assert.Equal(fixture.SessionId, cancellation.SessionId);
+        Assert.Equal("manual_backfill", cancellation.EntryOrigin);
+        Assert.Equal(entryBatchId, cancellation.EntryBatchId);
+    }
+
+    [PostgreSqlFact]
+    public async Task OneOffAndTrialVisitsCannotHaveMembershipConsumption()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var oneOffVisitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "one_off");
+        var trialVisitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "trial",
+            recordedAt: TestNow.AddMinutes(1));
+
+        await AssertPostgresViolationAsync(
+            () => InsertConsumptionAsync(
+                database.ConnectionString,
+                fixture,
+                oneOffVisitId,
+                fixture.ClientId,
+                fixture.MembershipId),
+            PostgresErrorCodes.ForeignKeyViolation,
+            "FK_visit_consumptions_visits_visit_client_kind");
+        await AssertPostgresViolationAsync(
+            () => InsertConsumptionAsync(
+                database.ConnectionString,
+                fixture,
+                trialVisitId,
+                fixture.ClientId,
+                fixture.MembershipId),
+            PostgresErrorCodes.ForeignKeyViolation,
+            "FK_visit_consumptions_visits_visit_client_kind");
+
+        Assert.Equal(2L, await CountRowsAsync(database, "visits"));
+        Assert.Equal(0L, await CountRowsAsync(database, "visit_consumptions"));
+    }
+
+    [PostgreSqlFact]
+    public async Task CompositeForeignKeysRejectCrossClientConsumption()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership");
+
+        await AssertPostgresViolationAsync(
+            () => InsertConsumptionAsync(
+                database.ConnectionString,
+                fixture,
+                visitId,
+                fixture.ClientId,
+                fixture.OtherMembershipId),
+            PostgresErrorCodes.ForeignKeyViolation,
+            "FK_visit_consumptions_issued_memberships_membership_client");
+        await AssertPostgresViolationAsync(
+            () => InsertConsumptionAsync(
+                database.ConnectionString,
+                fixture,
+                visitId,
+                fixture.OtherClientId,
+                fixture.OtherMembershipId),
+            PostgresErrorCodes.ForeignKeyViolation,
+            "FK_visit_consumptions_visits_visit_client_kind");
+
+        Assert.Equal(0L, await CountRowsAsync(database, "visit_consumptions"));
+    }
+
+    [PostgreSqlFact]
+    public async Task OneActiveCountedConsumptionCoexistsWithCanceledHistory()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership");
+        await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            visitId,
+            fixture.ClientId,
+            fixture.MembershipId,
+            status: "canceled");
+        await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            visitId,
+            fixture.ClientId,
+            fixture.MembershipId,
+            recordedAt: TestNow.AddMinutes(1));
+
+        await AssertPostgresViolationAsync(
+            () => InsertConsumptionAsync(
+                database.ConnectionString,
+                fixture,
+                visitId,
+                fixture.ClientId,
+                fixture.MembershipId,
+                recordedAt: TestNow.AddMinutes(2)),
+            PostgresErrorCodes.UniqueViolation,
+            "ux_visit_consumptions_active_counted_visit");
+
+        Assert.Equal(2L, await CountRowsAsync(database, "visit_consumptions"));
+        Assert.Equal(
+            1L,
+            await CountRowsAsync(
+                database,
+                "visit_consumptions",
+                "status = 'active'"));
+    }
+
+    [PostgreSqlFact]
+    public async Task ChecksRejectUnsupportedVisitConsumptionAndCancellationShapes()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+
+        await AssertPostgresViolationAsync(
+            () => InsertVisitAsync(
+                database.ConnectionString,
+                fixture,
+                fixture.ClientId,
+                "drop_in"),
+            PostgresErrorCodes.CheckViolation,
+            "ck_visits_visit_kind");
+        await AssertPostgresViolationAsync(
+            () => InsertVisitAsync(
+                database.ConnectionString,
+                fixture,
+                fixture.ClientId,
+                "membership",
+                entryOrigin: "spreadsheet"),
+            PostgresErrorCodes.CheckViolation,
+            "ck_visits_entry_origin");
+        await AssertPostgresViolationAsync(
+            () => InsertVisitAsync(
+                database.ConnectionString,
+                fixture,
+                fixture.ClientId,
+                "membership",
+                comment: "   "),
+            PostgresErrorCodes.CheckViolation,
+            "ck_visits_comment_not_empty");
+
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership");
+        await AssertPostgresViolationAsync(
+            () => InsertConsumptionAsync(
+                database.ConnectionString,
+                fixture,
+                visitId,
+                fixture.ClientId,
+                fixture.MembershipId,
+                consumptionType: "complimentary"),
+            PostgresErrorCodes.CheckViolation,
+            "ck_visit_consumptions_consumption_type");
+        await AssertPostgresViolationAsync(
+            () => InsertConsumptionAsync(
+                database.ConnectionString,
+                fixture,
+                visitId,
+                fixture.ClientId,
+                fixture.MembershipId,
+                sourceFactType: "manual"),
+            PostgresErrorCodes.CheckViolation,
+            "ck_visit_consumptions_source_fact_type");
+        await AssertPostgresViolationAsync(
+            () => InsertConsumptionAsync(
+                database.ConnectionString,
+                fixture,
+                visitId,
+                fixture.ClientId,
+                fixture.MembershipId,
+                sourceFactId: Guid.NewGuid()),
+            PostgresErrorCodes.CheckViolation,
+            "ck_visit_consumptions_source_fact_identity");
+        await AssertPostgresViolationAsync(
+            () => InsertCancellationAsync(
+                database.ConnectionString,
+                fixture,
+                visitId,
+                reason: "   "),
+            PostgresErrorCodes.CheckViolation,
+            "ck_visit_cancellations_reason_not_empty");
+        await AssertPostgresViolationAsync(
+            () => InsertCancellationAsync(
+                database.ConnectionString,
+                fixture,
+                visitId,
+                entryOrigin: "spreadsheet"),
+            PostgresErrorCodes.CheckViolation,
+            "ck_visit_cancellations_entry_origin");
+    }
+
+    [PostgreSqlFact]
+    public async Task CancellationIsUniqueAndSourceFactsUseRestrictiveDeletes()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership");
+        await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            visitId,
+            fixture.ClientId,
+            fixture.MembershipId);
+        await InsertCancellationAsync(
+            database.ConnectionString,
+            fixture,
+            visitId);
+
+        await AssertPostgresViolationAsync(
+            () => InsertCancellationAsync(
+                database.ConnectionString,
+                fixture,
+                visitId,
+                recordedAt: TestNow.AddMinutes(2)),
+            PostgresErrorCodes.UniqueViolation,
+            "ux_visit_cancellations_visit_id");
+        await AssertPostgresViolationAsync(
+            () => DeleteByIdAsync(database.ConnectionString, "visits", visitId),
+            PostgresErrorCodes.ForeignKeyViolation);
+        await AssertPostgresViolationAsync(
+            () => DeleteByIdAsync(
+                database.ConnectionString,
+                "issued_memberships",
+                fixture.MembershipId),
+            PostgresErrorCodes.ForeignKeyViolation,
+            "FK_visit_consumptions_issued_memberships_membership_client");
+    }
+
+    private static async Task<VisitStorageFixture> SeedFixtureAsync(
+        PostgreSqlTestDatabase database,
+        BodyLifeDbContext dbContext)
+    {
+        var bootstrap = await new OwnerBootstrapper(dbContext, new FixedTimeProvider(TestNow))
+            .BootstrapOwnerAsync("BodyLife Owner");
+        Assert.Equal(OwnerBootstrapStatus.Created, bootstrap.Status);
+
+        var actorAccountId = bootstrap.AccountId!.Value;
+        var sessionId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var otherClientId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var otherMembershipId = Guid.NewGuid();
+
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id,
+                account_id,
+                device_label,
+                started_at,
+                expires_at,
+                ended_at,
+                last_seen_at)
+            values (
+                @session_id,
+                @actor_account_id,
+                'Reception tablet',
+                @session_started_at,
+                @session_expires_at,
+                null,
+                @recorded_at);
+
+            insert into bodylife.clients (
+                id,
+                surname,
+                name,
+                patronymic,
+                normalized_full_name,
+                phone_raw,
+                phone_normalized,
+                phone_last4,
+                comment,
+                operational_status,
+                created_at,
+                created_by_account_id,
+                updated_at)
+            values
+                (
+                    @client_id,
+                    'Ivanenko',
+                    'Ivan',
+                    null,
+                    'IVANENKO IVAN',
+                    null,
+                    null,
+                    null,
+                    null,
+                    'active',
+                    @recorded_at,
+                    @actor_account_id,
+                    @recorded_at),
+                (
+                    @other_client_id,
+                    'Petrenko',
+                    'Olena',
+                    null,
+                    'PETRENKO OLENA',
+                    null,
+                    null,
+                    null,
+                    null,
+                    'active',
+                    @recorded_at,
+                    @actor_account_id,
+                    @recorded_at);
+
+            insert into bodylife.membership_types (
+                id,
+                name,
+                duration_days,
+                visits_limit,
+                price_amount,
+                price_currency,
+                is_active,
+                comment,
+                created_at,
+                updated_at,
+                deactivated_at)
+            values (
+                @membership_type_id,
+                'Visits storage fixture',
+                30,
+                8,
+                1000,
+                'UAH',
+                true,
+                null,
+                @recorded_at,
+                @recorded_at,
+                null);
+
+            insert into bodylife.issued_memberships (
+                id,
+                client_id,
+                membership_type_id,
+                type_name_snapshot,
+                duration_days_snapshot,
+                visits_limit_snapshot,
+                price_amount_snapshot,
+                price_currency_snapshot,
+                start_date,
+                base_end_date,
+                issued_at,
+                issued_by_account_id,
+                status,
+                entry_origin,
+                entry_batch_id,
+                comment)
+            values
+                (
+                    @membership_id,
+                    @client_id,
+                    @membership_type_id,
+                    'Visits storage fixture',
+                    30,
+                    8,
+                    1000,
+                    'UAH',
+                    @start_date,
+                    @base_end_date,
+                    @recorded_at,
+                    @actor_account_id,
+                    'active',
+                    'normal',
+                    null,
+                    null),
+                (
+                    @other_membership_id,
+                    @other_client_id,
+                    @membership_type_id,
+                    'Visits storage fixture',
+                    30,
+                    8,
+                    1000,
+                    'UAH',
+                    @start_date,
+                    @base_end_date,
+                    @recorded_at,
+                    @actor_account_id,
+                    'active',
+                    'normal',
+                    null,
+                    null)
+            """;
+        command.Parameters.AddWithValue("session_id", sessionId);
+        command.Parameters.AddWithValue("actor_account_id", actorAccountId);
+        command.Parameters.AddWithValue("session_started_at", TestNow.AddMinutes(-1));
+        command.Parameters.AddWithValue("session_expires_at", TestNow.AddHours(12));
+        command.Parameters.AddWithValue("recorded_at", TestNow);
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("other_client_id", otherClientId);
+        command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("other_membership_id", otherMembershipId);
+        command.Parameters.AddWithValue(
+            "start_date",
+            NpgsqlDbType.Date,
+            new DateOnly(2026, 7, 1));
+        command.Parameters.AddWithValue(
+            "base_end_date",
+            NpgsqlDbType.Date,
+            new DateOnly(2026, 7, 30));
+        Assert.Equal(6, await command.ExecuteNonQueryAsync());
+
+        return new VisitStorageFixture(
+            actorAccountId,
+            sessionId,
+            clientId,
+            otherClientId,
+            membershipId,
+            otherMembershipId);
+    }
+
+    private static async Task<Guid> InsertVisitAsync(
+        string connectionString,
+        VisitStorageFixture fixture,
+        Guid clientId,
+        string visitKind,
+        string entryOrigin = "normal",
+        Guid? entryBatchId = null,
+        string? comment = null,
+        string status = "active",
+        DateTimeOffset? recordedAt = null)
+    {
+        var visitId = Guid.NewGuid();
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.visits (
+                id,
+                client_id,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                visit_kind,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status)
+            values (
+                @id,
+                @client_id,
+                @occurred_at,
+                @recorded_at,
+                @recorded_by_account_id,
+                @session_id,
+                @visit_kind,
+                @entry_origin,
+                @entry_batch_id,
+                @comment,
+                @status)
+            """;
+        command.Parameters.AddWithValue("id", visitId);
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("occurred_at", VisitOccurredAt);
+        command.Parameters.AddWithValue("recorded_at", recordedAt ?? TestNow);
+        command.Parameters.AddWithValue("recorded_by_account_id", fixture.ActorAccountId);
+        command.Parameters.AddWithValue("session_id", fixture.SessionId);
+        command.Parameters.AddWithValue("visit_kind", visitKind);
+        command.Parameters.AddWithValue("entry_origin", entryOrigin);
+        command.Parameters.Add("entry_batch_id", NpgsqlDbType.Uuid).Value =
+            entryBatchId ?? (object)DBNull.Value;
+        command.Parameters.Add("comment", NpgsqlDbType.Varchar).Value =
+            comment ?? (object)DBNull.Value;
+        command.Parameters.AddWithValue("status", status);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+
+        return visitId;
+    }
+
+    private static async Task<Guid> InsertConsumptionAsync(
+        string connectionString,
+        VisitStorageFixture fixture,
+        Guid visitId,
+        Guid clientId,
+        Guid membershipId,
+        string visitKind = "membership",
+        string consumptionType = "counted",
+        string sourceFactType = "visit",
+        Guid? sourceFactId = null,
+        string status = "active",
+        DateTimeOffset? recordedAt = null)
+    {
+        var consumptionId = Guid.NewGuid();
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.visit_consumptions (
+                id,
+                visit_id,
+                client_id,
+                visit_kind,
+                membership_id,
+                consumption_type,
+                source_fact_type,
+                source_fact_id,
+                recorded_at,
+                recorded_by_account_id,
+                recorded_session_id,
+                status)
+            values (
+                @id,
+                @visit_id,
+                @client_id,
+                @visit_kind,
+                @membership_id,
+                @consumption_type,
+                @source_fact_type,
+                @source_fact_id,
+                @recorded_at,
+                @recorded_by_account_id,
+                @recorded_session_id,
+                @status)
+            """;
+        command.Parameters.AddWithValue("id", consumptionId);
+        command.Parameters.AddWithValue("visit_id", visitId);
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("visit_kind", visitKind);
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("consumption_type", consumptionType);
+        command.Parameters.AddWithValue("source_fact_type", sourceFactType);
+        command.Parameters.AddWithValue("source_fact_id", sourceFactId ?? visitId);
+        command.Parameters.AddWithValue("recorded_at", recordedAt ?? TestNow);
+        command.Parameters.AddWithValue("recorded_by_account_id", fixture.ActorAccountId);
+        command.Parameters.AddWithValue("recorded_session_id", fixture.SessionId);
+        command.Parameters.AddWithValue("status", status);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+
+        return consumptionId;
+    }
+
+    private static async Task<Guid> InsertCancellationAsync(
+        string connectionString,
+        VisitStorageFixture fixture,
+        Guid visitId,
+        string reason = "Mistaken reception entry",
+        string entryOrigin = "normal",
+        Guid? entryBatchId = null,
+        DateTimeOffset? recordedAt = null)
+    {
+        var cancellationId = Guid.NewGuid();
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.visit_cancellations (
+                id,
+                visit_id,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id)
+            values (
+                @id,
+                @visit_id,
+                @reason,
+                @occurred_at,
+                @recorded_at,
+                @recorded_by_account_id,
+                @session_id,
+                @entry_origin,
+                @entry_batch_id)
+            """;
+        command.Parameters.AddWithValue("id", cancellationId);
+        command.Parameters.AddWithValue("visit_id", visitId);
+        command.Parameters.AddWithValue("reason", reason);
+        command.Parameters.AddWithValue("occurred_at", VisitOccurredAt.AddMinutes(30));
+        command.Parameters.AddWithValue("recorded_at", recordedAt ?? TestNow.AddMinutes(1));
+        command.Parameters.AddWithValue("recorded_by_account_id", fixture.ActorAccountId);
+        command.Parameters.AddWithValue("session_id", fixture.SessionId);
+        command.Parameters.AddWithValue("entry_origin", entryOrigin);
+        command.Parameters.Add("entry_batch_id", NpgsqlDbType.Uuid).Value =
+            entryBatchId ?? (object)DBNull.Value;
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+
+        return cancellationId;
+    }
+
+    private static async Task SetVisitAndConsumptionCanceledAsync(
+        string connectionString,
+        Guid visitId,
+        Guid consumptionId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.visits
+            set status = 'canceled'
+            where id = @visit_id;
+
+            update bodylife.visit_consumptions
+            set status = 'canceled'
+            where id = @consumption_id
+            """;
+        command.Parameters.AddWithValue("visit_id", visitId);
+        command.Parameters.AddWithValue("consumption_id", consumptionId);
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task<PersistedVisit> ReadVisitAsync(
+        string connectionString,
+        Guid visitId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                client_id,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                visit_kind,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status
+            from bodylife.visits
+            where id = @id
+            """;
+        command.Parameters.AddWithValue("id", visitId);
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+
+        return new PersistedVisit(
+            reader.GetGuid(0),
+            reader.GetFieldValue<DateTimeOffset>(1),
+            reader.GetFieldValue<DateTimeOffset>(2),
+            reader.GetGuid(3),
+            reader.GetGuid(4),
+            reader.GetString(5),
+            reader.GetString(6),
+            reader.IsDBNull(7) ? null : reader.GetGuid(7),
+            reader.IsDBNull(8) ? null : reader.GetString(8),
+            reader.GetString(9));
+    }
+
+    private static async Task<PersistedConsumption> ReadConsumptionAsync(
+        string connectionString,
+        Guid consumptionId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                visit_id,
+                client_id,
+                membership_id,
+                consumption_type,
+                source_fact_type,
+                source_fact_id,
+                recorded_by_account_id,
+                recorded_session_id,
+                status
+            from bodylife.visit_consumptions
+            where id = @id
+            """;
+        command.Parameters.AddWithValue("id", consumptionId);
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+
+        return new PersistedConsumption(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            reader.GetGuid(2),
+            reader.GetString(3),
+            reader.GetString(4),
+            reader.GetGuid(5),
+            reader.GetGuid(6),
+            reader.GetGuid(7),
+            reader.GetString(8));
+    }
+
+    private static async Task<PersistedCancellation> ReadCancellationAsync(
+        string connectionString,
+        Guid cancellationId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                visit_id,
+                reason,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id
+            from bodylife.visit_cancellations
+            where id = @id
+            """;
+        command.Parameters.AddWithValue("id", cancellationId);
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+
+        return new PersistedCancellation(
+            reader.GetGuid(0),
+            reader.GetString(1),
+            reader.GetGuid(2),
+            reader.GetGuid(3),
+            reader.GetString(4),
+            reader.IsDBNull(5) ? null : reader.GetGuid(5));
+    }
+
+    private static async Task DeleteByIdAsync(
+        string connectionString,
+        string tableName,
+        Guid id)
+    {
+        var allowedTableName = tableName switch
+        {
+            "issued_memberships" => tableName,
+            "visits" => tableName,
+            _ => throw new ArgumentOutOfRangeException(nameof(tableName)),
+        };
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"delete from bodylife.{allowedTableName} where id = @id";
+        command.Parameters.AddWithValue("id", id);
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private static async Task AssertPostgresViolationAsync(
+        Func<Task> action,
+        string sqlState,
+        string? constraintName = null)
+    {
+        var exception = await Assert.ThrowsAsync<PostgresException>(action);
+
+        Assert.Equal(sqlState, exception.SqlState);
+        if (constraintName is not null)
+        {
+            Assert.Equal(constraintName, exception.ConstraintName);
+        }
+    }
+
+    private static async Task<IReadOnlyList<string>> ReadColumnNamesAsync(
+        PostgreSqlTestDatabase database,
+        string tableName)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select column_name
+            from information_schema.columns
+            where table_schema = 'bodylife'
+              and table_name = @table_name
+            order by ordinal_position
+            """;
+        command.Parameters.AddWithValue("table_name", tableName);
+        await using var reader = await command.ExecuteReaderAsync();
+        var columns = new List<string>();
+        while (await reader.ReadAsync())
+        {
+            columns.Add(reader.GetString(0));
+        }
+
+        return columns;
+    }
+
+    private static async Task<bool> ConstraintExistsAsync(
+        PostgreSqlTestDatabase database,
+        string constraintName)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select exists (
+                select 1
+                from pg_constraint constraint_row
+                join pg_namespace schema_row
+                  on schema_row.oid = constraint_row.connamespace
+                where schema_row.nspname = 'bodylife'
+                  and constraint_row.conname = @constraint_name)
+            """;
+        command.Parameters.AddWithValue("constraint_name", constraintName);
+
+        return (bool)(await command.ExecuteScalarAsync())!;
+    }
+
+    private static async Task<string> ReadIndexDefinitionAsync(
+        PostgreSqlTestDatabase database,
+        string indexName)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select indexdef
+            from pg_indexes
+            where schemaname = 'bodylife'
+              and indexname = @index_name
+            """;
+        command.Parameters.AddWithValue("index_name", indexName);
+
+        return (string)(await command.ExecuteScalarAsync())!;
+    }
+
+    private static Task<long> CountRowsAsync(
+        PostgreSqlTestDatabase database,
+        string tableName,
+        string? predicate = null)
+    {
+        var allowedTableName = tableName switch
+        {
+            "visit_consumptions" => tableName,
+            "visits" => tableName,
+            _ => throw new ArgumentOutOfRangeException(nameof(tableName)),
+        };
+        var allowedPredicate = predicate switch
+        {
+            null => string.Empty,
+            "status = 'active'" => $" where {predicate}",
+            _ => throw new ArgumentOutOfRangeException(nameof(predicate)),
+        };
+
+        return database.ExecuteScalarAsync<long>(
+            $"select count(*) from bodylife.{allowedTableName}{allowedPredicate}");
+    }
+
+    private sealed record VisitStorageFixture(
+        Guid ActorAccountId,
+        Guid SessionId,
+        Guid ClientId,
+        Guid OtherClientId,
+        Guid MembershipId,
+        Guid OtherMembershipId);
+
+    private sealed record PersistedVisit(
+        Guid ClientId,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        Guid RecordedByAccountId,
+        Guid SessionId,
+        string VisitKind,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment,
+        string Status);
+
+    private sealed record PersistedConsumption(
+        Guid VisitId,
+        Guid ClientId,
+        Guid MembershipId,
+        string ConsumptionType,
+        string SourceFactType,
+        Guid SourceFactId,
+        Guid RecordedByAccountId,
+        Guid RecordedSessionId,
+        string Status);
+
+    private sealed record PersistedCancellation(
+        Guid VisitId,
+        string Reason,
+        Guid RecordedByAccountId,
+        Guid SessionId,
+        string EntryOrigin,
+        Guid? EntryBatchId);
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
+    }
+}

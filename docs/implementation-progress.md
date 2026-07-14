@@ -3461,3 +3461,81 @@ Next recommended step:
   indexes and focused migration/storage tests. Keep `MarkVisit`/`CancelVisit`
   command orchestration, cache recalculation adapter, audit, reports and
   Razor/htmx UI outside that storage-only step.
+
+## Step 88 - Visit source-fact PostgreSQL storage
+
+Status: completed.
+
+Plan alignment:
+
+- Start Milestone 6 with only the canonical Visit/consumption/cancellation
+  source-fact storage named by the roadmap; add no state-changing command or UI.
+- Keep Visits as owner of arrival, explicit consumption and cancellation facts
+  while Memberships remains the sole owner of calculated visit balance/state.
+- Restrict Visit kind to ADR-014 `membership`, `one_off` or `trial` and retain
+  active/canceled status history with actor, session, occurred/recorded time,
+  entry origin, optional batch and comment/reason metadata.
+- Repeat `client_id` and controlled `visit_kind` on consumption only as
+  relational guards: composite FKs prove Visit/Membership Client equality and
+  make consumption impossible for one-off/trial Visits.
+- Keep initial Milestone 6 consumption semantics deliberately narrow:
+  `counted`, sourced by the same Visit id, with active/canceled status. Future
+  negative-closure/reallocation meanings require an explicit migration.
+- Enforce at most one active counted consumption per Visit with a PostgreSQL
+  partial unique index while allowing canceled historical rows to coexist.
+- Keep one retained cancellation fact per Visit and use only restrictive FKs;
+  no Visit, consumption or cancellation source history cascades away.
+
+Scope:
+
+- Add `VisitRecord`, `VisitConsumptionRecord` and `VisitCancellationRecord` plus
+  their EF Core configurations under the Visits infrastructure boundary.
+- Add composite alternate keys on Visits and issued Memberships, composite
+  Visit/consumption and Membership/consumption FKs, controlled checks and
+  report/recalculation/accountability indexes.
+- Add migration `20260714140347_AddVisitsSourceFacts` and update the EF model
+  snapshot.
+- Add seven PostgreSQL integration cases for DDL shape, accountability/history,
+  one-off/trial exclusion, cross-client rejection, active partial uniqueness,
+  metadata/type checks and restrictive deletes.
+- Synchronize `docs/data-architecture.md` with the implemented relational guard
+  fields and their non-editable purpose.
+- Add no `MarkVisit`/`CancelVisit` contract or handler, DI registration,
+  idempotency, row locking, Memberships cache adapter, business audit, report
+  query, Razor/htmx or UI change.
+
+Validation:
+
+- The first focused attempt stopped at compile time because a test helper
+  declared `Task<long?>` while the PostgreSQL scalar helper returns
+  `Task<long>`; the test-only signature was corrected before product behavior
+  executed.
+- Focused `PostgreSqlVisitsStorageTests` validation passed all 7 cases against
+  Docker PostgreSQL.
+- Generated SQL from `20260713194005_AddMembershipAdjustments` through
+  `20260714140347_AddVisitsSourceFacts` was reviewed: it contains only the
+  expected alternate key, three source tables, controlled checks, restrictive
+  FKs, indexes and migration-history insert.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 221 core tests, 35 web tests, 261 PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and EF migration listing through `20260714140347_AddVisitsSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+- `graphify update .` completed the structural rebuild with 5067 nodes, 10432
+  edges and 587 communities. `graph.json` and `GRAPH_REPORT.md` are current;
+  graphify skipped the optional HTML visualization because the graph exceeded
+  its default 5000-node visualization limit.
+- `graphify . --update` was attempted for the project-knowledge documentation
+  changes but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): add visit source storage`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the public Visits `MarkVisit` command/result contract and pure
+  preparation policy: distinguish membership from one-off/trial, require or
+  reject `membership_id` accordingly, carry the common command envelope and
+  typed expired/zero/negative acknowledgements, and delegate selected
+  Membership eligibility to the existing Memberships boundary. Keep the
+  PostgreSQL handler, idempotency claim, locks, source writes, recalculation,
+  audit, DI and UI outside that contract-only step.

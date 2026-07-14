@@ -46,6 +46,13 @@ internal sealed class IssuedMembershipRecordConfiguration
 
         builder.HasKey(membership => membership.Id);
 
+        builder.HasAlternateKey(membership => new
+        {
+            membership.Id,
+            membership.ClientId,
+        })
+            .HasName("AK_issued_memberships_id_client_id");
+
         builder.Property(membership => membership.Id)
             .HasColumnName("id")
             .ValueGeneratedNever();

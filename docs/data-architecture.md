@@ -137,8 +137,8 @@ The deterministic card, phone, last-four and name representation used by these f
 | Table | Key fields | Relationships | Notes |
 |---|---|---|---|
 | `visits` | `id`, `client_id`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `visit_kind`, `entry_origin`, `entry_batch_id`, `comment`, `status` | `client_id -> clients.id` | Fact of arrival. ADR-014 narrows v1 `visit_kind` to membership, one_off or trial. Cancellation keeps the row visible; one_off/trial has no membership consumption. |
-| `visit_consumptions` | `id`, `visit_id`, `membership_id`, `consumption_type`, `source_fact_type`, `source_fact_id`, `recorded_at`, `recorded_by_account_id`, `status` | `visit_id -> visits.id`, `membership_id -> issued_memberships.id` | Explicit selected membership for membership kind. Enables negative coverage/reallocation without deleting old history. At most one active counted consumption per visit; no row is allowed for one_off/trial. |
-| `visit_cancellations` | `id`, `visit_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id` | `visit_id -> visits.id` | Source fact. Updates `visits.status` and related `visit_consumptions.status` in the same transaction. |
+| `visit_consumptions` | `id`, `visit_id`, repeated `client_id`/`visit_kind`, `membership_id`, `consumption_type`, `source_fact_type`, `source_fact_id`, `recorded_at`, `recorded_by_account_id`, `recorded_session_id`, `status` | Composite `(visit_id, client_id, visit_kind) -> visits`; composite `(membership_id, client_id) -> issued_memberships` | Explicit selected membership for membership kind. Composite FKs prove the Visit and Membership belong to the same Client, while a `visit_kind = membership` check makes consumption impossible for one_off/trial. Initial Milestone 6 storage accepts only active/canceled counted consumption sourced by its Visit; later negative-closure/reallocation semantics require an explicit migration. At most one active counted consumption per Visit. |
+| `visit_cancellations` | `id`, `visit_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_id` | `visit_id -> visits.id` | Retained source fact with one row per canceled Visit. A future `CancelVisit` transaction updates `visits.status` and related `visit_consumptions.status` without deleting either source row. |
 
 ### Payments, freezes and non-working days
 
@@ -192,8 +192,8 @@ Core constraints:
 - At most one active opening state per membership.
 - At most one active counted `visit_consumption` per visit.
 - Multiple lifecycle-active issued Memberships per Client are allowed; no uniqueness constraint may silently encode a current Membership.
-- Membership-kind Visit requires exactly one active counted consumption after success; one_off/trial Visit requires none.
-- `visit_consumptions.membership_id` must belong to the same `client_id` as the visit's client, enforced by command/service or composite FK if the DB design supports it.
+- Membership-kind Visit requires exactly one active counted consumption after command success; one_off/trial Visit requires none. PostgreSQL prevents any one_off/trial consumption, while the command transaction is responsible for creating the required membership consumption atomically.
+- `visit_consumptions` repeats `client_id` and controlled `visit_kind` only to support composite FKs: the selected Membership must belong to the Visit Client and the referenced Visit must be membership kind. These repeated values are relational guards, not independent editable business facts.
 - Visit before selected Membership `start_date`, consumption of canceled/corrected Membership, and membership Visit during an active Freeze covering `occurred_at` are rejected under lock by the command/domain boundary; expired selection requires current-state acknowledgement.
 - `business_audit_entries` are append-only by application policy; database permissions/triggers can harden this if available.
 
