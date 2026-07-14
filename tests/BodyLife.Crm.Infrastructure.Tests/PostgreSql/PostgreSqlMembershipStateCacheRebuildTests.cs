@@ -577,28 +577,25 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
     }
 
     [PostgreSqlFact]
-    public async Task VisitEligibilityPreparationRequiresFreezeInputAndCallerTransaction()
+    public async Task VisitEligibilityPreparationRequiresFreezeProviderAndCallerTransaction()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        var missingFreezeProvider = Assert.Throws<ArgumentNullException>(() =>
+            new MembershipVisitEligibilityPreparer(
+                dbContext,
+                CreateRebuilder(dbContext),
+                freezeSourceProvider: null!));
         var preparer = CreateVisitEligibilityPreparer(dbContext);
-
-        var missingFreezeInput = await Assert.ThrowsAsync<ArgumentNullException>(() =>
-            preparer.PrepareAsync(
-                seeded.ClientId,
-                seeded.MembershipId,
-                TestNow,
-                freezeSources: null));
         var missingTransaction = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             preparer.PrepareAsync(
                 seeded.ClientId,
                 seeded.MembershipId,
-                TestNow,
-                freezeSources: []));
+                TestNow));
 
-        Assert.Equal("freezeSources", missingFreezeInput.ParamName);
+        Assert.Equal("freezeSourceProvider", missingFreezeProvider.ParamName);
         Assert.Contains(
             "caller-owned",
             missingTransaction.Message,
@@ -620,13 +617,11 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         var missingMembership = await preparer.PrepareAsync(
             seeded.ClientId,
             missingMembershipId,
-            TestNow,
-            freezeSources: []);
+            TestNow);
         var foreignClient = await preparer.PrepareAsync(
             Guid.NewGuid(),
             seeded.MembershipId,
-            TestNow,
-            freezeSources: []);
+            TestNow);
 
         Assert.Equal(
             MembershipVisitEligibilityPreparationStatus.NotFound,
@@ -665,8 +660,7 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         var result = await CreateVisitEligibilityPreparer(dbContext).PrepareAsync(
             seeded.ClientId,
             seeded.MembershipId,
-            new DateTimeOffset(2026, 8, 1, 9, 0, 0, TimeSpan.Zero),
-            freezeSources: []);
+            new DateTimeOffset(2026, 8, 1, 9, 0, 0, TimeSpan.Zero));
 
         Assert.Equal(
             MembershipVisitEligibilityPreparationStatus.Prepared,
@@ -718,11 +712,11 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
             isActive: true);
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
-        var result = await CreateVisitEligibilityPreparer(dbContext).PrepareAsync(
-            seeded.ClientId,
-            seeded.MembershipId,
-            new DateTimeOffset(2026, 7, 14, 9, 0, 0, TimeSpan.Zero),
-            freezeSources: [freeze]);
+        var result = await CreateVisitEligibilityPreparer(dbContext, [freeze])
+            .PrepareAsync(
+                seeded.ClientId,
+                seeded.MembershipId,
+                new DateTimeOffset(2026, 7, 14, 9, 0, 0, TimeSpan.Zero));
 
         Assert.True(result.IsPrepared);
         Assert.NotNull(result.Eligibility);
@@ -755,8 +749,7 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         var result = await CreateVisitEligibilityPreparer(dbContext).PrepareAsync(
             seeded.ClientId,
             seeded.MembershipId,
-            TestNow,
-            freezeSources: []);
+            TestNow);
 
         Assert.True(result.IsPrepared);
         var lockException = await AssertMembershipUpdateBlockedAsync(
@@ -891,11 +884,26 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
     }
 
     private static MembershipVisitEligibilityPreparer CreateVisitEligibilityPreparer(
-        BodyLifeDbContext dbContext)
+        BodyLifeDbContext dbContext,
+        IReadOnlyList<MembershipVisitFreezeSource>? freezeSources = null)
     {
         return new MembershipVisitEligibilityPreparer(
             dbContext,
-            CreateRebuilder(dbContext));
+            CreateRebuilder(dbContext),
+            new StaticMembershipVisitFreezeSourceProvider(freezeSources ?? []));
+    }
+
+    private sealed class StaticMembershipVisitFreezeSourceProvider(
+        IReadOnlyList<MembershipVisitFreezeSource> freezeSources)
+        : IMembershipVisitFreezeSourceProvider
+    {
+        public Task<IReadOnlyList<MembershipVisitFreezeSource>> GetForVisitAsync(
+            Guid membershipId,
+            DateOnly visitDate,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(freezeSources);
+        }
     }
 
     private static async Task<SeededMembership> SeedIssuedMembershipAsync(

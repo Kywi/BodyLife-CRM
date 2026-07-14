@@ -3798,3 +3798,95 @@ Next recommended step:
   Record this as a narrow Milestone 6 prerequisite to the later full Milestone
   8 Freeze workflow. Keep `AddFreeze`/`CancelFreeze`, extension recalculation,
   `MarkVisit` writes, DI and UI outside that storage/query-only step.
+
+## Step 92 - Canonical Freeze source storage and locked Visit projection
+
+Status: completed.
+
+Plan alignment:
+
+- Resolve only the ADR-014 dependency recorded after Step 91. This pulls the
+  minimum Freeze source persistence/read boundary needed by Milestone 6 ahead
+  of Milestone 8; it does not implement the later Freeze mutation workflow.
+- Keep Freezes as owner of canonical range/cancellation facts and Memberships
+  as owner of Visit eligibility and calculated state.
+- Replace the caller-supplied Freeze collection on
+  `MembershipVisitEligibilityPreparer` with a required
+  `IMembershipVisitFreezeSourceProvider`. The preparer locks the selected
+  `(membership_id, client_id)` first, then obtains the canonical Freeze
+  projection, so the dependency cannot be accidentally defaulted to empty or
+  read before the Membership lock.
+- Make the PostgreSQL provider require the caller transaction and lock every
+  inclusive-overlapping Freeze row with `FOR UPDATE`. Future Add/CancelFreeze
+  commands must use the same Membership-first lock order.
+- Keep `AddFreeze`, `CancelFreeze`, extension-day/state recalculation,
+  idempotency, audit, command handlers, DI registration, history/report query,
+  Razor/htmx and UI outside this step.
+
+Scope:
+
+- Add canonical `freezes` and `freeze_cancellations` EF records/configurations
+  plus migration `20260714174210_AddFreezeSourceFacts`.
+- Enforce inclusive `start_date <= end_date`, nonblank reasons, controlled
+  entry origins/statuses, restrictive account/session/source relationships,
+  one cancellation per Freeze and composite Membership/Client ownership.
+- Add the planned `(membership_id, status, start_date, end_date)` recalculation
+  and Visit lookup index plus client/cancellation timeline indexes.
+- Retain active/canceled Freeze ranges and cancellation command-envelope
+  metadata without hard deletion; canceled sources project with
+  `IsActive = false` and therefore do not block a Membership Visit.
+- Add a Freezes-owned `MembershipVisitFreezeSourceReader` implementing the
+  reviewed Memberships provider contract and returning only overlapping
+  canonical source ranges.
+- Update the data architecture schema row and lock-order rule to match the
+  implemented composite FK and cancellation envelope.
+
+Validation:
+
+- Release compile checks passed with 0 warnings/errors before and after
+  migration/test work.
+- Generated SQL from `20260714140347_AddVisitsSourceFacts` to
+  `20260714174210_AddFreezeSourceFacts` was reviewed and contains only the two
+  additive source tables, their restrictive relationships, checks and indexes.
+- The first formatting verification found the UTF-8 BOM emitted by
+  `dotnet-ef 10.0.4` in the new migration; the generated migration files were
+  normalized to the repository's ASCII-compatible encoding and the repeated
+  formatting/analyzer gate passed.
+- Focused `PostgreSqlFreezesStorageTests`,
+  `PostgreSqlMembershipStateCacheRebuildTests` and
+  `MembershipFormulaOwnershipTests` validation passed all 31 cases against
+  Docker PostgreSQL. The five new cases cover clean migration shape,
+  active/canceled history, inclusive blocking, metadata/range/composite-FK
+  constraints, unique retained cancellation, restrictive deletes, required
+  caller transaction and a real competing Freeze update lock timeout.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 241 core tests, 35 web tests, 274
+  PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and
+  EF migration listing through `20260714174210_AddFreezeSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+- `graphify update .` completed the structural rebuild with 5246 nodes, 10890
+  edges and 598 communities; optional HTML visualization remained skipped
+  above its configured 5000-node limit.
+- `graphify . --update` was attempted for the architecture/progress changes but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(freezes): add locked visit source projection`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Continue Milestone 6 with the server-side `MarkVisit` command handler over
+  the completed command, Visit storage, locked Membership eligibility and
+  canonical Freeze projection prerequisites. Keep the next step bounded to
+  authorization, idempotency, one PostgreSQL transaction, explicit
+  membership/one-off/trial source writes, synchronous selected-Membership
+  recalculation, `visit.marked` audit, rollback/concurrency tests and a
+  canonical reread target; leave DI/web UI, cancellation and report/history
+  presentation for following steps.

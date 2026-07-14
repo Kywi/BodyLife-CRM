@@ -4,15 +4,30 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 
-public sealed class MembershipVisitEligibilityPreparer(
-    BodyLifeDbContext dbContext,
-    MembershipStateCacheRebuilder stateCacheRebuilder)
+public sealed class MembershipVisitEligibilityPreparer
 {
+    private readonly BodyLifeDbContext dbContext;
+    private readonly IMembershipVisitFreezeSourceProvider freezeSourceProvider;
+    private readonly MembershipStateCacheRebuilder stateCacheRebuilder;
+
+    public MembershipVisitEligibilityPreparer(
+        BodyLifeDbContext dbContext,
+        MembershipStateCacheRebuilder stateCacheRebuilder,
+        IMembershipVisitFreezeSourceProvider freezeSourceProvider)
+    {
+        ArgumentNullException.ThrowIfNull(dbContext);
+        ArgumentNullException.ThrowIfNull(stateCacheRebuilder);
+        ArgumentNullException.ThrowIfNull(freezeSourceProvider);
+
+        this.dbContext = dbContext;
+        this.stateCacheRebuilder = stateCacheRebuilder;
+        this.freezeSourceProvider = freezeSourceProvider;
+    }
+
     public async Task<MembershipVisitEligibilityPreparationResult> PrepareAsync(
         Guid clientId,
         Guid membershipId,
         DateTimeOffset occurredAt,
-        IEnumerable<MembershipVisitFreezeSource>? freezeSources,
         CancellationToken cancellationToken = default)
     {
         if (clientId == Guid.Empty)
@@ -26,9 +41,6 @@ public sealed class MembershipVisitEligibilityPreparer(
                 "Membership id is required.",
                 nameof(membershipId));
         }
-
-        ArgumentNullException.ThrowIfNull(freezeSources);
-        var explicitFreezeSources = freezeSources.ToArray();
 
         if (dbContext.Database.CurrentTransaction is null)
         {
@@ -72,6 +84,12 @@ public sealed class MembershipVisitEligibilityPreparer(
                 membershipId);
         }
 
+        var visitDate = DateOnly.FromDateTime(occurredAt.DateTime);
+        var freezeSources = await freezeSourceProvider.GetForVisitAsync(
+            membershipId,
+            visitDate,
+            cancellationToken);
+
         var rebuild = await stateCacheRebuilder.RebuildAsync(
             membershipId,
             cancellationToken);
@@ -103,8 +121,8 @@ public sealed class MembershipVisitEligibilityPreparer(
             issueTerms,
             rebuild.State,
             lifecycleStatus,
-            DateOnly.FromDateTime(occurredAt.DateTime),
-            explicitFreezeSources);
+            visitDate,
+            freezeSources);
 
         return MembershipVisitEligibilityPreparationResult.Prepared(
             clientId,
