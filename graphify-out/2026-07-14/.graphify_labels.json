@@ -614,5 +614,11 @@
   "612": "MembershipWarningCodes.cs",
   "613": "MembershipTypeCatalogActionKeys.cs",
   "614": "FixedTimeProvider",
-  "615": "FixedTimeProvider"
+  "615": "FixedTimeProvider",
+  "616": "MembershipOpeningState",
+  "617": "MembershipFormulaOwnershipTests.cs",
+  "618": "AddAccountCredentials",
+  "619": "MembershipAuditActions.cs",
+  "620": "_MarkVisitForm.cshtml",
+  "621": ".PersistenceRegistrationExposesScopedStatePersistenceCoordinator"
 }
