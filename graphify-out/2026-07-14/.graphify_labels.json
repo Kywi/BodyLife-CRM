@@ -565,8 +565,14 @@
   "563": "MembershipOpeningState",
   "564": "MembershipOpeningStateRecord",
   "565": "FixedTimeProvider",
+  "566": "ClientSearchActionKeys.cs",
   "567": "SessionId",
+  "568": "MembershipActionKeys.cs",
   "569": ".InvokeAsync",
   "570": ".CheckHealthAsync",
-  "571": "MembershipStateCacheRebuildResult"
+  "571": "MembershipStateCacheRebuildResult",
+  "572": "MembershipWarningCodes.cs",
+  "573": "MembershipTypeCatalogActionKeys.cs",
+  "574": ".SourceMetadataRejectsMissingValues",
+  "575": "ClientSearchNormalizerTests.cs"
 }
