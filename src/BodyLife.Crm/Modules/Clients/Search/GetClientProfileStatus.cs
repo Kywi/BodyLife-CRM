@@ -5,5 +5,6 @@ public enum GetClientProfileStatus
     Success = 1,
     PermissionDenied,
     NotFound,
-    ValidationFailed
+    ValidationFailed,
+    RecalculationFailed
 }

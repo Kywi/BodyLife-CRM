@@ -44,6 +44,15 @@ public sealed record GetClientProfileResult(
             field);
     }
 
+    public static GetClientProfileResult RecalculationFailed()
+    {
+        return Failure(
+            GetClientProfileStatus.RecalculationFailed,
+            "recalculation_failed",
+            "Client profile is unavailable because membership recalculation has not completed successfully.",
+            field: null);
+    }
+
     private static GetClientProfileResult Failure(
         GetClientProfileStatus status,
         string errorCode,

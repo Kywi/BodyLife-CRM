@@ -1,8 +1,11 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
+using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -73,9 +76,10 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Empty(profile.Membership.Timeline);
         Assert.Empty(profile.Membership.Warnings);
         Assert.Empty(profile.Warnings);
-        Assert.Equal(2, profile.AllowedActions.Items.Count);
+        Assert.Equal(3, profile.AllowedActions.Items.Count);
         Assert.True(profile.AllowedActions.IsAllowed(ClientProfileActionKeys.UpdateClient));
         Assert.True(profile.AllowedActions.IsAllowed(ClientProfileActionKeys.AssignOrChangeCard));
+        Assert.True(profile.AllowedActions.IsAllowed(MembershipActionKeys.Issue));
         Assert.All(
             profile.AllowedActions.Items,
             permission => Assert.Equal(
@@ -115,7 +119,9 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Equal(
             new[] { "client_inactive", "no_current_card" },
             profile.Warnings.Select(warning => warning.Code));
-        Assert.Null(profile.MembershipAsOfDate);
+        Assert.Equal(
+            DateOnly.FromDateTime(TestNow.UtcDateTime),
+            profile.MembershipAsOfDate);
     }
 
     [PostgreSqlFact]
@@ -203,6 +209,9 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         var drillDowns = await handler.ExecuteAsync(
             new GetClientProfileQuery(actor, Guid.NewGuid(), IncludeDrillDowns: true),
             CancellationToken.None);
+        var invalidAsOfDate = await handler.ExecuteAsync(
+            new GetClientProfileQuery(actor, Guid.NewGuid(), default(DateOnly)),
+            CancellationToken.None);
 
         Assert.Equal(GetClientProfileStatus.ValidationFailed, emptyId.Status);
         Assert.Equal("clientId", emptyId.ErrorField);
@@ -212,7 +221,11 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Equal("includeHistory", history.ErrorField);
         Assert.Equal(GetClientProfileStatus.ValidationFailed, drillDowns.Status);
         Assert.Equal("includeDrillDowns", drillDowns.ErrorField);
-        Assert.All(new[] { emptyId, missing, history, drillDowns }, result => Assert.Null(result.Profile));
+        Assert.Equal(GetClientProfileStatus.ValidationFailed, invalidAsOfDate.Status);
+        Assert.Equal("membershipAsOfDate", invalidAsOfDate.ErrorField);
+        Assert.All(
+            new[] { emptyId, missing, history, drillDowns, invalidAsOfDate },
+            result => Assert.Null(result.Profile));
         Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
@@ -294,9 +307,246 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Equal(idempotencyCountBeforeQuery, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
-    private static GetClientProfileQueryHandler CreateHandler(BodyLifeDbContext dbContext)
+    [PostgreSqlFact]
+    public async Task ProfileComposesSingleCanonicalMembershipAndDeterministicTimeline()
     {
-        return new GetClientProfileQueryHandler(dbContext, new FixedTimeProvider(TestNow));
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        var clientId = Guid.NewGuid();
+        await InsertClientAsync(
+            database,
+            clientId,
+            actor.AccountId.Value,
+            "Membership",
+            "Profile");
+        var membershipTypeId = await InsertMembershipTypeAsync(database);
+        var currentMembershipId = await InsertMembershipAsync(
+            database,
+            clientId,
+            membershipTypeId,
+            actor.AccountId.Value,
+            new DateOnly(2026, 7, 1),
+            issuedAt: TestNow.AddDays(-11),
+            status: "active",
+            remainingVisits: 1);
+        var canceledMembershipId = await InsertMembershipAsync(
+            database,
+            clientId,
+            membershipTypeId,
+            actor.AccountId.Value,
+            new DateOnly(2026, 7, 5),
+            issuedAt: TestNow.AddDays(-7),
+            status: "canceled",
+            remainingVisits: 6);
+        var asOfDate = new DateOnly(2026, 7, 12);
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientProfileQuery(actor, clientId, asOfDate),
+            CancellationToken.None);
+
+        AssertSuccessful(result);
+        var profile = result.Profile!;
+        Assert.Equal(asOfDate, profile.MembershipAsOfDate);
+        Assert.NotNull(profile.Membership.CurrentMembership);
+        Assert.Equal(currentMembershipId, profile.Membership.CurrentMembership.MembershipId);
+        Assert.Equal(
+            ClientMembershipSummaryStatusCodes.Active,
+            profile.Membership.CurrentMembership.Status);
+        Assert.Equal(1, profile.Membership.CurrentMembership.RemainingVisits);
+        Assert.Equal(
+            new DateOnly(2026, 7, 30),
+            profile.Membership.CurrentMembership.EffectiveEndDate);
+        Assert.Collection(
+            profile.Membership.Timeline,
+            item =>
+            {
+                Assert.Equal(canceledMembershipId, item.MembershipId);
+                Assert.Equal(ClientMembershipSummaryStatusCodes.Canceled, item.Status);
+                Assert.Equal(6, item.RemainingVisits);
+            },
+            item =>
+            {
+                Assert.Equal(currentMembershipId, item.MembershipId);
+                Assert.Equal(ClientMembershipSummaryStatusCodes.Active, item.Status);
+                Assert.Equal(1, item.RemainingVisits);
+            });
+        var warning = Assert.Single(profile.Membership.Warnings);
+        Assert.Equal(MembershipWarningCodes.LowRemaining, warning.Code);
+        Assert.True(profile.AllowedActions.IsAllowed(MembershipActionKeys.Issue));
+        Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task AmbiguousActiveMembershipsExposeNoCurrentSummaryAndServerWarning()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
+        var clientId = Guid.NewGuid();
+        await InsertClientAsync(
+            database,
+            clientId,
+            actor.AccountId.Value,
+            "Ambiguous",
+            "Memberships");
+        var membershipTypeId = await InsertMembershipTypeAsync(database);
+        var olderMembershipId = await InsertMembershipAsync(
+            database,
+            clientId,
+            membershipTypeId,
+            actor.AccountId.Value,
+            new DateOnly(2026, 7, 1),
+            issuedAt: TestNow.AddDays(-11),
+            status: "active",
+            remainingVisits: 5);
+        var newerMembershipId = await InsertMembershipAsync(
+            database,
+            clientId,
+            membershipTypeId,
+            actor.AccountId.Value,
+            new DateOnly(2026, 7, 5),
+            issuedAt: TestNow.AddDays(-7),
+            status: "active",
+            remainingVisits: 4);
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientProfileQuery(
+                actor,
+                clientId,
+                new DateOnly(2026, 7, 12)),
+            CancellationToken.None);
+
+        AssertSuccessful(result);
+        Assert.Null(result.Profile!.Membership.CurrentMembership);
+        Assert.Equal(
+            [newerMembershipId, olderMembershipId],
+            result.Profile.Membership.Timeline.Select(item => item.MembershipId));
+        var warning = Assert.Single(result.Profile.Membership.Warnings);
+        Assert.Equal(
+            ClientProfileMembershipWarningCodes.AmbiguousCurrentMembership,
+            warning.Code);
+        Assert.Equal(
+            "Multiple active memberships require explicit selection.",
+            warning.Message);
+    }
+
+    [PostgreSqlFact]
+    public async Task MissingMembershipCacheFailsProfileWithoutPartialData()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.SharedReceptionAdmin);
+        var clientId = Guid.NewGuid();
+        await InsertClientAsync(
+            database,
+            clientId,
+            actor.AccountId.Value,
+            "Unavailable",
+            "Membership");
+        var membershipTypeId = await InsertMembershipTypeAsync(database);
+        await InsertMembershipAsync(
+            database,
+            clientId,
+            membershipTypeId,
+            actor.AccountId.Value,
+            new DateOnly(2026, 7, 1),
+            issuedAt: TestNow.AddDays(-11),
+            status: "active",
+            remainingVisits: 8,
+            includeCache: false);
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientProfileQuery(
+                actor,
+                clientId,
+                new DateOnly(2026, 7, 12)),
+            CancellationToken.None);
+
+        Assert.Equal(GetClientProfileStatus.RecalculationFailed, result.Status);
+        Assert.Equal("recalculation_failed", result.ErrorCode);
+        Assert.Null(result.Profile);
+        Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task MembershipQueryFailuresNeverReturnPartialProfileData()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        var clientId = Guid.NewGuid();
+        await InsertClientAsync(
+            database,
+            clientId,
+            actor.AccountId.Value,
+            "Atomic",
+            "Profile");
+        var cases = new[]
+        {
+            (
+                MembershipResult: GetClientMembershipStatesResult.Denied(),
+                ProfileStatus: GetClientProfileStatus.PermissionDenied,
+                ErrorCode: "permission_denied",
+                ErrorField: (string?)null),
+            (
+                MembershipResult: GetClientMembershipStatesResult.MissingClient(),
+                ProfileStatus: GetClientProfileStatus.NotFound,
+                ErrorCode: "not_found",
+                ErrorField: "clientId"),
+            (
+                MembershipResult: GetClientMembershipStatesResult.Invalid(
+                    "As-of date is required.",
+                    "asOfDate"),
+                ProfileStatus: GetClientProfileStatus.ValidationFailed,
+                ErrorCode: "validation_failed",
+                ErrorField: "membershipAsOfDate"),
+            (
+                MembershipResult: GetClientMembershipStatesResult.RecalculationFailed(),
+                ProfileStatus: GetClientProfileStatus.RecalculationFailed,
+                ErrorCode: "recalculation_failed",
+                ErrorField: (string?)null),
+        };
+
+        foreach (var testCase in cases)
+        {
+            var result = await CreateHandler(
+                dbContext,
+                new StubMembershipStatesQueryHandler(testCase.MembershipResult)).ExecuteAsync(
+                    new GetClientProfileQuery(
+                        actor,
+                        clientId,
+                        new DateOnly(2026, 7, 12)),
+                    CancellationToken.None);
+
+            Assert.Equal(testCase.ProfileStatus, result.Status);
+            Assert.Equal(testCase.ErrorCode, result.ErrorCode);
+            Assert.Equal(testCase.ErrorField, result.ErrorField);
+            Assert.Null(result.Profile);
+        }
+
+        Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    private static GetClientProfileQueryHandler CreateHandler(
+        BodyLifeDbContext dbContext,
+        IBodyLifeQueryHandler<GetClientMembershipStatesQuery, GetClientMembershipStatesResult>?
+            membershipStatesQueryHandler = null)
+    {
+        var timeProvider = new FixedTimeProvider(TestNow);
+
+        return new GetClientProfileQueryHandler(
+            dbContext,
+            membershipStatesQueryHandler
+                ?? new GetClientMembershipStatesQueryHandler(dbContext, timeProvider),
+            timeProvider);
     }
 
     private static CommandEnvelope CommandEnvelope(
@@ -469,6 +719,166 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         await command.ExecuteNonQueryAsync();
     }
 
+    private static async Task<Guid> InsertMembershipTypeAsync(
+        PostgreSqlTestDatabase database)
+    {
+        var membershipTypeId = Guid.NewGuid();
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.membership_types (
+                id,
+                name,
+                duration_days,
+                visits_limit,
+                price_amount,
+                price_currency,
+                is_active,
+                comment,
+                created_at,
+                updated_at,
+                deactivated_at)
+            values (
+                @id,
+                'Eight visits / 30 days',
+                30,
+                8,
+                1200,
+                'UAH',
+                true,
+                null,
+                @recorded_at,
+                @recorded_at,
+                null)
+            """;
+        command.Parameters.AddWithValue("id", membershipTypeId);
+        command.Parameters.AddWithValue("recorded_at", TestNow.AddDays(-30));
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        return membershipTypeId;
+    }
+
+    private static async Task<Guid> InsertMembershipAsync(
+        PostgreSqlTestDatabase database,
+        Guid clientId,
+        Guid membershipTypeId,
+        Guid issuedByAccountId,
+        DateOnly startDate,
+        DateTimeOffset issuedAt,
+        string status,
+        int remainingVisits,
+        bool includeCache = true)
+    {
+        const int visitsLimit = 8;
+        var membershipId = Guid.NewGuid();
+        var baseEndDate = startDate.AddDays(29);
+        var countedVisits = visitsLimit - remainingVisits;
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+
+        await using (var membershipCommand = connection.CreateCommand())
+        {
+            membershipCommand.CommandText =
+                """
+                insert into bodylife.issued_memberships (
+                    id,
+                    client_id,
+                    membership_type_id,
+                    type_name_snapshot,
+                    duration_days_snapshot,
+                    visits_limit_snapshot,
+                    price_amount_snapshot,
+                    price_currency_snapshot,
+                    start_date,
+                    base_end_date,
+                    issued_at,
+                    issued_by_account_id,
+                    status,
+                    entry_origin,
+                    entry_batch_id,
+                    comment)
+                values (
+                    @id,
+                    @client_id,
+                    @membership_type_id,
+                    'Eight visits / 30 days',
+                    30,
+                    8,
+                    1200,
+                    'UAH',
+                    @start_date,
+                    @base_end_date,
+                    @issued_at,
+                    @issued_by_account_id,
+                    @status,
+                    'normal',
+                    null,
+                    null)
+                """;
+            membershipCommand.Parameters.AddWithValue("id", membershipId);
+            membershipCommand.Parameters.AddWithValue("client_id", clientId);
+            membershipCommand.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+            membershipCommand.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, startDate);
+            membershipCommand.Parameters.AddWithValue("base_end_date", NpgsqlDbType.Date, baseEndDate);
+            membershipCommand.Parameters.AddWithValue("issued_at", issuedAt);
+            membershipCommand.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
+            membershipCommand.Parameters.AddWithValue("status", status);
+            Assert.Equal(1, await membershipCommand.ExecuteNonQueryAsync());
+        }
+
+        if (!includeCache)
+        {
+            return membershipId;
+        }
+
+        await using var cacheCommand = connection.CreateCommand();
+        cacheCommand.CommandText =
+            """
+            insert into bodylife.membership_state_cache (
+                membership_id,
+                counted_visits,
+                remaining_visits,
+                negative_balance,
+                first_negative_visit_id,
+                first_negative_visit_date,
+                extension_days,
+                effective_end_date,
+                last_counted_visit_at,
+                recalculated_at,
+                recalculation_version)
+            values (
+                @membership_id,
+                @counted_visits,
+                @remaining_visits,
+                0,
+                null,
+                null,
+                0,
+                @effective_end_date,
+                @last_counted_visit_at,
+                @recalculated_at,
+                @recalculation_version)
+            """;
+        cacheCommand.Parameters.AddWithValue("membership_id", membershipId);
+        cacheCommand.Parameters.AddWithValue("counted_visits", countedVisits);
+        cacheCommand.Parameters.AddWithValue("remaining_visits", remainingVisits);
+        cacheCommand.Parameters.AddWithValue(
+            "effective_end_date",
+            NpgsqlDbType.Date,
+            baseEndDate);
+        cacheCommand.Parameters.Add("last_counted_visit_at", NpgsqlDbType.TimestampTz).Value =
+            countedVisits == 0
+                ? DBNull.Value
+                : TestNow.AddDays(-1);
+        cacheCommand.Parameters.AddWithValue("recalculated_at", TestNow.AddMinutes(-20));
+        cacheCommand.Parameters.AddWithValue(
+            "recalculation_version",
+            MembershipStateCacheRebuilder.CurrentRecalculationVersion);
+        Assert.Equal(1, await cacheCommand.ExecuteNonQueryAsync());
+        return membershipId;
+    }
+
     private static async Task<Guid> InsertCardAsync(
         PostgreSqlTestDatabase database,
         Guid clientId,
@@ -574,6 +984,18 @@ public sealed class PostgreSqlGetClientProfileQueryTests
             ActorRole.Admin => "admin",
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, null),
         };
+    }
+
+    private sealed class StubMembershipStatesQueryHandler(
+        GetClientMembershipStatesResult result)
+        : IBodyLifeQueryHandler<GetClientMembershipStatesQuery, GetClientMembershipStatesResult>
+    {
+        public Task<GetClientMembershipStatesResult> ExecuteAsync(
+            GetClientMembershipStatesQuery query,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(result);
+        }
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider

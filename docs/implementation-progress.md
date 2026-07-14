@@ -3217,3 +3217,48 @@ Commits:
 Next recommended step:
 
 - Compose only the membership area of `GetClientProfile` through the public `GetClientMembershipStates` query: pass the canonical actor/client/`as_of`, project the deterministic timeline without formulas, expose a current summary only for a `single` candidate, surface an explicit server warning for `ambiguous`, and propagate permission/not-found/recalculation failures without partial optimistic profile state. Add focused core and PostgreSQL profile tests. Keep search-result membership summaries, issue-membership Razor/htmx UI, visits/payments/freezes/history sections and resolution of the multiple-active-membership product policy outside that profile-composition step.
+
+## Step 83 - Canonical membership composition in client profile
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 by replacing the membership placeholder in `GetClientProfile` with composition through the Step 81/82 public `GetClientMembershipStates` query.
+- Pass the canonical actor, client id and one resolved membership `as_of` date to Memberships. An omitted optional profile date resolves once from the server request time and the resolved date is returned with the profile; an explicitly empty date is rejected before composition.
+- Keep Memberships as the only formula owner. The Clients projection copies the deterministic public timeline, canonical remaining visits, effective end date and warnings; its active/expired display status delegates to the Memberships-owned `IsActiveByDate` result and performs no date or visit arithmetic.
+- Preserve source lifecycle history as stable `active`, `expired`, `canceled` or `corrected` summary status codes without dropping canceled/corrected/expired timeline rows.
+- Expose `CurrentMembership` only when Memberships returns a `single` active candidate. A `none` result has no current summary, while `ambiguous` has no arbitrary current summary and carries the explicit `membership_current_ambiguous` server warning.
+- For a single candidate, copy only that candidate's canonical Memberships warning codes/messages into the profile membership area. Do not reinterpret negative, zero, ending-soon, low-remaining or expired rules in Clients or Razor.
+- Merge the Memberships-provided `memberships.issue` permission with the existing profile identity/card permissions so future UI remains driven by server authorization intent.
+- Fail the whole profile composition on nested permission denial, missing client, invalid membership request or recalculation failure. No failure returns identity/card data as a partial optimistic profile.
+- Keep the read path side-effect free: no audit entry, idempotency row, cache repair, source mutation or direct cross-module persistence write.
+- Keep search-result membership summaries, issue-membership Razor/htmx interaction, visits/payments/freezes/history composition and resolution of the multiple-active-membership product policy outside this step.
+
+Scope:
+
+- Add `ClientProfileMembershipProjection` as a pure Clients-side adapter over the public Memberships collection, plus stable summary status and ambiguous-warning codes.
+- Add `RecalculationFailed` to the client profile result contract with the stable `recalculation_failed` error and no profile payload.
+- Inject the public client membership states query handler into `GetClientProfileQueryHandler`, resolve/validate `MembershipAsOfDate`, project successful canonical state, merge allowed actions and map every nested failure without partial data.
+- Add five focused core cases for single/none/ambiguous projection, canonical warning/status copying, deterministic/read-only collections and recalculation failure shape.
+- Extend PostgreSQL profile coverage to ten cases total, including empty profile issue permission, resolved default `as_of`, canonical single timeline, ambiguity, missing-cache failure, nested failure propagation and read-only/no-audit behavior.
+- Add no EF record/configuration/migration, schema/index change, search query composition, page/controller/Razor/htmx code or new business formula.
+
+Validation:
+
+- Focused `ClientProfileMembershipProjectionTests` validation passed all 5 cases.
+- Focused `PostgreSqlGetClientProfileQueryTests` validation passed all 10 cases against Docker PostgreSQL.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this composition-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 193 core tests, 35 web tests, 248 PostgreSQL infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `graphify update .` completed the structural rebuild with 4823 nodes, 9860 edges and 560 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(clients): compose canonical membership profile`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Close the remaining Milestone 5 ownership gate before starting Visits: add only an automated architecture check that formula-bearing Memberships types/rules are not referenced by production modules outside Memberships, while explicitly allowing public read/query contracts such as the profile projection. Pair it with a short Milestone 5 acceptance audit that records the still-unresolved multiple-active-membership/visit-allocation product decision. Keep the product-policy decision itself, search membership summaries, issue-membership Razor/htmx UI and all Milestone 6 persistence/commands outside that gate-only step.

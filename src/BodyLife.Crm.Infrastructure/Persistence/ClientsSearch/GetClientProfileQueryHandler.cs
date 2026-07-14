@@ -1,11 +1,14 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Memberships;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 
 public sealed class GetClientProfileQueryHandler(
     BodyLifeDbContext dbContext,
+    IBodyLifeQueryHandler<GetClientMembershipStatesQuery, GetClientMembershipStatesResult>
+        getClientMembershipStates,
     TimeProvider timeProvider)
     : IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult>
 {
@@ -25,10 +28,12 @@ public sealed class GetClientProfileQueryHandler(
     {
         ArgumentNullException.ThrowIfNull(query);
 
+        var requestTime = timeProvider.GetUtcNow();
+
         if (!await ClientQuerySupport.IsActorAuthorizedAsync(
                 dbContext,
                 query.Actor,
-                timeProvider.GetUtcNow(),
+                requestTime,
                 cancellationToken))
         {
             return GetClientProfileResult.Denied();
@@ -37,6 +42,14 @@ public sealed class GetClientProfileQueryHandler(
         if (query.ClientId == Guid.Empty)
         {
             return GetClientProfileResult.Invalid("Client id is required.", "clientId");
+        }
+
+        if (query.MembershipAsOfDate is { } requestedAsOfDate
+            && requestedAsOfDate == default)
+        {
+            return GetClientProfileResult.Invalid(
+                "Membership as-of date is required when supplied.",
+                "membershipAsOfDate");
         }
 
         if (query.IncludeHistory)
@@ -83,6 +96,27 @@ public sealed class GetClientProfileQueryHandler(
             return GetClientProfileResult.Missing();
         }
 
+        var membershipAsOfDate = query.MembershipAsOfDate
+            ?? DateOnly.FromDateTime(requestTime.UtcDateTime);
+        var membershipResult = await getClientMembershipStates.ExecuteAsync(
+            new GetClientMembershipStatesQuery(
+                query.Actor,
+                query.ClientId,
+                membershipAsOfDate),
+            cancellationToken);
+
+        if (membershipResult.Status != GetClientMembershipStatesStatus.Success)
+        {
+            return MapMembershipFailure(membershipResult);
+        }
+
+        if (membershipResult.StateCollection is not { } membershipStates
+            || membershipStates.ClientId != query.ClientId
+            || membershipStates.AsOfDate != membershipAsOfDate)
+        {
+            return GetClientProfileResult.RecalculationFailed();
+        }
+
         var currentCard = row.CurrentCardAssignmentId.HasValue
             ? new ClientProfileCard(
                 row.CurrentCardAssignmentId.Value,
@@ -101,11 +135,39 @@ public sealed class GetClientProfileQueryHandler(
             row.CreatedAt,
             row.UpdatedAt,
             currentCard,
-            query.MembershipAsOfDate,
-            ClientProfileMembershipArea.Empty,
+            membershipAsOfDate,
+            ClientProfileMembershipProjection.Project(membershipStates),
             ClientQuerySupport.BuildWarnings(row.OperationalStatus, row.CurrentCardNumber),
-            ImplementedActionPermissions);
+            MergePermissions(membershipResult.AllowedActions));
 
         return GetClientProfileResult.Succeeded(profile);
+    }
+
+    private static GetClientProfileResult MapMembershipFailure(
+        GetClientMembershipStatesResult membershipResult)
+    {
+        return membershipResult.Status switch
+        {
+            GetClientMembershipStatesStatus.PermissionDenied
+                => GetClientProfileResult.Denied(),
+            GetClientMembershipStatesStatus.NotFound
+                => GetClientProfileResult.Missing(),
+            GetClientMembershipStatesStatus.ValidationFailed
+                => GetClientProfileResult.Invalid(
+                    membershipResult.ErrorMessage ?? "Membership state request is invalid.",
+                    membershipResult.ErrorField == "asOfDate"
+                        ? "membershipAsOfDate"
+                        : membershipResult.ErrorField),
+            GetClientMembershipStatesStatus.RecalculationFailed
+                => GetClientProfileResult.RecalculationFailed(),
+            _ => GetClientProfileResult.RecalculationFailed(),
+        };
+    }
+
+    private static QueryPermissionSet MergePermissions(
+        QueryPermissionSet membershipPermissions)
+    {
+        return new QueryPermissionSet(
+            ImplementedActionPermissions.Items.Concat(membershipPermissions.Items));
     }
 }
