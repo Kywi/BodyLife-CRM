@@ -3710,3 +3710,91 @@ Next recommended step:
   preparation against canonical state. Do not provide an unsafe empty-Freeze
   default, and keep Visit writes, idempotency, audit, DI and UI outside that
   read/preparation step.
+
+## Step 91 - Locked Membership Visit eligibility preparation
+
+Status: completed.
+
+Plan alignment:
+
+- Continue only the read/preparation prerequisite recorded after Step 90; add
+  no Visit source write, command handler, idempotency claim, audit or UI.
+- Require a caller-owned PostgreSQL transaction instead of opening and
+  committing an internal transaction. This keeps the selected issued
+  Membership row locked through the later Visit write/recalculation/audit
+  consistency boundary and prevents a stale eligibility window.
+- Lock by explicit `(membership_id, client_id)` and return the same typed
+  `NotFound` shape for a missing Membership or wrong Client relationship.
+- Rebuild the canonical version-4 Membership cache while the issued row remains
+  locked, then evaluate Visit-date lifecycle/expiry/zero/negative/Freeze rules
+  only through `MembershipVisitEligibilityPolicy`.
+- Require a non-null explicit `MembershipVisitFreezeSource` collection. An
+  explicit empty collection is valid input from the future Freezes boundary;
+  no optional/default-empty product path exists.
+- Return only the reviewed Memberships eligibility contract and rebuild status.
+  Keep `MembershipCalculatedState` internal to the Memberships boundary so a
+  future Visits handler cannot depend on formula-bearing implementation state.
+- Compose the returned eligibility with Visits-owned
+  `MarkVisitPreparationPolicy` for exact current acknowledgement matching,
+  avoiding a Memberships-to-Visits production dependency or module cycle.
+
+Scope:
+
+- Add public `MembershipVisitEligibilityPreparer`, typed immutable result and
+  `Prepared`/`NotFound` status under the Memberships persistence boundary.
+- Reuse `MembershipStateCacheRebuilder` in the caller transaction and map the
+  locked issue-time snapshot/lifecycle to the existing Memberships eligibility
+  policy.
+- Add five PostgreSQL cases for required Freeze input, required caller
+  transaction, missing/wrong selection, canonical zero+expired warnings and
+  Visits acknowledgement composition, inclusive active Freeze rejection and
+  a real competing-update lock timeout until caller rollback.
+- Add no EF record/configuration/migration, Freezes storage/provider,
+  `MarkVisit` handler, Visit writer, authorization, idempotency, business audit,
+  DI registration, report query, Razor/htmx or UI change.
+
+Validation:
+
+- Focused `PostgreSqlMembershipStateCacheRebuildTests` validation passed all 24
+  cases against Docker PostgreSQL, including the five new eligibility/lock
+  scenarios.
+- Focused eligibility plus `MembershipFormulaOwnershipTests` validation passed
+  all 26 selected cases, confirming the narrowed result does not expose a new
+  formula dependency to Visits.
+- During the API-narrowing review, the first focused compile attempted to read
+  internal `MembershipStateCacheRecord` directly from the test assembly and
+  failed with `CS0122`; that test-only access was removed rather than widening
+  production visibility, then focused and full gates passed.
+- Solution formatting/analyzer verification passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet
+  DOTNET_BIN=/tmp/bodylife-dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 241 core tests, 35 web tests, 269
+  PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714140347_AddVisitsSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this transaction/read-boundary step generated no migration.
+- `graphify update .` completed the structural rebuild with 5159 nodes, 10702
+  edges and 591 communities; the optional HTML visualization remains skipped
+  above its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress change but stopped
+  because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): prepare locked visit eligibility`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Resolve the remaining ADR-014/Milestone ordering dependency by pulling
+  forward only the minimal canonical Freeze source persistence and read query
+  required by `MarkVisit`: retained active/canceled Freeze ranges and
+  cancellation history plus an explicit Membership Visit source projection.
+  Record this as a narrow Milestone 6 prerequisite to the later full Milestone
+  8 Freeze workflow. Keep `AddFreeze`/`CancelFreeze`, extension recalculation,
+  `MarkVisit` writes, DI and UI outside that storage/query-only step.

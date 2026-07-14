@@ -2,6 +2,8 @@ using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.Visits;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
@@ -575,6 +577,201 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
     }
 
     [PostgreSqlFact]
+    public async Task VisitEligibilityPreparationRequiresFreezeInputAndCallerTransaction()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        var preparer = CreateVisitEligibilityPreparer(dbContext);
+
+        var missingFreezeInput = await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            preparer.PrepareAsync(
+                seeded.ClientId,
+                seeded.MembershipId,
+                TestNow,
+                freezeSources: null));
+        var missingTransaction = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            preparer.PrepareAsync(
+                seeded.ClientId,
+                seeded.MembershipId,
+                TestNow,
+                freezeSources: []));
+
+        Assert.Equal("freezeSources", missingFreezeInput.ParamName);
+        Assert.Contains(
+            "caller-owned",
+            missingTransaction.Message,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(0L, await CountCacheRowsAsync(database));
+    }
+
+    [PostgreSqlFact]
+    public async Task VisitEligibilityPreparationReturnsNotFoundForWrongSelection()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        var preparer = CreateVisitEligibilityPreparer(dbContext);
+        var missingMembershipId = Guid.NewGuid();
+
+        var missingMembership = await preparer.PrepareAsync(
+            seeded.ClientId,
+            missingMembershipId,
+            TestNow,
+            freezeSources: []);
+        var foreignClient = await preparer.PrepareAsync(
+            Guid.NewGuid(),
+            seeded.MembershipId,
+            TestNow,
+            freezeSources: []);
+
+        Assert.Equal(
+            MembershipVisitEligibilityPreparationStatus.NotFound,
+            missingMembership.Status);
+        Assert.Equal(seeded.ClientId, missingMembership.ClientId);
+        Assert.Equal(missingMembershipId, missingMembership.MembershipId);
+        Assert.False(missingMembership.IsPrepared);
+        Assert.Null(missingMembership.Eligibility);
+        Assert.Null(missingMembership.RebuildStatus);
+        Assert.Equal(
+            MembershipVisitEligibilityPreparationStatus.NotFound,
+            foreignClient.Status);
+        Assert.False(foreignClient.IsPrepared);
+        Assert.Equal(0L, await CountCacheRowsAsync(database));
+    }
+
+    [PostgreSqlFact]
+    public async Task CanonicalStateDrivesVisitWarningsAndVisitsPreparation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        await InsertMembershipVisitAsync(
+            database.ConnectionString,
+            seeded,
+            new DateTimeOffset(2026, 7, 14, 9, 0, 0, TimeSpan.Zero),
+            TestNow.AddMinutes(1));
+        await InsertMembershipVisitAsync(
+            database.ConnectionString,
+            seeded,
+            new DateTimeOffset(2026, 7, 15, 9, 0, 0, TimeSpan.Zero),
+            TestNow.AddMinutes(2));
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var result = await CreateVisitEligibilityPreparer(dbContext).PrepareAsync(
+            seeded.ClientId,
+            seeded.MembershipId,
+            new DateTimeOffset(2026, 8, 1, 9, 0, 0, TimeSpan.Zero),
+            freezeSources: []);
+
+        Assert.Equal(
+            MembershipVisitEligibilityPreparationStatus.Prepared,
+            result.Status);
+        Assert.True(result.IsPrepared);
+        Assert.Equal(MembershipStateCacheRebuildStatus.Created, result.RebuildStatus);
+        Assert.NotNull(result.Eligibility);
+        Assert.True(result.Eligibility.IsEligible);
+        Assert.Equal(
+            [
+                MembershipVisitAcknowledgement.Expired,
+                MembershipVisitAcknowledgement.ZeroRemaining,
+            ],
+            result.Eligibility.RequiredAcknowledgements);
+
+        var visitPreparation = MarkVisitPreparationPolicy.Prepare(
+            seeded.ClientId,
+            VisitKind.Membership,
+            seeded.MembershipId,
+            acknowledgements:
+            [
+                MembershipVisitAcknowledgement.ZeroRemaining,
+                MembershipVisitAcknowledgement.Expired,
+            ],
+            result.Eligibility);
+
+        Assert.True(visitPreparation.CreatesMembershipConsumption);
+        Assert.True(visitPreparation.RequiresMembershipRecalculation);
+        Assert.All(
+            typeof(MembershipVisitEligibilityPreparationResult).GetProperties(),
+            property => Assert.Null(property.SetMethod));
+
+        await transaction.RollbackAsync();
+        Assert.Equal(0L, await CountCacheRowsAsync(database));
+    }
+
+    [PostgreSqlFact]
+    public async Task ExplicitFreezeSourceBlocksCanonicalMembershipVisit()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        var visitDate = new DateOnly(2026, 7, 14);
+        var freeze = new MembershipVisitFreezeSource(
+            seeded.MembershipId,
+            Guid.NewGuid(),
+            new DateRange(visitDate, visitDate),
+            isActive: true);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var result = await CreateVisitEligibilityPreparer(dbContext).PrepareAsync(
+            seeded.ClientId,
+            seeded.MembershipId,
+            new DateTimeOffset(2026, 7, 14, 9, 0, 0, TimeSpan.Zero),
+            freezeSources: [freeze]);
+
+        Assert.True(result.IsPrepared);
+        Assert.NotNull(result.Eligibility);
+        Assert.False(result.Eligibility.IsEligible);
+        Assert.Equal(
+            MembershipVisitEligibilityStatus.DuringActiveFreeze,
+            result.Eligibility.Status);
+        Assert.Equal(
+            MembershipVisitEligibilityErrorCodes.VisitDuringFreeze,
+            result.Eligibility.ErrorCode);
+        var exception = Assert.Throws<ArgumentException>(() =>
+            MarkVisitPreparationPolicy.Prepare(
+                seeded.ClientId,
+                VisitKind.Membership,
+                seeded.MembershipId,
+                acknowledgements: [],
+                result.Eligibility));
+        Assert.Equal("membershipEligibility", exception.ParamName);
+    }
+
+    [PostgreSqlFact]
+    public async Task VisitEligibilityPreparationKeepsMembershipLockedForCaller()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var result = await CreateVisitEligibilityPreparer(dbContext).PrepareAsync(
+            seeded.ClientId,
+            seeded.MembershipId,
+            TestNow,
+            freezeSources: []);
+
+        Assert.True(result.IsPrepared);
+        var lockException = await AssertMembershipUpdateBlockedAsync(
+            database.ConnectionString,
+            seeded.MembershipId);
+        Assert.Equal(PostgresErrorCodes.LockNotAvailable, lockException.SqlState);
+
+        await transaction.RollbackAsync();
+        await UpdateMembershipStatusAsync(
+            database.ConnectionString,
+            seeded.MembershipId,
+            "canceled");
+    }
+
+    [PostgreSqlFact]
     public async Task MatchingCacheIsVerifiedAndRefreshesRecalculationMetadata()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -691,6 +888,14 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         return new MembershipStateCacheRebuilder(
             dbContext,
             new FixedTimeProvider(TestNow));
+    }
+
+    private static MembershipVisitEligibilityPreparer CreateVisitEligibilityPreparer(
+        BodyLifeDbContext dbContext)
+    {
+        return new MembershipVisitEligibilityPreparer(
+            dbContext,
+            CreateRebuilder(dbContext));
     }
 
     private static async Task<SeededMembership> SeedIssuedMembershipAsync(
@@ -944,6 +1149,45 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
             where id = @id
             """;
         command.Parameters.AddWithValue("id", openingStateId);
+        command.Parameters.AddWithValue("status", status);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task<PostgresException> AssertMembershipUpdateBlockedAsync(
+        string connectionString,
+        Guid membershipId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            set lock_timeout = '250ms';
+            update bodylife.issued_memberships
+            set status = 'canceled'
+            where id = @membership_id
+            """;
+        command.Parameters.AddWithValue("membership_id", membershipId);
+
+        return await Assert.ThrowsAsync<PostgresException>(() =>
+            command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task UpdateMembershipStatusAsync(
+        string connectionString,
+        Guid membershipId,
+        string status)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.issued_memberships
+            set status = @status
+            where id = @membership_id
+            """;
+        command.Parameters.AddWithValue("membership_id", membershipId);
         command.Parameters.AddWithValue("status", status);
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
