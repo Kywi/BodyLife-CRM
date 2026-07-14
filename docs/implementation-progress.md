@@ -4301,3 +4301,104 @@ Next recommended step:
   rollback/concurrency mapping and canonical Client reread. Keep DI/Razor
   cancellation UI, profile history rows and report-source presentation for
   following small steps.
+
+## Step 97 - Transactional CancelVisit handler
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the unfinished Milestone 6 `CancelVisit` workflow directly after its
+  public contract and locked source preparation. This step implements the
+  command transaction only and does not broaden into UI, history or Reports.
+- Reuse the Step 96 PostgreSQL lock order and canonical projection instead of
+  accepting Client, Membership or consumption ownership from the caller.
+- Keep Memberships as the sole owner of counted/remaining/negative Visit state.
+  The handler synchronously rebuilds and rereads Membership state before and
+  after the cancellation inside the same transaction; Visits does not copy any
+  membership formula.
+- Preserve the accepted correction contract: one retained cancellation fact,
+  canceled source statuses, explicit reason/comment, command idempotency,
+  append-only `visit.canceled` audit and canonical Client reread.
+- Add a typed day-reconciliation status boundary without inventing a day-close
+  table. Open days permit canonical Owner/Admin actors; a reconciled day
+  requires Owner and marks both the result and audit as changed after close.
+- Keep concrete day-status wiring, DI registration, Razor/htmx cancellation UI,
+  profile history rows and report-source presentation for later bounded steps.
+
+Scope:
+
+- Add `IVisitDayReconciliationStatusProvider` and
+  `VisitDayReconciliationStatus` to the Visits public module boundary. The
+  provider is queried with the original Visit business date; unsupported status
+  values fail closed instead of silently assuming an open day.
+- Extend `VisitCommandSupport` with cancellation-specific normalization,
+  fingerprinting, successful replay, idempotency record creation, PostgreSQL
+  error mapping and canonical success/error result construction.
+- Implement `CancelVisitCommandHandler` with canonical account/session
+  authorization, caller envelope validation, pre-lock and post-lock idempotency
+  checks, locked source preparation and reconciled-day Owner authorization.
+- For Membership Visits, rebuild and reread canonical state before mutation,
+  cancel exactly one active Visit and its active counted consumption, insert one
+  retained `visit_cancellations` fact, then rebuild and reread state after the
+  mutation. One-off/trial cancellation writes no consumption or Membership
+  cache state.
+- Append `visit.canceled` audit against the original Visit with source metadata,
+  cancellation fact, before/after Membership summary and changed-after-close
+  marker; persist the successful command replay record and commit everything as
+  one `ReadCommitted` PostgreSQL transaction.
+- Map missing/already-canceled/inconsistent sources, duplicate payloads,
+  permission/day-close failures, lock/deadlock/serialization failures and
+  recalculation failures to the shared command taxonomy. Unexpected persistence
+  failures roll back and clear tracked state before they propagate.
+- Add eight PostgreSQL command scenarios to the existing twelve Visit storage
+  and source-preparation cases. Cover membership and one-off success, retained
+  metadata, canonical reread, first-negative Visit movement, replay, changed
+  payload rejection, different-key already-canceled behavior, concurrent
+  same-key serialization, reason/not-found/inactive-actor errors,
+  reconciled-day Admin denial and Owner marker, Visit lock conflict, failed
+  second recalculation and audit-write rollback.
+- Add no EF record/configuration/migration and no DI, Razor, JavaScript, CSS,
+  profile-history or report change.
+
+Validation:
+
+- The first local build attempt found no Linux `dotnet` on `PATH`; the pinned
+  repository SDK was already installed at `/home/genik/.dotnet`. Using that
+  .NET SDK 10.0.301, the focused Infrastructure test-project build passed with
+  0 warnings/errors.
+- Focused `PostgreSqlVisitsStorageTests` passed all 20 cases against the healthy
+  Docker PostgreSQL service, including all eight new command scenarios.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` and
+  `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 303
+  PostgreSQL/architecture infrastructure tests, 30 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714174210_AddFreezeSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this transaction-handler step generated no migration.
+- `graphify update .` completed the structural rebuild with 5650 nodes, 12166
+  edges and 592 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): implement transactional CancelVisit`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add the next small Milestone 6 read-side prerequisite for cancellation UI:
+  expose a Visits-owned canonical Client Visit row query containing active and
+  canceled source rows plus retained cancellation metadata and allowed actions.
+  Register only the handler/query dependencies needed by that boundary and
+  cover PostgreSQL ownership/status ordering. Keep the Razor cancel form,
+  Playwright mutation flow and report-source projection for following steps.

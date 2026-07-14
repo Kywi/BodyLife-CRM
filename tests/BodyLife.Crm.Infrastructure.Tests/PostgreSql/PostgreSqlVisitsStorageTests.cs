@@ -1,8 +1,13 @@
+using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
+using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Visits;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
@@ -20,6 +25,8 @@ public sealed class PostgreSqlVisitsStorageTests
         0,
         TimeSpan.Zero);
     private static readonly DateTimeOffset VisitOccurredAt = TestNow.AddHours(-2);
+    private static readonly DateTimeOffset CancellationOccurredAt = TestNow.AddMinutes(30);
+    private static readonly DateTimeOffset CancellationRecordedAt = TestNow.AddHours(1);
 
     [PostgreSqlFact]
     public async Task MigrationCreatesVisitSourceTablesConstraintsAndIndexes()
@@ -673,9 +680,555 @@ public sealed class PostgreSqlVisitsStorageTests
         await transaction.RollbackAsync();
     }
 
+    [PostgreSqlFact]
+    public async Task CancelVisitPersistsCancellationRecalculationAuditAndRereadAtomically()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext, visitsLimit: 1);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership");
+        var consumptionId = await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            visitId,
+            fixture.ClientId,
+            fixture.MembershipId);
+
+        var result = await CreateCancelVisitHandler(dbContext).ExecuteAsync(
+            CreateCancelVisitCommand(fixture, visitId, "cancel-membership"),
+            CancellationToken.None);
+
+        AssertSuccessfulCancellation(result, fixture.ClientId, visitId);
+        Assert.False(result.ChangedAfterClose);
+        var cancellationId = result.PrimaryEntityId!.Value.Value;
+        Assert.Equal("canceled", (await ReadVisitAsync(
+            database.ConnectionString,
+            visitId)).Status);
+        Assert.Equal("canceled", (await ReadConsumptionAsync(
+            database.ConnectionString,
+            consumptionId)).Status);
+
+        var cancellation = await ReadCancellationAsync(
+            database.ConnectionString,
+            cancellationId);
+        Assert.Equal(visitId, cancellation.VisitId);
+        Assert.Equal("Mistaken reception entry", cancellation.Reason);
+        Assert.Equal(CancellationOccurredAt, cancellation.OccurredAt);
+        Assert.Equal(CancellationRecordedAt, cancellation.RecordedAt);
+        Assert.Equal(fixture.Actor.AccountId.Value, cancellation.RecordedByAccountId);
+        Assert.Equal(fixture.Actor.SessionId.Value, cancellation.SessionId);
+        Assert.Equal("normal", cancellation.EntryOrigin);
+        Assert.Null(cancellation.EntryBatchId);
+
+        var cache = await ReadCacheAsync(database, fixture.MembershipId);
+        Assert.Equal(0, cache.CountedVisits);
+        Assert.Equal(1, cache.RemainingVisits);
+        Assert.Equal(0, cache.NegativeBalance);
+        Assert.Null(cache.FirstNegativeVisitId);
+        Assert.Null(cache.FirstNegativeVisitDate);
+        Assert.Null(cache.LastCountedVisitAt);
+        Assert.Equal(CancellationRecordedAt, cache.RecalculatedAt);
+
+        var audit = await ReadCancellationAuditAsync(
+            database,
+            result.AuditEntryId!.Value.Value);
+        Assert.Equal(VisitAuditActions.Canceled, audit.ActionType);
+        Assert.Equal(VisitAuditActions.VisitEntityType, audit.EntityType);
+        Assert.Equal(visitId, audit.EntityId);
+        Assert.Equal(CancellationOccurredAt, audit.OccurredAt);
+        Assert.Equal(CancellationRecordedAt, audit.RecordedAt);
+        Assert.Equal("Mistaken reception entry", audit.Reason);
+        Assert.Equal("Cancellation requested at reception", audit.Comment);
+        Assert.Equal("cancel-membership", audit.IdempotencyKey);
+        Assert.False(audit.ChangedAfterClose);
+        using (var before = JsonDocument.Parse(audit.BeforeSummary))
+        {
+            Assert.Equal(
+                0,
+                before.RootElement
+                    .GetProperty("membershipState")
+                    .GetProperty("remainingVisits")
+                    .GetInt32());
+        }
+
+        using (var after = JsonDocument.Parse(audit.AfterSummary))
+        {
+            Assert.Equal(
+                cancellationId,
+                after.RootElement
+                    .GetProperty("cancellation")
+                    .GetProperty("cancellationId")
+                    .GetGuid());
+            Assert.Equal(
+                1,
+                after.RootElement
+                    .GetProperty("membershipState")
+                    .GetProperty("remainingVisits")
+                    .GetInt32());
+        }
+
+        Assert.Equal(1L, await CountRowsAsync(database, "visit_cancellations"));
+        Assert.Equal(1L, await CountRowsAsync(database, "membership_state_cache"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task CancelVisitMovesFirstNegativeMetadataToNextCountedVisit()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext, visitsLimit: 0);
+        var firstVisitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership");
+        await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            firstVisitId,
+            fixture.ClientId,
+            fixture.MembershipId);
+        var secondVisitOccurredAt = VisitOccurredAt.AddMinutes(10);
+        var secondVisitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership",
+            recordedAt: TestNow.AddMinutes(1),
+            occurredAt: secondVisitOccurredAt);
+        await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            secondVisitId,
+            fixture.ClientId,
+            fixture.MembershipId,
+            recordedAt: TestNow.AddMinutes(1));
+
+        var result = await CreateCancelVisitHandler(dbContext).ExecuteAsync(
+            CreateCancelVisitCommand(fixture, firstVisitId, "cancel-first-negative"),
+            CancellationToken.None);
+
+        AssertSuccessfulCancellation(result, fixture.ClientId, firstVisitId);
+        var cache = await ReadCacheAsync(database, fixture.MembershipId);
+        Assert.Equal(1, cache.CountedVisits);
+        Assert.Equal(-1, cache.RemainingVisits);
+        Assert.Equal(1, cache.NegativeBalance);
+        Assert.Equal(secondVisitId, cache.FirstNegativeVisitId);
+        Assert.Equal(DateOnly.FromDateTime(secondVisitOccurredAt.DateTime), cache.FirstNegativeVisitDate);
+        Assert.Equal(secondVisitOccurredAt, cache.LastCountedVisitAt);
+    }
+
+    [PostgreSqlFact]
+    public async Task CancelVisitReplayReturnsOriginalAndDifferentRequestIsRejected()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "one_off");
+        var handler = CreateCancelVisitHandler(dbContext);
+        var command = CreateCancelVisitCommand(fixture, visitId, "cancel-replay");
+
+        var first = await handler.ExecuteAsync(command, CancellationToken.None);
+        var replay = await handler.ExecuteAsync(command, CancellationToken.None);
+        var changedPayload = await handler.ExecuteAsync(
+            command with
+            {
+                Envelope = command.Envelope with
+                {
+                    Comment = "Changed cancellation context",
+                },
+            },
+            CancellationToken.None);
+        var differentKey = await handler.ExecuteAsync(
+            command with
+            {
+                Envelope = command.Envelope with
+                {
+                    IdempotencyKey = "cancel-already-canceled",
+                    RequestCorrelationId = new RequestCorrelationId(
+                        "correlation-cancel-already-canceled"),
+                },
+            },
+            CancellationToken.None);
+
+        AssertSuccessfulCancellation(first, fixture.ClientId, visitId);
+        AssertSuccessfulCancellation(replay, fixture.ClientId, visitId);
+        Assert.Equal(first.PrimaryEntityId, replay.PrimaryEntityId);
+        Assert.Equal(first.AuditEntryId, replay.AuditEntryId);
+        AssertCommandError(
+            changedPayload,
+            CommandErrorCode.DuplicateSubmission,
+            "idempotencyKey");
+        AssertCommandError(
+            differentKey,
+            CommandErrorCode.AlreadyCanceled,
+            "visitId");
+        Assert.Equal(0L, await CountRowsAsync(database, "visit_consumptions"));
+        Assert.Equal(0L, await CountRowsAsync(database, "membership_state_cache"));
+        Assert.Equal(1L, await CountRowsAsync(database, "visit_cancellations"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task ConcurrentCancelVisitWithSameKeySerializesToOneWorkflow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        VisitStorageFixture fixture;
+        Guid visitId;
+        await using (var setupContext = database.CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync();
+            fixture = await SeedFixtureAsync(database, setupContext);
+            visitId = await InsertVisitAsync(
+                database.ConnectionString,
+                fixture,
+                fixture.ClientId,
+                "one_off");
+        }
+
+        var command = CreateCancelVisitCommand(
+            fixture,
+            visitId,
+            "concurrent-cancel");
+        await using var firstContext = database.CreateDbContext();
+        await using var secondContext = database.CreateDbContext();
+
+        var results = await Task.WhenAll(
+            CreateCancelVisitHandler(firstContext).ExecuteAsync(
+                command,
+                CancellationToken.None),
+            CreateCancelVisitHandler(secondContext).ExecuteAsync(
+                command,
+                CancellationToken.None));
+
+        Assert.All(
+            results,
+            result => AssertSuccessfulCancellation(
+                result,
+                fixture.ClientId,
+                visitId));
+        Assert.Equal(results[0].PrimaryEntityId, results[1].PrimaryEntityId);
+        Assert.Equal(results[0].AuditEntryId, results[1].AuditEntryId);
+        Assert.Equal(1L, await CountRowsAsync(database, "visit_cancellations"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task CancelVisitValidationMissingSourceAndInactiveActorDoNotMutate()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "one_off");
+        var handler = CreateCancelVisitHandler(dbContext);
+        var valid = CreateCancelVisitCommand(fixture, visitId, "cancel-valid");
+
+        var missingReason = await handler.ExecuteAsync(
+            valid with
+            {
+                Envelope = valid.Envelope with
+                {
+                    IdempotencyKey = "cancel-missing-reason",
+                    Reason = null,
+                },
+            },
+            CancellationToken.None);
+        var missingVisit = await handler.ExecuteAsync(
+            CreateCancelVisitCommand(
+                fixture,
+                Guid.NewGuid(),
+                "cancel-missing-visit"),
+            CancellationToken.None);
+        await DeactivateActorAsync(database, fixture.Actor.AccountId.Value);
+        var inactiveActor = await handler.ExecuteAsync(
+            valid,
+            CancellationToken.None);
+
+        AssertCommandError(
+            missingReason,
+            CommandErrorCode.ReasonRequired,
+            "reason");
+        AssertCommandError(missingVisit, CommandErrorCode.NotFound, "visitId");
+        AssertCommandError(inactiveActor, CommandErrorCode.PermissionDenied);
+        await AssertNoCancellationMutationAsync(database, visitId);
+    }
+
+    [PostgreSqlFact]
+    public async Task ReconciledVisitDayRequiresOwnerAndMarksOwnerCancellation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "one_off");
+        var adminActor = fixture.Actor with
+        {
+            Role = ActorRole.Admin,
+            AccountKind = AccountKind.NamedAdmin,
+        };
+        await UpdateActorIdentityAsync(
+            database,
+            fixture.Actor.AccountId.Value,
+            "named_admin",
+            "admin");
+        var reconciledDay = new StaticVisitDayReconciliationStatusProvider(
+            VisitDayReconciliationStatus.Reconciled);
+
+        var denied = await CreateCancelVisitHandler(
+            dbContext,
+            reconciledDay).ExecuteAsync(
+                CreateCancelVisitCommand(
+                    fixture,
+                    visitId,
+                    "admin-reconciled-cancel",
+                    adminActor),
+                CancellationToken.None);
+
+        AssertCommandError(
+            denied,
+            CommandErrorCode.DayClosedRequiresOwner,
+            "visitId");
+        await AssertNoCancellationMutationAsync(database, visitId);
+
+        await UpdateActorIdentityAsync(
+            database,
+            fixture.Actor.AccountId.Value,
+            "owner",
+            "owner");
+        var allowed = await CreateCancelVisitHandler(
+            dbContext,
+            reconciledDay).ExecuteAsync(
+                CreateCancelVisitCommand(
+                    fixture,
+                    visitId,
+                    "owner-reconciled-cancel"),
+                CancellationToken.None);
+
+        AssertSuccessfulCancellation(allowed, fixture.ClientId, visitId);
+        Assert.True(allowed.ChangedAfterClose);
+        var audit = await ReadCancellationAuditAsync(
+            database,
+            allowed.AuditEntryId!.Value.Value);
+        Assert.True(audit.ChangedAfterClose);
+    }
+
+    [PostgreSqlFact]
+    public async Task CompetingVisitLockReturnsConcurrencyConflictWithoutCancellation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using (var migrationContext = database.CreateDbContext())
+        {
+            await migrationContext.Database.MigrateAsync();
+        }
+
+        await using var dbContext = database.CreateDbContext();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "one_off");
+        await using var lockConnection = new NpgsqlConnection(database.ConnectionString);
+        await lockConnection.OpenAsync();
+        await using var lockTransaction = await lockConnection.BeginTransactionAsync();
+        await using (var lockCommand = lockConnection.CreateCommand())
+        {
+            lockCommand.Transaction = lockTransaction;
+            lockCommand.CommandText =
+                "select id from bodylife.visits where id = @id for update";
+            lockCommand.Parameters.AddWithValue("id", visitId);
+            Assert.Equal(visitId, await lockCommand.ExecuteScalarAsync());
+        }
+
+        await dbContext.Database.OpenConnectionAsync();
+        await dbContext.Database.ExecuteSqlRawAsync("set lock_timeout = '250ms'");
+
+        var result = await CreateCancelVisitHandler(dbContext).ExecuteAsync(
+            CreateCancelVisitCommand(fixture, visitId, "cancel-lock-conflict"),
+            CancellationToken.None);
+
+        await lockTransaction.RollbackAsync();
+        AssertCommandError(result, CommandErrorCode.ConcurrencyConflict);
+        await AssertNoCancellationMutationAsync(database, visitId);
+    }
+
+    [PostgreSqlFact]
+    public async Task RecalculationAndAuditFailuresRollBackEntireCancellation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership");
+        var consumptionId = await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            visitId,
+            fixture.ClientId,
+            fixture.MembershipId);
+        var realRecalculator = CreateMembershipStateRecalculator(dbContext);
+        var failingRecalculator = new FailOnSecondMembershipRecalculation(
+            realRecalculator);
+
+        var recalculationFailure = await CreateCancelVisitHandler(
+            dbContext,
+            membershipStateRecalculator: failingRecalculator).ExecuteAsync(
+                CreateCancelVisitCommand(
+                    fixture,
+                    visitId,
+                    "cancel-recalculation-failure"),
+                CancellationToken.None);
+
+        AssertCommandError(
+            recalculationFailure,
+            CommandErrorCode.RecalculationFailed);
+        await AssertNoCancellationMutationAsync(database, visitId, consumptionId);
+
+        await ExecuteNonQueryAsync(
+            database,
+            """
+            alter table bodylife.business_audit_entries
+            add constraint ck_test_reject_visit_canceled_audit
+            check (action_type <> 'visit.canceled')
+            """);
+
+        await Assert.ThrowsAsync<DbUpdateException>(() =>
+            CreateCancelVisitHandler(dbContext).ExecuteAsync(
+                CreateCancelVisitCommand(
+                    fixture,
+                    visitId,
+                    "cancel-audit-failure"),
+                CancellationToken.None));
+
+        await AssertNoCancellationMutationAsync(database, visitId, consumptionId);
+        Assert.Empty(dbContext.ChangeTracker.Entries());
+    }
+
+    private static CancelVisitCommandHandler CreateCancelVisitHandler(
+        BodyLifeDbContext dbContext,
+        IVisitDayReconciliationStatusProvider? dayReconciliationStatusProvider = null,
+        IMembershipStateRecalculator? membershipStateRecalculator = null)
+    {
+        var timeProvider = new FixedTimeProvider(CancellationRecordedAt);
+        var recalculator = membershipStateRecalculator
+            ?? CreateMembershipStateRecalculator(dbContext);
+
+        return new CancelVisitCommandHandler(
+            dbContext,
+            new BusinessAuditAppender(dbContext),
+            new CancelVisitSourcePreparer(dbContext),
+            recalculator,
+            new GetMembershipStateQueryHandler(dbContext, timeProvider),
+            dayReconciliationStatusProvider
+                ?? new StaticVisitDayReconciliationStatusProvider(
+                    VisitDayReconciliationStatus.Open),
+            timeProvider);
+    }
+
+    private static IMembershipStateRecalculator CreateMembershipStateRecalculator(
+        BodyLifeDbContext dbContext)
+    {
+        return new MembershipStateRecalculator(
+            new MembershipStateCacheRebuilder(
+                dbContext,
+                new FixedTimeProvider(CancellationRecordedAt)));
+    }
+
+    private static CancelVisitCommand CreateCancelVisitCommand(
+        VisitStorageFixture fixture,
+        Guid visitId,
+        string idempotencyKey,
+        ActorContext? actor = null,
+        EntryOrigin origin = EntryOrigin.Normal,
+        DateTimeOffset? occurredAt = null,
+        string? reason = "Mistaken reception entry",
+        string? comment = "Cancellation requested at reception",
+        Guid? entryBatchId = null)
+    {
+        return new CancelVisitCommand(
+            new CommandEnvelope(
+                actor ?? fixture.Actor,
+                new RequestCorrelationId($"correlation-{idempotencyKey}"),
+                origin,
+                occurredAt ?? CancellationOccurredAt,
+                idempotencyKey,
+                reason,
+                comment),
+            visitId,
+            entryBatchId);
+    }
+
+    private static void AssertSuccessfulCancellation(
+        CommandResult result,
+        Guid clientId,
+        Guid visitId)
+    {
+        Assert.Equal(CommandStatus.Success, result.Status);
+        Assert.True(result.PrimaryEntityId.HasValue);
+        Assert.Equal(
+            CancelVisitCommand.PrimaryEntityType,
+            result.PrimaryEntityId.Value.Type);
+        Assert.NotEqual(Guid.Empty, result.PrimaryEntityId.Value.Value);
+        Assert.Equal(
+            new EntityId(CancelVisitCommand.CanonicalRereadEntityType, clientId),
+            result.RereadTargetId);
+        Assert.Equal(
+            [new EntityId(CancelVisitCommand.SourceVisitEntityType, visitId)],
+            result.RelatedEntityIds);
+        Assert.True(result.AuditEntryId.HasValue);
+        Assert.Empty(result.Errors);
+    }
+
+    private static void AssertCommandError(
+        CommandResult result,
+        CommandErrorCode code,
+        string? field = null)
+    {
+        Assert.Equal(CommandStatus.Error, result.Status);
+        var error = Assert.Single(result.Errors);
+        Assert.Equal(code, error.Code);
+        if (field is not null)
+        {
+            Assert.Equal(field, error.Field);
+        }
+
+        Assert.Null(result.PrimaryEntityId);
+        Assert.Null(result.RereadTargetId);
+        Assert.Null(result.AuditEntryId);
+    }
+
     private static async Task<VisitStorageFixture> SeedFixtureAsync(
         PostgreSqlTestDatabase database,
-        BodyLifeDbContext dbContext)
+        BodyLifeDbContext dbContext,
+        int visitsLimit = 8)
     {
         var bootstrap = await new OwnerBootstrapper(dbContext, new FixedTimeProvider(TestNow))
             .BootstrapOwnerAsync("BodyLife Owner");
@@ -771,7 +1324,7 @@ public sealed class PostgreSqlVisitsStorageTests
                 @membership_type_id,
                 'Visits storage fixture',
                 30,
-                8,
+                @visits_limit,
                 1000,
                 'UAH',
                 true,
@@ -804,7 +1357,7 @@ public sealed class PostgreSqlVisitsStorageTests
                     @membership_type_id,
                     'Visits storage fixture',
                     30,
-                    8,
+                    @visits_limit,
                     1000,
                     'UAH',
                     @start_date,
@@ -821,7 +1374,7 @@ public sealed class PostgreSqlVisitsStorageTests
                     @membership_type_id,
                     'Visits storage fixture',
                     30,
-                    8,
+                    @visits_limit,
                     1000,
                     'UAH',
                     @start_date,
@@ -843,6 +1396,7 @@ public sealed class PostgreSqlVisitsStorageTests
         command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
         command.Parameters.AddWithValue("membership_id", membershipId);
         command.Parameters.AddWithValue("other_membership_id", otherMembershipId);
+        command.Parameters.AddWithValue("visits_limit", visitsLimit);
         command.Parameters.AddWithValue(
             "start_date",
             NpgsqlDbType.Date,
@@ -853,9 +1407,14 @@ public sealed class PostgreSqlVisitsStorageTests
             new DateOnly(2026, 7, 30));
         Assert.Equal(6, await command.ExecuteNonQueryAsync());
 
+        var actor = new ActorContext(
+            new AccountId(actorAccountId),
+            ActorRole.Owner,
+            AccountKind.Owner,
+            new SessionId(sessionId),
+            "Reception tablet");
         return new VisitStorageFixture(
-            actorAccountId,
-            sessionId,
+            actor,
             clientId,
             otherClientId,
             membershipId,
@@ -871,7 +1430,8 @@ public sealed class PostgreSqlVisitsStorageTests
         Guid? entryBatchId = null,
         string? comment = null,
         string status = "active",
-        DateTimeOffset? recordedAt = null)
+        DateTimeOffset? recordedAt = null,
+        DateTimeOffset? occurredAt = null)
     {
         var visitId = Guid.NewGuid();
         await using var connection = new NpgsqlConnection(connectionString);
@@ -906,7 +1466,7 @@ public sealed class PostgreSqlVisitsStorageTests
             """;
         command.Parameters.AddWithValue("id", visitId);
         command.Parameters.AddWithValue("client_id", clientId);
-        command.Parameters.AddWithValue("occurred_at", VisitOccurredAt);
+        command.Parameters.AddWithValue("occurred_at", occurredAt ?? VisitOccurredAt);
         command.Parameters.AddWithValue("recorded_at", recordedAt ?? TestNow);
         command.Parameters.AddWithValue("recorded_by_account_id", fixture.ActorAccountId);
         command.Parameters.AddWithValue("session_id", fixture.SessionId);
@@ -1149,6 +1709,8 @@ public sealed class PostgreSqlVisitsStorageTests
             select
                 visit_id,
                 reason,
+                occurred_at,
+                recorded_at,
                 recorded_by_account_id,
                 session_id,
                 entry_origin,
@@ -1163,10 +1725,162 @@ public sealed class PostgreSqlVisitsStorageTests
         return new PersistedCancellation(
             reader.GetGuid(0),
             reader.GetString(1),
+            reader.GetFieldValue<DateTimeOffset>(2),
+            reader.GetFieldValue<DateTimeOffset>(3),
+            reader.GetGuid(4),
+            reader.GetGuid(5),
+            reader.GetString(6),
+            reader.IsDBNull(7) ? null : reader.GetGuid(7));
+    }
+
+    private static async Task<PersistedMembershipStateCache> ReadCacheAsync(
+        PostgreSqlTestDatabase database,
+        Guid membershipId)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select counted_visits,
+                   remaining_visits,
+                   negative_balance,
+                   first_negative_visit_id,
+                   first_negative_visit_date,
+                   last_counted_visit_at,
+                   recalculated_at
+            from bodylife.membership_state_cache
+            where membership_id = @membership_id
+            """;
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+
+        return new PersistedMembershipStateCache(
+            reader.GetInt32(0),
+            reader.GetInt32(1),
+            reader.GetInt32(2),
+            reader.IsDBNull(3) ? null : reader.GetGuid(3),
+            reader.IsDBNull(4) ? null : reader.GetFieldValue<DateOnly>(4),
+            reader.IsDBNull(5)
+                ? null
+                : reader.GetFieldValue<DateTimeOffset>(5),
+            reader.GetFieldValue<DateTimeOffset>(6));
+    }
+
+    private static async Task<PersistedCancellationAudit> ReadCancellationAuditAsync(
+        PostgreSqlTestDatabase database,
+        Guid auditEntryId)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select action_type,
+                   entity_type,
+                   entity_id,
+                   occurred_at,
+                   recorded_at,
+                   reason,
+                   comment,
+                   idempotency_key,
+                   before_summary::text,
+                   after_summary::text,
+                   changed_after_close
+            from bodylife.business_audit_entries
+            where id = @id
+            """;
+        command.Parameters.AddWithValue("id", auditEntryId);
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+
+        return new PersistedCancellationAudit(
+            reader.GetString(0),
+            reader.GetString(1),
             reader.GetGuid(2),
-            reader.GetGuid(3),
-            reader.GetString(4),
-            reader.IsDBNull(5) ? null : reader.GetGuid(5));
+            reader.GetFieldValue<DateTimeOffset>(3),
+            reader.GetFieldValue<DateTimeOffset>(4),
+            reader.IsDBNull(5) ? null : reader.GetString(5),
+            reader.IsDBNull(6) ? null : reader.GetString(6),
+            reader.IsDBNull(7) ? null : reader.GetString(7),
+            reader.GetString(8),
+            reader.GetString(9),
+            reader.GetBoolean(10));
+    }
+
+    private static async Task DeactivateActorAsync(
+        PostgreSqlTestDatabase database,
+        Guid accountId)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.accounts
+            set is_active = false,
+                deactivated_at = @deactivated_at
+            where id = @id
+            """;
+        command.Parameters.AddWithValue("deactivated_at", CancellationRecordedAt);
+        command.Parameters.AddWithValue("id", accountId);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task UpdateActorIdentityAsync(
+        PostgreSqlTestDatabase database,
+        Guid accountId,
+        string accountType,
+        string role)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.accounts
+            set account_type = @account_type,
+                role = @role
+            where id = @id
+            """;
+        command.Parameters.AddWithValue("account_type", accountType);
+        command.Parameters.AddWithValue("role", role);
+        command.Parameters.AddWithValue("id", accountId);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task ExecuteNonQueryAsync(
+        PostgreSqlTestDatabase database,
+        string sql)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand(sql, connection);
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private static async Task AssertNoCancellationMutationAsync(
+        PostgreSqlTestDatabase database,
+        Guid visitId,
+        Guid? consumptionId = null)
+    {
+        Assert.Equal(
+            "active",
+            (await ReadVisitAsync(database.ConnectionString, visitId)).Status);
+        if (consumptionId is { } activeConsumptionId)
+        {
+            Assert.Equal(
+                "active",
+                (await ReadConsumptionAsync(
+                    database.ConnectionString,
+                    activeConsumptionId)).Status);
+        }
+
+        Assert.Equal(0L, await CountRowsAsync(database, "visit_cancellations"));
+        Assert.Equal(0L, await CountRowsAsync(database, "membership_state_cache"));
+        Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
     private static async Task DeleteByIdAsync(
@@ -1301,6 +2015,10 @@ public sealed class PostgreSqlVisitsStorageTests
     {
         var allowedTableName = tableName switch
         {
+            "business_audit_entries" => tableName,
+            "command_idempotency_keys" => tableName,
+            "membership_state_cache" => tableName,
+            "visit_cancellations" => tableName,
             "visit_consumptions" => tableName,
             "visits" => tableName,
             _ => throw new ArgumentOutOfRangeException(nameof(tableName)),
@@ -1317,12 +2035,16 @@ public sealed class PostgreSqlVisitsStorageTests
     }
 
     private sealed record VisitStorageFixture(
-        Guid ActorAccountId,
-        Guid SessionId,
+        ActorContext Actor,
         Guid ClientId,
         Guid OtherClientId,
         Guid MembershipId,
-        Guid OtherMembershipId);
+        Guid OtherMembershipId)
+    {
+        public Guid ActorAccountId => Actor.AccountId.Value;
+
+        public Guid SessionId => Actor.SessionId.Value;
+    }
 
     private sealed record PersistedVisit(
         Guid ClientId,
@@ -1350,10 +2072,68 @@ public sealed class PostgreSqlVisitsStorageTests
     private sealed record PersistedCancellation(
         Guid VisitId,
         string Reason,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
         Guid RecordedByAccountId,
         Guid SessionId,
         string EntryOrigin,
         Guid? EntryBatchId);
+
+    private sealed record PersistedMembershipStateCache(
+        int CountedVisits,
+        int RemainingVisits,
+        int NegativeBalance,
+        Guid? FirstNegativeVisitId,
+        DateOnly? FirstNegativeVisitDate,
+        DateTimeOffset? LastCountedVisitAt,
+        DateTimeOffset RecalculatedAt);
+
+    private sealed record PersistedCancellationAudit(
+        string ActionType,
+        string EntityType,
+        Guid EntityId,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        string? Reason,
+        string? Comment,
+        string? IdempotencyKey,
+        string BeforeSummary,
+        string AfterSummary,
+        bool ChangedAfterClose);
+
+    private sealed class StaticVisitDayReconciliationStatusProvider(
+        VisitDayReconciliationStatus status)
+        : IVisitDayReconciliationStatusProvider
+    {
+        public Task<VisitDayReconciliationStatus> GetStatusAsync(
+            DateOnly businessDate,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(status);
+        }
+    }
+
+    private sealed class FailOnSecondMembershipRecalculation(
+        IMembershipStateRecalculator inner)
+        : IMembershipStateRecalculator
+    {
+        private int callCount;
+
+        public async Task<MembershipStateRecalculationResult> RecalculateAsync(
+            Guid membershipId,
+            CancellationToken cancellationToken = default)
+        {
+            callCount++;
+            if (callCount == 2)
+            {
+                return new MembershipStateRecalculationResult(
+                    membershipId,
+                    MembershipStateRecalculationStatus.InvalidSourceState);
+            }
+
+            return await inner.RecalculateAsync(membershipId, cancellationToken);
+        }
+    }
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
