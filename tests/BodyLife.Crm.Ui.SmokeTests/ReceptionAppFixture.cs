@@ -44,6 +44,28 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid CardStaleClientId { get; private set; }
 
+    public Guid VisitTabletClientId { get; private set; }
+
+    public Guid VisitTabletMembershipId { get; private set; }
+
+    public Guid VisitPhoneClientId { get; private set; }
+
+    public Guid VisitPhoneMembershipId { get; private set; }
+
+    public Guid VisitZeroClientId { get; private set; }
+
+    public Guid VisitZeroMembershipId { get; private set; }
+
+    public Guid VisitNoMembershipClientId { get; private set; }
+
+    public Guid VisitStaleClientId { get; private set; }
+
+    public Guid VisitStaleMembershipId { get; private set; }
+
+    public Guid VisitFreezeClientId { get; private set; }
+
+    public Guid VisitFreezeMembershipId { get; private set; }
+
     public async Task ExpireSessionAsync(string deviceLabel)
     {
         var database = _database
@@ -215,6 +237,41 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadLatestMembershipTypeDeactivateReasonAsync(membershipTypeId);
     }
 
+    public Task<Guid> InsertExternalCountedVisitAsync(Guid clientId, Guid membershipId)
+    {
+        return RequireDatabase().InsertExternalCountedVisitAsync(clientId, membershipId);
+    }
+
+    public Task<Guid> InsertActiveFreezeForTodayAsync(Guid clientId, Guid membershipId)
+    {
+        return RequireDatabase().InsertActiveFreezeForTodayAsync(clientId, membershipId);
+    }
+
+    public Task<long> CountActiveVisitsAsync(Guid clientId, string? visitKind = null)
+    {
+        return RequireDatabase().CountActiveVisitsAsync(clientId, visitKind);
+    }
+
+    public Task<long> CountActiveVisitConsumptionsAsync(Guid clientId)
+    {
+        return RequireDatabase().CountActiveVisitConsumptionsAsync(clientId);
+    }
+
+    public Task<long> CountMarkVisitAuditEntriesAsync(Guid clientId)
+    {
+        return RequireDatabase().CountMarkVisitAuditEntriesAsync(clientId);
+    }
+
+    public Task<long> CountMarkVisitIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountMarkVisitIdempotencyKeysAsync(clientId);
+    }
+
+    public Task<MembershipStateSmokeSnapshot> ReadMembershipStateAsync(Guid membershipId)
+    {
+        return RequireDatabase().ReadMembershipStateAsync(membershipId);
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");
@@ -348,7 +405,11 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         Assert.Equal(OwnerCredentialsBootstrapStatus.Updated, credentialsResult.Status);
 
         await SeedReceptionClientsAsync(database, ownerResult.AccountId!.Value);
-        await SeedMembershipTypesAsync(database);
+        var activeMembershipTypeId = await SeedMembershipTypesAsync(database);
+        await SeedMarkVisitFixturesAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
 
         var ownerEnvelope = new CommandEnvelope(
             new ActorContext(
@@ -386,9 +447,9 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         Assert.Equal(StaffCredentialsStatus.Configured, staffCredentialsResult.Status);
     }
 
-    private static async Task SeedMembershipTypesAsync(PostgreSqlSmokeDatabase database)
+    private static async Task<Guid> SeedMembershipTypesAsync(PostgreSqlSmokeDatabase database)
     {
-        await database.SeedMembershipTypeAsync(
+        var activeMembershipTypeId = await database.SeedMembershipTypeAsync(
             "Eight visits / 30 days",
             durationDays: 30,
             visitsLimit: 8,
@@ -408,6 +469,86 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             createdAt: new DateTimeOffset(2026, 6, 1, 8, 0, 0, TimeSpan.Zero),
             updatedAt: new DateTimeOffset(2026, 7, 5, 11, 0, 0, TimeSpan.Zero),
             deactivatedAt: new DateTimeOffset(2026, 7, 5, 11, 0, 0, TimeSpan.Zero));
+
+        return activeMembershipTypeId;
+    }
+
+    private async Task SeedMarkVisitFixturesAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        VisitTabletClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Visit",
+            "Tablet",
+            "+380 67 600 01 01",
+            "BL-VISIT-TABLET");
+        VisitTabletMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            VisitTabletClientId,
+            membershipTypeId,
+            "Tablet four-visit snapshot",
+            visitsLimitSnapshot: 4);
+
+        VisitPhoneClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Visit",
+            "Phone",
+            "+380 67 600 02 02",
+            "BL-VISIT-PHONE");
+        VisitPhoneMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            VisitPhoneClientId,
+            membershipTypeId,
+            "Phone three-visit snapshot",
+            visitsLimitSnapshot: 3);
+
+        VisitZeroClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Visit",
+            "Zero",
+            "+380 67 600 03 03",
+            "BL-VISIT-ZERO");
+        VisitZeroMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            VisitZeroClientId,
+            membershipTypeId,
+            "Zero-remaining snapshot",
+            visitsLimitSnapshot: 0);
+
+        VisitNoMembershipClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Visit",
+            "NoMembership",
+            "+380 67 600 04 04",
+            "BL-VISIT-NONE");
+
+        VisitStaleClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Visit",
+            "Stale",
+            "+380 67 600 05 05",
+            "BL-VISIT-STALE");
+        VisitStaleMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            VisitStaleClientId,
+            membershipTypeId,
+            "Single-visit stale snapshot",
+            visitsLimitSnapshot: 1);
+
+        VisitFreezeClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Visit",
+            "Freeze",
+            "+380 67 600 06 06",
+            "BL-VISIT-FREEZE");
+        VisitFreezeMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            VisitFreezeClientId,
+            membershipTypeId,
+            "Freeze-block snapshot",
+            visitsLimitSnapshot: 2);
     }
 
     private async Task SeedReceptionClientsAsync(

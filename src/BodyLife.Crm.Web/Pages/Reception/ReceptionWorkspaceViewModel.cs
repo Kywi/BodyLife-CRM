@@ -31,6 +31,7 @@ public sealed record ClientProfileViewModel(
     GetClientProfileResult? Result,
     UpdateClientFormViewModel? UpdateClientForm,
     CardAssignmentFormViewModel? CardAssignmentForm,
+    MarkVisitFormViewModel? MarkVisitForm,
     string? OperationMessage,
     bool OperationSucceeded)
 {
@@ -38,6 +39,7 @@ public sealed record ClientProfileViewModel(
         Result: null,
         UpdateClientForm: null,
         CardAssignmentForm: null,
+        MarkVisitForm: null,
         OperationMessage: null,
         OperationSucceeded: false);
 
@@ -47,7 +49,8 @@ public sealed record ClientProfileViewModel(
         string? operationMessage = null,
         bool operationSucceeded = false,
         UpdateClientFormViewModel? updateClientForm = null,
-        CardAssignmentFormViewModel? cardAssignmentForm = null)
+        CardAssignmentFormViewModel? cardAssignmentForm = null,
+        MarkVisitFormViewModel? markVisitForm = null)
     {
         if (updateClientForm is null
             && result?.Profile is { } profile
@@ -69,6 +72,7 @@ public sealed record ClientProfileViewModel(
             result,
             updateClientForm,
             cardAssignmentForm,
+            markVisitForm,
             operationMessage,
             operationSucceeded);
     }

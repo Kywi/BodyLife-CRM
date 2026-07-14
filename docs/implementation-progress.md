@@ -4091,3 +4091,114 @@ Next recommended step:
   cases for ordinary membership, zero-to-negative acknowledgement, explicit
   one-off/trial, no duplicate source rows and stable blocked/stale errors. Keep
   `CancelVisit` and report/history presentation for following steps.
+
+## Step 95 - Razor/htmx Mark Visit reception action
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 6 from the completed `MarkVisit` command and canonical
+  options query with only the reception profile action. Keep `CancelVisit`,
+  Visit history/report presentation, Payments and new persistence schema outside
+  this step.
+- Render explicit membership, one-off and trial choices from
+  `GetMarkVisitOptions`; Razor and JavaScript display server-owned state and do
+  not calculate eligibility, remaining visits, warnings or acknowledgement
+  requirements.
+- Submit every mutation through the registered `MarkVisitCommand`, preserve the
+  command idempotency key and antiforgery token, and replace the full canonical
+  reception workspace after success or state-sensitive failure.
+- Keep the ordinary UI on the server-provided current UTC Visit timestamp.
+  Backdated/manual/paper-fallback entry UX remains part of the later operational
+  workflow rather than an unmarked date override in this quick action.
+
+Scope:
+
+- Add a typed `MarkVisitFormViewModel` and server-rendered profile action with a
+  stable htmx target, explicit Visit kind, explicit Membership candidates,
+  immutable snapshot details, eligibility state, server warning messages,
+  exact expired/zero/negative acknowledgements and an optional comment.
+- Compose options into both full-page and htmx profile reads. The sole ordinary
+  Membership candidate may start selected; ambiguous, expired/no-suggestion and
+  no-Membership contexts require a deliberate choice, while future-start and
+  active-Freeze candidates stay visible but disabled.
+- Add a CSRF-protected Razor Page POST that creates the common command envelope,
+  invokes `MarkVisit`, verifies its canonical Client reread target and replaces
+  `#reception-workspace` after success. Non-htmx submissions retain the normal
+  redirect fallback.
+- Requery current options on every command error. Validation errors replace only
+  the action form; warning, eligibility, duplicate, permission, recalculation
+  and concurrency errors reread the full profile while retaining editable Visit
+  kind, Membership, comment and idempotency context. Submitted acknowledgements
+  are retained only when they exactly equal the refreshed server requirements.
+- Extend the shared busy-form JavaScript with Mark Visit selection
+  synchronization. Membership acknowledgements are enabled and required only
+  for the currently selected server-selectable Membership; one-off/trial clears
+  stale Membership inputs; `hx-sync="this:drop"`, disabled/busy submit and
+  command idempotency jointly protect fast repeated taps.
+- Add responsive, restrained action styles with stable controls, candidate rows,
+  warning blocks and phone stacking; no business formula is present in CSS,
+  JavaScript or Razor.
+- Extend the PostgreSQL UI fixture with issued Membership snapshots, canonical
+  cache rebuilds and evidence reads for Visits, consumptions, audit and
+  idempotency. Add six Playwright cases covering ordinary tablet/phone
+  membership Visits, CSRF token presence, canonical profile reread,
+  zero-to-negative acknowledgement, repeat tap while busy, explicit one-off and
+  trial without consumption, changed-warning refresh and active-Freeze blocking
+  with an explicit one-off fallback.
+- Add no EF record/configuration/migration and no product workflow that writes
+  directly to PostgreSQL; direct source inserts exist only in isolated UI test
+  setup to simulate concurrent canonical-state changes.
+
+Validation:
+
+- The first Release solution build after the Razor/htmx implementation passed
+  with 0 warnings/errors; the repeated fixture and final builds also passed.
+- The first focused Playwright run passed 5 of 6 cases and exposed only a test
+  locator issue: the busy button correctly changed its accessible name from
+  `Mark visit` to `Marking...`. The helper now uses its stable data selector.
+- The next run exposed two test timing/selector issues: a post-login
+  `NetworkIdle` race and two identical negative-warning messages in canonical
+  profile and action option state. The helper now waits for the Reception
+  heading and scopes the assertion to the membership panel. The final focused
+  `MarkVisitSmokeTests` run passed all 6 cases.
+- The full UI smoke project passed all 30 tests, including every pre-existing
+  reception, membership catalog and staff-account scenario.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` and
+  `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 242 core tests, 35 web tests, 290
+  PostgreSQL/architecture infrastructure tests, 30 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714174210_AddFreezeSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this
+  UI/test step generated no migration.
+- Optional Playwright screenshot capture reran both ordinary viewport cases
+  successfully. Original-resolution tablet and phone form/success images showed
+  no overlap, clipped text or horizontal overflow.
+- `graphify update .` completed the structural rebuild with 5520 nodes, 11727
+  edges and 622 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress change but stopped because
+  no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(ui): add Mark Visit reception action`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Continue Milestone 6 with a small server-side `CancelVisit` prerequisite:
+  define the public command/result preparation contracts and a locked canonical
+  Visit-plus-active-consumption cancellation projection over the existing
+  `visits`, `visit_consumptions` and `visit_cancellations` schema. Cover
+  ownership, already-canceled/not-found, reason/comment, idempotency and
+  changed-after-close placeholders without implementing the transaction handler,
+  profile history UI or reports in the same step.

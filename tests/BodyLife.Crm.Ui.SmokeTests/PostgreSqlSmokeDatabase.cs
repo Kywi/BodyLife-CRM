@@ -1,4 +1,5 @@
 using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Clients.Search;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -499,6 +500,324 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return clientId;
     }
 
+    public async Task<Guid> SeedIssuedMembershipAsync(
+        Guid issuedByAccountId,
+        Guid clientId,
+        Guid membershipTypeId,
+        string typeNameSnapshot,
+        int visitsLimitSnapshot)
+    {
+        var membershipId = Guid.NewGuid();
+        var now = TimeProvider.System.GetUtcNow();
+        var startDate = DateOnly.FromDateTime(now.UtcDateTime).AddDays(-7);
+        const int durationDays = 30;
+
+        await using (var connection = new NpgsqlConnection(ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                """
+                insert into bodylife.issued_memberships (
+                    id,
+                    client_id,
+                    membership_type_id,
+                    type_name_snapshot,
+                    duration_days_snapshot,
+                    visits_limit_snapshot,
+                    price_amount_snapshot,
+                    price_currency_snapshot,
+                    start_date,
+                    base_end_date,
+                    issued_at,
+                    issued_by_account_id,
+                    status,
+                    entry_origin,
+                    entry_batch_id,
+                    comment)
+                values (
+                    @id,
+                    @client_id,
+                    @membership_type_id,
+                    @type_name_snapshot,
+                    @duration_days_snapshot,
+                    @visits_limit_snapshot,
+                    950,
+                    'UAH',
+                    @start_date,
+                    @base_end_date,
+                    @issued_at,
+                    @issued_by_account_id,
+                    'active',
+                    'normal',
+                    null,
+                    'UI smoke issued snapshot')
+                """;
+            command.Parameters.AddWithValue("id", membershipId);
+            command.Parameters.AddWithValue("client_id", clientId);
+            command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+            command.Parameters.AddWithValue("type_name_snapshot", typeNameSnapshot);
+            command.Parameters.AddWithValue("duration_days_snapshot", durationDays);
+            command.Parameters.AddWithValue("visits_limit_snapshot", visitsLimitSnapshot);
+            command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, startDate);
+            command.Parameters.AddWithValue(
+                "base_end_date",
+                NpgsqlDbType.Date,
+                startDate.AddDays(durationDays - 1));
+            command.Parameters.AddWithValue("issued_at", now.AddDays(-7));
+            command.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
+            Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        }
+
+        await RebuildMembershipAsync(membershipId);
+        return membershipId;
+    }
+
+    public async Task<Guid> InsertExternalCountedVisitAsync(
+        Guid clientId,
+        Guid membershipId)
+    {
+        var visitId = Guid.NewGuid();
+        var recordedAt = TimeProvider.System.GetUtcNow();
+
+        await using (var connection = new NpgsqlConnection(ConnectionString))
+        {
+            await connection.OpenAsync();
+            var actor = await ReadLatestActiveSessionAsync(connection);
+            await using var transaction = await connection.BeginTransactionAsync();
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText =
+                """
+                insert into bodylife.visits (
+                    id,
+                    client_id,
+                    occurred_at,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id,
+                    visit_kind,
+                    entry_origin,
+                    entry_batch_id,
+                    comment,
+                    status)
+                values (
+                    @visit_id,
+                    @client_id,
+                    @occurred_at,
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'membership',
+                    'normal',
+                    null,
+                    'Concurrent UI smoke source',
+                    'active');
+
+                insert into bodylife.visit_consumptions (
+                    id,
+                    visit_id,
+                    client_id,
+                    visit_kind,
+                    membership_id,
+                    consumption_type,
+                    source_fact_type,
+                    source_fact_id,
+                    recorded_at,
+                    recorded_by_account_id,
+                    recorded_session_id,
+                    status)
+                values (
+                    @consumption_id,
+                    @visit_id,
+                    @client_id,
+                    'membership',
+                    @membership_id,
+                    'counted',
+                    'visit',
+                    @visit_id,
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'active')
+                """;
+            command.Parameters.AddWithValue("visit_id", visitId);
+            command.Parameters.AddWithValue("consumption_id", Guid.NewGuid());
+            command.Parameters.AddWithValue("client_id", clientId);
+            command.Parameters.AddWithValue("membership_id", membershipId);
+            command.Parameters.AddWithValue("occurred_at", recordedAt.AddSeconds(-1));
+            command.Parameters.AddWithValue("recorded_at", recordedAt);
+            command.Parameters.AddWithValue("account_id", actor.AccountId);
+            command.Parameters.AddWithValue("session_id", actor.SessionId);
+            Assert.Equal(2, await command.ExecuteNonQueryAsync());
+            await transaction.CommitAsync();
+        }
+
+        await RebuildMembershipAsync(membershipId);
+        return visitId;
+    }
+
+    public async Task<Guid> InsertActiveFreezeForTodayAsync(
+        Guid clientId,
+        Guid membershipId)
+    {
+        var freezeId = Guid.NewGuid();
+        var recordedAt = TimeProvider.System.GetUtcNow();
+        var visitDate = DateOnly.FromDateTime(recordedAt.UtcDateTime);
+
+        await using (var connection = new NpgsqlConnection(ConnectionString))
+        {
+            await connection.OpenAsync();
+            var actor = await ReadLatestActiveSessionAsync(connection);
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                """
+                insert into bodylife.freezes (
+                    id,
+                    client_id,
+                    membership_id,
+                    start_date,
+                    end_date,
+                    reason,
+                    occurred_at,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id,
+                    entry_origin,
+                    entry_batch_id,
+                    status)
+                values (
+                    @id,
+                    @client_id,
+                    @membership_id,
+                    @start_date,
+                    @end_date,
+                    'Concurrent UI smoke freeze',
+                    @occurred_at,
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'normal',
+                    null,
+                    'active')
+                """;
+            command.Parameters.AddWithValue("id", freezeId);
+            command.Parameters.AddWithValue("client_id", clientId);
+            command.Parameters.AddWithValue("membership_id", membershipId);
+            command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, visitDate);
+            command.Parameters.AddWithValue("end_date", NpgsqlDbType.Date, visitDate);
+            command.Parameters.AddWithValue("occurred_at", recordedAt);
+            command.Parameters.AddWithValue("recorded_at", recordedAt);
+            command.Parameters.AddWithValue("account_id", actor.AccountId);
+            command.Parameters.AddWithValue("session_id", actor.SessionId);
+            Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        }
+
+        await RebuildMembershipAsync(membershipId);
+        return freezeId;
+    }
+
+    public async Task<long> CountActiveVisitsAsync(Guid clientId, string? visitKind = null)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = visitKind is null
+            ?
+            """
+            select count(*)
+            from bodylife.visits
+            where client_id = @client_id
+              and status = 'active'
+            """
+            :
+            """
+            select count(*)
+            from bodylife.visits
+            where client_id = @client_id
+              and visit_kind = @visit_kind
+              and status = 'active'
+            """;
+        command.Parameters.AddWithValue("client_id", clientId);
+        if (visitKind is not null)
+        {
+            command.Parameters.AddWithValue("visit_kind", visitKind);
+        }
+
+        return (long)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("The Visit count query returned no value."));
+    }
+
+    public Task<long> CountActiveVisitConsumptionsAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.visit_consumptions
+            where client_id = @client_id
+              and status = 'active'
+            """,
+            clientId);
+    }
+
+    public Task<long> CountMarkVisitAuditEntriesAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries audit
+            inner join bodylife.visits visit on visit.id = audit.entity_id
+            where audit.action_type = 'visit.marked'
+              and visit.client_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountMarkVisitIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'MarkVisit'
+              and reread_target_id = @client_id
+            """,
+            clientId);
+    }
+
+    public async Task<MembershipStateSmokeSnapshot> ReadMembershipStateAsync(
+        Guid membershipId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                counted_visits,
+                remaining_visits,
+                negative_balance,
+                first_negative_visit_date,
+                effective_end_date
+            from bodylife.membership_state_cache
+            where membership_id = @membership_id
+            """;
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException("The smoke Membership state was not found.");
+        }
+
+        return new MembershipStateSmokeSnapshot(
+            reader.GetInt32(0),
+            reader.GetInt32(1),
+            reader.GetInt32(2),
+            reader.IsDBNull(3) ? null : reader.GetFieldValue<DateOnly>(3),
+            reader.GetFieldValue<DateOnly>(4));
+    }
+
     public async Task AdvanceClientUpdatedAtAsync(Guid clientId)
     {
         await using var connection = new NpgsqlConnection(ConnectionString);
@@ -769,6 +1088,39 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return await command.ExecuteScalarAsync() as string;
     }
 
+    private async Task RebuildMembershipAsync(Guid membershipId)
+    {
+        await using var dbContext = CreateDbContext();
+        var rebuild = await new MembershipStateCacheRebuilder(
+                dbContext,
+                TimeProvider.System)
+            .RebuildAsync(membershipId);
+        Assert.True(
+            rebuild.Succeeded,
+            $"Membership state rebuild returned {rebuild.Status} for UI smoke fixture {membershipId}.");
+    }
+
+    private static async Task<ActiveSessionActor> ReadLatestActiveSessionAsync(
+        NpgsqlConnection connection)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select id, account_id
+            from bodylife.sessions
+            where ended_at is null
+              and expires_at > now()
+            order by started_at desc, id desc
+            limit 1
+            """;
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync()
+            ? new ActiveSessionActor(reader.GetGuid(0), reader.GetGuid(1))
+            : throw new InvalidOperationException(
+                "An active UI smoke session is required for the external source fixture.");
+    }
+
     public async ValueTask DisposeAsync()
     {
         await ExecuteAdminCommandAsync(
@@ -843,6 +1195,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
     {
         return "\"" + identifier.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
     }
+
+    private sealed record ActiveSessionActor(Guid SessionId, Guid AccountId);
 }
 
 public sealed record MembershipTypeSmokeSnapshot(
@@ -856,3 +1210,10 @@ public sealed record MembershipTypeSmokeSnapshot(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     DateTime? DeactivatedAt);
+
+public sealed record MembershipStateSmokeSnapshot(
+    int CountedVisits,
+    int RemainingVisits,
+    int NegativeBalance,
+    DateOnly? FirstNegativeVisitDate,
+    DateOnly EffectiveEndDate);

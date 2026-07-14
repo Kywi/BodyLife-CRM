@@ -643,7 +643,8 @@ textarea:focus-visible,
 
 .create-client-form,
 .update-client-form,
-.card-assignment-form {
+.card-assignment-form,
+.mark-visit-form {
   display: grid;
   gap: 16px;
 }
@@ -696,6 +697,186 @@ textarea:focus-visible,
 
 .card-assignment-form input:disabled {
   opacity: 0.6;
+}
+
+.visit-business-context,
+.visit-membership-meta {
+  display: grid;
+  margin: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.visit-business-context div,
+.visit-membership-meta div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.visit-business-context dt,
+.visit-membership-meta dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.visit-business-context dd,
+.visit-membership-meta dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.visit-kind-control,
+.visit-membership-choices {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.visit-kind-control legend,
+.visit-membership-choices legend {
+  margin-bottom: 8px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.visit-kind-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.visit-kind-options label {
+  position: relative;
+  min-width: 0;
+}
+
+.visit-kind-options input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.visit-kind-options span {
+  display: flex;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 10px;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-muted);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.visit-kind-options input:checked + span {
+  border-color: var(--info);
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.visit-kind-options input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.visit-kind-options input:disabled + span {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.visit-membership-empty {
+  margin: 0;
+  border-left: 3px solid var(--info);
+  padding: 3px 0 3px 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.visit-membership-list {
+  display: grid;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.visit-membership-option {
+  display: grid;
+  min-width: 0;
+  padding: 12px;
+  gap: 10px;
+  background: var(--surface);
+}
+
+.visit-membership-option + .visit-membership-option {
+  border-top: 1px solid var(--line);
+}
+
+.visit-membership-blocked {
+  background: var(--surface-muted);
+}
+
+.visit-membership-choice {
+  display: flex;
+  min-height: 44px;
+  min-width: 0;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.visit-membership-choice > input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--info);
+}
+
+.visit-membership-choice > input:disabled {
+  cursor: not-allowed;
+}
+
+.visit-membership-choice span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.visit-membership-choice strong,
+.visit-membership-choice small {
+  overflow-wrap: anywhere;
+}
+
+.visit-membership-choice small {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.visit-acknowledgement-list {
+  display: grid;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+  gap: 4px;
+}
+
+.visit-acknowledgement-list[data-active="false"] {
+  opacity: 0.72;
+}
+
+.mark-visit-form button:disabled:not([aria-busy="true"]) {
+  cursor: not-allowed;
 }
 
 .action-form-grid {
@@ -1311,7 +1492,10 @@ textarea:focus-visible,
   .client-result-meta,
   .client-profile-meta,
   .membership-summary-grid,
-  .action-form-grid {
+  .action-form-grid,
+  .visit-business-context,
+  .visit-membership-meta,
+  .visit-kind-options {
     grid-template-columns: 1fr;
   }
 
@@ -1321,6 +1505,14 @@ textarea:focus-visible,
 
   .profile-action-content {
     padding: 14px;
+  }
+
+  .mark-visit-form .action-form-footer {
+    flex-wrap: wrap;
+  }
+
+  .mark-visit-form .action-form-footer button {
+    width: 100%;
   }
 
   .management-header,

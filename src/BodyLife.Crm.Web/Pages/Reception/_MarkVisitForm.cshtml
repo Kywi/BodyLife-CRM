@@ -1,0 +1,301 @@
+@model MarkVisitFormViewModel
+@{
+    var input = Model.Input;
+    var options = Model.Options;
+    var clientKey = input.ClientId.ToString("N");
+    var selectedAcknowledgements = (input.Acknowledgements ?? []).ToHashSet();
+    var hasSelectableMembership = options?.MembershipOptions.Any(option => option.CanSelect) == true;
+    var hasSelectedMembership = input.VisitKind == VisitKind.Membership
+        && options?.MembershipOptions.Any(option =>
+            option.MembershipId == input.MembershipId && option.CanSelect) == true;
+    var canSubmit = input.VisitKind is VisitKind.OneOff or VisitKind.Trial
+        || hasSelectedMembership;
+}
+
+<details id="mark-visit-action-panel"
+         class="profile-action-panel"
+         open="@(Model.IsOpen ? "open" : null)">
+    <summary>Mark visit</summary>
+    <div class="profile-action-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Visit not marked</strong>
+                <ul>
+                    @foreach (var message in Model.Errors.Select(DisplayError).Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (!Model.IsAvailable || options is null)
+        {
+            <div class="warning-block warning-danger" role="alert">
+                <strong>Visit action unavailable</strong>
+                <span>@(Model.OptionsResult.ErrorMessage ?? "Canonical Visit options could not be loaded.")</span>
+            </div>
+        }
+        else
+        {
+            <form id="mark-visit-form-@clientKey"
+                  class="mark-visit-form"
+                  method="post"
+                  asp-page="/Reception/Index"
+                  asp-page-handler="MarkVisit"
+                  data-busy-form
+                  data-mark-visit-form
+                  hx-post="@Url.Page("/Reception/Index", "MarkVisit")"
+                  hx-target="#mark-visit-action-panel"
+                  hx-swap="outerHTML"
+                  hx-sync="this:drop"
+                  hx-indicator="#mark-visit-loading"
+                  hx-disabled-elt="find button">
+                <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+                <input type="hidden" name="form.OccurredAt" value="@options.OccurredAt.ToString("O")" />
+                <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+                <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+                <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+                <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+                <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+                <dl class="visit-business-context">
+                    <div>
+                        <dt>Visit date</dt>
+                        <dd>@options.VisitDate.ToString("yyyy-MM-dd")</dd>
+                    </div>
+                    <div>
+                        <dt>Recorded as</dt>
+                        <dd>@options.OccurredAt.ToString("HH:mm") UTC</dd>
+                    </div>
+                </dl>
+
+                <fieldset class="visit-kind-control">
+                    <legend>Visit type</legend>
+                    <div class="visit-kind-options">
+                        <label>
+                            <input type="radio"
+                                   name="form.VisitKind"
+                                   value="@VisitKind.Membership"
+                                   data-visit-kind="membership"
+                                   checked="@(input.VisitKind == VisitKind.Membership ? "checked" : null)"
+                                   disabled="@(!hasSelectableMembership ? "disabled" : null)"
+                                   required />
+                            <span>Membership</span>
+                        </label>
+                        <label>
+                            <input type="radio"
+                                   name="form.VisitKind"
+                                   value="@VisitKind.OneOff"
+                                   data-visit-kind="one-off"
+                                   checked="@(input.VisitKind == VisitKind.OneOff ? "checked" : null)"
+                                   required />
+                            <span>One-off</span>
+                        </label>
+                        <label>
+                            <input type="radio"
+                                   name="form.VisitKind"
+                                   value="@VisitKind.Trial"
+                                   data-visit-kind="trial"
+                                   checked="@(input.VisitKind == VisitKind.Trial ? "checked" : null)"
+                                   required />
+                            <span>Trial</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                @if (options.MembershipOptions.Count == 0)
+                {
+                    <p class="visit-membership-empty">
+                        No lifecycle-active memberships. Choose one-off or trial deliberately.
+                    </p>
+                }
+                else
+                {
+                    <fieldset class="visit-membership-choices">
+                        <legend>Membership choice</legend>
+                        <div class="visit-membership-list">
+                            @foreach (var membership in options.MembershipOptions)
+                            {
+                                var membershipKey = membership.MembershipId.ToString("N");
+                                var isSelected = input.MembershipId == membership.MembershipId;
+                                var acknowledgementInputsActive = input.VisitKind == VisitKind.Membership
+                                    && isSelected
+                                    && membership.CanSelect;
+
+                                <div class="visit-membership-option @(membership.CanSelect ? null : "visit-membership-blocked")"
+                                     data-visit-membership-option="@membershipKey">
+                                    <label class="visit-membership-choice">
+                                        <input type="radio"
+                                               name="form.MembershipId"
+                                               value="@membership.MembershipId"
+                                               data-visit-membership-choice
+                                               data-membership-id="@membershipKey"
+                                               checked="@(isSelected ? "checked" : null)"
+                                               disabled="@(!membership.CanSelect ? "disabled" : null)" />
+                                        <span>
+                                            <strong>@membership.TypeName</strong>
+                                            <small>
+                                                @membership.StartDate.ToString("yyyy-MM-dd") to
+                                                @membership.EffectiveEndDate.ToString("yyyy-MM-dd")
+                                            </small>
+                                        </span>
+                                    </label>
+
+                                    <dl class="visit-membership-meta">
+                                        <div>
+                                            <dt>Remaining</dt>
+                                            <dd>@membership.RemainingVisits</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Eligibility</dt>
+                                            <dd>@EligibilityLabel(membership.EligibilityStatus)</dd>
+                                        </div>
+                                    </dl>
+
+                                    @if (!membership.CanSelect)
+                                    {
+                                        <div class="warning-block warning-danger">
+                                            <strong>Membership blocked</strong>
+                                            <span>@EligibilityMessage(membership.EligibilityStatus)</span>
+                                        </div>
+                                    }
+
+                                    @foreach (var warning in membership.Warnings)
+                                    {
+                                        <div class="warning-block @WarningClass(warning.Severity)">
+                                            <strong>@WarningTitle(warning.Code)</strong>
+                                            <span>@warning.Message</span>
+                                        </div>
+                                    }
+
+                                    @if (membership.RequiredAcknowledgements.Count > 0)
+                                    {
+                                        <div class="visit-acknowledgement-list"
+                                             data-visit-acknowledgements="@membershipKey"
+                                             data-active="@(acknowledgementInputsActive ? "true" : "false")">
+                                            @foreach (var acknowledgement in membership.RequiredAcknowledgements)
+                                            {
+                                                var acknowledgementKey = $"visit-ack-{membershipKey}-{acknowledgement}";
+                                                <label class="acknowledgement-control" for="@acknowledgementKey">
+                                                    <input id="@acknowledgementKey"
+                                                           type="checkbox"
+                                                           name="form.Acknowledgements"
+                                                           value="@acknowledgement"
+                                                           data-visit-acknowledgement
+                                                           checked="@(selectedAcknowledgements.Contains(acknowledgement) && isSelected ? "checked" : null)"
+                                                           disabled="@(!acknowledgementInputsActive ? "disabled" : null)"
+                                                           required="@(acknowledgementInputsActive ? "required" : null)" />
+                                                    <span>@AcknowledgementLabel(acknowledgement)</span>
+                                                </label>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </fieldset>
+                }
+
+                <div class="form-field">
+                    <label for="visit-comment-@clientKey">Comment (optional)</label>
+                    <textarea id="visit-comment-@clientKey"
+                              name="form.Comment"
+                              maxlength="1000">@input.Comment</textarea>
+                </div>
+
+                <div class="action-form-footer">
+                    <span id="mark-visit-loading"
+                          class="request-indicator htmx-indicator"
+                          role="status"
+                          aria-live="polite">Marking visit...</span>
+                    <button type="submit"
+                            data-mark-visit-submit
+                            data-busy-text="Marking..."
+                            disabled="@(!canSubmit ? "disabled" : null)">Mark visit</button>
+                </div>
+            </form>
+        }
+    </div>
+</details>
+
+@functions {
+    private static string DisplayError(CommandError error)
+    {
+        return error.Code switch
+        {
+            CommandErrorCode.VisitDuringFreeze =>
+                "Membership visit is blocked by an active freeze on this date. Choose one-off/trial or correct the freeze.",
+            CommandErrorCode.WarningAcknowledgementRequired =>
+                "Membership warnings changed or were not acknowledged exactly. Review the current requirements below.",
+            CommandErrorCode.ConcurrencyConflict or CommandErrorCode.StaleState =>
+                "Visit or membership state changed. Canonical profile data was refreshed; review and try again.",
+            CommandErrorCode.DuplicateSubmission =>
+                "This visit form was already used with different data. Review the refreshed form before retrying.",
+            CommandErrorCode.RecalculationFailed =>
+                "The visit was not saved because canonical membership state could not be recalculated.",
+            _ => error.Message,
+        };
+    }
+
+    private static string EligibilityLabel(MembershipVisitEligibilityStatus status)
+    {
+        return status switch
+        {
+            MembershipVisitEligibilityStatus.Eligible => "Selectable",
+            MembershipVisitEligibilityStatus.BeforeMembershipStart => "Future start",
+            MembershipVisitEligibilityStatus.DuringActiveFreeze => "Frozen date",
+            MembershipVisitEligibilityStatus.MembershipInactive => "Inactive",
+            _ => "Unavailable",
+        };
+    }
+
+    private static string EligibilityMessage(MembershipVisitEligibilityStatus status)
+    {
+        return status switch
+        {
+            MembershipVisitEligibilityStatus.BeforeMembershipStart =>
+                "The visit date is before this membership starts.",
+            MembershipVisitEligibilityStatus.DuringActiveFreeze =>
+                "An active freeze includes the visit date and cannot be overridden.",
+            MembershipVisitEligibilityStatus.MembershipInactive =>
+                "This membership is not lifecycle-active.",
+            _ => "This membership cannot be selected for the visit date.",
+        };
+    }
+
+    private static string WarningClass(MembershipWarningSeverity severity)
+    {
+        return severity == MembershipWarningSeverity.Danger
+            ? "warning-danger"
+            : "warning-caution";
+    }
+
+    private static string WarningTitle(string code)
+    {
+        return code switch
+        {
+            MembershipWarningCodes.NegativeBalance => "Negative balance",
+            MembershipWarningCodes.ExpiredByDate => "Expired membership",
+            MembershipWarningCodes.ZeroRemaining => "Zero remaining",
+            MembershipWarningCodes.EndingSoon => "Ending soon",
+            MembershipWarningCodes.LowRemaining => "Low remaining",
+            _ => "Membership warning",
+        };
+    }
+
+    private static string AcknowledgementLabel(MembershipVisitAcknowledgement acknowledgement)
+    {
+        return acknowledgement switch
+        {
+            MembershipVisitAcknowledgement.Expired =>
+                "I acknowledge that this membership is expired for the visit date.",
+            MembershipVisitAcknowledgement.ZeroRemaining =>
+                "I acknowledge that this visit will move the membership below zero.",
+            MembershipVisitAcknowledgement.NegativeRemaining =>
+                "I acknowledge that this membership already has a negative visit balance.",
+            _ => "I acknowledge the current membership warning.",
+        };
+    }
+}
