@@ -3993,3 +3993,101 @@ Next recommended step:
   success. Add tablet/phone Playwright coverage for membership, one-off/trial,
   warnings, busy/disabled duplicate-submit protection and stable command errors;
   keep `CancelVisit` and report/history presentation for later steps.
+
+## Step 94 - Canonical MarkVisit options and application composition
+
+Status: completed.
+
+Plan alignment:
+
+- Continue only the first server-side prerequisite of the Step 93 recommendation.
+  The existing Client profile projection intentionally summarizes Membership
+  state and cannot safely derive expired/zero/negative acknowledgements,
+  future-start eligibility, ambiguous explicit choices or Freeze blocking in
+  Razor.
+- Add a canonical `GetMarkVisitOptions` query before building the profile form,
+  so the next UI step consumes server-owned choices instead of duplicating
+  Memberships formulas or reading persistence records.
+- Keep the options response advisory and read-only. The `MarkVisit` command still
+  reloads and locks the selected Membership plus overlapping Freeze sources and
+  revalidates every rule in its transaction.
+- Compose the completed query, command, recalculation, eligibility and Freeze
+  services in DI, but keep Razor/htmx, CSS/JavaScript, Playwright workflow
+  additions, `CancelVisit`, reports and history presentation outside this step.
+
+Scope:
+
+- Add typed Visits contracts for `GetMarkVisitOptions`, stable query statuses,
+  `VisitActionKeys.Mark`, explicit Membership option rows and a sole-candidate
+  suggestion that is cleared when the candidate is blocked by a Freeze.
+- Return every lifecycle-active Membership as an explicit option with immutable
+  issue-time type name, start/effective-end dates, signed remaining visits,
+  server-derived warnings, eligibility status and exact typed acknowledgements.
+  Canceled/corrected Memberships are not selectable options; future-start and
+  active-Freeze rows remain visible but disabled; expired/zero/negative rows
+  remain selectable only with their current acknowledgement set.
+- Add a Memberships-owned eligibility evaluator boundary over canonical
+  `MembershipStateReadModel`. The overload reconstructs and validates canonical
+  issue/calculated state inside Memberships and requires the read model's as-of
+  date to equal the Visit date.
+- Add a separate read-only Freeze snapshot provider interface. The concrete
+  Freezes reader implements both the non-locking query snapshot and the existing
+  transaction-required `FOR UPDATE` command provider without weakening the
+  command contract.
+- Register `GetMarkVisitOptionsQueryHandler`, `MarkVisitCommandHandler`, the
+  shared Freeze reader, Membership eligibility evaluator/recalculation ports and
+  locked eligibility preparer in `AddBodyLifePersistence`.
+- Add one domain regression and six PostgreSQL/registration cases covering a
+  suggested single candidate, no-Membership one-off/trial context, exact
+  expired+zero then expired+negative acknowledgements, ambiguous/future/frozen
+  choices, canceled source exclusion, stable invalid/denied/missing/stale-cache
+  failures and complete scoped DI resolution.
+- Add no EF record/configuration/migration and no state-changing query behavior.
+
+Validation:
+
+- The first solution compile exposed an interface-segregation issue: adding the
+  snapshot read to `IMembershipVisitFreezeSourceProvider` forced locked command
+  test providers to implement an unrelated concern. The read path was moved to
+  `IMembershipVisitFreezeSourceSnapshotProvider`; the original command interface
+  remained byte-for-byte unchanged and the repeated Release build passed.
+- Focused `MembershipVisitEligibilityPolicyTests` passed all 10 cases.
+- Focused `PostgreSqlGetMarkVisitOptionsQueryTests`,
+  `MembershipFormulaOwnershipTests`, `PostgreSqlFreezesStorageTests` and
+  `PostgreSqlMembershipStateCacheRebuildTests` passed all 36 cases; the final
+  options-only rerun passed all 6 query/DI cases.
+- Solution formatting/analyzer verification and `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 242 core tests, 35 web tests, 290
+  PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714174210_AddFreezeSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this
+  query/composition step generated no migration.
+- `graphify update .` completed the structural rebuild with 5443 nodes, 11455
+  edges and 616 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress change but stopped because
+  no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): expose canonical mark visit options`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Continue Milestone 6 with the Razor/htmx Mark Visit profile action over the
+  completed options query and command registration. Build a CSRF-protected form
+  with explicit membership/one-off/trial selection, server-provided
+  acknowledgements, retained editable context on errors, idempotency key and
+  busy/disabled duplicate-submit protection; after success reread and replace
+  the canonical reception workspace/profile. Add tablet and phone Playwright
+  cases for ordinary membership, zero-to-negative acknowledgement, explicit
+  one-off/trial, no duplicate source rows and stable blocked/stale errors. Keep
+  `CancelVisit` and report/history presentation for following steps.

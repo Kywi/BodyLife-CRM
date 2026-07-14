@@ -3,12 +3,15 @@ using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
+using BodyLife.Crm.Infrastructure.Persistence.Freezes;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
+using BodyLife.Crm.Modules.Visits;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -55,6 +58,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeQueryHandler<PreviewIssueMembershipQuery, PreviewIssueMembershipResult>,
             PreviewIssueMembershipQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<GetMarkVisitOptionsQuery, GetMarkVisitOptionsResult>,
+            GetMarkVisitOptionsQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<CreateMembershipTypeCommand>,
@@ -75,6 +81,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<IssueMembershipCommand>,
             IssueMembershipCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<MarkVisitCommand>,
+            MarkVisitCommandHandler>();
+        services.AddScoped<MembershipVisitFreezeSourceReader>();
+        services.AddScoped<IMembershipVisitFreezeSourceProvider>(provider =>
+            provider.GetRequiredService<MembershipVisitFreezeSourceReader>());
+        services.AddScoped<IMembershipVisitFreezeSourceSnapshotProvider>(provider =>
+            provider.GetRequiredService<MembershipVisitFreezeSourceReader>());
+        services.AddScoped<
+            IMembershipVisitEligibilityEvaluator,
+            MembershipVisitEligibilityEvaluator>();
+        services.AddScoped<IMembershipStateRecalculator, MembershipStateRecalculator>();
+        services.AddScoped<MembershipVisitEligibilityPreparer>();
         services.AddScoped<MembershipExtensionDayWriter>();
         services.AddScoped<MembershipStatePersistenceCoordinator>();
         services.AddScoped<MembershipStateCacheRebuilder>();

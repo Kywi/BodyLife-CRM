@@ -176,6 +176,39 @@ public sealed class MembershipVisitEligibilityPolicyTests
     }
 
     [Fact]
+    public void CanonicalReadModelOverloadRequiresTheVisitDateAndPreservesRules()
+    {
+        var issueTerms = CreateIssueTerms(visitsLimit: 2);
+        var visitDate = issueTerms.BaseEndDate.AddDays(1);
+        var readModel = new MembershipStateReadModel(
+            MembershipId,
+            Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            issueTerms,
+            CreateState(issueTerms, remainingVisits: 0),
+            visitDate);
+
+        var eligibility = MembershipVisitEligibilityPolicy.Evaluate(
+            readModel,
+            IssuedMembershipLifecycleStatus.Active,
+            visitDate,
+            freezeSources: []);
+
+        Assert.Equal(
+            [
+                MembershipVisitAcknowledgement.Expired,
+                MembershipVisitAcknowledgement.ZeroRemaining,
+            ],
+            eligibility.RequiredAcknowledgements);
+        var mismatchedDate = Assert.Throws<ArgumentException>(() =>
+            MembershipVisitEligibilityPolicy.Evaluate(
+                readModel,
+                IssuedMembershipLifecycleStatus.Active,
+                visitDate.AddDays(1),
+                freezeSources: []));
+        Assert.Equal("state", mismatchedDate.ParamName);
+    }
+
+    [Fact]
     public void EligibilityRejectsMissingOrMismatchedExplicitInputs()
     {
         var issueTerms = CreateIssueTerms(visitsLimit: 8);

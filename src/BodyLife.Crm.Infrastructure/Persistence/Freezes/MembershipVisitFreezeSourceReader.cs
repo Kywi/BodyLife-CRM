@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace BodyLife.Crm.Infrastructure.Persistence.Freezes;
 
 public sealed class MembershipVisitFreezeSourceReader(BodyLifeDbContext dbContext)
-    : IMembershipVisitFreezeSourceProvider
+    : IMembershipVisitFreezeSourceProvider,
+        IMembershipVisitFreezeSourceSnapshotProvider
 {
     public async Task<IReadOnlyList<MembershipVisitFreezeSource>> GetForVisitAsync(
         Guid membershipId,
@@ -53,18 +54,49 @@ public sealed class MembershipVisitFreezeSourceReader(BodyLifeDbContext dbContex
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);
 
-        return records
-            .Select(record => new MembershipVisitFreezeSource(
-                record.MembershipId,
-                record.Id,
-                new DateRange(record.StartDate, record.EndDate),
-                record.Status switch
-                {
-                    "active" => true,
-                    "canceled" => false,
-                    _ => throw new InvalidOperationException(
-                        $"Freeze status '{record.Status}' is not supported."),
-                }))
+        return Map(records);
+    }
+
+    public async Task<IReadOnlyList<MembershipVisitFreezeSource>>
+        GetSnapshotForVisitAsync(
+            Guid membershipId,
+            DateOnly visitDate,
+            CancellationToken cancellationToken = default)
+    {
+        if (membershipId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Membership id is required.",
+                nameof(membershipId));
+        }
+
+        var records = await dbContext.Set<FreezeRecord>()
+            .AsNoTracking()
+            .Where(record => record.MembershipId == membershipId
+                && record.StartDate <= visitDate
+                && record.EndDate >= visitDate)
+            .OrderBy(record => record.StartDate)
+            .ThenBy(record => record.EndDate)
+            .ThenBy(record => record.Id)
+            .ToArrayAsync(cancellationToken);
+
+        return Map(records);
+    }
+
+    private static IReadOnlyList<MembershipVisitFreezeSource> Map(
+        IEnumerable<FreezeRecord> records)
+    {
+        return records.Select(record => new MembershipVisitFreezeSource(
+            record.MembershipId,
+            record.Id,
+            new DateRange(record.StartDate, record.EndDate),
+            record.Status switch
+            {
+                "active" => true,
+                "canceled" => false,
+                _ => throw new InvalidOperationException(
+                    $"Freeze status '{record.Status}' is not supported."),
+            }))
             .ToArray();
     }
 }

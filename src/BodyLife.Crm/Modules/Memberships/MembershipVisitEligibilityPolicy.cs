@@ -3,6 +3,46 @@ namespace BodyLife.Crm.Modules.Memberships;
 public static class MembershipVisitEligibilityPolicy
 {
     public static MembershipVisitEligibility Evaluate(
+        MembershipStateReadModel state,
+        IssuedMembershipLifecycleStatus lifecycleStatus,
+        DateOnly visitDate,
+        IEnumerable<MembershipVisitFreezeSource>? freezeSources)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        if (state.AsOfDate != visitDate)
+        {
+            throw new ArgumentException(
+                "Membership state must be read for the Visit date.",
+                nameof(state));
+        }
+
+        var issueTerms = MembershipIssueTerms.FromIssuedSnapshot(
+            state.MembershipTypeId,
+            state.Snapshot,
+            state.StartDate,
+            state.BaseEndDate);
+        var calculatedState = MembershipCalculatedState.FromStoredCache(
+            issueTerms,
+            state.CountedVisits,
+            state.RemainingVisits,
+            state.NegativeBalance,
+            state.FirstNegativeVisitId,
+            state.FirstNegativeVisitDate,
+            state.ExtensionDays,
+            state.EffectiveEndDate,
+            state.LastCountedVisitAt);
+
+        return Evaluate(
+            state.MembershipId,
+            issueTerms,
+            calculatedState,
+            lifecycleStatus,
+            visitDate,
+            freezeSources);
+    }
+
+    public static MembershipVisitEligibility Evaluate(
         Guid membershipId,
         MembershipIssueTerms? issueTerms,
         MembershipCalculatedState? calculatedState,

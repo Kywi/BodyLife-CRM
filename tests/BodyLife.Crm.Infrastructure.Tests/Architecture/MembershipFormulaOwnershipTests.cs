@@ -104,6 +104,8 @@ internal static class MembershipDependencyInspector
         typeof(MembershipVisitFreezeSource),
         typeof(MembershipVisitEligibilityStatus),
         typeof(IMembershipVisitFreezeSourceProvider),
+        typeof(IMembershipVisitFreezeSourceSnapshotProvider),
+        typeof(IMembershipVisitEligibilityEvaluator),
         typeof(IMembershipStateRecalculator),
         typeof(MembershipStateRecalculationResult),
         typeof(MembershipStateRecalculationStatus),
