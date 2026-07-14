@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784017959.2757666,
-    "ast_hash": "104f584022f9bcafb7efefc825896428",
+    "mtime": 1784024751.4328578,
+    "ast_hash": "7a88e27eeee515dafa5660bbffe4ead0",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2312,6 +2312,16 @@
   "tests/BodyLife.Crm.Tests/Modules/Clients/Search/ClientProfileMembershipProjectionTests.cs": {
     "mtime": 1784018803.1466181,
     "ast_hash": "9e3903783ea85d0dcfb51fe322928cdf",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/Architecture/MembershipFormulaOwnershipTests.cs": {
+    "mtime": 1784024769.609617,
+    "ast_hash": "a24aac124d483dca2770cd95e01a184a",
+    "semantic_hash": ""
+  },
+  "docs/milestone-5-acceptance-review.md": {
+    "mtime": 1784024739.004212,
+    "ast_hash": "0dd101e6b0e00453e9e01d18fd2366ee",
     "semantic_hash": ""
   }
 }
