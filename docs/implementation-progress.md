@@ -3262,3 +3262,45 @@ Commits:
 Next recommended step:
 
 - Close the remaining Milestone 5 ownership gate before starting Visits: add only an automated architecture check that formula-bearing Memberships types/rules are not referenced by production modules outside Memberships, while explicitly allowing public read/query contracts such as the profile projection. Pair it with a short Milestone 5 acceptance audit that records the still-unresolved multiple-active-membership/visit-allocation product decision. Keep the product-policy decision itself, search membership summaries, issue-membership Razor/htmx UI and all Milestone 6 persistence/commands outside that gate-only step.
+
+## Step 84 - Membership formula ownership gate and Milestone 5 audit
+
+Status: completed.
+
+Plan alignment:
+
+- Close only the remaining Milestone 5 architecture/review gate before any Visit implementation.
+- Treat the Core `BodyLife.Crm.Modules.Memberships` namespace and Infrastructure `Persistence.Memberships` namespace as the formula owners.
+- Permit production code outside those owners to depend only on an explicit allowlist of reviewed Memberships commands, queries, results, read models, warnings and action metadata.
+- Inspect compiled type signatures, fields, locals and IL member/type tokens across Core, Infrastructure and Web so direct calls to calculators, rules, policies or newly exposed unreviewed Memberships types fail the test.
+- Include a negative self-test that deliberately calls `MembershipDateRules` from an outside fixture, proving the inspector is active rather than vacuously green.
+- Audit Milestone 5 without silently resolving or hiding its remaining closure gates: multiple active memberships/visit allocation, visit without an active membership, visit during an active freeze, the required pure Visit source-fact calculation tests, and adjustment participation in rebuild.
+- Preserve the current ambiguity behavior: Memberships returns `ambiguous` with no selected membership, and no Visit schema/command may infer a candidate before the policy is accepted.
+- Keep one-off negative closure explicitly deferred to Milestone 7 Payments; the current issue path continues to support only leaving prior negative state visible.
+
+Scope:
+
+- Add `MembershipFormulaOwnershipTests` and its reflection/IL dependency inspector to the infrastructure test assembly, which already references all three production assemblies.
+- Use a reviewed contract allowlist rather than a package or source-text pattern, so a new Memberships type crossing the boundary requires an intentional test change.
+- Add `docs/milestone-5-acceptance-review.md` with completed evidence, partial criteria, missing required-test coverage, unresolved product decisions and scope exclusions.
+- Add no production code, NuGet package, EF record/configuration/migration, database schema/index, Visit/Payment/Freeze/NonWorkingDay workflow, page/controller or UI change.
+
+Validation:
+
+- The first focused attempt stopped at compile time because the inspector used the wrong named argument for `FieldInfo.GetValue`; the helper was corrected and no product behavior executed or failed.
+- The next two focused iterations exposed reflection edge cases for non-generic constructors and non-catch exception clauses; the inspector was narrowed to valid runtime metadata shapes without weakening the ownership rule.
+- Final focused `MembershipFormulaOwnershipTests` validation passed both cases: the production assemblies use only approved contracts and the deliberate outside formula call is rejected.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this test/documentation-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 193 core tests, 35 web tests, 250 PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `graphify update .` completed the structural rebuild with 4869 nodes, 9942 edges and 576 communities.
+- `graphify . --update` was attempted for the acceptance/progress documentation changes but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `test(memberships): enforce formula ownership`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Before starting Milestone 6 persistence or commands, record an accepted product-policy decision for multiple active memberships and Visit allocation: whether multiples are allowed, how `MarkVisit` requires/selects a membership, what happens without an active membership, and how an active freeze affects marking. Preserve explicit selection/acknowledgement and the current no-arbitrary-candidate behavior. Keep Visit schema and implementation outside that decision-only step; use the following small implementation step to close the pure Memberships Visit-calculation test gap and explicitly resolve adjustment rebuild participation.
