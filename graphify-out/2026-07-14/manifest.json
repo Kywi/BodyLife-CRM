@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784040843.5519416,
-    "ast_hash": "5a43b4a06b703d171608815795454915",
+    "mtime": 1784041789.538027,
+    "ast_hash": "9c4e24512e4f0859466cdf969bf8682d",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -1875,8 +1875,8 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlMembershipStateCacheRebuildTests.cs": {
-    "mtime": 1784040567.3136036,
-    "ast_hash": "83dc2939c9d5dfb08e1a9db133288ede",
+    "mtime": 1784041580.4192803,
+    "ast_hash": "104d671f76991d4fef6b0ada01c544ea",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipOpeningStateRecord.cs": {
@@ -2472,6 +2472,21 @@
   "tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipCombinedSourceCalculationTests.cs": {
     "mtime": 1784040448.2905579,
     "ast_hash": "4edc93ac8cae8668b8212dcd996f1a31",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipVisitEligibilityPreparationResult.cs": {
+    "mtime": 1784041550.163498,
+    "ast_hash": "00a100bfed9e2d8214327d1ff16cd941",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipVisitEligibilityPreparationStatus.cs": {
+    "mtime": 1784041215.2484412,
+    "ast_hash": "a94736db5b773b0dca6eeeea7b5aae99",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Memberships/MembershipVisitEligibilityPreparer.cs": {
+    "mtime": 1784041550.163498,
+    "ast_hash": "088688ec9e27776a30cb40948af45098",
     "semantic_hash": ""
   }
 }
