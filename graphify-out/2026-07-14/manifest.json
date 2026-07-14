@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1784055801.120182,
-    "ast_hash": "f63de52607d5d634492cbf35e48a00d9",
+    "mtime": 1784062842.5843616,
+    "ast_hash": "80876cc3d9f51dc63227fbeee37cbf69",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784062016.6046753,
-    "ast_hash": "97a2ff0de7d4d515526b6b300d4b4029",
+    "mtime": 1784063358.6533742,
+    "ast_hash": "cf9949d91343c4fcccb35f1b0b59de67",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2620,8 +2620,8 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Visits/VisitActionKeys.cs": {
-    "mtime": 1784055717.3146727,
-    "ast_hash": "36899dbeede8a74fe8d2a03862fe8559",
+    "mtime": 1784062735.266477,
+    "ast_hash": "ba7caabcdf39f30f03fae6fbf1e7caa1",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlGetMarkVisitOptionsQueryTests.cs": {
@@ -2702,6 +2702,71 @@
   "src/BodyLife.Crm/Modules/Visits/VisitDayReconciliationStatus.cs": {
     "mtime": 1784061047.3138583,
     "ast_hash": "562d764a830850e37c2616ee3fee7408",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Visits/GetClientVisitRowsQueryHandler.cs": {
+    "mtime": 1784062876.4728177,
+    "ast_hash": "c3ec17782981f1333bb7eb7064669b3f",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Visits/OpenVisitDayReconciliationStatusProvider.cs": {
+    "mtime": 1784062826.0951965,
+    "ast_hash": "a55ac298046f56b9e873d93324e53c7c",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Visits/VisitQuerySupport.cs": {
+    "mtime": 1784062826.0911963,
+    "ast_hash": "6a3ec46ce23a8f2ab95b346229dfb1b3",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/ClientVisitCancellation.cs": {
+    "mtime": 1784062735.266477,
+    "ast_hash": "b4af89545c0cbc54b5d8a6e563f5d350",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/ClientVisitConsumption.cs": {
+    "mtime": 1784062735.266477,
+    "ast_hash": "b382c3632e2ee9d44ed30bca98fd34b8",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/ClientVisitConsumptionStatus.cs": {
+    "mtime": 1784062735.266477,
+    "ast_hash": "2247223e261a0396ec06a343e689969a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/ClientVisitRow.cs": {
+    "mtime": 1784062735.266477,
+    "ast_hash": "4c836d48c2218212e89c7838a2f4783d",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/ClientVisitRowStatus.cs": {
+    "mtime": 1784062735.266477,
+    "ast_hash": "d947948a74a79a440b03d3908e8847e9",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/ClientVisitRowsPage.cs": {
+    "mtime": 1784062735.266477,
+    "ast_hash": "45e9ee3b78016ba1d54aae0e814c06b1",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/GetClientVisitRowsQuery.cs": {
+    "mtime": 1784062860.9677634,
+    "ast_hash": "248416f8f45573457a170b21c6a3ea2c",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/GetClientVisitRowsResult.cs": {
+    "mtime": 1784062735.266477,
+    "ast_hash": "984da8c91c64421f343f5fcd68caa64b",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/GetClientVisitRowsStatus.cs": {
+    "mtime": 1784062735.266477,
+    "ast_hash": "3a6a082b2e60d024f2cf98acce2fb409",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlGetClientVisitRowsQueryTests.cs": {
+    "mtime": 1784063103.5410082,
+    "ast_hash": "80c172473e43710cfdaf06bcd91168f3",
     "semantic_hash": ""
   }
 }
