@@ -3126,3 +3126,48 @@ Commits:
 Next recommended step:
 
 - Add only the public client-scoped Memberships collection query contract and pure active-candidate selection outcome needed by `GetClientProfile`: actor, client id and required `as_of`; deterministic membership timeline; explicit `none`, `single` or `ambiguous` active-candidate status; and no arbitrary current-membership choice when multiple candidates exist. Reuse `MembershipStateReadModel` as the canonical state shape and add focused core tests. Keep the PostgreSQL collection handler, profile composition and UI outside that contract-only step.
+
+## Step 81 - Client membership state collection contract
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 with only the public client-scoped Memberships collection boundary required before composing the membership section of `GetClientProfile`.
+- Carry canonical actor/session context, required client id and required `as_of` date on `GetClientMembershipStatesQuery`; keep authorization and PostgreSQL execution for the next handler-only step.
+- Reuse `MembershipStateReadModel` for every calculated membership value, warning and immutable issue snapshot so profile composition cannot duplicate Memberships formulas.
+- Wrap each canonical state only with source-owned lifecycle status and `issued_at`, which are needed to exclude canceled/corrected history from active selection and to make timeline ordering deterministic.
+- Define an active candidate as both lifecycle `active` and canonically active by date. Preserve the accepted inclusive Memberships date rule instead of introducing a profile-specific date formula.
+- Return an explicit `none`, `single` or `ambiguous` active-candidate outcome. An ambiguous result exposes the ordered candidates but deliberately has no selected membership, preserving the unresolved multiple-active-memberships product decision.
+- Order the timeline newest-first by start date, then issue time, then membership id as a stable final tie-break; validate client/as-of consistency and duplicate membership ids before exposing the collection.
+- Follow existing public query result conventions for success, permission denial, missing client, validation failure and recalculation failure; failed results expose neither state nor actions.
+- Keep PostgreSQL loading/cache integrity checks, DI registration, `GetClientProfile` composition, warning projection, Razor/htmx UI and visit allocation policy outside this contract-only step.
+
+Scope:
+
+- Add `GetClientMembershipStatesQuery`, `GetClientMembershipStatesResult` and `GetClientMembershipStatesStatus` as the public client-scoped collection query contract.
+- Add controlled `IssuedMembershipLifecycleStatus` and immutable `ClientMembershipStateTimelineItem` metadata around the existing canonical state read model.
+- Add `ClientMembershipStatesReadModel`, `ActiveMembershipCandidateSelection` and `ActiveMembershipCandidateStatus` for deterministic timeline plus explicit selection outcome.
+- Add pure `ClientMembershipStatesPolicy.Create` for selector validation, canonical client/as-of consistency, duplicate rejection, deterministic ordering and ambiguity-preserving candidate classification.
+- Carry client-scoped allowed actions on a successful collection result so the future handler/profile can expose the already established `memberships.issue` permission intent without client-side authorization logic.
+- Add 14 focused core cases covering query shape, empty/single/expired/canceled/corrected/ambiguous outcomes, deterministic ordering and tie-break, defensive read-only storage, selector/state validation, stable result errors and permission projection.
+- Add no query handler/DI registration, EF record/configuration/migration, PostgreSQL read, cache repair, profile DTO composition, controller/page or UI change.
+
+Validation:
+
+- Focused `ClientMembershipStatesQueryContractsTests` validation passed all 14 cases.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 134 tests.
+- Solution formatting/analyzer verification passed without changes.
+- The first EF drift command used unsupported `--no-connect` with the pinned `dotnet-ef 10.0.4` and exited before model comparison; the corrected `dotnet-ef migrations has-pending-model-changes` command built successfully and reported no model drift. This contract/domain-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 188 core tests, 35 web tests, 237 PostgreSQL infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `graphify update .` completed the structural rebuild with 4732 nodes, 9553 edges and 578 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): define client state collection`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Implement only the PostgreSQL `GetClientMembershipStates` query handler: canonical Admin/Owner authorization, required selector validation, client existence, no-tracking issued-membership/cache/extension reads, controlled lifecycle mapping, current-version/domain rehydration for every timeline row, Step 81 policy execution and client-scoped issue permission projection. Add focused PostgreSQL tests and scoped DI registration. Keep `GetClientProfile` composition, profile warning/status projection, search integration, Razor/htmx UI and multiple-active-membership product resolution outside that handler-only step.
