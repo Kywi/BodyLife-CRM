@@ -589,7 +589,5 @@
   "587": "CreateMembershipTypeCommandHandler",
   "588": "BodyLifeAuthorizationPolicies.cs",
   "589": ".ReadAdjustmentsAsync",
-  "590": "MembershipAuditActions.cs",
-  "591": ".PersistenceRegistrationExposesScopedClientMembershipStatesHandler",
-  "592": ".PersistenceRegistrationExposesScopedStatePersistenceCoordinator"
+  "590": "MembershipAuditActions.cs"
 }
