@@ -567,14 +567,7 @@
   "565": "AccountCredentialRecord",
   "566": "PostgreSqlCreateClientCommandTests.cs",
   "567": "SessionId",
-  "568": "MembershipExtensionSourceRange",
   "569": ".InvokeAsync",
   "570": ".CheckHealthAsync",
-  "571": "MembershipStateCacheRebuildResult",
-  "572": "EditMembershipTypeFormInput",
-  "573": ".From",
-  "574": "MutableTimeProvider",
-  "575": "MembershipActionKeys.cs",
-  "576": ".DeclarationDerivesNegativeBalanceFromSignedRemainingVisits",
-  "577": ".PersistenceRegistrationExposesScopedExtensionDayWriter"
+  "571": "MembershipStateCacheRebuildResult"
 }

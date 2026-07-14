@@ -1,16 +1,16 @@
 # Graph Report - BodyLife-CRM  (2026-07-14)
 
 ## Corpus Check
-- 434 files · ~257,344 words
+- 437 files · ~260,180 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4732 nodes · 9553 edges · 578 communities (239 shown, 339 thin omitted)
+- 4784 nodes · 9727 edges · 571 communities (231 shown, 340 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 62 edges (avg confidence: 0.59)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0cbc46b3`
+- Built from commit: `73402b1f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -580,28 +580,21 @@
 - [[_COMMUNITY_AccountCredentialRecord|AccountCredentialRecord]]
 - [[_COMMUNITY_PostgreSqlCreateClientCommandTests.cs|PostgreSqlCreateClientCommandTests.cs]]
 - [[_COMMUNITY_SessionId|SessionId]]
-- [[_COMMUNITY_MembershipExtensionSourceRange|MembershipExtensionSourceRange]]
 - [[_COMMUNITY_.InvokeAsync|.InvokeAsync]]
 - [[_COMMUNITY_.CheckHealthAsync|.CheckHealthAsync]]
 - [[_COMMUNITY_MembershipStateCacheRebuildResult|MembershipStateCacheRebuildResult]]
-- [[_COMMUNITY_EditMembershipTypeFormInput|EditMembershipTypeFormInput]]
-- [[_COMMUNITY_.From|.From]]
-- [[_COMMUNITY_MutableTimeProvider|MutableTimeProvider]]
-- [[_COMMUNITY_MembershipActionKeys.cs|MembershipActionKeys.cs]]
-- [[_COMMUNITY_.DeclarationDerivesNegativeBalanceFromSignedRemainingVisits|.DeclarationDerivesNegativeBalanceFromSignedRemainingVisits]]
-- [[_COMMUNITY_.PersistenceRegistrationExposesScopedExtensionDayWriter|.PersistenceRegistrationExposesScopedExtensionDayWriter]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `PostgreSqlTestDatabase` - 173 edges
-2. `BodyLife.Crm.SharedKernel` - 92 edges
-3. `BodyLife CRM implementation progress` - 83 edges
-4. `BodyLife.Crm.Modules.Memberships` - 73 edges
+1. `PostgreSqlTestDatabase` - 182 edges
+2. `BodyLife.Crm.SharedKernel` - 93 edges
+3. `BodyLife CRM implementation progress` - 84 edges
+4. `BodyLife.Crm.Modules.Memberships` - 76 edges
 5. `CommandResult` - 65 edges
 6. `BodyLife.Crm.Infrastructure.Persistence.UsersRoles` - 63 edges
 7. `BodyLife.Crm.Application.Commands` - 60 edges
-8. `ReceptionAppFixture` - 55 edges
-9. `BodyLife.Crm.Infrastructure.Persistence` - 54 edges
-10. `BodyLife.Crm.Modules.Clients.Search` - 48 edges
+8. `BodyLife.Crm.Infrastructure.Persistence` - 55 edges
+9. `ReceptionAppFixture` - 55 edges
+10. `ActorContext` - 50 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Architecture Research Options HTML Preview` --semantically_similar_to--> `Architecture Research Options Markdown Brief`  [INFERRED] [semantically similar]
@@ -649,7 +642,7 @@
 - **Reception-first UI Contract** — agents_ui_rules, docs_ui_design_foundation_product_posture, docs_ui_workflows_reception_dashboard_workflow, docs_vertical_slice_plan_slice_goal [INFERRED 0.95]
 - **Membership Command Report Audit Consistency** — agents_membership_rules, docs_implementation_roadmap_cross_cutting_rules, docs_ui_workflows_active_membership_panel_workflow, docs_vertical_slice_plan_technical_flow [INFERRED 0.85]
 
-## Communities (578 total, 339 thin omitted)
+## Communities (571 total, 340 thin omitted)
 
 ### Community 0 - "htmx 2 0 10 min"
 Cohesion: 0.08
@@ -660,36 +653,36 @@ Cohesion: 0.05
 Nodes (34): ActorLogContext, AuthorizationMiddlewareResultHandler, AuthorizationPolicy, CookieAuthenticationEvents, CookieValidatePrincipalContext, IAuthorizationMiddlewareResultHandler, PolicyAuthorizationResult, RequestDelegate (+26 more)
 
 ### Community 2 - "Index Model"
-Cohesion: 0.06
-Nodes (29): OpeningStateFixture, PersistedOpeningState, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider (+21 more)
+Cohesion: 0.18
+Nodes (10): OpeningStateFixture, PersistedOpeningState, FixedTimeProvider, PostgreSqlMembershipOpeningStatesStorageTests, DateOnly, DateTimeOffset, Func, Guid (+2 more)
 
 ### Community 3 - "Postgre Sql Deactivate Membership Type"
 Cohesion: 0.12
 Nodes (16): CacheFingerprint, IssuedMembershipFixture, PreviewFixture, PreviewIssueMembershipQueryHandler, CancellationToken, Task, PreviewIssueMembershipQuery, PreviewIssueMembershipResult (+8 more)
 
 ### Community 4 - "Postgre Sql Edit Membership Type"
-Cohesion: 0.26
-Nodes (9): PostgreSqlEditMembershipTypeCommandTests, AuditRow, DateTimeOffset, Guid, IdempotencyRow, JsonElement, MembershipTypeRow, PostgreSqlFact (+1 more)
+Cohesion: 0.14
+Nodes (19): MembershipTypeCatalogSnapshot, EditMembershipTypeCommandHandler, MembershipTypeCatalogSnapshot, CancellationToken, DateTimeOffset, Guid, string, Task (+11 more)
 
 ### Community 5 - "Membership Types Model"
 Cohesion: 0.13
 Nodes (20): SeededMembership, MembershipStateCacheRebuilder, CancellationToken, DateTimeOffset, Guid, int, Task, MembershipStateCacheRecord (+12 more)
 
 ### Community 6 - "Postgre Sql Assign Or Change"
-Cohesion: 0.29
-Nodes (9): PostgreSqlAssignOrChangeCardCommandTests, AuditRow, CardRow, DateTimeOffset, Guid, NpgsqlConnection, NpgsqlTransaction, PostgreSqlFact (+1 more)
+Cohesion: 0.17
+Nodes (14): JsonSerializerOptions, EntryOrigin, BusinessAuditAppender, DateTimeOffset, Guid, PostgreSqlAssignOrChangeCardCommandTests, AuditRow, CardRow (+6 more)
 
 ### Community 7 - "Membership Type Contracts Tests"
 Cohesion: 0.19
-Nodes (11): IClassFixture, MembershipTypeCatalogSmokeTests, Fact, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+3 more)
+Nodes (11): IAsyncLifetime, MembershipTypeCatalogSmokeTests, Fact, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+3 more)
 
 ### Community 8 - "Postgre Sql Update Client Command"
-Cohesion: 0.18
-Nodes (15): UpdateClientCommandHandler, CancellationToken, DateTimeOffset, string, Task, UpdateClientCommand, PostgreSqlUpdateClientCommandTests, AuditRow (+7 more)
+Cohesion: 0.15
+Nodes (17): ClientIdentitySnapshot, ClientIdentitySnapshot, UpdateClientCommandHandler, CancellationToken, DateTimeOffset, string, Task, UpdateClientCommand (+9 more)
 
 ### Community 9 - "Client Command Support"
-Cohesion: 0.09
-Nodes (20): CommandEnvelope, ClientCommandSupport, NormalizedClientAcknowledgement, NormalizedClientCommandEnvelope, NormalizedClientIdentity, BodyLifeDbContext, CancellationToken, DateTimeOffset (+12 more)
+Cohesion: 0.12
+Nodes (18): CommandEnvelope, ClientCommandSupport, NormalizedClientAcknowledgement, NormalizedClientCommandEnvelope, NormalizedClientIdentity, BodyLifeDbContext, CancellationToken, DateTimeOffset (+10 more)
 
 ### Community 10 - "Reception App Fixture"
 Cohesion: 0.06
@@ -697,11 +690,11 @@ Nodes (17): ConcurrentQueue, IAsyncDisposable, Process, MembershipTypeSmokeSnaps
 
 ### Community 11 - "Membership Type Command Support"
 Cohesion: 0.11
-Nodes (16): MembershipTypeCommandSupport, NormalizedMembershipTypeCommandEnvelope, NormalizedMembershipTypeCreate, NormalizedMembershipTypeDeactivation, NormalizedMembershipTypeEdit, BodyLifeDbContext, CancellationToken, DateTimeOffset (+8 more)
+Nodes (14): CommandErrorCode, CommandResult, IReadOnlyList, MembershipTypeCommandSupport, NormalizedMembershipTypeCommandEnvelope, NormalizedMembershipTypeCreate, NormalizedMembershipTypeDeactivation, NormalizedMembershipTypeEdit (+6 more)
 
 ### Community 12 - "Postgre Sql Smoke Database"
-Cohesion: 0.11
-Nodes (20): DeactivateFormRenderState, EditFormRenderState, CommandError, Money, CreateMembershipTypeFormInput, CreateMembershipTypeFormViewModel, IReadOnlyList, DeactivateMembershipTypeFormInput (+12 more)
+Cohesion: 0.13
+Nodes (19): DeactivateFormRenderState, EditFormRenderState, CommandError, CreateMembershipTypeFormInput, CreateMembershipTypeFormViewModel, IReadOnlyList, EditMembershipTypeFormInput, EditMembershipTypeFormViewModel (+11 more)
 
 ### Community 13 - "Body Life Crm Infrastructure csproj"
 Cohesion: 0.05
@@ -713,31 +706,31 @@ Nodes (33): BodyLife.Crm.Modules.Visits, BodyLife.Crm.Modules.Freezes, BodyLife.
 
 ### Community 15 - "Request Correlation Middleware"
 Cohesion: 0.08
-Nodes (20): EntryOrigin, RequestCorrelationId, BodyLifeRequestContext, BodyLifeRequestContextResolver, IBodyLifeRequestContextResolver, DateTimeOffset, HttpContext, RequestCorrelationMiddleware (+12 more)
+Nodes (19): RequestCorrelationId, BodyLifeRequestContext, BodyLifeRequestContextResolver, IBodyLifeRequestContextResolver, DateTimeOffset, HttpContext, RequestCorrelationMiddleware, HttpContext (+11 more)
 
 ### Community 16 - "Postgre Sql Create Client Command"
-Cohesion: 0.19
-Nodes (14): CreateClientCommandHandler, CancellationToken, PostgresException, string, Task, CreateClientCommand, PostgreSqlCreateClientCommandTests, AuditRow (+6 more)
+Cohesion: 0.17
+Nodes (15): CreateClientCommandHandler, CancellationToken, PostgresException, string, Task, ClientDuplicateWarningAcknowledgement, CreateClientCommand, PostgreSqlCreateClientCommandTests (+7 more)
 
 ### Community 17 - "Crm Modules Membership Types"
-Cohesion: 0.07
-Nodes (13): BodyLife.Crm.Modules.Memberships, BodyLife.Crm.Application.Queries, BodyLife.Crm.Modules.MembershipTypes, BodyLife.Crm.Tests.Modules.Memberships, BodyLife.Crm.Tests.Modules.MembershipTypes, BodyLife.Crm.SharedKernel, MembershipExtensionRow, MembershipStateRow (+5 more)
+Cohesion: 0.06
+Nodes (15): BodyLife.Crm.Modules.Memberships, BodyLife.Crm.Application.Queries, BodyLife.Crm.Modules.MembershipTypes, BodyLife.Crm.Tests.Modules.Memberships, BodyLife.Crm.Tests.Modules.MembershipTypes, BodyLife.Crm.SharedKernel, ExistingMembershipRow, ExistingStateCacheRow (+7 more)
 
 ### Community 18 - "Body Life Crm Application Queries"
 Cohesion: 0.19
 Nodes (14): PersistedCache, PersistedExtensionRow, FixedTimeProvider, MutableTimeProvider, PostgreSqlMembershipStatePersistenceCoordinatorTests, DateOnly, DateTimeOffset, Fact (+6 more)
 
 ### Community 19 - "Crm Infrastructure Persistence Users Roles"
-Cohesion: 0.06
-Nodes (25): BodyLife.Crm.Infrastructure.Tests.PostgreSql, BodyLife.Crm.Infrastructure.Persistence.UsersRoles, BodyLife.Crm.Infrastructure.Persistence, FactAttribute, AccountSessionPolicy, TimeSpan, OwnerBootstrapStatus, OwnerCredentialsBootstrapStatus (+17 more)
+Cohesion: 0.05
+Nodes (29): BodyLife.Crm.Infrastructure.Tests.PostgreSql, BodyLife.Crm.Infrastructure.Persistence.UsersRoles, BodyLife.Crm.Web.Pages, BodyLife.Crm.Web.Tests.Operations, BodyLife.Crm.Infrastructure.Persistence, BodyLife.Crm.Web.Operations, FactAttribute, AccountSessionPolicy (+21 more)
 
 ### Community 20 - "2 Entities"
 Cohesion: 0.05
 Nodes (40): 1. Domain overview, 2. Entities, 3. Invariants, 4. Lifecycles, 5. Calculation rules, 6. Correction and cancellation rules, 7. Edge case matrix, 8. Domain test scenarios (+32 more)
 
 ### Community 21 - "Postgre Sql Get Membership Types"
-Cohesion: 0.11
-Nodes (24): OpeningStateRow, CreateMembershipOpeningStateCommandHandler, BodyLifeDbContext, CancellationToken, Guid, string, Task, CreateMembershipOpeningStateCommand (+16 more)
+Cohesion: 0.05
+Nodes (50): ExistingNegativeStateLoadResult, OpeningStateRow, CreateMembershipOpeningStateCommandHandler, BodyLifeDbContext, CancellationToken, Guid, string, Task (+42 more)
 
 ### Community 22 - "4 Commands"
 Cohesion: 0.05
@@ -748,8 +741,8 @@ Cohesion: 0.22
 Nodes (10): IResponse, ReceptionDashboardSmokeTests, Fact, IBrowser, ILocator, InlineData, IPage, IPlaywright (+2 more)
 
 ### Community 24 - "Postgre Sql Test Database"
-Cohesion: 0.08
-Nodes (20): MembershipIssueNegativeContext, DateOnly, MembershipIssuePreparation, DateOnly, Guid, IReadOnlyList, MembershipIssuePreparationPolicy, DateOnly (+12 more)
+Cohesion: 0.05
+Nodes (32): MembershipIssueNegativeContext, DateOnly, MembershipIssuePreparation, DateOnly, Guid, IReadOnlyList, MembershipIssuePreparationPolicy, DateOnly (+24 more)
 
 ### Community 25 - "Postgre Sql Create Membership Type"
 Cohesion: 0.26
@@ -757,23 +750,23 @@ Nodes (8): PostgreSqlCreateMembershipTypeCommandTests, AuditRow, DateTimeOffset,
 
 ### Community 26 - "Crm Infrastructure Persistence Clients Search"
 Cohesion: 0.19
-Nodes (11): IAsyncLifetime, StaffAccountManagementSmokeTests, Fact, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+3 more)
+Nodes (11): IClassFixture, StaffAccountManagementSmokeTests, Fact, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+3 more)
 
 ### Community 27 - "Gym System Interview"
 Cohesion: 0.07
 Nodes (32): First Version Exclusions, First Version Proposal, First Version Scope, Fixed Price 400 USD, Gym Membership Accounting System, Non-Working Days Business Logic, Payment After Completion, Reception Workflow (+24 more)
 
 ### Community 28 - "Postgre Sql Issued Memberships Storage"
-Cohesion: 0.06
-Nodes (25): IBodyLifeQuery, ActiveMembershipCandidateSelection, IReadOnlyList, ActiveMembershipCandidateStatus, ClientMembershipStatesPolicy, DateOnly, Guid, IEnumerable (+17 more)
+Cohesion: 0.11
+Nodes (13): ActiveMembershipCandidateSelection, IReadOnlyList, ActiveMembershipCandidateStatus, ClientMembershipStatesPolicy, DateOnly, Guid, IEnumerable, ClientMembershipStatesReadModel (+5 more)
 
 ### Community 29 - "Set Staff Credentials Async"
-Cohesion: 0.12
-Nodes (14): MembershipCommandSupport, NormalizedMembershipCommandEnvelope, NormalizedMembershipOpeningStateCreate, BodyLifeDbContext, CancellationToken, DateTimeOffset, Exception, Guid (+6 more)
+Cohesion: 0.11
+Nodes (17): CommandIdempotencyRecord, DateTimeOffset, Guid, MembershipCommandSupport, NormalizedMembershipCommandEnvelope, NormalizedMembershipOpeningStateCreate, BodyLifeDbContext, CancellationToken (+9 more)
 
 ### Community 30 - "Body Life Crm Application Commands"
-Cohesion: 0.30
-Nodes (6): FixedTimeProvider, PostgreSqlClientDuplicateCandidateQueryTests, DateTimeOffset, Guid, PostgreSqlFact, Task
+Cohesion: 0.21
+Nodes (9): ClientDuplicateWarningType, CreateClientDuplicateAcknowledgementInput, Guid, FixedTimeProvider, PostgreSqlClientDuplicateCandidateQueryTests, DateTimeOffset, Guid, PostgreSqlFact (+1 more)
 
 ### Community 31 - "Postgre Sql Membership State Cache"
 Cohesion: 0.18
@@ -812,8 +805,8 @@ Cohesion: 0.24
 Nodes (9): PersistedIssuedMembership, FixedTimeProvider, PostgreSqlIssuedMembershipsStorageTests, DateOnly, DateTimeOffset, Func, Guid, PostgreSqlFact (+1 more)
 
 ### Community 40 - "Postgre Sql Get Client Profile"
-Cohesion: 0.11
-Nodes (16): IBodyLifeQueryHandler, CancellationToken, Task, GetClientProfileQueryHandler, CancellationToken, Task, GetClientProfileQuery, GetClientProfileResult (+8 more)
+Cohesion: 0.08
+Nodes (24): IBodyLifeQuery, IBodyLifeQueryHandler, CancellationToken, Task, FindClientDuplicateCandidatesQueryHandler, CancellationToken, IReadOnlyList, string (+16 more)
 
 ### Community 41 - "Execute Async"
 Cohesion: 0.09
@@ -824,8 +817,8 @@ Cohesion: 0.16
 Nodes (9): OwnerBootstrapResult, Guid, OwnerBootstrapCommand, CancellationToken, IConfiguration, ILogger, IServiceProvider, string (+1 more)
 
 ### Community 43 - "Time Provider"
-Cohesion: 0.12
-Nodes (16): CacheMetadata, GetMembershipStateQueryHandler, CancellationToken, Task, GetMembershipStateQuery, GetMembershipStateResult, GetMembershipStateStatus, FixedTimeProvider (+8 more)
+Cohesion: 0.13
+Nodes (15): GetMembershipStateQueryHandler, CancellationToken, Task, GetMembershipStateQuery, GetMembershipStateResult, GetMembershipStateStatus, PostgreSqlGetMembershipStateQueryTests, CacheMetadata (+7 more)
 
 ### Community 44 - "Postgre Sql Duplicate Warning Acknowledgement"
 Cohesion: 0.28
@@ -840,12 +833,12 @@ Cohesion: 0.08
 Nodes (23): 10. Empty, error and stale states, 11. First screens to implement as visual exemplars, 12. Implementation notes, 13. Acceptance checklist, 1. Product posture, 2. Source hierarchy, 3. Information hierarchy, 4. Layout model (+15 more)
 
 ### Community 47 - ".ExecuteAsync"
-Cohesion: 0.13
+Cohesion: 0.12
 Nodes (10): QueryPermissionResult, QueryPermissionSet, IReadOnlyDictionary, IReadOnlyList, MembershipQuerySupport, BodyLifeDbContext, CancellationToken, DateTimeOffset (+2 more)
 
 ### Community 48 - "Staff Accounts Model"
-Cohesion: 0.08
-Nodes (23): PageModel, RedirectToPageResult, StaffAccountQueryService, StaffAccountSummary, CancellationToken, IReadOnlyList, string, Task (+15 more)
+Cohesion: 0.17
+Nodes (13): RedirectToPageResult, StaffAccountQueryService, StaffAccountSummary, CancellationToken, IReadOnlyList, string, Task, StaffAccountsModel (+5 more)
 
 ### Community 49 - "Membership Type Editing Smoke Tests"
 Cohesion: 0.22
@@ -868,8 +861,8 @@ Cohesion: 0.28
 Nodes (8): AuthorizationResult, BodyLifeAuthorizationPolicyTests, ClaimsPrincipal, Fact, InlineData, ServiceProvider, Task, Theory
 
 ### Community 54 - "Crm Modules Clients Search"
-Cohesion: 0.09
-Nodes (17): StaffCredentialsResult, StaffCredentialsService, StaffCredentialsStatus, CancellationToken, DbUpdateException, Guid, int, NormalizedLogin (+9 more)
+Cohesion: 0.20
+Nodes (7): FixedTimeProvider, PostgreSqlStaffAccountAuditTests, AuditRow, DateTimeOffset, PostgreSqlFact, Task, TimeProvider
 
 ### Community 55 - "Body Life Db Context"
 Cohesion: 0.35
@@ -880,8 +873,8 @@ Cohesion: 0.24
 Nodes (8): FixedTimeProvider, PostgreSqlClientsSearchStorageTests, DateTimeOffset, Guid, NpgsqlConnection, NpgsqlTransaction, PostgreSqlFact, Task
 
 ### Community 57 - "Issued Membership Record"
-Cohesion: 0.27
-Nodes (3): MembershipOpeningStateTests, DateOnly, Fact
+Cohesion: 0.21
+Nodes (5): MembershipOpeningStateTests, DateOnly, Fact, InlineData, Theory
 
 ### Community 58 - "Body Life CRM UI workflows"
 Cohesion: 0.11
@@ -905,19 +898,19 @@ Nodes (19): 10. Risks and validation scenarios, 1. Data architecture summary, 2.
 
 ### Community 64 - "Milestone 3 Clients and Search"
 Cohesion: 0.02
-Nodes (83): BodyLife CRM implementation progress, Milestone 1 plan, Milestone 2 plan, Step 10 - Milestone 1 acceptance review, Step 11 - Local Docker PostgreSQL setup, Step 12 - CI PostgreSQL readiness test fix, Step 13 - Idempotency key storage foundation, Step 14 - Accounts and sessions persistence foundation (+75 more)
+Nodes (84): BodyLife CRM implementation progress, Milestone 1 plan, Milestone 2 plan, Step 10 - Milestone 1 acceptance review, Step 11 - Local Docker PostgreSQL setup, Step 12 - CI PostgreSQL readiness test fix, Step 13 - Idempotency key storage foundation, Step 14 - Accounts and sessions persistence foundation (+76 more)
 
 ### Community 65 - "Search Clients Query Handler"
-Cohesion: 0.18
-Nodes (7): MembershipIssuePreviewContractsTests, DateOnly, DateTimeOffset, Fact, Guid, InlineData, Theory
+Cohesion: 0.13
+Nodes (16): ClientCatalogFixture, GetClientMembershipStatesQueryHandler, CancellationToken, Task, GetClientMembershipStatesQuery, GetClientMembershipStatesResult, GetClientMembershipStatesStatus, PostgreSqlGetClientMembershipStatesQueryTests (+8 more)
 
 ### Community 66 - "Membership Type Query Support"
 Cohesion: 0.15
 Nodes (8): ClientQuerySupport, BodyLifeDbContext, CancellationToken, DateTimeOffset, IReadOnlyList, string, Task, ClientWarning
 
 ### Community 67 - "AccountKind"
-Cohesion: 0.28
-Nodes (5): ActorRole, BodyLifeClaimsPrincipalReader, ClaimsPrincipal, Func, Guid
+Cohesion: 0.26
+Nodes (6): AccountKind, ActorRole, BodyLifeClaimsPrincipalReader, ClaimsPrincipal, Func, Guid
 
 ### Community 68 - "Client Search Normalizer Tests"
 Cohesion: 0.22
@@ -928,20 +921,16 @@ Cohesion: 0.12
 Nodes (16): 1. Documentation Map, 2. Implementation Strategy, 3. Milestone / Phase Plan, 4.1. Foundation and Project Scaffold, 4.2. Database Migrations, 4.3. Domain and Business Rules, 4.4. Command Workflows, 4.5. UI Workflows (+8 more)
 
 ### Community 70 - "Postgre Sql Users Roles Storage"
-Cohesion: 0.19
-Nodes (11): ExistingNegativeStateLoadResult, ExistingNegativeStateLoadResult, IssueMembershipCommandHandler, CancellationToken, Guid, IReadOnlyCollection, string, Task (+3 more)
-
-### Community 71 - "Check Health Async"
-Cohesion: 0.05
-Nodes (19): BodyLife.Crm.Modules.Clients.Search, BodyLife.Crm.Infrastructure.Persistence.ClientsSearch, ClientAuditActions, string, NormalizedSearchCriteria, ClientMembershipSummary, ClientProfileActionKeys, string (+11 more)
+Cohesion: 0.06
+Nodes (16): FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider (+8 more)
 
 ### Community 72 - ".LoginOwnerAsync"
 Cohesion: 0.33
 Nodes (3): MembershipIssueTermsTests, DateTimeOffset, Fact
 
 ### Community 73 - "MembershipCalculatedState"
-Cohesion: 0.12
-Nodes (12): CommandErrorCode, CommandResult, IReadOnlyList, IssueMembershipCommandSupport, NormalizedMembershipIssue, NormalizedMembershipIssueEnvelope, DateTimeOffset, Guid (+4 more)
+Cohesion: 0.18
+Nodes (9): IssueMembershipCommandSupport, NormalizedMembershipIssue, NormalizedMembershipIssueEnvelope, DateTimeOffset, Guid, int, IReadOnlyList, string (+1 more)
 
 ### Community 74 - "Body Life CRM Agent Instructions"
 Cohesion: 0.13
@@ -968,16 +957,16 @@ Cohesion: 0.14
 Nodes (14): 10. Правила пошуку, 11. Разові і пробні відвідування, 13. Повідомлення і попередження всередині системи, 15. Критерії готовності першої версії, 16. Що потрібно уточнити перед або під час реалізації, 17. Погоджена логіка після останнього уточнення, 18. Підсумок, 1. Призначення документа (+6 more)
 
 ### Community 80 - "Command Result"
-Cohesion: 0.20
-Nodes (7): IssueMembershipCommandContractsTests, DateOnly, DateTimeOffset, Fact, Guid, InlineData, Theory
+Cohesion: 0.17
+Nodes (10): StaffCredentialsResult, StaffCredentialsService, StaffCredentialsStatus, CancellationToken, DbUpdateException, Guid, int, NormalizedLogin (+2 more)
 
 ### Community 81 - "Client Query Support"
 Cohesion: 0.29
 Nodes (6): PostgreSqlMembershipTypesStorageTests, DateTimeOffset, Func, Guid, PostgreSqlFact, Task
 
 ### Community 82 - "MembershipTypeCatalogItem"
-Cohesion: 0.31
-Nodes (8): PostgreSqlMembershipExtensionDayWriterTests, DateOnly, DateTimeOffset, Guid, IReadOnlyList, PersistedExtensionDay, PostgreSqlFact, Task
+Cohesion: 0.05
+Nodes (38): MembershipExtensionDayWriter, BodyLifeDbContext, CancellationToken, DateTimeOffset, Guid, Task, MembershipExtensionDayWriteResult, DateTimeOffset (+30 more)
 
 ### Community 83 - "7 Бізнес правила і формули"
 Cohesion: 0.17
@@ -1052,16 +1041,16 @@ Cohesion: 0.22
 Nodes (8): Acceptance criteria, Completed foundation, Decision, Milestone 4 acceptance review, Scope and risk check, Test coverage review, Transition to Milestone 5, Validation baseline after Step 54
 
 ### Community 102 - "Append Components"
-Cohesion: 0.08
-Nodes (21): BodyLife.Crm.Infrastructure.Persistence.MembershipTypes, BodyLife.Crm.Web.Pages.Owner, BodyLife.Crm.Infrastructure.Persistence.Idempotency, BodyLife.Crm.Infrastructure.Persistence.Audit, BodyLife.Crm.Application.Commands, CommandStatus, MembershipTypePriceSnapshot, MembershipTypePriceSnapshot (+13 more)
+Cohesion: 0.05
+Nodes (33): BodyLife.Crm.Infrastructure.Persistence.MembershipTypes, BodyLife.Crm.Web.Pages.Reception, BodyLife.Crm.Modules.Clients.Search, BodyLife.Crm.Infrastructure.Persistence.Idempotency, BodyLife.Crm.Infrastructure.Persistence.Audit, BodyLife.Crm.Infrastructure.Persistence.ClientsSearch, BodyLife.Crm.Application.Commands, CommandStatus (+25 more)
 
 ### Community 103 - "Create Factory"
-Cohesion: 0.12
-Nodes (14): BodyLife.Crm.Infrastructure, Program, CacheMetadata, MembershipFixture, AuditRow, CacheRow, ExistingMembershipFixture, IdempotencyRow (+6 more)
+Cohesion: 0.39
+Nodes (5): Program, PostgreSqlReadyHealthCheckTests, PostgreSqlFact, Task, WebApplicationFactory
 
 ### Community 104 - "Crm Ui Smoke Tests"
-Cohesion: 0.26
-Nodes (9): PostgreSqlDeactivateMembershipTypeCommandTests, AuditRow, DateTimeOffset, Guid, IdempotencyRow, JsonElement, MembershipTypeRow, PostgreSqlFact (+1 more)
+Cohesion: 0.11
+Nodes (23): MembershipTypeLifecycleSnapshot, DeactivateMembershipTypeCommandHandler, MembershipTypeLifecycleSnapshot, CancellationToken, DateTimeOffset, Guid, string, Task (+15 more)
 
 ### Community 105 - "ADR 001 Product shape and"
 Cohesion: 0.25
@@ -1176,8 +1165,8 @@ Cohesion: 0.31
 Nodes (4): QueryPermissionResultTests, Fact, InlineData, Theory
 
 ### Community 133 - "Invoke Async"
-Cohesion: 0.20
-Nodes (7): CardAssignmentSnapshot, CardAssignmentSnapshot, ClientCardAssignmentRecord, DateTimeOffset, Guid, ClientCardAssignmentRecordConfiguration, EntityTypeBuilder
+Cohesion: 0.23
+Nodes (5): ClientMembershipStatesQueryContractsTests, DateOnly, DateTimeOffset, Fact, Guid
 
 ### Community 134 - "Body Life Command Workflows"
 Cohesion: 0.29
@@ -1216,8 +1205,8 @@ Cohesion: 0.29
 Nodes (6): Загальний порядок, Контрольний checklist перед стартом коду, Найближчий наступний prompt, План роботи після прийнятих ADR, Поточний етап, Принципи флоу
 
 ### Community 143 - "ClientRecord"
-Cohesion: 0.14
-Nodes (11): IEntityTypeConfiguration, AccountRecord, DateTimeOffset, Guid, AccountRecordConfiguration, EntityTypeBuilder, SessionRecord, DateTimeOffset (+3 more)
+Cohesion: 0.06
+Nodes (25): CardAssignmentSnapshot, IEntityTypeConfiguration, CardAssignmentSnapshot, ClientCardAssignmentRecord, DateTimeOffset, Guid, ClientCardAssignmentRecordConfiguration, EntityTypeBuilder (+17 more)
 
 ### Community 144 - "Membership Date Rules Tests"
 Cohesion: 0.38
@@ -1288,20 +1277,20 @@ Cohesion: 0.33
 Nodes (6): Done criteria, Prompt, Recommended slice, Мета, Очікуваний документ, Фаза 8. Vertical slice plan
 
 ### Community 161 - "Migration Components"
-Cohesion: 0.30
-Nodes (9): CardAssignmentFormInput, Guid, IndexModel, CancellationToken, Guid, IActionResult, int, IReadOnlyList (+1 more)
+Cohesion: 0.25
+Nodes (12): ClientSearchMode, CardAssignmentFormInput, Guid, CreateClientFormInput, List, IndexModel, CancellationToken, Guid (+4 more)
 
 ### Community 162 - "Succeeded Components"
 Cohesion: 0.32
 Nodes (7): QueryPermissionResolverTests, ClaimsPrincipal, Fact, InlineData, ServiceProvider, Task, Theory
 
 ### Community 163 - "Postgre Sql Create Membership Type"
-Cohesion: 0.16
-Nodes (12): MembershipStatePersistenceCoordinator, CancellationToken, Guid, Task, MembershipStatePersistenceResult, DateTimeOffset, Guid, MembershipStatePersistenceStatus (+4 more)
+Cohesion: 0.21
+Nodes (8): MembershipStatePersistenceCoordinator, CancellationToken, Guid, Task, MembershipStatePersistenceResult, DateTimeOffset, Guid, MembershipStatePersistenceStatus
 
 ### Community 164 - "Postgre Sql Deactivate Membership Type"
-Cohesion: 0.18
-Nodes (11): AdjustmentFixture, PersistedAdjustment, FixedTimeProvider, PostgreSqlMembershipAdjustmentsStorageTests, DateOnly, DateTimeOffset, Func, Guid (+3 more)
+Cohesion: 0.21
+Nodes (9): AdjustmentFixture, PersistedAdjustment, PostgreSqlMembershipAdjustmentsStorageTests, DateOnly, Func, Guid, IReadOnlyList, PostgreSqlFact (+1 more)
 
 ### Community 165 - "View Imports cshtml"
 Cohesion: 0.33
@@ -1405,19 +1394,19 @@ Nodes (4): compose(), dev-postgres.sh script, usage(), wait_for_postgres()
 
 ### Community 191 - "Initial Baseline"
 Cohesion: 0.22
-Nodes (5): Migration, InitialBaseline, MigrationBuilder, AddAccountCredentials, MigrationBuilder
+Nodes (5): Migration, AddAccountCredentials, MigrationBuilder, AddMembershipStateCache, MigrationBuilder
 
-### Community 194 - "Add Account Credentials"
-Cohesion: 0.08
-Nodes (10): BodyLife.Crm.Web.Pages, BodyLife.Crm.Web.Tests.Operations, BodyLife.Crm.Web.Operations, ActorLogContext, BodyLifeClaimTypes, string, BodyLifeRequestContextServiceCollectionExtensions, IServiceCollection (+2 more)
+### Community 200 - "Add Membership State Cache"
+Cohesion: 0.14
+Nodes (10): PageModel, ErrorModel, LoginModel, CancellationToken, IActionResult, Task, LogoutModel, CancellationToken (+2 more)
 
 ### Community 201 - "MembershipOpeningState"
 Cohesion: 0.17
 Nodes (8): IssuedMembershipSnapshot, MembershipIssueTerms, DateOnly, Guid, MembershipOpeningState, DateOnly, MembershipStateCalculator, DateOnly
 
 ### Community 202 - "MembershipIssueTermsTests"
-Cohesion: 0.25
-Nodes (6): MembershipExtensionDayRecord, DateOnly, DateTimeOffset, Guid, MembershipExtensionDayRecordConfiguration, EntityTypeBuilder
+Cohesion: 0.22
+Nodes (7): IReadOnlyList, MembershipTypeCatalogItem, DeactivateMembershipTypeFormInput, DeactivateMembershipTypeFormViewModel, DateTimeOffset, Guid, IReadOnlyList
 
 ### Community 203 - "graphify reference add a URL"
 Cohesion: 0.50
@@ -1452,68 +1441,68 @@ Cohesion: 0.39
 Nodes (6): IQueryPermissionResolver, QueryPermissionRequest, QueryPermissionResolver, CancellationToken, IEnumerable, Task
 
 ### Community 217 - "20260712192355 Add Membership Types Catalog"
-Cohesion: 0.33
+Cohesion: 0.29
 Nodes (5): ClientRecord, DateTimeOffset, Guid, ClientRecordConfiguration, EntityTypeBuilder
 
 ### Community 219 - "UpdateClientFormInput"
-Cohesion: 0.10
-Nodes (11): BodyLife.Crm.Infrastructure.Persistence.Memberships, MembershipAuditActions, string, AuditRow, CacheRow, IdempotencyRow, MembershipFixture, OpeningStateRow (+3 more)
+Cohesion: 0.05
+Nodes (31): BodyLife.Crm.Infrastructure.Persistence.Memberships, BodyLife.Crm.Infrastructure, ClientMembershipStateStorageRow, MembershipStateStorageRow, MembershipAdjustmentRecord, DateOnly, DateTimeOffset, Guid (+23 more)
 
 ### Community 220 - "Date Range"
 Cohesion: 0.23
 Nodes (6): MembershipExtensionCalculatorTests, DateOnly, Fact, Guid, InlineData, Theory
 
 ### Community 221 - "SessionId"
-Cohesion: 0.14
-Nodes (13): MembershipExtensionDayWriter, BodyLifeDbContext, CancellationToken, DateTimeOffset, Guid, Task, MembershipExtensionCalculation, IReadOnlyList (+5 more)
+Cohesion: 0.27
+Nodes (6): MutableTimeProvider, PostgreSqlStaffAccountQueryTests, DateTimeOffset, PostgreSqlFact, Task, TimeSpan
 
 ### Community 222 - "Command Result Tests"
 Cohesion: 0.33
 Nodes (3): BodyLife.Crm.Tests.Application, CommandResultTests, Fact
 
 ### Community 227 - "MutableTimeProvider"
-Cohesion: 0.33
+Cohesion: 0.29
 Nodes (5): DuplicateWarningAcknowledgementRecord, DateTimeOffset, Guid, DuplicateWarningAcknowledgementRecordConfiguration, EntityTypeBuilder
 
 ### Community 487 - "IConfiguration Components"
-Cohesion: 0.12
-Nodes (11): MembershipStateReadModel, DateOnly, DateTimeOffset, Guid, IReadOnlyList, MembershipWarning, MembershipWarningRules, DateOnly (+3 more)
+Cohesion: 0.18
+Nodes (7): MembershipStateReadModel, DateOnly, DateTimeOffset, Guid, IReadOnlyList, MembershipWarning, MembershipWarningSeverity
 
 ### Community 489 - "Http Context"
 Cohesion: 0.25
 Nodes (6): HealthReport, HealthCheckEntryResponse, HealthCheckResponse, HealthCheckResponseWriter, HttpContext, Task
 
-### Community 494 - "UpdateClientFormInput"
-Cohesion: 0.38
-Nodes (3): MembershipTypeCatalogSnapshot, MembershipTypeCatalogRules, MembershipTypeCatalogValues
-
 ### Community 495 - "UpdateClientFormInput"
-Cohesion: 0.13
-Nodes (15): BodyLife.Crm.Web.Pages.Reception, ClientSearchMode, CreateClientDuplicateAcknowledgementInput, CreateClientDuplicateWarningViewModel, CreateClientFormInput, CreateClientFormViewModel, Guid, IReadOnlyList (+7 more)
+Cohesion: 0.50
+Nodes (5): UpdateClientDuplicateAcknowledgementInput, UpdateClientFormInput, DateTimeOffset, Guid, List
 
 ### Community 535 - "MembershipInitialStateTests"
 Cohesion: 0.42
 Nodes (3): MembershipInitialStateTests, DateTimeOffset, Fact
 
 ### Community 536 - ".LoginAsync"
-Cohesion: 0.09
-Nodes (23): IBodyLifeCommand, IBodyLifeCommandHandler, CancellationToken, Task, CreateMembershipTypeCommandHandler, CancellationToken, string, Task (+15 more)
+Cohesion: 0.12
+Nodes (16): IBodyLifeCommand, IBodyLifeCommandHandler, CancellationToken, Task, AssignOrChangeCardCommandHandler, CancellationToken, Guid, PostgresException (+8 more)
 
 ### Community 538 - ".FindPostgresException"
-Cohesion: 0.19
-Nodes (8): ClientProfile, CardAssignmentFormViewModel, IReadOnlyList, ClientProfileViewModel, ReceptionSearchContext, ReceptionWorkspaceViewModel, UpdateClientFormViewModel, IReadOnlyList
+Cohesion: 0.16
+Nodes (10): ClientProfile, CardAssignmentFormViewModel, IReadOnlyList, CreateClientFormViewModel, IReadOnlyList, ClientProfileViewModel, ReceptionSearchContext, ReceptionWorkspaceViewModel (+2 more)
 
 ### Community 539 - ".HandleAsync"
-Cohesion: 0.33
-Nodes (5): MembershipStateExtensionCalculationTests, DateOnly, DateTimeOffset, Fact, Guid
+Cohesion: 0.36
+Nodes (5): BodyLifeDbContext, CancellationToken, DateTimeOffset, IDbContextTransaction, Task
 
 ### Community 540 - "GetMembershipTypesForIssueResult"
 Cohesion: 0.50
 Nodes (3): ServiceCollectionExtensions, IConfiguration, IServiceCollection
 
 ### Community 541 - "MembershipTypeAuditActions.cs"
-Cohesion: 0.17
-Nodes (8): MembershipTypeCatalogSnapshot, MembershipTypeLifecycleSnapshot, MembershipTypeLifecycleSnapshot, MembershipTypeRecord, DateTimeOffset, Guid, MembershipTypeRecordConfiguration, EntityTypeBuilder
+Cohesion: 0.29
+Nodes (3): BodyLife.Crm.Web.Pages.Owner, DeactivateFormRenderState, EditFormRenderState
+
+### Community 542 - ".CheckHealthAsync"
+Cohesion: 0.48
+Nodes (4): MembershipCalculatedState, DateOnly, DateTimeOffset, Guid
 
 ### Community 543 - "MembershipTypeCatalogActionKeys.cs"
 Cohesion: 0.67
@@ -1524,20 +1513,16 @@ Cohesion: 0.22
 Nodes (5): MembershipStateQueryContractsTests, DateOnly, Fact, Guid, IEnumerable
 
 ### Community 545 - "PostgreSqlCreateMembershipTypeCommandTests.cs"
-Cohesion: 0.13
-Nodes (11): MembershipTypeQuerySupport, BodyLifeDbContext, CancellationToken, DateTimeOffset, string, Task, AccountSessionValidationService, CancellationToken (+3 more)
+Cohesion: 0.12
+Nodes (10): MembershipTypeQuerySupport, BodyLifeDbContext, CancellationToken, DateTimeOffset, string, Task, AccountSessionValidationService, CancellationToken (+2 more)
 
 ### Community 551 - "AssignOrChangeCardCommandHandler"
-Cohesion: 0.32
-Nodes (7): AssignOrChangeCardCommandHandler, CancellationToken, Guid, PostgresException, string, Task, AssignOrChangeCardCommand
+Cohesion: 0.33
+Nodes (3): IssuedMembershipLifecycleStatus, InlineData, Theory
 
 ### Community 554 - "ClientDuplicateCandidate"
-Cohesion: 0.25
-Nodes (8): FindClientDuplicateCandidatesQueryHandler, CancellationToken, IReadOnlyList, string, Task, ClientDuplicateCandidate, FindClientDuplicateCandidatesQuery, IReadOnlyList
-
-### Community 555 - ".Append"
-Cohesion: 0.31
-Nodes (4): JsonSerializerOptions, BusinessAuditAppender, DateTimeOffset, Guid
+Cohesion: 0.33
+Nodes (4): MembershipWarningRules, DateOnly, int, IReadOnlyList
 
 ### Community 557 - "MembershipTypeCatalogActionKeys.cs"
 Cohesion: 0.60
@@ -1552,32 +1537,12 @@ Cohesion: 0.50
 Nodes (3): PostgreSqlMigrationTests, PostgreSqlFact, Task
 
 ### Community 560 - "CommandIdempotencyRecord"
-Cohesion: 0.29
-Nodes (5): CommandIdempotencyRecord, DateTimeOffset, Guid, CommandIdempotencyRecordConfiguration, EntityTypeBuilder
-
-### Community 561 - "IssuedMembershipRecord"
-Cohesion: 0.29
-Nodes (6): IssuedMembershipRecord, DateOnly, DateTimeOffset, Guid, IssuedMembershipRecordConfiguration, EntityTypeBuilder
-
-### Community 562 - "MembershipAdjustmentRecord"
-Cohesion: 0.29
-Nodes (6): MembershipAdjustmentRecord, DateOnly, DateTimeOffset, Guid, MembershipAdjustmentRecordConfiguration, EntityTypeBuilder
-
-### Community 563 - "MembershipExtensionDayWriteResult"
-Cohesion: 0.36
-Nodes (4): MembershipExtensionDayWriteResult, DateTimeOffset, Guid, MembershipExtensionDayWriteStatus
+Cohesion: 0.50
+Nodes (3): AuditRow, IdempotencyRow, MembershipTypeRow
 
 ### Community 564 - "MembershipOpeningStateRecord"
-Cohesion: 0.29
+Cohesion: 0.25
 Nodes (6): MembershipOpeningStateRecord, DateOnly, DateTimeOffset, Guid, MembershipOpeningStateRecordConfiguration, EntityTypeBuilder
-
-### Community 565 - "AccountCredentialRecord"
-Cohesion: 0.29
-Nodes (5): AccountCredentialRecord, DateTimeOffset, Guid, AccountCredentialRecordConfiguration, EntityTypeBuilder
-
-### Community 568 - "MembershipExtensionSourceRange"
-Cohesion: 0.29
-Nodes (5): MembershipExtensionSourceRange, Guid, int, DateRange, DateOnly
 
 ### Community 569 - ".InvokeAsync"
 Cohesion: 0.39
@@ -1591,29 +1556,25 @@ Nodes (6): HealthCheckContext, HealthCheckResult, IHealthCheck, PostgreSqlHealth
 Cohesion: 0.48
 Nodes (4): MembershipStateCacheRebuildResult, DateTimeOffset, Guid, MembershipStateCacheRebuildStatus
 
-### Community 572 - "EditMembershipTypeFormInput"
-Cohesion: 0.33
-Nodes (5): EditMembershipTypeFormInput, EditMembershipTypeFormViewModel, DateTimeOffset, Guid, IReadOnlyList
-
 ## Knowledge Gaps
-- **1240 isolated node(s):** `apply-migrations.sh script`, `bootstrap-owner.sh script`, `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)` (+1235 more)
+- **1244 isolated node(s):** `apply-migrations.sh script`, `bootstrap-owner.sh script`, `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)` (+1239 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **339 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **340 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BodyLife.Crm.SharedKernel` connect `Crm Modules Membership Types` to `PostgreSqlCreateMembershipTypeCommandTests.cs`, `Add Account Credentials`, `AccountKind`, `AccountId`, `Append Components`, `Check Health Async`, `Postgre Sql Users Roles Storage`, `Create Factory`, `Postgre Sql Smoke Database`, `Request Correlation Middleware`, `Crm Infrastructure Persistence Users Roles`, `Body Life Authorization Extensions cs`, `SessionId`, `MembershipExtensionSourceRange`, `Date Range Tests cs`, `UpdateClientFormInput`, `Command Result Tests`, `Postgre Sql Membership State Cache`?**
-  _High betweenness centrality (0.108) - this node is a cross-community bridge._
-- **Why does `PostgreSqlTestDatabase` connect `Business Audit Entry Record` to `Index Model`, `Postgre Sql Deactivate Membership Type`, `Postgre Sql Edit Membership Type`, `Membership Types Model`, `Postgre Sql Assign Or Change`, `Postgre Sql Update Client Command`, `Reception App Fixture`, `Postgre Sql Create Client Command`, `Body Life Crm Application Queries`, `Crm Infrastructure Persistence Users Roles`, `Postgre Sql Get Membership Types`, `Postgre Sql Create Membership Type`, `Body Life Crm Application Commands`, `MembershipTypeCatalogActionKeys.cs`, `Staff Account Lifecycle Result`, `Postgre Sql Search Clients Query`, `Postgre Sql Staff Credentials Tests`, `Postgre Sql Deactivate Membership Type`, `Command Envelope`, `Postgre Sql Clients Search Storage`, `Postgre Sql Get Client Profile`, `Time Provider`, `Postgre Sql Duplicate Warning Acknowledgement`, `Crm Modules Clients Search`, `Body Life Db Context`, `Postgre Sql Client Duplicate Candidate`, `Client Query Support`, `MembershipTypeCatalogItem`, `20260709204232 Add Business Audit Entries`, `Crm Ui Smoke Tests`?**
-  _High betweenness centrality (0.077) - this node is a cross-community bridge._
-- **Why does `BodyLife.Crm.Infrastructure.Persistence` connect `Crm Infrastructure Persistence Users Roles` to `Reception App Fixture`, `20260709113419_AddCommandIdempotencyKeys.Designer.cs`, `20260709120305_AddUsersRolesAccountsSessions.Designer.cs`, `Postgre Sql Staff Credentials Tests`, `20260710111409_AddClientsSearchStorage.Designer.cs`, `20260713194005_AddMembershipAdjustments.Designer.cs`, `Body Life Db Context Options`, `Add Account Credentials`, `Check Health Async`, `20260708140900 Initial Baseline Designer cs`, `20260709113419 Add Command Idempotency Keys`, `20260709120305 Add Users Roles Accounts`, `20260709143654 Add Account Credentials Designer`, `20260710093311 Add Session Expiry Designer`, `20260710113814 Add Duplicate Warning Acknowledgements`, `20260713100046 Add Membership State Cache`, `UpdateClientFormInput`, `Crm Infrastructure Persistence Migrations`, `Append Components`, `Create Factory`?**
-  _High betweenness centrality (0.067) - this node is a cross-community bridge._
+- **Why does `BodyLife.Crm.SharedKernel` connect `Crm Modules Membership Types` to `PostgreSqlCreateMembershipTypeCommandTests.cs`, `Add Account Credentials`, `AccountKind`, `AccountId`, `Append Components`, `UpdateClientFormInput`, `Request Correlation Middleware`, `CommandIdempotencyRecord`, `MembershipTypeCatalogItem`, `Crm Infrastructure Persistence Users Roles`, `Body Life Authorization Extensions cs`, `Postgre Sql Get Membership Types`, `SessionId`, `Date Range Tests cs`, `UpdateClientFormInput`, `MembershipTypeAuditActions.cs`, `Command Result Tests`, `Postgre Sql Membership State Cache`?**
+  _High betweenness centrality (0.102) - this node is a cross-community bridge._
+- **Why does `BodyLife.Crm.Infrastructure.Persistence` connect `Crm Infrastructure Persistence Users Roles` to `20260709113419_AddCommandIdempotencyKeys.Designer.cs`, `20260709120305_AddUsersRolesAccountsSessions.Designer.cs`, `Postgre Sql Staff Credentials Tests`, `Append Components`, `20260710111409_AddClientsSearchStorage.Designer.cs`, `20260713194005_AddMembershipAdjustments.Designer.cs`, `Reception App Fixture`, `CommandIdempotencyRecord`, `Body Life Db Context Options`, `20260708140900 Initial Baseline Designer cs`, `20260709113419 Add Command Idempotency Keys`, `20260709143654 Add Account Credentials Designer`, `20260709120305 Add Users Roles Accounts`, `20260710093311 Add Session Expiry Designer`, `20260710113814 Add Duplicate Warning Acknowledgements`, `20260713100046 Add Membership State Cache`, `UpdateClientFormInput`, `Crm Infrastructure Persistence Migrations`?**
+  _High betweenness centrality (0.071) - this node is a cross-community bridge._
+- **Why does `PostgreSqlTestDatabase` connect `Business Audit Entry Record` to `Index Model`, `Postgre Sql Deactivate Membership Type`, `Postgre Sql Edit Membership Type`, `Membership Types Model`, `Postgre Sql Assign Or Change`, `Postgre Sql Update Client Command`, `Reception App Fixture`, `Postgre Sql Create Client Command`, `Body Life Crm Application Queries`, `Crm Infrastructure Persistence Users Roles`, `Postgre Sql Get Membership Types`, `Postgre Sql Create Membership Type`, `Body Life Crm Application Commands`, `MembershipTypeCatalogActionKeys.cs`, `Staff Account Lifecycle Result`, `Postgre Sql Search Clients Query`, `Postgre Sql Staff Credentials Tests`, `Postgre Sql Deactivate Membership Type`, `Command Envelope`, `Postgre Sql Clients Search Storage`, `Postgre Sql Get Client Profile`, `Time Provider`, `Postgre Sql Duplicate Warning Acknowledgement`, `Crm Modules Clients Search`, `Body Life Db Context`, `Postgre Sql Client Duplicate Candidate`, `Search Clients Query Handler`, `Client Query Support`, `MembershipTypeCatalogItem`, `20260709204232 Add Business Audit Entries`, `Crm Ui Smoke Tests`?**
+  _High betweenness centrality (0.071) - this node is a cross-community bridge._
 - **What connects `apply-migrations.sh script`, `bootstrap-owner.sh script`, `generate-migration-sql.sh script` to the rest of the system?**
-  _1298 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1302 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `htmx 2 0 10 min` be split into smaller, more focused modules?**
   _Cohesion score 0.07912087912087912 - nodes in this community are weakly interconnected._
 - **Should `Body Life Auth Technical Logger` be split into smaller, more focused modules?**
   _Cohesion score 0.05157894736842105 - nodes in this community are weakly interconnected._
-- **Should `Index Model` be split into smaller, more focused modules?**
-  _Cohesion score 0.05780885780885781 - nodes in this community are weakly interconnected._
+- **Should `Postgre Sql Deactivate Membership Type` be split into smaller, more focused modules?**
+  _Cohesion score 0.12313725490196079 - nodes in this community are weakly interconnected._
