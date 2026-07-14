@@ -120,6 +120,53 @@ public static class MembershipStateCalculator
             nameof(adjustmentFactsNotIncludedInOpeningState));
     }
 
+    public static MembershipCalculatedState CalculateFromVisitAndAdjustmentFacts(
+        Guid membershipId,
+        MembershipIssueTerms? issueTerms,
+        IEnumerable<MembershipVisitSourceFact>? visitFacts,
+        IEnumerable<MembershipAdjustmentSourceFact>? adjustmentFacts)
+    {
+        ArgumentNullException.ThrowIfNull(issueTerms);
+
+        var adjustedBaseline = ApplyAdjustmentFacts(
+            membershipId,
+            issueTerms,
+            CalculateInitial(issueTerms),
+            adjustmentFacts,
+            nameof(adjustmentFacts));
+
+        return ApplyVisitFacts(
+            membershipId,
+            adjustedBaseline,
+            visitFacts,
+            nameof(visitFacts));
+    }
+
+    public static MembershipCalculatedState
+        CalculateFromOpeningStateVisitAndAdjustmentFacts(
+            Guid membershipId,
+            MembershipIssueTerms? issueTerms,
+            MembershipOpeningState? openingState,
+            IEnumerable<MembershipVisitSourceFact>? visitFactsNotIncludedInOpeningState,
+            IEnumerable<MembershipAdjustmentSourceFact>?
+                adjustmentFactsNotIncludedInOpeningState)
+    {
+        ArgumentNullException.ThrowIfNull(issueTerms);
+
+        var adjustedBaseline = ApplyAdjustmentFacts(
+            membershipId,
+            issueTerms,
+            CalculateFromOpeningState(issueTerms, openingState),
+            adjustmentFactsNotIncludedInOpeningState,
+            nameof(adjustmentFactsNotIncludedInOpeningState));
+
+        return ApplyVisitFacts(
+            membershipId,
+            adjustedBaseline,
+            visitFactsNotIncludedInOpeningState,
+            nameof(visitFactsNotIncludedInOpeningState));
+    }
+
     public static MembershipCalculatedState ApplyExtensionCalculation(
         MembershipIssueTerms? issueTerms,
         MembershipCalculatedState? baseline,

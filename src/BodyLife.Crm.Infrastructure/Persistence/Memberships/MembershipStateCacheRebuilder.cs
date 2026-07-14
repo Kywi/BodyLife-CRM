@@ -1,4 +1,5 @@
 using System.Data;
+using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ public sealed class MembershipStateCacheRebuilder(
     BodyLifeDbContext dbContext,
     TimeProvider timeProvider)
 {
-    public const int CurrentRecalculationVersion = 3;
+    public const int CurrentRecalculationVersion = 4;
 
     public async Task<MembershipStateCacheRebuildResult> RebuildAsync(
         Guid membershipId,
@@ -97,21 +98,43 @@ public sealed class MembershipStateCacheRebuilder(
         var adjustmentFacts = adjustmentSources
             .Select(MapAdjustmentSource)
             .ToArray();
+        var visitSourceRows = await (
+            from consumption in dbContext.Set<VisitConsumptionRecord>().AsNoTracking()
+            join visit in dbContext.Set<VisitRecord>().AsNoTracking()
+                on consumption.VisitId equals visit.Id
+            where consumption.MembershipId == membershipId
+            select new MembershipVisitSourceRow(
+                consumption.Id,
+                consumption.VisitId,
+                visit.OccurredAt,
+                visit.Status,
+                consumption.RecordedAt,
+                consumption.Status))
+            .ToArrayAsync(cancellationToken);
+        var visitFacts = visitSourceRows
+            .GroupBy(sourceRow => sourceRow.VisitId)
+            .Select(sourceRows => MapVisitSource(membershipId, sourceRows))
+            .Where(visitFact => openingStateSource is null
+                || visitFact.RecordedAt > openingStateSource.RecordedAt)
+            .ToArray();
         var calculatedState = openingStateSource is null
-            ? MembershipStateCalculator.CalculateFromAdjustmentFacts(
+            ? MembershipStateCalculator.CalculateFromVisitAndAdjustmentFacts(
                 membershipId,
                 issueTerms,
+                visitFacts,
                 adjustmentFacts)
-            : MembershipStateCalculator.CalculateFromOpeningStateAndAdjustmentFacts(
-                membershipId,
-                issueTerms,
-                MembershipOpeningState.FromStoredSource(
-                    openingStateSource.OpeningAsOfDate,
-                    openingStateSource.DeclaredRemainingVisits,
-                    openingStateSource.DeclaredNegativeBalance,
-                    openingStateSource.KnownEffectiveEndDate,
-                    openingStateSource.KnownExtensionDays),
-                adjustmentFacts);
+            : MembershipStateCalculator
+                .CalculateFromOpeningStateVisitAndAdjustmentFacts(
+                    membershipId,
+                    issueTerms,
+                    MembershipOpeningState.FromStoredSource(
+                        openingStateSource.OpeningAsOfDate,
+                        openingStateSource.DeclaredRemainingVisits,
+                        openingStateSource.DeclaredNegativeBalance,
+                        openingStateSource.KnownEffectiveEndDate,
+                        openingStateSource.KnownExtensionDays),
+                    visitFacts,
+                    adjustmentFacts);
         var cache = await dbContext.Set<MembershipStateCacheRecord>()
             .SingleOrDefaultAsync(
                 state => state.MembershipId == membershipId,
@@ -203,4 +226,73 @@ public sealed class MembershipStateCacheRebuilder(
             source.EffectiveDate,
             status);
     }
+
+    private static MembershipVisitSourceFact MapVisitSource(
+        Guid membershipId,
+        IEnumerable<MembershipVisitSourceRow> sourceRows)
+    {
+        var sources = sourceRows.ToArray();
+        if (sources.Length == 0)
+        {
+            throw new ArgumentException(
+                "Membership Visit source rows are required.",
+                nameof(sourceRows));
+        }
+
+        var visitStatus = sources[0].VisitStatus switch
+        {
+            "active" => MembershipVisitSourceStatus.Active,
+            "canceled" => MembershipVisitSourceStatus.Canceled,
+            _ => throw new InvalidOperationException(
+                $"Visit status '{sources[0].VisitStatus}' is not supported."),
+        };
+        var activeConsumptionSources = new List<MembershipVisitSourceRow>();
+        foreach (var source in sources)
+        {
+            switch (source.ConsumptionStatus)
+            {
+                case "active":
+                    activeConsumptionSources.Add(source);
+                    break;
+                case "canceled":
+                    break;
+                default:
+                    throw new InvalidOperationException(
+                        $"Visit consumption status '{source.ConsumptionStatus}' "
+                        + "is not supported.");
+            }
+        }
+
+        if (activeConsumptionSources.Count > 1)
+        {
+            throw new InvalidOperationException(
+                $"Visit '{sources[0].VisitId}' has multiple active counted consumptions.");
+        }
+
+        var effectiveSource = activeConsumptionSources.SingleOrDefault()
+            ?? sources
+                .OrderByDescending(source => source.ConsumptionRecordedAt)
+                .ThenByDescending(source => source.ConsumptionId)
+                .First();
+        var status = visitStatus == MembershipVisitSourceStatus.Active
+            && activeConsumptionSources.Count == 1
+                ? MembershipVisitSourceStatus.Active
+                : MembershipVisitSourceStatus.Canceled;
+
+        return new MembershipVisitSourceFact(
+            membershipId,
+            effectiveSource.VisitId,
+            DateOnly.FromDateTime(effectiveSource.OccurredAt.DateTime),
+            effectiveSource.OccurredAt,
+            effectiveSource.ConsumptionRecordedAt,
+            status);
+    }
+
+    private sealed record MembershipVisitSourceRow(
+        Guid ConsumptionId,
+        Guid VisitId,
+        DateTimeOffset OccurredAt,
+        string VisitStatus,
+        DateTimeOffset ConsumptionRecordedAt,
+        string ConsumptionStatus);
 }

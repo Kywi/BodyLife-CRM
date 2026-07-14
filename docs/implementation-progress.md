@@ -3627,3 +3627,86 @@ Next recommended step:
   rebuild and opening-state recorded-time cutover with focused PostgreSQL
   tests. Keep `MarkVisit` writes, idempotency, audit, DI and UI outside that
   recalculation-adapter step.
+
+## Step 90 - Visit source projection into Memberships cache rebuild
+
+Status: completed.
+
+Plan alignment:
+
+- Continue only the Milestone 6 recalculation prerequisite recommended after
+  Step 89; add no `MarkVisit` command handler, Visit writer or reception UI.
+- Keep Visits as owner of retained Visit/consumption source rows while the
+  Memberships persistence boundary projects those rows into the existing
+  immutable `MembershipVisitSourceFact` contract under the already-held issued
+  Membership row lock.
+- Collapse active and canceled consumption history for the same Visit and
+  selected Membership into one effective source fact. Count it only when both
+  the Visit and exactly one effective counted consumption are active.
+- Use the effective consumption's server `recorded_at` for deterministic
+  Memberships ordering and the active opening-state recording-time cutover;
+  use Visit `occurred_at` for business date and last-counted chronology.
+- Preserve the adjustment-aware rebuild introduced in Step 87. Apply supported
+  active adjustment deltas to the native/opening baseline first, then apply
+  ordered active Visit facts so adjustments do not become synthetic counted
+  Visits or invent first-negative Visit metadata.
+- Raise the rebuild calculation version from 3 to 4 so caches calculated before
+  canonical Visit participation are detected and repaired.
+
+Scope:
+
+- Add combined native/opening Visit-plus-adjustment entry points to
+  `MembershipStateCalculator` without changing the existing single-source
+  contracts.
+- Extend `MembershipStateCacheRebuilder` to join retained
+  `visit_consumptions` to `visits`, collapse effective source state, apply the
+  opening cutover and persist every stable Visit-derived cache field.
+- Add three focused domain composition cases and three PostgreSQL rebuild cases
+  for adjustment/Visit composition and ordering, canceled-history collapse,
+  inactive source exclusion and effective-consumption opening cutover.
+- Synchronize `docs/data-architecture.md` with the implemented effective
+  consumption and recording-time semantics.
+- Add no EF record/configuration/migration, Visit/consumption/cancellation
+  writer, authorization, idempotency claim, business audit, DI registration,
+  report query, Razor/htmx or UI change.
+
+Validation:
+
+- Focused `MembershipCombinedSourceCalculationTests` validation passed all 3
+  new domain cases.
+- Focused `PostgreSqlMembershipStateCacheRebuildTests` validation passed all 19
+  cases against Docker PostgreSQL, including the three new Visit projection
+  scenarios and every previous opening/adjustment/concurrency regression.
+- Solution formatting/analyzer verification passed without changes.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet
+  DOTNET_BIN=/tmp/bodylife-dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 241 core tests, 35 web tests, 264
+  PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714140347_AddVisitsSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this query/calculation step generated no migration.
+- `graphify update .` completed the structural rebuild with 5134 nodes, 10630
+  edges and 593 communities; the optional HTML visualization remains skipped
+  above its configured 5000-node limit.
+- `graphify . --update` was attempted for the data-architecture/progress changes
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): rebuild state from visit sources`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only a Memberships-owned locked Visit eligibility preparation boundary:
+  load the selected issued Membership and current cache under transaction,
+  require explicit Freeze source input from the owning Freezes boundary, and
+  rerun `MembershipVisitEligibilityPolicy` plus exact acknowledgement
+  preparation against canonical state. Do not provide an unsafe empty-Freeze
+  default, and keep Visit writes, idempotency, audit, DI and UI outside that
+  read/preparation step.
