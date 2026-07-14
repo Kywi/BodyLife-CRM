@@ -3890,3 +3890,106 @@ Next recommended step:
   recalculation, `visit.marked` audit, rollback/concurrency tests and a
   canonical reread target; leave DI/web UI, cancellation and report/history
   presentation for following steps.
+
+## Step 93 - Transactional MarkVisit command handler
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 6 exactly from the command/storage/eligibility prerequisites
+  completed in Steps 89-92; implement only the server-side `MarkVisit` command
+  transaction and keep DI, Razor/htmx presentation, `CancelVisit` and reports or
+  history outside this step.
+- Authorize only canonical active Owner/Admin account-session pairs and preserve
+  the accepted named/shared Admin account kinds without pretending a shared
+  account identifies a physical person.
+- Require a validated command envelope and idempotency key, lock the Client and
+  explicitly selected Membership/Freeze sources, and revalidate all current
+  eligibility warnings inside one PostgreSQL transaction.
+- Write an active `visits` source for `membership`, `one_off` and `trial`, but
+  write an active counted `visit_consumptions` source and synchronously
+  recalculate only for an explicit membership Visit.
+- Keep Memberships as the sole owner of state formulas through a reviewed
+  `IMembershipStateRecalculator` port; Visits receives only a typed completion
+  result and the existing public Membership state query/read model.
+- Append `visit.marked` business audit plus succeeded idempotency only after the
+  source write and recalculation succeed, return the Client as canonical reread
+  target, and roll the entire workflow back on any failure.
+
+Scope:
+
+- Add `MarkVisitCommandHandler`, shared Visits command validation/idempotency
+  support and stable public `VisitAuditActions` identifiers.
+- Normalize and fingerprint actor, origin, occurred-at, reason/comment,
+  membership selection, acknowledgements and fallback batch context; reject
+  mismatched same-key payloads while replaying the original completed result.
+- Persist explicit membership consumption accountability, preserve separate
+  occurred/recorded timestamps and fallback metadata, and include Visit plus
+  before/after Membership summaries and accepted acknowledgements in audit.
+- Add a narrow Memberships recalculation port and PostgreSQL adapter around the
+  existing cache rebuilder; no formula-bearing cache type crosses the module
+  boundary.
+- Map unique idempotency races and PostgreSQL serialization/deadlock/lock timeout
+  failures to stable duplicate/concurrency command errors and clear tracked
+  state after rollback.
+- Add ten PostgreSQL command cases covering atomic membership success, exact
+  simultaneous expired/zero acknowledgements and negative transition,
+  one-off/trial isolation, replay and changed payload, concurrent same-key
+  serialization, missing selection, active Freeze rejection, paper fallback
+  metadata, canonical authorization/envelope validation, competing row lock and
+  audit-failure rollback.
+- Add no EF record/configuration/migration, DI registration, web endpoint,
+  Razor/htmx UI, Visit cancellation or report/history presentation.
+
+Validation:
+
+- Initial focused Release compile exposed only test visibility/nullability helper
+  issues; `VisitAuditActions` was aligned with the repository's other public
+  stable audit-action catalogs and the repeated compile passed with 0
+  warnings/errors.
+- The first focused PostgreSQL run passed 8 of 9 cases and exposed a real error
+  mapping defect: EF wrapped `lock_not_available` in `InvalidOperationException`,
+  which the eligibility catch incorrectly mapped to `recalculation_failed`.
+  PostgreSQL-backed exceptions now pass through to the concurrency mapper; the
+  repeated suite passed all 9 cases, and the added concurrent same-key case
+  brought the final focused result to 10/10.
+- Focused `PostgreSqlMembershipStateCacheRebuildTests`,
+  `MembershipFormulaOwnershipTests` and `PostgreSqlMarkVisitCommandTests`
+  validation passed all 35 cases. The ownership allowlist contains only the
+  reviewed eligibility status and recalculation contracts, not Memberships
+  formula implementations.
+- Solution formatting/analyzer verification and `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 241 core tests, 35 web tests, 284
+  PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714174210_AddFreezeSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift; this
+  command-only step generated no migration.
+- `graphify update .` completed the structural rebuild with 5366 nodes, 11258
+  edges and 600 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress change but stopped because
+  no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): handle mark visit commands`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Continue Milestone 6 with only the application composition and server-rendered
+  reception integration for the completed `MarkVisit` handler: register the
+  reviewed handler/recalculation/query dependencies, expose a CSRF-protected
+  profile action that supplies server-derived explicit Membership choices and
+  acknowledgements, and refresh canonical Client/Membership fragments after
+  success. Add tablet/phone Playwright coverage for membership, one-off/trial,
+  warnings, busy/disabled duplicate-submit protection and stable command errors;
+  keep `CancelVisit` and report/history presentation for later steps.
