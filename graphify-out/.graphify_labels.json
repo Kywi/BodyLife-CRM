@@ -596,5 +596,7 @@
   "594": "20260714140347_AddVisitsSourceFacts.Designer.cs",
   "595": "20260714174210_AddFreezeSourceFacts.Designer.cs",
   "596": ".InitialBaselineMigrationAppliesToCleanPostgreSqlDatabase",
-  "597": "ClientAuditActions.cs"
+  "597": "ClientAuditActions.cs",
+  "598": "MembershipVisitEligibilityErrorCodes.cs",
+  "599": ".PersistenceRegistrationExposesScopedStatePersistenceCoordinator"
 }

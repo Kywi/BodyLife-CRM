@@ -589,5 +589,12 @@
   "587": "CreateMembershipTypeCommandHandler",
   "588": "BodyLifeAuthorizationPolicies.cs",
   "589": ".ReadAdjustmentsAsync",
-  "590": "MembershipAuditActions.cs"
+  "590": "MembershipAuditActions.cs",
+  "591": "BodyLifeAuthorizationPolicies.cs",
+  "592": ".NonMembershipCommandMayOmitMembershipAndBatchReference",
+  "593": "20260710113814_AddDuplicateWarningAcknowledgements.Designer.cs",
+  "594": "20260714140347_AddVisitsSourceFacts.Designer.cs",
+  "595": "20260714174210_AddFreezeSourceFacts.Designer.cs",
+  "596": ".InitialBaselineMigrationAppliesToCleanPostgreSqlDatabase",
+  "597": "ClientAuditActions.cs"
 }
