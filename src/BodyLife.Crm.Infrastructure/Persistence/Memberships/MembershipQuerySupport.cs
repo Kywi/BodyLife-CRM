@@ -7,6 +7,8 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 internal static class MembershipQuerySupport
 {
     internal const string ActiveMembershipStatus = "active";
+    internal const string CanceledMembershipStatus = "canceled";
+    internal const string CorrectedMembershipStatus = "corrected";
     internal const string ActiveOpeningStateStatus = "active";
     private static readonly QueryPermissionSet OpeningStateActionPermissions = new(
     [
@@ -48,5 +50,20 @@ internal static class MembershipQuerySupport
     internal static QueryPermissionSet BuildIssueActionPermissions()
     {
         return IssueActionPermissions;
+    }
+
+    internal static bool TryMapLifecycleStatus(
+        string? status,
+        out IssuedMembershipLifecycleStatus lifecycleStatus)
+    {
+        lifecycleStatus = status switch
+        {
+            ActiveMembershipStatus => IssuedMembershipLifecycleStatus.Active,
+            CanceledMembershipStatus => IssuedMembershipLifecycleStatus.Canceled,
+            CorrectedMembershipStatus => IssuedMembershipLifecycleStatus.Corrected,
+            _ => default,
+        };
+
+        return lifecycleStatus != default;
     }
 }

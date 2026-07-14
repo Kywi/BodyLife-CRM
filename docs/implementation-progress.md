@@ -3171,3 +3171,49 @@ Commits:
 Next recommended step:
 
 - Implement only the PostgreSQL `GetClientMembershipStates` query handler: canonical Admin/Owner authorization, required selector validation, client existence, no-tracking issued-membership/cache/extension reads, controlled lifecycle mapping, current-version/domain rehydration for every timeline row, Step 81 policy execution and client-scoped issue permission projection. Add focused PostgreSQL tests and scoped DI registration. Keep `GetClientProfile` composition, profile warning/status projection, search integration, Razor/htmx UI and multiple-active-membership product resolution outside that handler-only step.
+
+## Step 82 - PostgreSQL client membership state collection handler
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 5 by connecting the Step 81 public client-scoped Memberships collection contract to canonical PostgreSQL reads before composing the membership section of `GetClientProfile`.
+- Reuse the established Owner, named Admin and shared Reception/Admin account/session authorization path; forged, inactive, expired, ended, unknown and invalid actor/session shapes are denied before client or membership data is returned.
+- Validate required client id and `as_of` date, distinguish a missing client from a valid client with no issued memberships, and return an empty successful collection with the established `memberships.issue` permission intent for the latter.
+- Read every issued membership for the client with no tracking and a left join to `membership_state_cache`, so a missing derived row cannot silently remove source history from the timeline.
+- Require every cache row to use the current recalculation version and rehydrate every snapshot/cache/extension combination through Memberships domain constructors. Missing, stale or inconsistent state fails the whole collection with `recalculation_failed`; queries never repair derived state on read.
+- Map only the PostgreSQL-controlled `active`, `canceled` and `corrected` source lifecycle values into the Step 81 enum, then delegate ordering and `none`/`single`/`ambiguous` candidate classification to `ClientMembershipStatesPolicy`.
+- Preserve all canceled/corrected/expired rows in the deterministic timeline while allowing only lifecycle-active and date-active rows to become candidates. Multiple candidates remain explicitly ambiguous with no arbitrary current membership.
+- Extract the canonical persistence-to-domain state mapping into one infrastructure factory and reuse it from both direct `GetMembershipState` and client collection handlers, preventing snapshot/cache/extension projection drift.
+- Keep query execution read-only: no cache mutation, audit entry, idempotency row, profile composition, search projection, controller/page or UI behavior.
+
+Scope:
+
+- Add `GetClientMembershipStatesQueryHandler` with canonical authorization, selector/client validation, no-tracking source/cache reads, batched extension explanation loading, lifecycle mapping, full-state integrity checks and Step 81 policy execution.
+- Add internal `MembershipStateReadModelFactory` for current-version cache validation, immutable snapshot/domain rehydration and stable extension explanation ordering.
+- Refactor `GetMembershipStateQueryHandler` to use the same factory without changing its public result or opening-state action semantics.
+- Extend `MembershipQuerySupport` with controlled source lifecycle mapping and register the collection handler as scoped `IBodyLifeQueryHandler<GetClientMembershipStatesQuery, GetClientMembershipStatesResult>` through `AddBodyLifePersistence`.
+- Add seven focused cases covering all accepted operational roles, empty collection/issue permission, canonical multi-row timeline and extension projection, active/canceled/corrected/expired classification, explicit ambiguity, missing/stale/inconsistent cache without read repair, stable selector/client failures, denied actor/session shapes, no query side effects and scoped DI registration.
+- Add no EF record/configuration/migration, schema/index change, state mutation, `GetClientProfile` DTO/handler composition, search integration, page/controller or UI test.
+
+Validation:
+
+- Focused `PostgreSqlGetClientMembershipStatesQueryTests` validation passed all 7 cases against Docker PostgreSQL.
+- Existing direct `PostgreSqlGetMembershipStateQueryTests` compatibility regression passed all 8 cases after sharing the rehydration factory.
+- Wider `FullyQualifiedName~Membership` PostgreSQL regression passed all 137 tests.
+- Wider `FullyQualifiedName~Memberships` core regression passed all 134 tests.
+- Solution formatting/analyzer verification passed without changes.
+- `dotnet-ef migrations has-pending-model-changes` built successfully and reported no model drift; this handler-only step generated no migration.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet DOTNET_BIN=/tmp/bodylife-dotnet/dotnet BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;Database=postgres;Username=bodylife;Password=bodylife_dev_password' ./scripts/validate.sh` passed: Release build 0 warnings/errors, formatting/analyzers, 188 core tests, 35 web tests, 244 PostgreSQL infrastructure tests, 24 Playwright smoke tests and unchanged EF migration listing through `20260713194005_AddMembershipAdjustments`.
+- `graphify update .` completed the structural rebuild with 4784 nodes, 9727 edges and 571 communities.
+- `graphify . --update` was attempted for the progress documentation change but stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): handle client state collection`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Compose only the membership area of `GetClientProfile` through the public `GetClientMembershipStates` query: pass the canonical actor/client/`as_of`, project the deterministic timeline without formulas, expose a current summary only for a `single` candidate, surface an explicit server warning for `ambiguous`, and propagate permission/not-found/recalculation failures without partial optimistic profile state. Add focused core and PostgreSQL profile tests. Keep search-result membership summaries, issue-membership Razor/htmx UI, visits/payments/freezes/history sections and resolution of the multiple-active-membership product policy outside that profile-composition step.
