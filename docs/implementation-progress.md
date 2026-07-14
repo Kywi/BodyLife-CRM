@@ -4202,3 +4202,102 @@ Next recommended step:
   ownership, already-canceled/not-found, reason/comment, idempotency and
   changed-after-close placeholders without implementing the transaction handler,
   profile history UI or reports in the same step.
+
+## Step 96 - CancelVisit contract and locked source preparation
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the next unfinished Milestone 6 task after the complete `MarkVisit`
+  reception path. This step prepares cancellation input and canonical source
+  state only; it does not claim that cancellation mutations are implemented.
+- Keep Visits as owner of Visit, consumption and cancellation source facts.
+  The public command accepts only the Visit id plus the common command envelope
+  and optional batch reference; Client and Membership ownership come from the
+  locked canonical PostgreSQL projection rather than caller input.
+- Require an explicit normalized reason, allow a separate optional comment,
+  require a bounded idempotency key and preserve occurred-at/entry-origin/batch
+  metadata for the later cancellation fact and audit entry.
+- Preserve the existing server-side changed-after-close result contract as a
+  required preparation input. The future handler must derive it from canonical
+  day reconciliation state when that optional source exists; this step adds no
+  client-controlled day-close flag or reconciliation table.
+- Make source preparation require a caller-owned PostgreSQL transaction and
+  lock the Visit first, then its active consumption and retained cancellation.
+  This is the lock order the future mutation handler must reuse.
+- Keep authorization, canonical session revalidation, idempotency claim/replay,
+  cancellation/status writes, Memberships recalculation, business audit, DI,
+  profile/history UI and Reports outside this bounded prerequisite.
+
+Scope:
+
+- Add `CancelVisitCommand`, immutable `VisitCancellationSource`,
+  `CancelVisitPreparation` and `CancelVisitPreparationPolicy` under the Visits
+  public module boundary.
+- Define cancellation success entity names for the new cancellation fact,
+  original Visit relation and canonical Client reread target. Add the documented
+  `ReasonRequired` error at the end of `CommandErrorCode` without renumbering
+  existing values.
+- Normalize reason, comment, idempotency key and cancellation occurred time;
+  reject missing/oversized metadata, empty ids, invalid entry origin, normal
+  entry with a backfill/fallback batch, mismatched Visit identity, canceled
+  source and invalid membership/non-membership consumption shapes.
+- Add `CancelVisitSourcePreparer` and typed prepared/not-found/already-canceled/
+  inconsistent result statuses. It projects retained Visit metadata and only
+  the active counted consumption, recognizes either canceled Visit status or an
+  existing cancellation as `AlreadyCanceled`, and never writes source state.
+- Lock `visits`, active `visit_consumptions` and existing
+  `visit_cancellations` with PostgreSQL `FOR UPDATE` in a caller transaction.
+  Existing composite foreign keys remain the ownership guarantee; the projected
+  Client, Membership and consumption ids are checked again before preparation.
+- Add 19 focused core contract/policy cases and five PostgreSQL preparation
+  cases to the existing seven Visit storage cases. Cover canonical result and
+  changed-after-close placeholders, reason/comment/idempotency validation,
+  membership and one-off/trial shapes, ownership, not-found, already-canceled,
+  inconsistent source and competing updates blocked on all three source paths.
+- Add no EF record/configuration/migration and no Razor, JavaScript, CSS or
+  report/history query change.
+
+Validation:
+
+- Focused `CancelVisitCommandContractsTests` passed all 19 cases.
+- The first focused PostgreSQL build found one missing test namespace import for
+  `EntryOrigin`; no product code executed. After adding the import, focused
+  `PostgreSqlVisitsStorageTests` passed all 12 cases, including real lock timeout
+  evidence for Visit, active consumption and cancellation rows.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` and
+  `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 295
+  PostgreSQL/architecture infrastructure tests, 30 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714174210_AddFreezeSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this contract/read-only persistence step generated no migration.
+- `graphify update .` completed the structural rebuild with 5587 nodes, 11909
+  edges and 611 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): prepare CancelVisit sources`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Implement only the transactional `CancelVisit` command handler over the
+  completed contract and locked source preparation: canonical Owner/Admin
+  authorization with the existing after-close policy placeholder, idempotency
+  claim/replay, one cancellation fact, Visit/consumption status updates,
+  synchronous affected-Membership recalculation, `visit.canceled` audit,
+  rollback/concurrency mapping and canonical Client reread. Keep DI/Razor
+  cancellation UI, profile history rows and report-source presentation for
+  following small steps.

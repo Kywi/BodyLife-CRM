@@ -18,5 +18,6 @@ public enum CommandErrorCode
     AlreadyInactive,
     NegativeDecisionRequired,
     WarningAcknowledgementRequired,
-    VisitDuringFreeze
+    VisitDuringFreeze,
+    ReasonRequired
 }

@@ -1,5 +1,8 @@
+using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Visits;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
@@ -448,6 +451,226 @@ public sealed class PostgreSqlVisitsStorageTests
                 fixture.MembershipId),
             PostgresErrorCodes.ForeignKeyViolation,
             "FK_visit_consumptions_issued_memberships_membership_client");
+    }
+
+    [PostgreSqlFact]
+    public async Task CancelVisitSourcePreparationRequiresCallerTransaction()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var preparer = new CancelVisitSourcePreparer(dbContext);
+
+        var missingVisitId = await Assert.ThrowsAsync<ArgumentException>(() =>
+            preparer.PrepareAsync(Guid.Empty));
+        var missingTransaction = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            preparer.PrepareAsync(Guid.NewGuid()));
+
+        Assert.Equal("visitId", missingVisitId.ParamName);
+        Assert.Contains(
+            "caller-owned",
+            missingTransaction.Message,
+            StringComparison.Ordinal);
+    }
+
+    [PostgreSqlFact]
+    public async Task CancelVisitSourcePreparationProjectsOwnershipAndLocksActiveSources()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var entryBatchId = Guid.NewGuid();
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership",
+            entryOrigin: "paper_fallback",
+            entryBatchId: entryBatchId,
+            comment: "Paper batch visit");
+        var consumptionId = await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            visitId,
+            fixture.ClientId,
+            fixture.MembershipId);
+        var preparer = new CancelVisitSourcePreparer(dbContext);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var result = await preparer.PrepareAsync(visitId);
+
+        Assert.True(result.IsPrepared);
+        Assert.Equal(CancelVisitSourcePreparationStatus.Prepared, result.Status);
+        Assert.Equal(visitId, result.VisitId);
+        var source = Assert.IsType<VisitCancellationSource>(result.Source);
+        Assert.Equal(visitId, source.VisitId);
+        Assert.Equal(fixture.ClientId, source.ClientId);
+        Assert.Equal(VisitOccurredAt, source.OccurredAt);
+        Assert.Equal(TestNow, source.RecordedAt);
+        Assert.Equal(fixture.ActorAccountId, source.RecordedByAccountId);
+        Assert.Equal(fixture.SessionId, source.SessionId);
+        Assert.Equal(VisitKind.Membership, source.VisitKind);
+        Assert.Equal(EntryOrigin.PaperFallback, source.EntryOrigin);
+        Assert.Equal(entryBatchId, source.EntryBatchId);
+        Assert.Equal("Paper batch visit", source.Comment);
+        Assert.Equal(VisitCancellationSourceStatus.Active, source.Status);
+        Assert.Equal(consumptionId, source.ActiveConsumptionId);
+        Assert.Equal(fixture.MembershipId, source.MembershipId);
+        Assert.Null(source.ExistingCancellationId);
+
+        var visitLockFailure = await AssertSourceUpdateBlockedAsync(
+            database.ConnectionString,
+            "visits",
+            visitId);
+        var consumptionLockFailure = await AssertSourceUpdateBlockedAsync(
+            database.ConnectionString,
+            "visit_consumptions",
+            consumptionId);
+
+        Assert.Equal(PostgresErrorCodes.LockNotAvailable, visitLockFailure.SqlState);
+        Assert.Equal(
+            PostgresErrorCodes.LockNotAvailable,
+            consumptionLockFailure.SqlState);
+        await transaction.RollbackAsync();
+    }
+
+    [PostgreSqlFact]
+    public async Task CancelVisitSourcePreparationSupportsNonMembershipVisits()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var oneOffVisitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "one_off");
+        var trialVisitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "trial",
+            recordedAt: TestNow.AddMinutes(1));
+        var preparer = new CancelVisitSourcePreparer(dbContext);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var oneOff = await preparer.PrepareAsync(oneOffVisitId);
+        var trial = await preparer.PrepareAsync(trialVisitId);
+
+        Assert.True(oneOff.IsPrepared);
+        Assert.Equal(VisitKind.OneOff, oneOff.Source!.VisitKind);
+        Assert.Null(oneOff.Source.ActiveConsumptionId);
+        Assert.Null(oneOff.Source.MembershipId);
+        Assert.True(trial.IsPrepared);
+        Assert.Equal(VisitKind.Trial, trial.Source!.VisitKind);
+        Assert.Null(trial.Source.ActiveConsumptionId);
+        Assert.Null(trial.Source.MembershipId);
+        await transaction.RollbackAsync();
+    }
+
+    [PostgreSqlFact]
+    public async Task CancelVisitSourcePreparationDistinguishesMissingAndCanceledVisits()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var canceledVisitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership");
+        var consumptionId = await InsertConsumptionAsync(
+            database.ConnectionString,
+            fixture,
+            canceledVisitId,
+            fixture.ClientId,
+            fixture.MembershipId);
+        var cancellationId = await InsertCancellationAsync(
+            database.ConnectionString,
+            fixture,
+            canceledVisitId);
+        await SetVisitAndConsumptionCanceledAsync(
+            database.ConnectionString,
+            canceledVisitId,
+            consumptionId);
+        var activeVisitWithCancellationId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "one_off",
+            recordedAt: TestNow.AddMinutes(2));
+        var activeCancellationId = await InsertCancellationAsync(
+            database.ConnectionString,
+            fixture,
+            activeVisitWithCancellationId,
+            recordedAt: TestNow.AddMinutes(3));
+        var missingVisitId = Guid.NewGuid();
+        var preparer = new CancelVisitSourcePreparer(dbContext);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var missing = await preparer.PrepareAsync(missingVisitId);
+        var canceled = await preparer.PrepareAsync(canceledVisitId);
+        var cancellationWins = await preparer.PrepareAsync(
+            activeVisitWithCancellationId);
+
+        Assert.Equal(CancelVisitSourcePreparationStatus.NotFound, missing.Status);
+        Assert.Equal(missingVisitId, missing.VisitId);
+        Assert.Null(missing.Source);
+        Assert.Equal(
+            CancelVisitSourcePreparationStatus.AlreadyCanceled,
+            canceled.Status);
+        Assert.Equal(
+            VisitCancellationSourceStatus.Canceled,
+            canceled.Source!.Status);
+        Assert.Equal(cancellationId, canceled.Source.ExistingCancellationId);
+        Assert.Equal(
+            CancelVisitSourcePreparationStatus.AlreadyCanceled,
+            cancellationWins.Status);
+        Assert.Equal(
+            VisitCancellationSourceStatus.Active,
+            cancellationWins.Source!.Status);
+        Assert.Equal(
+            activeCancellationId,
+            cancellationWins.Source.ExistingCancellationId);
+
+        var cancellationLockFailure = await AssertSourceUpdateBlockedAsync(
+            database.ConnectionString,
+            "visit_cancellations",
+            cancellationId);
+        Assert.Equal(
+            PostgresErrorCodes.LockNotAvailable,
+            cancellationLockFailure.SqlState);
+        await transaction.RollbackAsync();
+    }
+
+    [PostgreSqlFact]
+    public async Task CancelVisitSourcePreparationRejectsIncompleteMembershipSource()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database.ConnectionString,
+            fixture,
+            fixture.ClientId,
+            "membership");
+        var preparer = new CancelVisitSourcePreparer(dbContext);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var result = await preparer.PrepareAsync(visitId);
+
+        Assert.False(result.IsPrepared);
+        Assert.Equal(
+            CancelVisitSourcePreparationStatus.InconsistentSource,
+            result.Status);
+        Assert.NotNull(result.Source);
+        Assert.Null(result.Source.ActiveConsumptionId);
+        Assert.Null(result.Source.MembershipId);
+        await transaction.RollbackAsync();
     }
 
     private static async Task<VisitStorageFixture> SeedFixtureAsync(
@@ -963,6 +1186,31 @@ public sealed class PostgreSqlVisitsStorageTests
         command.CommandText = $"delete from bodylife.{allowedTableName} where id = @id";
         command.Parameters.AddWithValue("id", id);
         await command.ExecuteNonQueryAsync();
+    }
+
+    private static async Task<PostgresException> AssertSourceUpdateBlockedAsync(
+        string connectionString,
+        string tableName,
+        Guid id)
+    {
+        var updateStatement = tableName switch
+        {
+            "visits" =>
+                "update bodylife.visits set comment = 'Concurrent update' where id = @id",
+            "visit_consumptions" =>
+                "update bodylife.visit_consumptions set status = 'canceled' where id = @id",
+            "visit_cancellations" =>
+                "update bodylife.visit_cancellations set reason = 'Concurrent update' where id = @id",
+            _ => throw new ArgumentOutOfRangeException(nameof(tableName)),
+        };
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"set lock_timeout = '250ms'; {updateStatement}";
+        command.Parameters.AddWithValue("id", id);
+
+        return await Assert.ThrowsAsync<PostgresException>(() =>
+            command.ExecuteNonQueryAsync());
     }
 
     private static async Task AssertPostgresViolationAsync(
