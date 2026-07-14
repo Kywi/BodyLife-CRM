@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784058528.6986241,
-    "ast_hash": "7fe3178a70848e51ec6ac44f2a5594af",
+    "mtime": 1784062016.6046753,
+    "ast_hash": "97a2ff0de7d4d515526b6b300d4b4029",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlVisitsStorageTests.cs": {
-    "mtime": 1784059835.1134121,
-    "ast_hash": "bccf22f539ae5f6e0d5090c36fdf2a6c",
+    "mtime": 1784061623.2668529,
+    "ast_hash": "b18a64693562b0e33add17f81964444a",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Visits/MarkVisitCommand.cs": {
@@ -2545,13 +2545,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Visits/VisitAuditActions.cs": {
-    "mtime": 1784053711.1727543,
-    "ast_hash": "9dc5af2f7e5a5fae82352da0cbf9ab5b",
+    "mtime": 1784061047.3138583,
+    "ast_hash": "d777089a127d288882aab32d4cce7568",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Visits/VisitCommandSupport.cs": {
-    "mtime": 1784053136.3782322,
-    "ast_hash": "d33f3367521e27c5bc0ce2408bc5d425",
+    "mtime": 1784061115.6865463,
+    "ast_hash": "458ca66b75f3bc63723105f64ebd7159",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Memberships/IMembershipStateRecalculator.cs": {
@@ -2687,6 +2687,21 @@
   "tests/BodyLife.Crm.Tests/Modules/Visits/CancelVisitCommandContractsTests.cs": {
     "mtime": 1784059720.9067283,
     "ast_hash": "241d249b3f245e8ee7024ab2253986a1",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Visits/CancelVisitCommandHandler.cs": {
+    "mtime": 1784061235.9503746,
+    "ast_hash": "a3968b49ee8b6beded252a4b435b9fe5",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/IVisitDayReconciliationStatusProvider.cs": {
+    "mtime": 1784061047.3138583,
+    "ast_hash": "9db3fc86134e2dcb989c0a3f46405050",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/VisitDayReconciliationStatus.cs": {
+    "mtime": 1784061047.3138583,
+    "ast_hash": "562d764a830850e37c2616ee3fee7408",
     "semantic_hash": ""
   }
 }
