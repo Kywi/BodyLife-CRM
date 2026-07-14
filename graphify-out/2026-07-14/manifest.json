@@ -530,8 +530,8 @@
     "semantic_hash": "67153cd15a65f5520c9418997e1fe216"
   },
   "src/BodyLife.Crm/Application/Commands/CommandErrorCode.cs": {
-    "mtime": 1783975646.2364497,
-    "ast_hash": "93d31d9f171d30e9987ec5ac4b2d60c8",
+    "mtime": 1784039534.4433973,
+    "ast_hash": "a75dc540e1ccf2c1447f39e3f0179e99",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Application/Commands/CommandResult.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784038360.3173401,
-    "ast_hash": "b125237f4374871049ca1460e6499d50",
+    "mtime": 1784039882.1225924,
+    "ast_hash": "def2ec50987926b4123bb8a652791fdd",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2315,8 +2315,8 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/Architecture/MembershipFormulaOwnershipTests.cs": {
-    "mtime": 1784024769.609617,
-    "ast_hash": "a24aac124d483dca2770cd95e01a184a",
+    "mtime": 1784039534.4433973,
+    "ast_hash": "53d91ca5ddd0cd30b74d1c052669e563",
     "semantic_hash": ""
   },
   "docs/milestone-5-acceptance-review.md": {
@@ -2442,6 +2442,31 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlVisitsStorageTests.cs": {
     "mtime": 1784038150.9597917,
     "ast_hash": "29ae31cfdc0545c5782778008b2fad34",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/MarkVisitCommand.cs": {
+    "mtime": 1784039534.439397,
+    "ast_hash": "a37a9cf6552e80f16c754460f7a48326",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/MarkVisitPreparation.cs": {
+    "mtime": 1784039534.439397,
+    "ast_hash": "4f3a9b0891650f5c3db39322be7d6dff",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/MarkVisitPreparationPolicy.cs": {
+    "mtime": 1784039659.8397167,
+    "ast_hash": "f5904189ec73802957a48206b6e24208",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/VisitKind.cs": {
+    "mtime": 1784039534.439397,
+    "ast_hash": "e5a8bb73a2d4154d8e81f75c901b8a19",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/Visits/MarkVisitCommandContractsTests.cs": {
+    "mtime": 1784039659.8437166,
+    "ast_hash": "ffc231ebe8e906a4f16b7e93a7b710cb",
     "semantic_hash": ""
   }
 }
