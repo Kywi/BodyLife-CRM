@@ -99,6 +99,8 @@ internal static class MembershipDependencyInspector
         typeof(MembershipNegativeHandlingOption),
         typeof(CreateMembershipOpeningStateCommand),
         typeof(IssueMembershipCommand),
+        typeof(MembershipVisitEligibility),
+        typeof(MembershipVisitAcknowledgement),
     ];
 
     public static IReadOnlyList<string> FindForbiddenReferences(IEnumerable<Type> sourceTypes)

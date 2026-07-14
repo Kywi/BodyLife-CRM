@@ -3539,3 +3539,91 @@ Next recommended step:
   Membership eligibility to the existing Memberships boundary. Keep the
   PostgreSQL handler, idempotency claim, locks, source writes, recalculation,
   audit, DI and UI outside that contract-only step.
+
+## Step 89 - MarkVisit public contract and preparation policy
+
+Status: completed.
+
+Plan alignment:
+
+- Continue Milestone 6 with only the public `MarkVisit` boundary and pure
+  preparation rules after canonical Visit storage; add no PostgreSQL command
+  orchestration or reception UI.
+- Carry the common command envelope, explicit Client, controlled
+  `membership`/`one_off`/`trial` context, optional opening batch and typed
+  current-state acknowledgements without copying occurred/actor/session/
+  correlation/idempotency fields into a parallel Visit-specific envelope.
+- Require a non-empty explicit `membership_id` only for membership Visits and
+  reject any Membership selector, eligibility or acknowledgement for one-off
+  and trial Visits.
+- Consume only the immutable `MembershipVisitEligibility` result supplied by
+  Memberships. Visits neither invokes `MembershipVisitEligibilityPolicy` nor
+  receives remaining visits, negative balance, effective end date or other
+  client-supplied formula state.
+- Require the accepted acknowledgement set to exactly match Memberships'
+  current expired/zero/negative requirements. Reject missing, stale extra,
+  duplicate and unknown acknowledgement values.
+- Preserve Memberships' stable ineligible/freeze reason for the later handler
+  mapping and add the documented command errors
+  `WarningAcknowledgementRequired` and `VisitDuringFreeze` without renumbering
+  existing error values.
+- Define canonical success as a new `visit` with a `client` reread target; a
+  selected Membership may be returned as a related entity.
+
+Scope:
+
+- Add `VisitKind`, `MarkVisitCommand`, immutable `MarkVisitPreparation` and
+  `MarkVisitPreparationPolicy` under the Visits module.
+- Add only `MembershipVisitEligibility` and
+  `MembershipVisitAcknowledgement` to the architecture-reviewed Memberships
+  contracts available outside the owning module; formula implementations and
+  calculated-state types remain forbidden.
+- Add 17 focused command/preparation cases for envelope shape, canonical result
+  targets, visit kinds, eligibility identity, Freeze rejection, exact
+  acknowledgement matching, immutable preparation and invalid input guards.
+- Add no EF record/configuration/migration, handler, authorization,
+  idempotency claim, row lock, Visit/consumption write, Memberships
+  recalculation, business audit, DI, report query, Razor/htmx or UI change.
+
+Validation:
+
+- Focused `MarkVisitCommandContractsTests` validation passed all 17 cases.
+- Focused `MembershipFormulaOwnershipTests` validation passed both cases,
+  proving Visits uses only the two explicitly reviewed Memberships contracts.
+- Solution formatting/analyzer verification passed without changes.
+- The first bare `./scripts/validate.sh` attempt stopped before restore because
+  this shell has no system `dotnet` on `PATH`; the repository-local .NET 10
+  invocation below then completed successfully.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/tmp/bodylife-dotnet
+  DOTNET_BIN=/tmp/bodylife-dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55432;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 238 core tests, 35 web tests, 261
+  PostgreSQL/architecture infrastructure tests, 24 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714140347_AddVisitsSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this contract-only step generated no migration.
+- `graphify update .` completed the structural rebuild with 5110 nodes, 10534
+  edges and 583 communities; the optional HTML visualization remains skipped
+  above its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): define mark visit contract`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add only the Memberships-owned persistence adapter that projects retained
+  canonical Visit/active-counted consumption rows into
+  `MembershipVisitSourceFact` and includes them in
+  `MembershipStateCacheRebuilder` under the existing issued-Membership lock.
+  Cover deterministic ordering, canceled Visit/consumption exclusion, native
+  rebuild and opening-state recorded-time cutover with focused PostgreSQL
+  tests. Keep `MarkVisit` writes, idempotency, audit, DI and UI outside that
+  recalculation-adapter step.

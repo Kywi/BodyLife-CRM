@@ -16,5 +16,7 @@ public enum CommandErrorCode
     RecalculationFailed,
     ConcurrencyConflict,
     AlreadyInactive,
-    NegativeDecisionRequired
+    NegativeDecisionRequired,
+    WarningAcknowledgementRequired,
+    VisitDuringFreeze
 }
