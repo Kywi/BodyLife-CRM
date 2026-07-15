@@ -710,8 +710,8 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1784149932.086772,
-    "ast_hash": "7a6a0c2b3a66584fb24ce88f0883df64",
+    "mtime": 1784151320.054579,
+    "ast_hash": "b041e2b8a8c80711dcf20baf057f9f4f",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784150647.790733,
-    "ast_hash": "352271ee2e9a934e776dcc8a53b98125",
+    "mtime": 1784150680.523962,
+    "ast_hash": "bfbb2d8e5e064a3deb966052b4b723fa",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2822,6 +2822,51 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlGetDailyVisitSourceRowsQueryTests.cs": {
     "mtime": 1784150311.577346,
     "ast_hash": "0ecab13e38a571c7d24872c13ae7ecad",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260715213519_AddPaymentSourceFacts.Designer.cs": {
+    "mtime": 1784151338.5017521,
+    "ast_hash": "4338e96241991ee13fe1f2743e1e8cb2",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260715213519_AddPaymentSourceFacts.cs": {
+    "mtime": 1784151338.5017521,
+    "ast_hash": "fbe24cff6217d1fed327cc6baf0b698a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentCancellationRecord.cs": {
+    "mtime": 1784151191.4925845,
+    "ast_hash": "0a6b9b0e38c79c8e58d63abd574bbbab",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentCancellationRecordConfiguration.cs": {
+    "mtime": 1784151191.4925845,
+    "ast_hash": "0735595107e880e225cbe624f5ea7246",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentCorrectionRecord.cs": {
+    "mtime": 1784151191.4925845,
+    "ast_hash": "d6e78c331c043631e3b68c874a41ffb7",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentCorrectionRecordConfiguration.cs": {
+    "mtime": 1784151308.0300102,
+    "ast_hash": "82ff27242735b4b008830d9413f8e866",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentRecord.cs": {
+    "mtime": 1784151191.4885843,
+    "ast_hash": "6e5058f0ec83d85ca434884e5b4517dd",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentRecordConfiguration.cs": {
+    "mtime": 1784151308.0300102,
+    "ast_hash": "e89ccf30b87db555f60425eaa0c3f36b",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlPaymentsStorageTests.cs": {
+    "mtime": 1784151612.5271947,
+    "ast_hash": "449e433392f223c23b318328b52b0814",
     "semantic_hash": ""
   }
 }

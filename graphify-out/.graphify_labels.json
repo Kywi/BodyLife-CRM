@@ -610,6 +610,22 @@
   "608": "MutableTimeProvider",
   "609": "AccountSessionPolicy.cs",
   "610": "FixedTimeProvider",
+  "611": "MembershipExtensionSourceRange",
   "612": "_CancelVisitForm.cshtml",
-  "620": "_MarkVisitForm.cshtml"
+  "613": "MutableTimeProvider",
+  "614": "ClientRecord",
+  "615": "VisitConsumptionRecord",
+  "616": "MembershipVisitSourceFact",
+  "617": "DeactivateMembershipTypeFormInput",
+  "618": ".CountOwnerAccountsAsync",
+  "619": "PostgreSqlPaymentsStorageTests.cs",
+  "620": "_MarkVisitForm.cshtml",
+  "621": "AddMembershipExtensionDays",
+  "622": "AddPaymentSourceFacts",
+  "623": "20260709143654_AddAccountCredentials.Designer.cs",
+  "624": "20260714174210_AddFreezeSourceFacts.Designer.cs",
+  "625": "20260715211212_AddDailyVisitSourceIndex.Designer.cs",
+  "626": "20260715213519_AddPaymentSourceFacts.Designer.cs",
+  "627": "MembershipTypeCatalogActionKeys.cs",
+  "628": ".PersistenceRegistrationExposesScopedStatePersistenceCoordinator"
 }
