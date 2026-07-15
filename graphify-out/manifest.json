@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1784062842.5843616,
-    "ast_hash": "80876cc3d9f51dc63227fbeee37cbf69",
+    "mtime": 1784149882.7120798,
+    "ast_hash": "525346820a4301d765f9093e0beec952",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -710,8 +710,8 @@
     "semantic_hash": "af8e9a28e26be78a35130423c8da135d"
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/BodyLifeDbContextModelSnapshot.cs": {
-    "mtime": 1784050930.2445343,
-    "ast_hash": "3f303de01b77bdf1710b30b910da277e",
+    "mtime": 1784149932.086772,
+    "ast_hash": "7a6a0c2b3a66584fb24ce88f0883df64",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Operations/HealthCheckResponseWriter.cs": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784148997.1283517,
-    "ast_hash": "eb85e3e40427db6e7ff3f83a417b5df3",
+    "mtime": 1784150647.790733,
+    "ast_hash": "352271ee2e9a934e776dcc8a53b98125",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2435,13 +2435,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Visits/VisitRecordConfiguration.cs": {
-    "mtime": 1784037745.8712673,
-    "ast_hash": "28f7353f8c9725acda6c8e71bae4b868",
+    "mtime": 1784149913.2977743,
+    "ast_hash": "fce82a31a071195e7394615dd80b8a86",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlVisitsStorageTests.cs": {
-    "mtime": 1784061623.2668529,
-    "ast_hash": "b18a64693562b0e33add17f81964444a",
+    "mtime": 1784150189.4377046,
+    "ast_hash": "2001700384c7c75db36a35062579d739",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Visits/MarkVisitCommand.cs": {
@@ -2705,8 +2705,8 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Visits/GetClientVisitRowsQueryHandler.cs": {
-    "mtime": 1784062876.4728177,
-    "ast_hash": "c3ec17782981f1333bb7eb7064669b3f",
+    "mtime": 1784149827.3666198,
+    "ast_hash": "2a1e7b4dcf675de004b03a853fe92114",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Visits/OpenVisitDayReconciliationStatusProvider.cs": {
@@ -2715,8 +2715,8 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Visits/VisitQuerySupport.cs": {
-    "mtime": 1784062826.0911963,
-    "ast_hash": "6a3ec46ce23a8f2ab95b346229dfb1b3",
+    "mtime": 1784149794.713586,
+    "ast_hash": "ad1cadc6af857e24738669bb9866f30f",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Visits/ClientVisitCancellation.cs": {
@@ -2777,6 +2777,51 @@
   "src/BodyLife.Crm.Web/Pages/Reception/_CancelVisitForm.cshtml": {
     "mtime": 1784148345.759294,
     "ast_hash": "8402ff72544b39f33a3dbbbee42102bc",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260715211212_AddDailyVisitSourceIndex.Designer.cs": {
+    "mtime": 1784150400.8029475,
+    "ast_hash": "12ecd3e11ec74392a2a762f7384bc9d6",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Migrations/20260715211212_AddDailyVisitSourceIndex.cs": {
+    "mtime": 1784150400.8029475,
+    "ast_hash": "a66026f2c6a841075a72053312baccc0",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Visits/GetDailyVisitSourceRowsQueryHandler.cs": {
+    "mtime": 1784149882.7120798,
+    "ast_hash": "6734dd3ae9ba5ca9e4ed1588d60a649e",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/DailyVisitSourceRow.cs": {
+    "mtime": 1784149768.1731052,
+    "ast_hash": "3cac5fe7bb2548d583fd0d7a5fcc8bf1",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/DailyVisitSourceSnapshot.cs": {
+    "mtime": 1784149768.1731052,
+    "ast_hash": "406109ae0f6b561f45b41af8e7f3e9aa",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/GetDailyVisitSourceRowsQuery.cs": {
+    "mtime": 1784149768.1731052,
+    "ast_hash": "d2f699fe4d7eb12054f36bd16ce3e5f8",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/GetDailyVisitSourceRowsResult.cs": {
+    "mtime": 1784149768.1731052,
+    "ast_hash": "b3b9843e65dde02d2bf57295726b4108",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Visits/GetDailyVisitSourceRowsStatus.cs": {
+    "mtime": 1784149768.1731052,
+    "ast_hash": "201710873faa659e22521539b37b2470",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlGetDailyVisitSourceRowsQueryTests.cs": {
+    "mtime": 1784150311.577346,
+    "ast_hash": "0ecab13e38a571c7d24872c13ae7ecad",
     "semantic_hash": ""
   }
 }

@@ -609,9 +609,10 @@
   "607": "MembershipExtensionSourceRange",
   "608": "MutableTimeProvider",
   "609": "AccountSessionPolicy.cs",
+  "610": "FixedTimeProvider",
   "611": "MembershipVisitSourceFact",
-  "617": "MembershipActionKeys.cs",
-  "620": "_MarkVisitForm.cshtml",
-  "621": "MembershipWarningCodes.cs",
-  "625": ".PersistenceRegistrationExposesScopedStatePersistenceCoordinator"
+  "612": "_CancelVisitForm.cshtml",
+  "613": ".PersistenceRegistrationExposesScopedClientMembershipStatesHandler",
+  "614": ".PersistenceRegistrationExposesScopedExtensionDayWriter",
+  "620": "_MarkVisitForm.cshtml"
 }
