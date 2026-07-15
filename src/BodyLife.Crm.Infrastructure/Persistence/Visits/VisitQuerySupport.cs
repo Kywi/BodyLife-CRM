@@ -122,4 +122,139 @@ internal static class VisitQuerySupport
 
         return status != default;
     }
+
+    internal static bool TryMapSourceRow(
+        CanonicalVisitSourceRow source,
+        CanonicalVisitConsumptionSourceRow? consumptionSource,
+        CanonicalVisitCancellationSourceRow? cancellationSource,
+        out CanonicalVisitProjection? projection)
+    {
+        projection = null;
+        if (!TryMapVisitKind(source.VisitKind, out var visitKind)
+            || !TryMapEntryOrigin(source.EntryOrigin, out var entryOrigin)
+            || !TryMapVisitStatus(
+                source.Status,
+                cancellationSource is not null,
+                out var status))
+        {
+            return false;
+        }
+
+        ClientVisitConsumption? consumption = null;
+        if (visitKind == VisitKind.Membership)
+        {
+            if (consumptionSource is null
+                || consumptionSource.ClientId != source.ClientId
+                || consumptionSource.MembershipClientId != source.ClientId
+                || consumptionSource.VisitKind != source.VisitKind
+                || consumptionSource.ConsumptionType != CountedConsumptionType
+                || consumptionSource.SourceFactType != VisitSourceFactType
+                || consumptionSource.SourceFactId != source.VisitId
+                || string.IsNullOrWhiteSpace(
+                    consumptionSource.MembershipTypeNameSnapshot)
+                || !TryMapConsumptionStatus(
+                    consumptionSource.Status,
+                    out var consumptionStatus)
+                || !StatusesAgree(status, consumptionStatus))
+            {
+                return false;
+            }
+
+            consumption = new ClientVisitConsumption(
+                consumptionSource.ConsumptionId,
+                consumptionSource.MembershipId,
+                consumptionSource.MembershipTypeNameSnapshot,
+                consumptionStatus);
+        }
+        else if (consumptionSource is not null)
+        {
+            return false;
+        }
+
+        ClientVisitCancellation? cancellation = null;
+        if (cancellationSource is not null)
+        {
+            if (string.IsNullOrWhiteSpace(cancellationSource.Reason)
+                || !TryMapEntryOrigin(
+                    cancellationSource.EntryOrigin,
+                    out var cancellationOrigin))
+            {
+                return false;
+            }
+
+            cancellation = new ClientVisitCancellation(
+                cancellationSource.CancellationId,
+                cancellationSource.Reason,
+                cancellationSource.OccurredAt,
+                cancellationSource.RecordedAt,
+                cancellationSource.RecordedByAccountId,
+                cancellationSource.SessionId,
+                cancellationOrigin,
+                cancellationSource.EntryBatchId);
+        }
+
+        projection = new CanonicalVisitProjection(
+            visitKind,
+            entryOrigin,
+            status,
+            consumption,
+            cancellation);
+        return true;
+    }
+
+    private static bool StatusesAgree(
+        ClientVisitRowStatus visitStatus,
+        ClientVisitConsumptionStatus consumptionStatus)
+    {
+        return (visitStatus, consumptionStatus) switch
+        {
+            (ClientVisitRowStatus.Active, ClientVisitConsumptionStatus.Active) => true,
+            (ClientVisitRowStatus.Canceled, ClientVisitConsumptionStatus.Canceled) => true,
+            _ => false,
+        };
+    }
+
+    internal sealed record CanonicalVisitSourceRow(
+        Guid VisitId,
+        Guid ClientId,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        Guid RecordedByAccountId,
+        Guid SessionId,
+        string VisitKind,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment,
+        string Status);
+
+    internal sealed record CanonicalVisitConsumptionSourceRow(
+        Guid ConsumptionId,
+        Guid VisitId,
+        Guid ClientId,
+        string VisitKind,
+        Guid MembershipId,
+        Guid MembershipClientId,
+        string MembershipTypeNameSnapshot,
+        string ConsumptionType,
+        string SourceFactType,
+        Guid SourceFactId,
+        string Status);
+
+    internal sealed record CanonicalVisitCancellationSourceRow(
+        Guid CancellationId,
+        Guid VisitId,
+        string Reason,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        Guid RecordedByAccountId,
+        Guid SessionId,
+        string EntryOrigin,
+        Guid? EntryBatchId);
+
+    internal sealed record CanonicalVisitProjection(
+        VisitKind VisitKind,
+        EntryOrigin EntryOrigin,
+        ClientVisitRowStatus Status,
+        ClientVisitConsumption? Consumption,
+        ClientVisitCancellation? Cancellation);
 }

@@ -102,6 +102,14 @@ internal sealed class VisitRecordConfiguration : IEntityTypeConfiguration<VisitR
 
         builder.HasIndex(visit => new
         {
+            visit.OccurredAt,
+            visit.Status,
+            visit.ClientId,
+        })
+            .HasDatabaseName("ix_visits_daily_source");
+
+        builder.HasIndex(visit => new
+        {
             visit.ClientId,
             visit.OccurredAt,
             visit.RecordedAt,

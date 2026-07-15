@@ -130,6 +130,11 @@ public sealed class PostgreSqlVisitsStorageTests
         Assert.Contains("active", dailyIndex, StringComparison.OrdinalIgnoreCase);
 
         Assert.Contains(
+            "(occurred_at, status, client_id)",
+            await ReadIndexDefinitionAsync(database, "ix_visits_daily_source"),
+            StringComparison.OrdinalIgnoreCase);
+
+        Assert.Contains(
             "UNIQUE INDEX",
             await ReadIndexDefinitionAsync(database, "ux_visit_cancellations_visit_id"),
             StringComparison.OrdinalIgnoreCase);

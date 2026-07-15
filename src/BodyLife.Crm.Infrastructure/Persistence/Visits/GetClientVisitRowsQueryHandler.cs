@@ -56,7 +56,7 @@ public sealed class GetClientVisitRowsQueryHandler(
             .ThenByDescending(visit => visit.RecordedAt)
             .ThenByDescending(visit => visit.Id)
             .Take(query.Limit + 1)
-            .Select(visit => new VisitSourceRow(
+            .Select(visit => new VisitQuerySupport.CanonicalVisitSourceRow(
                 visit.Id,
                 visit.ClientId,
                 visit.OccurredAt,
@@ -83,7 +83,7 @@ public sealed class GetClientVisitRowsQueryHandler(
             join membership in dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
                 on consumption.MembershipId equals membership.Id
             where visitIds.Contains(consumption.VisitId)
-            select new ConsumptionSourceRow(
+            select new VisitQuerySupport.CanonicalVisitConsumptionSourceRow(
                 consumption.Id,
                 consumption.VisitId,
                 consumption.ClientId,
@@ -99,7 +99,7 @@ public sealed class GetClientVisitRowsQueryHandler(
         var cancellationRows = await dbContext.Set<VisitCancellationRecord>()
             .AsNoTracking()
             .Where(cancellation => visitIds.Contains(cancellation.VisitId))
-            .Select(cancellation => new CancellationSourceRow(
+            .Select(cancellation => new VisitQuerySupport.CanonicalVisitCancellationSourceRow(
                 cancellation.Id,
                 cancellation.VisitId,
                 cancellation.Reason,
@@ -126,21 +126,18 @@ public sealed class GetClientVisitRowsQueryHandler(
         {
             consumptionByVisitId.TryGetValue(source.VisitId, out var consumptionSource);
             cancellationByVisitId.TryGetValue(source.VisitId, out var cancellationSource);
-            if (!TryMapSourceRow(
+            if (!VisitQuerySupport.TryMapSourceRow(
                     source,
                     consumptionSource,
                     cancellationSource,
-                    out var visitKind,
-                    out var entryOrigin,
-                    out var status,
-                    out var consumption,
-                    out var cancellation))
+                    out var projection)
+                || projection is null)
             {
                 return GetClientVisitRowsResult.InconsistentSource();
             }
 
             var allowedActions = QueryPermissionSet.Empty;
-            if (status == ClientVisitRowStatus.Active)
+            if (projection.Status == ClientVisitRowStatus.Active)
             {
                 var businessDate = DateOnly.FromDateTime(source.OccurredAt.DateTime);
                 if (!dayStatuses.TryGetValue(businessDate, out var dayStatus))
@@ -158,7 +155,7 @@ public sealed class GetClientVisitRowsQueryHandler(
 
                 allowedActions = VisitQuerySupport.BuildCancellationPermissions(
                     query.Actor,
-                    status,
+                    projection.Status,
                     dayStatus);
             }
 
@@ -169,13 +166,13 @@ public sealed class GetClientVisitRowsQueryHandler(
                 source.RecordedAt,
                 source.RecordedByAccountId,
                 source.SessionId,
-                visitKind,
-                entryOrigin,
+                projection.VisitKind,
+                projection.EntryOrigin,
                 source.EntryBatchId,
                 source.Comment,
-                status,
-                consumption,
-                cancellation,
+                projection.Status,
+                projection.Consumption,
+                projection.Cancellation,
                 allowedActions));
         }
 
@@ -186,133 +183,4 @@ public sealed class GetClientVisitRowsQueryHandler(
                 hasMore));
     }
 
-    private static bool TryMapSourceRow(
-        VisitSourceRow source,
-        ConsumptionSourceRow? consumptionSource,
-        CancellationSourceRow? cancellationSource,
-        out VisitKind visitKind,
-        out BodyLife.Crm.Application.Commands.EntryOrigin entryOrigin,
-        out ClientVisitRowStatus status,
-        out ClientVisitConsumption? consumption,
-        out ClientVisitCancellation? cancellation)
-    {
-        visitKind = default;
-        entryOrigin = default;
-        status = default;
-        consumption = null;
-        cancellation = null;
-        if (!VisitQuerySupport.TryMapVisitKind(source.VisitKind, out visitKind)
-            || !VisitQuerySupport.TryMapEntryOrigin(source.EntryOrigin, out entryOrigin)
-            || !VisitQuerySupport.TryMapVisitStatus(
-                source.Status,
-                cancellationSource is not null,
-                out status))
-        {
-            return false;
-        }
-
-        if (visitKind == VisitKind.Membership)
-        {
-            if (consumptionSource is null
-                || consumptionSource.ClientId != source.ClientId
-                || consumptionSource.MembershipClientId != source.ClientId
-                || consumptionSource.VisitKind != source.VisitKind
-                || consumptionSource.ConsumptionType
-                    != VisitQuerySupport.CountedConsumptionType
-                || consumptionSource.SourceFactType
-                    != VisitQuerySupport.VisitSourceFactType
-                || consumptionSource.SourceFactId != source.VisitId
-                || string.IsNullOrWhiteSpace(
-                    consumptionSource.MembershipTypeNameSnapshot)
-                || !VisitQuerySupport.TryMapConsumptionStatus(
-                    consumptionSource.Status,
-                    out var consumptionStatus)
-                || !StatusesAgree(status, consumptionStatus))
-            {
-                return false;
-            }
-
-            consumption = new ClientVisitConsumption(
-                consumptionSource.ConsumptionId,
-                consumptionSource.MembershipId,
-                consumptionSource.MembershipTypeNameSnapshot,
-                consumptionStatus);
-        }
-        else if (consumptionSource is not null)
-        {
-            return false;
-        }
-
-        if (cancellationSource is not null)
-        {
-            if (string.IsNullOrWhiteSpace(cancellationSource.Reason)
-                || !VisitQuerySupport.TryMapEntryOrigin(
-                    cancellationSource.EntryOrigin,
-                    out var cancellationOrigin))
-            {
-                return false;
-            }
-
-            cancellation = new ClientVisitCancellation(
-                cancellationSource.CancellationId,
-                cancellationSource.Reason,
-                cancellationSource.OccurredAt,
-                cancellationSource.RecordedAt,
-                cancellationSource.RecordedByAccountId,
-                cancellationSource.SessionId,
-                cancellationOrigin,
-                cancellationSource.EntryBatchId);
-        }
-
-        return true;
-    }
-
-    private static bool StatusesAgree(
-        ClientVisitRowStatus visitStatus,
-        ClientVisitConsumptionStatus consumptionStatus)
-    {
-        return (visitStatus, consumptionStatus) switch
-        {
-            (ClientVisitRowStatus.Active, ClientVisitConsumptionStatus.Active) => true,
-            (ClientVisitRowStatus.Canceled, ClientVisitConsumptionStatus.Canceled) => true,
-            _ => false,
-        };
-    }
-
-    private sealed record VisitSourceRow(
-        Guid VisitId,
-        Guid ClientId,
-        DateTimeOffset OccurredAt,
-        DateTimeOffset RecordedAt,
-        Guid RecordedByAccountId,
-        Guid SessionId,
-        string VisitKind,
-        string EntryOrigin,
-        Guid? EntryBatchId,
-        string? Comment,
-        string Status);
-
-    private sealed record ConsumptionSourceRow(
-        Guid ConsumptionId,
-        Guid VisitId,
-        Guid ClientId,
-        string VisitKind,
-        Guid MembershipId,
-        Guid MembershipClientId,
-        string MembershipTypeNameSnapshot,
-        string ConsumptionType,
-        string SourceFactType,
-        Guid SourceFactId,
-        string Status);
-
-    private sealed record CancellationSourceRow(
-        Guid CancellationId,
-        Guid VisitId,
-        string Reason,
-        DateTimeOffset OccurredAt,
-        DateTimeOffset RecordedAt,
-        Guid RecordedByAccountId,
-        Guid SessionId,
-        string EntryOrigin,
-        Guid? EntryBatchId);
 }

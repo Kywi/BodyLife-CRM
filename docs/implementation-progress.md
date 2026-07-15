@@ -4705,3 +4705,98 @@ Next recommended step:
   public state without reimplementing Membership formulas, preserve correction
   visibility, and prove daily totals equal drill-down source rows. Keep report
   Razor composition for a subsequent bounded step.
+
+## Step 101 - Daily Visit report source readiness
+
+Status: completed. Milestone 6 is complete.
+
+Plan alignment:
+
+- Complete the final unfinished Milestone 6 task: prepare the report-facing
+  query/source shape for daily Visit totals and cancellations. The public read
+  boundary remains owned by Visits so a later Reports query can compose it with
+  Payments and Memberships without querying Visit tables independently.
+- Count every active canonical Visit kind (`membership`, `one_off`, `trial`) for
+  the selected business date, exclude canceled Visits from the total, and keep
+  active plus canceled source rows in one explainable drill-down.
+- Derive the active total from the exact returned source rows so total and
+  drill-down filters cannot diverge. Reuse the same fail-closed source mapper as
+  Client profile history rather than reinterpreting Visit/consumption status.
+- Do not implement Milestone 9 `GenerateDailyReport`, payment totals, audit
+  timeline composition, report Razor/htmx UI or Membership formulas in this
+  bounded source-readiness step.
+
+Scope:
+
+- Add `GetDailyVisitSourceRowsQuery`, result/status types and
+  `DailyVisitSourceSnapshot`/`DailyVisitSourceRow` contracts. The snapshot
+  exposes business date, day reconciliation status, canonical rows and an
+  active count derived from those rows.
+- Implement `GetDailyVisitSourceRowsQueryHandler` over one half-open UTC
+  business-date range. It joins current Client display identity for navigation,
+  orders rows deterministically by occurred time, recorded time and Visit id,
+  and preserves actor/session, kind, origin/batch, comment, Membership snapshot
+  consumption and full cancellation metadata.
+- Enforce canonical active Owner/named Admin/shared Reception Admin session
+  authorization. Attach server-owned open/reconciled-day cancellation
+  permissions to active rows and return no action for canceled history.
+- Move existing Visit/consumption/cancellation source-shape validation into one
+  shared Visits mapper used by both Client profile history and the daily source
+  query. Unknown/missing/mismatched status, consumption or retained
+  cancellation fails the complete read with `source_inconsistent`.
+- Register the query handler through the application query DI boundary. Reads
+  remain no-tracking and create no business audit entry.
+- Add `ix_visits_daily_source` on `(occurred_at, status, client_id)` while
+  retaining the smaller partial active-total index. Add EF migration
+  `20260715211212_AddDailyVisitSourceIndex` and review its idempotent SQL.
+- Add six focused tests covering all Visit kinds across Clients, exact
+  total/drill-down equality, retained cancellation and backfill metadata, UTC
+  range boundaries, deterministic ordering, empty/invalid/denied results,
+  reconciled Owner/Admin permissions, fail-closed source inconsistency, DI and
+  the PostgreSQL query plan. Extend the Visit storage migration test with the
+  new index definition.
+
+Validation:
+
+- The Infrastructure project and test project built in Release with 0
+  warnings/errors. Focused `PostgreSqlGetDailyVisitSourceRowsQueryTests` passed
+  all 6 cases, the migration/index case passed 1/1 and the existing shared
+  profile mapper regression suite passed 6/6 against Docker PostgreSQL.
+- The first idempotent migration SQL command used `--no-build` immediately
+  after generation and therefore read the previous compiled migration assembly.
+  Repeating with a build succeeded and produced only guarded creation of
+  `ix_visits_daily_source` plus the migration history row.
+- The first full validation attempt stopped before tests because EF generated
+  the two migration files with a UTF-8 BOM while the repository formatter
+  requires UTF-8 without BOM. Removing those generated BOM markers made the
+  standalone formatting gate pass.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 317
+  PostgreSQL/architecture infrastructure tests, 31 Playwright smoke tests and
+  EF migration listing through
+  `20260715211212_AddDailyVisitSourceIndex`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+- `graphify update .` completed the structural rebuild with 5851 nodes, 12730
+  edges and 613 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): add daily Visit report source`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Start Milestone 7 with canonical cash Payment source storage: define the
+  minimal `payments`, `payment_cancellations` and `payment_corrections` records,
+  controlled v1 cash/context/status values, correction-preserving relationships,
+  daily-report indexes, one reviewable EF migration and PostgreSQL
+  constraint/index tests. Keep Create/Correct Payment commands and UI for later
+  bounded steps.
