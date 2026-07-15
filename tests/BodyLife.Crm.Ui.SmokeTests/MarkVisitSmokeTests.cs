@@ -6,6 +6,8 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
 {
     private const string ZeroAcknowledgement =
         "I acknowledge that this visit will move the membership below zero.";
+    private const string CancellationConfirmation =
+        "I confirm this Visit was recorded by mistake and should be canceled.";
     private readonly ReceptionAppFixture _app;
     private IPlaywright? _playwright;
     private IBrowser? _browser;
@@ -37,7 +39,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
     [Theory]
     [InlineData("tablet", 1024, 768, "BL-VISIT-TABLET", 3)]
     [InlineData("phone", 390, 844, "BL-VISIT-PHONE", 2)]
-    public async Task VisitHistoryShowsActiveThenCanceledRowOnTargetViewport(
+    public async Task OwnerCancelsVisitThroughProfileOnTargetViewport(
         string viewportName,
         int width,
         int height,
@@ -106,11 +108,15 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 viewportName,
                 "membership Visit kind");
             await ExpectVisibleAsync(
-                activeVisit.GetByText(
-                    viewportName == "tablet"
-                        ? "Tablet four-visit snapshot"
-                        : "Phone three-visit snapshot",
-                    new() { Exact = true }),
+                activeVisit.GetByRole(
+                    AriaRole.Heading,
+                    new()
+                    {
+                        Name = viewportName == "tablet"
+                            ? "Tablet four-visit snapshot"
+                            : "Phone three-visit snapshot",
+                        Exact = true,
+                    }),
                 viewportName,
                 "issued membership snapshot");
             await ExpectVisibleAsync(
@@ -123,8 +129,40 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             var visitIdValue = await activeVisit.GetAttributeAsync("data-visit-id");
             Assert.True(Guid.TryParse(visitIdValue, out var visitId));
             const string cancellationReason = "Reception correction for Visit history smoke.";
-            await _app.CancelVisitAsync(visitId, cancellationReason);
-            await SubmitHtmxSearchAsync(page, cardNumber);
+            await DelayCancelVisitRequestsAsync(page);
+            var cancelPanel = await OpenCancelVisitPanelAsync(
+                activeVisit,
+                viewportName);
+            var cancelForm = cancelPanel.Locator("form");
+            Assert.Equal(1, await cancelForm.Locator(
+                "input[name='__RequestVerificationToken']").CountAsync());
+            Assert.False(string.IsNullOrWhiteSpace(await cancelForm.Locator(
+                "input[name='form.IdempotencyKey']").InputValueAsync()));
+            await cancelPanel.GetByLabel("Reason", new() { Exact = true })
+                .FillAsync(cancellationReason);
+            await cancelPanel.GetByLabel("Comment (optional)", new() { Exact = true })
+                .FillAsync($"Canceled from {viewportName} reception.");
+            await cancelPanel.GetByRole(
+                AriaRole.Checkbox,
+                new() { Name = CancellationConfirmation, Exact = true })
+                .CheckAsync();
+            await AssertMinimumTouchTargetAsync(
+                cancelPanel.GetByRole(AriaRole.Button, new() { Name = "Cancel visit" }),
+                viewportName,
+                "Cancel Visit button");
+            await AssertFitsViewportAsync(page, viewportName, "Cancel Visit form");
+            await CaptureVisualAsync(page, viewportName, "cancel-visit-form");
+
+            await SubmitHtmxCancelVisitAsync(
+                page,
+                visitId,
+                repeatTapWhileBusy: true,
+                verifyBusy: true);
+
+            await ExpectVisibleAsync(
+                profile.GetByText("Visit canceled."),
+                viewportName,
+                "Visit cancellation success message");
 
             var canceledVisit = profile.Locator(
                 $"[data-visit-id='{visitId}'][data-visit-status='canceled']");
@@ -143,10 +181,111 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 "Visit cancellation reason");
             Assert.Equal(0L, await _app.CountActiveVisitsAsync(clientId, "membership"));
             Assert.Equal(0L, await _app.CountActiveVisitConsumptionsAsync(clientId));
+            Assert.Equal(1L, await _app.CountCancelVisitAuditEntriesAsync(clientId));
+            Assert.Equal(1L, await _app.CountCancelVisitIdempotencyKeysAsync(clientId));
             var restoredState = await _app.ReadMembershipStateAsync(membershipId);
             Assert.Equal(0, restoredState.CountedVisits);
             await AssertFitsViewportAsync(page, viewportName, "canceled Visit profile");
             await CaptureVisualAsync(page, viewportName, "visit-history-canceled");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task NamedAdminConfirmationErrorDoesNotCancelBeforeSuccessfulRetry()
+    {
+        var context = await CreateContextAsync(1024, 768);
+
+        try
+        {
+            var page = await OpenReceptionAsync(
+                context,
+                "tablet admin cancel visit",
+                _app.AdminLoginName,
+                _app.AdminPassword);
+            await SubmitHtmxSearchAsync(page, "BL-VISIT-ADMIN");
+
+            var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            var markPanel = profile.Locator("#mark-visit-action-panel");
+            await OpenMarkVisitPanelAsync(markPanel, "tablet");
+            await SubmitHtmxMarkVisitAsync(page);
+
+            var activeVisit = profile.Locator("[data-visit-status='active']").First;
+            await ExpectVisibleAsync(
+                activeVisit,
+                "tablet",
+                "Admin active Visit row");
+            Assert.Equal("true", await activeVisit.GetAttributeAsync("data-can-cancel"));
+            var visitIdValue = await activeVisit.GetAttributeAsync("data-visit-id");
+            Assert.True(Guid.TryParse(visitIdValue, out var visitId));
+            var cancelPanel = await OpenCancelVisitPanelAsync(activeVisit, "tablet");
+            const string cancellationReason = "Named Admin corrected a mistaken Visit.";
+            await cancelPanel.GetByLabel("Reason", new() { Exact = true })
+                .FillAsync(cancellationReason);
+            var originalIdempotencyKey = await cancelPanel.Locator(
+                "input[name='form.IdempotencyKey']").InputValueAsync();
+
+            await SubmitHtmxCancelVisitAsync(
+                page,
+                visitId,
+                bypassValidation: true,
+                verifyBusy: false);
+
+            cancelPanel = profile.Locator($"#cancel-visit-panel-{visitId:N}");
+            await ExpectVisibleAsync(
+                cancelPanel.GetByText(
+                    "Confirm that this Visit should be canceled.",
+                    new() { Exact = true }),
+                "tablet",
+                "server confirmation error");
+            Assert.NotNull(await cancelPanel.GetAttributeAsync("open"));
+            Assert.Equal(
+                originalIdempotencyKey,
+                await cancelPanel.Locator(
+                    "input[name='form.IdempotencyKey']").InputValueAsync());
+            Assert.Equal(
+                cancellationReason,
+                await cancelPanel.GetByLabel("Reason", new() { Exact = true }).InputValueAsync());
+            Assert.Equal(1L, await _app.CountActiveVisitsAsync(_app.VisitAdminClientId));
+            Assert.Equal(
+                0L,
+                await _app.CountCancelVisitAuditEntriesAsync(_app.VisitAdminClientId));
+            Assert.Equal(
+                0L,
+                await _app.CountCancelVisitIdempotencyKeysAsync(_app.VisitAdminClientId));
+
+            await cancelPanel.GetByRole(
+                AriaRole.Checkbox,
+                new() { Name = CancellationConfirmation, Exact = true })
+                .CheckAsync();
+            await SubmitHtmxCancelVisitAsync(page, visitId, verifyBusy: false);
+
+            await ExpectVisibleAsync(
+                profile.GetByText("Visit canceled."),
+                "tablet",
+                "Admin cancellation success");
+            await ExpectVisibleAsync(
+                profile.Locator($"[data-visit-id='{visitId}'][data-visit-status='canceled']"),
+                "tablet",
+                "Admin canceled Visit row");
+            Assert.Equal(0L, await _app.CountActiveVisitsAsync(_app.VisitAdminClientId));
+            Assert.Equal(
+                0L,
+                await _app.CountActiveVisitConsumptionsAsync(_app.VisitAdminClientId));
+            Assert.Equal(
+                1L,
+                await _app.CountCancelVisitAuditEntriesAsync(_app.VisitAdminClientId));
+            Assert.Equal(
+                1L,
+                await _app.CountCancelVisitIdempotencyKeysAsync(_app.VisitAdminClientId));
+            var restoredState = await _app.ReadMembershipStateAsync(
+                _app.VisitAdminMembershipId);
+            Assert.Equal(0, restoredState.CountedVisits);
+            Assert.Equal(2, restoredState.RemainingVisits);
+            await AssertFitsViewportAsync(page, "tablet", "Admin canceled Visit profile");
         }
         finally
         {
@@ -443,7 +582,9 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
 
     private async Task<IPage> OpenReceptionAsync(
         IBrowserContext context,
-        string deviceLabel)
+        string deviceLabel,
+        string? loginName = null,
+        string? password = null)
     {
         var page = await context.NewPageAsync();
         var response = await page.GotoAsync(
@@ -452,8 +593,9 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         Assert.NotNull(response);
         Assert.True(response.Ok, $"Reception request returned HTTP {response.Status}.");
         await page.GetByRole(AriaRole.Textbox, new() { Name = "Login" })
-            .FillAsync(_app.LoginName);
-        await page.GetByLabel("Password", new() { Exact = true }).FillAsync(_app.Password);
+            .FillAsync(loginName ?? _app.LoginName);
+        await page.GetByLabel("Password", new() { Exact = true })
+            .FillAsync(password ?? _app.Password);
         await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
@@ -493,6 +635,27 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             "Mark Visit form");
     }
 
+    private static async Task<ILocator> OpenCancelVisitPanelAsync(
+        ILocator visitRow,
+        string viewportName)
+    {
+        var panel = visitRow.Locator("[data-cancel-visit-panel]");
+        await ExpectVisibleAsync(
+            panel.Locator("summary"),
+            viewportName,
+            "Cancel Visit action");
+        if (await panel.GetAttributeAsync("open") is null)
+        {
+            await panel.Locator("summary").ClickAsync();
+        }
+
+        await ExpectVisibleAsync(
+            panel.Locator("form"),
+            viewportName,
+            "Cancel Visit form");
+        return panel;
+    }
+
     private static async Task SubmitHtmxMarkVisitAsync(
         IPage page,
         bool repeatTapWhileBusy = false)
@@ -520,10 +683,69 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         await WaitForHtmxSettleAsync(page);
     }
 
+    private static async Task SubmitHtmxCancelVisitAsync(
+        IPage page,
+        Guid visitId,
+        bool repeatTapWhileBusy = false,
+        bool bypassValidation = false,
+        bool verifyBusy = true)
+    {
+        var panelSelector = $"#cancel-visit-panel-{visitId:N}";
+        var panel = page.Locator(panelSelector);
+        var form = panel.Locator("form");
+        Assert.Equal("this:drop", await form.GetAttributeAsync("hx-sync"));
+        Assert.NotNull(await form.GetAttributeAsync("data-busy-form"));
+        var responseTask = page.WaitForResponseAsync(response =>
+            response.Request.Method == "POST"
+            && response.Url.Contains("handler=CancelVisit", StringComparison.OrdinalIgnoreCase));
+        Task<IJSHandle>? disabledTask = null;
+        if (verifyBusy)
+        {
+            disabledTask = page.WaitForFunctionAsync(
+                $"() => document.querySelector('{panelSelector} button[type=\"submit\"]')?.disabled === true");
+        }
+
+        var submitButton = panel.Locator("[data-cancel-visit-submit]");
+        if (bypassValidation)
+        {
+            await form.EvaluateAsync(
+                "form => { form.noValidate = true; form.requestSubmit(); }");
+        }
+        else
+        {
+            await submitButton.ClickAsync();
+        }
+
+        if (disabledTask is not null)
+        {
+            await disabledTask;
+        }
+
+        if (repeatTapWhileBusy)
+        {
+            Assert.True(await submitButton.IsDisabledAsync());
+            await submitButton.EvaluateAsync("button => button.click()");
+        }
+
+        AssertHtmxResponse(await responseTask);
+        await WaitForHtmxSettleAsync(page);
+    }
+
     private static Task DelayMarkVisitRequestsAsync(IPage page)
     {
         return page.RouteAsync(
             "**/*handler=MarkVisit*",
+            async route =>
+            {
+                await Task.Delay(500);
+                await route.ContinueAsync();
+            });
+    }
+
+    private static Task DelayCancelVisitRequestsAsync(IPage page)
+    {
+        return page.RouteAsync(
+            "**/*handler=CancelVisit*",
             async route =>
             {
                 await Task.Delay(500);

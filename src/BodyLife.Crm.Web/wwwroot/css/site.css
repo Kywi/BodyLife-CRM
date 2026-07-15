@@ -709,6 +709,62 @@ textarea:focus-visible,
   font-weight: 800;
 }
 
+.visit-correction-panel {
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 4px;
+}
+
+.visit-correction-panel summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--danger-strong);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.visit-correction-panel[open] summary {
+  margin-bottom: 10px;
+}
+
+.visit-correction-content,
+.cancel-visit-form {
+  display: grid;
+  gap: 12px;
+}
+
+.visit-correction-context {
+  display: grid;
+  margin: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+.visit-correction-context div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.visit-correction-context dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.visit-correction-context dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.cancel-visit-confirmation {
+  align-items: flex-start;
+  color: var(--danger-strong);
+}
+
 .permission-allowed {
   color: var(--success);
 }
@@ -780,7 +836,8 @@ textarea:focus-visible,
 .create-client-form,
 .update-client-form,
 .card-assignment-form,
-.mark-visit-form {
+.mark-visit-form,
+.cancel-visit-form {
   display: grid;
   gap: 16px;
 }
@@ -1635,6 +1692,7 @@ textarea:focus-visible,
   .client-profile-meta,
   .membership-summary-grid,
   .recent-visit-meta,
+  .visit-correction-context,
   .action-form-grid,
   .visit-business-context,
   .visit-membership-meta,
@@ -1650,11 +1708,13 @@ textarea:focus-visible,
     padding: 14px;
   }
 
-  .mark-visit-form .action-form-footer {
+  .mark-visit-form .action-form-footer,
+  .cancel-visit-form .action-form-footer {
     flex-wrap: wrap;
   }
 
-  .mark-visit-form .action-form-footer button {
+  .mark-visit-form .action-form-footer button,
+  .cancel-visit-form .action-form-footer button {
     width: 100%;
   }
 

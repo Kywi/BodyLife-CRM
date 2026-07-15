@@ -22,6 +22,7 @@ public sealed class IndexModel(
     IBodyLifeCommandHandler<UpdateClientCommand> updateClient,
     IBodyLifeCommandHandler<AssignOrChangeCardCommand> assignOrChangeCard,
     IBodyLifeCommandHandler<MarkVisitCommand> markVisit,
+    IBodyLifeCommandHandler<CancelVisitCommand> cancelVisit,
     TimeProvider timeProvider)
     : PageModel
 {
@@ -303,6 +304,47 @@ public sealed class IndexModel(
             cancellationToken);
     }
 
+    public async Task<IActionResult> OnPostCancelVisitAsync(
+        CancelVisitFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        if (!form.Confirmed)
+        {
+            return await RenderCancelVisitErrorAsync(
+                form,
+                [
+                    new CommandError(
+                        CommandErrorCode.ValidationFailed,
+                        "Confirm that this Visit should be canceled.",
+                        "confirmed"),
+                ],
+                forceCanonicalRefresh: false,
+                cancellationToken);
+        }
+
+        var command = new CancelVisitCommand(
+            requestContextResolver.CreateCommandEnvelope(
+                occurredAt: timeProvider.GetUtcNow(),
+                idempotencyKey: form.IdempotencyKey,
+                reason: form.Reason,
+                comment: form.Comment),
+            form.VisitId);
+        var result = await cancelVisit.ExecuteAsync(command, cancellationToken);
+
+        if (result.Status == CommandStatus.Success)
+        {
+            return await RenderSuccessfulCancelVisitAsync(form, result, cancellationToken);
+        }
+
+        return await RenderCancelVisitErrorAsync(
+            form,
+            result.Errors,
+            RequiresCanonicalCancelVisitRefresh(result.Errors),
+            cancellationToken);
+    }
+
     private async Task<IActionResult> RenderSuccessfulCreateAsync(
         CreateClientFormInput form,
         CommandResult result,
@@ -495,6 +537,65 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IActionResult> RenderSuccessfulCancelVisitAsync(
+        CancelVisitFormInput form,
+        CommandResult result,
+        CancellationToken cancellationToken)
+    {
+        if (result.PrimaryEntityId is not { } cancellationId
+            || cancellationId.Type != CancelVisitCommand.PrimaryEntityType
+            || cancellationId.Value == Guid.Empty
+            || result.RereadTargetId is not { } rereadTarget
+            || rereadTarget.Type != CancelVisitCommand.CanonicalRereadEntityType
+            || rereadTarget.Value == Guid.Empty
+            || !result.RelatedEntityIds.Any(entityId =>
+                entityId.Type == CancelVisitCommand.SourceVisitEntityType
+                && entityId.Value == form.VisitId))
+        {
+            throw new InvalidOperationException(
+                "CancelVisit did not return the expected cancellation, source Visit and canonical Client reread target.");
+        }
+
+        ApplySearchContext(form);
+        if (rereadTarget.Value != form.ClientId)
+        {
+            Query = null;
+            Mode = ClientSearchMode.Auto;
+            IncludeInactive = false;
+            PageCursor = null;
+        }
+
+        ClientId = rereadTarget.Value;
+        var outcome = result.ChangedAfterClose
+            ? "Visit canceled after reconciled day"
+            : "Visit canceled";
+        var message = result.AuditEntryId is { } auditEntryId
+            ? $"{outcome}. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
+            : $"{outcome}.";
+
+        if (!IsHtmxRequest())
+        {
+            ClientOperationMessage = message;
+            ClientOperationTone = "success";
+            return RedirectToCanonicalPage(ClientId);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with
+            {
+                OperationMessage = message,
+                OperationSucceeded = true,
+            },
+        };
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
     private async Task<IActionResult> RenderCanonicalConflictAsync(
         UpdateClientFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -603,6 +704,76 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IActionResult> RenderCancelVisitErrorAsync(
+        CancelVisitFormInput form,
+        IReadOnlyList<CommandError> errors,
+        bool forceCanonicalRefresh,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+
+        if (IsHtmxRequest() && !forceCanonicalRefresh)
+        {
+            var errorForm = await BuildCancelVisitErrorFormAsync(
+                form,
+                errors,
+                cancellationToken);
+            if (errorForm is not null)
+            {
+                return Partial("_CancelVisitForm", errorForm);
+            }
+
+            forceCanonicalRefresh = true;
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        var currentForm = Workspace.Profile.CancelVisitForms
+            .SingleOrDefault(candidate => candidate.Input.VisitId == form.VisitId);
+        if (currentForm is not null)
+        {
+            var errorForm = forceCanonicalRefresh
+                ? CancelVisitFormViewModel.FromCanonicalRefresh(form, currentForm, errors)
+                : CancelVisitFormViewModel.FromSubmission(form, currentForm.Visit, errors);
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with
+                {
+                    CancelVisitForms = Workspace.Profile.CancelVisitForms
+                        .Select(candidate => candidate.Input.VisitId == form.VisitId
+                            ? errorForm
+                            : candidate)
+                        .ToArray(),
+                },
+            };
+        }
+        else
+        {
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with
+                {
+                    OperationMessage = errors
+                        .Select(CancelVisitFormViewModel.DisplayError)
+                        .FirstOrDefault()
+                        ?? "Visit cancellation could not be completed.",
+                    OperationSucceeded = false,
+                },
+            };
+        }
+
+        if (!IsHtmxRequest())
+        {
+            return Page();
+        }
+
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
     private async Task<MarkVisitFormViewModel> BuildMarkVisitErrorFormAsync(
         MarkVisitFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -619,9 +790,39 @@ public sealed class IndexModel(
         return MarkVisitFormViewModel.FromSubmission(form, optionsResult, errors);
     }
 
+    private async Task<CancelVisitFormViewModel?> BuildCancelVisitErrorFormAsync(
+        CancelVisitFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        var actor = requestContextResolver.Require().Actor;
+        var profileResult = await getClientProfile.ExecuteAsync(
+            new GetClientProfileQuery(
+                actor,
+                form.ClientId,
+                IncludeHistory: true),
+            cancellationToken);
+        var visit = profileResult.Profile?.RecentVisits?.Items.SingleOrDefault(row =>
+            row.VisitId == form.VisitId
+            && row.ClientId == form.ClientId
+            && row.Status == ClientVisitRowStatus.Active
+            && row.AllowedActions.IsAllowed(VisitActionKeys.Cancel));
+
+        return visit is null
+            ? null
+            : CancelVisitFormViewModel.FromSubmission(form, visit, errors);
+    }
+
     private static bool RequiresCanonicalVisitRefresh(IReadOnlyList<CommandError> errors)
     {
         return errors.Any(error => error.Code != CommandErrorCode.ValidationFailed);
+    }
+
+    private static bool RequiresCanonicalCancelVisitRefresh(
+        IReadOnlyList<CommandError> errors)
+    {
+        return errors.Any(error => error.Code is not
+            (CommandErrorCode.ValidationFailed or CommandErrorCode.ReasonRequired));
     }
 
     private async Task<UpdateClientFormViewModel> BuildErrorFormAsync(
@@ -780,6 +981,7 @@ public sealed class IndexModel(
         bool operationSucceeded = false)
     {
         MarkVisitFormViewModel? markVisitForm = null;
+        IReadOnlyList<CancelVisitFormViewModel> cancelVisitForms = [];
 
         if (profileResult is
             {
@@ -799,6 +1001,11 @@ public sealed class IndexModel(
                 occurredAt,
                 optionsResult,
                 searchContext);
+            cancelVisitForms = profile.RecentVisits?.Items
+                .Where(visit => visit.Status == ClientVisitRowStatus.Active
+                    && visit.AllowedActions.IsAllowed(VisitActionKeys.Cancel))
+                .Select(visit => CancelVisitFormViewModel.FromVisit(visit, searchContext))
+                .ToArray() ?? [];
         }
 
         return ClientProfileViewModel.FromResult(
@@ -806,7 +1013,8 @@ public sealed class IndexModel(
             searchContext,
             operationMessage,
             operationSucceeded,
-            markVisitForm: markVisitForm);
+            markVisitForm: markVisitForm,
+            cancelVisitForms: cancelVisitForms);
     }
 
     private ReceptionSearchContext CurrentSearchContext()
@@ -843,6 +1051,14 @@ public sealed class IndexModel(
     }
 
     private void ApplySearchContext(MarkVisitFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
+    }
+
+    private void ApplySearchContext(CancelVisitFormInput form)
     {
         Query = form.SearchQuery;
         Mode = form.SearchMode;

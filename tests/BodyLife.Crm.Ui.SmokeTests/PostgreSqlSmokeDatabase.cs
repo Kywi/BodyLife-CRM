@@ -1,12 +1,6 @@
-using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
-using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
-using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.Modules.Clients.Search;
-using BodyLife.Crm.Modules.Memberships;
-using BodyLife.Crm.Modules.Visits;
-using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
@@ -663,46 +657,6 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return visitId;
     }
 
-    public async Task CancelVisitAsync(Guid visitId, string reason)
-    {
-        await using var connection = new NpgsqlConnection(ConnectionString);
-        await connection.OpenAsync();
-        var sessionActor = await ReadLatestActiveSessionAsync(connection);
-        var actor = new ActorContext(
-            new AccountId(sessionActor.AccountId),
-            ActorRole.Owner,
-            AccountKind.Owner,
-            new SessionId(sessionActor.SessionId),
-            "UI smoke Visit history cancellation");
-        var now = TimeProvider.System.GetUtcNow();
-        var timeProvider = new FixedTimeProvider(now);
-
-        await using var dbContext = CreateDbContext();
-        var result = await new CancelVisitCommandHandler(
-                dbContext,
-                new BusinessAuditAppender(dbContext),
-                new CancelVisitSourcePreparer(dbContext),
-                new MembershipStateRecalculator(
-                    new MembershipStateCacheRebuilder(dbContext, timeProvider)),
-                new GetMembershipStateQueryHandler(dbContext, timeProvider),
-                new OpenVisitDayReconciliationStatusProvider(),
-                timeProvider)
-            .ExecuteAsync(
-                new CancelVisitCommand(
-                    new CommandEnvelope(
-                        actor,
-                        new RequestCorrelationId($"ui-smoke-cancel-{visitId:N}"),
-                        EntryOrigin.Normal,
-                        now,
-                        $"ui-smoke-cancel-{visitId:N}",
-                        reason,
-                        "Canceled to verify canonical reception history."),
-                    visitId),
-                CancellationToken.None);
-
-        Assert.Equal(CommandStatus.Success, result.Status);
-    }
-
     public async Task<Guid> InsertActiveFreezeForTodayAsync(
         Guid clientId,
         Guid membershipId)
@@ -826,6 +780,31 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             select count(*)
             from bodylife.command_idempotency_keys
             where command_name = 'MarkVisit'
+              and reread_target_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountCancelVisitAuditEntriesAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries audit
+            inner join bodylife.visits visit on visit.id = audit.entity_id
+            where audit.action_type = 'visit.canceled'
+              and visit.client_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountCancelVisitIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'CancelVisit'
               and reread_target_id = @client_id
             """,
             clientId);
@@ -1243,25 +1222,6 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
     }
 
     private sealed record ActiveSessionActor(Guid SessionId, Guid AccountId);
-
-    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
-    {
-        public override DateTimeOffset GetUtcNow()
-        {
-            return utcNow;
-        }
-    }
-
-    private sealed class OpenVisitDayReconciliationStatusProvider
-        : IVisitDayReconciliationStatusProvider
-    {
-        public Task<VisitDayReconciliationStatus> GetStatusAsync(
-            DateOnly businessDate,
-            CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(VisitDayReconciliationStatus.Open);
-        }
-    }
 }
 
 public sealed record MembershipTypeSmokeSnapshot(

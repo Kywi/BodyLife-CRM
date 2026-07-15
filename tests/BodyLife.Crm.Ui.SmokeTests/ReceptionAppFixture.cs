@@ -66,6 +66,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid VisitFreezeMembershipId { get; private set; }
 
+    public Guid VisitAdminClientId { get; private set; }
+
+    public Guid VisitAdminMembershipId { get; private set; }
+
     public async Task ExpireSessionAsync(string deviceLabel)
     {
         var database = _database
@@ -242,11 +246,6 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().InsertExternalCountedVisitAsync(clientId, membershipId);
     }
 
-    public Task CancelVisitAsync(Guid visitId, string reason)
-    {
-        return RequireDatabase().CancelVisitAsync(visitId, reason);
-    }
-
     public Task<Guid> InsertActiveFreezeForTodayAsync(Guid clientId, Guid membershipId)
     {
         return RequireDatabase().InsertActiveFreezeForTodayAsync(clientId, membershipId);
@@ -270,6 +269,16 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public Task<long> CountMarkVisitIdempotencyKeysAsync(Guid clientId)
     {
         return RequireDatabase().CountMarkVisitIdempotencyKeysAsync(clientId);
+    }
+
+    public Task<long> CountCancelVisitAuditEntriesAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCancelVisitAuditEntriesAsync(clientId);
+    }
+
+    public Task<long> CountCancelVisitIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCancelVisitIdempotencyKeysAsync(clientId);
     }
 
     public Task<MembershipStateSmokeSnapshot> ReadMembershipStateAsync(Guid membershipId)
@@ -553,6 +562,19 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             VisitFreezeClientId,
             membershipTypeId,
             "Freeze-block snapshot",
+            visitsLimitSnapshot: 2);
+
+        VisitAdminClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Visit",
+            "Admin",
+            "+380 67 600 07 07",
+            "BL-VISIT-ADMIN");
+        VisitAdminMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            VisitAdminClientId,
+            membershipTypeId,
+            "Admin cancel snapshot",
             visitsLimitSnapshot: 2);
     }
 

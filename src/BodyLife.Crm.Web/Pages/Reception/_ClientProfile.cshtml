@@ -157,6 +157,8 @@
                             var hasCancellationPermission = visit.AllowedActions.TryGet(
                                 VisitActionKeys.Cancel,
                                 out var cancellationPermission);
+                            var cancelVisitForm = Model.CancelVisitForms.SingleOrDefault(form =>
+                                form.Input.VisitId == visit.VisitId);
                             <li class="recent-visit-row"
                                 data-visit-id="@visit.VisitId"
                                 data-visit-status="@visit.Status.ToString().ToLowerInvariant()"
@@ -208,12 +210,16 @@
                                         </span>
                                     </div>
                                 }
+                                else if (canCancel && cancelVisitForm is not null)
+                                {
+                                    <partial name="_CancelVisitForm" model="cancelVisitForm" />
+                                }
                                 else if (hasCancellationPermission)
                                 {
                                     <p class="recent-visit-permission @(canCancel ? "permission-allowed" : "permission-restricted")"
                                        data-visit-cancel-permission>
                                         @(canCancel
-                                            ? "Cancellation permitted"
+                                            ? "Cancellation action unavailable; refresh the profile."
                                             : cancellationPermission.DeniedReason ?? "Cancellation restricted")
                                     </p>
                                 }

@@ -4610,3 +4610,98 @@ Next recommended step:
   Cover open-day Admin/Owner permission states, failure rendering and tablet/
   phone Playwright mutation flow. Keep the daily report source projection for
   the following step.
+
+## Step 100 - Cancel Visit correction from Client profile
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the next unfinished Milestone 6 correction workflow after canonical
+  Visit history became visible in the reception profile. This step exposes the
+  already validated `CancelVisit` command through Razor; it does not duplicate
+  cancellation rules or mutate Visit/Membership state in the PageModel.
+- Render the state-changing form only for an active row whose server-provided
+  permission set contains `visits.cancel`. Owner/Admin open-day behavior and
+  Owner-only reconciled-day behavior remain owned by the query and command.
+- Require explicit confirmation and a reason, retain business history, create
+  audit/idempotency facts through the command, and always reread canonical
+  workspace state after a completed or source-sensitive attempt.
+- Keep the daily report-facing Visit source/query and report consistency tests
+  for the next bounded Milestone 6 step.
+
+Scope:
+
+- Add `CancelVisitFormViewModel` and input models with a fresh idempotency key,
+  retained search context, bounded reason/comment fields and stable local error
+  mappings. Canonical-refresh forms preserve entered text but clear confirmation
+  and rotate the key supplied by the reread row.
+- Add `OnPostCancelVisitAsync` to the reception PageModel. The server verifies
+  confirmation before dispatch, builds the standard command envelope, invokes
+  the existing transactional `CancelVisit` handler and validates the primary
+  cancellation plus canonical Client/Visit reread identities before rendering
+  success.
+- Return field-level validation and reason failures to the inline form. Refresh
+  the full canonical workspace for stale, permission, duplicate, not-found,
+  already-canceled, day-close and recalculation outcomes so browser state is
+  never treated as business truth.
+- Compose one correction form for each eligible active Visit row and render it
+  inline beneath that row. The form includes retained Visit context, correction
+  warning, required confirmation/reason, optional comment, antiforgery token,
+  idempotency key, htmx busy/disabled state and duplicate-submit drop behavior.
+- Add scoped responsive styling for the established tablet two-area and phone
+  one-column profile layouts. Canceled rows remain read-only retained history.
+- Replace direct test-fixture cancellation in the Visit history smoke with the
+  real Owner UI workflow. Assert successful command execution, canonical
+  canceled history, restored Membership state, one audit entry and one
+  idempotency record on tablet and phone.
+- Add a named-Admin browser case that bypasses HTML confirmation validation,
+  proves the server rejects the attempt without mutation/audit/idempotency,
+  then confirms and successfully retries the same open-day correction.
+- Add no EF record/configuration/migration, JavaScript bundle, report query or
+  daily report UI change.
+
+Validation:
+
+- The first focused Playwright attempt could not connect because Docker Desktop
+  was stopped. After it started, Windows reported local port `55432` inside a
+  dynamically excluded range, so the unchanged Compose service was run on
+  temporary host port `55532` for this validation only.
+- The first browser-capable focused run passed 5/7 cases; the two viewport cases
+  found an ambiguous exact-text locator because the Membership snapshot appears
+  both as the Visit heading and form context. Scoping the assertion to the
+  heading fixed the test without changing product behavior.
+- Final focused `MarkVisitSmokeTests` passed all 7 cases against Docker
+  PostgreSQL. A separate screenshot run passed 2/2; visual review at 1024x768
+  and 390x844 confirmed readable correction forms and canceled history with no
+  overlap or horizontal overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 311
+  PostgreSQL/architecture infrastructure tests, 31 Playwright smoke tests and
+  unchanged EF migration listing through
+  `20260714174210_AddFreezeSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this command/UI step generated no migration.
+- `graphify update .` completed the structural rebuild with 5779 nodes, 12546
+  edges and 616 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(visits): add Cancel Visit reception flow`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add the report-facing daily Visit source/query shape and PostgreSQL
+  consistency tests. Read canonical active/canceled Visit facts and Memberships
+  public state without reimplementing Membership formulas, preserve correction
+  visibility, and prove daily totals equal drill-down source rows. Keep report
+  Razor composition for a subsequent bounded step.

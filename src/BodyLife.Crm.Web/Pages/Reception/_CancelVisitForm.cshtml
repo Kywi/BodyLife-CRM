@@ -1,0 +1,119 @@
+@model CancelVisitFormViewModel
+@{
+    var input = Model.Input;
+    var visit = Model.Visit;
+    var visitKey = visit.VisitId.ToString("N");
+    var contextLabel = visit.Consumption?.MembershipTypeNameSnapshot
+        ?? VisitKindLabel(visit.VisitKind);
+}
+
+<details id="cancel-visit-panel-@visitKey"
+         class="visit-correction-panel"
+         data-cancel-visit-panel
+         open="@(Model.IsOpen ? "open" : null)">
+    <summary>Cancel visit</summary>
+    <div class="visit-correction-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Visit not canceled</strong>
+                <ul>
+                    @foreach (var message in Model.Errors
+                        .Select(CancelVisitFormViewModel.DisplayError)
+                        .Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <dl class="visit-correction-context">
+            <div>
+                <dt>Visit</dt>
+                <dd>@contextLabel</dd>
+            </div>
+            <div>
+                <dt>Occurred</dt>
+                <dd>@visit.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+            </div>
+        </dl>
+
+        <div class="warning-block warning-danger">
+            <strong>Correction keeps history</strong>
+            <span>The Visit remains visible as canceled and counted Membership state is recalculated.</span>
+        </div>
+
+        <form id="cancel-visit-form-@visitKey"
+              class="cancel-visit-form"
+              method="post"
+              asp-page="/Reception/Index"
+              asp-page-handler="CancelVisit"
+              data-busy-form
+              data-cancel-visit-form
+              hx-post="@Url.Page("/Reception/Index", "CancelVisit")"
+              hx-target="#cancel-visit-panel-@visitKey"
+              hx-swap="outerHTML"
+              hx-sync="this:drop"
+              hx-indicator="#cancel-visit-loading-@visitKey"
+              hx-disabled-elt="find button">
+            <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+            <input type="hidden" name="form.VisitId" value="@input.VisitId" />
+            <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+            <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+            <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+            <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+            <div class="form-field">
+                <label for="cancel-visit-reason-@visitKey">Reason</label>
+                <textarea id="cancel-visit-reason-@visitKey"
+                          name="form.Reason"
+                          maxlength="@CancelVisitFormViewModel.ReasonMaxLength"
+                          required>@input.Reason</textarea>
+            </div>
+
+            <div class="form-field">
+                <label for="cancel-visit-comment-@visitKey">Comment (optional)</label>
+                <textarea id="cancel-visit-comment-@visitKey"
+                          name="form.Comment"
+                          maxlength="@CancelVisitFormViewModel.CommentMaxLength">@input.Comment</textarea>
+            </div>
+
+            <label class="acknowledgement-control cancel-visit-confirmation"
+                   for="cancel-visit-confirmed-@visitKey">
+                <input id="cancel-visit-confirmed-@visitKey"
+                       type="checkbox"
+                       name="form.Confirmed"
+                       value="true"
+                       checked="@(input.Confirmed ? "checked" : null)"
+                       required />
+                <span>I confirm this Visit was recorded by mistake and should be canceled.</span>
+            </label>
+
+            <div class="action-form-footer">
+                <span id="cancel-visit-loading-@visitKey"
+                      class="request-indicator htmx-indicator"
+                      role="status"
+                      aria-live="polite">Canceling visit...</span>
+                <button class="danger-button"
+                        type="submit"
+                        data-cancel-visit-submit
+                        data-busy-text="Canceling...">Cancel visit</button>
+            </div>
+        </form>
+    </div>
+</details>
+
+@functions {
+    private static string VisitKindLabel(VisitKind visitKind)
+    {
+        return visitKind switch
+        {
+            VisitKind.Membership => "Membership visit",
+            VisitKind.OneOff => "One-off visit",
+            VisitKind.Trial => "Trial visit",
+            _ => "Visit",
+        };
+    }
+}
