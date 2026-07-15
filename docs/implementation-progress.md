@@ -4800,3 +4800,96 @@ Next recommended step:
   daily-report indexes, one reviewable EF migration and PostgreSQL
   constraint/index tests. Keep Create/Correct Payment commands and UI for later
   bounded steps.
+
+## Step 102 - Canonical Payment source storage
+
+Status: completed. Milestone 7 is in progress.
+
+Plan alignment:
+
+- Complete the first bounded Milestone 7 task from the roadmap by introducing
+  PostgreSQL source facts for cash Payments and explicit cancellation/replacement
+  history before implementing commands or UI.
+- Keep daily cash truth canonical: only `active` cash rows contribute to totals,
+  while `canceled` and `replaced` originals remain queryable and correction or
+  cancellation facts explain the transition.
+- Enforce the roadmap's `amount > 0`, cash-only method, controlled context,
+  entry-origin and same-client Membership relationship rules in PostgreSQL.
+- Do not implement `CreatePayment`, `CorrectPayment`, issue-with-payment
+  integration, negative-closure policy, report query composition, Audit hooks or
+  Razor/htmx flows in this storage-only step.
+
+Scope:
+
+- Add EF records and configurations for `payments`, `payment_cancellations` and
+  `payment_corrections`. Payment facts retain client, optional Membership,
+  amount/currency, cash method, controlled context, occurred/recorded times,
+  account/session, origin/batch, comment and canonical status.
+- Accept only `membership_sale`, `one_off`, `trial`, `negative_closure` and
+  `other` contexts; retain `active`, `canceled` and `replaced` Payment statuses.
+  Currency stays a canonical uppercase value consistent with existing
+  Membership price storage rather than introducing an unaccepted accounting
+  or multi-method model.
+- Add the composite nullable FK
+  `FK_payments_issued_memberships_membership_client`: a standalone Payment may
+  omit Membership, but a supplied Membership must belong to the Payment client.
+- Preserve replacement explainability with separate original and replacement
+  Payment rows, a non-empty JSON array of changed fields, required reason,
+  actor/session/origin metadata, distinct-row checks and same-client composite
+  FKs. Unique original/replacement indexes keep each replacement relationship
+  unambiguous while still allowing a later correction chain.
+- Preserve cancellation history with one reasoned cancellation fact per
+  Payment and restrictive foreign keys; application commands will own the
+  future cross-table terminal-state transaction.
+- Add covering partial/full daily-cash indexes, client and Membership timeline
+  indexes, correction/cancellation timelines and accountability indexes.
+- Add EF migration `20260715213519_AddPaymentSourceFacts`; remove the UTF-8 BOM
+  emitted in its two generated files to satisfy the repository formatter.
+- Add four PostgreSQL tests covering exact tables/checks/indexes, replacement
+  history and active daily totals, optional/cross-client Membership behavior,
+  invalid amount/method/context/currency/origin/status/comment values, unique
+  correction/cancellation relationships and restrictive history deletes.
+
+Validation:
+
+- The first migration-generation attempt used a stale Debug assembly because
+  it combined Release-only prior build output with `--no-build`. That empty
+  migration was removed before application; regeneration with an explicit
+  Release build produced the intended three-table migration.
+- Focused `PostgreSqlPaymentsStorageTests` passed all 4 cases against Docker
+  PostgreSQL, including clean migration apply and canonical daily cash totals
+  before/after replacement.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 321
+  PostgreSQL/architecture infrastructure tests, 31 Playwright smoke tests and
+  EF migration listing through
+  `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+  Idempotent migration SQL from `20260715211212_AddDailyVisitSourceIndex` was
+  reviewed and contains only the three guarded Payment tables, their explicit
+  constraints/indexes and the migration-history row.
+- `graphify update .` completed the structural rebuild with 5922 nodes, 12886
+  edges and 629 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(payments): add canonical Payment source storage`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add the standalone `CreatePayment` command boundary and PostgreSQL handler:
+  active Owner/Admin session authorization, cash/context validation, optional
+  same-client Membership link, idempotency, one transaction, `payment.created`
+  business audit and a canonical Payment result. Prove ordinary standalone
+  Payments do not alter Membership negative state. Keep issue-with-payment,
+  `CorrectPayment`, daily-cash query/UI and negative-closure policy for later
+  bounded steps.
