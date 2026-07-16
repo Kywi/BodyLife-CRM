@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1784230892.1912029,
-    "ast_hash": "61604f28db84e694b80b253f6b25b159",
+    "mtime": 1784232343.8753264,
+    "ast_hash": "5fcafaf6ca97edaeb6e475076bc0353f",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784230187.7077484,
-    "ast_hash": "8e203c6a727141c9bf7df9ec671c0efd",
+    "mtime": 1784231697.8299754,
+    "ast_hash": "35b0f617f6c201906cc3b609efd5890a",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -3165,13 +3165,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Freezes/FreezeAuditActions.cs": {
-    "mtime": 1784230881.4468455,
-    "ast_hash": "8ff5f8d1724fd3fdd99063f989853fef",
+    "mtime": 1784232241.3550694,
+    "ast_hash": "bb924bf40080e33a1ddacc1af13b8f4a",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Freezes/FreezeCommandSupport.cs": {
-    "mtime": 1784230881.4468455,
-    "ast_hash": "1aa4bc63431e00aad115f4f611497d1e",
+    "mtime": 1784232241.3550694,
+    "ast_hash": "04b282430ee929a03a63c7fde9f5d3ce",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Freezes/MembershipFreezeExtensionSourceReader.cs": {
@@ -3192,6 +3192,66 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlAddFreezeCommandTests.cs": {
     "mtime": 1784231293.5390823,
     "ast_hash": "c0463521cd76cb3b41fb7792bb1342ac",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Freezes/CancelFreezeCommandHandler.cs": {
+    "mtime": 1784232343.8753264,
+    "ast_hash": "1a16c8c2bd17413c10ff387c84f8b569",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Freezes/CancelFreezeSourcePreparationResult.cs": {
+    "mtime": 1784232159.3953884,
+    "ast_hash": "aad90558520fee7896579fa23d77be8b",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Freezes/CancelFreezeSourcePreparationStatus.cs": {
+    "mtime": 1784232159.3953884,
+    "ast_hash": "02f5bcd438cd2c36f33ce221e64b5e34",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Freezes/CancelFreezeSourcePreparer.cs": {
+    "mtime": 1784232746.1807034,
+    "ast_hash": "6fc6f03ac25479743981bdb92092c116",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Freezes/OpenFreezeDayReconciliationStatusProvider.cs": {
+    "mtime": 1784232159.3953884,
+    "ast_hash": "5d80cb78ff74f51baebbb9fcc3859805",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Freezes/CancelFreezeCommand.cs": {
+    "mtime": 1784232159.3953884,
+    "ast_hash": "49316a4ecdb5654919a5e0a15aec1fe4",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Freezes/FreezeCancellationSource.cs": {
+    "mtime": 1784232159.3953884,
+    "ast_hash": "072918c4428dcc36c2bcaad149f8a88a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Freezes/FreezeCancellationSourceStatus.cs": {
+    "mtime": 1784232159.3953884,
+    "ast_hash": "fb39a78e1bb5c13394c90d8ecbecae88",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Freezes/FreezeDayReconciliationStatus.cs": {
+    "mtime": 1784232159.3953884,
+    "ast_hash": "f7aecc64cc6dc5d38b0d12b05f922e90",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Freezes/IFreezeDayReconciliationStatusProvider.cs": {
+    "mtime": 1784232159.3953884,
+    "ast_hash": "84b562dbcb53bc4433901229cfd0fd1b",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCancelFreezeCommandTests.cs": {
+    "mtime": 1784232709.0198963,
+    "ast_hash": "0e12392d3d51ab8bfe0d48131f070c50",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260716_201145_\u043c\u0435\u043d\u0456_\u043d\u0435_\u043f\u043e\u0434\u043e\u0431\u0430\u0454\u0442\u044c\u0441\u044f_\u043f\u043e\u0442\u043e\u0447\u043d\u0438\u0439_\u0432\u0438\u0433\u043b\u044f\u0434_\u0456\u043d\u0442\u0435\u0440\u0444\u0435\u0439\u0441\u0443__\u0432\u0456.md": {
+    "mtime": 1784232705.1837256,
+    "ast_hash": "2dafacb4831cae8dc8ce021347a2da10",
     "semantic_hash": ""
   }
 }
