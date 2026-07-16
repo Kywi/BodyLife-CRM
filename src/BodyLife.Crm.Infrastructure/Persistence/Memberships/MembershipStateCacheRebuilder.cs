@@ -6,11 +6,35 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 
-public sealed class MembershipStateCacheRebuilder(
-    BodyLifeDbContext dbContext,
-    TimeProvider timeProvider)
+public sealed class MembershipStateCacheRebuilder
 {
-    public const int CurrentRecalculationVersion = 4;
+    private readonly BodyLifeDbContext dbContext;
+    private readonly IReadOnlyList<IMembershipExtensionSourceProvider>
+        extensionSourceProviders;
+    private readonly TimeProvider timeProvider;
+
+    public MembershipStateCacheRebuilder(
+        BodyLifeDbContext dbContext,
+        TimeProvider timeProvider,
+        IEnumerable<IMembershipExtensionSourceProvider>? extensionSourceProviders = null)
+    {
+        ArgumentNullException.ThrowIfNull(dbContext);
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
+        var providers = extensionSourceProviders?.ToArray() ?? [];
+        if (providers.Any(provider => provider is null))
+        {
+            throw new ArgumentException(
+                "Membership extension source providers cannot contain a missing item.",
+                nameof(extensionSourceProviders));
+        }
+
+        this.dbContext = dbContext;
+        this.timeProvider = timeProvider;
+        this.extensionSourceProviders = providers;
+    }
+
+    public const int CurrentRecalculationVersion = 5;
 
     public async Task<MembershipStateCacheRebuildResult> RebuildAsync(
         Guid membershipId,
@@ -119,7 +143,7 @@ public sealed class MembershipStateCacheRebuilder(
             .Where(visitFact => openingStateSource is null
                 || visitFact.RecordedAt > openingStateSource.RecordedAt)
             .ToArray();
-        var calculatedState = openingStateSource is null
+        var sourceBaseline = openingStateSource is null
             ? MembershipStateCalculator.CalculateFromVisitAndAdjustmentFacts(
                 membershipId,
                 issueTerms,
@@ -137,6 +161,34 @@ public sealed class MembershipStateCacheRebuilder(
                         openingStateSource.KnownExtensionDays),
                     visitFacts,
                     adjustmentFacts);
+        MembershipExtensionCalculation? extensionCalculation = null;
+        var calculatedState = sourceBaseline;
+        if (extensionSourceProviders.Count > 0)
+        {
+            var extensionSources = new List<MembershipExtensionSourceRange>();
+            foreach (var provider in extensionSourceProviders)
+            {
+                var providerSources = await provider.GetForMembershipAsync(
+                    membershipId,
+                    cancellationToken);
+                if (providerSources is null)
+                {
+                    throw new InvalidOperationException(
+                        "Membership extension source provider returned no collection.");
+                }
+
+                extensionSources.AddRange(providerSources);
+            }
+
+            extensionCalculation = MembershipExtensionCalculator.Calculate(
+                extensionSources);
+            calculatedState = MembershipStateCalculator
+                .ApplyDateRangeExtensionCalculation(
+                    issueTerms,
+                    sourceBaseline,
+                    extensionCalculation);
+        }
+
         var cache = await dbContext.Set<MembershipStateCacheRecord>()
             .SingleOrDefaultAsync(
                 state => state.MembershipId == membershipId,
@@ -159,6 +211,16 @@ public sealed class MembershipStateCacheRebuilder(
 
         var recalculatedAt = timeProvider.GetUtcNow();
         ApplyCalculatedState(cache, calculatedState, recalculatedAt);
+        if (extensionCalculation is not null)
+        {
+            await MembershipExtensionDayWriter.ReplaceAfterMembershipLockAsync(
+                dbContext,
+                membershipId,
+                extensionCalculation,
+                recalculatedAt,
+                cancellationToken);
+        }
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (ownedTransaction is not null)

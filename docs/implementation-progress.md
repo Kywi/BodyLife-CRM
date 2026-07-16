@@ -5951,3 +5951,85 @@ Next recommended step:
   extension-day recalculation, append-only `freeze.added` business audit,
   canonical reread target and rollback evidence. Keep CancelFreeze and reception
   UI as later independent steps.
+
+## Step 115 - Transactional AddFreeze workflow
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement the state-changing `AddFreeze` slice immediately after the pure
+  eligibility contract and locked PostgreSQL preparation from Steps 113-114.
+- Reuse the existing `freezes`, `membership_extension_days`, business-audit and
+  command-idempotency schema. This step adds no EF model or migration change.
+- Keep Memberships as the sole owner of extension union, effective end and
+  warning calculations. Freezes exposes locked canonical source ranges but does
+  not calculate Membership state itself.
+- Keep `CancelFreeze`, reception UI and Owner-only NonWorkingDay workflows as
+  following bounded Milestone 8 steps.
+
+Scope:
+
+- Add the public `AddFreezeCommand` with canonical Client reread and related
+  Membership target, plus stable `FreezeConflictsWithVisit` command mapping.
+- Require an active canonical Owner or Admin account/session and normalize the
+  correlation id, idempotency key, device label, occurred time, reason, comment,
+  entry origin and optional backfill/fallback batch metadata.
+- Execute authorization, idempotency replay/rejection, Membership-first locked
+  eligibility preparation, active Freeze insertion, synchronous Membership
+  recalculation, `freeze.added` business audit and idempotency completion in one
+  PostgreSQL transaction.
+- Add a Memberships extension-source provider contract and a PostgreSQL Freeze
+  reader that locks all retained ranges for the selected Membership. Active
+  ranges participate in the union while canceled source facts remain visible
+  but non-extending.
+- Make the canonical cache rebuild combine opening/adjustment extension days
+  with the union of active date-range sources, atomically replace explanation
+  rows and persist cache version 5. Existing Visit and negative-balance state is
+  preserved through the same Memberships calculator boundary.
+- Return a canonical Client reread target after success and map duplicate,
+  Membership/Visit/Freeze concurrency, eligibility and recalculation failures
+  without leaving partial Freeze, cache, extension-day, audit or idempotency
+  state.
+- Add focused domain, architecture and PostgreSQL coverage for union arithmetic,
+  source ownership, permissions, metadata, Visit conflicts, lifecycle/range
+  rejection, replay, concurrent duplicate submission, lock conflict, audit and
+  recalculation rollback, and DI resolution.
+
+Validation:
+
+- Focused Membership extension calculation tests passed 11/11.
+- Focused `PostgreSqlAddFreezeCommandTests` passed 11/11 against Docker
+  PostgreSQL, and the compatibility selection for Membership formula ownership,
+  cache rebuild, Freeze storage and MarkVisit passed 46/46.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 279 core tests, 35 web tests, 373
+  PostgreSQL/architecture infrastructure tests, 37 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this workflow reuses the existing Freeze source schema.
+- `git diff --check` passed before the progress update.
+- `graphify update .` completed the structural rebuild with 6761 nodes, 15397
+  edges and 654 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(freezes): add freeze workflow`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add one transactional `CancelFreeze` workflow over the retained
+  `freeze_cancellations` source table: canonical Owner/Admin authorization,
+  Membership-first locking, active Freeze validation, idempotency, retained
+  cancellation fact, synchronous extension-union rebuild, append-only
+  `freeze.canceled` audit, canonical Client reread and rollback/concurrency
+  evidence. Keep reception UI and NonWorkingDays as later independent steps.

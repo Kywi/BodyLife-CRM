@@ -205,6 +205,62 @@ public static class MembershipStateCalculator
             baseline.LastCountedVisitAt);
     }
 
+    public static MembershipCalculatedState ApplyDateRangeExtensionCalculation(
+        MembershipIssueTerms? issueTerms,
+        MembershipCalculatedState? sourceBaseline,
+        MembershipExtensionCalculation? extensionCalculation)
+    {
+        ArgumentNullException.ThrowIfNull(issueTerms);
+        ArgumentNullException.ThrowIfNull(sourceBaseline);
+        ArgumentNullException.ThrowIfNull(extensionCalculation);
+
+        MembershipCalculatedState canonicalBaseline;
+        try
+        {
+            canonicalBaseline = MembershipCalculatedState.FromStoredCache(
+                issueTerms,
+                sourceBaseline.CountedVisits,
+                sourceBaseline.RemainingVisits,
+                sourceBaseline.NegativeBalance,
+                sourceBaseline.FirstNegativeVisitId,
+                sourceBaseline.FirstNegativeVisitDate,
+                sourceBaseline.ExtensionDays,
+                sourceBaseline.EffectiveEndDate,
+                sourceBaseline.LastCountedVisitAt);
+        }
+        catch (ArgumentException exception)
+        {
+            throw new ArgumentException(
+                "Membership source baseline must match the supplied issued terms.",
+                nameof(sourceBaseline),
+                exception);
+        }
+
+        // The source baseline excludes date-range sources; the calculation is their full union.
+        var extensionDays = (long)canonicalBaseline.ExtensionDays
+            + extensionCalculation.ExtensionDays;
+        var effectiveEndDayNumber = (long)issueTerms.BaseEndDate.DayNumber
+            + extensionDays;
+        if (extensionDays > int.MaxValue
+            || effectiveEndDayNumber > DateOnly.MaxValue.DayNumber)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(extensionCalculation),
+                extensionCalculation.ExtensionDays,
+                "Extension days exceed the supported calendar range.");
+        }
+
+        return new MembershipCalculatedState(
+            canonicalBaseline.CountedVisits,
+            canonicalBaseline.RemainingVisits,
+            canonicalBaseline.NegativeBalance,
+            canonicalBaseline.FirstNegativeVisitId,
+            canonicalBaseline.FirstNegativeVisitDate,
+            (int)extensionDays,
+            DateOnly.FromDayNumber((int)effectiveEndDayNumber),
+            canonicalBaseline.LastCountedVisitAt);
+    }
+
     private static int ResolveExtensionDays(
         MembershipIssueTerms issueTerms,
         MembershipOpeningState openingState)

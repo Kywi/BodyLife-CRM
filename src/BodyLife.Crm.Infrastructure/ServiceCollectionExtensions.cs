@@ -10,6 +10,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
 using BodyLife.Crm.Modules.Payments;
@@ -116,6 +117,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<CorrectPaymentCommand>,
             CorrectPaymentCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<AddFreezeCommand>,
+            AddFreezeCommandHandler>();
         services.TryAddSingleton<
             IPaymentDayReconciliationStatusProvider,
             OpenPaymentDayReconciliationStatusProvider>();
@@ -128,11 +132,15 @@ public static class ServiceCollectionExtensions
             provider.GetRequiredService<MembershipVisitFreezeSourceReader>());
         services.AddScoped<IMembershipVisitFreezeSourceSnapshotProvider>(provider =>
             provider.GetRequiredService<MembershipVisitFreezeSourceReader>());
+        services.AddScoped<MembershipFreezeExtensionSourceReader>();
+        services.AddScoped<IMembershipExtensionSourceProvider>(provider =>
+            provider.GetRequiredService<MembershipFreezeExtensionSourceReader>());
         services.AddScoped<
             IMembershipVisitEligibilityEvaluator,
             MembershipVisitEligibilityEvaluator>();
         services.AddScoped<IMembershipStateRecalculator, MembershipStateRecalculator>();
         services.AddScoped<MembershipVisitEligibilityPreparer>();
+        services.AddScoped<MembershipFreezeEligibilityPreparer>();
         services.AddScoped<MembershipExtensionDayWriter>();
         services.AddScoped<MembershipStatePersistenceCoordinator>();
         services.AddScoped<MembershipStateCacheRebuilder>();

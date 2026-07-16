@@ -19,5 +19,6 @@ public enum CommandErrorCode
     NegativeDecisionRequired,
     WarningAcknowledgementRequired,
     VisitDuringFreeze,
-    ReasonRequired
+    ReasonRequired,
+    FreezeConflictsWithVisit
 }

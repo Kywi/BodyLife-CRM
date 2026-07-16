@@ -235,6 +235,121 @@ public sealed class MembershipStateExtensionCalculationTests
         Assert.Equal("baseline", exception.ParamName);
     }
 
+    [Fact]
+    public void DateRangeUnionAddsToHonestAggregateSourceBaseline()
+    {
+        var issueTerms = CreateIssueTerms();
+        var sourceBaseline = MembershipCalculatedState.FromStoredCache(
+            issueTerms,
+            countedVisits: 10,
+            remainingVisits: -2,
+            negativeBalance: 2,
+            firstNegativeVisitId: FirstNegativeVisitId,
+            firstNegativeVisitDate: new DateOnly(2026, 7, 12),
+            extensionDays: 2,
+            effectiveEndDate: issueTerms.BaseEndDate.AddDays(2),
+            lastCountedVisitAt: LastCountedVisitAt);
+        var calculation = MembershipExtensionCalculator.Calculate(
+        [
+            Source(
+                "freeze",
+                FreezeId,
+                new DateOnly(2026, 7, 10),
+                new DateOnly(2026, 7, 12)),
+            Source(
+                "non_working_period",
+                NonWorkingPeriodId,
+                new DateOnly(2026, 7, 11),
+                new DateOnly(2026, 7, 13)),
+        ]);
+
+        var state = MembershipStateCalculator.ApplyDateRangeExtensionCalculation(
+            issueTerms,
+            sourceBaseline,
+            calculation);
+
+        Assert.Equal(4, calculation.ExtensionDays);
+        Assert.Equal(6, state.ExtensionDays);
+        Assert.Equal(issueTerms.BaseEndDate.AddDays(6), state.EffectiveEndDate);
+        Assert.Equal(sourceBaseline.CountedVisits, state.CountedVisits);
+        Assert.Equal(sourceBaseline.RemainingVisits, state.RemainingVisits);
+        Assert.Equal(sourceBaseline.NegativeBalance, state.NegativeBalance);
+        Assert.Equal(sourceBaseline.FirstNegativeVisitId, state.FirstNegativeVisitId);
+        Assert.Equal(sourceBaseline.FirstNegativeVisitDate, state.FirstNegativeVisitDate);
+        Assert.Equal(sourceBaseline.LastCountedVisitAt, state.LastCountedVisitAt);
+        Assert.Equal(2, sourceBaseline.ExtensionDays);
+    }
+
+    [Fact]
+    public void DateRangeApplicationValidatesInputsAndIssuedTerms()
+    {
+        var issueTerms = CreateIssueTerms();
+        var sourceBaseline = MembershipStateCalculator.CalculateInitial(issueTerms);
+        var calculation = MembershipExtensionCalculator.Calculate([]);
+        var differentTerms = CreateIssueTerms(durationDays: 31);
+
+        var missingTerms = Assert.Throws<ArgumentNullException>(() =>
+            MembershipStateCalculator.ApplyDateRangeExtensionCalculation(
+                issueTerms: null,
+                sourceBaseline,
+                calculation));
+        var missingBaseline = Assert.Throws<ArgumentNullException>(() =>
+            MembershipStateCalculator.ApplyDateRangeExtensionCalculation(
+                issueTerms,
+                sourceBaseline: null,
+                calculation));
+        var missingCalculation = Assert.Throws<ArgumentNullException>(() =>
+            MembershipStateCalculator.ApplyDateRangeExtensionCalculation(
+                issueTerms,
+                sourceBaseline,
+                extensionCalculation: null));
+        var mismatchedBaseline = Assert.Throws<ArgumentException>(() =>
+            MembershipStateCalculator.ApplyDateRangeExtensionCalculation(
+                differentTerms,
+                sourceBaseline,
+                calculation));
+
+        Assert.Equal("issueTerms", missingTerms.ParamName);
+        Assert.Equal("sourceBaseline", missingBaseline.ParamName);
+        Assert.Equal("extensionCalculation", missingCalculation.ParamName);
+        Assert.Equal("sourceBaseline", mismatchedBaseline.ParamName);
+    }
+
+    [Fact]
+    public void DateRangeUnionRejectsAggregateCalendarOverflow()
+    {
+        var issueTerms = CreateIssueTerms(
+            startDate: DateOnly.MaxValue.AddDays(-2),
+            durationDays: 1);
+        var sourceBaseline = MembershipCalculatedState.FromStoredCache(
+            issueTerms,
+            countedVisits: 0,
+            remainingVisits: 8,
+            negativeBalance: 0,
+            firstNegativeVisitId: null,
+            firstNegativeVisitDate: null,
+            extensionDays: 1,
+            effectiveEndDate: DateOnly.MaxValue.AddDays(-1),
+            lastCountedVisitAt: null);
+        var calculation = MembershipExtensionCalculator.Calculate(
+        [
+            Source(
+                "freeze",
+                FreezeId,
+                DateOnly.MaxValue.AddDays(-1),
+                DateOnly.MaxValue),
+        ]);
+
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            MembershipStateCalculator.ApplyDateRangeExtensionCalculation(
+                issueTerms,
+                sourceBaseline,
+                calculation));
+
+        Assert.Equal("extensionCalculation", exception.ParamName);
+        Assert.Equal(2, exception.ActualValue);
+    }
+
     private static MembershipIssueTerms CreateIssueTerms(
         DateOnly? startDate = null,
         int durationDays = 30)
