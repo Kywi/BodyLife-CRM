@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-07T21:34:15.063621+00:00",
+  "generated_at": "2026-07-16T21:55:36.624870+00:00",
   "nodes": {
     "docs_adr_adr_backlog_adr_backlog_для_bodylife_crm": {
       "code_fingerprint": "8587e9f50a6bad2f1e3cf969b815bface8d14027062981a22c37c9c0693a4775",
@@ -12,7 +12,7 @@
           "q": "Сформувати accepted ADR package"
         }
       ],
-      "score": 0.992894713,
+      "score": 0.806204766,
       "source_file": "docs/adr/adr-backlog.md",
       "status": "tentative",
       "uses": 1
@@ -28,8 +28,24 @@
           "q": "Сформувати accepted ADR package"
         }
       ],
-      "score": 0.992894713,
+      "score": 0.806204766,
       "source_file": "docs/architecture-research-options.md",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_domain_model_bodylife_crm_domain_model": {
+      "code_fingerprint": "a5b16b49006c4a15ff92d46f8d732045320c1bdf47fc0f22dc2f19ae7e44275e",
+      "label": "BodyLife CRM domain model",
+      "last": "2026-07-07T21:38:06.760175+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-07T21:38:06.760175+00:00",
+          "outcome": "useful",
+          "q": "На основі всіх post-ADR документів сформуй docs/implementation-roadmap.md"
+        }
+      ],
+      "score": 0.812024386,
+      "source_file": "docs/domain-model.md",
       "status": "tentative",
       "uses": 1
     },
@@ -44,7 +60,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.976704222,
+      "score": 0.793058508,
       "source_file": "docs/initial-context.txt",
       "status": "tentative",
       "uses": 1
@@ -60,7 +76,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.976704222,
+      "score": 0.793058508,
       "source_file": "docs/question-answering-interview.txt",
       "status": "tentative",
       "uses": 1
@@ -76,7 +92,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.976704222,
+      "score": 0.793058508,
       "source_file": "docs/question-answering-interview.txt",
       "status": "tentative",
       "uses": 1
@@ -92,8 +108,103 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.976704222,
+      "score": 0.793058508,
       "source_file": "docs/question-answering-interview.txt",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_technology_stack_decision": {
+      "code_fingerprint": "a2c040de2b52a6d69d770661e11f3988a562f0c1b80e2e76d8d5924e1bc5a8dd",
+      "label": "technology-stack-decision.md",
+      "last": "2026-07-07T21:38:06.760175+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-07T21:38:06.760175+00:00",
+          "outcome": "useful",
+          "q": "На основі всіх post-ADR документів сформуй docs/implementation-roadmap.md"
+        }
+      ],
+      "score": 0.812024386,
+      "source_file": "docs/technology-stack-decision.md",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_ui_design_foundation_bodylife_crm_ui_design_foundation": {
+      "code_fingerprint": "82ec8c0af55908457a0823e5baec97689072d9bd6f107fd2668eaffce360d4bf",
+      "label": "BodyLife CRM UI design foundation",
+      "last": "2026-07-16T20:32:37.350856+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-16T20:32:37.350856+00:00",
+          "outcome": "useful",
+          "q": "шо ти думаєш про шось таке?"
+        },
+        {
+          "date": "2026-07-16T20:11:45.190389+00:00",
+          "outcome": "useful",
+          "q": "мені не подобається поточний вигляд інтерфейсу, він не практичний та щоб наприклад додати нового клієнта потрібно виконати пошук і не знайти його, як на мене це з точки зору ux не правильно, які шаблони ти можеш запропонувти, щоб воно якось стильово ше виглядало. поки робимо чисто шаблони без змін коду"
+        }
+      ],
+      "score": 1.99700433,
+      "source_file": "docs/ui-design-foundation.md",
+      "status": "preferred",
+      "uses": 2
+    },
+    "docs_ui_workflows_client_search_workflow": {
+      "code_fingerprint": "731c8f6e8f484bd3ad397290b6d1b356ccb4c9ef0524c5b02053271dcdd338b0",
+      "label": "Client Search Workflow",
+      "last": "2026-07-16T20:32:37.350856+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-16T20:32:37.350856+00:00",
+          "outcome": "useful",
+          "q": "шо ти думаєш про шось таке?"
+        },
+        {
+          "date": "2026-07-16T20:11:45.190389+00:00",
+          "outcome": "useful",
+          "q": "мені не подобається поточний вигляд інтерфейсу, він не практичний та щоб наприклад додати нового клієнта потрібно виконати пошук і не знайти його, як на мене це з точки зору ux не правильно, які шаблони ти можеш запропонувти, щоб воно якось стильово ше виглядало. поки робимо чисто шаблони без змін коду"
+        }
+      ],
+      "score": 1.99700433,
+      "source_file": "docs/ui-workflows.md",
+      "status": "preferred",
+      "uses": 2
+    },
+    "docs_ui_workflows_reception_dashboard_workflow": {
+      "code_fingerprint": "731c8f6e8f484bd3ad397290b6d1b356ccb4c9ef0524c5b02053271dcdd338b0",
+      "label": "Reception Dashboard Workflow",
+      "last": "2026-07-16T20:32:37.350856+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-16T20:32:37.350856+00:00",
+          "outcome": "useful",
+          "q": "шо ти думаєш про шось таке?"
+        },
+        {
+          "date": "2026-07-16T20:11:45.190389+00:00",
+          "outcome": "useful",
+          "q": "мені не подобається поточний вигляд інтерфейсу, він не практичний та щоб наприклад додати нового клієнта потрібно виконати пошук і не знайти його, як на мене це з точки зору ux не правильно, які шаблони ти можеш запропонувти, щоб воно якось стильово ше виглядало. поки робимо чисто шаблони без змін коду"
+        }
+      ],
+      "score": 1.99700433,
+      "source_file": "docs/ui-workflows.md",
+      "status": "preferred",
+      "uses": 2
+    },
+    "docs_vertical_slice_plan": {
+      "code_fingerprint": "bfef6156fcca55b2e5344c6c45fbf2023ac2968a5b2a53765731d20e4490397c",
+      "label": "vertical-slice-plan.md",
+      "last": "2026-07-07T21:38:06.760175+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-07T21:38:06.760175+00:00",
+          "outcome": "useful",
+          "q": "На основі всіх post-ADR документів сформуй docs/implementation-roadmap.md"
+        }
+      ],
+      "score": 0.812024386,
+      "source_file": "docs/vertical-slice-plan.md",
       "status": "tentative",
       "uses": 1
     }
