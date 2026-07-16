@@ -638,10 +638,10 @@
   "636": ".ListStaffAccountsAsync",
   "637": ".RejectAsync",
   "638": "AccountSessionSnapshot",
+  "639": "FixedTimeProvider",
+  "640": ".FormatTimestamp",
+  "641": ".PersistenceRegistrationResolvesCorrectPaymentWorkflow",
   "642": "MembershipAdjustmentTypes.cs",
-  "643": "BodyLifeAuthTechnicalLogger.cs",
   "644": ".NormalizeAndValidate",
-  "646": "MembershipAuditActions.cs",
-  "648": "MembershipVisitEligibilityErrorCodes.cs",
   "650": "FixedTimeProvider"
 }
