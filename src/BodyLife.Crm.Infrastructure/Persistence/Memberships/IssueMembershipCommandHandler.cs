@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
+using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 public sealed class IssueMembershipCommandHandler(
     BodyLifeDbContext dbContext,
     BusinessAuditAppender auditAppender,
+    IMembershipIssuePaymentWriter paymentWriter,
     MembershipStateCacheRebuilder stateCacheRebuilder,
     TimeProvider timeProvider)
     : IBodyLifeCommandHandler<IssueMembershipCommand>
@@ -242,6 +244,17 @@ public sealed class IssueMembershipCommandHandler(
             }
 
             var recalculatedState = rebuildResult.State;
+            MembershipIssuePaymentWriteResult? paymentWrite = null;
+            if (issue.Payment is not null)
+            {
+                paymentWrite = paymentWriter.Stage(
+                    command.Envelope,
+                    issue.ClientId,
+                    membershipId,
+                    issue.Payment,
+                    recordedAt);
+            }
+
             var auditEntryId = auditAppender.Append(
                 command.Envelope,
                 MembershipAuditActions.Issued,
@@ -252,6 +265,7 @@ public sealed class IssueMembershipCommandHandler(
                 {
                     ClientId = issue.ClientId,
                     MembershipTypeId = issue.MembershipTypeId,
+                    PaymentId = paymentWrite?.PaymentId,
                 },
                 afterSummary: new
                 {
@@ -279,6 +293,18 @@ public sealed class IssueMembershipCommandHandler(
                         {
                             preparation.ExistingNegativeState.NegativeBalance,
                             preparation.ExistingNegativeState.FirstNegativeVisitDate,
+                        },
+                    Payment = paymentWrite is null
+                        ? null
+                        : new
+                        {
+                            paymentWrite.PaymentId,
+                            PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
+                            Amount = issue.Payment!.Amount.Amount,
+                            Currency = issue.Payment.Amount.Currency,
+                            Method = "cash",
+                            PaymentContext = "membership_sale",
+                            OccurredAt = issue.Envelope.OccurredAt ?? recordedAt,
                         },
                     InitialState = new
                     {

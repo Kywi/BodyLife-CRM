@@ -5271,3 +5271,92 @@ Next recommended step:
   and prove rollback on Payment/recalculation/audit failure. Do not compose it
   by calling the standalone profile Payment form after issuance. Keep
   `CorrectPayment` and daily-cash Reports for later bounded steps.
+
+## Step 107 - Atomic IssueMembership Payment integration
+
+Status: completed. Milestone 7 is in progress.
+
+Plan alignment:
+
+- Complete the roadmap's bounded Milestone 7 command/persistence portion of
+  issue-with-payment after standalone Payment source facts and reception entry
+  exist. The optional cash Payment is part of `IssueMembership`; it is not a
+  follow-up call to the standalone Add Payment form or command.
+- Preserve module ownership through a Payments-owned
+  `IMembershipIssuePaymentWriter` port. Memberships coordinates one transaction,
+  while Payments owns staging the canonical `payments` row and
+  `payment.created` audit event.
+- Keep accepted v1 semantics narrow: payment method is cash, the integrated
+  context is `membership_sale`, amount must be positive and currency remains a
+  canonical `Money` value. Payment presence does not hide an existing negative
+  Membership; the existing explicit negative-decision rules still apply.
+- Keep the reception issue form, preview/form composition, `CorrectPayment`
+  and Reports-owned daily cash work for later bounded steps.
+
+Scope:
+
+- Extend `IssueMembershipCommand` with optional `MembershipIssuePayment`
+  amount/context input and include its canonical amount, currency and context
+  in the IssueMembership idempotency fingerprint.
+- Validate positive amount, canonical currency, membership-sale context and the
+  Payment row's comment limit before opening or mutating business state.
+- Add `MembershipIssuePaymentWriter` in Payments. Inside the caller-owned
+  transaction it stages one active cash Payment linked to the new Membership,
+  copies actor/session/origin/occurred/recorded metadata and appends the
+  separate `payment.created` business audit.
+- Coordinate Payment staging after initial Membership state rebuild and before
+  final save/commit. The existing single IssueMembership idempotency record is
+  retained; no nested `CreatePayment` transaction or second command key is
+  created.
+- Include Payment id and summary plus its Payment audit id in the
+  `membership.issued` audit, while the Payment audit points back to Client and
+  Membership. Command success still directs the UI to reread the canonical
+  Client profile.
+- Add command-contract and PostgreSQL integration evidence for optional/no
+  Payment behavior, source metadata, both audits, payment-sensitive
+  fingerprint replay, concurrent same-key submission and rollback on
+  recalculation, Payment persistence, Payment audit and Membership audit
+  failures.
+- Reuse the existing Payment schema and migration; add no EF record,
+  configuration or migration.
+
+Validation:
+
+- Focused `IssueMembershipCommandContractsTests` passed 12/12.
+- Focused PostgreSQL `PostgreSqlIssueMembershipCommandTests` passed 17/17
+  against Docker PostgreSQL, including atomic success, idempotent/concurrent
+  replay and rollback failure injection.
+- `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 341
+  PostgreSQL/architecture infrastructure tests, 33 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` built successfully and
+  reported no model drift; this transaction-composition step generated no
+  migration.
+- `graphify update .` completed the structural rebuild with 6202 nodes, 13725
+  edges and 653 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): issue memberships with optional payment`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add the reception Issue Membership Razor/htmx workflow over
+  `GetMembershipTypesForIssue`, `PreviewIssueMembership` and the now-atomic
+  `IssueMembershipCommand`. Render immutable snapshot/end-date preview,
+  require the server-provided negative decision when applicable, accept an
+  optional positive UAH cash membership-sale Payment, prevent duplicate
+  submit with one idempotency key and reread the canonical Client profile after
+  success. Keep `CorrectPayment` and daily-cash Reports for subsequent bounded
+  steps.

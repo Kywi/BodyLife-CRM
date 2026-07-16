@@ -94,6 +94,9 @@ public static class ServiceCollectionExtensions
             IBodyLifeCommandHandler<CreateMembershipOpeningStateCommand>,
             CreateMembershipOpeningStateCommandHandler>();
         services.AddScoped<
+            IMembershipIssuePaymentWriter,
+            MembershipIssuePaymentWriter>();
+        services.AddScoped<
             IBodyLifeCommandHandler<IssueMembershipCommand>,
             IssueMembershipCommandHandler>();
         services.AddScoped<

@@ -3,6 +3,7 @@ using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
@@ -15,6 +16,7 @@ internal static class IssueMembershipCommandSupport
     private const int DeviceLabelMaxLength = 120;
     private const int AuditReasonMaxLength = 1000;
     private const int AuditCommentMaxLength = 2000;
+    private const int PaymentCommentMaxLength = 1000;
     private static readonly TimeSpan IdempotencyRetention = TimeSpan.FromHours(24);
 
     internal static CommandResult? ValidateAndNormalize(
@@ -53,6 +55,14 @@ internal static class IssueMembershipCommandSupport
                 "entryBatchId");
         }
 
+        var paymentValidation = ValidateAndNormalizePayment(
+            command.Payment,
+            out var normalizedPayment);
+        if (paymentValidation is not null)
+        {
+            return paymentValidation;
+        }
+
         var envelopeValidation = ValidateAndNormalizeEnvelope(
             command.Envelope,
             out var normalizedEnvelope);
@@ -61,11 +71,20 @@ internal static class IssueMembershipCommandSupport
             return envelopeValidation;
         }
 
+        if (normalizedPayment is not null
+            && normalizedEnvelope!.Comment?.Length > PaymentCommentMaxLength)
+        {
+            return ValidationError(
+                $"Issue comment must be {PaymentCommentMaxLength} characters or fewer when a Payment is included.",
+                "envelope.comment");
+        }
+
         normalizedIssue = new NormalizedMembershipIssue(
             command.ClientId,
             command.MembershipTypeId,
             command.StartDate,
             command.NegativeHandlingDecision,
+            normalizedPayment,
             normalizedEnvelope!);
         return null;
     }
@@ -89,6 +108,14 @@ internal static class IssueMembershipCommandSupport
             issue.StartDate,
             NegativeHandlingDecision = MapNegativeHandlingDecision(
                 issue.NegativeHandlingDecision),
+            Payment = issue.Payment is null
+                ? null
+                : new
+                {
+                    Amount = issue.Payment.Amount.Amount,
+                    Currency = issue.Payment.Amount.Currency,
+                    PaymentContext = "membership_sale",
+                },
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));
@@ -270,6 +297,48 @@ internal static class IssueMembershipCommandSupport
         return null;
     }
 
+    private static CommandResult? ValidateAndNormalizePayment(
+        MembershipIssuePayment? payment,
+        out MembershipIssuePayment? normalizedPayment)
+    {
+        normalizedPayment = null;
+        if (payment is null)
+        {
+            return null;
+        }
+
+        if (!Enum.IsDefined(payment.PaymentContext)
+            || payment.PaymentContext != PaymentContext.MembershipSale)
+        {
+            return ValidationError(
+                "IssueMembership accepts only membership-sale Payment context.",
+                "payment.paymentContext");
+        }
+
+        if (payment.Amount.Amount <= 0)
+        {
+            return ValidationError(
+                "Payment amount must be greater than zero.",
+                "payment.amount");
+        }
+
+        try
+        {
+            normalizedPayment = payment with
+            {
+                Amount = new Money(
+                    payment.Amount.Amount,
+                    payment.Amount.Currency),
+            };
+        }
+        catch (ArgumentException exception)
+        {
+            return ValidationError(exception.Message, "payment.amount");
+        }
+
+        return null;
+    }
+
     private static string? NormalizeOptional(string? value)
     {
         var trimmed = value?.Trim();
@@ -303,6 +372,7 @@ internal sealed record NormalizedMembershipIssue(
     Guid MembershipTypeId,
     DateOnly StartDate,
     MembershipNegativeHandlingDecision? NegativeHandlingDecision,
+    MembershipIssuePayment? Payment,
     NormalizedMembershipIssueEnvelope Envelope);
 
 internal sealed record NormalizedMembershipIssueEnvelope(
