@@ -4979,3 +4979,95 @@ Next recommended step:
   add PostgreSQL fail-closed consistency tests. Keep `CorrectPayment`, the
   reception payment form and Reports-owned daily-cash composition for later
   bounded steps.
+
+## Step 104 - Canonical Client Payment rows query
+
+Status: completed. Milestone 7 is in progress.
+
+Plan alignment:
+
+- Continue the next bounded Milestone 7 read-side prerequisite after the
+  transactional standalone `CreatePayment` command. This step exposes
+  Payments-owned source rows needed by Client profile/history composition
+  without implementing a second projection in Clients/Search or Razor.
+- Preserve canonical history: active, canceled and replaced Payment rows remain
+  visible; a canceled row requires its retained cancellation fact, while a
+  replaced row requires its outgoing correction and links both original and
+  replacement sides to the same correction metadata.
+- Keep payment facts typed and explainable with cash method, context, Money,
+  optional issue-time Membership type snapshot, actor/session,
+  occurred/recorded times, entry origin/batch, comment, reason and structured
+  changed fields.
+- Expose no correction/cancellation actions yet because `CorrectPayment` and
+  day-close policy are not implemented. The read boundary does not infer future
+  permissions, calculate Membership state or reinterpret daily cash totals.
+- Keep profile composition/rendering, `CorrectPayment`, reception mutation
+  forms and Reports-owned daily-cash source composition for later bounded
+  steps.
+
+Scope:
+
+- Add `GetClientPaymentRowsQuery`, result/status types and a bounded page
+  contract with default limit 20, maximum limit 100 and `HasMore` indication.
+- Add immutable public Payment row, method/status, cancellation and correction
+  models. Correction links are explicit in both directions so a replacement
+  chain remains understandable even when its counterpart falls outside the
+  selected page.
+- Implement `GetClientPaymentRowsQueryHandler` with canonical active Owner,
+  named Admin or shared Reception/Admin session authorization, Client
+  existence and limit validation, Client ownership filtering and deterministic
+  `occurred_at DESC, recorded_at DESC, id DESC` ordering.
+- Read Payment, optional Membership snapshot, cancellation and correction
+  records without tracking. Parse `changed_fields` with `System.Text.Json` and
+  fail closed on non-string/empty/duplicate field names, unknown enum-like
+  values, noncanonical cash/currency/Membership relationships, duplicate
+  retained facts or lifecycle/status disagreement.
+- Register the query through the application query DI boundary. Reads create no
+  business audit entry and expose no `QueryPermissionSet` until the mutation
+  policy exists.
+- Add six focused tests covering owned active/canceled/replaced rows, two-sided
+  correction links and cancellation/backfill metadata, no read audit,
+  deterministic ordering/paging, empty/invalid/not-found/inactive-actor
+  responses, missing retained cancellation, malformed correction JSON and DI.
+- Reuse the existing Payment timeline indexes; this read-only step changes no
+  EF model and generates no migration.
+
+Validation:
+
+- The Infrastructure and Infrastructure test projects built in Release with 0
+  warnings/errors. Focused `PostgreSqlGetClientPaymentRowsQueryTests` passed all
+  6 cases against Docker PostgreSQL.
+- An exploratory `dotnet format` run elevated all existing repository IDE
+  suggestions to `info` and therefore returned exit 2; the standard repository
+  `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` gate passed,
+  as did `git diff --check`.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 337
+  PostgreSQL/architecture infrastructure tests, 31 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this query/DI step generated no migration.
+- `graphify update .` completed the structural rebuild with 6108 nodes, 13412
+  edges and 638 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(payments): query canonical Client Payment rows`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Compose `GetClientPaymentRowsQuery` into the canonical Client profile and
+  render a compact read-only recent Payments section for tablet and phone.
+  Show active/canceled/replaced state, amount/context, occurred/recorded and
+  backfill/fallback labels, retained cancellation reason and two-sided
+  correction explanation. Keep add/correct Payment forms, mutation permissions
+  and Reports-owned daily-cash composition for subsequent bounded steps.
