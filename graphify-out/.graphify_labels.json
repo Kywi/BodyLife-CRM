@@ -627,5 +627,22 @@
   "625": "20260715211212_AddDailyVisitSourceIndex.Designer.cs",
   "626": "20260715213519_AddPaymentSourceFacts.Designer.cs",
   "627": "MembershipTypeCatalogActionKeys.cs",
-  "628": ".PersistenceRegistrationExposesScopedStatePersistenceCoordinator"
+  "628": ".PersistenceRegistrationExposesScopedStatePersistenceCoordinator",
+  "629": "MarkVisitFormInput",
+  "630": "IssuedMembershipRecord",
+  "631": "MembershipOpeningStateRecord",
+  "632": ".ListStaffAccountsAsync",
+  "633": "PaymentCorrectionRecord",
+  "634": ".GetSnapshotForVisitAsync",
+  "635": "IEntityTypeConfiguration",
+  "636": "BodyLifeAuthorizationPolicies.cs",
+  "637": "ClientAuditActions.cs",
+  "638": "PaymentAuditActions.cs",
+  "639": "AccountSessionPolicy.cs",
+  "640": "StaffAccountAuditActions.cs",
+  "641": "FixedTimeProvider",
+  "642": "FixedTimeProvider",
+  "643": ".AssertScopedRegistration",
+  "644": ".PersistenceRegistrationResolvesDailyVisitSourceRowsQuery",
+  "645": ".PersistenceRegistrationExposesScopedIssuePreviewHandler"
 }

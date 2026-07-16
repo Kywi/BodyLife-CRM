@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1784149882.7120798,
-    "ast_hash": "525346820a4301d765f9093e0beec952",
+    "mtime": 1784205354.9918334,
+    "ast_hash": "73720691c8e9a7aff4d675392acb74af",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784150680.523962,
-    "ast_hash": "bfbb2d8e5e064a3deb966052b4b723fa",
+    "mtime": 1784151886.0759625,
+    "ast_hash": "cb1a56532751dca32435b1f145efbbca",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2867,6 +2867,36 @@
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlPaymentsStorageTests.cs": {
     "mtime": 1784151612.5271947,
     "ast_hash": "449e433392f223c23b318328b52b0814",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/CreatePaymentCommandHandler.cs": {
+    "mtime": 1784205354.9918334,
+    "ast_hash": "0958b7d31d8baf50b4b0ac031aa4f773",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentAuditActions.cs": {
+    "mtime": 1784205354.9878335,
+    "ast_hash": "ce909cf1f4d408439657d23fcefb015a",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentCommandSupport.cs": {
+    "mtime": 1784205354.9918334,
+    "ast_hash": "745afd61894c223f2000b6573e3601ba",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/CreatePaymentCommand.cs": {
+    "mtime": 1784205208.5038373,
+    "ast_hash": "a98dcd966832ee774b12c4ef2db002d0",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/PaymentContext.cs": {
+    "mtime": 1784205208.5038373,
+    "ast_hash": "6ffea22ec3b2e59109ca115f9dae7306",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCreatePaymentCommandTests.cs": {
+    "mtime": 1784205649.3798225,
+    "ast_hash": "7ef28b25e20912826d6c29770c849e2a",
     "semantic_hash": ""
   }
 }
