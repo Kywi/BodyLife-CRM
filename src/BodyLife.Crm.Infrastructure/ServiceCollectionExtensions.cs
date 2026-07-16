@@ -76,6 +76,11 @@ public static class ServiceCollectionExtensions
                 GetClientPaymentRowsQuery,
                 GetClientPaymentRowsResult>,
             GetClientPaymentRowsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<
+                GetDailyPaymentSourceRowsQuery,
+                GetDailyPaymentSourceRowsResult>,
+            GetDailyPaymentSourceRowsQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<CreateMembershipTypeCommand>,

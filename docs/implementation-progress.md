@@ -5644,3 +5644,88 @@ Next recommended step:
   drill-down rows before adding the reception report UI. Keep Membership
   formulas out of Reports and keep day-close storage/policy as a separate
   explicit decision-backed step.
+
+## Step 111 - Daily Payment report source readiness
+
+Status: completed. Milestone 7 is complete.
+
+Plan alignment:
+
+- Close the final Milestone 7 daily-cash source task after Payment storage,
+  standalone and issue-integrated creation, canonical Client history,
+  correction/cancellation commands and reception workflows are already proven.
+- Follow the same bounded source-query pattern established by Step 101 for
+  daily Visits. This step exposes canonical Payment rows and derived count/sum
+  only; full `GenerateDailyReport`, report navigation and reception report UI
+  remain Milestone 9 work.
+- Read direct canonical Payment facts as required by ADR-007 and the report
+  consistency contract. Active rows drive totals while canceled/replaced rows
+  remain visible with their cancellation/correction links.
+- Reuse the existing `ix_payments_daily_source` index and Payment source schema;
+  add no report-owned formulas outside the returned canonical row set and make
+  no EF model or migration change.
+
+Scope:
+
+- Add public `GetDailyPaymentSourceRowsQuery` result/status contracts and a
+  `DailyPaymentSourceSnapshot` for one UTC business date. Payment count and cash
+  sum are derived from active drill-down rows, so totals cannot diverge from the
+  query result.
+- Add a PostgreSQL query handler with canonical active-session authorization,
+  half-open UTC date bounds, deterministic newest-first ordering, Client display
+  names, optional Membership snapshot ownership checks and fail-closed source
+  mapping through shared Payment query support.
+- Preserve canceled/replaced Payment rows and attach canonical cancellation and
+  incoming/outgoing correction facts. A correction that moves `occurred_at`
+  leaves the old date explainable and contributes the replacement only to its
+  new date.
+- Return server-owned correction permissions from the selected day's
+  open/reconciled status. Reconciled ordinary Payments are Owner-only and the
+  reserved `negative_closure` context exposes no generic correction action.
+- Reject an aggregate with mixed active currencies instead of producing one
+  misleading cash sum. Empty days retain the v1 reception default `UAH` zero.
+- Register the handler in persistence DI. Queries remain read-only and create no
+  business audit entry.
+- Add PostgreSQL integration coverage for count/sum equality, retained
+  correction/cancellation drill-down, cross-date corrections, UTC boundaries,
+  deterministic ordering, empty dates, active actor authorization,
+  reconciled-day permissions, reserved negative closure, source inconsistency,
+  DI registration and `ix_payments_daily_source` query-plan usage.
+
+Validation:
+
+- Release infrastructure-test build passed with 0 warnings/errors.
+- Focused `PostgreSqlGetDailyPaymentSourceRowsQueryTests` passed 7/7 against
+  Docker PostgreSQL, including canonical total/drill-down equality and
+  old/new-date correction explainability.
+- `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 266 core tests, 35 web tests, 357
+  PostgreSQL/architecture infrastructure tests, 37 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this query-contract step generated no migration.
+- `graphify update .` completed the structural rebuild with 6545 nodes, 14770
+  edges and 647 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(payments): add daily cash source query`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Start Milestone 8 with one bounded `AddFreeze` command/persistence workflow
+  over the existing Freeze source tables and Memberships recalculation
+  coordinator: inclusive range validation, canonical Membership lock,
+  idempotency, extension-day rebuild, append-only `freeze.added` audit and
+  rollback evidence. Keep `CancelFreeze`, reception UI and Owner-only
+  NonWorkingDay preview/confirmation as following independent steps.
