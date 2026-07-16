@@ -5462,3 +5462,89 @@ Next recommended step:
   evidence. Do not invent a closed-day policy while the roadmap decision is
   pending; keep the correction Razor UI and daily-cash Report composition for
   following steps.
+
+## Step 109 - CorrectPayment command and persistence workflow
+
+Status: completed. Milestone 7 is in progress.
+
+Plan alignment:
+
+- Complete the roadmap's bounded `CorrectPayment` command/persistence portion
+  after canonical Payment source facts, standalone creation, profile history
+  and issue-with-payment are already proven. Keep the correction Razor/htmx UI
+  and Reports-owned daily cash composition for later steps.
+- Preserve source history: replacement creates a new active cash Payment and a
+  `payment_corrections` fact while marking the original `replaced`; cancellation
+  creates a `payment_cancellations` fact while marking the original `canceled`.
+  Neither path deletes or overwrites the original amount/date/context.
+- Follow the accepted open/reconciled-day contract through a narrow Payments
+  status-provider port. The current default remains open until day-close
+  storage/policy is implemented; a reconciled status is fail-closed to Owner
+  and carries `changed_after_close` in command and audit results.
+- Keep ordinary corrections outside Membership recalculation. An original or
+  replacement `negative_closure` Payment is rejected until its explicit
+  Membership-owned correction policy exists.
+
+Scope:
+
+- Add public `CorrectPaymentCommand`, replace/cancel modes, replacement value
+  contract and Payment day-reconciliation status/provider contracts.
+- Add one transactional command handler that authorizes the canonical active
+  Owner/Admin session, normalizes operational metadata, locks the original
+  Payment, validates active source state and replacement Client/Membership
+  ownership, and rereads the canonical Client after success.
+- Persist replacement/correction or cancellation facts, original status,
+  command idempotency and one append-only `payment.corrected` or
+  `payment.canceled` business audit in the same ACID transaction.
+- Include original and replacement Payment summaries, changed field names,
+  both occurred dates, reason/comment and changed-after-close state in audit
+  evidence. Replay reconstructs and verifies the committed canonical fact.
+- Map duplicate/outgoing-fact and PostgreSQL lock/unique races to stable command
+  errors. Concurrent same-key submission serializes to one complete workflow;
+  audit failure rolls back Payment state, correction/cancellation and
+  idempotency together.
+- Register the handler and an overridable open-day provider in persistence DI.
+  Reuse the existing Payment schema and migration; add no EF model change.
+- Add command-contract and PostgreSQL tests for replace/cancel, fallback
+  accountability, old/new date explainability, reason/shape/relationship
+  validation, negative-closure reservation, day-close permission, idempotent
+  and concurrent replay, already-processed state and rollback.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- Focused `CorrectPaymentCommandContractsTests` passed 5/5.
+- Focused PostgreSQL `PostgreSqlCorrectPaymentCommandTests` passed 8/8 against
+  Docker PostgreSQL, including replace/cancel facts, reconciled-day Owner
+  enforcement, idempotency/concurrency and audit-failure rollback.
+- `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 266 core tests, 35 web tests, 349
+  PostgreSQL/architecture infrastructure tests, 35 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this command/persistence step generated no migration.
+- `graphify update .` completed the structural rebuild with 6410 nodes, 14342
+  edges and 645 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(payments): correct and cancel payments`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add the reception `CorrectPayment` Razor/htmx workflow from canonical Client
+  Payment history: Owner/Admin replace or cancel on open days, required reason,
+  positive cash replacement fields, one idempotency key, busy/disabled submit,
+  server errors and a full canonical Client profile reread after success. Keep
+  reconciled-day actions Owner-only through the command result/provider, and
+  keep daily-cash Report composition as the following bounded step.

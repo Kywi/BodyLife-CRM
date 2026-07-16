@@ -108,6 +108,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<CreatePaymentCommand>,
             CreatePaymentCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<CorrectPaymentCommand>,
+            CorrectPaymentCommandHandler>();
+        services.TryAddSingleton<
+            IPaymentDayReconciliationStatusProvider,
+            OpenPaymentDayReconciliationStatusProvider>();
         services.TryAddSingleton<
             IVisitDayReconciliationStatusProvider,
             OpenVisitDayReconciliationStatusProvider>();
