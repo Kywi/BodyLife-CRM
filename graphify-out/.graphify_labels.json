@@ -636,13 +636,5 @@
   "634": ".GetSnapshotForVisitAsync",
   "635": "IEntityTypeConfiguration",
   "636": "BodyLifeAuthorizationPolicies.cs",
-  "637": "ClientAuditActions.cs",
-  "638": "PaymentAuditActions.cs",
-  "639": "AccountSessionPolicy.cs",
-  "640": "StaffAccountAuditActions.cs",
-  "641": "FixedTimeProvider",
-  "642": "FixedTimeProvider",
-  "643": ".AssertScopedRegistration",
-  "644": ".PersistenceRegistrationResolvesDailyVisitSourceRowsQuery",
-  "645": ".PersistenceRegistrationExposesScopedIssuePreviewHandler"
+  "637": "ClientAuditActions.cs"
 }
