@@ -669,6 +669,9 @@
 - Report-access auditing for read-only queries unless future owner policy requires it.
 - Full support ticketing system.
 
+
+## Стоп перед 11 Milestone
+
 ## Milestone 11. Backup/restore/paper fallback readiness
 
 ### Ціль
