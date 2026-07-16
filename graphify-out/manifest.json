@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1784213180.771651,
-    "ast_hash": "50a9c5c4148cef024e28a28319a958e2",
+    "mtime": 1784216808.8377707,
+    "ast_hash": "506806f8247e3a268773a81f38257683",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784215819.032623,
-    "ast_hash": "f118c225c3e5368f1a9ea48e4057e260",
+    "mtime": 1784218183.1311686,
+    "ast_hash": "24a8afb51ec4de9cc127378b909e2045",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -2875,8 +2875,8 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentAuditActions.cs": {
-    "mtime": 1784205354.9878335,
-    "ast_hash": "ce909cf1f4d408439657d23fcefb015a",
+    "mtime": 1784216808.8377707,
+    "ast_hash": "9b394eead2275cdf6f6f9bb54910cf4d",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentCommandSupport.cs": {
@@ -3007,6 +3007,56 @@
   "tests/BodyLife.Crm.Ui.SmokeTests/IssueMembershipSmokeTests.cs": {
     "mtime": 1784215425.4847045,
     "ast_hash": "2e3847ffca96be9cb99b6c5b8f5d63bf",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/CorrectPaymentCommandHandler.cs": {
+    "mtime": 1784216942.4250479,
+    "ast_hash": "3781c5be15eba550e2479d0d07c29435",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/CorrectPaymentCommandSupport.cs": {
+    "mtime": 1784216808.8377707,
+    "ast_hash": "f7d2eb33a0fe32381be4e8b43258255c",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/OpenPaymentDayReconciliationStatusProvider.cs": {
+    "mtime": 1784216808.8377707,
+    "ast_hash": "c6649bdde01c3df7039c84c337823ebc",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/CorrectPaymentCommand.cs": {
+    "mtime": 1784216666.4128182,
+    "ast_hash": "568e3f988b7af6e24fcc6e3a6bcd9f04",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/IPaymentDayReconciliationStatusProvider.cs": {
+    "mtime": 1784216666.4128182,
+    "ast_hash": "31f56fc152147dbd6b7d2406cbc35edb",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/PaymentCorrectionMode.cs": {
+    "mtime": 1784216666.4128182,
+    "ast_hash": "6565b0e9b3702789a8f014123d1a7ca9",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/PaymentDayReconciliationStatus.cs": {
+    "mtime": 1784216666.4128182,
+    "ast_hash": "721a9d23d913455e2836e8b851e86129",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/PaymentReplacement.cs": {
+    "mtime": 1784216666.4128182,
+    "ast_hash": "f51ab4eb1e46a8454e23d36624dcbe7d",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlCorrectPaymentCommandTests.cs": {
+    "mtime": 1784217931.5463743,
+    "ast_hash": "d1fdf6f0d0b5ede10d0d85eeff8f39cb",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Tests/Modules/Payments/CorrectPaymentCommandContractsTests.cs": {
+    "mtime": 1784217772.9466062,
+    "ast_hash": "f4d6b0a529b706522add98c30d69b57d",
     "semantic_hash": ""
   }
 }
