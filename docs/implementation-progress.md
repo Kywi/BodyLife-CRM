@@ -5170,3 +5170,104 @@ Next recommended step:
   with idempotency and reread the canonical profile on success. Keep
   issue-with-payment integration, `CorrectPayment` and daily-cash Reports for
   subsequent bounded steps.
+
+## Step 106 - Reception Add Payment workflow
+
+Status: completed. Milestone 7 is in progress.
+
+Plan alignment:
+
+- Continue the next bounded Milestone 7 task after canonical Payment source,
+  command, Client row query and profile history. This step exposes the existing
+  `CreatePaymentCommand` through the reception profile without creating a
+  second mutation path or moving Payment validation into Razor.
+- Keep this profile action to normal same-day standalone cash Payments in UAH.
+  Supported contexts are membership sale, one-off, trial and other;
+  `negative_closure` remains blocked by the command and is not offered by the
+  UI until its explicit workflow is accepted and implemented.
+- Preserve the roadmap warning that a standalone Payment does not close
+  negative visits or recalculate Membership state. The profile rereads
+  canonical state after success instead of applying optimistic Payment or
+  Membership values.
+- Keep manual backfill/paper fallback entry, issue-with-payment transaction
+  integration, `CorrectPayment` and Reports-owned daily cash composition for
+  subsequent bounded steps.
+
+Scope:
+
+- Add the Payments-owned `PaymentActionKeys.Create` permission and compose it
+  into `GetClientProfile`. The profile remains server-authoritative for whether
+  the Add Payment form is exposed, while `CreatePaymentCommandHandler` repeats
+  canonical account/session, Client and Membership authorization in its
+  PostgreSQL transaction.
+- Extend the existing profile Membership timeline summary with its immutable
+  issue-time type-name snapshot so the optional same-Client Membership choice
+  is recognizable without an extra UI-owned projection.
+- Add `AddPaymentFormViewModel`, input model and `_AddPaymentForm` Razor partial.
+  The form fixes method to cash and currency to UAH, accepts a positive amount,
+  one supported context, optional canonical Membership, current UTC occurred
+  time and optional comment, and carries the current search context plus a new
+  idempotency key.
+- Validate adapter-only form shape before constructing `Money`: required
+  positive amount/context/time, non-empty optional Membership id, normal
+  current UTC date and no future occurred time. Domain and persistence
+  validation remain in `CreatePaymentCommand` and PostgreSQL constraints.
+- Submit through an antiforgery-protected Razor handler with `hx-sync` drop,
+  disabled/busy button state and command idempotency. Verify the returned
+  Payment id and canonical Client reread target before reporting success.
+- Return validation failures in the open action panel after rebuilding its
+  choices from a lightweight canonical profile query. Non-validation failures
+  refresh the entire workspace; successful commands reread full profile
+  history and display the new canonical Payment row and audit reference.
+- Show a visible warning that standalone Payment does not close negative visits
+  or recalculate Membership state. Do not expose negative closure, correction,
+  cancellation or report actions in this step.
+- Add isolated tablet and phone fixtures plus PostgreSQL evidence helpers. The
+  tablet path creates a Membership-linked membership-sale Payment; the phone
+  path creates a standalone one-off Payment. Both first prove zero-amount
+  rejection without source/audit/idempotency rows, then prove busy duplicate
+  tap protection, exactly one active Payment/audit/idempotency row, canonical
+  profile history and unchanged Membership state where linked.
+
+Validation:
+
+- The Web, Infrastructure test and UI smoke projects built in Release with 0
+  warnings/errors. Focused `ClientProfileMembershipProjectionTests` passed 5/5,
+  `PostgreSqlGetClientProfileQueryTests` passed 13/13 against Docker PostgreSQL,
+  and focused `AddPaymentSmokeTests` passed 2/2 at 1024x768 and 390x844.
+- Full-page tablet and phone form/success screenshots were inspected. The
+  normal-payment warning, amount/context/Membership inputs, validation error,
+  touch submit and canonical Payment row remain readable without overlap or
+  horizontal overflow; phone controls collapse to one column.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` and
+  `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 338
+  PostgreSQL/architecture infrastructure tests, 33 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this permission/profile/Razor workflow generated no migration.
+- `graphify update .` completed the structural rebuild with 6179 nodes, 13638
+  edges and 634 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(payments): add reception Payment workflow`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Implement optional cash Payment inside `IssueMembership` as one atomic
+  workflow: extend the issue command/preview/form contract, commit issued
+  Membership, Payment, initial recalculation, audit and idempotency together,
+  and prove rollback on Payment/recalculation/audit failure. Do not compose it
+  by calling the standalone profile Payment form after issuance. Keep
+  `CorrectPayment` and daily-cash Reports for later bounded steps.

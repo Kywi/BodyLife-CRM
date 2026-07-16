@@ -32,6 +32,7 @@ public sealed record ClientProfileViewModel(
     UpdateClientFormViewModel? UpdateClientForm,
     CardAssignmentFormViewModel? CardAssignmentForm,
     MarkVisitFormViewModel? MarkVisitForm,
+    AddPaymentFormViewModel? AddPaymentForm,
     IReadOnlyList<CancelVisitFormViewModel> CancelVisitForms,
     string? OperationMessage,
     bool OperationSucceeded)
@@ -41,6 +42,7 @@ public sealed record ClientProfileViewModel(
         UpdateClientForm: null,
         CardAssignmentForm: null,
         MarkVisitForm: null,
+        AddPaymentForm: null,
         CancelVisitForms: [],
         OperationMessage: null,
         OperationSucceeded: false);
@@ -53,6 +55,7 @@ public sealed record ClientProfileViewModel(
         UpdateClientFormViewModel? updateClientForm = null,
         CardAssignmentFormViewModel? cardAssignmentForm = null,
         MarkVisitFormViewModel? markVisitForm = null,
+        AddPaymentFormViewModel? addPaymentForm = null,
         IReadOnlyList<CancelVisitFormViewModel>? cancelVisitForms = null)
     {
         if (updateClientForm is null
@@ -76,6 +79,7 @@ public sealed record ClientProfileViewModel(
             updateClientForm,
             cardAssignmentForm,
             markVisitForm,
+            addPaymentForm,
             cancelVisitForms ?? [],
             operationMessage,
             operationSucceeded);

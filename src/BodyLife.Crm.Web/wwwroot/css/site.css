@@ -268,6 +268,7 @@ input[type="search"],
 input[type="text"],
 input[type="password"],
 input[type="number"],
+input[type="datetime-local"],
 select {
   width: 100%;
   min-height: 48px;
@@ -891,6 +892,7 @@ textarea:focus-visible,
 .update-client-form,
 .card-assignment-form,
 .mark-visit-form,
+.add-payment-form,
 .cancel-visit-form {
   display: grid;
   gap: 16px;
@@ -947,6 +949,7 @@ textarea:focus-visible,
 }
 
 .visit-business-context,
+.payment-fixed-context,
 .visit-membership-meta {
   display: grid;
   margin: 0;
@@ -955,6 +958,7 @@ textarea:focus-visible,
 }
 
 .visit-business-context div,
+.payment-fixed-context div,
 .visit-membership-meta div {
   display: grid;
   min-width: 0;
@@ -962,6 +966,7 @@ textarea:focus-visible,
 }
 
 .visit-business-context dt,
+.payment-fixed-context dt,
 .visit-membership-meta dt {
   color: var(--muted);
   font-size: 0.8rem;
@@ -969,6 +974,7 @@ textarea:focus-visible,
 }
 
 .visit-business-context dd,
+.payment-fixed-context dd,
 .visit-membership-meta dd {
   min-width: 0;
   margin: 0;
@@ -1756,6 +1762,7 @@ textarea:focus-visible,
   .visit-correction-context,
   .action-form-grid,
   .visit-business-context,
+  .payment-fixed-context,
   .visit-membership-meta,
   .visit-kind-options {
     grid-template-columns: 1fr;
@@ -1770,11 +1777,13 @@ textarea:focus-visible,
   }
 
   .mark-visit-form .action-form-footer,
+  .add-payment-form .action-form-footer,
   .cancel-visit-form .action-form-footer {
     flex-wrap: wrap;
   }
 
   .mark-visit-form .action-form-footer button,
+  .add-payment-form .action-form-footer button,
   .cancel-visit-form .action-form-footer button {
     width: 100%;
   }

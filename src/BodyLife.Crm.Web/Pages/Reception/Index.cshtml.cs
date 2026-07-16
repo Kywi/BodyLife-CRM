@@ -1,7 +1,9 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
+using BodyLife.Crm.SharedKernel;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -22,6 +24,7 @@ public sealed class IndexModel(
     IBodyLifeCommandHandler<UpdateClientCommand> updateClient,
     IBodyLifeCommandHandler<AssignOrChangeCardCommand> assignOrChangeCard,
     IBodyLifeCommandHandler<MarkVisitCommand> markVisit,
+    IBodyLifeCommandHandler<CreatePaymentCommand> createPayment,
     IBodyLifeCommandHandler<CancelVisitCommand> cancelVisit,
     TimeProvider timeProvider)
     : PageModel
@@ -345,6 +348,46 @@ public sealed class IndexModel(
             cancellationToken);
     }
 
+    public async Task<IActionResult> OnPostCreatePaymentAsync(
+        AddPaymentFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        var now = timeProvider.GetUtcNow();
+        var adapterErrors = ValidateAddPaymentForm(form, now, out var occurredAt);
+        if (adapterErrors.Count > 0)
+        {
+            return await RenderAddPaymentErrorAsync(
+                form,
+                adapterErrors,
+                forceCanonicalRefresh: false,
+                cancellationToken);
+        }
+
+        var command = new CreatePaymentCommand(
+            requestContextResolver.CreateCommandEnvelope(
+                occurredAt: occurredAt,
+                idempotencyKey: form.IdempotencyKey,
+                comment: form.Comment),
+            form.ClientId,
+            form.MembershipId,
+            new Money(form.Amount!.Value, AddPaymentFormViewModel.Currency),
+            form.PaymentContext!.Value);
+        var result = await createPayment.ExecuteAsync(command, cancellationToken);
+
+        if (result.Status == CommandStatus.Success)
+        {
+            return await RenderSuccessfulPaymentAsync(form, result, cancellationToken);
+        }
+
+        return await RenderAddPaymentErrorAsync(
+            form,
+            result.Errors,
+            RequiresCanonicalPaymentRefresh(result.Errors),
+            cancellationToken);
+    }
+
     private async Task<IActionResult> RenderSuccessfulCreateAsync(
         CreateClientFormInput form,
         CommandResult result,
@@ -596,6 +639,51 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IActionResult> RenderSuccessfulPaymentAsync(
+        AddPaymentFormInput form,
+        CommandResult result,
+        CancellationToken cancellationToken)
+    {
+        if (result.PrimaryEntityId is not { } paymentId
+            || paymentId.Type != CreatePaymentCommand.PrimaryEntityType
+            || paymentId.Value == Guid.Empty
+            || result.RereadTargetId is not { } rereadTarget
+            || rereadTarget.Type != CreatePaymentCommand.CanonicalRereadEntityType
+            || rereadTarget.Value != form.ClientId)
+        {
+            throw new InvalidOperationException(
+                "CreatePayment did not return the expected Payment and canonical Client reread target.");
+        }
+
+        ApplySearchContext(form);
+        ClientId = rereadTarget.Value;
+        var message = result.AuditEntryId is { } auditEntryId
+            ? $"Payment added. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
+            : "Payment added.";
+
+        if (!IsHtmxRequest())
+        {
+            ClientOperationMessage = message;
+            ClientOperationTone = "success";
+            return RedirectToCanonicalPage(ClientId);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with
+            {
+                OperationMessage = message,
+                OperationSucceeded = true,
+            },
+        };
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
     private async Task<IActionResult> RenderCanonicalConflictAsync(
         UpdateClientFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -774,6 +862,46 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IActionResult> RenderAddPaymentErrorAsync(
+        AddPaymentFormInput form,
+        IReadOnlyList<CommandError> errors,
+        bool forceCanonicalRefresh,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+        var addPaymentForm = await BuildAddPaymentErrorFormAsync(
+            form,
+            errors,
+            cancellationToken);
+
+        if (IsHtmxRequest() && !forceCanonicalRefresh && addPaymentForm is not null)
+        {
+            return Partial("_AddPaymentForm", addPaymentForm);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        if (addPaymentForm is not null
+            && Workspace.Profile.Result?.Profile?.ClientId == form.ClientId)
+        {
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with { AddPaymentForm = addPaymentForm },
+            };
+        }
+
+        if (!IsHtmxRequest())
+        {
+            return Page();
+        }
+
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
     private async Task<MarkVisitFormViewModel> BuildMarkVisitErrorFormAsync(
         MarkVisitFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -823,6 +951,99 @@ public sealed class IndexModel(
     {
         return errors.Any(error => error.Code is not
             (CommandErrorCode.ValidationFailed or CommandErrorCode.ReasonRequired));
+    }
+
+    private async Task<AddPaymentFormViewModel?> BuildAddPaymentErrorFormAsync(
+        AddPaymentFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        var actor = requestContextResolver.Require().Actor;
+        var result = await getClientProfile.ExecuteAsync(
+            new GetClientProfileQuery(actor, form.ClientId),
+            cancellationToken);
+
+        return result is
+        {
+            Status: GetClientProfileStatus.Success,
+            Profile: { } profile,
+        }
+            && profile.AllowedActions.IsAllowed(PaymentActionKeys.Create)
+                ? AddPaymentFormViewModel.FromSubmission(form, profile, errors)
+                : null;
+    }
+
+    private static bool RequiresCanonicalPaymentRefresh(
+        IReadOnlyList<CommandError> errors)
+    {
+        return errors.Any(error => error.Code != CommandErrorCode.ValidationFailed);
+    }
+
+    private static IReadOnlyList<CommandError> ValidateAddPaymentForm(
+        AddPaymentFormInput form,
+        DateTimeOffset now,
+        out DateTimeOffset occurredAt)
+    {
+        var errors = new List<CommandError>();
+        occurredAt = default;
+
+        if (form.Amount is null || form.Amount <= 0)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Payment amount must be greater than zero.",
+                "amount"));
+        }
+
+        if (form.PaymentContext is not { } paymentContext
+            || !AddPaymentFormViewModel.SupportedContexts.Contains(paymentContext))
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Choose a supported Payment context.",
+                "paymentContext"));
+        }
+
+        if (form.MembershipId == Guid.Empty)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Membership id must be a non-empty identifier when supplied.",
+                "membershipId"));
+        }
+
+        if (form.OccurredAtUtc is not { } occurredAtUtc)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Payment occurred time is required.",
+                "occurredAt"));
+        }
+        else
+        {
+            occurredAt = new DateTimeOffset(
+                DateTime.SpecifyKind(occurredAtUtc, DateTimeKind.Unspecified),
+                TimeSpan.Zero);
+            var occurredDate = DateOnly.FromDateTime(occurredAt.UtcDateTime);
+            var currentDate = DateOnly.FromDateTime(now.UtcDateTime);
+
+            if (occurredDate != currentDate)
+            {
+                errors.Add(new CommandError(
+                    CommandErrorCode.ValidationFailed,
+                    "This form accepts normal same-day Payments only.",
+                    "occurredAt"));
+            }
+            else if (occurredAt > now.AddMinutes(1))
+            {
+                errors.Add(new CommandError(
+                    CommandErrorCode.ValidationFailed,
+                    "Payment occurred time cannot be in the future.",
+                    "occurredAt"));
+            }
+        }
+
+        return errors.AsReadOnly();
     }
 
     private async Task<UpdateClientFormViewModel> BuildErrorFormAsync(
@@ -981,6 +1202,7 @@ public sealed class IndexModel(
         bool operationSucceeded = false)
     {
         MarkVisitFormViewModel? markVisitForm = null;
+        AddPaymentFormViewModel? addPaymentForm = null;
         IReadOnlyList<CancelVisitFormViewModel> cancelVisitForms = [];
 
         if (profileResult is
@@ -1001,6 +1223,13 @@ public sealed class IndexModel(
                 occurredAt,
                 optionsResult,
                 searchContext);
+            if (profile.AllowedActions.IsAllowed(PaymentActionKeys.Create))
+            {
+                addPaymentForm = AddPaymentFormViewModel.FromProfile(
+                    profile,
+                    occurredAt,
+                    searchContext);
+            }
             cancelVisitForms = profile.RecentVisits?.Items
                 .Where(visit => visit.Status == ClientVisitRowStatus.Active
                     && visit.AllowedActions.IsAllowed(VisitActionKeys.Cancel))
@@ -1014,6 +1243,7 @@ public sealed class IndexModel(
             operationMessage,
             operationSucceeded,
             markVisitForm: markVisitForm,
+            addPaymentForm: addPaymentForm,
             cancelVisitForms: cancelVisitForms);
     }
 
@@ -1059,6 +1289,14 @@ public sealed class IndexModel(
     }
 
     private void ApplySearchContext(CancelVisitFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
+    }
+
+    private void ApplySearchContext(AddPaymentFormInput form)
     {
         Query = form.SearchQuery;
         Mode = form.SearchMode;

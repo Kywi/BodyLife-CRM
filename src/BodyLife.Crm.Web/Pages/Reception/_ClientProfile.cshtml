@@ -133,6 +133,11 @@
             <partial name="_MarkVisitForm" model="Model.MarkVisitForm" />
         }
 
+        @if (Model.AddPaymentForm is not null)
+        {
+            <partial name="_AddPaymentForm" model="Model.AddPaymentForm" />
+        }
+
         @if (profile.RecentVisits is { } recentVisits)
         {
             <section class="recent-visits" aria-labelledby="recent-visits-title">

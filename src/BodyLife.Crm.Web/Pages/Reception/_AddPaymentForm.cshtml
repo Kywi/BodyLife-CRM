@@ -1,0 +1,163 @@
+@using System.Globalization
+@model AddPaymentFormViewModel
+@{
+    var input = Model.Input;
+    var clientKey = input.ClientId.ToString("N");
+    var amountValue = input.Amount?.ToString(CultureInfo.InvariantCulture);
+    var occurredAtValue = input.OccurredAtUtc?.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+}
+
+<details id="add-payment-action-panel"
+         class="profile-action-panel"
+         open="@(Model.IsOpen ? "open" : null)">
+    <summary>Add payment</summary>
+    <div class="profile-action-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Payment not added</strong>
+                <ul>
+                    @foreach (var message in Model.Errors
+                        .Select(AddPaymentFormViewModel.DisplayError)
+                        .Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="warning-block warning-caution">
+            <strong>Membership state is unchanged</strong>
+            <span>This standalone payment does not close negative visits or recalculate membership state.</span>
+        </div>
+
+        <form id="add-payment-form-@clientKey"
+              class="add-payment-form"
+              method="post"
+              asp-page="/Reception/Index"
+              asp-page-handler="CreatePayment"
+              data-busy-form
+              hx-post="@Url.Page("/Reception/Index", "CreatePayment")"
+              hx-target="#add-payment-action-panel"
+              hx-swap="outerHTML"
+              hx-sync="this:drop"
+              hx-indicator="#add-payment-loading"
+              hx-disabled-elt="find button">
+            <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+            <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+            <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+            <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+            <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+            <dl class="payment-fixed-context">
+                <div>
+                    <dt>Method</dt>
+                    <dd>Cash</dd>
+                </div>
+                <div>
+                    <dt>Currency</dt>
+                    <dd>@AddPaymentFormViewModel.Currency</dd>
+                </div>
+            </dl>
+
+            <div class="action-form-grid">
+                <div class="form-field">
+                    <label for="payment-amount-@clientKey">Amount (UAH)</label>
+                    <input id="payment-amount-@clientKey"
+                           type="number"
+                           name="form.Amount"
+                           value="@amountValue"
+                           min="0.01"
+                           step="0.01"
+                           inputmode="decimal"
+                           required />
+                </div>
+
+                <div class="form-field">
+                    <label for="payment-context-@clientKey">Payment context</label>
+                    <select id="payment-context-@clientKey"
+                            name="form.PaymentContext"
+                            required>
+                        <option value="" selected="@(input.PaymentContext is null ? "selected" : null)">Choose context</option>
+                        @foreach (var paymentContext in AddPaymentFormViewModel.SupportedContexts)
+                        {
+                            <option value="@paymentContext"
+                                    selected="@(input.PaymentContext == paymentContext ? "selected" : null)">
+                                @PaymentContextLabel(paymentContext)
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-field form-field-wide">
+                    <label for="payment-membership-@clientKey">Membership (optional)</label>
+                    <select id="payment-membership-@clientKey" name="form.MembershipId">
+                        <option value="" selected="@(input.MembershipId is null ? "selected" : null)">No membership</option>
+                        @foreach (var membership in Model.MembershipOptions)
+                        {
+                            <option value="@membership.MembershipId"
+                                    selected="@(input.MembershipId == membership.MembershipId ? "selected" : null)">
+                                @membership.TypeNameSnapshot | @MembershipStatusLabel(membership.Status) | ends @membership.EffectiveEndDate.ToString("yyyy-MM-dd")
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-field form-field-wide">
+                    <label for="payment-occurred-at-@clientKey">Occurred (UTC)</label>
+                    <input id="payment-occurred-at-@clientKey"
+                           type="datetime-local"
+                           name="form.OccurredAtUtc"
+                           value="@occurredAtValue"
+                           step="60"
+                           required />
+                </div>
+
+                <div class="form-field form-field-wide">
+                    <label for="payment-comment-@clientKey">Comment (optional)</label>
+                    <textarea id="payment-comment-@clientKey"
+                              name="form.Comment"
+                              maxlength="@AddPaymentFormViewModel.CommentMaxLength">@input.Comment</textarea>
+                </div>
+            </div>
+
+            <div class="action-form-footer">
+                <span id="add-payment-loading"
+                      class="request-indicator htmx-indicator"
+                      role="status"
+                      aria-live="polite">Adding payment...</span>
+                <button type="submit"
+                        data-add-payment-submit
+                        data-busy-text="Adding...">Add payment</button>
+            </div>
+        </form>
+    </div>
+</details>
+
+@functions {
+    private static string PaymentContextLabel(PaymentContext paymentContext)
+    {
+        return paymentContext switch
+        {
+            PaymentContext.MembershipSale => "Membership sale",
+            PaymentContext.OneOff => "One-off",
+            PaymentContext.Trial => "Trial",
+            PaymentContext.Other => "Other",
+            _ => "Unsupported",
+        };
+    }
+
+    private static string MembershipStatusLabel(string status)
+    {
+        return status switch
+        {
+            ClientMembershipSummaryStatusCodes.Active => "active",
+            ClientMembershipSummaryStatusCodes.Expired => "expired",
+            ClientMembershipSummaryStatusCodes.Canceled => "canceled",
+            ClientMembershipSummaryStatusCodes.Corrected => "corrected",
+            _ => status,
+        };
+    }
+}

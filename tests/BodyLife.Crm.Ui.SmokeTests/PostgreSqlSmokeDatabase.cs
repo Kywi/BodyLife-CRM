@@ -1012,6 +1012,80 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             clientId);
     }
 
+    public Task<long> CountActivePaymentsAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.payments
+            where client_id = @client_id
+              and status = 'active'
+            """,
+            clientId);
+    }
+
+    public Task<long> CountCreatePaymentAuditEntriesAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries audit
+            inner join bodylife.payments payment on payment.id = audit.entity_id
+            where audit.action_type = 'payment.created'
+              and payment.client_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountCreatePaymentIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'CreatePayment'
+              and reread_target_id = @client_id
+            """,
+            clientId);
+    }
+
+    public async Task<PaymentSmokeSnapshot> ReadLatestActivePaymentAsync(Guid clientId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                amount,
+                currency,
+                payment_context,
+                membership_id,
+                comment,
+                status
+            from bodylife.payments
+            where client_id = @client_id
+              and status = 'active'
+            order by recorded_at desc, id desc
+            limit 1
+            """;
+        command.Parameters.AddWithValue("client_id", clientId);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException("The active smoke Payment was not found.");
+        }
+
+        return new PaymentSmokeSnapshot(
+            reader.GetDecimal(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.IsDBNull(3) ? null : reader.GetGuid(3),
+            reader.IsDBNull(4) ? null : reader.GetString(4),
+            reader.GetString(5));
+    }
+
     public async Task<MembershipStateSmokeSnapshot> ReadMembershipStateAsync(
         Guid membershipId)
     {
@@ -1444,3 +1518,11 @@ public sealed record MembershipStateSmokeSnapshot(
     int NegativeBalance,
     DateOnly? FirstNegativeVisitDate,
     DateOnly EffectiveEndDate);
+
+public sealed record PaymentSmokeSnapshot(
+    decimal Amount,
+    string Currency,
+    string PaymentContext,
+    Guid? MembershipId,
+    string? Comment,
+    string Status);

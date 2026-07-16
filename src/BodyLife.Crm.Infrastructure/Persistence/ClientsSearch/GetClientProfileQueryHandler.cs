@@ -26,6 +26,9 @@ public sealed class GetClientProfileQueryHandler(
         QueryPermissionResult.Allowed(
             ClientProfileActionKeys.AssignOrChangeCard,
             ClientProfileActionKeys.AdminOrOwnerPolicy),
+        QueryPermissionResult.Allowed(
+            PaymentActionKeys.Create,
+            PaymentActionKeys.AdminOrOwnerPolicy),
     ]);
 
     public async Task<GetClientProfileResult> ExecuteAsync(

@@ -74,6 +74,12 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid PaymentHistoryMembershipId { get; private set; }
 
+    public Guid PaymentTabletClientId { get; private set; }
+
+    public Guid PaymentTabletMembershipId { get; private set; }
+
+    public Guid PaymentPhoneClientId { get; private set; }
+
     public async Task ExpireSessionAsync(string deviceLabel)
     {
         var database = _database
@@ -290,6 +296,26 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadMembershipStateAsync(membershipId);
     }
 
+    public Task<long> CountActivePaymentsAsync(Guid clientId)
+    {
+        return RequireDatabase().CountActivePaymentsAsync(clientId);
+    }
+
+    public Task<long> CountCreatePaymentAuditEntriesAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCreatePaymentAuditEntriesAsync(clientId);
+    }
+
+    public Task<long> CountCreatePaymentIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCreatePaymentIdempotencyKeysAsync(clientId);
+    }
+
+    public Task<PaymentSmokeSnapshot> ReadLatestActivePaymentAsync(Guid clientId)
+    {
+        return RequireDatabase().ReadLatestActivePaymentAsync(clientId);
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");
@@ -429,6 +455,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
         await SeedPaymentHistoryFixtureAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
+        await SeedAddPaymentFixturesAsync(
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
@@ -607,6 +637,32 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             PaymentHistoryClientId,
             PaymentHistoryMembershipId);
+    }
+
+    private async Task SeedAddPaymentFixturesAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        PaymentTabletClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Payment",
+            "Tablet",
+            "+380 67 700 02 01",
+            "BL-PAYMENT-TABLET");
+        PaymentTabletMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            PaymentTabletClientId,
+            membershipTypeId,
+            "Payment tablet snapshot",
+            visitsLimitSnapshot: 6);
+
+        PaymentPhoneClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Payment",
+            "Phone",
+            "+380 67 700 02 02",
+            "BL-PAYMENT-PHONE");
     }
 
     private async Task SeedReceptionClientsAsync(

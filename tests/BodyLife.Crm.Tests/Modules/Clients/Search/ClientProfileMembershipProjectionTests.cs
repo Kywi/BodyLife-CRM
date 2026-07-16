@@ -45,6 +45,7 @@ public sealed class ClientProfileMembershipProjectionTests
             summary =>
             {
                 Assert.Equal(HistoricalMembershipId, summary.MembershipId);
+                Assert.Equal("Eight visits / 30 days", summary.TypeNameSnapshot);
                 Assert.Equal(ClientMembershipSummaryStatusCodes.Canceled, summary.Status);
                 Assert.Equal(6, summary.RemainingVisits);
                 Assert.Equal(new DateOnly(2026, 8, 18), summary.EffectiveEndDate);
@@ -52,6 +53,7 @@ public sealed class ClientProfileMembershipProjectionTests
             summary =>
             {
                 Assert.Equal(CurrentMembershipId, summary.MembershipId);
+                Assert.Equal("Eight visits / 30 days", summary.TypeNameSnapshot);
                 Assert.Equal(ClientMembershipSummaryStatusCodes.Active, summary.Status);
                 Assert.Equal(1, summary.RemainingVisits);
                 Assert.Equal(new DateOnly(2026, 7, 30), summary.EffectiveEndDate);

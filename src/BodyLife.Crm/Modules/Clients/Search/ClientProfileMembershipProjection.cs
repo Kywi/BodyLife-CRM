@@ -68,6 +68,7 @@ public static class ClientProfileMembershipProjection
     {
         return new ClientMembershipSummary(
             item.State.MembershipId,
+            item.State.Snapshot.TypeName,
             MapStatus(item),
             item.State.RemainingVisits,
             item.State.EffectiveEndDate);
