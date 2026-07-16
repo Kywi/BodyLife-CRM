@@ -18,6 +18,7 @@
 - `docs/adr/011-membership-type-lifecycle.md`: snapshot persistence and no hard delete.
 - `docs/adr/014-visit-membership-selection-and-freeze-policy.md`: Visit/Freeze relational guards and Membership-first locking.
 - `docs/adr/015-freeze-range-eligibility-policy.md`: AddFreeze range validation, Visit conflict query and lock order.
+- `docs/adr/016-non-working-day-application-scope.md`: exact application snapshot, full-period applied ranges, preview revalidation and old/new correction scope.
 
 ## Query-specific docs
 

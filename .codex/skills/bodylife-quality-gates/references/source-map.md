@@ -25,3 +25,4 @@
 - `docs/adr/012-permissions-session-accountability-and-corrections.md`: authorization/accountability gates.
 - `docs/adr/014-visit-membership-selection-and-freeze-policy.md`: Visit/Freeze concurrency and blocking tests.
 - `docs/adr/015-freeze-range-eligibility-policy.md`: Freeze lifecycle/start bounds, unclipped end, counted-Visit conflict and lock-order tests.
+- `docs/adr/016-non-working-day-application-scope.md`: NonWorkingDay lifecycle/overlap eligibility, full-period boundary, exact scope fingerprint, correction and rollback tests.

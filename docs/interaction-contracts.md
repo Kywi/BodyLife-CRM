@@ -269,11 +269,11 @@ Common errors:
 
 - Purpose: додати global non-working day/period and apply it to affected memberships with explicit owner confirmation.
 - Input: start date, end date, reason code, reason comment, preview/confirmation token or affected-scope acknowledgement, common command envelope.
-- Validation: Owner confirms affected membership summary before commit; inclusive date range and `start_date <= end_date`; reason required; overlapping non-working periods warn and must not double-count extension days; affected scope is captured in `non_working_period_applications`.
+- Validation: Owner confirms the exact ADR-016 affected Membership set and full applied range before commit; candidate Membership must be lifecycle-active and have any inclusive overlap with canonical pre-command state calculated without the proposed period; inclusive date range and `start_date <= end_date`; reason required; overlapping non-working periods warn and must not double-count extension days; affected scope is captured in `non_working_period_applications`.
 - Permissions: Owner-only.
 - Transaction boundary: one ACID transaction creates `non_working_periods`, captures affected membership application rows, recalculates affected memberships, and appends audit. For v1 scale this should commit atomically; if a future batch path is introduced, the UI must not report complete until recalculation status is consistent and retryable.
 - Affected modules: NonWorkingDays, Memberships, Reports, Audit, Users/Roles.
-- Recalculation: synchronous recalculation for all affected memberships: extension source days, effective end date, warnings. Freeze/non-working overlap counted by union calendar days.
+- Recalculation: synchronous recalculation for all affected Memberships. Every confirmed application contributes the full period without Membership-boundary clipping; Memberships calculates effective end/warnings and union unique dates across Freeze/non-working sources.
 - Audit event: `non_working_day.added`; include period, reason, affected membership count/summary, recalculation summary.
 - Possible errors: `permission_denied`, `validation_failed`, `preview_expired`, `affected_scope_changed`, `recalculation_failed`, `concurrency_conflict`.
 - UI result: owner sees confirmed affected count, recalculation result, and link to affected membership drill-down; client profiles show non-working extension reason.
@@ -282,11 +282,11 @@ Common errors:
 
 - Purpose: explicitly correct or cancel a non-working period while keeping add/correct history explainable.
 - Input: non-working period id, correction mode (`replace_range`, `replace_reason`, `cancel`), replacement start/end/reason when applicable, reason/comment for correction, preview/confirmation token for old/new affected scope, common command envelope.
-- Validation: period exists; not already canceled unless idempotent repeat; reason/comment required; replacement range is inclusive and valid; Owner confirms affected memberships before commit; correction must preserve original source record and add correction/cancellation facts instead of hard delete.
+- Validation: period exists; not already canceled unless idempotent repeat; reason/comment required; replacement range is inclusive and valid; Owner confirms exact old/new scope before commit; `replace_range` calculates replacement eligibility from canonical state with the old period excluded; `replace_reason` preserves the existing application set/ranges; correction preserves original source/application records instead of hard delete.
 - Permissions: Owner-only.
 - Transaction boundary: one ACID transaction creates correction/cancellation fact, updates active status or creates replacement period/application rows, recalculates old and new affected membership scopes, and appends audit.
 - Affected modules: NonWorkingDays, Memberships, Reports, Audit, Users/Roles.
-- Recalculation: synchronous recalculation of every membership in old affected scope and new affected scope. Extension days remain union calendar days across active freeze/non-working/adjustment sources.
+- Recalculation: synchronous recalculation of the union of every Membership in retained old scope and confirmed new scope. Extension days remain union calendar days across active freeze/non-working/adjustment sources.
 - Audit event: `non_working_day.corrected` або `non_working_day.canceled`; include before/after period summary, affected counts, reason, recalculation summary.
 - Possible errors: `permission_denied`, `not_found`, `already_canceled`, `reason_required`, `preview_expired`, `affected_scope_changed`, `recalculation_failed`, `concurrency_conflict`.
 - UI result: owner sees corrected period, affected membership count, and recalculation result; reports/profile histories remain explainable through original and correction records.
@@ -335,9 +335,9 @@ Query access uses the same actor/session context as commands. Reception/profile/
 ### PreviewNonWorkingDayImpact
 
 - Input: proposed start date/end date, reason code, actor context.
-- Output shape: affected membership count, affected client/membership compact list or sample/page, overlap warnings, estimated extension changes, confirmation token with expiry.
+- Output shape: affected Membership count, exact ordered Membership/Client IDs (with compact list/sample/page for display), full applied range and estimated before/after extension per Membership, overlap warnings, scope fingerprint and confirmation token with expiry.
 - Source modules: NonWorkingDays, Memberships.
-- Consistency expectations: preview is not source of truth; `AddNonWorkingDay` or `CorrectNonWorkingDay` revalidates affected scope in transaction and may fail with `affected_scope_changed`.
+- Consistency expectations: preview is not source of truth; token binds proposed input plus exact IDs/ranges. `AddNonWorkingDay` or `CorrectNonWorkingDay` revalidates the same ADR-016 policy in a consistent transaction snapshot and fails `preview_expired` or `affected_scope_changed` without partial writes. Successful application rows are an immutable confirmed snapshot; later Membership/source changes do not silently mutate it.
 
 ### GenerateDailyReport
 

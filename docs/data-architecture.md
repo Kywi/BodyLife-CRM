@@ -94,7 +94,7 @@ Recalculation trigger matrix:
 | Record/cancel/correct visit | Membership referenced by active consumption; if consumption allocation changes, old and new memberships. |
 | Record/cancel/correct payment | Membership only if payment participates in issue workflow, negative closure or correction policy; daily report reads canonical payment rows. |
 | Add/cancel/correct freeze | Affected membership. |
-| Add/cancel/correct non-working period | All memberships in application scope, plus any later corrected memberships that overlap if policy says period should apply. |
+| Add/cancel/correct non-working period | Exact ADR-016 confirmed scope; correction recalculates the union of retained old scope and confirmed replacement scope. Later Membership/source changes do not silently rewrite an existing scope snapshot. |
 | Create/update opening state | Affected membership. |
 | Add/cancel/correct supported membership adjustment | Affected membership; unsupported active type/delta shape fails recalculation. |
 | Negative closure or coverage change | Source membership, covering membership and listed closure visits. |
@@ -150,7 +150,7 @@ The deterministic card, phone, last-four and name representation used by these f
 | `freezes` | `id`, `client_id`, `membership_id`, `start_date`, `end_date`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_id`, `status` | Composite `(membership_id, client_id) -> issued_memberships(id, client_id)` | Inclusive range. The composite FK proves that the selected Membership belongs to the repeated Client. Active freezes contribute extension dates. |
 | `freeze_cancellations` | `id`, `freeze_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_id` | `freeze_id -> freezes.id` | Retained source fact with at most one cancellation per Freeze. Recalculation removes freeze dates from active extension sources. |
 | `non_working_periods` | `id`, `start_date`, `end_date`, `reason_code`, `reason_comment`, `created_at`, `created_by_account_id`, `session_id`, `status` | Global source fact. | Owner-only. Inclusive range. |
-| `non_working_period_applications` | `id`, `non_working_period_id`, `membership_id`, `client_id`, `applied_start_date`, `applied_end_date`, `previewed_at`, `confirmed_at`, `status` | References period, membership, client. | Captures affected membership scope/history. Recalculation derives actual unique extension days. |
+| `non_working_period_applications` | `id`, `non_working_period_id`, `membership_id`, `client_id`, `applied_start_date`, `applied_end_date`, `previewed_at`, `confirmed_at`, `status` | References period, membership, client. | Captures the immutable ADR-016 Owner-confirmed scope snapshot. Active applied range equals the full period after any inclusive eligibility overlap; recalculation derives unique union days. |
 | `non_working_period_cancellations` | `id`, `non_working_period_id`, `reason`, `recorded_at`, `recorded_by_account_id`, `session_id` | `non_working_period_id -> non_working_periods.id` | Owner-only source fact. Affected memberships recalculate. |
 
 ### Negative closure and day reconciliation
@@ -206,6 +206,17 @@ Core constraints:
   `issued_memberships` row first, then read and lock the relevant `freezes` and
   membership Visit rows. MarkVisit, AddFreeze and future CancelFreeze workflows
   keep that order so neither side observes a stale eligibility window.
+- NonWorkingDay scope includes only lifecycle-active issued Memberships whose
+  locked canonical interval, calculated without the proposed/replaced period,
+  has any inclusive overlap. Each stored application uses the full period for
+  `applied_start_date..applied_end_date`; range clipping is forbidden.
+- At most one active application per non-working period/version and Membership.
+  Preview token/fingerprint binds the exact ordered Membership IDs and applied
+  ranges. Command revalidation mismatch fails before source/application writes.
+- Confirmed application rows are retained snapshots. Period correction/cancel
+  changes status through retained facts and recalculates old/new scope; later
+  Membership or extension-source changes never UPDATE the confirmed set
+  silently.
 - `business_audit_entries` are append-only by application policy; database permissions/triggers can harden this if available.
 
 Important indexes:

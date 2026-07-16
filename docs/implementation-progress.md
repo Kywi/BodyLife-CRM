@@ -6125,3 +6125,70 @@ Next recommended step:
   period once any overlap exists, plus the exact affected-membership lifecycle
   boundary. Keep schema, `PreviewNonWorkingDayImpact`, add/correct commands and
   UI for later implementation steps after that decision is explicit.
+
+## Step 117 - NonWorkingDay application-scope decision
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Close the remaining documented Milestone 8 product-decision dependency before
+  adding NonWorkingDay domain code, schema, preview, commands or UI.
+- Preserve ADR-005 Memberships formula ownership, ADR-012 Owner-only authority
+  and the locked pre-command-state precedent from ADR-015.
+- Keep this step architecture/documentation-only so implementation can follow in
+  small, test-first slices.
+
+Scope:
+
+- Accept ADR-016 for NonWorkingDay application scope and full-period
+  contribution.
+- A proposed period affects an issued Membership only when its lifecycle status
+  is `active` and it has any inclusive overlap with canonical pre-command state
+  calculated without the proposed/replaced period. Client operational status
+  and current server date do not replace that policy.
+- Every confirmed application contributes the complete inclusive period without
+  clipping to Membership start or locked pre-command effective end. Memberships
+  still de-duplicates overlapping Freeze/NonWorkingDay/adjustment dates by union.
+- Define successful scope as an immutable Owner-confirmed transaction snapshot.
+  Preview token/fingerprint binds the exact ordered Membership IDs and applied
+  ranges; expiry or any revalidation difference fails without partial writes.
+- Define correction behavior: reason-only preserves scope, range replacement
+  computes a new snapshot with the old source excluded, cancellation retains old
+  facts, and recalculation covers the union of old/new Membership IDs.
+- Synchronize ADR index, architecture baseline, domain/data/interaction/UI
+  contracts, implementation plan/roadmap, AGENTS guardrails and relevant local
+  skill source maps. Add no production code, EF mapping, migration or UI.
+
+Validation:
+
+- Stale-decision search found no remaining `001..015` ADR range, unresolved
+  NonWorkingDay application-scope question or conditional later-membership
+  policy in the governing docs/source maps.
+- `git diff --check` passed before the progress update.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed after
+  starting Docker Desktop and the healthy repo PostgreSQL service. The script
+  read `ConnectionStrings:BodyLifeTestAdmin` from
+  `appsettings.Development.json`: Release build 0 warnings/errors,
+  formatting/analyzers, 279 core tests, 35 web tests, 386
+  PostgreSQL/architecture infrastructure tests, 37 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `graphify . --update` was attempted for the project-knowledge documentation
+  change but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `docs(nonworking-days): define application scope`.
+
+Next recommended step:
+
+- Add one pure Memberships-owned NonWorkingDay eligibility/contribution contract
+  and focused domain tests for lifecycle-active status, both inclusive overlap
+  endpoints, no-overlap rejection, full-period contribution when Membership
+  starts/ends inside the period, proposed-source exclusion and deterministic
+  applied ranges. Keep EF schema, preview tokens, PostgreSQL scope selection,
+  commands and UI as later independent steps.

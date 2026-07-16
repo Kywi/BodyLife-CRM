@@ -13,6 +13,7 @@
 - `docs/adr/008-search-identity-card-rules-and-duplicate-warnings.md`: search/card/duplicate behavior.
 - `docs/adr/012-permissions-session-accountability-and-corrections.md`: Owner/Admin/shared account UI implications.
 - `docs/adr/013-future-client-self-service-boundary.md`: no client portal/API-first scope.
+- `docs/adr/016-non-working-day-application-scope.md`: Owner preview/confirmation must show exact affected scope, full applied period and stale-scope failures.
 
 ## Business requirements
 

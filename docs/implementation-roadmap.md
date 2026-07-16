@@ -475,7 +475,8 @@
 - Milestone 6 for visit/state interactions.
 - ADR-014 and ADR-015 for Visit/Freeze conflict symmetry, Freeze range
   eligibility and Membership-first locking.
-- Product decision for NonWorkingDay application scope.
+- ADR-016 for NonWorkingDay lifecycle/date eligibility, full-period
+  contribution, immutable confirmed scope and correction semantics.
 
 ### Задачі
 
@@ -503,8 +504,15 @@
   `freeze_conflicts_with_visit`; canceled and one_off/trial Visits do not block.
 - Canceling freeze preserves history and removes its active extension days.
 - NonWorkingDay add/correction is Owner-only and requires preview/affected-scope confirmation.
+- NonWorkingDay scope contains lifecycle-active Memberships with any inclusive
+  overlap against canonical pre-command state calculated without the proposed
+  or replaced period.
+- Every confirmed NonWorkingDay application contributes the full inclusive
+  period without clipping to Membership boundaries.
 - Freeze and NonWorkingDay overlap counts union calendar days, not sum of sources.
-- NonWorkingDay application scope is stored and explainable.
+- NonWorkingDay application scope is stored as an immutable Owner-confirmed
+  transaction snapshot and is explainable; later Membership/source changes do
+  not silently add or remove applications.
 - Correcting/canceling NonWorkingDay recalculates old and new affected memberships.
 - Profile shows extension reasons and history for freeze/non-working sources.
 - Recalculation and audit are committed consistently; failure blocks success.
@@ -512,11 +520,14 @@
 ### Потрібні тести
 
 - Domain tests for inclusive freeze days, lifecycle/start eligibility, end beyond
-  pre-command effective end, counted-Visit conflict, canceled freeze,
-  NonWorkingDay days and overlap union.
+  pre-command effective end, counted-Visit conflict, canceled freeze, plus
+  NonWorkingDay lifecycle/overlap eligibility, full-period endpoint behavior,
+  proposed-source exclusion and overlap union.
 - Application tests for Add/CancelFreeze permissions, validation, Membership-first
   locking, concurrency with MarkVisit, idempotency, audit and rollback.
-- Application tests for Preview/Add/CorrectNonWorkingDay: owner-only, preview expiry, affected_scope_changed, overlap warning and recalculation.
+- Application tests for Preview/Add/CorrectNonWorkingDay: owner-only, exact
+  scope/range fingerprint, preview expiry, affected_scope_changed, immutable
+  snapshot, old/new correction scope, overlap warning and recalculation.
 - PostgreSQL tests for date range constraints and application rows.
 - Performance/transaction tests for realistic affected membership counts.
 - UI tests for add freeze, cancel freeze, non-working preview/confirm/correct.

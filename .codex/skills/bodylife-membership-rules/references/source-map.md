@@ -15,6 +15,7 @@
 - `docs/adr/011-membership-type-lifecycle.md`: editable catalog plus immutable issued snapshot.
 - `docs/adr/014-visit-membership-selection-and-freeze-policy.md`: Visit-side Freeze eligibility and shared lock order.
 - `docs/adr/015-freeze-range-eligibility-policy.md`: lifecycle/start eligibility, unclipped end and counted-Visit conflict for Freeze extension facts.
+- `docs/adr/016-non-working-day-application-scope.md`: lifecycle/date eligibility, full-period contribution, confirmed scope snapshot and correction behavior for NonWorkingDay applications.
 
 ## Business requirements
 

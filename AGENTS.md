@@ -12,7 +12,7 @@
 
 Use these documents before inventing implementation details:
 
-- `docs/adr/README.md` and `docs/adr/001..015-*.md` for accepted decisions.
+- `docs/adr/README.md` and `docs/adr/001..016-*.md` for accepted decisions.
 - `docs/architecture-baseline.md` for the concise implementation contract.
 - `docs/domain-model.md` for business entities, invariants, lifecycle rules, and membership calculations.
 - `docs/data-architecture.md` for source facts, derived state, schema direction, constraints, indexes, audit, backfill, and reporting data access.
@@ -89,6 +89,7 @@ Shared code should stay narrow: IDs, Money, DateRange, actor/session context, re
 - Counted visits exclude canceled visits. Cancel/correct workflows preserve history and trigger recalculation.
 - Freeze and non-working day ranges are inclusive. Extension days are counted as a union of unique calendar dates, not a naive sum when ranges overlap.
 - AddFreeze targets a lifecycle-active Membership. Its range starts no earlier than Membership start and no later than the locked pre-command effective end; its end may cross that date. An active counted Membership Visit in the range blocks creation under ADR-015.
+- Under ADR-016, NonWorkingDay affects lifecycle-active Memberships whose locked canonical pre-command interval has any inclusive overlap with the proposed period. Every confirmed application contributes the full inclusive period, and the exact affected scope is an immutable Owner-confirmed transaction snapshot.
 - `membership_state_cache` and `membership_extension_days` are rebuildable derived state, not source truth.
 
 ## Data And Persistence
