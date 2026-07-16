@@ -638,18 +638,10 @@
   "636": ".ListStaffAccountsAsync",
   "637": ".RejectAsync",
   "638": "AccountSessionSnapshot",
-  "639": "MembershipVisitSourceFact",
-  "640": ".Create",
-  "641": ".GetSnapshotForVisitAsync",
   "642": "MembershipAdjustmentTypes.cs",
   "643": "BodyLifeAuthTechnicalLogger.cs",
   "644": ".NormalizeAndValidate",
-  "645": "QueryPermissionDeniedReasonCodes.cs",
   "646": "MembershipAuditActions.cs",
-  "647": "MembershipActionKeys.cs",
   "648": "MembershipVisitEligibilityErrorCodes.cs",
-  "649": "FixedTimeProvider",
-  "650": "FixedTimeProvider",
-  "651": ".PersistenceRegistrationExposesScopedStatePersistenceCoordinator",
-  "652": "FixedTimeProvider"
+  "650": "FixedTimeProvider"
 }
