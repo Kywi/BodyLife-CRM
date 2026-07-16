@@ -4893,3 +4893,89 @@ Next recommended step:
   Payments do not alter Membership negative state. Keep issue-with-payment,
   `CorrectPayment`, daily-cash query/UI and negative-closure policy for later
   bounded steps.
+
+## Step 103 - Standalone Create Payment workflow
+
+Status: completed. Milestone 7 is in progress.
+
+Plan alignment:
+
+- Complete the next bounded Milestone 7 task from the roadmap by adding the
+  standalone `CreatePayment` public command and PostgreSQL handler over the
+  canonical Payment source storage introduced in Step 102.
+- Require a canonical active Owner, named Admin or shared Reception/Admin
+  account and session, validate cash amount/context and optional same-client
+  Membership linkage, and preserve command accountability metadata.
+- Execute Payment creation, `payment.created` business audit and successful
+  idempotency storage in one transaction. Return the Payment as primary result,
+  the Client as canonical reread target and the Membership as a related entity
+  when supplied.
+- Keep ordinary Payment entry independent from Membership recalculation and
+  prove it cannot hide an existing negative Membership state. Reserve the
+  `negative_closure` context in the public enum but reject it in this standalone
+  workflow until its explicit policy and command orchestration are implemented.
+- Do not implement issue-with-payment integration, `CorrectPayment`, Payment
+  history/report queries, daily-cash UI or negative-closure behavior in this
+  bounded command step.
+
+Scope:
+
+- Add `CreatePaymentCommand` and `PaymentContext` public contracts, including a
+  stable `payment` primary result kind and `client` canonical reread target.
+- Add shared Payment command support for actor/session authorization,
+  validation and normalization, deterministic request fingerprints,
+  idempotent replay, PostgreSQL duplicate/concurrency mapping and transaction
+  cleanup.
+- Implement `CreatePaymentCommandHandler` with `ReadCommitted`, a serialized
+  Client lock, an optional same-client Membership key-share lock, one active
+  cash source fact, append-only audit and a 24-hour successful idempotency row.
+- Register the handler through the application command DI boundary.
+- Add ten PostgreSQL tests covering all allowed actor and context shapes,
+  backfill metadata, replay and changed-payload duplicates, concurrent same-key
+  serialization, invalid/reserved inputs, missing and cross-client records,
+  ended sessions, competing Membership locks, audit-triggered rollback/tracker
+  cleanup, DI registration and unchanged negative Membership state.
+- Reuse the existing Payment tables and indexes; this command step changes no
+  EF model and generates no migration.
+
+Validation:
+
+- The Infrastructure project built in Release with 0 warnings/errors, and the
+  standalone formatting/diff checks passed.
+- The first PostgreSQL test attempt reached the DI-only case but the remaining
+  cases could not connect to `localhost:55532` because Docker Desktop had
+  stopped. Docker Desktop startup then exposed stale Windows runtime sockets;
+  removing those sockets and restarting the engine restored the existing
+  `bodylife-crm-postgres` container without changing repository files.
+- Focused `PostgreSqlCreatePaymentCommandTests` then passed all 10 cases against
+  Docker PostgreSQL.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 331
+  PostgreSQL/architecture infrastructure tests, 31 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this command step generated no migration.
+- `graphify update .` completed the structural rebuild with 6024 nodes, 13207
+  edges and 646 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(payments): add standalone CreatePayment workflow`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add the Payments-owned canonical Client payment-history query/read model.
+  Preserve active, canceled and replaced source rows together with
+  correction/cancellation metadata, expose no mutation permissions yet, and
+  add PostgreSQL fail-closed consistency tests. Keep `CorrectPayment`, the
+  reception payment form and Reports-owned daily-cash composition for later
+  bounded steps.

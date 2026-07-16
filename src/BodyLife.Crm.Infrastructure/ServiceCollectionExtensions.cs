@@ -6,11 +6,13 @@ using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Freezes;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
+using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
+using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,6 +97,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<CancelVisitCommand>,
             CancelVisitCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<CreatePaymentCommand>,
+            CreatePaymentCommandHandler>();
         services.TryAddSingleton<
             IVisitDayReconciliationStatusProvider,
             OpenVisitDayReconciliationStatusProvider>();
