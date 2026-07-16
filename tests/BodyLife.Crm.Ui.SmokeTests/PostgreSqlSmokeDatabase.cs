@@ -1024,6 +1024,90 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             clientId);
     }
 
+    public Task<long> CountIssuedMembershipsAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.issued_memberships
+            where client_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountIssueMembershipAuditEntriesAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries audit
+            inner join bodylife.issued_memberships membership
+                on membership.id = audit.entity_id
+            where audit.action_type = 'membership.issued'
+              and membership.client_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountIssueMembershipIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'IssueMembership'
+              and reread_target_id = @client_id
+            """,
+            clientId);
+    }
+
+    public async Task<IssuedMembershipSmokeSnapshot> ReadLatestIssuedMembershipAsync(
+        Guid clientId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                id,
+                membership_type_id,
+                type_name_snapshot,
+                duration_days_snapshot,
+                visits_limit_snapshot,
+                price_amount_snapshot,
+                price_currency_snapshot,
+                start_date,
+                base_end_date,
+                comment,
+                status
+            from bodylife.issued_memberships
+            where client_id = @client_id
+            order by issued_at desc, id desc
+            limit 1
+            """;
+        command.Parameters.AddWithValue("client_id", clientId);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException("The issued smoke Membership was not found.");
+        }
+
+        return new IssuedMembershipSmokeSnapshot(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            reader.GetString(2),
+            reader.GetInt32(3),
+            reader.GetInt32(4),
+            reader.GetDecimal(5),
+            reader.GetString(6),
+            reader.GetFieldValue<DateOnly>(7),
+            reader.GetFieldValue<DateOnly>(8),
+            reader.IsDBNull(9) ? null : reader.GetString(9),
+            reader.GetString(10));
+    }
+
     public Task<long> CountCreatePaymentAuditEntriesAsync(Guid clientId)
     {
         return CountRowsAsync(
@@ -1518,6 +1602,19 @@ public sealed record MembershipStateSmokeSnapshot(
     int NegativeBalance,
     DateOnly? FirstNegativeVisitDate,
     DateOnly EffectiveEndDate);
+
+public sealed record IssuedMembershipSmokeSnapshot(
+    Guid MembershipId,
+    Guid MembershipTypeId,
+    string TypeNameSnapshot,
+    int DurationDaysSnapshot,
+    int VisitsLimitSnapshot,
+    decimal PriceAmountSnapshot,
+    string PriceCurrencySnapshot,
+    DateOnly StartDate,
+    DateOnly BaseEndDate,
+    string? Comment,
+    string Status);
 
 public sealed record PaymentSmokeSnapshot(
     decimal Amount,

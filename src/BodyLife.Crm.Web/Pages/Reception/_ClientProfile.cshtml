@@ -128,6 +128,11 @@
             }
         </section>
 
+        @if (Model.IssueMembershipForm is not null)
+        {
+            <partial name="_IssueMembershipForm" model="Model.IssueMembershipForm" />
+        }
+
         @if (Model.MarkVisitForm is not null)
         {
             <partial name="_MarkVisitForm" model="Model.MarkVisitForm" />

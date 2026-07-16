@@ -80,6 +80,14 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid PaymentPhoneClientId { get; private set; }
 
+    public Guid IssueMembershipTypeId { get; private set; }
+
+    public Guid IssueTabletClientId { get; private set; }
+
+    public Guid IssuePhoneClientId { get; private set; }
+
+    public Guid IssuePhoneExistingMembershipId { get; private set; }
+
     public async Task ExpireSessionAsync(string deviceLabel)
     {
         var database = _database
@@ -296,6 +304,26 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadMembershipStateAsync(membershipId);
     }
 
+    public Task<long> CountIssuedMembershipsAsync(Guid clientId)
+    {
+        return RequireDatabase().CountIssuedMembershipsAsync(clientId);
+    }
+
+    public Task<long> CountIssueMembershipAuditEntriesAsync(Guid clientId)
+    {
+        return RequireDatabase().CountIssueMembershipAuditEntriesAsync(clientId);
+    }
+
+    public Task<long> CountIssueMembershipIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountIssueMembershipIdempotencyKeysAsync(clientId);
+    }
+
+    public Task<IssuedMembershipSmokeSnapshot> ReadLatestIssuedMembershipAsync(Guid clientId)
+    {
+        return RequireDatabase().ReadLatestIssuedMembershipAsync(clientId);
+    }
+
     public Task<long> CountActivePaymentsAsync(Guid clientId)
     {
         return RequireDatabase().CountActivePaymentsAsync(clientId);
@@ -459,6 +487,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
         await SeedAddPaymentFixturesAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
+        await SeedIssueMembershipFixturesAsync(
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
@@ -663,6 +695,36 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "Phone",
             "+380 67 700 02 02",
             "BL-PAYMENT-PHONE");
+    }
+
+    private async Task SeedIssueMembershipFixturesAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        IssueMembershipTypeId = membershipTypeId;
+        IssueTabletClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Issue",
+            "Tablet",
+            "+380 67 800 01 01",
+            "BL-ISSUE-TABLET");
+
+        IssuePhoneClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Issue",
+            "Phone",
+            "+380 67 800 01 02",
+            "BL-ISSUE-PHONE");
+        IssuePhoneExistingMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            IssuePhoneClientId,
+            membershipTypeId,
+            "Existing negative snapshot",
+            visitsLimitSnapshot: 0);
+        await database.InsertExternalCountedVisitAsync(
+            IssuePhoneClientId,
+            IssuePhoneExistingMembershipId);
     }
 
     private async Task SeedReceptionClientsAsync(

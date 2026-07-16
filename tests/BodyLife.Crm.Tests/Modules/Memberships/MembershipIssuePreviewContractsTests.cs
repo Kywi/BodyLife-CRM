@@ -71,6 +71,9 @@ public sealed class MembershipIssuePreviewContractsTests
         Assert.Null(preview.ExpectedInitialState.FirstNegativeVisitDate);
         Assert.Equal(0, preview.ExpectedInitialState.ExtensionDays);
         Assert.Equal(preview.BaseEndDate, preview.ExpectedInitialState.EffectiveEndDate);
+        Assert.Equal(8, preview.ExpectedInitialRemainingVisits);
+        Assert.Equal(0, preview.ExpectedInitialExtensionDays);
+        Assert.Equal(preview.BaseEndDate, preview.ExpectedInitialEffectiveEndDate);
         Assert.Null(preview.ExistingNegativeState);
         Assert.Empty(preview.NegativeHandlingOptions);
         Assert.Empty(preview.Warnings);

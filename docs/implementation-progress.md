@@ -5360,3 +5360,105 @@ Next recommended step:
   submit with one idempotency key and reread the canonical Client profile after
   success. Keep `CorrectPayment` and daily-cash Reports for subsequent bounded
   steps.
+
+## Step 108 - Reception Issue Membership workflow
+
+Status: completed. Milestone 7 is in progress.
+
+Plan alignment:
+
+- Complete the reception/UI portion of the roadmap's issue-with-payment task
+  after the catalog query, server preview and atomic `IssueMembershipCommand`
+  were already proven independently. This step adds no alternate mutation path
+  and does not move Membership formulas into Razor or JavaScript.
+- Keep the workflow server-authoritative: ordinary issue catalog data comes
+  from `GetMembershipTypesForIssue`, all snapshot/date/negative-state values
+  come from `PreviewIssueMembership`, and success always rereads the canonical
+  Client profile.
+- Keep the optional Payment inside the single IssueMembership command and
+  idempotency boundary. Standalone Add Payment remains a separate workflow and
+  cannot be composed after issue to approximate atomicity.
+- Keep `CorrectPayment`, correction UI, daily-cash Reports and the unresolved
+  day-close/reconciliation policy for subsequent bounded steps.
+
+Scope:
+
+- Add a profile-owned `IssueMembershipFormViewModel`, input model and
+  `_IssueMembershipForm` Razor partial. The form is exposed only by the
+  canonical `MembershipActionKeys.Issue` permission and preserves reception
+  search context across preview and mutation requests.
+- Load active Membership Types and an initial same-day preview while composing
+  the profile. Membership Type, start-date and negative-decision changes issue
+  htmx GET preview requests and replace only the open action panel.
+- Render immutable issue-time name/duration/visit-limit/price snapshot,
+  Memberships-owned base/effective end date, initial remaining visits,
+  extension days, server warnings and existing negative context. Add primitive
+  preview projection properties so generated Razor does not reference the
+  Memberships-owned `MembershipCalculatedState` implementation.
+- Require one server-provided available negative handling decision where an
+  existing active Membership is negative. The accepted v1 `leave_visible`
+  option is selectable; deferred coverage/explicit-closure options remain
+  visible but disabled, and no Payment silently closes or hides the old state.
+- Offer an optional positive cash UAH `membership_sale` Payment prefilled from
+  the selected snapshot price. JavaScript only enables/disables its input; the
+  handler constructs the canonical `Money` and atomic command input.
+- Submit through an antiforgery-protected Razor handler with one idempotency
+  key, htmx drop synchronization and disabled/busy duplicate-tap protection.
+  Verify command entity/reread targets, then rebuild full canonical profile,
+  Membership state and Payment history before showing success.
+- Keep antiforgery data out of GET preview query strings by including only
+  named `form.*` controls. Adapter validation errors retain the form key and
+  entered values; stale/permission/catalog/recalculation failures force a
+  canonical workspace refresh.
+- Add isolated tablet and phone fixtures plus PostgreSQL readback helpers. The
+  tablet path proves payment validation, atomic issue/payment/audits and one
+  command key; the phone path proves required negative decision, unchanged old
+  negative state and canonical multiple-membership warning.
+- Add no EF record, configuration or migration.
+
+Validation:
+
+- Release solution/UI builds passed with 0 warnings/errors. Focused
+  `MembershipFormulaOwnershipTests` passed 2/2,
+  `MembershipIssuePreviewContractsTests` passed 14/14 and
+  `IssueMembershipSmokeTests` passed 2/2 against Docker PostgreSQL at 1024x768
+  and 390x844.
+- Full-page tablet and phone form/success screenshots were inspected. Snapshot,
+  negative decision, optional Payment, errors, touch submit, canonical
+  Membership state and Payment history remain readable without overlap or
+  horizontal overflow; the snapshot uses two tablet/desktop columns and one
+  phone column.
+- `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 341
+  PostgreSQL/architecture infrastructure tests, 35 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` built successfully and
+  reported no model drift; this query-contract/Razor workflow generated no
+  migration.
+- `graphify update .` completed the structural rebuild with 6270 nodes, 13955
+  edges and 645 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): add reception issue workflow`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Implement the bounded `CorrectPayment` command/persistence workflow over the
+  existing Payment, correction and cancellation source tables: replace/cancel
+  modes, required reason, positive cash replacement, canonical Client and
+  Membership relationship, retained original fact/status, idempotency,
+  append-only audit and canonical Client reread with PostgreSQL rollback
+  evidence. Do not invent a closed-day policy while the roadmap decision is
+  pending; keep the correction Razor UI and daily-cash Report composition for
+  following steps.

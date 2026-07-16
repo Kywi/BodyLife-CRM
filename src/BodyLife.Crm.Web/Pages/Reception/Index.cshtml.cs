@@ -1,6 +1,8 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.MembershipTypes;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
 using BodyLife.Crm.SharedKernel;
@@ -15,6 +17,12 @@ public sealed class IndexModel(
     IBodyLifeQueryHandler<SearchClientsQuery, SearchClientsResult> searchClients,
     IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult> getClientProfile,
     IBodyLifeQueryHandler<
+        GetMembershipTypesForIssueQuery,
+        GetMembershipTypesForIssueResult> getMembershipTypesForIssue,
+    IBodyLifeQueryHandler<
+        PreviewIssueMembershipQuery,
+        PreviewIssueMembershipResult> previewIssueMembership,
+    IBodyLifeQueryHandler<
         GetMarkVisitOptionsQuery,
         GetMarkVisitOptionsResult> getMarkVisitOptions,
     IBodyLifeQueryHandler<
@@ -23,6 +31,7 @@ public sealed class IndexModel(
     IBodyLifeCommandHandler<CreateClientCommand> createClient,
     IBodyLifeCommandHandler<UpdateClientCommand> updateClient,
     IBodyLifeCommandHandler<AssignOrChangeCardCommand> assignOrChangeCard,
+    IBodyLifeCommandHandler<IssueMembershipCommand> issueMembership,
     IBodyLifeCommandHandler<MarkVisitCommand> markVisit,
     IBodyLifeCommandHandler<CreatePaymentCommand> createPayment,
     IBodyLifeCommandHandler<CancelVisitCommand> cancelVisit,
@@ -97,6 +106,25 @@ public sealed class IndexModel(
                 result,
                 CurrentSearchContext(),
                 cancellationToken));
+    }
+
+    public async Task<IActionResult> OnGetIssueMembershipPreviewAsync(
+        IssueMembershipFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+        ApplySearchContext(form);
+
+        if (!IsHtmxRequest())
+        {
+            return RedirectToCanonicalPage(form.ClientId);
+        }
+
+        var issueForm = await BuildIssueMembershipFormFromInputAsync(
+            form,
+            errors: [],
+            cancellationToken);
+        return Partial("_IssueMembershipForm", issueForm);
     }
 
     public async Task<IActionResult> OnPostCreateClientAsync(
@@ -262,6 +290,55 @@ public sealed class IndexModel(
         };
 
         return Page();
+    }
+
+    public async Task<IActionResult> OnPostIssueMembershipAsync(
+        IssueMembershipFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        var adapterErrors = ValidateIssueMembershipForm(form);
+        if (adapterErrors.Count > 0)
+        {
+            return await RenderIssueMembershipErrorAsync(
+                form,
+                adapterErrors,
+                forceCanonicalRefresh: false,
+                cancellationToken);
+        }
+
+        var payment = form.IncludePayment
+            ? new MembershipIssuePayment(
+                new Money(
+                    form.PaymentAmount!.Value,
+                    IssueMembershipFormViewModel.Currency),
+                PaymentContext.MembershipSale)
+            : null;
+        var command = new IssueMembershipCommand(
+            requestContextResolver.CreateCommandEnvelope(
+                idempotencyKey: form.IdempotencyKey,
+                comment: form.Comment),
+            form.ClientId,
+            form.MembershipTypeId!.Value,
+            form.StartDate!.Value,
+            form.NegativeHandlingDecision,
+            Payment: payment);
+        var result = await issueMembership.ExecuteAsync(command, cancellationToken);
+
+        if (result.Status == CommandStatus.Success)
+        {
+            return await RenderSuccessfulIssueMembershipAsync(
+                form,
+                result,
+                cancellationToken);
+        }
+
+        return await RenderIssueMembershipErrorAsync(
+            form,
+            result.Errors,
+            RequiresCanonicalIssueRefresh(result.Errors),
+            cancellationToken);
     }
 
     public async Task<IActionResult> OnPostMarkVisitAsync(
@@ -537,6 +614,54 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IActionResult> RenderSuccessfulIssueMembershipAsync(
+        IssueMembershipFormInput form,
+        CommandResult result,
+        CancellationToken cancellationToken)
+    {
+        if (result.PrimaryEntityId is not { } membershipId
+            || membershipId.Type != IssueMembershipCommand.PrimaryEntityType
+            || membershipId.Value == Guid.Empty
+            || result.RereadTargetId is not { } rereadTarget
+            || rereadTarget.Type != IssueMembershipCommand.CanonicalRereadEntityType
+            || rereadTarget.Value != form.ClientId)
+        {
+            throw new InvalidOperationException(
+                "IssueMembership did not return the expected Membership and canonical Client reread target.");
+        }
+
+        ApplySearchContext(form);
+        ClientId = rereadTarget.Value;
+        var outcome = form.IncludePayment
+            ? "Membership issued with cash payment"
+            : "Membership issued";
+        var message = result.AuditEntryId is { } auditEntryId
+            ? $"{outcome}. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
+            : $"{outcome}.";
+
+        if (!IsHtmxRequest())
+        {
+            ClientOperationMessage = message;
+            ClientOperationTone = "success";
+            return RedirectToCanonicalPage(ClientId);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with
+            {
+                OperationMessage = message,
+                OperationSucceeded = true,
+            },
+        };
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
     private async Task<IActionResult> RenderSuccessfulMarkVisitAsync(
         MarkVisitFormInput form,
         CommandResult result,
@@ -753,6 +878,48 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IActionResult> RenderIssueMembershipErrorAsync(
+        IssueMembershipFormInput form,
+        IReadOnlyList<CommandError> errors,
+        bool forceCanonicalRefresh,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+        var issueForm = await BuildIssueMembershipFormFromInputAsync(
+            form,
+            errors,
+            cancellationToken);
+
+        if (IsHtmxRequest() && !forceCanonicalRefresh)
+        {
+            return Partial("_IssueMembershipForm", issueForm);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        if (Workspace.Profile.Result?.Profile?.ClientId == form.ClientId)
+        {
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with
+                {
+                    IssueMembershipForm = issueForm,
+                },
+            };
+        }
+
+        if (!IsHtmxRequest())
+        {
+            return Page();
+        }
+
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
     private async Task<IActionResult> RenderMarkVisitErrorAsync(
         MarkVisitFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -902,6 +1069,85 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IssueMembershipFormViewModel> BuildInitialIssueMembershipFormAsync(
+        Guid clientId,
+        DateOnly startDate,
+        ReceptionSearchContext searchContext,
+        CancellationToken cancellationToken)
+    {
+        var actor = requestContextResolver.Require().Actor;
+        var membershipTypesResult = await getMembershipTypesForIssue.ExecuteAsync(
+            new GetMembershipTypesForIssueQuery(actor),
+            cancellationToken);
+        var selectedType = membershipTypesResult.Items.FirstOrDefault();
+        var previewResult = selectedType is null
+            ? null
+            : await previewIssueMembership.ExecuteAsync(
+                new PreviewIssueMembershipQuery(
+                    actor,
+                    clientId,
+                    selectedType.MembershipTypeId,
+                    startDate),
+                cancellationToken);
+
+        return IssueMembershipFormViewModel.FromInitialQueries(
+            clientId,
+            startDate,
+            membershipTypesResult,
+            previewResult,
+            searchContext);
+    }
+
+    private async Task<IssueMembershipFormViewModel> BuildIssueMembershipFormFromInputAsync(
+        IssueMembershipFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        var actor = requestContextResolver.Require().Actor;
+        var membershipTypesResult = await getMembershipTypesForIssue.ExecuteAsync(
+            new GetMembershipTypesForIssueQuery(actor),
+            cancellationToken);
+        PreviewIssueMembershipResult? previewResult = null;
+
+        if (form.MembershipTypeId is { } membershipTypeId
+            && membershipTypeId != Guid.Empty
+            && form.StartDate is { } startDate
+            && startDate != default)
+        {
+            previewResult = await previewIssueMembership.ExecuteAsync(
+                new PreviewIssueMembershipQuery(
+                    actor,
+                    form.ClientId,
+                    membershipTypeId,
+                    startDate,
+                    form.NegativeHandlingDecision),
+                cancellationToken);
+
+            if (form.NegativeHandlingDecision is not null
+                && previewResult is
+                {
+                    Status: PreviewIssueMembershipStatus.ValidationFailed,
+                    ErrorField: "negativeHandlingDecision",
+                })
+            {
+                form.NegativeHandlingDecision = null;
+                previewResult = await previewIssueMembership.ExecuteAsync(
+                    new PreviewIssueMembershipQuery(
+                        actor,
+                        form.ClientId,
+                        membershipTypeId,
+                        startDate),
+                    cancellationToken);
+            }
+        }
+
+        return IssueMembershipFormViewModel.FromSubmission(
+            form,
+            membershipTypesResult,
+            previewResult,
+            errors);
+    }
+
     private async Task<MarkVisitFormViewModel> BuildMarkVisitErrorFormAsync(
         MarkVisitFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -939,6 +1185,77 @@ public sealed class IndexModel(
         return visit is null
             ? null
             : CancelVisitFormViewModel.FromSubmission(form, visit, errors);
+    }
+
+    private static bool RequiresCanonicalIssueRefresh(
+        IReadOnlyList<CommandError> errors)
+    {
+        return errors.Any(error => error.Code is
+            CommandErrorCode.PermissionDenied
+            or CommandErrorCode.NotFound
+            or CommandErrorCode.MembershipTypeInactive
+            or CommandErrorCode.RecalculationFailed
+            or CommandErrorCode.ConcurrencyConflict
+            or CommandErrorCode.StaleState);
+    }
+
+    private static IReadOnlyList<CommandError> ValidateIssueMembershipForm(
+        IssueMembershipFormInput form)
+    {
+        var errors = new List<CommandError>();
+
+        if (form.ClientId == Guid.Empty)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Client id is required.",
+                "clientId"));
+        }
+
+        if (!form.MembershipTypeId.HasValue
+            || form.MembershipTypeId.Value == Guid.Empty)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Choose an active membership type.",
+                "membershipTypeId"));
+        }
+
+        if (!form.StartDate.HasValue || form.StartDate.Value == default)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Start date is required.",
+                "startDate"));
+        }
+
+        if (form.NegativeHandlingDecision is { } decision
+            && !Enum.IsDefined(decision))
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Negative handling decision is not supported.",
+                "negativeHandlingDecision"));
+        }
+
+        if (form.IncludePayment
+            && (form.PaymentAmount is null || form.PaymentAmount <= 0))
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Payment amount must be greater than zero.",
+                "payment.amount"));
+        }
+
+        if (form.Comment?.Trim().Length > IssueMembershipFormViewModel.CommentMaxLength)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                $"Comment must be {IssueMembershipFormViewModel.CommentMaxLength} characters or fewer.",
+                "envelope.comment"));
+        }
+
+        return errors.AsReadOnly();
     }
 
     private static bool RequiresCanonicalVisitRefresh(IReadOnlyList<CommandError> errors)
@@ -1202,6 +1519,7 @@ public sealed class IndexModel(
         bool operationSucceeded = false)
     {
         MarkVisitFormViewModel? markVisitForm = null;
+        IssueMembershipFormViewModel? issueMembershipForm = null;
         AddPaymentFormViewModel? addPaymentForm = null;
         IReadOnlyList<CancelVisitFormViewModel> cancelVisitForms = [];
 
@@ -1223,6 +1541,14 @@ public sealed class IndexModel(
                 occurredAt,
                 optionsResult,
                 searchContext);
+            if (profile.AllowedActions.IsAllowed(MembershipActionKeys.Issue))
+            {
+                issueMembershipForm = await BuildInitialIssueMembershipFormAsync(
+                    profile.ClientId,
+                    DateOnly.FromDateTime(occurredAt.UtcDateTime),
+                    searchContext,
+                    cancellationToken);
+            }
             if (profile.AllowedActions.IsAllowed(PaymentActionKeys.Create))
             {
                 addPaymentForm = AddPaymentFormViewModel.FromProfile(
@@ -1243,6 +1569,7 @@ public sealed class IndexModel(
             operationMessage,
             operationSucceeded,
             markVisitForm: markVisitForm,
+            issueMembershipForm: issueMembershipForm,
             addPaymentForm: addPaymentForm,
             cancelVisitForms: cancelVisitForms);
     }
@@ -1273,6 +1600,14 @@ public sealed class IndexModel(
     }
 
     private void ApplySearchContext(CardAssignmentFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
+    }
+
+    private void ApplySearchContext(IssueMembershipFormInput form)
     {
         Query = form.SearchQuery;
         Mode = form.SearchMode;

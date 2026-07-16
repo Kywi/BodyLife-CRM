@@ -1,0 +1,316 @@
+@using System.Globalization
+@using BodyLife.Crm.Modules.MembershipTypes
+@model IssueMembershipFormViewModel
+@{
+    var input = Model.Input;
+    var preview = Model.Preview;
+    var clientKey = input.ClientId.ToString("N");
+    var formId = $"issue-membership-form-{clientKey}";
+    var startDateValue = input.StartDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    var paymentAmountValue = input.PaymentAmount?.ToString(CultureInfo.InvariantCulture);
+    var previewUrl = Url.Page("/Reception/Index", "IssueMembershipPreview");
+}
+
+<details id="issue-membership-action-panel"
+         class="profile-action-panel"
+         open="@(Model.IsOpen ? "open" : null)">
+    <summary>Issue membership</summary>
+    <div class="profile-action-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Membership not issued</strong>
+                <ul>
+                    @foreach (var message in Model.Errors
+                        .Select(IssueMembershipFormViewModel.DisplayError)
+                        .Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (Model.MembershipTypesResult.Status != GetMembershipTypesForIssueStatus.Success)
+        {
+            <div class="warning-block warning-danger" role="alert">
+                <strong>Issue action unavailable</strong>
+                <span>@(Model.MembershipTypesResult.ErrorMessage ?? "Membership catalog could not be loaded.")</span>
+            </div>
+        }
+        else if (Model.MembershipTypes.Count == 0)
+        {
+            <div class="warning-block warning-caution" role="status">
+                <strong>No active membership types</strong>
+                <span>There is no catalog item available for ordinary issue.</span>
+            </div>
+        }
+        else
+        {
+            <form id="@formId"
+                  class="issue-membership-form"
+                  method="post"
+                  asp-page="/Reception/Index"
+                  asp-page-handler="IssueMembership"
+                  data-busy-form
+                  data-issue-membership-form
+                  data-can-submit="@Model.CanSubmit.ToString().ToLowerInvariant()"
+                  hx-post="@Url.Page("/Reception/Index", "IssueMembership")"
+                  hx-target="#issue-membership-action-panel"
+                  hx-swap="outerHTML"
+                  hx-sync="this:drop"
+                  hx-indicator="#issue-membership-loading"
+                  hx-disabled-elt="find button">
+                <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+                <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+                <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+                <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+                <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+                <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+                <div class="action-form-grid issue-membership-inputs">
+                    <div class="form-field">
+                        <label for="membership-type-@clientKey">Membership type</label>
+                        <select id="membership-type-@clientKey"
+                                name="form.MembershipTypeId"
+                                required
+                                hx-get="@previewUrl"
+                                hx-trigger="change"
+                                hx-include="#@formId [name^='form.']"
+                                hx-target="#issue-membership-action-panel"
+                                hx-swap="outerHTML"
+                                hx-sync="#@formId:replace"
+                                hx-indicator="#issue-membership-preview-loading">
+                            @foreach (var membershipType in Model.MembershipTypes)
+                            {
+                                <option value="@membershipType.MembershipTypeId"
+                                        selected="@(input.MembershipTypeId == membershipType.MembershipTypeId ? "selected" : null)">
+                                    @membershipType.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="membership-start-date-@clientKey">Start date</label>
+                        <input id="membership-start-date-@clientKey"
+                               type="date"
+                               name="form.StartDate"
+                               value="@startDateValue"
+                               required
+                               hx-get="@previewUrl"
+                               hx-trigger="change"
+                               hx-include="#@formId [name^='form.']"
+                               hx-target="#issue-membership-action-panel"
+                               hx-swap="outerHTML"
+                               hx-sync="#@formId:replace"
+                               hx-indicator="#issue-membership-preview-loading" />
+                    </div>
+                </div>
+
+                @if (Model.PreviewResult is { Status: not PreviewIssueMembershipStatus.Success })
+                {
+                    <div class="warning-block warning-danger" role="alert">
+                        <strong>Preview unavailable</strong>
+                        <span>@(Model.PreviewResult.ErrorMessage ?? "Canonical membership preview could not be loaded.")</span>
+                    </div>
+                }
+                else if (preview is not null)
+                {
+                    <section class="issue-membership-preview" aria-labelledby="issue-membership-preview-title-@clientKey">
+                        <header class="issue-membership-preview-header">
+                            <h4 id="issue-membership-preview-title-@clientKey">Issue preview</h4>
+                            <span id="issue-membership-preview-loading"
+                                  class="request-indicator htmx-indicator"
+                                  role="status"
+                                  aria-live="polite">Refreshing preview...</span>
+                        </header>
+
+                        <dl class="issue-membership-snapshot">
+                            <div>
+                                <dt>Snapshot name</dt>
+                                <dd>@preview.Snapshot.TypeName</dd>
+                            </div>
+                            <div>
+                                <dt>Duration</dt>
+                                <dd>@preview.Snapshot.DurationDays days</dd>
+                            </div>
+                            <div>
+                                <dt>Visit limit</dt>
+                                <dd>@preview.Snapshot.VisitsLimit</dd>
+                            </div>
+                            <div>
+                                <dt>Snapshot price</dt>
+                                <dd>@MoneyLabel(preview.Snapshot.Price)</dd>
+                            </div>
+                            <div>
+                                <dt>Base end</dt>
+                                <dd data-issue-preview-base-end>@preview.BaseEndDate.ToString("yyyy-MM-dd")</dd>
+                            </div>
+                            <div>
+                                <dt>Effective end</dt>
+                                <dd>@preview.ExpectedInitialEffectiveEndDate.ToString("yyyy-MM-dd")</dd>
+                            </div>
+                            <div>
+                                <dt>Initial remaining</dt>
+                                <dd>@preview.ExpectedInitialRemainingVisits</dd>
+                            </div>
+                            <div>
+                                <dt>Extension days</dt>
+                                <dd>@preview.ExpectedInitialExtensionDays</dd>
+                            </div>
+                        </dl>
+
+                        @foreach (var warning in preview.Warnings)
+                        {
+                            <div class="warning-block @WarningClass(warning.Severity)">
+                                <strong>@WarningTitle(warning.Code)</strong>
+                                <span>@warning.Message</span>
+                            </div>
+                        }
+
+                        @if (preview.ExistingNegativeState is { } negativeState)
+                        {
+                            <fieldset class="issue-negative-decision">
+                                <legend>Existing negative visits</legend>
+                                <p>
+                                    Balance: -@negativeState.NegativeBalance
+                                    @if (negativeState.FirstNegativeVisitDate is { } firstNegativeDate)
+                                    {
+                                        <span>since @firstNegativeDate.ToString("yyyy-MM-dd")</span>
+                                    }
+                                </p>
+                                <div class="issue-negative-options">
+                                    @foreach (var option in preview.NegativeHandlingOptions)
+                                    {
+                                        <label class="@(option.IsAvailable ? null : "issue-negative-option-disabled")">
+                                            <input type="radio"
+                                                   name="form.NegativeHandlingDecision"
+                                                   value="@option.Decision"
+                                                   checked="@(input.NegativeHandlingDecision == option.Decision ? "checked" : null)"
+                                                   disabled="@(!option.IsAvailable ? "disabled" : null)"
+                                                   required="@(preview.RequiresNegativeHandlingDecision && option.IsAvailable ? "required" : null)"
+                                                   hx-get="@previewUrl"
+                                                   hx-trigger="change"
+                                                   hx-include="#@formId [name^='form.']"
+                                                   hx-target="#issue-membership-action-panel"
+                                                   hx-swap="outerHTML"
+                                                   hx-sync="#@formId:replace"
+                                                   hx-indicator="#issue-membership-preview-loading" />
+                                            <span>
+                                                <strong>@NegativeDecisionLabel(option.Decision)</strong>
+                                                @if (!option.IsAvailable)
+                                                {
+                                                    <small>Unavailable</small>
+                                                }
+                                            </span>
+                                        </label>
+                                    }
+                                </div>
+                            </fieldset>
+                        }
+                    </section>
+                }
+
+                <fieldset class="issue-payment-choice">
+                    <legend>Payment</legend>
+                    <label class="issue-payment-toggle" for="issue-payment-toggle-@clientKey">
+                        <input id="issue-payment-toggle-@clientKey"
+                               type="checkbox"
+                               name="form.IncludePayment"
+                               value="true"
+                               checked="@(input.IncludePayment ? "checked" : null)"
+                               data-issue-payment-toggle />
+                        <span>Add cash membership-sale payment</span>
+                    </label>
+
+                    <div class="issue-payment-fields" data-issue-payment-fields>
+                        <dl class="payment-fixed-context">
+                            <div>
+                                <dt>Method</dt>
+                                <dd>Cash</dd>
+                            </div>
+                            <div>
+                                <dt>Currency</dt>
+                                <dd>@IssueMembershipFormViewModel.Currency</dd>
+                            </div>
+                            <div>
+                                <dt>Context</dt>
+                                <dd>Membership sale</dd>
+                            </div>
+                        </dl>
+                        <div class="form-field">
+                            <label for="issue-payment-amount-@clientKey">Amount (UAH)</label>
+                            <input id="issue-payment-amount-@clientKey"
+                                   type="number"
+                                   name="form.PaymentAmount"
+                                   value="@paymentAmountValue"
+                                   min="0.01"
+                                   step="0.01"
+                                   inputmode="decimal"
+                                   disabled="@(!input.IncludePayment ? "disabled" : null)"
+                                   required="@(input.IncludePayment ? "required" : null)"
+                                   data-issue-payment-input />
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="form-field">
+                    <label for="issue-membership-comment-@clientKey">Comment (optional)</label>
+                    <textarea id="issue-membership-comment-@clientKey"
+                              name="form.Comment"
+                              maxlength="@IssueMembershipFormViewModel.CommentMaxLength">@input.Comment</textarea>
+                </div>
+
+                <div class="action-form-footer">
+                    <span id="issue-membership-loading"
+                          class="request-indicator htmx-indicator"
+                          role="status"
+                          aria-live="polite">Issuing membership...</span>
+                    <button type="submit"
+                            data-issue-membership-submit
+                            data-busy-text="Issuing..."
+                            disabled="@(!Model.CanSubmit ? "disabled" : null)">Issue membership</button>
+                </div>
+            </form>
+        }
+    </div>
+</details>
+
+@functions {
+    private static string MoneyLabel(Money money)
+    {
+        return $"{money.Amount.ToString("0.00", CultureInfo.InvariantCulture)} {money.Currency}";
+    }
+
+    private static string WarningClass(MembershipWarningSeverity severity)
+    {
+        return severity == MembershipWarningSeverity.Danger
+            ? "warning-danger"
+            : "warning-caution";
+    }
+
+    private static string WarningTitle(string code)
+    {
+        return code switch
+        {
+            MembershipWarningCodes.NegativeBalance => "Negative balance",
+            MembershipWarningCodes.ExpiredByDate => "Expired membership",
+            MembershipWarningCodes.ZeroRemaining => "Zero remaining",
+            MembershipWarningCodes.EndingSoon => "Ending soon",
+            MembershipWarningCodes.LowRemaining => "Low remaining",
+            _ => "Membership warning",
+        };
+    }
+
+    private static string NegativeDecisionLabel(MembershipNegativeHandlingDecision decision)
+    {
+        return decision switch
+        {
+            MembershipNegativeHandlingDecision.LeaveVisible => "Leave negative balance visible",
+            MembershipNegativeHandlingDecision.CoverWithNewMembership => "Cover with new membership",
+            MembershipNegativeHandlingDecision.RecordExplicitClosure => "Record explicit closure",
+            _ => "Unsupported decision",
+        };
+    }
+}

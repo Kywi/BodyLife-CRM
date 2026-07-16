@@ -891,6 +891,7 @@ textarea:focus-visible,
 .create-client-form,
 .update-client-form,
 .card-assignment-form,
+.issue-membership-form,
 .mark-visit-form,
 .add-payment-form,
 .cancel-visit-form {
@@ -1130,6 +1131,156 @@ textarea:focus-visible,
 
 .mark-visit-form button:disabled:not([aria-busy="true"]) {
   cursor: not-allowed;
+}
+
+.issue-membership-form button:disabled:not([aria-busy="true"]) {
+  cursor: not-allowed;
+}
+
+.issue-membership-preview {
+  display: grid;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px;
+  gap: 12px;
+  background: var(--surface-muted);
+}
+
+.issue-membership-preview-header {
+  display: flex;
+  min-width: 0;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.issue-membership-preview-header h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.issue-membership-snapshot {
+  display: grid;
+  margin: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.issue-membership-snapshot div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.issue-membership-snapshot dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.issue-membership-snapshot dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.issue-negative-decision,
+.issue-payment-choice {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.issue-negative-decision legend,
+.issue-payment-choice legend {
+  margin-bottom: 8px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.issue-negative-decision > p {
+  margin: 0 0 8px;
+  color: var(--danger-strong);
+  font-weight: 800;
+}
+
+.issue-negative-options {
+  display: grid;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.issue-negative-options label {
+  display: flex;
+  min-height: 48px;
+  min-width: 0;
+  padding: 8px 12px;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.issue-negative-options label + label {
+  border-top: 1px solid var(--line);
+}
+
+.issue-negative-options input,
+.issue-payment-toggle input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--info);
+}
+
+.issue-negative-options label > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.issue-negative-options strong,
+.issue-negative-options small {
+  overflow-wrap: anywhere;
+}
+
+.issue-negative-options small {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.issue-negative-option-disabled {
+  opacity: 0.62;
+  cursor: not-allowed !important;
+}
+
+.issue-payment-choice {
+  display: grid;
+  gap: 10px;
+}
+
+.issue-payment-toggle {
+  display: flex;
+  min-height: 44px;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.issue-payment-fields {
+  display: grid;
+  border-left: 3px solid var(--info);
+  padding-left: 12px;
+  gap: 12px;
+}
+
+.issue-payment-fields[data-active="false"] {
+  display: none;
 }
 
 .action-form-grid {
@@ -1761,6 +1912,7 @@ textarea:focus-visible,
   .recent-payment-meta,
   .visit-correction-context,
   .action-form-grid,
+  .issue-membership-snapshot,
   .visit-business-context,
   .payment-fixed-context,
   .visit-membership-meta,
@@ -1777,12 +1929,14 @@ textarea:focus-visible,
   }
 
   .mark-visit-form .action-form-footer,
+  .issue-membership-form .action-form-footer,
   .add-payment-form .action-form-footer,
   .cancel-visit-form .action-form-footer {
     flex-wrap: wrap;
   }
 
   .mark-visit-form .action-form-footer button,
+  .issue-membership-form .action-form-footer button,
   .add-payment-form .action-form-footer button,
   .cancel-visit-form .action-form-footer button {
     width: 100%;

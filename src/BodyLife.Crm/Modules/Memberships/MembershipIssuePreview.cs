@@ -25,6 +25,9 @@ public sealed class MembershipIssuePreview
         ProposedStartDate = issueTerms.StartDate;
         BaseEndDate = issueTerms.BaseEndDate;
         ExpectedInitialState = expectedInitialState;
+        ExpectedInitialRemainingVisits = expectedInitialState.RemainingVisits;
+        ExpectedInitialExtensionDays = expectedInitialState.ExtensionDays;
+        ExpectedInitialEffectiveEndDate = expectedInitialState.EffectiveEndDate;
         ExistingNegativeState = existingNegativeState;
         SelectedNegativeHandlingDecision = selectedNegativeHandlingDecision;
         NegativeHandlingOptions = Array.AsReadOnly(optionItems);
@@ -49,6 +52,12 @@ public sealed class MembershipIssuePreview
     public DateOnly BaseEndDate { get; }
 
     public MembershipCalculatedState ExpectedInitialState { get; }
+
+    public int ExpectedInitialRemainingVisits { get; }
+
+    public int ExpectedInitialExtensionDays { get; }
+
+    public DateOnly ExpectedInitialEffectiveEndDate { get; }
 
     public MembershipIssueNegativeContext? ExistingNegativeState { get; }
 
