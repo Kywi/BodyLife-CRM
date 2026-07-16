@@ -643,7 +643,15 @@
   "641": ".PersistenceRegistrationResolvesCorrectPaymentWorkflow",
   "642": "MembershipAdjustmentTypes.cs",
   "643": "ClientRecord",
+  "644": ".ReadDailyCashAsync",
+  "645": "AddUsersRolesAccountsSessions",
+  "646": "MutableTimeProvider",
   "647": ".InitializeAsync",
+  "648": ".InitialBaselineMigrationAppliesToCleanPostgreSqlDatabase",
   "649": "MembershipAuditActions.cs",
-  "651": "_CorrectPaymentForm.cshtml"
+  "650": "FixedTimeProvider",
+  "651": "_CorrectPaymentForm.cshtml",
+  "652": "FixedTimeProvider",
+  "653": ".PersistenceRegistrationResolvesCorrectPaymentWorkflow",
+  "654": "FixedTimeProvider"
 }
