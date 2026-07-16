@@ -765,6 +765,231 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
     }
 
     [PostgreSqlFact]
+    public async Task FreezeEligibilityPreparationRequiresInputsAndCallerTransaction()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        var missingRebuilder = Assert.Throws<ArgumentNullException>(() =>
+            new MembershipFreezeEligibilityPreparer(
+                dbContext,
+                stateCacheRebuilder: null!));
+        var preparer = CreateFreezeEligibilityPreparer(dbContext);
+        var range = new DateRange(TestStartDate, TestStartDate);
+
+        var missingClientId = await Assert.ThrowsAsync<ArgumentException>(() =>
+            preparer.PrepareAsync(Guid.Empty, seeded.MembershipId, range));
+        var missingMembershipId = await Assert.ThrowsAsync<ArgumentException>(() =>
+            preparer.PrepareAsync(seeded.ClientId, Guid.Empty, range));
+        var missingTransaction = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            preparer.PrepareAsync(seeded.ClientId, seeded.MembershipId, range));
+
+        Assert.Equal("stateCacheRebuilder", missingRebuilder.ParamName);
+        Assert.Equal("clientId", missingClientId.ParamName);
+        Assert.Equal("membershipId", missingMembershipId.ParamName);
+        Assert.Contains(
+            "caller-owned",
+            missingTransaction.Message,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(0L, await CountCacheRowsAsync(database));
+        Assert.Equal(0L, await CountFreezeRowsAsync(database));
+    }
+
+    [PostgreSqlFact]
+    public async Task FreezeEligibilityPreparationReturnsNotFoundForWrongSelection()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        var preparer = CreateFreezeEligibilityPreparer(dbContext);
+        var range = new DateRange(TestStartDate, TestStartDate);
+        var missingMembershipId = Guid.NewGuid();
+
+        var missingMembership = await preparer.PrepareAsync(
+            seeded.ClientId,
+            missingMembershipId,
+            range);
+        var foreignClient = await preparer.PrepareAsync(
+            Guid.NewGuid(),
+            seeded.MembershipId,
+            range);
+
+        Assert.Equal(
+            MembershipFreezeEligibilityPreparationStatus.NotFound,
+            missingMembership.Status);
+        Assert.Equal(seeded.ClientId, missingMembership.ClientId);
+        Assert.Equal(missingMembershipId, missingMembership.MembershipId);
+        Assert.False(missingMembership.IsPrepared);
+        Assert.Null(missingMembership.Eligibility);
+        Assert.Null(missingMembership.RebuildStatus);
+        Assert.Equal(
+            MembershipFreezeEligibilityPreparationStatus.NotFound,
+            foreignClient.Status);
+        Assert.False(foreignClient.IsPrepared);
+        Assert.Equal(0L, await CountCacheRowsAsync(database));
+        Assert.Equal(0L, await CountFreezeRowsAsync(database));
+    }
+
+    [PostgreSqlFact]
+    public async Task CanonicalStateDrivesInclusiveFreezeRangePreparation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        var preparer = CreateFreezeEligibilityPreparer(dbContext);
+        var startRange = new DateRange(TestStartDate, TestStartDate);
+        var endCrossingRange = new DateRange(
+            TestBaseEndDate,
+            TestBaseEndDate.AddDays(3));
+
+        var startResult = await preparer.PrepareAsync(
+            seeded.ClientId,
+            seeded.MembershipId,
+            startRange);
+        var endResult = await preparer.PrepareAsync(
+            seeded.ClientId,
+            seeded.MembershipId,
+            endCrossingRange);
+
+        Assert.True(startResult.IsPrepared);
+        Assert.Equal(MembershipStateCacheRebuildStatus.Created, startResult.RebuildStatus);
+        Assert.NotNull(startResult.Eligibility);
+        Assert.True(startResult.Eligibility.IsEligible);
+        Assert.Equal(startRange, startResult.Eligibility.Range);
+        Assert.True(endResult.IsPrepared);
+        Assert.Equal(MembershipStateCacheRebuildStatus.Verified, endResult.RebuildStatus);
+        Assert.NotNull(endResult.Eligibility);
+        Assert.True(endResult.Eligibility.IsEligible);
+        Assert.Equal(endCrossingRange, endResult.Eligibility.Range);
+        Assert.All(
+            typeof(MembershipFreezeEligibilityPreparationResult).GetProperties(),
+            property => Assert.Null(property.SetMethod));
+
+        await transaction.RollbackAsync();
+        dbContext.ChangeTracker.Clear();
+        Assert.Equal(0L, await CountCacheRowsAsync(database));
+        Assert.Equal(0L, await CountFreezeRowsAsync(database));
+    }
+
+    [PostgreSqlFact]
+    public async Task RetainedVisitSourcesDriveFreezeConflictWithoutCreatingFreeze()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        var range = new DateRange(
+            new DateOnly(2026, 7, 10),
+            new DateOnly(2026, 7, 12));
+        await InsertMembershipVisitAsync(
+            database.ConnectionString,
+            seeded,
+            new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero),
+            TestNow.AddMinutes(1),
+            visitStatus: "canceled",
+            consumptionStatus: "canceled");
+        await InsertMembershipVisitAsync(
+            database.ConnectionString,
+            seeded,
+            new DateTimeOffset(2026, 7, 13, 9, 0, 0, TimeSpan.Zero),
+            TestNow.AddMinutes(2));
+
+        await using (var eligibleTransaction =
+            await dbContext.Database.BeginTransactionAsync())
+        {
+            var eligible = await CreateFreezeEligibilityPreparer(dbContext)
+                .PrepareAsync(seeded.ClientId, seeded.MembershipId, range);
+
+            Assert.NotNull(eligible.Eligibility);
+            Assert.True(eligible.Eligibility.IsEligible);
+            await eligibleTransaction.RollbackAsync();
+        }
+
+        dbContext.ChangeTracker.Clear();
+        await InsertMembershipVisitAsync(
+            database.ConnectionString,
+            seeded,
+            new DateTimeOffset(2026, 7, 12, 9, 0, 0, TimeSpan.Zero),
+            TestNow.AddMinutes(3));
+        await using (var conflictTransaction =
+            await dbContext.Database.BeginTransactionAsync())
+        {
+            var conflict = await CreateFreezeEligibilityPreparer(dbContext)
+                .PrepareAsync(seeded.ClientId, seeded.MembershipId, range);
+
+            Assert.NotNull(conflict.Eligibility);
+            Assert.Equal(
+                MembershipFreezeEligibilityStatus.ConflictsWithActiveVisit,
+                conflict.Eligibility.Status);
+            Assert.Equal(
+                MembershipFreezeEligibilityErrorCodes.FreezeConflictsWithVisit,
+                conflict.Eligibility.ErrorCode);
+            await conflictTransaction.RollbackAsync();
+        }
+
+        dbContext.ChangeTracker.Clear();
+        Assert.Equal(0L, await CountCacheRowsAsync(database));
+        Assert.Equal(0L, await CountFreezeRowsAsync(database));
+    }
+
+    [PostgreSqlFact]
+    public async Task FreezeEligibilityPreparationKeepsMembershipAndVisitSourcesLockedForCaller()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        var visitId = await InsertMembershipVisitAsync(
+            database.ConnectionString,
+            seeded,
+            new DateTimeOffset(2026, 7, 14, 9, 0, 0, TimeSpan.Zero),
+            TestNow.AddMinutes(1));
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var result = await CreateFreezeEligibilityPreparer(dbContext).PrepareAsync(
+            seeded.ClientId,
+            seeded.MembershipId,
+            new DateRange(new DateOnly(2026, 7, 14), new DateOnly(2026, 7, 14)));
+
+        Assert.True(result.IsPrepared);
+        Assert.NotNull(result.Eligibility);
+        Assert.Equal(
+            MembershipFreezeEligibilityStatus.ConflictsWithActiveVisit,
+            result.Eligibility.Status);
+        var membershipLock = await AssertMembershipUpdateBlockedAsync(
+            database.ConnectionString,
+            seeded.MembershipId);
+        var visitLock = await AssertVisitUpdateBlockedAsync(
+            database.ConnectionString,
+            visitId);
+        var consumptionLock = await AssertVisitConsumptionUpdateBlockedAsync(
+            database.ConnectionString,
+            seeded.MembershipId,
+            visitId);
+        Assert.Equal(PostgresErrorCodes.LockNotAvailable, membershipLock.SqlState);
+        Assert.Equal(PostgresErrorCodes.LockNotAvailable, visitLock.SqlState);
+        Assert.Equal(PostgresErrorCodes.LockNotAvailable, consumptionLock.SqlState);
+
+        await transaction.RollbackAsync();
+        dbContext.ChangeTracker.Clear();
+        await UpdateMembershipStatusAsync(
+            database.ConnectionString,
+            seeded.MembershipId,
+            "canceled");
+        await UpdateVisitCommentAsync(database.ConnectionString, visitId);
+        await UpdateVisitConsumptionRecordedAtAsync(
+            database.ConnectionString,
+            seeded.MembershipId,
+            visitId);
+        Assert.Equal(0L, await CountFreezeRowsAsync(database));
+    }
+
+    [PostgreSqlFact]
     public async Task MatchingCacheIsVerifiedAndRefreshesRecalculationMetadata()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -891,6 +1116,14 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
             dbContext,
             CreateRebuilder(dbContext),
             new StaticMembershipVisitFreezeSourceProvider(freezeSources ?? []));
+    }
+
+    private static MembershipFreezeEligibilityPreparer CreateFreezeEligibilityPreparer(
+        BodyLifeDbContext dbContext)
+    {
+        return new MembershipFreezeEligibilityPreparer(
+            dbContext,
+            CreateRebuilder(dbContext));
     }
 
     private sealed class StaticMembershipVisitFreezeSourceProvider(
@@ -1197,6 +1430,82 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
             """;
         command.Parameters.AddWithValue("membership_id", membershipId);
         command.Parameters.AddWithValue("status", status);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task<PostgresException> AssertVisitUpdateBlockedAsync(
+        string connectionString,
+        Guid visitId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            set lock_timeout = '250ms';
+            update bodylife.visits
+            set comment = 'Concurrent update'
+            where id = @visit_id
+            """;
+        command.Parameters.AddWithValue("visit_id", visitId);
+
+        return await Assert.ThrowsAsync<PostgresException>(() =>
+            command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task<PostgresException> AssertVisitConsumptionUpdateBlockedAsync(
+        string connectionString,
+        Guid membershipId,
+        Guid visitId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            set lock_timeout = '250ms';
+            update bodylife.visit_consumptions
+            set recorded_at = recorded_at + interval '1 second'
+            where membership_id = @membership_id
+                and visit_id = @visit_id
+            """;
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("visit_id", visitId);
+
+        return await Assert.ThrowsAsync<PostgresException>(() =>
+            command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task UpdateVisitCommentAsync(
+        string connectionString,
+        Guid visitId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            "update bodylife.visits set comment = 'Unlocked update' where id = @visit_id";
+        command.Parameters.AddWithValue("visit_id", visitId);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task UpdateVisitConsumptionRecordedAtAsync(
+        string connectionString,
+        Guid membershipId,
+        Guid visitId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.visit_consumptions
+            set recorded_at = recorded_at + interval '1 second'
+            where membership_id = @membership_id
+                and visit_id = @visit_id
+            """;
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("visit_id", visitId);
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
 
@@ -1517,6 +1826,12 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
     {
         return database.ExecuteScalarAsync<long>(
             "select count(*) from bodylife.membership_state_cache");
+    }
+
+    private static Task<long> CountFreezeRowsAsync(PostgreSqlTestDatabase database)
+    {
+        return database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.freezes");
     }
 
     private static async Task<long> CountAdjustmentRowsAsync(

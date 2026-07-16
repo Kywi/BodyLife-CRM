@@ -5870,3 +5870,84 @@ Next recommended step:
   retained counted Visit sources, invoke the pure policy and return its typed
   result without inserting a Freeze. Keep the transactional AddFreeze source/
   recalculation/audit/idempotency workflow as the following bounded step.
+
+## Step 114 - Locked PostgreSQL Freeze eligibility preparation
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement the ADR-015 persistence preparation boundary immediately after the
+  pure Membership Freeze eligibility contract from Step 113 and before the
+  state-changing AddFreeze command.
+- Follow the established MarkVisit preparation shape: require a caller-owned
+  PostgreSQL transaction, lock the selected issued Membership first, rebuild
+  canonical Membership state and return a typed preparation result.
+- Add the ADR-015 symmetric concurrency protection by locking the retained
+  counted Visit and Visit-consumption source rows relevant to the proposed
+  inclusive range after the Membership lock.
+- Keep authorization, command metadata, idempotency, Freeze insertion,
+  extension recalculation after mutation, business audit, DI and reception UI
+  outside this bounded step. No EF model or migration change is required.
+
+Scope:
+
+- Add `MembershipFreezeEligibilityPreparer` with required Client/Membership
+  identifiers, caller-owned transaction enforcement and Membership-first
+  `FOR UPDATE` selection by canonical Client ownership.
+- Rebuild/read the locked Membership state through
+  `MembershipStateCacheRebuilder`, reconstruct immutable issue-time terms and
+  map the retained lifecycle status before invoking the pure
+  `MembershipFreezeEligibilityPolicy`.
+- Load only counted Membership Visit sources in the requested UTC business-date
+  range and lock both `visits` and `visit_consumptions` in deterministic order.
+  Preserve canceled source history while active counted rows drive conflicts.
+- Extract the existing fail-closed Visit/consumption source mapper from the
+  cache rebuilder so canonical rebuild and Freeze preparation interpret active,
+  canceled and replacement consumption history identically.
+- Return immutable prepared/not-found status, selected identifiers, pure
+  eligibility and rebuild status. The preparation boundary never inserts a
+  Freeze and leaves commit or rollback ownership with its caller.
+- Add five PostgreSQL integration cases for input/transaction guards,
+  wrong-selection `NotFound`, both inclusive Membership boundaries plus an
+  unclipped end, canceled/out-of-range/active-endpoint Visit behavior, no Freeze
+  insertion, rollback of the rebuilt cache and real Membership/Visit/
+  consumption row-lock release.
+
+Validation:
+
+- Release infrastructure-test build passed with 0 warnings/errors.
+- Focused Freeze eligibility preparation tests passed 5/5 against Docker
+  PostgreSQL, including `55P03` lock evidence for the Membership, Visit and
+  Visit-consumption rows and successful updates after caller rollback.
+- `git diff --check` passed before the progress update.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 276 core tests, 35 web tests, 362
+  PostgreSQL/architecture infrastructure tests, 37 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this persistence preparation step generated no migration.
+- `graphify update .` completed the structural rebuild with 6632 nodes, 14990
+  edges and 655 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): prepare freeze eligibility`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add one transactional `AddFreeze` command/persistence workflow over this
+  preparation boundary and the existing Freeze source tables: canonical actor
+  authorization and metadata, idempotency, active Freeze insertion, synchronous
+  extension-day recalculation, append-only `freeze.added` business audit,
+  canonical reread target and rollback evidence. Keep CancelFreeze and reception
+  UI as later independent steps.
