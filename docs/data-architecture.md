@@ -195,7 +195,17 @@ Core constraints:
 - Membership-kind Visit requires exactly one active counted consumption after command success; one_off/trial Visit requires none. PostgreSQL prevents any one_off/trial consumption, while the command transaction is responsible for creating the required membership consumption atomically.
 - `visit_consumptions` repeats `client_id` and controlled `visit_kind` only to support composite FKs: the selected Membership must belong to the Visit Client and the referenced Visit must be membership kind. These repeated values are relational guards, not independent editable business facts.
 - Visit before selected Membership `start_date`, consumption of canceled/corrected Membership, and membership Visit during an active Freeze covering `occurred_at` are rejected under lock by the command/domain boundary; expired selection requires current-state acknowledgement.
-- Membership Visit/Freeze concurrency uses one lock order: lock the selected `issued_memberships` row first, then read and lock inclusive-overlapping `freezes` rows. Future Add/CancelFreeze workflows must lock the same Membership before inserting or changing Freeze facts so `MarkVisit` cannot observe a stale no-Freeze window.
+- AddFreeze requires a lifecycle-active Membership and validates its inclusive range
+  against locked canonical pre-command state: start must be at least Membership
+  `start_date` and no later than pre-command `effective_end_date`; end may cross
+  that effective end and the stored range is not clipped.
+- AddFreeze rejects an active counted Membership Visit inside the proposed range
+  with `freeze_conflicts_with_visit`. Canceled Visits and one_off/trial Visits do
+  not block it.
+- Membership Visit/Freeze concurrency uses one lock order: lock the selected
+  `issued_memberships` row first, then read and lock the relevant `freezes` and
+  membership Visit rows. MarkVisit, AddFreeze and future CancelFreeze workflows
+  keep that order so neither side observes a stale eligibility window.
 - `business_audit_entries` are append-only by application policy; database permissions/triggers can harden this if available.
 
 Important indexes:
@@ -370,15 +380,18 @@ Validation scenarios:
 3. Record visit when remaining visits is 0. Verify remaining becomes -1, negative balance is 1 and first negative date is set.
 4. Cancel the first negative visit. Verify visit remains visible, state recalculates, daily report excludes it and audit explains cancellation.
 5. Add freeze 2026-01-10..2026-01-12. Verify inclusive 3-day extension and extension days explain the source.
-6. Add non-working period overlapping the freeze. Verify extension counts union calendar days, not sum of sources.
-7. Cancel non-working period. Verify affected memberships recalculate and client history still shows add plus cancel.
-8. Correct payment amount after day close. Verify live daily cash total changes, changed-after-close is visible and audit has before/after plus reason.
-9. Search by exact card number. Verify exact current card match opens the correct client and duplicate current card assignment is blocked.
-10. Search by last four phone digits. Verify non-unique matches produce list, not auto-open.
-11. Enter active membership via manual backfill opening state. Verify no fake visits are generated, state is explainable and audit marks manual backfill.
-12. Enter paper fallback visits/payments next day. Verify `occurred_at` drives reports for the business date while `recorded_at` and audit show late entry.
-13. Close negative visits with a new membership. Verify `membership_negative_closures` and closure items list covered visits; old negative state is not silently hidden.
-14. Restore database to staging. Rebuild membership state, compare caches, verify audit and source rows are transactionally consistent.
+6. Reject Freeze starting before Membership start or after locked pre-command effective end; verify no source fact, recalculation or success audit is committed.
+7. Accept Freeze whose start is eligible and whose end crosses pre-command effective end; verify the full range participates in extension union.
+8. Reject Freeze overlapping an active counted Membership Visit with `freeze_conflicts_with_visit`; verify Membership-first locking prevents a partial or stale write.
+9. Add non-working period overlapping the freeze. Verify extension counts union calendar days, not sum of sources.
+10. Cancel non-working period. Verify affected memberships recalculate and client history still shows add plus cancel.
+11. Correct payment amount after day close. Verify live daily cash total changes, changed-after-close is visible and audit has before/after plus reason.
+12. Search by exact card number. Verify exact current card match opens the correct client and duplicate current card assignment is blocked.
+13. Search by last four phone digits. Verify non-unique matches produce list, not auto-open.
+14. Enter active membership via manual backfill opening state. Verify no fake visits are generated, state is explainable and audit marks manual backfill.
+15. Enter paper fallback visits/payments next day. Verify `occurred_at` drives reports for the business date while `recorded_at` and audit show late entry.
+16. Close negative visits with a new membership. Verify `membership_negative_closures` and closure items list covered visits; old negative state is not silently hidden.
+17. Restore database to staging. Rebuild membership state, compare caches, verify audit and source rows are transactionally consistent.
 
 Open validation questions to settle before migrations:
 
@@ -391,3 +404,8 @@ Resolved before Visit migrations:
 - ADR-014 allows multiple lifecycle-active Memberships and requires explicit `membership_id`; no automatic allocation is permitted.
 - ADR-014 blocks membership Visit during an active Freeze covering the business date.
 - ADR-014 uses explicit one_off/trial Visit kinds without consumption and permits a dedicated technical Client for unidentified visitors.
+
+Resolved before Freeze migrations:
+
+- ADR-015 defines lifecycle eligibility, start-date bounds, full-range storage,
+  counted-Visit conflict handling and Membership-first lock order for AddFreeze.

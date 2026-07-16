@@ -473,11 +473,16 @@
 - Milestone 3.
 - Milestone 5.
 - Milestone 6 for visit/state interactions.
-- Product decisions for freeze range validation, visit during freeze and NonWorkingDay application scope.
+- ADR-014 and ADR-015 for Visit/Freeze conflict symmetry, Freeze range
+  eligibility and Membership-first locking.
+- Product decision for NonWorkingDay application scope.
 
 ### Задачі
 
 - Створити `freezes`, `freeze_cancellations`, `non_working_periods`, `non_working_period_applications`, `non_working_period_cancellations`.
+- Apply ADR-015 in AddFreeze: lifecycle-active Membership, eligible start bound
+  against locked pre-command state, unclipped end, counted-Visit conflict and
+  shared Membership-first lock order.
 - Реалізувати `AddFreeze` and `CancelFreeze` with inclusive date range, reason/comment and synchronous membership recalculation.
 - Реалізувати `PreviewNonWorkingDayImpact` with affected membership count/list, overlap warnings and expiring confirmation token.
 - Реалізувати Owner-only `AddNonWorkingDay` with affected scope confirmation captured in application rows.
@@ -491,6 +496,11 @@
 ### Acceptance Criteria
 
 - Freeze range is inclusive and changes effective end date only through Memberships recalculation.
+- Freeze starts no earlier than Membership start and no later than locked
+  pre-command effective end; an eligible range may end after that effective end
+  and is not clipped.
+- AddFreeze rejects active counted Membership Visit overlap with
+  `freeze_conflicts_with_visit`; canceled and one_off/trial Visits do not block.
 - Canceling freeze preserves history and removes its active extension days.
 - NonWorkingDay add/correction is Owner-only and requires preview/affected-scope confirmation.
 - Freeze and NonWorkingDay overlap counts union calendar days, not sum of sources.
@@ -501,8 +511,11 @@
 
 ### Потрібні тести
 
-- Domain tests for inclusive freeze days, canceled freeze, NonWorkingDay days and overlap union.
-- Application tests for Add/CancelFreeze permissions, validation, idempotency, audit and rollback.
+- Domain tests for inclusive freeze days, lifecycle/start eligibility, end beyond
+  pre-command effective end, counted-Visit conflict, canceled freeze,
+  NonWorkingDay days and overlap union.
+- Application tests for Add/CancelFreeze permissions, validation, Membership-first
+  locking, concurrency with MarkVisit, idempotency, audit and rollback.
 - Application tests for Preview/Add/CorrectNonWorkingDay: owner-only, preview expiry, affected_scope_changed, overlap warning and recalculation.
 - PostgreSQL tests for date range constraints and application rows.
 - Performance/transaction tests for realistic affected membership counts.
@@ -513,7 +526,8 @@
 - NonWorkingDay mass recalculation can be slow or partially applied.
 - Preview can become stale between view and commit.
 - Overlap rules can be accidentally double-counted.
-- Freeze validation policy outside active membership dates may be unresolved.
+- MarkVisit and Add/CancelFreeze lock-order drift can reintroduce stale
+  Visit/Freeze eligibility windows.
 - Admin may expect to manage NonWorkingDays, but ADR-012 makes it Owner-only.
 
 ### Що не входить
@@ -761,7 +775,8 @@
 
 - Last-minute hosting constraints can invalidate backup/restore assumptions.
 - Performance issues can appear only with realistic report/search data.
-- Production hardening can uncover missing product decisions, especially day close, one-off negative closure or NonWorkingDay/Freeze range boundaries.
+- Production hardening can uncover missing product decisions, especially day
+  close, one-off negative closure or NonWorkingDay range boundaries.
 - Logs/metrics can leak personal data if reviewed too late.
 - Scope pressure can add v2 surfaces before v1 is stable.
 

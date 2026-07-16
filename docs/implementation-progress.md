@@ -5729,3 +5729,70 @@ Next recommended step:
   idempotency, extension-day rebuild, append-only `freeze.added` audit and
   rollback evidence. Keep `CancelFreeze`, reception UI and Owner-only
   NonWorkingDay preview/confirmation as following independent steps.
+
+## Step 112 - Freeze range eligibility decision
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Audited Milestone 8 before implementation and found its explicit dependency
+  on a product decision for Freeze range validation. ADR-014 had already
+  resolved the Visit-side Freeze block, but the inverse AddFreeze eligibility
+  boundary remained open in the domain model, implementation plan and roadmap.
+- Close that decision before writing AddFreeze code, so Infrastructure or Razor
+  code cannot invent lifecycle, date-bound or Visit-conflict behavior.
+- Keep the still-unresolved NonWorkingDay application-scope decision open and
+  make no NonWorkingDay implementation claim in this step.
+- Make no code, schema, migration or UI change. This is the bounded decision
+  gate required before the first Milestone 8 implementation slice.
+
+Scope:
+
+- Add accepted ADR-015. AddFreeze targets a lifecycle-active Membership; its
+  inclusive start is bounded by Membership start and locked pre-command
+  canonical effective end, while an eligible end may cross that date and is
+  never silently clipped.
+- Define symmetric Visit/Freeze integrity: an active counted Membership Visit
+  inside the proposed range returns stable `freeze_conflicts_with_visit`.
+  Canceled and one_off/trial Visits do not block the range.
+- Require one Membership-first lock order across MarkVisit, AddFreeze and future
+  CancelFreeze work. Source fact, synchronous recalculation, business audit and
+  idempotency success remain one PostgreSQL transaction.
+- Preserve overlapping Freeze/NonWorking sources as valid source facts while
+  Memberships counts their union of unique active calendar dates.
+- Synchronize ADR index, AGENTS guardrails, architecture baseline, domain/data
+  models, command/error contracts, reception UI workflow, implementation plan,
+  roadmap, vertical-slice plan and the four relevant local skill source maps.
+
+Validation:
+
+- ADR-014/ADR-015 local references exist; stale ADR range and unresolved Freeze
+  policy references are absent from the synchronized governing documents.
+- `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 266 core tests, 35 web tests, 357
+  PostgreSQL/architecture infrastructure tests, 37 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this documentation decision generated no migration.
+- `graphify . --update` was attempted for the governing documentation changes
+  but stopped because no semantic extraction LLM backend is configured. It made
+  no `graphify-out/` change, so this step needs no generated graph commit.
+
+Commit:
+
+- `docs(freezes): define range eligibility policy`.
+
+Next recommended step:
+
+- Add one Memberships-owned pure Freeze eligibility contract and focused core
+  tests for lifecycle status, inclusive endpoints, before-start/post-expiry
+  rejection, end-after-effective acceptance and active/canceled counted Visit
+  overlap. Keep PostgreSQL AddFreeze orchestration, migration changes,
+  CancelFreeze and reception UI as later bounded steps.

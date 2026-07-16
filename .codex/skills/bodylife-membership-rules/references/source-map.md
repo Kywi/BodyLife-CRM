@@ -13,6 +13,8 @@
 - `docs/adr/005-membership-invariants-and-recalculation.md`: source facts plus derived state, negative visits, overlap union.
 - `docs/adr/010-migration-manual-backfill-and-paper-fallback.md`: opening/backdated facts through commands.
 - `docs/adr/011-membership-type-lifecycle.md`: editable catalog plus immutable issued snapshot.
+- `docs/adr/014-visit-membership-selection-and-freeze-policy.md`: Visit-side Freeze eligibility and shared lock order.
+- `docs/adr/015-freeze-range-eligibility-policy.md`: lifecycle/start eligibility, unclipped end and counted-Visit conflict for Freeze extension facts.
 
 ## Business requirements
 

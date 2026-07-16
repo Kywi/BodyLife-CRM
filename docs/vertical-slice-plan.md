@@ -13,7 +13,7 @@
 
 1. Reception/Admin знаходить існуючого клієнта.
 2. Видає йому абонемент із cash payment.
-3. Додає коротку freeze range як source reason для продовження.
+3. Додає коротку ADR-015-eligible Freeze range без active counted Membership Visit overlap як source reason для продовження.
 4. Відмічає visits до нуля і один negative visit з явним warning acknowledgement.
 5. Скасовує помилковий negative visit з reason/comment.
 6. Коригує cash payment з reason/comment.
@@ -43,7 +43,7 @@ Concrete scenario for the slice:
 2. Reception opens the dashboard, searches `BL-1001`, and gets an exact unique card match.
 3. Reception opens the client profile and issues `Slice 2 visits / 30 days` starting `2026-07-01`, with cash payment `1000 UAH`.
 4. System copies membership type snapshot, calculates `base_end_date = 2026-07-30`, stores initial `membership_state_cache`, stores payment, writes audit, and rereads the profile.
-5. Reception adds Freeze `2026-07-10..2026-07-11` with reason `medical pause`. System recalculates `extension_days = 2` and `effective_end_date = 2026-08-01`.
+5. Reception adds Freeze `2026-07-10..2026-07-11` with reason `medical pause`. Its start is inside the locked pre-command Membership window and no active counted Membership Visit overlaps the range. System recalculates `extension_days = 2` and `effective_end_date = 2026-08-01`.
 6. Reception records visits on `2026-07-01` and `2026-07-02`. Remaining visits becomes `0`.
 7. Reception records a visit on `2026-07-03` after acknowledging the zero/negative warning. Remaining visits becomes `-1`, `negative_balance = 1`, `first_negative_visit_date = 2026-07-03`.
 8. Reception discovers the `2026-07-03` visit was mistaken and uses `CancelVisit` with reason. The visit remains visible as canceled, remaining visits returns to `0`, negative state clears, and the daily report excludes that visit from totals while showing the cancellation in drill-down/history.
@@ -167,7 +167,10 @@ One narrow technical proof for `occurred_at` vs `recorded_at` may be covered in 
    - After success, UI rereads `GetClientProfile`; it does not apply local formulas.
 
 4. Add freeze and recalculate effective end date
-   - `AddFreeze` creates a `freezes` source fact with inclusive range and reason.
+   - `AddFreeze` locks Membership first, verifies ADR-015 lifecycle/start eligibility
+     and absence of active counted Membership Visit overlap, then creates a
+     `freezes` source fact with the full inclusive range and reason.
+   - An eligible Freeze end may cross the pre-command effective end and is not clipped.
    - Memberships recalculates extension source days, rebuilds `membership_extension_days`, updates `extension_days` and `effective_end_date`, and includes before/after membership summary in audit.
    - Profile shows the extension explanation from Memberships state.
 
@@ -208,6 +211,9 @@ Domain tests:
 - zero-to-negative visit transition with first negative date;
 - canceling the negative visit clears or moves negative state;
 - freeze inclusive range contributes expected extension days;
+- freeze start before Membership start or after locked pre-command effective end is rejected;
+- eligible freeze end beyond pre-command effective end is stored and counted in full;
+- active counted Membership Visit overlap returns `freeze_conflicts_with_visit`;
 - canceled visit excluded from counted visits, negative state and last-counted visit logic;
 - direct effective end date edit is impossible outside source facts or explicit audited adjustment.
 

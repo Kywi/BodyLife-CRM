@@ -16,6 +16,8 @@
 - `docs/adr/009-backup-restore-and-operational-recovery.md`: backup/restore implications.
 - `docs/adr/010-migration-manual-backfill-and-paper-fallback.md`: no direct DB patches.
 - `docs/adr/011-membership-type-lifecycle.md`: snapshot persistence and no hard delete.
+- `docs/adr/014-visit-membership-selection-and-freeze-policy.md`: Visit/Freeze relational guards and Membership-first locking.
+- `docs/adr/015-freeze-range-eligibility-policy.md`: AddFreeze range validation, Visit conflict query and lock order.
 
 ## Query-specific docs
 

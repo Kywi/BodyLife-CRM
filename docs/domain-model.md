@@ -255,6 +255,14 @@ Permissions summary:
 - First negative visit date рахується як дата першого counted Visit, після якого running remaining visits став меншим за 0.
 - Negative closure є explicit. New Membership може стартувати з first negative visit date, або negative visits можуть закриватися one-off payments/visits, але система не приховує це рішення.
 - Freeze ranges і NonWorkingDay ranges inclusive.
+- New Freeze requires a lifecycle-active Membership. Its start date must be on or
+  after the issued Membership start date and on or before the locked canonical
+  effective end date read before the command mutates state.
+- Freeze end date may extend beyond that pre-command effective end date. The
+  accepted inclusive range contributes in full and is not clipped.
+- An active counted Membership Visit inside the proposed inclusive Freeze range
+  blocks the Freeze. Canceled Visits and non-membership `one_off`/`trial` Visits
+  do not block it.
 - Freeze і NonWorkingDay extension походять із source records.
 - Overlap Freeze і NonWorkingDay рахується як union calendar days. Один календарний день автоматично дає максимум 1 extension day.
 - Canceled Freezes і canceled NonWorkingDays не додають extension days після recalculation.
@@ -317,11 +325,15 @@ Permissions summary:
 
 ### Freeze lifecycle
 
-1. Actor adds Freeze to issued Membership with inclusive start and end dates.
-2. System derives day count and recalculates effective end date.
-3. Freeze is visible in client history.
-4. Якщо Freeze помилковий, Actor cancels it with reason/comment.
-5. Canceled Freeze contributes no extension days after recalculation but remains auditable.
+1. Actor proposes an inclusive Freeze range for a lifecycle-active issued Membership.
+2. System locks Membership, reads canonical pre-command state and validates that
+   the start date is within Membership start and the pre-command effective end date.
+3. System rejects the range when an active counted Membership Visit falls inside it.
+4. System persists the full range, derives its day count and recalculates effective
+   end date; the end date may cross the previous effective end and is not clipped.
+5. Freeze is visible in client history.
+6. Якщо Freeze помилковий, Actor cancels it with reason/comment.
+7. Canceled Freeze contributes no extension days after recalculation but remains auditable.
 
 ### NonWorkingDay lifecycle
 
@@ -624,6 +636,9 @@ Backdated correction:
 | Cancellations | Payment date or amount corrected after day close | Correction allowed only by policy; old and new report dates remain explainable | Reports change live totals; Audit/drill-down shows changed-after-reconciliation |
 | Cancellations | Issued Membership created with wrong MembershipType snapshot | Catalog edit does not fix it | Explicit membership correction required; Audit preserves before/after |
 | Freeze | Freeze range is 2026-01-10 to 2026-01-12 | Range inclusive and contributes 3 calendar days | Effective end date extends by 3 days unless overlap de-duplicates days |
+| Freeze | Freeze starts before Membership start or after locked pre-command effective end | Command rejects the range; it is not clipped or silently shifted | No source fact, recalculation or business audit entry is committed |
+| Freeze | Freeze starts within the eligible window and ends after pre-command effective end | Full inclusive range is accepted | Every range day participates in extension union calculation |
+| Freeze | Active counted Membership Visit falls inside proposed range | Command rejects with `freeze_conflicts_with_visit` until Visit is canceled/corrected or the range changes | Membership-first lock order keeps Visit/Freeze validation deterministic; no partial write |
 | Freeze | Freeze is canceled | Freeze contributes 0 extension days | Effective end date recalculates; client history shows canceled Freeze |
 | Freeze | Two Freeze records overlap each other | One calendar day should not inflate extension twice without explicit adjustment | Extension uses unique calendar days; Audit shows both source records |
 | Freeze | Backdated Freeze entered after visits already exist | Backdated source fact valid only through command with reason | Effective end date recalculates from source facts; Audit records occurred/recorded times |
@@ -751,17 +766,32 @@ These scenarios should be testable through domain/application commands and queri
    - When Actor creates opening state with start date, snapshot, remaining visits or negative balance, known end/extension state, reason and source.
    - Then membership queries can calculate from that opening fact and Audit marks it as manual backfill.
 
+23. Freeze start must be eligible against locked canonical state
+   - Given a lifecycle-active Membership with start date 2026-01-01 and pre-command effective end date 2026-01-31.
+   - When Actor proposes a Freeze starting before 2026-01-01 or after 2026-01-31.
+   - Then validation rejects it without persisting a source fact, recalculation or Audit success entry.
+
+24. Freeze end may cross the previous effective end
+   - Given the same Membership and a Freeze from 2026-01-30 to 2026-02-03.
+   - When the command succeeds.
+   - Then all 5 inclusive calendar days participate in the extension union; the range is not clipped to 2026-01-31.
+
+25. Counted Visit conflicts with Freeze
+   - Given an active counted Membership Visit on 2026-01-11.
+   - When Actor proposes a Freeze covering 2026-01-10 to 2026-01-12.
+   - Then command fails with `freeze_conflicts_with_visit` until that Visit is canceled/corrected or the range changes.
+
 ## 9. Open implementation questions
 
 Inclusive date arithmetic is accepted by ADR-005 and locked by tests. Multiple
 Memberships, Visit allocation/no-active behavior, same-day ordering and Visit
-during Freeze are accepted by ADR-014.
+during Freeze are accepted by ADR-014. Freeze range eligibility and its inverse
+Visit conflict are accepted by ADR-015.
 
 1. Define whether NonWorkingDay period extends Membership only for overlapping active calendar days or for full period once any overlap exists.
-2. Define validation for Freeze ranges: can Freeze start before Membership start, after Membership end, or outside current active period?
-3. Specify exact one-off negative closure behavior: whether it consumes one-off MembershipType, payment-only closure, or another explicit domain fact.
-4. Define which correction/cancellation actions always require reason/comment and which can use optional comments.
-5. Define day close/reconciliation policy: who closes the day, what owner approval means after close, and how changed-after-close is labeled in Reports.
-6. Choose standard inactive-client default threshold while keeping 14, 30 and 60 days available.
-7. Define whether denied permission attempts are business-audited or only technically logged.
-8. Decide how much historical card-assignment history is visible in v1 beyond current card number and Audit trail.
+2. Specify exact one-off negative closure behavior: whether it consumes one-off MembershipType, payment-only closure, or another explicit domain fact.
+3. Define which correction/cancellation actions always require reason/comment and which can use optional comments.
+4. Define day close/reconciliation policy: who closes the day, what owner approval means after close, and how changed-after-close is labeled in Reports.
+5. Choose standard inactive-client default threshold while keeping 14, 30 and 60 days available.
+6. Define whether denied permission attempts are business-audited or only technically logged.
+7. Decide how much historical card-assignment history is visible in v1 beyond current card number and Audit trail.

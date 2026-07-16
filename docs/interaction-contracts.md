@@ -59,6 +59,7 @@ Common errors:
 - `day_closed_requires_owner`;
 - `membership_not_eligible`;
 - `visit_during_freeze`;
+- `freeze_conflicts_with_visit`;
 - `membership_type_inactive`;
 - `already_canceled`;
 - `recalculation_failed`;
@@ -230,13 +231,25 @@ Common errors:
 
 - Purpose: додати individual Freeze source range that extends one issued Membership.
 - Input: client id, membership id, start date, end date, reason/comment, occurred_at if business event date differs from recorded date, common command envelope.
-- Validation: client and membership exist and match; date range is inclusive and `start_date <= end_date`; reason/comment required; backdated/paper fallback entry requires marker; effective end date is not edited directly; overlap with NonWorkingDay is allowed but counted by union calendar-day rule in Memberships.
+- Validation: client and membership exist and match; Membership is lifecycle-active;
+  date range is inclusive and `start_date <= end_date`; start is on or after
+  Membership start and on or before the locked canonical pre-command effective
+  end date; end may cross that effective end and the range is not clipped; an
+  active counted Membership Visit inside the range is rejected while canceled
+  and one_off/trial Visits do not block; reason/comment required; backdated/paper
+  fallback entry requires marker; effective end date is not edited directly;
+  overlap with another Freeze or NonWorkingDay is allowed and Memberships counts
+  the union of unique calendar days.
 - Permissions: Admin + Owner.
-- Transaction boundary: one ACID transaction creates `freezes`, recalculates affected membership extension days/state, and appends audit.
+- Transaction boundary: one ACID transaction locks Membership first, validates
+  canonical state and relevant Membership Visits, creates `freezes`, recalculates
+  affected membership extension days/state, and appends audit.
 - Affected modules: Freezes, Memberships, Reports, Audit, Users/Roles.
 - Recalculation: synchronous recalculation of affected membership: extension source days, effective end date, warnings. `membership_extension_days` is rebuilt/explained from source facts.
 - Audit event: `freeze.added`; include range, day count, reason, before/after membership effective end date summary.
-- Possible errors: `permission_denied`, `not_found`, `validation_failed`, `duplicate_submission`, `recalculation_failed`, `concurrency_conflict`.
+- Possible errors: `permission_denied`, `not_found`, `membership_not_eligible`,
+  `freeze_conflicts_with_visit`, `validation_failed`, `duplicate_submission`,
+  `recalculation_failed`, `concurrency_conflict`.
 - UI result: profile history shows freeze; membership panel shows updated effective end date and extension explanation.
 
 ### CancelFreeze
@@ -382,6 +395,10 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - NonWorkingDay commands recalculate affected memberships in the same completed action for v1. If this ever becomes async, the command contract must expose pending/failed/retry state before UI treats the action as complete.
 - Reports and profile screens read committed state after command success. UI must not optimistically keep calculated membership values after a state-changing command.
 - Idempotency keys are required for fast reception actions that can be double-submitted: `IssueMembership`, `MarkVisit`, `CreatePayment`, `AddFreeze`, and correction/cancellation commands.
+- Membership Visit/Freeze commands share a Membership-first lock order. MarkVisit
+  locks the Membership before overlapping Freezes; AddFreeze locks the Membership
+  before overlapping active counted Membership Visits and before creating its
+  source fact.
 - Concurrency conflicts should fail clearly and ask UI to refresh canonical state, not silently overwrite source facts.
 - Direct database edits, synthetic fake history and unmarked backdated entries are outside the application contract.
 

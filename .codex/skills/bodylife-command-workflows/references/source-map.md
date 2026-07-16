@@ -17,10 +17,12 @@ Read the command contract first, then the module-specific docs.
 - `docs/adr/006-business-audit-corrections-and-technical-logs.md`: append-only audit.
 - `docs/adr/010-migration-manual-backfill-and-paper-fallback.md`: backdated entries via commands.
 - `docs/adr/012-permissions-session-accountability-and-corrections.md`: roles and correction boundaries.
+- `docs/adr/014-visit-membership-selection-and-freeze-policy.md`: Visit-side Freeze conflict and Membership-first locking.
+- `docs/adr/015-freeze-range-eligibility-policy.md`: AddFreeze range eligibility, inverse counted-Visit conflict and transaction lock order.
 
 ## Module docs by task
 
 - Clients/search/card commands: `docs/adr/008-search-identity-card-rules-and-duplicate-warnings.md`, `docs/data-architecture.md` clients/search schema.
 - Membership issue/recalculation commands: `docs/domain-model.md` calculation rules, `docs/adr/005...`, `docs/adr/011...`.
-- Visit/payment/freeze/non-working commands: `docs/domain-model.md` lifecycles and correction rules, `docs/data-architecture.md` source facts.
+- Visit/payment/freeze/non-working commands: `docs/domain-model.md` lifecycles and correction rules, `docs/data-architecture.md` source facts; AddFreeze also requires ADR-015.
 - UI command forms: `docs/ui-workflows.md` relevant workflow and warning/duplicate-submit requirements.

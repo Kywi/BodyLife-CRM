@@ -139,13 +139,23 @@
 ## 13. Workflow: add/cancel freeze flow
 
 - User goal: add an individual freeze range that extends one issued membership, or cancel a mistaken freeze without deleting history.
-- Screen/state: profile membership panel/history with active membership selected; add-freeze form includes start date, end date and reason/comment; cancel-freeze action is available from an existing freeze history row when permitted.
+- Screen/state: profile membership panel/history with a lifecycle-active Membership selected; add-freeze form includes start date, end date and reason/comment; cancel-freeze action is available from an existing freeze history row when permitted.
 - Primary actions: add freeze range; review membership affected; submit `AddFreeze`; for cancellation, choose existing freeze, enter reason/comment, confirm and submit `CancelFreeze`.
-- Warnings: inclusive date range must have `start_date <= end_date`; freeze must belong to selected client/membership; overlap with NonWorkingDay is allowed but extension days are counted by union calendar-day rule; backdated/paper fallback requires marker and reason/comment; after closed/reconciled day may require Owner policy.
+- Warnings: inclusive date range must have `start_date <= end_date`; start must
+  be no earlier than Membership start and no later than the current canonical
+  effective end date; end may cross that effective end and is not clipped;
+  active counted Membership Visits inside the range block the command until the
+  Visit is canceled/corrected or the range changes; overlap with another Freeze
+  or NonWorkingDay is allowed but extension days use the union calendar-day rule;
+  backdated/paper fallback requires marker and reason/comment; after a
+  closed/reconciled day may require Owner policy.
 - Confirmations: add freeze requires reason/comment as part of the form; cancel freeze requires destructive confirmation plus reason/comment.
 - Loading/duplicate-submit protection: `AddFreeze` and `CancelFreeze` use idempotency/duplicate-submit guards; submit buttons become disabled/busy; membership panel rereads after commit.
 - Success state: history shows active or canceled freeze fact; membership effective end date, extension days and extension explanation refresh from canonical recalculation.
-- Failure state: `validation_failed`, `already_canceled`, `reason_required`, `day_closed_requires_owner`, `recalculation_failed` or conflict errors are shown; no direct end-date mutation is displayed as success.
+- Failure state: `membership_not_eligible`, `freeze_conflicts_with_visit`,
+  `validation_failed`, `already_canceled`, `reason_required`,
+  `day_closed_requires_owner`, `recalculation_failed` or concurrency errors are
+  shown; no direct end-date mutation is displayed as success.
 
 ## 14. Workflow: daily report flow
 

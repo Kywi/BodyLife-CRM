@@ -13,7 +13,7 @@ Graphify was used first because `graphify-out/graph.json` exists:
 Primary sources:
 
 - `AGENTS.md`: local guardrails, module map, quality gates, forbidden shortcuts.
-- `docs/adr/README.md` and `docs/adr/001..014-*.md`: accepted architecture decisions. Any conflict requires a new ADR or explicit ADR update.
+- `docs/adr/README.md` and `docs/adr/001..015-*.md`: accepted architecture decisions. Any conflict requires a new ADR or explicit ADR update.
 - `docs/architecture-baseline.md`: concise implementation contract and non-negotiable rules.
 - `docs/technology-stack-decision.md`: selected stack: ASP.NET Core 10 LTS + Razor Pages/MVC + htmx + EF Core/Npgsql + PostgreSQL.
 - `docs/domain-model.md`: entities, invariants, lifecycle rules, Memberships formulas, edge cases, domain tests.
@@ -76,7 +76,7 @@ Shared code should stay narrow: IDs, `Money`, `DateRange`, actor/session context
 | 5. Memberships | Central membership state owner. | `issued_memberships`, snapshots, opening states, `membership_state_cache`, `membership_extension_days`, recalculation, `GetMembershipState`. | 1-4 plus open domain decisions. | Inclusive base end date; signed remaining visits; negative state; derived cache rebuildable; no formulas outside Memberships. | Domain math tests, rebuild tests, PostgreSQL constraints, architecture checks. |
 | 6. Visits | Visit marking/cancellation. | `visits`, `visit_consumptions`, `visit_cancellations`, `MarkVisit`, `CancelVisit`, warnings/idempotency. | 2, 3, 5. | Visit consumes one membership visit; zero-to-negative works with acknowledgement; cancel preserves history and recalculates. | Command transaction tests, idempotency, row lock/concurrency, Playwright mark/cancel. |
 | 7. Payments | Cash payments/corrections. | `payments`, corrections/cancellations, `CreatePayment`, `CorrectPayment`, issue-with-payment consistency. | 2, 3, 5, 6. | Cash totals come from canonical rows; correction preserves original; duplicate submit blocked. | Payment command tests, report consistency, amount/check constraints, UI payment/correction. |
-| 8. Freezes/NonWorkingDays | Extension source workflows. | `freezes`, non-working periods/applications, preview/confirm, union extension days. | 2, 3, 5, 6. | Inclusive ranges; overlaps count union days; Owner-only non-working; recalculation atomic. | Domain overlap tests, preview/scope tests, range constraints, UI freeze/non-working. |
+| 8. Freezes/NonWorkingDays | Extension source workflows. | `freezes`, non-working periods/applications, preview/confirm, union extension days. | 2, 3, 5, 6, ADR-014, ADR-015. | Inclusive ranges; Freeze start is bounded by locked canonical Membership state, end is not clipped, counted Visit overlap is rejected; overlaps count union days; Owner-only non-working; recalculation atomic. | Freeze eligibility/Visit-conflict/lock-order tests, domain overlap tests, preview/scope tests, range constraints, UI freeze/non-working. |
 | 9. Reports | Owner/admin operational visibility. | Daily cash/visits, ending soon, low remaining, negative, inactive reports with drill-down. | 3, 5, 6, 7, 8. | Totals equal drill-down rows; reports read Memberships state, not formulas. | Report consistency tests, query/index tests, Playwright report drill-down. |
 | 10. Audit/History UI | Explainable business history. | `business_audit_entries`, `GetClientHistory`, `GetAuditTimeline`, links from profile/report. | 2-9. | Every implemented mutation has append-only audit; history shows original plus correction/fallback labels. | Audit matrix tests, append-only tests, access tests, UI timeline tests. |
 | 11. Backup/Fallback Readiness | Prove recoverability and outage workflow. | Backup config evidence, restore runbook, restore rehearsal, paper fallback batches/template. | 1-10 plus hosting choice. | 30-day retention expectation documented; restore rehearsal passes; fallback reconciliation works through commands. | Restore rehearsal, migration on restore, cache rebuild compare, fallback batch test. |
@@ -445,17 +445,18 @@ Open questions from the docs:
 
 ADR-005 resolves inclusive date arithmetic. ADR-014 resolves multiple
 Memberships, Visit selection/no-active behavior, one-off/trial context,
-same-date ordering and Visit-during-Freeze blocking.
+same-date ordering and Visit-during-Freeze blocking. ADR-015 resolves Freeze
+range eligibility, the inverse counted-Visit conflict and Membership-first
+locking.
 
 1. Define whether NonWorkingDay extends only overlapping active calendar days or the full period once any overlap exists.
-2. Define Freeze validation outside membership active range.
-3. Specify one-off negative closure behavior.
-4. Define which correction/cancellation actions always require reason/comment.
-5. Define day close/reconciliation command and changed-after-close policy if needed.
-6. Choose default inactive-client threshold while keeping 14/30/60 available.
-7. Decide whether denied permission attempts are business-audited or only technically logged.
-8. Decide how much historical card-assignment history is visible beyond current card number and audit trail.
-9. Choose hosting provider and backup/PITR plan.
+2. Specify one-off negative closure behavior.
+3. Define which correction/cancellation actions always require reason/comment.
+4. Define day close/reconciliation command and changed-after-close policy if needed.
+5. Choose default inactive-client threshold while keeping 14/30/60 available.
+6. Decide whether denied permission attempts are business-audited or only technically logged.
+7. Decide how much historical card-assignment history is visible beyond current card number and audit trail.
+8. Choose hosting provider and backup/PITR plan.
 
 ## 7. First Execution Sprint
 
