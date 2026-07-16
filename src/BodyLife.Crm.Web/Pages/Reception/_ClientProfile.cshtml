@@ -230,6 +230,132 @@
             </section>
         }
 
+        @if (profile.RecentPayments is { } recentPayments)
+        {
+            <section class="recent-payments" aria-labelledby="recent-payments-title">
+                <header class="recent-payments-header">
+                    <h3 id="recent-payments-title">Recent payments</h3>
+                    @if (recentPayments.HasMore)
+                    {
+                        <span class="result-count">Latest @recentPayments.Items.Count</span>
+                    }
+                </header>
+
+                @if (recentPayments.Items.Count == 0)
+                {
+                    <p class="recent-payments-empty">No payments recorded</p>
+                }
+                else
+                {
+                    <ol class="recent-payment-list">
+                        @foreach (var payment in recentPayments.Items)
+                        {
+                            <li class="recent-payment-row"
+                                data-payment-id="@payment.PaymentId"
+                                data-payment-status="@payment.Status.ToString().ToLowerInvariant()">
+                                <header class="recent-payment-row-header">
+                                    <div>
+                                        <p class="recent-payment-context">@PaymentContextLabel(payment.PaymentContext)</p>
+                                        <h4>@MoneyLabel(payment.Amount)</h4>
+                                    </div>
+                                    <span class="status-chip @PaymentStatusClass(payment.Status)">
+                                        @PaymentStatusLabel(payment.Status)
+                                    </span>
+                                </header>
+
+                                <dl class="recent-payment-meta">
+                                    <div>
+                                        <dt>Method</dt>
+                                        <dd>@PaymentMethodLabel(payment.Method)</dd>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(payment.MembershipTypeNameSnapshot))
+                                    {
+                                        <div>
+                                            <dt>Membership</dt>
+                                            <dd>@payment.MembershipTypeNameSnapshot</dd>
+                                        </div>
+                                    }
+                                    <div>
+                                        <dt>Occurred</dt>
+                                        <dd>@payment.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Recorded</dt>
+                                        <dd>@payment.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                                    </div>
+                                    @if (payment.EntryOrigin != EntryOrigin.Normal)
+                                    {
+                                        <div>
+                                            <dt>Source</dt>
+                                            <dd><span class="source-label">@EntryOriginLabel(payment.EntryOrigin)</span></dd>
+                                        </div>
+                                    }
+                                </dl>
+
+                                @if (!string.IsNullOrWhiteSpace(payment.Comment))
+                                {
+                                    <p class="recent-payment-comment">@payment.Comment</p>
+                                }
+
+                                @if (payment.Cancellation is { } paymentCancellation)
+                                {
+                                    <div class="recent-payment-cancellation">
+                                        <strong>Cancellation</strong>
+                                        <span>@paymentCancellation.Reason</span>
+                                        <span>
+                                            @paymentCancellation.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC
+                                            @if (paymentCancellation.EntryOrigin != EntryOrigin.Normal)
+                                            {
+                                                <span class="source-label">@EntryOriginLabel(paymentCancellation.EntryOrigin)</span>
+                                            }
+                                        </span>
+                                    </div>
+                                }
+
+                                @if (payment.CorrectionFromOriginal is { } correctionFromOriginal)
+                                {
+                                    <div class="recent-payment-correction correction-incoming"
+                                         data-original-payment-id="@correctionFromOriginal.OriginalPaymentId"
+                                         data-replacement-payment-id="@correctionFromOriginal.ReplacementPaymentId">
+                                        <strong>Corrected replacement</strong>
+                                        <span>This payment replaces the original cash entry.</span>
+                                        <span>@correctionFromOriginal.Reason</span>
+                                        <span>Changed: @ChangedFieldsLabel(correctionFromOriginal.ChangedFields)</span>
+                                        <span>
+                                            @correctionFromOriginal.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC
+                                            @if (correctionFromOriginal.EntryOrigin != EntryOrigin.Normal)
+                                            {
+                                                <span class="source-label">@EntryOriginLabel(correctionFromOriginal.EntryOrigin)</span>
+                                            }
+                                        </span>
+                                    </div>
+                                }
+
+                                @if (payment.CorrectionToReplacement is { } correctionToReplacement)
+                                {
+                                    <div class="recent-payment-correction correction-outgoing"
+                                         data-original-payment-id="@correctionToReplacement.OriginalPaymentId"
+                                         data-replacement-payment-id="@correctionToReplacement.ReplacementPaymentId">
+                                        <strong>Replaced payment</strong>
+                                        <span>This original cash entry was replaced by a correction.</span>
+                                        <span>@correctionToReplacement.Reason</span>
+                                        <span>Changed: @ChangedFieldsLabel(correctionToReplacement.ChangedFields)</span>
+                                        <span>
+                                            @correctionToReplacement.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC
+                                            @if (correctionToReplacement.EntryOrigin != EntryOrigin.Normal)
+                                            {
+                                                <span class="source-label">@EntryOriginLabel(correctionToReplacement.EntryOrigin)</span>
+                                            }
+                                        </span>
+                                    </div>
+                                }
+                            </li>
+                        }
+                    </ol>
+                }
+            </section>
+        }
+
         @if (Model.UpdateClientForm is not null)
         {
             <partial name="_UpdateClientForm" model="Model.UpdateClientForm" />
@@ -279,6 +405,73 @@
             EntryOrigin.PaperFallback => "Paper fallback",
             EntryOrigin.FutureImport => "Future import",
             _ => "Unknown source",
+        };
+    }
+
+    private static string MoneyLabel(Money money)
+    {
+        return FormattableString.Invariant($"{money.Amount:0.##} {money.Currency}");
+    }
+
+    private static string PaymentMethodLabel(PaymentMethod method)
+    {
+        return method switch
+        {
+            PaymentMethod.Cash => "Cash",
+            _ => "Unknown method",
+        };
+    }
+
+    private static string PaymentContextLabel(PaymentContext paymentContext)
+    {
+        return paymentContext switch
+        {
+            PaymentContext.MembershipSale => "Membership sale",
+            PaymentContext.OneOff => "One-off payment",
+            PaymentContext.Trial => "Trial payment",
+            PaymentContext.NegativeClosure => "Negative closure",
+            PaymentContext.Other => "Other payment",
+            _ => "Payment",
+        };
+    }
+
+    private static string PaymentStatusClass(ClientPaymentRowStatus status)
+    {
+        return status switch
+        {
+            ClientPaymentRowStatus.Active => "status-active",
+            ClientPaymentRowStatus.Canceled => "status-canceled",
+            ClientPaymentRowStatus.Replaced => "status-replaced",
+            _ => "status-inactive",
+        };
+    }
+
+    private static string PaymentStatusLabel(ClientPaymentRowStatus status)
+    {
+        return status switch
+        {
+            ClientPaymentRowStatus.Active => "Active",
+            ClientPaymentRowStatus.Canceled => "Canceled",
+            ClientPaymentRowStatus.Replaced => "Replaced",
+            _ => "Unknown",
+        };
+    }
+
+    private static string ChangedFieldsLabel(IReadOnlyList<string> changedFields)
+    {
+        return string.Join(", ", changedFields.Select(ChangedFieldLabel));
+    }
+
+    private static string ChangedFieldLabel(string changedField)
+    {
+        return changedField switch
+        {
+            "amount" => "amount",
+            "occurred_at" => "occurred time",
+            "payment_context" => "context",
+            "membership_id" => "membership",
+            "comment" => "comment",
+            _ => changedField.Replace('_', ' '),
         };
     }
 }

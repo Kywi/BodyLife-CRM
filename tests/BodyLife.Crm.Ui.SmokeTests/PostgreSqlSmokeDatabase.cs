@@ -573,6 +573,208 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return membershipId;
     }
 
+    public async Task SeedPaymentHistoryAsync(
+        Guid recordedByAccountId,
+        Guid clientId,
+        Guid membershipId)
+    {
+        var sessionId = Guid.NewGuid();
+        var originalPaymentId = Guid.NewGuid();
+        var replacementPaymentId = Guid.NewGuid();
+        var canceledPaymentId = Guid.NewGuid();
+        var trialPaymentId = Guid.NewGuid();
+        var recordedAt = TimeProvider.System.GetUtcNow();
+        var sourceBatchId = Guid.NewGuid();
+        var correctionBatchId = Guid.NewGuid();
+        var cancellationBatchId = Guid.NewGuid();
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id,
+                account_id,
+                device_label,
+                started_at,
+                expires_at,
+                ended_at,
+                last_seen_at)
+            values (
+                @session_id,
+                @account_id,
+                'UI payment history seed',
+                @session_started_at,
+                @session_expires_at,
+                null,
+                @session_last_seen_at);
+
+            insert into bodylife.payments (
+                id,
+                client_id,
+                membership_id,
+                amount,
+                currency,
+                method,
+                payment_context,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status)
+            values
+                (
+                    @original_payment_id,
+                    @client_id,
+                    @membership_id,
+                    1000,
+                    'UAH',
+                    'cash',
+                    'membership_sale',
+                    @original_occurred_at,
+                    @original_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'paper_fallback',
+                    @source_batch_id,
+                    'Recovered original cash sale',
+                    'replaced'),
+                (
+                    @replacement_payment_id,
+                    @client_id,
+                    @membership_id,
+                    900,
+                    'UAH',
+                    'cash',
+                    'membership_sale',
+                    @replacement_occurred_at,
+                    @replacement_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'normal',
+                    null,
+                    'Corrected cash amount',
+                    'active'),
+                (
+                    @canceled_payment_id,
+                    @client_id,
+                    null,
+                    250,
+                    'UAH',
+                    'cash',
+                    'one_off',
+                    @canceled_occurred_at,
+                    @canceled_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'normal',
+                    null,
+                    'Duplicate drop-in cash',
+                    'canceled'),
+                (
+                    @trial_payment_id,
+                    @client_id,
+                    null,
+                    100,
+                    'UAH',
+                    'cash',
+                    'trial',
+                    @trial_occurred_at,
+                    @trial_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'normal',
+                    null,
+                    'Trial cash entry',
+                    'active');
+
+            insert into bodylife.payment_corrections (
+                id,
+                client_id,
+                original_payment_id,
+                replacement_payment_id,
+                changed_fields,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id)
+            values (
+                @correction_id,
+                @client_id,
+                @original_payment_id,
+                @replacement_payment_id,
+                @changed_fields,
+                'Cash amount was entered incorrectly',
+                @correction_occurred_at,
+                @correction_recorded_at,
+                @account_id,
+                @session_id,
+                'manual_backfill',
+                @correction_batch_id);
+
+            insert into bodylife.payment_cancellations (
+                id,
+                payment_id,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id)
+            values (
+                @cancellation_id,
+                @canceled_payment_id,
+                'Duplicate cash entry',
+                @cancellation_occurred_at,
+                @cancellation_recorded_at,
+                @account_id,
+                @session_id,
+                'paper_fallback',
+                @cancellation_batch_id)
+            """;
+        command.Parameters.AddWithValue("session_id", sessionId);
+        command.Parameters.AddWithValue("account_id", recordedByAccountId);
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("original_payment_id", originalPaymentId);
+        command.Parameters.AddWithValue("replacement_payment_id", replacementPaymentId);
+        command.Parameters.AddWithValue("canceled_payment_id", canceledPaymentId);
+        command.Parameters.AddWithValue("trial_payment_id", trialPaymentId);
+        command.Parameters.AddWithValue("correction_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("cancellation_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("source_batch_id", sourceBatchId);
+        command.Parameters.AddWithValue("correction_batch_id", correctionBatchId);
+        command.Parameters.AddWithValue("cancellation_batch_id", cancellationBatchId);
+        command.Parameters.AddWithValue("session_started_at", recordedAt.AddDays(-1));
+        command.Parameters.AddWithValue("session_expires_at", recordedAt.AddDays(1));
+        command.Parameters.AddWithValue("session_last_seen_at", recordedAt.AddMinutes(-5));
+        command.Parameters.AddWithValue("original_occurred_at", recordedAt.AddHours(-4));
+        command.Parameters.AddWithValue("original_recorded_at", recordedAt.AddHours(-3));
+        command.Parameters.AddWithValue("replacement_occurred_at", recordedAt.AddHours(-3));
+        command.Parameters.AddWithValue("replacement_recorded_at", recordedAt.AddHours(-2));
+        command.Parameters.AddWithValue("canceled_occurred_at", recordedAt.AddHours(-2));
+        command.Parameters.AddWithValue("canceled_recorded_at", recordedAt.AddHours(-1));
+        command.Parameters.AddWithValue("trial_occurred_at", recordedAt.AddHours(-1));
+        command.Parameters.AddWithValue("trial_recorded_at", recordedAt.AddMinutes(-30));
+        command.Parameters.AddWithValue("correction_occurred_at", recordedAt.AddHours(-2));
+        command.Parameters.AddWithValue("correction_recorded_at", recordedAt.AddHours(-1));
+        command.Parameters.AddWithValue("cancellation_occurred_at", recordedAt.AddHours(-1));
+        command.Parameters.AddWithValue("cancellation_recorded_at", recordedAt.AddMinutes(-30));
+        command.Parameters.AddWithValue(
+            "changed_fields",
+            NpgsqlDbType.Jsonb,
+            "[\"amount\",\"occurred_at\"]");
+        Assert.Equal(7, await command.ExecuteNonQueryAsync());
+    }
+
     public async Task<Guid> InsertExternalCountedVisitAsync(
         Guid clientId,
         Guid membershipId)

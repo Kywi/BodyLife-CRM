@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Queries;
+using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
 
 namespace BodyLife.Crm.Modules.Clients.Search;
@@ -18,5 +19,6 @@ public sealed record ClientProfile(
     DateOnly? MembershipAsOfDate,
     ClientProfileMembershipArea Membership,
     ClientVisitRowsPage? RecentVisits,
+    ClientPaymentRowsPage? RecentPayments,
     IReadOnlyList<ClientWarning> Warnings,
     QueryPermissionSet AllowedActions);

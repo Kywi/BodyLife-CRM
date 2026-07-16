@@ -70,6 +70,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid VisitAdminMembershipId { get; private set; }
 
+    public Guid PaymentHistoryClientId { get; private set; }
+
+    public Guid PaymentHistoryMembershipId { get; private set; }
+
     public async Task ExpireSessionAsync(string deviceLabel)
     {
         var database = _database
@@ -424,6 +428,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
+        await SeedPaymentHistoryFixtureAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
 
         var ownerEnvelope = new CommandEnvelope(
             new ActorContext(
@@ -576,6 +584,29 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             membershipTypeId,
             "Admin cancel snapshot",
             visitsLimitSnapshot: 2);
+    }
+
+    private async Task SeedPaymentHistoryFixtureAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        PaymentHistoryClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Payment",
+            "History",
+            "+380 67 700 01 01",
+            "BL-PAYMENT-HISTORY");
+        PaymentHistoryMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            PaymentHistoryClientId,
+            membershipTypeId,
+            "Payment history snapshot",
+            visitsLimitSnapshot: 8);
+        await database.SeedPaymentHistoryAsync(
+            ownerAccountId,
+            PaymentHistoryClientId,
+            PaymentHistoryMembershipId);
     }
 
     private async Task SeedReceptionClientsAsync(

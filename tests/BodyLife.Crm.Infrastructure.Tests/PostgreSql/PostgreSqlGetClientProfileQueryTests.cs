@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -77,6 +78,7 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Empty(profile.Membership.Timeline);
         Assert.Empty(profile.Membership.Warnings);
         Assert.Null(profile.RecentVisits);
+        Assert.Null(profile.RecentPayments);
         Assert.Empty(profile.Warnings);
         Assert.Equal(3, profile.AllowedActions.Items.Count);
         Assert.True(profile.AllowedActions.IsAllowed(ClientProfileActionKeys.UpdateClient));
@@ -228,7 +230,7 @@ public sealed class PostgreSqlGetClientProfileQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task RequestedHistoryComposesCanonicalVisitRowsIntoProfile()
+    public async Task RequestedHistoryComposesCanonicalVisitAndPaymentRowsIntoProfile()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -269,10 +271,38 @@ public sealed class PostgreSqlGetClientProfileQueryTests
             HasMore: false);
         var visitRowsHandler = new StubClientVisitRowsQueryHandler(
             _ => GetClientVisitRowsResult.Succeeded(visitPage));
+        var paymentId = Guid.NewGuid();
+        var paymentPage = new ClientPaymentRowsPage(
+            clientId,
+            [
+                new ClientPaymentRow(
+                    PaymentId: paymentId,
+                    ClientId: clientId,
+                    MembershipId: null,
+                    MembershipTypeNameSnapshot: null,
+                    Amount: new Money(350m, "UAH"),
+                    Method: PaymentMethod.Cash,
+                    PaymentContext: PaymentContext.OneOff,
+                    OccurredAt: TestNow.AddHours(-3),
+                    RecordedAt: TestNow.AddHours(-2),
+                    RecordedByAccountId: actor.AccountId.Value,
+                    SessionId: actor.SessionId.Value,
+                    EntryOrigin: EntryOrigin.PaperFallback,
+                    EntryBatchId: null,
+                    Comment: "Paper cash row",
+                    Status: ClientPaymentRowStatus.Active,
+                    Cancellation: null,
+                    CorrectionFromOriginal: null,
+                    CorrectionToReplacement: null),
+            ],
+            HasMore: false);
+        var paymentRowsHandler = new StubClientPaymentRowsQueryHandler(
+            _ => GetClientPaymentRowsResult.Succeeded(paymentPage));
 
         var result = await CreateHandler(
             dbContext,
-            visitRowsQueryHandler: visitRowsHandler).ExecuteAsync(
+            visitRowsQueryHandler: visitRowsHandler,
+            paymentRowsQueryHandler: paymentRowsHandler).ExecuteAsync(
                 new GetClientProfileQuery(actor, clientId, IncludeHistory: true),
                 CancellationToken.None);
 
@@ -285,6 +315,18 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Equal(actor, capturedQuery.Actor);
         Assert.Equal(clientId, capturedQuery.ClientId);
         Assert.Equal(GetClientVisitRowsQuery.DefaultLimit, capturedQuery.Limit);
+        Assert.Same(paymentPage, result.Profile.RecentPayments);
+        var recentPayments = Assert.IsType<ClientPaymentRowsPage>(
+            result.Profile.RecentPayments);
+        Assert.Single(recentPayments.Items);
+        Assert.Equal(paymentId, recentPayments.Items[0].PaymentId);
+        var capturedPaymentQuery = Assert.IsType<GetClientPaymentRowsQuery>(
+            paymentRowsHandler.LastQuery);
+        Assert.Equal(actor, capturedPaymentQuery.Actor);
+        Assert.Equal(clientId, capturedPaymentQuery.ClientId);
+        Assert.Equal(
+            GetClientPaymentRowsQuery.DefaultLimit,
+            capturedPaymentQuery.Limit);
         Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
     }
 
@@ -650,12 +692,85 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
+    [PostgreSqlFact]
+    public async Task PaymentHistoryFailuresNeverReturnPartialProfileData()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        var clientId = Guid.NewGuid();
+        await InsertClientAsync(
+            database,
+            clientId,
+            actor.AccountId.Value,
+            "Atomic",
+            "PaymentHistory");
+        var cases = new[]
+        {
+            (
+                PaymentResult: GetClientPaymentRowsResult.Denied(),
+                ProfileStatus: GetClientProfileStatus.PermissionDenied,
+                ErrorCode: "permission_denied",
+                ErrorField: (string?)null),
+            (
+                PaymentResult: GetClientPaymentRowsResult.MissingClient(),
+                ProfileStatus: GetClientProfileStatus.NotFound,
+                ErrorCode: "not_found",
+                ErrorField: "clientId"),
+            (
+                PaymentResult: GetClientPaymentRowsResult.Invalid(
+                    "Limit is invalid.",
+                    "limit"),
+                ProfileStatus: GetClientProfileStatus.ValidationFailed,
+                ErrorCode: "validation_failed",
+                ErrorField: "limit"),
+            (
+                PaymentResult: GetClientPaymentRowsResult.InconsistentSource(),
+                ProfileStatus: GetClientProfileStatus.SourceInconsistent,
+                ErrorCode: "source_inconsistent",
+                ErrorField: (string?)null),
+            (
+                PaymentResult: GetClientPaymentRowsResult.Succeeded(
+                    new ClientPaymentRowsPage(
+                        Guid.NewGuid(),
+                        [],
+                        HasMore: false)),
+                ProfileStatus: GetClientProfileStatus.SourceInconsistent,
+                ErrorCode: "source_inconsistent",
+                ErrorField: (string?)null),
+        };
+
+        foreach (var testCase in cases)
+        {
+            var result = await CreateHandler(
+                dbContext,
+                paymentRowsQueryHandler: new StubClientPaymentRowsQueryHandler(
+                    _ => testCase.PaymentResult)).ExecuteAsync(
+                    new GetClientProfileQuery(
+                        actor,
+                        clientId,
+                        IncludeHistory: true),
+                    CancellationToken.None);
+
+            Assert.Equal(testCase.ProfileStatus, result.Status);
+            Assert.Equal(testCase.ErrorCode, result.ErrorCode);
+            Assert.Equal(testCase.ErrorField, result.ErrorField);
+            Assert.Null(result.Profile);
+        }
+
+        Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
     private static GetClientProfileQueryHandler CreateHandler(
         BodyLifeDbContext dbContext,
         IBodyLifeQueryHandler<GetClientMembershipStatesQuery, GetClientMembershipStatesResult>?
             membershipStatesQueryHandler = null,
         IBodyLifeQueryHandler<GetClientVisitRowsQuery, GetClientVisitRowsResult>?
-            visitRowsQueryHandler = null)
+            visitRowsQueryHandler = null,
+        IBodyLifeQueryHandler<GetClientPaymentRowsQuery, GetClientPaymentRowsResult>?
+            paymentRowsQueryHandler = null)
     {
         var timeProvider = new FixedTimeProvider(TestNow);
 
@@ -667,6 +782,10 @@ public sealed class PostgreSqlGetClientProfileQueryTests
                 ?? new StubClientVisitRowsQueryHandler(
                     query => GetClientVisitRowsResult.Succeeded(
                         new ClientVisitRowsPage(query.ClientId, [], HasMore: false))),
+            paymentRowsQueryHandler
+                ?? new StubClientPaymentRowsQueryHandler(
+                    query => GetClientPaymentRowsResult.Succeeded(
+                        new ClientPaymentRowsPage(query.ClientId, [], HasMore: false))),
             timeProvider);
     }
 
@@ -1127,6 +1246,21 @@ public sealed class PostgreSqlGetClientProfileQueryTests
 
         public Task<GetClientVisitRowsResult> ExecuteAsync(
             GetClientVisitRowsQuery query,
+            CancellationToken cancellationToken)
+        {
+            LastQuery = query;
+            return Task.FromResult(resultFactory(query));
+        }
+    }
+
+    private sealed class StubClientPaymentRowsQueryHandler(
+        Func<GetClientPaymentRowsQuery, GetClientPaymentRowsResult> resultFactory)
+        : IBodyLifeQueryHandler<GetClientPaymentRowsQuery, GetClientPaymentRowsResult>
+    {
+        public GetClientPaymentRowsQuery? LastQuery { get; private set; }
+
+        public Task<GetClientPaymentRowsResult> ExecuteAsync(
+            GetClientPaymentRowsQuery query,
             CancellationToken cancellationToken)
         {
             LastQuery = query;

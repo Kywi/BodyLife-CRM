@@ -127,6 +127,103 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await AssertFitsViewportAsync(page, viewportName, "exact-card profile");
             await CaptureVisualAsync(page, viewportName, "exact-profile");
 
+            await SubmitHtmxSearchAsync(page, "BL-PAYMENT-HISTORY");
+
+            await ExpectVisibleAsync(
+                clientProfile.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Payment History" }),
+                viewportName,
+                "payment-history profile");
+            var recentPayments = clientProfile.GetByRole(
+                AriaRole.Region,
+                new() { Name = "Recent payments" });
+            await ExpectVisibleAsync(
+                recentPayments,
+                viewportName,
+                "recent Payments history");
+            Assert.Equal(4, await recentPayments.Locator(".recent-payment-row").CountAsync());
+            Assert.Equal(
+                2,
+                await recentPayments.Locator("[data-payment-status='active']").CountAsync());
+            Assert.Equal(
+                1,
+                await recentPayments.Locator("[data-payment-status='canceled']").CountAsync());
+            Assert.Equal(
+                1,
+                await recentPayments.Locator("[data-payment-status='replaced']").CountAsync());
+
+            var trialPayment = recentPayments.Locator(".recent-payment-row")
+                .Filter(new LocatorFilterOptions { HasText = "100 UAH" });
+            await ExpectVisibleAsync(
+                trialPayment.GetByText("Trial payment", new() { Exact = true }),
+                viewportName,
+                "trial Payment context");
+            await ExpectVisibleAsync(
+                trialPayment.GetByText("Trial cash entry", new() { Exact = true }),
+                viewportName,
+                "trial Payment comment");
+
+            var canceledPayment = recentPayments.Locator(
+                "[data-payment-status='canceled']");
+            await ExpectVisibleAsync(
+                canceledPayment.GetByText("250 UAH", new() { Exact = true }),
+                viewportName,
+                "canceled Payment amount");
+            await ExpectVisibleAsync(
+                canceledPayment.GetByText("Duplicate cash entry", new() { Exact = true }),
+                viewportName,
+                "Payment cancellation reason");
+            await ExpectVisibleAsync(
+                canceledPayment.GetByText("Paper fallback", new() { Exact = true }),
+                viewportName,
+                "Payment cancellation source");
+
+            var replacementPayment = recentPayments.Locator(".recent-payment-row")
+                .Filter(new LocatorFilterOptions { HasText = "900 UAH" });
+            await ExpectVisibleAsync(
+                replacementPayment.GetByText(
+                    "Payment history snapshot",
+                    new() { Exact = true }),
+                viewportName,
+                "Payment Membership snapshot");
+            await ExpectVisibleAsync(
+                replacementPayment.GetByText(
+                    "Corrected replacement",
+                    new() { Exact = true }),
+                viewportName,
+                "replacement correction direction");
+            await ExpectVisibleAsync(
+                replacementPayment.GetByText(
+                    "Changed: amount, occurred time",
+                    new() { Exact = true }),
+                viewportName,
+                "replacement changed fields");
+            await ExpectVisibleAsync(
+                replacementPayment.GetByText(
+                    "Manual backfill",
+                    new() { Exact = true }),
+                viewportName,
+                "replacement correction source");
+
+            var originalPayment = recentPayments.Locator(
+                "[data-payment-status='replaced']");
+            await ExpectVisibleAsync(
+                originalPayment.GetByText("1000 UAH", new() { Exact = true }),
+                viewportName,
+                "original Payment amount");
+            await ExpectVisibleAsync(
+                originalPayment.GetByText("Replaced payment", new() { Exact = true }),
+                viewportName,
+                "outgoing correction direction");
+            await ExpectVisibleAsync(
+                originalPayment.GetByText("Paper fallback", new() { Exact = true }),
+                viewportName,
+                "original Payment source");
+            Assert.Equal(0, await recentPayments.GetByRole(AriaRole.Button).CountAsync());
+            await AssertFitsViewportAsync(page, viewportName, "Payment history profile");
+            await CaptureVisualAsync(page, viewportName, "payment-history");
+
             await SubmitHtmxSearchAsync(page, "Kovalenko");
 
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "No client selected" }), viewportName, "ambiguous search profile state");

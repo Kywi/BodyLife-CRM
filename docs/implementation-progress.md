@@ -5071,3 +5071,102 @@ Next recommended step:
   backfill/fallback labels, retained cancellation reason and two-sided
   correction explanation. Keep add/correct Payment forms, mutation permissions
   and Reports-owned daily-cash composition for subsequent bounded steps.
+
+## Step 105 - Recent Payment history in Client profile
+
+Status: completed. Milestone 7 is in progress.
+
+Plan alignment:
+
+- Continue the next bounded Milestone 7 profile/history task after the
+  Payments-owned canonical Client row query. This step composes and renders
+  Payment rows without adding a second Payment projection or moving source
+  interpretation into Clients/Search or Razor.
+- Keep `GetClientProfile` as the server composition boundary and request recent
+  Payment history only when `IncludeHistory` is true. Existing visible
+  reception profile paths already request history, while helper/card-conflict
+  rereads remain lightweight.
+- Preserve active, canceled and replaced history with cash/context, source
+  labels, cancellation reason and both incoming/outgoing correction
+  explanations. Razor formats trusted typed read models and performs no daily
+  cash or Membership calculations.
+- Expose no Payment mutation action because `CorrectPayment`, day-close policy
+  and the reception Add Payment form are separate unfinished workflows.
+- Keep `CreatePayment` form handling, issue-with-payment integration,
+  correction commands/forms and Reports-owned daily-cash composition for later
+  bounded steps.
+
+Scope:
+
+- Extend `ClientProfile` with optional `ClientPaymentRowsPage`. When history is
+  requested, `GetClientProfileQueryHandler` sequentially composes the existing
+  Visits and Payments queries on the scoped DbContext.
+- Map Payment query permission/not-found/validation/source failures to stable
+  profile results and reject mismatched Client pages. The profile fails
+  atomically instead of returning identity/Membership/Visit data beside
+  untrusted Payment history.
+- Render an unframed Recent payments section after Recent visits. Rows show
+  amount/currency, cash method, context, optional Membership snapshot,
+  active/canceled/replaced text status, occurred/recorded UTC times,
+  non-normal source labels, comment, retained cancellation details and
+  two-sided correction reason/changed-fields metadata.
+- Add semantic replaced/canceled/correction colors paired with visible text,
+  wrapping metadata grids and a one-column phone layout. The section contains
+  no buttons or inferred mutation permission.
+- Extend the PostgreSQL profile-composition suite with canonical Payment page
+  composition, captured query defaults, every mapped failure and mismatched
+  page ownership. Existing profile reads verify Payment history remains opt-in.
+- Seed a real four-row Payment history in the UI smoke database: active trial,
+  canceled one-off with retained cancellation, active correction replacement
+  and replaced original with source/correction metadata.
+- Extend the existing exact-card tablet/phone Playwright path to verify all
+  statuses, amounts, Membership snapshot, source labels, correction directions,
+  no mutation buttons and no horizontal overflow.
+- Add no EF record/configuration/migration and no Payment mutation endpoint,
+  form model or JavaScript change.
+
+Validation:
+
+- The Infrastructure test project built in Release with 0 warnings/errors, and
+  focused `PostgreSqlGetClientProfileQueryTests` passed all 13 cases against
+  Docker PostgreSQL.
+- The Web and UI smoke projects built in Release with 0 warnings/errors.
+  Focused `ReceptionSearchAndProfileReadPathWorksOnTargetViewport` Playwright
+  coverage passed 2/2 against the real app and PostgreSQL at 1024x768 and
+  390x844.
+- Full-page tablet and phone Payment-history screenshots were inspected. Both
+  preserve readable source/correction content, status labels and one-column
+  phone flow without overlap or horizontal overflow.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` and
+  `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 261 core tests, 35 web tests, 338
+  PostgreSQL/architecture infrastructure tests, 31 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this profile/UI step generated no migration.
+- `graphify update .` completed the structural rebuild with 6116 nodes, 13448
+  edges and 630 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(payments): show recent Payments in Client profile`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add the reception Add Payment Razor/htmx workflow over the existing
+  `CreatePaymentCommand`: expose a server-authoritative profile action, accept
+  positive cash amount, supported non-negative-closure context, optional
+  same-client Membership and occurred time/comment, prevent duplicate submit
+  with idempotency and reread the canonical profile on success. Keep
+  issue-with-payment integration, `CorrectPayment` and daily-cash Reports for
+  subsequent bounded steps.

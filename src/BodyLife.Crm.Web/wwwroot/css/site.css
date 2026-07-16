@@ -607,14 +607,17 @@ textarea:focus-visible,
   margin-top: 14px;
 }
 
-.recent-visits {
+.recent-visits,
+.recent-payments {
   margin-top: 18px;
   border-top: 1px solid var(--line);
   padding-top: 18px;
 }
 
 .recent-visits-header,
-.recent-visit-row-header {
+.recent-visit-row-header,
+.recent-payments-header,
+.recent-payment-row-header {
   display: flex;
   min-width: 0;
   gap: 12px;
@@ -623,44 +626,53 @@ textarea:focus-visible,
 }
 
 .recent-visits-header h3,
-.recent-visit-row-header h4 {
+.recent-visit-row-header h4,
+.recent-payments-header h3,
+.recent-payment-row-header h4 {
   margin: 0;
 }
 
-.recent-visits-header h3 {
+.recent-visits-header h3,
+.recent-payments-header h3 {
   font-size: 1rem;
 }
 
-.recent-visits-empty {
+.recent-visits-empty,
+.recent-payments-empty {
   margin: 12px 0 0;
   color: var(--muted);
   font-weight: 700;
 }
 
-.recent-visit-list {
+.recent-visit-list,
+.recent-payment-list {
   display: grid;
   margin: 12px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.recent-visit-row {
+.recent-visit-row,
+.recent-payment-row {
   min-width: 0;
   border-top: 1px solid var(--line);
   padding: 14px 0;
 }
 
-.recent-visit-row:last-child {
+.recent-visit-row:last-child,
+.recent-payment-row:last-child {
   padding-bottom: 0;
 }
 
-.recent-visit-row-header h4 {
+.recent-visit-row-header h4,
+.recent-payment-row-header h4 {
   min-width: 0;
   overflow-wrap: anywhere;
   font-size: 0.95rem;
 }
 
-.recent-visit-kind {
+.recent-visit-kind,
+.recent-payment-context {
   margin: 0 0 3px;
   color: var(--muted);
   font-size: 0.78rem;
@@ -668,26 +680,30 @@ textarea:focus-visible,
   text-transform: uppercase;
 }
 
-.recent-visit-meta {
+.recent-visit-meta,
+.recent-payment-meta {
   display: grid;
   margin: 10px 0 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 14px;
 }
 
-.recent-visit-meta div {
+.recent-visit-meta div,
+.recent-payment-meta div {
   display: grid;
   min-width: 0;
   gap: 2px;
 }
 
-.recent-visit-meta dt {
+.recent-visit-meta dt,
+.recent-payment-meta dt {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
 }
 
-.recent-visit-meta dd {
+.recent-visit-meta dd,
+.recent-payment-meta dd {
   min-width: 0;
   margin: 0;
   overflow-wrap: anywhere;
@@ -695,12 +711,14 @@ textarea:focus-visible,
 }
 
 .recent-visit-comment,
-.recent-visit-permission {
+.recent-visit-permission,
+.recent-payment-comment {
   margin: 10px 0 0;
   overflow-wrap: anywhere;
 }
 
-.recent-visit-comment {
+.recent-visit-comment,
+.recent-payment-comment {
   color: var(--muted);
 }
 
@@ -786,6 +804,42 @@ textarea:focus-visible,
 
 .recent-visit-cancellation strong {
   color: var(--danger-strong);
+}
+
+.recent-payment-cancellation,
+.recent-payment-correction {
+  display: grid;
+  margin-top: 10px;
+  border-left: 3px solid;
+  padding: 2px 0 2px 10px;
+  gap: 3px;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.recent-payment-cancellation {
+  border-left-color: var(--danger);
+}
+
+.recent-payment-cancellation strong {
+  color: var(--danger-strong);
+}
+
+.recent-payment-correction {
+  border-left-color: var(--info);
+}
+
+.recent-payment-correction strong {
+  color: var(--info);
+}
+
+.recent-payment-correction.correction-outgoing {
+  border-left-color: var(--warning);
+}
+
+.recent-payment-correction.correction-outgoing strong {
+  color: var(--warning);
 }
 
 .source-label {
@@ -1516,6 +1570,12 @@ textarea:focus-visible,
   color: var(--danger-strong);
 }
 
+.status-replaced {
+  border-color: var(--warning);
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
 .status-owner {
   border-color: var(--restricted);
   background: #f0edfb;
@@ -1692,6 +1752,7 @@ textarea:focus-visible,
   .client-profile-meta,
   .membership-summary-grid,
   .recent-visit-meta,
+  .recent-payment-meta,
   .visit-correction-context,
   .action-form-grid,
   .visit-business-context,

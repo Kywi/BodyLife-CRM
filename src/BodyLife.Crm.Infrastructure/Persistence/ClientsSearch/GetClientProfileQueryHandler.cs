@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,8 @@ public sealed class GetClientProfileQueryHandler(
         getClientMembershipStates,
     IBodyLifeQueryHandler<GetClientVisitRowsQuery, GetClientVisitRowsResult>
         getClientVisitRows,
+    IBodyLifeQueryHandler<GetClientPaymentRowsQuery, GetClientPaymentRowsResult>
+        getClientPaymentRows,
     TimeProvider timeProvider)
     : IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult>
 {
@@ -114,6 +117,7 @@ public sealed class GetClientProfileQueryHandler(
         }
 
         ClientVisitRowsPage? recentVisits = null;
+        ClientPaymentRowsPage? recentPayments = null;
         if (query.IncludeHistory)
         {
             var visitRowsResult = await getClientVisitRows.ExecuteAsync(
@@ -131,6 +135,22 @@ public sealed class GetClientProfileQueryHandler(
             }
 
             recentVisits = visitRows;
+
+            var paymentRowsResult = await getClientPaymentRows.ExecuteAsync(
+                new GetClientPaymentRowsQuery(query.Actor, query.ClientId),
+                cancellationToken);
+            if (paymentRowsResult.Status != GetClientPaymentRowsStatus.Success)
+            {
+                return MapPaymentRowsFailure(paymentRowsResult);
+            }
+
+            if (paymentRowsResult.Page is not { } paymentRows
+                || paymentRows.ClientId != query.ClientId)
+            {
+                return GetClientProfileResult.InconsistentSource();
+            }
+
+            recentPayments = paymentRows;
         }
 
         var currentCard = row.CurrentCardAssignmentId.HasValue
@@ -154,6 +174,7 @@ public sealed class GetClientProfileQueryHandler(
             membershipAsOfDate,
             ClientProfileMembershipProjection.Project(membershipStates),
             recentVisits,
+            recentPayments,
             ClientQuerySupport.BuildWarnings(row.OperationalStatus, row.CurrentCardNumber),
             MergePermissions(membershipResult.AllowedActions));
 
@@ -195,6 +216,26 @@ public sealed class GetClientProfileQueryHandler(
                     visitRowsResult.ErrorMessage ?? "Visit history request is invalid.",
                     visitRowsResult.ErrorField),
             GetClientVisitRowsStatus.SourceInconsistent
+                => GetClientProfileResult.InconsistentSource(),
+            _ => GetClientProfileResult.InconsistentSource(),
+        };
+    }
+
+    private static GetClientProfileResult MapPaymentRowsFailure(
+        GetClientPaymentRowsResult paymentRowsResult)
+    {
+        return paymentRowsResult.Status switch
+        {
+            GetClientPaymentRowsStatus.PermissionDenied
+                => GetClientProfileResult.Denied(),
+            GetClientPaymentRowsStatus.NotFound
+                => GetClientProfileResult.Missing(),
+            GetClientPaymentRowsStatus.ValidationFailed
+                => GetClientProfileResult.Invalid(
+                    paymentRowsResult.ErrorMessage
+                        ?? "Payment history request is invalid.",
+                    paymentRowsResult.ErrorField),
+            GetClientPaymentRowsStatus.SourceInconsistent
                 => GetClientProfileResult.InconsistentSource(),
             _ => GetClientProfileResult.InconsistentSource(),
         };
