@@ -5796,3 +5796,77 @@ Next recommended step:
   rejection, end-after-effective acceptance and active/canceled counted Visit
   overlap. Keep PostgreSQL AddFreeze orchestration, migration changes,
   CancelFreeze and reception UI as later bounded steps.
+
+## Step 113 - Pure Membership Freeze eligibility contract
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement only the ADR-015 pure Memberships boundary required before
+  AddFreeze persistence. Keep source insertion, command authorization,
+  idempotency, audit, DI, PostgreSQL locking and UI outside this step.
+- Reuse canonical `MembershipVisitSourceFact` inputs because they represent
+  counted Membership consumptions. One-off/trial Visits do not enter this
+  boundary, while canceled counted facts remain visible but non-blocking.
+- Preserve Memberships ownership of lifecycle/date eligibility and return
+  typed status plus stable domain error strings for the future command adapter.
+  Application `CommandErrorCode` mapping remains part of the AddFreeze command
+  step rather than being exposed without a command consumer.
+- Add no EF record, configuration or migration and make no change to the
+  existing Freeze source schema or extension calculation.
+
+Scope:
+
+- Add `MembershipFreezeEligibilityPolicy` with explicit Membership id,
+  issue-time terms, canonical calculated state, lifecycle, proposed `DateRange`
+  and retained Membership Visit source inputs.
+- Add a canonical `MembershipStateReadModel` overload matching the established
+  Membership Visit eligibility shape. The current query date does not replace
+  the locked pre-command effective-end boundary for backdated Freeze intent.
+- Return immutable Membership id/range, typed eligible/inactive/before-start/
+  after-effective/conflicting-Visit status and stable
+  `membership_not_eligible` or `freeze_conflicts_with_visit` error strings.
+- Accept both inclusive start bounds and retain an eligible end beyond the
+  pre-command effective end without clipping. Reject canceled/corrected
+  Membership lifecycle and a start outside the canonical effective interval.
+- Reject an active counted Visit on either inclusive range endpoint. Ignore
+  canceled counted Visits and active counted Visits outside the range while
+  fail-closing on missing, foreign or duplicate canonical source inputs.
+- Add 10 focused core cases covering the complete pure ADR-015 matrix and the
+  canonical read-model overload.
+
+Validation:
+
+- Focused `MembershipFreezeEligibilityPolicyTests` passed 10/10.
+- Full `BodyLife.Crm.Tests` validation passed 276/276.
+- `git diff --check` passed before the progress update.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 276 core tests, 35 web tests, 357
+  PostgreSQL/architecture infrastructure tests, 37 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this pure domain step generated no migration.
+- Standard `graphify update .` reached the known Python 3.14 `forkserver`
+  filesystem limitation (`Errno 95`). Re-running the same structural update in
+  `fork` mode completed with 6594 nodes, 14879 edges and 655 communities.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(memberships): define freeze eligibility`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add one locked PostgreSQL Membership Freeze eligibility preparation boundary:
+  lock the selected issued Membership first, rebuild/read canonical state, load
+  retained counted Visit sources, invoke the pure policy and return its typed
+  result without inserting a Freeze. Keep the transactional AddFreeze source/
+  recalculation/audit/idempotency workflow as the following bounded step.
