@@ -643,14 +643,7 @@
   "641": ".PersistenceRegistrationResolvesCorrectPaymentWorkflow",
   "642": "MembershipAdjustmentTypes.cs",
   "643": "ClientRecord",
-  "644": ".NormalizeAndValidate",
-  "645": "AccountSessionSnapshot",
-  "646": "MembershipVisitSourceFact",
   "647": ".InitializeAsync",
-  "648": "BodyLifeAuthTechnicalLogger.cs",
   "649": "MembershipAuditActions.cs",
-  "650": "FixedTimeProvider",
-  "651": "_CorrectPaymentForm.cshtml",
-  "652": "FixedTimeProvider",
-  "653": ".PersistenceRegistrationResolvesClientPaymentRowsQuery"
+  "651": "_CorrectPaymentForm.cshtml"
 }

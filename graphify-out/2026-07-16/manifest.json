@@ -460,8 +460,8 @@
     "semantic_hash": "363893a8d18e525fcbc5baa210f70bc4"
   },
   "src/BodyLife.Crm.Web/Pages/Reception/Index.cshtml.cs": {
-    "mtime": 1784214775.0611882,
-    "ast_hash": "bc96ee768153ad9cd05e419eb5d41741",
+    "mtime": 1784220018.9169323,
+    "ast_hash": "6c5d99a2c8ab986f3029993d4bc2897d",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Shared/_Layout.cshtml": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784218183.1311686,
-    "ast_hash": "24a8afb51ec4de9cc127378b909e2045",
+    "mtime": 1784218220.419568,
+    "ast_hash": "17f1758fdc40444fb1025d21659cc6a9",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -810,13 +810,13 @@
     "semantic_hash": "11f75986539fd0528aeff0caa711fd62"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionAppFixture.cs": {
-    "mtime": 1784215038.5857286,
-    "ast_hash": "fc6f07f84f3efec86a33e9d48819ab23",
+    "mtime": 1784220148.753054,
+    "ast_hash": "5ff4c3eaf9325d7bb6526560e3f1167a",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/ReceptionDashboardSmokeTests.cs": {
-    "mtime": 1784208622.2344272,
-    "ast_hash": "4a24c15d1186bef1f7297861385dbae1",
+    "mtime": 1784220425.8440113,
+    "ast_hash": "c8c811cbf0f71f35fa46544aecd68596",
     "semantic_hash": ""
   },
   "scripts/dev-postgres.sh": {
@@ -1040,8 +1040,8 @@
     "semantic_hash": "b7089c5454d0a1f24c75bcaf7f4f3ca2"
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/PostgreSqlSmokeDatabase.cs": {
-    "mtime": 1784215038.5897288,
-    "ast_hash": "b5ba5c966747ab273d6a450fcc75a983",
+    "mtime": 1784220148.753054,
+    "ast_hash": "964f48ea354dfc70c09344dc2dea6e0b",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Web.Tests/BodyLife.Crm.Web.Tests.csproj": {
@@ -1200,8 +1200,8 @@
     "semantic_hash": "163e4ee656c3d3f714800fee7dd6d7d7"
   },
   "src/BodyLife.Crm.Web/wwwroot/js/site.js": {
-    "mtime": 1784214906.1669774,
-    "ast_hash": "405c00d0868eae7f7d195658aab7f093",
+    "mtime": 1784220065.8702002,
+    "ast_hash": "bcd08a97228219f6a82c66c681c7d376",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlStaffAccountQueryTests.cs": {
@@ -1505,18 +1505,18 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlGetClientProfileQueryTests.cs": {
-    "mtime": 1784210855.5715833,
-    "ast_hash": "5f3445812637452942354ae64f1fcc64",
+    "mtime": 1784219533.9300778,
+    "ast_hash": "2e2f25aa0122d4c020dd0c30a82c80b0",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Reception/ReceptionWorkspaceViewModel.cs": {
-    "mtime": 1784214493.3143559,
-    "ast_hash": "df4d9e9ee41130fdcb14aacdf66db6ce",
+    "mtime": 1784219937.274058,
+    "ast_hash": "b2a03f64023ff56e697d6e8cd00ffb98",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Reception/_ClientProfile.cshtml": {
-    "mtime": 1784214860.3731341,
-    "ast_hash": "5f77b1e32304e9ed22654413c8a07471",
+    "mtime": 1784219937.274058,
+    "ast_hash": "e7338e2ba8731aeab7abba72b3ba6782",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Reception/_ReceptionWorkspace.cshtml": {
@@ -2900,13 +2900,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Payments/GetClientPaymentRowsQueryHandler.cs": {
-    "mtime": 1784207372.4196966,
-    "ast_hash": "91738aec66b6b56c25e92d9448a08d1a",
+    "mtime": 1784219533.9260776,
+    "ast_hash": "e9a5738e839c2d50c90c3c594a291e8c",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Payments/PaymentQuerySupport.cs": {
-    "mtime": 1784207372.4196966,
-    "ast_hash": "af5267f21b60507815c1f0620d05ae68",
+    "mtime": 1784219533.9260776,
+    "ast_hash": "b0353daea2c218fafffb880a2f4a13e6",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Payments/ClientPaymentCancellation.cs": {
@@ -2920,8 +2920,8 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Payments/ClientPaymentRow.cs": {
-    "mtime": 1784207255.7523143,
-    "ast_hash": "3717039090325857c9ced4c11396ff1b",
+    "mtime": 1784219572.0115342,
+    "ast_hash": "299c531ac9ad8415619ef8b7b49284a9",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Payments/ClientPaymentRowStatus.cs": {
@@ -2955,8 +2955,8 @@
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlGetClientPaymentRowsQueryTests.cs": {
-    "mtime": 1784207553.9487257,
-    "ast_hash": "18d08d55289070a10ccd2828c9715189",
+    "mtime": 1784219572.0115342,
+    "ast_hash": "f0030a4edbb4868a9e7fca5ef6d36f4b",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Pages/Reception/AddPaymentFormViewModel.cs": {
@@ -2970,13 +2970,13 @@
     "semantic_hash": ""
   },
   "src/BodyLife.Crm/Modules/Payments/PaymentActionKeys.cs": {
-    "mtime": 1784210855.5635827,
-    "ast_hash": "d9768c5a79f618d43deeae71c7a78d7c",
+    "mtime": 1784219533.9260776,
+    "ast_hash": "d34017de0e1cf234beb755427bd900f5",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/AddPaymentSmokeTests.cs": {
-    "mtime": 1784211727.0100179,
-    "ast_hash": "57b55e04ad17a0496b93d5914600a10f",
+    "mtime": 1784220620.4380066,
+    "ast_hash": "63b6a9b7099ac31b871a86ef1f585bb3",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Infrastructure/Persistence/Payments/MembershipIssuePaymentWriter.cs": {
@@ -3057,6 +3057,21 @@
   "tests/BodyLife.Crm.Tests/Modules/Payments/CorrectPaymentCommandContractsTests.cs": {
     "mtime": 1784217772.9466062,
     "ast_hash": "f4d6b0a529b706522add98c30d69b57d",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Web/Pages/Reception/CorrectPaymentFormViewModel.cs": {
+    "mtime": 1784219937.274058,
+    "ast_hash": "0a8383b3d068160bdb1dfc4009725ca9",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Web/Pages/Reception/_CorrectPaymentForm.cshtml": {
+    "mtime": 1784219937.274058,
+    "ast_hash": "c553b865d0c60f6291e1a6027e3a5351",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Ui.SmokeTests/CorrectPaymentSmokeTests.cs": {
+    "mtime": 1784220325.9485636,
+    "ast_hash": "272133ad5686a1514350b9b52021a6df",
     "semantic_hash": ""
   }
 }

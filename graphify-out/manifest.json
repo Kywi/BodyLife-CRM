@@ -510,8 +510,8 @@
     "semantic_hash": "32fa010804d4d40af971b4e24a7062ae"
   },
   "src/BodyLife.Crm.Infrastructure/ServiceCollectionExtensions.cs": {
-    "mtime": 1784216808.8377707,
-    "ast_hash": "506806f8247e3a268773a81f38257683",
+    "mtime": 1784223128.024226,
+    "ast_hash": "c7c455c9e2d58f050022ed6a182cc256",
     "semantic_hash": ""
   },
   "src/BodyLife.Crm.Web/Properties/launchSettings.json": {
@@ -800,8 +800,8 @@
     "semantic_hash": "9203d61b800a90c06cf384be96a8b8a8"
   },
   "docs/implementation-progress.md": {
-    "mtime": 1784218220.419568,
-    "ast_hash": "17f1758fdc40444fb1025d21659cc6a9",
+    "mtime": 1784220898.6219287,
+    "ast_hash": "68f4a890e3468ec11cba901ccf263ea7",
     "semantic_hash": ""
   },
   "tests/BodyLife.Crm.Ui.SmokeTests/BodyLife.Crm.Ui.SmokeTests.csproj": {
@@ -3072,6 +3072,41 @@
   "tests/BodyLife.Crm.Ui.SmokeTests/CorrectPaymentSmokeTests.cs": {
     "mtime": 1784220325.9485636,
     "ast_hash": "272133ad5686a1514350b9b52021a6df",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm.Infrastructure/Persistence/Payments/GetDailyPaymentSourceRowsQueryHandler.cs": {
+    "mtime": 1784223136.164591,
+    "ast_hash": "3499978760fb98fc5e5a6f4056088ba0",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/DailyPaymentSourceRow.cs": {
+    "mtime": 1784223128.024226,
+    "ast_hash": "47243a8f077fe606d2dfc7d3bb14b746",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/DailyPaymentSourceSnapshot.cs": {
+    "mtime": 1784223128.024226,
+    "ast_hash": "e1c140da6364fe25dc4ded8357ebf290",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/GetDailyPaymentSourceRowsQuery.cs": {
+    "mtime": 1784223128.024226,
+    "ast_hash": "53eec18341711b679d668715fab6c7f0",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/GetDailyPaymentSourceRowsResult.cs": {
+    "mtime": 1784223128.024226,
+    "ast_hash": "7e43da963dabdcf2f716ba7d5ac4a207",
+    "semantic_hash": ""
+  },
+  "src/BodyLife.Crm/Modules/Payments/GetDailyPaymentSourceRowsStatus.cs": {
+    "mtime": 1784223128.024226,
+    "ast_hash": "224972e88a2adae743ba04a8850c9ac2",
+    "semantic_hash": ""
+  },
+  "tests/BodyLife.Crm.Infrastructure.Tests/PostgreSql/PostgreSqlGetDailyPaymentSourceRowsQueryTests.cs": {
+    "mtime": 1784223384.2467713,
+    "ast_hash": "07ad4de0110259666177df6222603c1c",
     "semantic_hash": ""
   }
 }
