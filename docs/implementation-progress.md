@@ -5548,3 +5548,99 @@ Next recommended step:
   server errors and a full canonical Client profile reread after success. Keep
   reconciled-day actions Owner-only through the command result/provider, and
   keep daily-cash Report composition as the following bounded step.
+
+## Step 110 - Reception CorrectPayment workflow
+
+Status: completed. Milestone 7 is in progress.
+
+Plan alignment:
+
+- Complete the roadmap's reception/UI portion of `CorrectPayment` after the
+  canonical Payment history query and transactional command were proven in
+  earlier bounded steps. Keep Reports-owned daily cash composition as the next
+  independent task.
+- Render correction actions only from per-row server query permissions. Active
+  ordinary Payments are Owner/Admin-correctable on open days; reconciled rows
+  are Owner-only, and active `negative_closure`, canceled and replaced rows do
+  not expose this generic correction action.
+- Preserve the command boundary: Razor and JavaScript collect intent only;
+  server validation constructs `CorrectPaymentCommand`, permission and source
+  state are rechecked transactionally, and every success rereads the complete
+  canonical Client profile instead of applying optimistic cash/history state.
+- Add no report formula, day-close storage, direct Payment mutation or EF model
+  change in this UI step.
+
+Scope:
+
+- Add `payments.correct` query action projection to canonical Client Payment
+  rows. Reuse `IPaymentDayReconciliationStatusProvider`, cache status by
+  business date during one query and return an explicit
+  `day_closed_requires_owner` denial to Admin on reconciled days.
+- Add a profile-owned `CorrectPaymentFormViewModel`, input model and
+  `_CorrectPaymentForm` partial for each active permitted Payment. Prefill the
+  replacement from the original cash fact while excluding
+  `negative_closure` from both source and replacement contexts.
+- Support replace and cancel modes. Replacement accepts positive UAH amount,
+  canonical Client Membership choice, context, occurred UTC time and comment;
+  both modes require reason and explicit destructive confirmation while
+  preserving the original Payment in history.
+- Add an antiforgery-protected Razor handler and htmx island with one
+  idempotency key, `hx-sync="this:drop"`, disabled/busy duplicate-tap
+  protection and mode-aware replacement controls. Adapter validation retains
+  local input; stale, permission, already-processed and other canonical errors
+  refresh the full workspace before retry.
+- Verify successful command entity relationships, audit reference and
+  changed-after-close marker, then rerender Payment history and all allowed
+  actions from a fresh `GetClientProfile` result.
+- Add tablet replace and phone cancel Playwright paths with validation failure,
+  duplicate-tap attempt, canonical correction/cancellation facts, active cash
+  state, audit and command-idempotency readback. Update existing Payment
+  history/Add Payment smoke locators to distinguish display text from the new
+  prefilled closed correction controls.
+- Add no EF record, configuration or migration.
+
+Validation:
+
+- Release solution and UI smoke builds passed with 0 warnings/errors. Focused
+  PostgreSQL `PostgreSqlGetClientPaymentRowsQueryTests` passed 7/7, including
+  open-day permission, reconciled Owner/Admin difference and reserved
+  negative-closure behavior.
+- Focused `CorrectPaymentSmokeTests` passed 2/2 against Docker PostgreSQL at
+  1024x768 and 390x844. Updated reception read-path and Add Payment smoke tests
+  each passed 2/2 after display-only locator scoping.
+- Full-page tablet/phone form and success screenshots were inspected. Replace
+  and cancel controls, validation, warning, confirmation, canonical history,
+  touch submit and status rows remain readable without overlap or horizontal
+  overflow; cancel mode hides and disables replacement inputs.
+- `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 266 core tests, 35 web tests, 350
+  PostgreSQL/architecture infrastructure tests, 37 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  this query-contract/Razor workflow generated no migration.
+- `graphify update .` completed the structural rebuild with 6481 nodes, 14581
+  edges and 654 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(payments): add reception correction workflow`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Add the Reports-owned daily cash query for a selected business date over
+  canonical Payment source facts. Active originals/replacements must drive the
+  total, canceled/replaced originals must remain visible and explainable in
+  drill-down, and consistency tests must prove total count/sum equals active
+  drill-down rows before adding the reception report UI. Keep Membership
+  formulas out of Reports and keep day-close storage/policy as a separate
+  explicit decision-backed step.

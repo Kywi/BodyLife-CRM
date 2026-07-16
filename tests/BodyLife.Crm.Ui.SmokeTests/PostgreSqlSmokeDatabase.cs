@@ -1170,6 +1170,55 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             reader.GetString(5));
     }
 
+    public Task<long> CountPaymentCorrectionsAsync(Guid originalPaymentId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.payment_corrections
+            where original_payment_id = @entity_id
+            """,
+            "entity_id",
+            originalPaymentId);
+    }
+
+    public Task<long> CountPaymentCancellationsAsync(Guid paymentId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.payment_cancellations
+            where payment_id = @entity_id
+            """,
+            "entity_id",
+            paymentId);
+    }
+
+    public Task<long> CountCorrectPaymentAuditEntriesAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries audit
+            inner join bodylife.payments payment on payment.id = audit.entity_id
+            where audit.action_type in ('payment.corrected', 'payment.canceled')
+              and payment.client_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountCorrectPaymentIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'CorrectPayment'
+              and reread_target_id = @client_id
+            """,
+            clientId);
+    }
+
     public async Task<MembershipStateSmokeSnapshot> ReadMembershipStateAsync(
         Guid membershipId)
     {

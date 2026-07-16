@@ -49,6 +49,10 @@ for (const eventName of ["htmx:responseError", "htmx:sendError", "htmx:timeout"]
     if (form.matches("[data-issue-membership-form]")) {
       syncIssueMembershipForm(form);
     }
+
+    if (form.matches("[data-correct-payment-form]")) {
+      syncCorrectPaymentForm(form);
+    }
   });
 }
 
@@ -154,6 +158,38 @@ const syncIssueMembershipForms = (root) => {
   }
 };
 
+const syncCorrectPaymentForm = (form) => {
+  const selectedMode = form.querySelector("[data-payment-correction-mode]:checked");
+  const replacementFields = form.querySelector("[data-payment-replacement-fields]");
+  const replacePayment = selectedMode?.dataset.paymentCorrectionMode === "replace";
+
+  if (replacementFields instanceof HTMLElement) {
+    replacementFields.dataset.active = replacePayment ? "true" : "false";
+  }
+
+  for (const input of form.querySelectorAll("[data-payment-replacement-input]")) {
+    input.disabled = !replacePayment;
+    input.required = replacePayment
+      && input.hasAttribute("data-payment-replacement-required");
+  }
+
+  for (const button of form.querySelectorAll("[data-correct-payment-submit]")) {
+    if (!button.hasAttribute("aria-busy")) {
+      button.disabled = !(selectedMode instanceof HTMLInputElement);
+    }
+  }
+};
+
+const syncCorrectPaymentForms = (root) => {
+  if (root instanceof HTMLFormElement && root.matches("[data-correct-payment-form]")) {
+    syncCorrectPaymentForm(root);
+  }
+
+  for (const form of root.querySelectorAll?.("form[data-correct-payment-form]") ?? []) {
+    syncCorrectPaymentForm(form);
+  }
+};
+
 document.addEventListener("change", (event) => {
   if (!(event.target instanceof HTMLInputElement)
     || !event.target.matches("[data-clear-card-input]")) {
@@ -163,6 +199,18 @@ document.addEventListener("change", (event) => {
   const form = event.target.closest("form[data-card-intent-form]");
   if (form instanceof HTMLFormElement) {
     syncCardIntentForm(form);
+  }
+});
+
+document.addEventListener("change", (event) => {
+  if (!(event.target instanceof HTMLInputElement)
+    || !event.target.matches("[data-payment-correction-mode]")) {
+    return;
+  }
+
+  const form = event.target.closest("form[data-correct-payment-form]");
+  if (form instanceof HTMLFormElement) {
+    syncCorrectPaymentForm(form);
   }
 });
 
@@ -207,8 +255,10 @@ document.addEventListener("htmx:load", (event) => {
   syncCardIntentForms(event.detail?.elt ?? document);
   syncMarkVisitForms(event.detail?.elt ?? document);
   syncIssueMembershipForms(event.detail?.elt ?? document);
+  syncCorrectPaymentForms(event.detail?.elt ?? document);
 });
 
 syncCardIntentForms(document);
 syncMarkVisitForms(document);
 syncIssueMembershipForms(document);
+syncCorrectPaymentForms(document);

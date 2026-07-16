@@ -8,6 +8,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Payments;
 
 public sealed class GetClientPaymentRowsQueryHandler(
     BodyLifeDbContext dbContext,
+    IPaymentDayReconciliationStatusProvider dayReconciliationStatusProvider,
     TimeProvider timeProvider)
     : IBodyLifeQueryHandler<GetClientPaymentRowsQuery, GetClientPaymentRowsResult>
 {
@@ -146,6 +147,7 @@ public sealed class GetClientPaymentRowsQueryHandler(
         var correctionToReplacementByPaymentId = correctionRows
             .Where(row => paymentIds.Contains(row.OriginalPaymentId))
             .ToDictionary(row => row.OriginalPaymentId);
+        var dayStatuses = new Dictionary<DateOnly, PaymentDayReconciliationStatus>();
         var resultRows = new List<ClientPaymentRow>(visibleRows.Length);
 
         foreach (var source in visibleRows)
@@ -170,6 +172,31 @@ public sealed class GetClientPaymentRowsQueryHandler(
                 return GetClientPaymentRowsResult.InconsistentSource();
             }
 
+            var allowedActions = QueryPermissionSet.Empty;
+            if (projection.Status == ClientPaymentRowStatus.Active
+                && projection.PaymentContext != PaymentContext.NegativeClosure)
+            {
+                var businessDate = DateOnly.FromDateTime(source.OccurredAt.UtcDateTime);
+                if (!dayStatuses.TryGetValue(businessDate, out var dayStatus))
+                {
+                    dayStatus = await dayReconciliationStatusProvider.GetStatusAsync(
+                        businessDate,
+                        cancellationToken);
+                    if (!Enum.IsDefined(dayStatus))
+                    {
+                        return GetClientPaymentRowsResult.InconsistentSource();
+                    }
+
+                    dayStatuses.Add(businessDate, dayStatus);
+                }
+
+                allowedActions = PaymentQuerySupport.BuildCorrectionPermissions(
+                    query.Actor,
+                    projection.Status,
+                    projection.PaymentContext,
+                    dayStatus);
+            }
+
             resultRows.Add(new ClientPaymentRow(
                 source.PaymentId,
                 source.ClientId,
@@ -188,7 +215,8 @@ public sealed class GetClientPaymentRowsQueryHandler(
                 projection.Status,
                 projection.Cancellation,
                 projection.CorrectionFromOriginal,
-                projection.CorrectionToReplacement));
+                projection.CorrectionToReplacement,
+                allowedActions));
         }
 
         return GetClientPaymentRowsResult.Succeeded(

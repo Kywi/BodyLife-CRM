@@ -1,5 +1,6 @@
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 
@@ -24,6 +25,48 @@ internal static class PaymentQuerySupport
                 now,
                 cancellationToken)
             : Task.FromResult(false);
+    }
+
+    internal static QueryPermissionSet BuildCorrectionPermissions(
+        ActorContext actor,
+        ClientPaymentRowStatus paymentStatus,
+        PaymentContext paymentContext,
+        PaymentDayReconciliationStatus dayStatus)
+    {
+        if (paymentStatus != ClientPaymentRowStatus.Active
+            || paymentContext == PaymentContext.NegativeClosure)
+        {
+            return QueryPermissionSet.Empty;
+        }
+
+        return dayStatus switch
+        {
+            PaymentDayReconciliationStatus.Open => new QueryPermissionSet(
+            [
+                QueryPermissionResult.Allowed(
+                    PaymentActionKeys.Correct,
+                    PaymentActionKeys.AdminOrOwnerPolicy),
+            ]),
+            PaymentDayReconciliationStatus.Reconciled when actor.Role == ActorRole.Owner
+                => new QueryPermissionSet(
+                [
+                    QueryPermissionResult.Allowed(
+                        PaymentActionKeys.Correct,
+                        PaymentActionKeys.OwnerPolicy),
+                ]),
+            PaymentDayReconciliationStatus.Reconciled => new QueryPermissionSet(
+            [
+                QueryPermissionResult.Denied(
+                    PaymentActionKeys.Correct,
+                    PaymentActionKeys.OwnerPolicy,
+                    "day_closed_requires_owner",
+                    "Only the Owner can correct a Payment from a reconciled day."),
+            ]),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(dayStatus),
+                dayStatus,
+                null),
+        };
     }
 
     internal static bool TryMapSourceRow(

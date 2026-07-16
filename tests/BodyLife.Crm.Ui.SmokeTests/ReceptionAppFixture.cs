@@ -344,6 +344,26 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadLatestActivePaymentAsync(clientId);
     }
 
+    public Task<long> CountPaymentCorrectionsAsync(Guid originalPaymentId)
+    {
+        return RequireDatabase().CountPaymentCorrectionsAsync(originalPaymentId);
+    }
+
+    public Task<long> CountPaymentCancellationsAsync(Guid paymentId)
+    {
+        return RequireDatabase().CountPaymentCancellationsAsync(paymentId);
+    }
+
+    public Task<long> CountCorrectPaymentAuditEntriesAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCorrectPaymentAuditEntriesAsync(clientId);
+    }
+
+    public Task<long> CountCorrectPaymentIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCorrectPaymentIdempotencyKeysAsync(clientId);
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");

@@ -294,7 +294,8 @@ public sealed class PostgreSqlGetClientProfileQueryTests
                     Status: ClientPaymentRowStatus.Active,
                     Cancellation: null,
                     CorrectionFromOriginal: null,
-                    CorrectionToReplacement: null),
+                    CorrectionToReplacement: null,
+                    AllowedActions: QueryPermissionSet.Empty),
             ],
             HasMore: false);
         var paymentRowsHandler = new StubClientPaymentRowsQueryHandler(

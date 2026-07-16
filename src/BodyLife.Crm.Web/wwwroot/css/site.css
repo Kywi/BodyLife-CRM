@@ -728,13 +728,15 @@ textarea:focus-visible,
   font-weight: 800;
 }
 
-.visit-correction-panel {
+.visit-correction-panel,
+.payment-correction-panel {
   margin-top: 12px;
   border-top: 1px solid var(--line);
   padding-top: 4px;
 }
 
-.visit-correction-panel summary {
+.visit-correction-panel summary,
+.payment-correction-panel summary {
   display: flex;
   min-height: 44px;
   align-items: center;
@@ -743,36 +745,43 @@ textarea:focus-visible,
   font-weight: 800;
 }
 
-.visit-correction-panel[open] summary {
+.visit-correction-panel[open] summary,
+.payment-correction-panel[open] summary {
   margin-bottom: 10px;
 }
 
 .visit-correction-content,
-.cancel-visit-form {
+.payment-correction-content,
+.cancel-visit-form,
+.correct-payment-form {
   display: grid;
   gap: 12px;
 }
 
-.visit-correction-context {
+.visit-correction-context,
+.payment-correction-context {
   display: grid;
   margin: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 14px;
 }
 
-.visit-correction-context div {
+.visit-correction-context div,
+.payment-correction-context div {
   display: grid;
   min-width: 0;
   gap: 2px;
 }
 
-.visit-correction-context dt {
+.visit-correction-context dt,
+.payment-correction-context dt {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
 }
 
-.visit-correction-context dd {
+.visit-correction-context dd,
+.payment-correction-context dd {
   min-width: 0;
   margin: 0;
   overflow-wrap: anywhere;
@@ -780,6 +789,76 @@ textarea:focus-visible,
 }
 
 .cancel-visit-confirmation {
+  align-items: flex-start;
+  color: var(--danger-strong);
+}
+
+.payment-correction-mode,
+.payment-replacement-fields {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.payment-correction-mode legend,
+.payment-replacement-fields legend {
+  margin-bottom: 7px;
+  padding: 0;
+  font-weight: 800;
+}
+
+.payment-correction-segments {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.payment-correction-segments label {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+}
+
+.payment-correction-segments input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.payment-correction-segments span {
+  display: flex;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-muted);
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.payment-correction-segments input:checked + span {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger-strong);
+}
+
+.payment-correction-segments input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.payment-replacement-fields[data-active="false"] {
+  display: none;
+}
+
+.correct-payment-confirmation {
   align-items: flex-start;
   color: var(--danger-strong);
 }
@@ -894,7 +973,8 @@ textarea:focus-visible,
 .issue-membership-form,
 .mark-visit-form,
 .add-payment-form,
-.cancel-visit-form {
+.cancel-visit-form,
+.correct-payment-form {
   display: grid;
   gap: 16px;
 }
@@ -1911,6 +1991,7 @@ textarea:focus-visible,
   .recent-visit-meta,
   .recent-payment-meta,
   .visit-correction-context,
+  .payment-correction-context,
   .action-form-grid,
   .issue-membership-snapshot,
   .visit-business-context,
@@ -1931,14 +2012,16 @@ textarea:focus-visible,
   .mark-visit-form .action-form-footer,
   .issue-membership-form .action-form-footer,
   .add-payment-form .action-form-footer,
-  .cancel-visit-form .action-form-footer {
+  .cancel-visit-form .action-form-footer,
+  .correct-payment-form .action-form-footer {
     flex-wrap: wrap;
   }
 
   .mark-visit-form .action-form-footer button,
   .issue-membership-form .action-form-footer button,
   .add-payment-form .action-form-footer button,
-  .cancel-visit-form .action-form-footer button {
+  .cancel-visit-form .action-form-footer button,
+  .correct-payment-form .action-form-footer button {
     width: 100%;
   }
 

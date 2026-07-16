@@ -1,0 +1,246 @@
+@using System.Globalization
+@model CorrectPaymentFormViewModel
+@{
+    var input = Model.Input;
+    var payment = Model.Payment;
+    var paymentKey = payment.PaymentId.ToString("N");
+    var amountValue = input.ReplacementAmount?.ToString(CultureInfo.InvariantCulture);
+    var occurredAtValue = input.ReplacementOccurredAtUtc?.ToString(
+        "yyyy-MM-ddTHH:mm",
+        CultureInfo.InvariantCulture);
+    var replaceMode = input.Mode != PaymentCorrectionMode.Cancel;
+}
+
+<details id="correct-payment-panel-@paymentKey"
+         class="payment-correction-panel"
+         data-correct-payment-panel
+         open="@(Model.IsOpen ? "open" : null)">
+    <summary>Correct or cancel</summary>
+    <div class="payment-correction-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Payment correction not applied</strong>
+                <ul>
+                    @foreach (var message in Model.Errors
+                        .Select(CorrectPaymentFormViewModel.DisplayError)
+                        .Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <dl class="payment-correction-context">
+            <div>
+                <dt>Original amount</dt>
+                <dd>@payment.Amount.Amount.ToString("0.##", CultureInfo.InvariantCulture) @payment.Amount.Currency</dd>
+            </div>
+            <div>
+                <dt>Original context</dt>
+                <dd>@PaymentContextLabel(payment.PaymentContext)</dd>
+            </div>
+            <div>
+                <dt>Original date</dt>
+                <dd>@payment.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+            </div>
+            <div>
+                <dt>Method</dt>
+                <dd>Cash</dd>
+            </div>
+        </dl>
+
+        <div class="warning-block warning-danger">
+            <strong>Correction keeps history</strong>
+            <span>The original Payment remains visible. Canonical cash totals use its cancellation or replacement record.</span>
+        </div>
+
+        <form id="correct-payment-form-@paymentKey"
+              class="correct-payment-form"
+              method="post"
+              asp-page="/Reception/Index"
+              asp-page-handler="CorrectPayment"
+              data-busy-form
+              data-correct-payment-form
+              hx-post="@Url.Page("/Reception/Index", "CorrectPayment")"
+              hx-target="#correct-payment-panel-@paymentKey"
+              hx-swap="outerHTML"
+              hx-sync="this:drop"
+              hx-indicator="#correct-payment-loading-@paymentKey"
+              hx-disabled-elt="find button">
+            <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+            <input type="hidden" name="form.OriginalPaymentId" value="@input.OriginalPaymentId" />
+            <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+            <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+            <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+            <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+            <fieldset class="payment-correction-mode">
+                <legend>Correction mode</legend>
+                <div class="payment-correction-segments">
+                    <label>
+                        <input type="radio"
+                               name="form.Mode"
+                               value="@PaymentCorrectionMode.Replace"
+                               data-payment-correction-mode="replace"
+                               checked="@(replaceMode ? "checked" : null)" />
+                        <span>Replace payment</span>
+                    </label>
+                    <label>
+                        <input type="radio"
+                               name="form.Mode"
+                               value="@PaymentCorrectionMode.Cancel"
+                               data-payment-correction-mode="cancel"
+                               checked="@(!replaceMode ? "checked" : null)" />
+                        <span>Cancel payment</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <fieldset class="payment-replacement-fields"
+                      data-payment-replacement-fields
+                      data-active="@(replaceMode ? "true" : "false")">
+                <legend>Replacement Payment</legend>
+                <div class="action-form-grid">
+                    <div class="form-field">
+                        <label for="replacement-amount-@paymentKey">Replacement amount (UAH)</label>
+                        <input id="replacement-amount-@paymentKey"
+                               type="number"
+                               name="form.ReplacementAmount"
+                               value="@amountValue"
+                               min="0.01"
+                               step="0.01"
+                               inputmode="decimal"
+                               data-payment-replacement-input
+                               data-payment-replacement-required
+                               disabled="@(!replaceMode ? "disabled" : null)"
+                               required="@(replaceMode ? "required" : null)" />
+                    </div>
+
+                    <div class="form-field">
+                        <label for="replacement-context-@paymentKey">Replacement context</label>
+                        <select id="replacement-context-@paymentKey"
+                                name="form.ReplacementPaymentContext"
+                                data-payment-replacement-input
+                                data-payment-replacement-required
+                                disabled="@(!replaceMode ? "disabled" : null)"
+                                required="@(replaceMode ? "required" : null)">
+                            <option value="" selected="@(input.ReplacementPaymentContext is null ? "selected" : null)">Choose context</option>
+                            @foreach (var paymentContext in CorrectPaymentFormViewModel.SupportedContexts)
+                            {
+                                <option value="@paymentContext"
+                                        selected="@(input.ReplacementPaymentContext == paymentContext ? "selected" : null)">
+                                    @PaymentContextLabel(paymentContext)
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-field form-field-wide">
+                        <label for="replacement-membership-@paymentKey">Replacement membership (optional)</label>
+                        <select id="replacement-membership-@paymentKey"
+                                name="form.ReplacementMembershipId"
+                                data-payment-replacement-input
+                                disabled="@(!replaceMode ? "disabled" : null)">
+                            <option value="" selected="@(input.ReplacementMembershipId is null ? "selected" : null)">No membership</option>
+                            @foreach (var membership in Model.MembershipOptions)
+                            {
+                                <option value="@membership.MembershipId"
+                                        selected="@(input.ReplacementMembershipId == membership.MembershipId ? "selected" : null)">
+                                    @membership.TypeNameSnapshot | @MembershipStatusLabel(membership.Status) | ends @membership.EffectiveEndDate.ToString("yyyy-MM-dd")
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-field form-field-wide">
+                        <label for="replacement-occurred-at-@paymentKey">Replacement occurred (UTC)</label>
+                        <input id="replacement-occurred-at-@paymentKey"
+                               type="datetime-local"
+                               name="form.ReplacementOccurredAtUtc"
+                               value="@occurredAtValue"
+                               step="60"
+                               data-payment-replacement-input
+                               data-payment-replacement-required
+                               disabled="@(!replaceMode ? "disabled" : null)"
+                               required="@(replaceMode ? "required" : null)" />
+                    </div>
+
+                    <div class="form-field form-field-wide">
+                        <label for="replacement-comment-@paymentKey">Replacement comment (optional)</label>
+                        <textarea id="replacement-comment-@paymentKey"
+                                  name="form.ReplacementComment"
+                                  maxlength="@CorrectPaymentFormViewModel.CommentMaxLength"
+                                  data-payment-replacement-input
+                                  disabled="@(!replaceMode ? "disabled" : null)">@input.ReplacementComment</textarea>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="form-field">
+                <label for="correct-payment-reason-@paymentKey">Reason</label>
+                <textarea id="correct-payment-reason-@paymentKey"
+                          name="form.Reason"
+                          maxlength="@CorrectPaymentFormViewModel.ReasonMaxLength"
+                          required>@input.Reason</textarea>
+            </div>
+
+            <div class="form-field">
+                <label for="correct-payment-comment-@paymentKey">Correction comment (optional)</label>
+                <textarea id="correct-payment-comment-@paymentKey"
+                          name="form.Comment"
+                          maxlength="@CorrectPaymentFormViewModel.CommentMaxLength">@input.Comment</textarea>
+            </div>
+
+            <label class="acknowledgement-control correct-payment-confirmation"
+                   for="correct-payment-confirmed-@paymentKey">
+                <input id="correct-payment-confirmed-@paymentKey"
+                       type="checkbox"
+                       name="form.Confirmed"
+                       value="true"
+                       checked="@(input.Confirmed ? "checked" : null)"
+                       required />
+                <span>I confirm this Payment should be corrected and its original history preserved.</span>
+            </label>
+
+            <div class="action-form-footer">
+                <span id="correct-payment-loading-@paymentKey"
+                      class="request-indicator htmx-indicator"
+                      role="status"
+                      aria-live="polite">Applying correction...</span>
+                <button class="danger-button"
+                        type="submit"
+                        data-correct-payment-submit
+                        data-busy-text="Applying...">Apply correction</button>
+            </div>
+        </form>
+    </div>
+</details>
+
+@functions {
+    private static string PaymentContextLabel(PaymentContext paymentContext)
+    {
+        return paymentContext switch
+        {
+            PaymentContext.MembershipSale => "Membership sale",
+            PaymentContext.OneOff => "One-off payment",
+            PaymentContext.Trial => "Trial payment",
+            PaymentContext.Other => "Other",
+            _ => "Unsupported",
+        };
+    }
+
+    private static string MembershipStatusLabel(string status)
+    {
+        return status switch
+        {
+            ClientMembershipSummaryStatusCodes.Active => "active",
+            ClientMembershipSummaryStatusCodes.Expired => "expired",
+            ClientMembershipSummaryStatusCodes.Canceled => "canceled",
+            ClientMembershipSummaryStatusCodes.Corrected => "corrected",
+            _ => status,
+        };
+    }
+}

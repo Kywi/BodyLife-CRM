@@ -156,11 +156,15 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             var trialPayment = recentPayments.Locator(".recent-payment-row")
                 .Filter(new LocatorFilterOptions { HasText = "100 UAH" });
             await ExpectVisibleAsync(
-                trialPayment.GetByText("Trial payment", new() { Exact = true }),
+                trialPayment.Locator(".recent-payment-context").GetByText(
+                    "Trial payment",
+                    new() { Exact = true }),
                 viewportName,
                 "trial Payment context");
             await ExpectVisibleAsync(
-                trialPayment.GetByText("Trial cash entry", new() { Exact = true }),
+                trialPayment.Locator(".recent-payment-comment").GetByText(
+                    "Trial cash entry",
+                    new() { Exact = true }),
                 viewportName,
                 "trial Payment comment");
 
@@ -182,7 +186,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             var replacementPayment = recentPayments.Locator(".recent-payment-row")
                 .Filter(new LocatorFilterOptions { HasText = "900 UAH" });
             await ExpectVisibleAsync(
-                replacementPayment.GetByText(
+                replacementPayment.Locator(".recent-payment-meta").GetByText(
                     "Payment history snapshot",
                     new() { Exact = true }),
                 viewportName,
@@ -220,7 +224,15 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 originalPayment.GetByText("Paper fallback", new() { Exact = true }),
                 viewportName,
                 "original Payment source");
-            Assert.Equal(0, await recentPayments.GetByRole(AriaRole.Button).CountAsync());
+            Assert.Equal(
+                2,
+                await recentPayments.Locator("[data-correct-payment-panel]").CountAsync());
+            Assert.Equal(
+                0,
+                await canceledPayment.Locator("[data-correct-payment-panel]").CountAsync());
+            Assert.Equal(
+                0,
+                await originalPayment.Locator("[data-correct-payment-panel]").CountAsync());
             await AssertFitsViewportAsync(page, viewportName, "Payment history profile");
             await CaptureVisualAsync(page, viewportName, "payment-history");
 

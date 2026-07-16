@@ -178,22 +178,30 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
             var paymentRow = profile.Locator("[data-payment-status='active']").First;
             await ExpectVisibleAsync(paymentRow, viewportName, "canonical Payment row");
             await ExpectVisibleAsync(
-                paymentRow.GetByText($"{amount} UAH", new() { Exact = true }),
+                paymentRow.Locator(".recent-payment-row-header h4").GetByText(
+                    $"{amount} UAH",
+                    new() { Exact = true }),
                 viewportName,
                 "canonical Payment amount");
             await ExpectVisibleAsync(
-                paymentRow.GetByText(historyContextLabel, new() { Exact = true }),
+                paymentRow.Locator(".recent-payment-context").GetByText(
+                    historyContextLabel,
+                    new() { Exact = true }),
                 viewportName,
                 "canonical Payment context");
             await ExpectVisibleAsync(
-                paymentRow.GetByText(comment, new() { Exact = true }),
+                paymentRow.Locator(".recent-payment-comment").GetByText(
+                    comment,
+                    new() { Exact = true }),
                 viewportName,
                 "canonical Payment comment");
 
             if (membershipId is not null)
             {
                 await ExpectVisibleAsync(
-                    paymentRow.GetByText("Payment tablet snapshot", new() { Exact = true }),
+                    paymentRow.Locator(".recent-payment-meta").GetByText(
+                        "Payment tablet snapshot",
+                        new() { Exact = true }),
                     viewportName,
                     "linked Membership snapshot");
             }

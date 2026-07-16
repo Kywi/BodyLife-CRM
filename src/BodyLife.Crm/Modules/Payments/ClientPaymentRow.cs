@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Payments;
@@ -21,4 +22,5 @@ public sealed record ClientPaymentRow(
     ClientPaymentRowStatus Status,
     ClientPaymentCancellation? Cancellation,
     ClientPaymentCorrection? CorrectionFromOriginal,
-    ClientPaymentCorrection? CorrectionToReplacement);
+    ClientPaymentCorrection? CorrectionToReplacement,
+    QueryPermissionSet AllowedActions);

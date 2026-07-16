@@ -2,6 +2,8 @@
 @{
     var result = Model.Result;
     var profile = result?.Profile;
+    var correctPaymentFormsByPaymentId = Model.CorrectPaymentForms.ToDictionary(
+        form => form.Input.OriginalPaymentId);
 }
 
 <section id="client-profile" class="client-profile-region" aria-label="Client profile" aria-live="polite">
@@ -358,6 +360,13 @@
                                             }
                                         </span>
                                     </div>
+                                }
+
+                                @if (correctPaymentFormsByPaymentId.TryGetValue(
+                                    payment.PaymentId,
+                                    out var correctPaymentForm))
+                                {
+                                    <partial name="_CorrectPaymentForm" model="correctPaymentForm" />
                                 }
                             </li>
                         }

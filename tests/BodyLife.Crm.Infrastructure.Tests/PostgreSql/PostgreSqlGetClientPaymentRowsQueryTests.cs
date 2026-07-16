@@ -141,6 +141,10 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Assert.Null(latest.Cancellation);
         Assert.Null(latest.CorrectionFromOriginal);
         Assert.Null(latest.CorrectionToReplacement);
+        Assert.True(latest.AllowedActions.IsAllowed(PaymentActionKeys.Correct));
+        Assert.Equal(
+            PaymentActionKeys.AdminOrOwnerPolicy,
+            Assert.Single(latest.AllowedActions.Items).RequiredPolicy);
 
         var canceled = page.Items[1];
         Assert.Equal(fixture.ClientId, canceled.ClientId);
@@ -159,6 +163,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Assert.Equal(cancellationBatchId, cancellation.EntryBatchId);
         Assert.Null(canceled.CorrectionFromOriginal);
         Assert.Null(canceled.CorrectionToReplacement);
+        Assert.Empty(canceled.AllowedActions.Items);
 
         var replacement = page.Items[2];
         Assert.Equal(fixture.MembershipId, replacement.MembershipId);
@@ -176,6 +181,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
             replacementPaymentId,
             correctionBatchId);
         Assert.Null(replacement.CorrectionToReplacement);
+        Assert.True(replacement.AllowedActions.IsAllowed(PaymentActionKeys.Correct));
 
         var original = page.Items[3];
         Assert.Equal(EntryOrigin.PaperFallback, original.EntryOrigin);
@@ -191,6 +197,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
             originalPaymentId,
             replacementPaymentId,
             correctionBatchId);
+        Assert.Empty(original.AllowedActions.Items);
 
         Assert.Equal(
             0L,
@@ -251,6 +258,80 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Assert.Equal(
             [thirdId, secondId],
             page.Items.Select(row => row.PaymentId).ToArray());
+    }
+
+    [PostgreSqlFact]
+    public async Task ReconciledDayAllowsOwnerDeniesAdminAndReservesNegativeClosure()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var ordinaryPaymentId = await InsertPaymentAsync(
+            database,
+            fixture,
+            fixture.ClientId,
+            membershipId: null,
+            300m,
+            "one_off",
+            FirstPaymentOccurredAt,
+            TestNow.AddMinutes(-2));
+        var negativeClosurePaymentId = await InsertPaymentAsync(
+            database,
+            fixture,
+            fixture.ClientId,
+            fixture.MembershipId,
+            200m,
+            "negative_closure",
+            FirstPaymentOccurredAt.AddMinutes(1),
+            TestNow.AddMinutes(-1));
+        var reconciledProvider = new RecordingPaymentDayStatusProvider(
+            PaymentDayReconciliationStatus.Reconciled);
+
+        var ownerResult = await CreateHandler(
+            dbContext,
+            reconciledProvider).ExecuteAsync(
+                new GetClientPaymentRowsQuery(fixture.Actor, fixture.ClientId),
+                CancellationToken.None);
+
+        var ownerRows = AssertSuccess(ownerResult, fixture.ClientId).Items;
+        var ownerOrdinary = Assert.Single(
+            ownerRows,
+            row => row.PaymentId == ordinaryPaymentId);
+        var ownerPermission = Assert.Single(ownerOrdinary.AllowedActions.Items);
+        Assert.True(ownerPermission.IsAllowed);
+        Assert.Equal(PaymentActionKeys.OwnerPolicy, ownerPermission.RequiredPolicy);
+        Assert.Empty(Assert.Single(
+            ownerRows,
+            row => row.PaymentId == negativeClosurePaymentId).AllowedActions.Items);
+
+        await UpdateActorIdentityAsync(
+            database,
+            fixture.Actor.AccountId.Value,
+            "named_admin",
+            "admin");
+        var adminActor = fixture.Actor with
+        {
+            Role = ActorRole.Admin,
+            AccountKind = AccountKind.NamedAdmin,
+        };
+        var adminResult = await CreateHandler(
+            dbContext,
+            reconciledProvider).ExecuteAsync(
+                new GetClientPaymentRowsQuery(adminActor, fixture.ClientId),
+                CancellationToken.None);
+
+        var adminRows = AssertSuccess(adminResult, fixture.ClientId).Items;
+        var deniedPermission = Assert.Single(Assert.Single(
+            adminRows,
+            row => row.PaymentId == ordinaryPaymentId).AllowedActions.Items);
+        Assert.False(deniedPermission.IsAllowed);
+        Assert.Equal(PaymentActionKeys.OwnerPolicy, deniedPermission.RequiredPolicy);
+        Assert.Equal("day_closed_requires_owner", deniedPermission.DeniedReasonCode);
+        Assert.Empty(Assert.Single(
+            adminRows,
+            row => row.PaymentId == negativeClosurePaymentId).AllowedActions.Items);
+        Assert.Equal(2, reconciledProvider.RequestedDates.Count);
     }
 
     [PostgreSqlFact]
@@ -412,10 +493,13 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
     }
 
     private static GetClientPaymentRowsQueryHandler CreateHandler(
-        BodyLifeDbContext dbContext)
+        BodyLifeDbContext dbContext,
+        IPaymentDayReconciliationStatusProvider? dayStatusProvider = null)
     {
         return new GetClientPaymentRowsQueryHandler(
             dbContext,
+            dayStatusProvider ?? new RecordingPaymentDayStatusProvider(
+                PaymentDayReconciliationStatus.Open),
             new FixedTimeProvider(TestNow));
     }
 
@@ -803,6 +887,28 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
 
+    private static async Task UpdateActorIdentityAsync(
+        PostgreSqlTestDatabase database,
+        Guid accountId,
+        string accountType,
+        string role)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.accounts
+            set account_type = @account_type,
+                role = @role
+            where id = @id
+            """;
+        command.Parameters.AddWithValue("account_type", accountType);
+        command.Parameters.AddWithValue("role", role);
+        command.Parameters.AddWithValue("id", accountId);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
     private static ClientPaymentRowsPage AssertSuccess(
         GetClientPaymentRowsResult result,
         Guid clientId)
@@ -854,6 +960,21 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Guid ClientId,
         Guid OtherClientId,
         Guid MembershipId);
+
+    private sealed class RecordingPaymentDayStatusProvider(
+        PaymentDayReconciliationStatus status)
+        : IPaymentDayReconciliationStatusProvider
+    {
+        public List<DateOnly> RequestedDates { get; } = [];
+
+        public Task<PaymentDayReconciliationStatus> GetStatusAsync(
+            DateOnly businessDate,
+            CancellationToken cancellationToken = default)
+        {
+            RequestedDates.Add(businessDate);
+            return Task.FromResult(status);
+        }
+    }
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
