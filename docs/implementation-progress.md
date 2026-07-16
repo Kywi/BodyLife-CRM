@@ -6192,3 +6192,74 @@ Next recommended step:
   starts/ends inside the period, proposed-source exclusion and deterministic
   applied ranges. Keep EF schema, preview tokens, PostgreSQL scope selection,
   commands and UI as later independent steps.
+
+## Step 118 - Pure NonWorkingDay application policy
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement the first ADR-016 code slice immediately after accepting its product
+  decision, before persistence, preview tokens, scope selection or commands.
+- Keep eligibility and full-period contribution inside Memberships so
+  NonWorkingDays, Infrastructure and UI cannot reinterpret the date formula.
+- Mirror the existing pure Freeze policy/result convention without adding Visit
+  conflict inputs that do not belong to global NonWorkingDay eligibility.
+
+Scope:
+
+- Add `MembershipNonWorkingDayApplicationPolicy` with canonical read-model and
+  lower-level issue-terms/pre-command-state overloads.
+- Include only lifecycle-active Memberships whose inclusive source interval
+  overlaps the proposed period: period end is on/after Membership start and
+  period start is on/before pre-command effective end.
+- Return explicit inactive, period-before-start and period-after-effective-end
+  statuses for excluded Memberships. Excluded results expose no applied range
+  and zero applied days.
+- For every eligible Membership, expose the original complete period as
+  `AppliedRange` and its inclusive length as `AppliedDays`; do not clip either
+  boundary to Membership dates.
+- Make the pre-command-state dependency explicit so a proposed period cannot
+  extend effective end and thereby make itself eligible.
+- Add focused unit coverage for both inclusive overlap endpoints, full-period
+  contribution before Membership start and after effective end, inactive
+  lifecycle states, both no-overlap directions, proposed-source exclusion,
+  canonical stored effective end and invalid canonical inputs.
+- Add no NonWorkingDay EF record, migration, PostgreSQL selector, preview/token,
+  command handler, audit or UI change.
+
+Validation:
+
+- Focused `MembershipNonWorkingDayApplicationPolicyTests` passed 9/9 in Release.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal
+  --no-restore` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed. The
+  script read `ConnectionStrings:BodyLifeTestAdmin` from
+  `appsettings.Development.json`: Release build 0 warnings/errors,
+  formatting/analyzers, 288 core tests, 35 web tests, 386
+  PostgreSQL/architecture infrastructure tests, 37 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `graphify update .` and its no-cluster fallback were attempted in sandboxed
+  and approved modes, but the local graphify rebuild stopped with
+  `Errno 95: Operation not supported`. Its partial cache-index change was
+  removed; no generated graph update is claimed or committed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(memberships): define nonworking day application policy`.
+
+Next recommended step:
+
+- Add only the PostgreSQL/EF source schema for `non_working_periods`,
+  `non_working_period_applications` and `non_working_period_cancellations`, with
+  one reviewable migration and focused PostgreSQL tests for inclusive ranges,
+  lifecycle/status values, full-period application equality, composite
+  Membership/Client ownership, one active application per period/version and
+  retained cancellation history. Keep preview scope selection/tokens,
+  Add/Correct commands, recalculation orchestration and UI for later steps.
