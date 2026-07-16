@@ -120,13 +120,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<AddFreezeCommand>,
             AddFreezeCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<CancelFreezeCommand>,
+            CancelFreezeCommandHandler>();
         services.TryAddSingleton<
             IPaymentDayReconciliationStatusProvider,
             OpenPaymentDayReconciliationStatusProvider>();
         services.TryAddSingleton<
             IVisitDayReconciliationStatusProvider,
             OpenVisitDayReconciliationStatusProvider>();
+        services.TryAddSingleton<
+            IFreezeDayReconciliationStatusProvider,
+            OpenFreezeDayReconciliationStatusProvider>();
         services.AddScoped<CancelVisitSourcePreparer>();
+        services.AddScoped<CancelFreezeSourcePreparer>();
         services.AddScoped<MembershipVisitFreezeSourceReader>();
         services.AddScoped<IMembershipVisitFreezeSourceProvider>(provider =>
             provider.GetRequiredService<MembershipVisitFreezeSourceReader>());

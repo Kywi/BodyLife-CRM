@@ -6033,3 +6033,95 @@ Next recommended step:
   cancellation fact, synchronous extension-union rebuild, append-only
   `freeze.canceled` audit, canonical Client reread and rollback/concurrency
   evidence. Keep reception UI and NonWorkingDays as later independent steps.
+
+## Step 116 - Transactional CancelFreeze workflow
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement command number 13, `CancelFreeze`, immediately after the completed
+  `AddFreeze` workflow and before NonWorkingDay commands in the accepted command
+  order.
+- Reuse the existing `freezes`, `freeze_cancellations`, extension explanation,
+  business-audit and command-idempotency schema. This step adds no EF model or
+  migration change.
+- Preserve ADR-014/ADR-015 Membership-first ordering across MarkVisit,
+  AddFreeze and CancelFreeze, and keep Memberships as the only calculator of
+  extension union, effective end and warnings.
+- Keep reception UI and NonWorkingDay implementation outside this bounded step.
+  The unresolved NonWorkingDay application-scope decision remains a required
+  gate before its preview/add/correct workflows.
+
+Scope:
+
+- Add the public `CancelFreezeCommand`, canonical Freeze cancellation source
+  shape and day-reconciliation abstraction. The default provider reports an
+  open day until a real reconciliation source is introduced.
+- Add `CancelFreezeSourcePreparer`: resolve the selected Membership through the
+  immutable Freeze relationship, lock that Membership first, then lock the
+  Freeze and retained cancellation source rows, and return typed prepared,
+  not-found, already-canceled or inconsistent status.
+- Require a canonical active Owner/Admin account and session, normalized
+  correlation/idempotency/device metadata, `occurred_at`, reason/comment, entry
+  origin and optional backfill/fallback batch. Reconciled-day cancellation is
+  Owner-only and carries `changed_after_close`.
+- Execute idempotency checks, locked source preparation, pre-command canonical
+  recalculation/reread, active-to-canceled Freeze transition, retained
+  `freeze_cancellations` insert, post-command recalculation/reread,
+  `freeze.canceled` audit and idempotency completion in one PostgreSQL
+  transaction.
+- Keep canceled Freeze dates in `membership_extension_days` as inactive
+  explanation rows while removing their contribution from the active union.
+  Overlapping active Freeze sources continue to determine the canonical union;
+  the command never subtracts a naive range length or edits effective end.
+- Return the cancellation id, related source Freeze and canonical Client reread
+  target. Map duplicate, already-canceled, day-close and row-lock conflicts to
+  stable command errors without partial source, cache, audit or idempotency
+  state.
+- Register the command handler, Membership-first source preparer and open-day
+  reconciliation provider in the persistence composition root.
+
+Validation:
+
+- Release infrastructure-test build passed with 0 warnings/errors.
+- Focused `PostgreSqlCancelFreezeCommandTests` passed 13/13 against Docker
+  PostgreSQL, covering retained inactive explanations, overlap union, Owner and
+  both Admin account types, reconciled-day policy, fallback metadata,
+  not-found/already-canceled behavior, replay, concurrent same-key
+  serialization, real Membership/Freeze row locks, recalculation/audit rollback
+  and DI resolution.
+- The focused compatibility selection for Membership formula ownership,
+  AddFreeze, Freeze storage/projection, canonical cache rebuild and MarkVisit
+  passed 57/57.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1
+  BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING='Host=localhost;Port=55532;
+  Database=postgres;Username=bodylife;Password=bodylife_dev_password'
+  ./scripts/validate.sh` passed: Release build 0 warnings/errors,
+  formatting/analyzers, 279 core tests, 35 web tests, 386
+  PostgreSQL/architecture infrastructure tests, 37 Playwright smoke tests and
+  EF migration listing through `20260715213519_AddPaymentSourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift;
+  cancellation uses the existing Freeze source schema.
+- `git diff --check` passed before the progress update.
+- `graphify update .` completed the structural rebuild with 6896 nodes, 15829
+  edges and 675 communities; optional HTML visualization remained skipped above
+  its configured 5000-node limit.
+- `graphify . --update` was attempted for the progress documentation change but
+  stopped because no semantic extraction LLM backend is configured.
+
+Commits:
+
+- `feat(freezes): cancel freeze workflow`.
+- `chore(graphify): refresh code graph`.
+
+Next recommended step:
+
+- Resolve the remaining Milestone 8 NonWorkingDay application-scope decision in
+  one accepted ADR and synchronize the governing docs: whether a period extends
+  only overlapping eligible Membership calendar dates or contributes its full
+  period once any overlap exists, plus the exact affected-membership lifecycle
+  boundary. Keep schema, `PreviewNonWorkingDayImpact`, add/correct commands and
+  UI for later implementation steps after that decision is explicit.
