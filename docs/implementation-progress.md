@@ -6769,3 +6769,86 @@ Next recommended step:
   corrected states and define replace-versus-cancel preparation outcomes. Keep
   correction writes, recalculation, audit, idempotency and UI for the following
   bounded step.
+
+## Step 125 - CorrectNonWorkingDay canonical source preparation
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue the roadmap's Owner-only `CorrectNonWorkingDay` workflow after the
+  accepted Add command, but establish the canonical old-source read and lock
+  boundary before adding any correction mutation.
+- Preserve ADR-016 semantics explicitly: `replace_range` recomputes a new
+  confirmed scope, `replace_reason` preserves the exact old application
+  snapshot, and `cancel` creates no replacement scope.
+- Keep this step read-only. It adds no correction/cancellation write, source
+  status update, replacement period, recalculation, audit, idempotency, command
+  authorization or UI.
+
+Scope:
+
+- Add stable `NonWorkingDayCorrectionMode` values for `ReplaceRange`,
+  `ReplaceReason` and `Cancel`, plus a NonWorkingDays-owned policy that maps
+  them to `RecomputeReplacement`, `PreserveConfirmedApplications` and
+  `NoReplacement` scope behavior.
+- Add immutable correction source contracts for the original period and its
+  exact ordered application snapshot. They validate non-empty identities,
+  full-period application ranges, preview/confirmation time order, unique
+  application and Membership ids, deterministic Membership/application order,
+  matching period/application statuses, and cancellation-fact consistency.
+- Add `CorrectNonWorkingDaySourcePreparer` and scoped DI registration. It
+  requires a caller-owned `RepeatableRead` or `Serializable` transaction,
+  locks every old-scope Membership in deterministic id order before locking
+  the period, application and cancellation rows, and performs no tracked or
+  persistent write.
+- Return stable preparation outcomes for prepared active source, not found,
+  already canceled, already corrected and inconsistent source. Terminal
+  outcomes retain the explainable original snapshot when its state is
+  internally consistent.
+- Treat a period/application status mismatch, missing or unexpected
+  cancellation fact, duplicate Membership snapshot, non-full range, unknown
+  status or broken Membership/client association as inconsistent source rather
+  than allowing a future command to mutate ambiguous history.
+- Add no EF model or migration. The current source schema remains unchanged.
+
+Validation:
+
+- Focused `CorrectNonWorkingDaySourceContractsTests` passed 5/5 in Release.
+- Focused `PostgreSqlCorrectNonWorkingDaySourcePreparerTests` passed 6/6 with
+  no skips against local Docker PostgreSQL. Coverage proves the isolation
+  guard, missing and terminal outcomes, exact deterministic snapshot,
+  read-only behavior, DI registration, inconsistent-state rejection and held
+  row locks for Membership, period, application and cancellation sources.
+- `dotnet format BodyLife.Crm.sln --no-restore --verify-no-changes` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 300 core tests, 35 web
+  tests, 420 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored exactly to `HEAD`, so no generated code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(nonworking-days): prepare correction source snapshots`.
+
+Next recommended step:
+
+- Add only the Memberships-owned replacement impact preparation required by
+  `replace_range`: calculate canonical eligibility with the selected old
+  period excluded, lock all lifecycle-active candidates in deterministic order
+  before old-source preparation, and return exact replacement scope/impact
+  confirmation material. Keep correction writes, status transitions,
+  recalculation persistence, audit, idempotency and UI for a later bounded
+  step.
