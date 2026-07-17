@@ -54,7 +54,7 @@ public sealed class MembershipFreezeExtensionSourceReader(BodyLifeDbContext dbCo
 
         return records
             .Select(record => new MembershipExtensionSourceRange(
-                sourceType: "freeze",
+                MembershipExtensionSourceRange.FreezeSourceType,
                 record.Id,
                 CreateSourceLabel(record),
                 new DateRange(record.StartDate, record.EndDate),

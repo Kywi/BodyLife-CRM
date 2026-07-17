@@ -6852,3 +6852,89 @@ Next recommended step:
   confirmation material. Keep correction writes, status transitions,
   recalculation persistence, audit, idempotency and UI for a later bounded
   step.
+
+## Step 126 - NonWorkingDay replacement impact preparation
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue `CorrectNonWorkingDay` with the ADR-016 `replace_range` calculation
+  boundary after Step 125 established the immutable old-source snapshot.
+- Keep Memberships as the sole owner of effective-end, extension-union,
+  overlap and eligibility calculations. NonWorkingDays exposes only canonical
+  application identities needed to exclude the selected old period.
+- Preserve one deterministic lock order for future correction orchestration:
+  read old application identities without row locks, lock every
+  lifecycle-active Membership candidate by id, calculate canonical state with
+  the old source excluded, then allow Step 125 old-source preparation.
+
+Scope:
+
+- Add `IMembershipNonWorkingDayReplacementImpactPreparer` and an immutable
+  preparation result that binds the replaced period id, exact sorted old
+  application ids and the complete replacement affected-scope/impact model.
+- Add `IMembershipNonWorkingDayApplicationSourceProvider`. Extend the existing
+  PostgreSQL NonWorkingDay extension reader to return the selected period's
+  application ids in deterministic order without taking source row locks.
+- Extend the existing affected-scope preparer with one internal replacement
+  path. It reuses the same `RepeatableRead`/`Serializable` guard, lifecycle-
+  active candidate query, deterministic Membership locks, application policy,
+  impact estimator and exact full-period scope construction as Add/Preview.
+- Extend canonical Membership calculation with a replacement-only exclusion
+  set. Filtering matches both stable source type `non_working_period` and exact
+  application id, so an equal Guid belonging to a Freeze or another source is
+  never removed. Freeze and all unrelated NonWorkingDay sources remain in the
+  union and overlap explanation.
+- Keep the ordinary canonical calculation path unchanged. Add stable extension
+  source-type constants to the existing Membership source-range contract and
+  use them in Freeze/NonWorkingDay readers.
+- Register the source-provider alias and replacement preparer as scoped
+  services, preserving one scoped NonWorkingDay reader instance. Extend the
+  Membership formula ownership gate only with the new reviewed public
+  contracts.
+- Add no EF model/migration, correction preview token/query, command write,
+  period/application status transition, replacement source row, recalculation
+  persistence, audit, idempotency or UI.
+
+Validation:
+
+- Focused `MembershipNonWorkingDayReplacementImpactPreparationTests` passed
+  3/3 in Release.
+- Focused affected-scope plus formula-ownership suite passed 9/9 with no skips
+  against local Docker PostgreSQL. Coverage proves input/isolation guards,
+  exact old application identity capture, source-specific exclusion, changed
+  old/new eligibility, preserved Freeze union, full replacement ranges, DI
+  identity, all-active-candidate row locks, later Step 125 source preparation
+  composition and unchanged source/cache/audit/idempotency state.
+- `dotnet format BodyLife.Crm.sln --no-restore --verify-no-changes` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 303 core tests, 35 web
+  tests, 422 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored exactly to `HEAD`, so no generated code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(memberships): prepare nonworking replacement impact`.
+
+Next recommended step:
+
+- Add only the mode-specific signed confirmation contract for
+  `CorrectNonWorkingDay`: bind period id, correction mode, exact old source and
+  application identities, replacement input plus exact new scope for
+  `replace_range`, preserved old scope for `replace_reason`, and no replacement
+  scope for `cancel`. Keep the Owner preview query, correction writes,
+  recalculation persistence, audit, idempotency and UI for later bounded steps.

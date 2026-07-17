@@ -155,11 +155,17 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MembershipNonWorkingDayExtensionSourceReader>();
         services.AddScoped<IMembershipExtensionSourceProvider>(provider =>
             provider.GetRequiredService<MembershipNonWorkingDayExtensionSourceReader>());
+        services.AddScoped<IMembershipNonWorkingDayApplicationSourceProvider>(provider =>
+            provider.GetRequiredService<MembershipNonWorkingDayExtensionSourceReader>());
         services.AddScoped<MembershipNonWorkingDayAffectedScopePreparer>();
         services.AddScoped<IMembershipNonWorkingDayAffectedScopePreparer>(provider =>
             provider.GetRequiredService<MembershipNonWorkingDayAffectedScopePreparer>());
         services.AddScoped<IMembershipNonWorkingDayImpactPreparer>(provider =>
             provider.GetRequiredService<MembershipNonWorkingDayAffectedScopePreparer>());
+        services.AddScoped<MembershipNonWorkingDayReplacementImpactPreparer>();
+        services.AddScoped<IMembershipNonWorkingDayReplacementImpactPreparer>(provider =>
+            provider.GetRequiredService<
+                MembershipNonWorkingDayReplacementImpactPreparer>());
         services.AddScoped<
             IBodyLifeQueryHandler<
                 PreviewNonWorkingDayImpactQuery,

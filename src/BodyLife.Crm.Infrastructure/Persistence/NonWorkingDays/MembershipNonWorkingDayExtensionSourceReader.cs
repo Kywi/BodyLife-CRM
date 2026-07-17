@@ -9,8 +9,16 @@ namespace BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 
 public sealed class MembershipNonWorkingDayExtensionSourceReader(
     BodyLifeDbContext dbContext)
-    : IMembershipExtensionSourceProvider
+    : IMembershipExtensionSourceProvider,
+      IMembershipNonWorkingDayApplicationSourceProvider
 {
+    private const string ApplicationIdsSql =
+        """
+        select id
+        from bodylife.non_working_period_applications
+        where non_working_period_id = @non_working_period_id
+        order by id
+        """;
     private const string SourceSql =
         """
         select
@@ -70,12 +78,46 @@ public sealed class MembershipNonWorkingDayExtensionSourceReader(
 
         return rows
             .Select(row => new MembershipExtensionSourceRange(
-                sourceType: "non_working_period",
+                MembershipExtensionSourceRange.NonWorkingPeriodSourceType,
                 row.ApplicationId,
                 CreateSourceLabel(row),
                 new DateRange(row.AppliedStartDate, row.AppliedEndDate),
                 isActive: IsActive(row)))
             .ToArray();
+    }
+
+    public async Task<IReadOnlyList<Guid>> GetApplicationIdsForPeriodAsync(
+        Guid nonWorkingPeriodId,
+        CancellationToken cancellationToken = default)
+    {
+        if (nonWorkingPeriodId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "NonWorkingDay period id is required.",
+                nameof(nonWorkingPeriodId));
+        }
+
+        var transaction = dbContext.Database.CurrentTransaction
+            ?? throw new InvalidOperationException(
+                "Membership NonWorkingDay application source reading requires a "
+                + "caller-owned database transaction.");
+        await using var command = dbContext.Database.GetDbConnection().CreateCommand();
+        command.Transaction = transaction.GetDbTransaction();
+        command.CommandText = ApplicationIdsSql;
+        AddParameter(
+            command,
+            "non_working_period_id",
+            DbType.Guid,
+            nonWorkingPeriodId);
+
+        var applicationIds = new List<Guid>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            applicationIds.Add(reader.GetGuid(0));
+        }
+
+        return Array.AsReadOnly(applicationIds.ToArray());
     }
 
     private static bool IsActive(NonWorkingDayExtensionSourceRow row)

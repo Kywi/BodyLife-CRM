@@ -4,6 +4,8 @@ namespace BodyLife.Crm.Modules.Memberships;
 
 public sealed record MembershipExtensionSourceRange
 {
+    public const string FreezeSourceType = "freeze";
+    public const string NonWorkingPeriodSourceType = "non_working_period";
     public const int MaxSourceTypeLength = 64;
     public const int MaxSourceLabelLength = 500;
 

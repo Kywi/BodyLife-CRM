@@ -20,9 +20,37 @@ public sealed class MembershipNonWorkingDayAffectedScopePreparer(
         return impact.AffectedScope;
     }
 
-    public async Task<MembershipNonWorkingDayImpactPreparation> PrepareImpactAsync(
+    public Task<MembershipNonWorkingDayImpactPreparation> PrepareImpactAsync(
         DateRange period,
         CancellationToken cancellationToken = default)
+    {
+        return PrepareImpactCoreAsync(
+            period,
+            excludedApplicationIds: null,
+            cancellationToken);
+    }
+
+    internal Task<MembershipNonWorkingDayImpactPreparation>
+        PrepareReplacementImpactAsync(
+            DateRange replacementPeriod,
+            IReadOnlySet<Guid> excludedApplicationIds,
+            CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(excludedApplicationIds);
+        if (excludedApplicationIds.Any(applicationId => applicationId == Guid.Empty))
+        {
+            throw new ArgumentException(
+                "Excluded NonWorkingDay application ids must be non-empty.",
+                nameof(excludedApplicationIds));
+        }
+
+        return PrepareImpactCoreAsync(
+            replacementPeriod,
+            excludedApplicationIds,
+            cancellationToken);
+    }
+
+    internal void EnsureConsistentTransaction()
     {
         var transaction = dbContext.Database.CurrentTransaction
             ?? throw new InvalidOperationException(
@@ -36,6 +64,22 @@ public sealed class MembershipNonWorkingDayAffectedScopePreparer(
                 "NonWorkingDay affected scope preparation requires RepeatableRead "
                 + "or Serializable transaction isolation.");
         }
+    }
+
+    private async Task<MembershipNonWorkingDayImpactPreparation>
+        PrepareImpactCoreAsync(
+            DateRange period,
+            IReadOnlySet<Guid>? excludedApplicationIds,
+            CancellationToken cancellationToken)
+    {
+        if (period.StartDate == default || period.EndDate == default)
+        {
+            throw new ArgumentException(
+                "NonWorkingDay period dates are required.",
+                nameof(period));
+        }
+
+        EnsureConsistentTransaction();
 
         var candidates = await dbContext.Set<IssuedMembershipRecord>()
             .FromSqlRaw(
@@ -69,10 +113,16 @@ public sealed class MembershipNonWorkingDayAffectedScopePreparer(
 
         foreach (var candidate in candidates)
         {
-            var canonical = await stateCacheRebuilder
-                .CalculateCanonicalStateAfterMembershipLockAsync(
-                    candidate,
-                    cancellationToken);
+            var canonical = excludedApplicationIds is null
+                ? await stateCacheRebuilder
+                    .CalculateCanonicalStateAfterMembershipLockAsync(
+                        candidate,
+                        cancellationToken)
+                : await stateCacheRebuilder
+                    .CalculateCanonicalStateForNonWorkingDayReplacementAfterMembershipLockAsync(
+                        candidate,
+                        excludedApplicationIds,
+                        cancellationToken);
             var application = MembershipNonWorkingDayApplicationPolicy.Evaluate(
                 candidate.Id,
                 canonical.IssueTerms,

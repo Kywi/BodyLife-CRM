@@ -31,6 +31,9 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
     private static readonly DateRange ProposedPeriod = new(
         new DateOnly(2026, 1, 30),
         new DateOnly(2026, 2, 2));
+    private static readonly DateRange ReplacementPeriod = new(
+        new DateOnly(2026, 2, 3),
+        new DateOnly(2026, 2, 4));
 
     [Fact]
     public void ServicesRegisterAffectedScopeImpactAndPreviewQuery()
@@ -59,6 +62,20 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
             concrete,
             scope.ServiceProvider.GetRequiredService<
                 IMembershipNonWorkingDayImpactPreparer>());
+        var nonWorkingDaySourceReader = scope.ServiceProvider.GetRequiredService<
+            MembershipNonWorkingDayExtensionSourceReader>();
+        Assert.Same(
+            nonWorkingDaySourceReader,
+            scope.ServiceProvider.GetRequiredService<
+                IMembershipNonWorkingDayApplicationSourceProvider>());
+        var replacementPreparer = Assert.IsType<
+            MembershipNonWorkingDayReplacementImpactPreparer>(
+                scope.ServiceProvider.GetRequiredService<
+                    MembershipNonWorkingDayReplacementImpactPreparer>());
+        Assert.Same(
+            replacementPreparer,
+            scope.ServiceProvider.GetRequiredService<
+                IMembershipNonWorkingDayReplacementImpactPreparer>());
 
         var queryServiceType = typeof(IBodyLifeQueryHandler<
             PreviewNonWorkingDayImpactQuery,
@@ -98,6 +115,167 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
             weakIsolation.Message,
             StringComparison.Ordinal);
         await transaction.RollbackAsync();
+    }
+
+    [PostgreSqlFact]
+    public async Task ReplacementPreparationRequiresConsistentTransactionAndValidInput()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var preparer = CreateReplacementPreparer(dbContext);
+        var periodId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            preparer.PrepareReplacementImpactAsync(
+                Guid.Empty,
+                ReplacementPeriod));
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            preparer.PrepareReplacementImpactAsync(
+                periodId,
+                new DateRange(default, default)));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            preparer.PrepareReplacementImpactAsync(
+                periodId,
+                ReplacementPeriod));
+
+        await using (var readCommitted = await dbContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted))
+        {
+            var weakIsolation = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                preparer.PrepareReplacementImpactAsync(
+                    periodId,
+                    ReplacementPeriod));
+            Assert.Contains("RepeatableRead", weakIsolation.Message, StringComparison.Ordinal);
+            await readCommitted.RollbackAsync();
+        }
+
+        await using var repeatableRead = await dbContext.Database
+            .BeginTransactionAsync(IsolationLevel.RepeatableRead);
+        var missingSource = await preparer.PrepareReplacementImpactAsync(
+            periodId,
+            ReplacementPeriod);
+
+        Assert.Equal(periodId, missingSource.ReplacedPeriodId);
+        Assert.Equal(ReplacementPeriod, missingSource.ReplacementPeriod);
+        Assert.Empty(missingSource.ExcludedApplicationIds);
+        Assert.Equal(0, missingSource.AffectedCount);
+        await repeatableRead.RollbackAsync();
+    }
+
+    [PostgreSqlFact]
+    public async Task ReplacementPreparationExcludesOnlyOldPeriodAndLocksAllCandidates()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedScopeFixtureAsync(
+            database,
+            dbContext,
+            includeReplacedPeriod: true);
+        var before = await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId);
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.RepeatableRead);
+        var preparation = await CreateReplacementPreparer(dbContext)
+            .PrepareReplacementImpactAsync(
+                fixture.ReplacedPeriodId,
+                ReplacementPeriod);
+
+        Assert.Equal(fixture.ReplacedPeriodId, preparation.ReplacedPeriodId);
+        Assert.Equal(ReplacementPeriod, preparation.ReplacementPeriod);
+        Assert.Equal(
+            [
+                fixture.StartBoundaryReplacedApplicationId,
+                fixture.ExtendedReplacedApplicationId,
+                fixture.EndBoundaryReplacedApplicationId,
+            ],
+            preparation.ExcludedApplicationIds);
+        Assert.Equal(
+            [
+                fixture.StartBoundaryMembershipId,
+                fixture.NoOverlapMembershipId,
+                fixture.ExtendedMembershipId,
+            ],
+            preparation.AffectedMemberships.Select(item => item.MembershipId));
+        Assert.DoesNotContain(
+            preparation.AffectedMemberships,
+            item => item.MembershipId == fixture.EndBoundaryMembershipId);
+        Assert.All(
+            preparation.AffectedMemberships,
+            item => Assert.Equal(ReplacementPeriod, item.AppliedRange));
+
+        var startBoundary = preparation.AffectedMemberships[0];
+        Assert.Equal(0, startBoundary.Estimate.BeforeExtensionDays);
+        Assert.Equal(
+            new DateOnly(2026, 2, 11),
+            startBoundary.Estimate.BeforeEffectiveEndDate);
+        Assert.Equal(2, startBoundary.Estimate.EstimatedAfterExtensionDays);
+        Assert.Equal(
+            new DateOnly(2026, 2, 13),
+            startBoundary.Estimate.EstimatedAfterEffectiveEndDate);
+
+        var newlyAffected = preparation.AffectedMemberships[1];
+        Assert.Equal(fixture.NoOverlapClientId, newlyAffected.ClientId);
+        Assert.Equal(0, newlyAffected.Estimate.BeforeExtensionDays);
+        Assert.Equal(2, newlyAffected.Estimate.AddedUniqueExtensionDays);
+
+        var extended = preparation.AffectedMemberships[2];
+        Assert.Equal(7, extended.Estimate.BeforeExtensionDays);
+        Assert.Equal(
+            new DateOnly(2026, 2, 5),
+            extended.Estimate.BeforeEffectiveEndDate);
+        Assert.Equal(9, extended.Estimate.EstimatedAfterExtensionDays);
+        Assert.Equal(
+            new DateOnly(2026, 2, 7),
+            extended.Estimate.EstimatedAfterEffectiveEndDate);
+        Assert.Equal(2, extended.Estimate.AddedUniqueExtensionDays);
+        Assert.Equal(0, extended.Estimate.ExistingOverlapDays);
+        Assert.Empty(extended.Estimate.OverlapWarnings);
+
+        var oldSource = await new CorrectNonWorkingDaySourcePreparer(dbContext)
+            .PrepareAsync(
+                fixture.ReplacedPeriodId,
+                NonWorkingDayCorrectionMode.ReplaceRange);
+        Assert.True(oldSource.IsPrepared);
+        Assert.Equal(
+            preparation.ExcludedApplicationIds,
+            oldSource.Source!.Applications
+                .Select(application => application.ApplicationId)
+                .Order());
+
+        Assert.Equal(
+            before,
+            await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId));
+        Assert.False(dbContext.ChangeTracker.HasChanges());
+        Assert.Empty(dbContext.ChangeTracker.Entries());
+        Assert.Equal(
+            PostgresErrorCodes.LockNotAvailable,
+            (await AssertMembershipUpdateBlockedAsync(
+                database.ConnectionString,
+                fixture.EndBoundaryMembershipId)).SqlState);
+        Assert.Equal(
+            PostgresErrorCodes.LockNotAvailable,
+            (await AssertMembershipUpdateBlockedAsync(
+                database.ConnectionString,
+                fixture.NoOverlapMembershipId)).SqlState);
+        Assert.Equal(
+            1,
+            await UpdateMembershipCommentAsync(
+                database.ConnectionString,
+                fixture.CanceledMembershipId,
+                "Canceled Membership remains unlocked"));
+
+        await transaction.RollbackAsync();
+        Assert.Equal(
+            1,
+            await UpdateMembershipCommentAsync(
+                database.ConnectionString,
+                fixture.EndBoundaryMembershipId,
+                "Active Membership lock released"));
+        Assert.Equal(
+            before,
+            await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId));
     }
 
     [PostgreSqlFact]
@@ -402,6 +580,25 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
                 ]));
     }
 
+    private static MembershipNonWorkingDayReplacementImpactPreparer
+        CreateReplacementPreparer(BodyLifeDbContext dbContext)
+    {
+        var nonWorkingDaySourceReader =
+            new MembershipNonWorkingDayExtensionSourceReader(dbContext);
+        var affectedScopePreparer = new MembershipNonWorkingDayAffectedScopePreparer(
+            dbContext,
+            new MembershipStateCacheRebuilder(
+                dbContext,
+                new FixedTimeProvider(TestNow),
+                [
+                    new MembershipFreezeExtensionSourceReader(dbContext),
+                    nonWorkingDaySourceReader,
+                ]));
+        return new MembershipNonWorkingDayReplacementImpactPreparer(
+            affectedScopePreparer,
+            nonWorkingDaySourceReader);
+    }
+
     private static HmacNonWorkingDayPreviewTokenService CreatePreviewTokenService()
     {
         var signingKey = Convert.ToBase64String(
@@ -440,7 +637,8 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
 
     private static async Task<ScopeFixture> SeedScopeFixtureAsync(
         PostgreSqlTestDatabase database,
-        BodyLifeDbContext dbContext)
+        BodyLifeDbContext dbContext,
+        bool includeReplacedPeriod = false)
     {
         var bootstrap = await new OwnerBootstrapper(
             dbContext,
@@ -502,6 +700,11 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
             "canceled",
             "active");
         await InsertFreezeAndStaleCacheAsync(connection, fixture);
+        if (includeReplacedPeriod)
+        {
+            await InsertReplacedPeriodAsync(connection, fixture);
+        }
+
         dbContext.ChangeTracker.Clear();
 
         return fixture;
@@ -741,6 +944,119 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         Assert.Equal(2, await command.ExecuteNonQueryAsync());
     }
 
+    private static async Task InsertReplacedPeriodAsync(
+        NpgsqlConnection connection,
+        ScopeFixture fixture)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.non_working_periods (
+                id,
+                start_date,
+                end_date,
+                reason_code,
+                reason_comment,
+                created_at,
+                created_by_account_id,
+                session_id,
+                status)
+            values (
+                @period_id,
+                @start_date,
+                @end_date,
+                'weather_closure',
+                'Original closure',
+                @recorded_at,
+                @actor_account_id,
+                @session_id,
+                'active');
+
+            insert into bodylife.non_working_period_applications (
+                id,
+                non_working_period_id,
+                membership_id,
+                client_id,
+                applied_start_date,
+                applied_end_date,
+                previewed_at,
+                confirmed_at,
+                status)
+            values
+                (
+                    @end_boundary_application_id,
+                    @period_id,
+                    @end_boundary_membership_id,
+                    @end_boundary_client_id,
+                    @start_date,
+                    @end_date,
+                    @previewed_at,
+                    @recorded_at,
+                    'active'),
+                (
+                    @start_boundary_application_id,
+                    @period_id,
+                    @start_boundary_membership_id,
+                    @start_boundary_client_id,
+                    @start_date,
+                    @end_date,
+                    @previewed_at,
+                    @recorded_at,
+                    'active'),
+                (
+                    @extended_application_id,
+                    @period_id,
+                    @extended_membership_id,
+                    @extended_client_id,
+                    @start_date,
+                    @end_date,
+                    @previewed_at,
+                    @recorded_at,
+                    'active')
+            """;
+        command.Parameters.AddWithValue("period_id", fixture.ReplacedPeriodId);
+        command.Parameters.AddWithValue(
+            "end_boundary_application_id",
+            fixture.EndBoundaryReplacedApplicationId);
+        command.Parameters.AddWithValue(
+            "start_boundary_application_id",
+            fixture.StartBoundaryReplacedApplicationId);
+        command.Parameters.AddWithValue(
+            "extended_application_id",
+            fixture.ExtendedReplacedApplicationId);
+        command.Parameters.AddWithValue(
+            "end_boundary_membership_id",
+            fixture.EndBoundaryMembershipId);
+        command.Parameters.AddWithValue(
+            "start_boundary_membership_id",
+            fixture.StartBoundaryMembershipId);
+        command.Parameters.AddWithValue(
+            "extended_membership_id",
+            fixture.ExtendedMembershipId);
+        command.Parameters.AddWithValue(
+            "end_boundary_client_id",
+            fixture.EndBoundaryClientId);
+        command.Parameters.AddWithValue(
+            "start_boundary_client_id",
+            fixture.StartBoundaryClientId);
+        command.Parameters.AddWithValue(
+            "extended_client_id",
+            fixture.ExtendedClientId);
+        command.Parameters.AddWithValue("actor_account_id", fixture.ActorAccountId);
+        command.Parameters.AddWithValue("session_id", fixture.SessionId);
+        command.Parameters.AddWithValue("previewed_at", TestNow.AddMinutes(-5));
+        command.Parameters.AddWithValue("recorded_at", TestNow);
+        command.Parameters.AddWithValue(
+            "start_date",
+            NpgsqlDbType.Date,
+            ProposedPeriod.StartDate);
+        command.Parameters.AddWithValue(
+            "end_date",
+            NpgsqlDbType.Date,
+            ProposedPeriod.EndDate);
+        Assert.Equal(4, await command.ExecuteNonQueryAsync());
+    }
+
     private static async Task<DatabaseSnapshot> ReadSnapshotAsync(
         BodyLifeDbContext dbContext,
         Guid extendedMembershipId)
@@ -849,6 +1165,10 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         Guid SessionId,
         Guid MembershipTypeId,
         Guid FreezeId,
+        Guid ReplacedPeriodId,
+        Guid EndBoundaryReplacedApplicationId,
+        Guid StartBoundaryReplacedApplicationId,
+        Guid ExtendedReplacedApplicationId,
         Guid EndBoundaryMembershipId,
         Guid EndBoundaryClientId,
         Guid StartBoundaryMembershipId,
@@ -870,6 +1190,10 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
                 sessionId,
                 membershipTypeId,
                 Guid.Parse("40000000-0000-0000-0000-000000000001"),
+                Guid.Parse("50000000-0000-0000-0000-000000000001"),
+                Guid.Parse("60000000-0000-0000-0000-000000000003"),
+                Guid.Parse("60000000-0000-0000-0000-000000000001"),
+                Guid.Parse("60000000-0000-0000-0000-000000000002"),
                 Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Guid.Parse("10000000-0000-0000-0000-000000000001"),
                 Guid.Parse("00000000-0000-0000-0000-000000000002"),

@@ -141,10 +141,42 @@ public sealed class MembershipStateCacheRebuilder
             CurrentRecalculationVersion);
     }
 
-    internal async Task<MembershipCanonicalStateCalculation>
+    internal Task<MembershipCanonicalStateCalculation>
         CalculateCanonicalStateAfterMembershipLockAsync(
             IssuedMembershipRecord source,
             CancellationToken cancellationToken = default)
+    {
+        return CalculateCanonicalStateAfterMembershipLockCoreAsync(
+            source,
+            excludedNonWorkingDayApplicationIds: null,
+            cancellationToken);
+    }
+
+    internal Task<MembershipCanonicalStateCalculation>
+        CalculateCanonicalStateForNonWorkingDayReplacementAfterMembershipLockAsync(
+            IssuedMembershipRecord source,
+            IReadOnlySet<Guid> excludedApplicationIds,
+            CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(excludedApplicationIds);
+        if (excludedApplicationIds.Any(applicationId => applicationId == Guid.Empty))
+        {
+            throw new ArgumentException(
+                "Excluded NonWorkingDay application ids must be non-empty.",
+                nameof(excludedApplicationIds));
+        }
+
+        return CalculateCanonicalStateAfterMembershipLockCoreAsync(
+            source,
+            excludedApplicationIds,
+            cancellationToken);
+    }
+
+    private async Task<MembershipCanonicalStateCalculation>
+        CalculateCanonicalStateAfterMembershipLockCoreAsync(
+            IssuedMembershipRecord source,
+            IReadOnlySet<Guid>? excludedNonWorkingDayApplicationIds,
+            CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -244,7 +276,15 @@ public sealed class MembershipStateCacheRebuilder
                         "Membership extension source provider returned no collection.");
                 }
 
-                extensionSources.AddRange(providerSources);
+                extensionSources.AddRange(providerSources.Where(providerSource =>
+                    providerSource is null
+                    || excludedNonWorkingDayApplicationIds is null
+                    || !string.Equals(
+                        providerSource.SourceType,
+                        MembershipExtensionSourceRange.NonWorkingPeriodSourceType,
+                        StringComparison.Ordinal)
+                    || !excludedNonWorkingDayApplicationIds.Contains(
+                        providerSource.SourceId)));
             }
 
             extensionCalculation = MembershipExtensionCalculator.Calculate(
