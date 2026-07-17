@@ -136,6 +136,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<AddNonWorkingDayCommand>,
             AddNonWorkingDayCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<CorrectNonWorkingDayCommand>,
+            CorrectNonWorkingDayCommandHandler>();
         services.TryAddSingleton<
             IPaymentDayReconciliationStatusProvider,
             OpenPaymentDayReconciliationStatusProvider>();

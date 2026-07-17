@@ -7334,3 +7334,99 @@ Next recommended step:
   facts, synchronous recalculation of the old/new Membership union, one
   append-only business audit event and atomic success/rollback. Keep Owner UI,
   profile/history presentation and report changes for later bounded steps.
+
+## Step 132 - Owner CorrectNonWorkingDay backend command
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Complete the roadmap's Owner-only `CorrectNonWorkingDay` backend workflow
+  immediately after Steps 125-131 established source locking, replacement
+  impact, correction preview/token, command preparation and current-scope
+  revalidation.
+- Preserve ADR-016 mode semantics: `replace_reason` keeps the exact old
+  Membership/Client/full-range snapshot, `replace_range` persists the newly
+  confirmed scope with the old source excluded, and `cancel` creates no
+  replacement scope.
+- Keep source transition, old/new Membership union recalculation, one business
+  audit entry and the idempotency outcome inside one `RepeatableRead`
+  transaction. Leave Razor/htmx Owner UI, profile/history presentation and
+  report changes for later bounded steps.
+
+Scope:
+
+- Add `CorrectNonWorkingDayCommandHandler` and scoped command-handler
+  registration. The handler rejects non-Owner actor shapes, applies the pure
+  Step 130 preparation policy, verifies the canonical active Owner before
+  replay, and delegates locked source/scope/token revalidation to Step 131.
+- Add a correction-specific request fingerprint and successful idempotency
+  contract. Exact retries return the original replacement period or
+  cancellation, original-period reread target, affected Membership union and
+  audit id; a changed or incomplete payload returns `DuplicateSubmission`.
+  Concurrent same-key serialization/unique races roll back the stale snapshot
+  and recover the committed result.
+- For `replace_range`, retain the old period/applications as `corrected`, create
+  a new active period and exact newly confirmed applications, and use the
+  authenticated token issue time as `previewed_at`. For `replace_reason`, do
+  the same while preserving every old Membership/Client/applied-range tuple.
+- For `cancel`, retain the old period/applications as `canceled` and create one
+  explicit `non_working_period_cancellations` source fact with the normalized
+  Owner reason. No hard delete or direct derived-state edit is introduced.
+- Persist source transitions before calling the Memberships public
+  recalculator, then synchronously rebuild the deterministic distinct union of
+  old and replacement Membership ids. Inactive explanation rows remain
+  rebuildable history while only active replacement sources contribute to the
+  aggregate extension/effective-end state.
+- Append exactly one `non_working_day.corrected` or
+  `non_working_day.canceled` audit entry against the original period. Include
+  old/new period and application summaries, preview fingerprint/window,
+  old/new/union counts, affected identities and requested/succeeded
+  recalculation details.
+- Add no EF model or migration. The accepted schema already models replacement
+  as a new period/application snapshot and cancellation as its explicit source
+  fact; the original/replacement relationship remains Owner-readable through
+  retained facts and business audit.
+- Add nine focused PostgreSQL tests covering range replacement, reason-only
+  snapshot preservation, cancellation, active/inactive extension explanation
+  rows, exact replay and changed-payload rejection, token expiry/scope drift,
+  recalculation rollback, audit rollback, concurrent same-key recovery and DI
+  registration.
+
+Validation:
+
+- Early and post-test Release builds passed with 0 warnings/errors.
+- Focused `PostgreSqlCorrectNonWorkingDayCommandTests` passed 9/9 with no skips
+  against the healthy local Docker PostgreSQL service.
+- `dotnet format BodyLife.Crm.sln --no-restore --verify-no-changes` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 334 core tests, 35 web
+  tests, 443 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored byte-for-byte to `HEAD`, so no generated code graph
+  update is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked graph change.
+
+Commit:
+
+- `feat(nonworking-days): implement correction workflow`.
+
+Next recommended step:
+
+- Add only the Milestone 8 backend profile projection for extension
+  explanations. Extend canonical client-profile Membership rows with ordered
+  active/inactive Freeze and NonWorkingDay source explanations from retained
+  facts, including range, source status and reason labels, with focused query
+  and PostgreSQL tests. Keep Razor rendering, Owner NonWorkingDay management UI,
+  reports and general audit/history screens for later bounded steps.
