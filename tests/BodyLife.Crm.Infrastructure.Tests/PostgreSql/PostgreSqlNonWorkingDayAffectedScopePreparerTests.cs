@@ -1,4 +1,5 @@
 using System.Data;
+using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Freezes;
@@ -6,6 +7,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.NonWorkingDays;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -31,7 +33,7 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         new DateOnly(2026, 2, 2));
 
     [Fact]
-    public void ServicesRegisterAffectedScopePreparer()
+    public void ServicesRegisterAffectedScopeImpactAndPreviewQuery()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -53,6 +55,21 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
             concrete,
             scope.ServiceProvider.GetRequiredService<
                 IMembershipNonWorkingDayAffectedScopePreparer>());
+        Assert.Same(
+            concrete,
+            scope.ServiceProvider.GetRequiredService<
+                IMembershipNonWorkingDayImpactPreparer>());
+
+        var queryServiceType = typeof(IBodyLifeQueryHandler<
+            PreviewNonWorkingDayImpactQuery,
+            PreviewNonWorkingDayImpactResult>);
+        var queryDescriptor = Assert.Single(
+            services,
+            candidate => candidate.ServiceType == queryServiceType);
+        Assert.Equal(ServiceLifetime.Scoped, queryDescriptor.Lifetime);
+        Assert.Equal(
+            typeof(PreviewNonWorkingDayImpactQueryHandler),
+            queryDescriptor.ImplementationType);
     }
 
     [PostgreSqlFact]
@@ -64,7 +81,7 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         var preparer = CreatePreparer(dbContext);
 
         var missingTransaction = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            preparer.PrepareAsync(ProposedPeriod));
+            preparer.PrepareImpactAsync(ProposedPeriod));
 
         Assert.Contains(
             "caller-owned",
@@ -74,7 +91,7 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted);
         var weakIsolation = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            preparer.PrepareAsync(ProposedPeriod));
+            preparer.PrepareImpactAsync(ProposedPeriod));
 
         Assert.Contains(
             "RepeatableRead",
@@ -94,7 +111,8 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.RepeatableRead);
-        var result = await CreatePreparer(dbContext).PrepareAsync(ProposedPeriod);
+        var impact = await CreatePreparer(dbContext).PrepareImpactAsync(ProposedPeriod);
+        var result = impact.AffectedScope;
 
         Assert.Equal(ProposedPeriod, result.Period);
         Assert.Equal(3, result.AffectedCount);
@@ -125,6 +143,31 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         Assert.DoesNotContain(
             result.AffectedMemberships,
             item => item.MembershipId == fixture.CanceledMembershipId);
+        Assert.Equal(result.AffectedCount, impact.AffectedCount);
+        Assert.Equal(
+            result.AffectedMemberships.Select(item => item.MembershipId),
+            impact.AffectedMemberships.Select(item => item.MembershipId));
+
+        var extendedImpact = Assert.Single(
+            impact.AffectedMemberships,
+            item => item.MembershipId == fixture.ExtendedMembershipId);
+        Assert.Equal(7, extendedImpact.Estimate.BeforeExtensionDays);
+        Assert.Equal(new DateOnly(2026, 2, 5), extendedImpact.Estimate.BeforeEffectiveEndDate);
+        Assert.Equal(9, extendedImpact.Estimate.EstimatedAfterExtensionDays);
+        Assert.Equal(
+            new DateOnly(2026, 2, 7),
+            extendedImpact.Estimate.EstimatedAfterEffectiveEndDate);
+        Assert.Equal(2, extendedImpact.Estimate.AddedUniqueExtensionDays);
+        Assert.Equal(2, extendedImpact.Estimate.ExistingOverlapDays);
+        var overlap = Assert.Single(extendedImpact.Estimate.OverlapWarnings);
+        Assert.Equal("freeze", overlap.SourceType);
+        Assert.Equal(fixture.FreezeId, overlap.SourceId);
+        Assert.Equal(
+            new DateRange(
+                new DateOnly(2026, 1, 30),
+                new DateOnly(2026, 1, 31)),
+            overlap.OverlapRange);
+        Assert.Equal(2, overlap.OverlapDays);
 
         var during = await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId);
         Assert.Equal(before, during);
@@ -160,6 +203,191 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         Assert.Equal(before, after);
     }
 
+    [PostgreSqlFact]
+    public async Task OwnerPreviewReturnsExactImpactAndBoundTokenWithoutWrites()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedScopeFixtureAsync(database, dbContext);
+        var before = await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId);
+        var tokenService = CreatePreviewTokenService();
+        var handler = new PreviewNonWorkingDayImpactQueryHandler(
+            dbContext,
+            CreatePreparer(dbContext),
+            tokenService,
+            new FixedTimeProvider(TestNow));
+        var actor = OwnerActor(fixture);
+
+        var result = await handler.ExecuteAsync(
+            new PreviewNonWorkingDayImpactQuery(
+                actor,
+                ProposedPeriod.StartDate,
+                ProposedPeriod.EndDate,
+                "  weather_closure  ",
+                "  Severe weather  "),
+            CancellationToken.None);
+
+        Assert.Equal(PreviewNonWorkingDayImpactStatus.Success, result.Status);
+        Assert.Null(result.ErrorCode);
+        Assert.Null(result.ErrorMessage);
+        Assert.Null(result.ErrorField);
+        var preview = Assert.IsType<NonWorkingDayImpactPreview>(result.Preview);
+        Assert.Equal(ProposedPeriod, preview.Period);
+        Assert.Equal("weather_closure", preview.ReasonCode);
+        Assert.Equal("Severe weather", preview.ReasonComment);
+        Assert.Equal(3, preview.AffectedCount);
+        Assert.Equal(1, preview.OverlapWarningCount);
+        Assert.True(preview.HasOverlapWarnings);
+        Assert.Equal(
+            [
+                fixture.EndBoundaryMembershipId,
+                fixture.StartBoundaryMembershipId,
+                fixture.ExtendedMembershipId,
+            ],
+            preview.AffectedMemberships.Select(item => item.MembershipId));
+        Assert.All(
+            preview.AffectedMemberships,
+            item => Assert.Equal(ProposedPeriod, item.AppliedRange));
+
+        var endBoundary = preview.AffectedMemberships[0];
+        Assert.Equal(0, endBoundary.BeforeExtensionDays);
+        Assert.Equal(new DateOnly(2026, 1, 31), endBoundary.BeforeEffectiveEndDate);
+        Assert.Equal(4, endBoundary.EstimatedAfterExtensionDays);
+        Assert.Equal(new DateOnly(2026, 2, 4), endBoundary.EstimatedAfterEffectiveEndDate);
+        Assert.Equal(4, endBoundary.AddedUniqueExtensionDays);
+        Assert.Empty(endBoundary.OverlapWarnings);
+
+        var extended = preview.AffectedMemberships[2];
+        Assert.Equal(fixture.ExtendedClientId, extended.ClientId);
+        Assert.Equal(7, extended.BeforeExtensionDays);
+        Assert.Equal(9, extended.EstimatedAfterExtensionDays);
+        Assert.Equal(2, extended.AddedUniqueExtensionDays);
+        Assert.Equal(2, extended.ExistingOverlapDays);
+        var warning = Assert.Single(extended.OverlapWarnings);
+        Assert.Equal("freeze", warning.SourceType);
+        Assert.Equal(fixture.FreezeId, warning.SourceId);
+        Assert.Equal(
+            "Freeze 2026-01-25..2026-01-31: Accepted extension source",
+            warning.SourceLabel);
+        Assert.Equal(2, warning.OverlapDays);
+
+        Assert.Equal(TestNow, preview.Confirmation.IssuedAt);
+        Assert.Equal(TestNow.AddMinutes(5), preview.Confirmation.ExpiresAt);
+        var tokenScope = new MembershipNonWorkingDayAffectedScope(
+            preview.Period,
+            preview.AffectedMemberships.Select(item =>
+                new MembershipNonWorkingDayAffectedScopeItem(
+                    item.MembershipId,
+                    item.ClientId,
+                    item.AppliedRange)));
+        var tokenInput = new NonWorkingDayPreviewInput(
+            preview.Period,
+            preview.ReasonCode,
+            preview.ReasonComment);
+        Assert.Equal(
+            NonWorkingDayPreviewTokenValidationStatus.Valid,
+            tokenService.Validate(
+                preview.Confirmation.ConfirmationToken,
+                tokenInput,
+                tokenScope).Status);
+
+        Assert.Equal(
+            before,
+            await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId));
+        Assert.False(dbContext.ChangeTracker.HasChanges());
+        Assert.Empty(dbContext.ChangeTracker.Entries());
+    }
+
+    [PostgreSqlFact]
+    public async Task PreviewRequiresCanonicalOwnerAndValidInput()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedScopeFixtureAsync(database, dbContext);
+        var handler = new PreviewNonWorkingDayImpactQueryHandler(
+            dbContext,
+            CreatePreparer(dbContext),
+            CreatePreviewTokenService(),
+            new FixedTimeProvider(TestNow));
+        var owner = OwnerActor(fixture);
+        var adminShape = owner with
+        {
+            Role = ActorRole.Admin,
+            AccountKind = AccountKind.NamedAdmin,
+        };
+        var unknownOwner = new ActorContext(
+            AccountId.New(),
+            ActorRole.Owner,
+            AccountKind.Owner,
+            SessionId.New(),
+            "Unknown device");
+
+        foreach (var deniedActor in new[] { adminShape, unknownOwner })
+        {
+            var denied = await handler.ExecuteAsync(
+                Query(deniedActor, ProposedPeriod.StartDate, ProposedPeriod.EndDate, "weather"),
+                CancellationToken.None);
+
+            Assert.Equal(PreviewNonWorkingDayImpactStatus.PermissionDenied, denied.Status);
+            Assert.Equal("permission_denied", denied.ErrorCode);
+            Assert.Null(denied.Preview);
+        }
+
+        var invalidQueries = new[]
+        {
+            (
+                Query(owner, default, ProposedPeriod.EndDate, "weather"),
+                "proposedStartDate"),
+            (
+                Query(owner, ProposedPeriod.StartDate, default, "weather"),
+                "proposedEndDate"),
+            (
+                Query(owner, ProposedPeriod.EndDate, ProposedPeriod.StartDate, "weather"),
+                "proposedEndDate"),
+            (
+                Query(owner, ProposedPeriod.StartDate, ProposedPeriod.EndDate, "  "),
+                "reasonCode"),
+            (
+                Query(
+                    owner,
+                    ProposedPeriod.StartDate,
+                    ProposedPeriod.EndDate,
+                    "weather",
+                    new string('c', NonWorkingDayPreviewInput.ReasonCommentMaxLength + 1)),
+                "reasonComment"),
+        };
+
+        foreach (var (query, errorField) in invalidQueries)
+        {
+            var invalid = await handler.ExecuteAsync(query, CancellationToken.None);
+
+            Assert.Equal(PreviewNonWorkingDayImpactStatus.ValidationFailed, invalid.Status);
+            Assert.Equal("validation_failed", invalid.ErrorCode);
+            Assert.Equal(errorField, invalid.ErrorField);
+            Assert.Null(invalid.Preview);
+        }
+
+        var failingHandler = new PreviewNonWorkingDayImpactQueryHandler(
+            dbContext,
+            new ThrowingImpactPreparer(),
+            CreatePreviewTokenService(),
+            new FixedTimeProvider(TestNow));
+        var failed = await failingHandler.ExecuteAsync(
+            Query(
+                owner,
+                ProposedPeriod.StartDate,
+                ProposedPeriod.EndDate,
+                "weather"),
+            CancellationToken.None);
+
+        Assert.Equal(PreviewNonWorkingDayImpactStatus.RecalculationFailed, failed.Status);
+        Assert.Equal("recalculation_failed", failed.ErrorCode);
+        Assert.Null(failed.Preview);
+        Assert.Null(dbContext.Database.CurrentTransaction);
+    }
+
     private static MembershipNonWorkingDayAffectedScopePreparer CreatePreparer(
         BodyLifeDbContext dbContext)
     {
@@ -172,6 +400,42 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
                     new MembershipFreezeExtensionSourceReader(dbContext),
                     new MembershipNonWorkingDayExtensionSourceReader(dbContext),
                 ]));
+    }
+
+    private static HmacNonWorkingDayPreviewTokenService CreatePreviewTokenService()
+    {
+        var signingKey = Convert.ToBase64String(
+            Enumerable.Range(1, 32).Select(value => (byte)value).ToArray());
+        return new HmacNonWorkingDayPreviewTokenService(
+            new NonWorkingDayPreviewTokenOptions(
+                signingKey,
+                TimeSpan.FromMinutes(5)),
+            new FixedTimeProvider(TestNow));
+    }
+
+    private static ActorContext OwnerActor(ScopeFixture fixture)
+    {
+        return new ActorContext(
+            new AccountId(fixture.ActorAccountId),
+            ActorRole.Owner,
+            AccountKind.Owner,
+            new SessionId(fixture.SessionId),
+            "Owner laptop");
+    }
+
+    private static PreviewNonWorkingDayImpactQuery Query(
+        ActorContext actor,
+        DateOnly startDate,
+        DateOnly endDate,
+        string? reasonCode,
+        string? reasonComment = null)
+    {
+        return new PreviewNonWorkingDayImpactQuery(
+            actor,
+            startDate,
+            endDate,
+            reasonCode,
+            reasonComment);
     }
 
     private static async Task<ScopeFixture> SeedScopeFixtureAsync(
@@ -455,7 +719,7 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
                 @stale_recalculated_at,
                 1)
             """;
-        command.Parameters.AddWithValue("freeze_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("freeze_id", fixture.FreezeId);
         command.Parameters.AddWithValue("client_id", fixture.ExtendedClientId);
         command.Parameters.AddWithValue("membership_id", fixture.ExtendedMembershipId);
         command.Parameters.AddWithValue("actor_account_id", fixture.ActorAccountId);
@@ -468,7 +732,7 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         command.Parameters.AddWithValue(
             "freeze_end_date",
             NpgsqlDbType.Date,
-            new DateOnly(2026, 1, 29));
+            new DateOnly(2026, 1, 31));
         command.Parameters.AddWithValue(
             "stale_effective_end_date",
             NpgsqlDbType.Date,
@@ -570,10 +834,21 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         public override DateTimeOffset GetUtcNow() => utcNow;
     }
 
+    private sealed class ThrowingImpactPreparer : IMembershipNonWorkingDayImpactPreparer
+    {
+        public Task<MembershipNonWorkingDayImpactPreparation> PrepareImpactAsync(
+            DateRange period,
+            CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException("Synthetic canonical calculation failure.");
+        }
+    }
+
     private sealed record ScopeFixture(
         Guid ActorAccountId,
         Guid SessionId,
         Guid MembershipTypeId,
+        Guid FreezeId,
         Guid EndBoundaryMembershipId,
         Guid EndBoundaryClientId,
         Guid StartBoundaryMembershipId,
@@ -594,6 +869,7 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
                 actorAccountId,
                 sessionId,
                 membershipTypeId,
+                Guid.Parse("40000000-0000-0000-0000-000000000001"),
                 Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Guid.Parse("10000000-0000-0000-0000-000000000001"),
                 Guid.Parse("00000000-0000-0000-0000-000000000002"),

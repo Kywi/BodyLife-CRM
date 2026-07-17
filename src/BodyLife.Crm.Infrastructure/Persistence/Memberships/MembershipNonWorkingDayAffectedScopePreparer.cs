@@ -9,9 +9,18 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 public sealed class MembershipNonWorkingDayAffectedScopePreparer(
     BodyLifeDbContext dbContext,
     MembershipStateCacheRebuilder stateCacheRebuilder)
-    : IMembershipNonWorkingDayAffectedScopePreparer
+    : IMembershipNonWorkingDayAffectedScopePreparer,
+      IMembershipNonWorkingDayImpactPreparer
 {
     public async Task<MembershipNonWorkingDayAffectedScope> PrepareAsync(
+        DateRange period,
+        CancellationToken cancellationToken = default)
+    {
+        var impact = await PrepareImpactAsync(period, cancellationToken);
+        return impact.AffectedScope;
+    }
+
+    public async Task<MembershipNonWorkingDayImpactPreparation> PrepareImpactAsync(
         DateRange period,
         CancellationToken cancellationToken = default)
     {
@@ -56,6 +65,7 @@ public sealed class MembershipNonWorkingDayAffectedScopePreparer(
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);
         var affectedMemberships = new List<MembershipNonWorkingDayAffectedScopeItem>();
+        var impactItems = new List<MembershipNonWorkingDayImpactItem>();
 
         foreach (var candidate in candidates)
         {
@@ -81,10 +91,21 @@ public sealed class MembershipNonWorkingDayAffectedScopePreparer(
                 candidate.Id,
                 candidate.ClientId,
                 appliedRange));
+            impactItems.Add(new MembershipNonWorkingDayImpactItem(
+                candidate.Id,
+                candidate.ClientId,
+                appliedRange,
+                MembershipNonWorkingDayImpactEstimator.Estimate(
+                    canonical.State,
+                    canonical.ExtensionCalculation,
+                    period)));
         }
 
-        return new MembershipNonWorkingDayAffectedScope(
+        var affectedScope = new MembershipNonWorkingDayAffectedScope(
             period,
             affectedMemberships);
+        return new MembershipNonWorkingDayImpactPreparation(
+            affectedScope,
+            impactItems);
     }
 }

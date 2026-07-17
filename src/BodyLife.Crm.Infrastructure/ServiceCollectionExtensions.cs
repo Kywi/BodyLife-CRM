@@ -154,6 +154,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MembershipNonWorkingDayAffectedScopePreparer>();
         services.AddScoped<IMembershipNonWorkingDayAffectedScopePreparer>(provider =>
             provider.GetRequiredService<MembershipNonWorkingDayAffectedScopePreparer>());
+        services.AddScoped<IMembershipNonWorkingDayImpactPreparer>(provider =>
+            provider.GetRequiredService<MembershipNonWorkingDayAffectedScopePreparer>());
+        services.AddScoped<
+            IBodyLifeQueryHandler<
+                PreviewNonWorkingDayImpactQuery,
+                PreviewNonWorkingDayImpactResult>,
+            PreviewNonWorkingDayImpactQueryHandler>();
         services.AddScoped<
             IMembershipVisitEligibilityEvaluator,
             MembershipVisitEligibilityEvaluator>();

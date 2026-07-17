@@ -6587,3 +6587,94 @@ Next recommended step:
   return the ordered Membership/Client/full-range details, and issue this
   expiring token/fingerprint. Keep Add/Correct commands, period/application
   writes, recalculation persistence, audit and UI for later bounded steps.
+
+## Step 123 - Owner NonWorkingDay impact preview query
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement the roadmap's `PreviewNonWorkingDayImpact` application boundary
+  after exact affected-scope preparation and signed confirmation foundations,
+  before any Add/Correct mutation or UI work.
+- Keep eligibility, extension union, effective-end estimates and overlap
+  interpretation inside Memberships. NonWorkingDays coordinates authorization,
+  normalized input, output mapping and token issuance only.
+- Treat preview as an advisory read: use a consistent snapshot, return no
+  success if canonical calculation fails, create no business audit and leave
+  all source, derived cache and idempotency state unchanged.
+
+Scope:
+
+- Add a Memberships-owned pure impact estimator. It compares canonical current
+  extension/effective-end state with the proposed full period, counts only new
+  unique active date-source days, excludes inactive sources and returns
+  deterministic per-source Freeze/NonWorkingDay overlap warnings.
+- Add `IMembershipNonWorkingDayImpactPreparer` and exact preparation/item read
+  models. Extend the existing affected-scope preparer so one candidate lock and
+  canonical calculation pass produces both the immutable ordered scope and its
+  before/after estimates under the existing `RepeatableRead`/`Serializable`
+  requirement.
+- Add `PreviewNonWorkingDayImpactQuery`, status/result and preview read models.
+  Output includes normalized period/reason values, exact ordered Membership and
+  Client IDs, full applied ranges, before/estimated-after extension days and
+  effective end dates, unique added/overlap days, overlap details, affected
+  count and signed fingerprint/token expiry.
+- Add `PreviewNonWorkingDayImpactQueryHandler`: require a canonical active Owner
+  account/session, validate input before persistence work, open one owned
+  `RepeatableRead` transaction, prepare impact, issue the Step 122 token over the
+  exact scope and commit only the read snapshot. Canonical calculation failures
+  return stable `recalculation_failed` without issuing a successful preview.
+- Register the impact preparer as the same scoped instance as the exact-scope
+  preparer and register the public query handler. No signing key is committed;
+  the existing lazy secret configuration remains unchanged.
+- Add three pure estimator tests and expand the PostgreSQL scope suite from
+  three to five tests. Coverage proves full-period addition, Freeze/
+  NonWorkingDay union, inactive exclusion, deterministic warnings, overflow and
+  inconsistent-state guards, DI identity, transaction isolation, Owner-only
+  access, input validation, stable calculation failure, exact output, valid
+  bound token and unchanged source/cache/audit/idempotency state.
+- Extend the Membership formula ownership gate only with the new read-only
+  Memberships contracts consumed by NonWorkingDays.
+- Add no EF model/migration, NonWorkingDay period/application write,
+  recalculation persistence, audit entry, idempotency record, Add/Correct
+  command, appsettings secret or UI endpoint.
+
+Validation:
+
+- Focused `MembershipNonWorkingDayImpactEstimatorTests` passed 3/3;
+  `MembershipFormulaOwnershipTests` passed 2/2; expanded
+  `PostgreSqlNonWorkingDayAffectedScopePreparerTests` passed 5/5 in Release
+  against local Docker PostgreSQL.
+- Scoped `dotnet format BodyLife.Crm.sln --no-restore
+  --verify-no-changes --include ...` passed for every file in this step.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 291 core tests, 35 web
+  tests, 405 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- Rebuilt `dotnet-ef migrations has-pending-model-changes` passed with no model
+  changes since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was removed, so no generated code graph update is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(nonworking-days): preview affected membership impact`.
+
+Next recommended step:
+
+- Implement only the complete Owner-authorized `AddNonWorkingDay` backend
+  command: revalidate the expiring exact-scope token in one consistent
+  transaction, capture immutable period/application source rows, enforce
+  idempotency, synchronously recalculate every affected Membership, append the
+  business audit event and roll back all state on any failure. Keep
+  CorrectNonWorkingDay, UI and profile/history presentation for later bounded
+  steps.
