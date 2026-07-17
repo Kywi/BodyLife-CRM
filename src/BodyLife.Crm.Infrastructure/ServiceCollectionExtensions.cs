@@ -129,6 +129,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<CancelFreezeCommand>,
             CancelFreezeCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<AddNonWorkingDayCommand>,
+            AddNonWorkingDayCommandHandler>();
         services.TryAddSingleton<
             IPaymentDayReconciliationStatusProvider,
             OpenPaymentDayReconciliationStatusProvider>();

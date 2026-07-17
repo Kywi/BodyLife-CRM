@@ -6678,3 +6678,94 @@ Next recommended step:
   business audit event and roll back all state on any failure. Keep
   CorrectNonWorkingDay, UI and profile/history presentation for later bounded
   steps.
+
+## Step 124 - Owner AddNonWorkingDay backend command
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement the roadmap's Owner-only `AddNonWorkingDay` command after the exact
+  ADR-016 scope, signed confirmation token and read-only impact preview
+  foundations from Steps 121-123.
+- Recompute and lock the canonical affected scope in the command transaction;
+  never trust the preview as source truth and never allow a stale confirmation
+  to produce source, derived, audit or idempotency writes.
+- Commit the confirmed period/application snapshot, synchronous Memberships
+  recalculation and business audit as one atomic workflow. Keep correction,
+  owner UI and profile/history presentation outside this bounded step.
+
+Scope:
+
+- Add `AddNonWorkingDayCommand` with the common operational envelope, inclusive
+  period, explicit reason code/comment and signed confirmation token. Extend
+  the stable command error taxonomy with `PreviewExpired` and
+  `AffectedScopeChanged` while preserving existing numeric values.
+- Add normalized command validation for idempotency/correlation/device metadata,
+  bounded reason values and canonical token shape. The request fingerprint
+  binds actor/session, operational metadata, exact normalized preview input and
+  the confirmation token.
+- Add `AddNonWorkingDayCommandHandler` and DI registration. It requires the
+  canonical active Owner account/session, opens one caller-owned
+  `RepeatableRead` transaction and reuses the Memberships-owned impact preparer
+  to lock lifecycle-active Membership candidates in deterministic id order and
+  recompute the exact ADR-016 scope.
+- Revalidate the authenticated token against the current exact
+  Membership/Client/full-range set. Expiry returns `PreviewExpired`, any
+  authenticated input/scope drift returns `AffectedScopeChanged`, and a
+  malformed/tampered token returns validation failure; every path rolls back
+  without partial writes.
+- On confirmation, create one active `non_working_periods` row and one immutable
+  `non_working_period_applications` row per exact affected Membership. Every
+  application stores the full proposed range plus authenticated preview and
+  server confirmation timestamps.
+- Recalculate every affected Membership synchronously in deterministic order
+  after the source rows are visible in the same transaction. Any missing,
+  invalid or mismatched recalculation result rolls back period/application,
+  cache/extension, audit and idempotency state.
+- Append `non_working_day.added` with period/reason, exact affected identities,
+  preview fingerprint/window and requested/succeeded recalculation summary.
+  Store the successful idempotency result atomically and replay the original
+  period, affected Membership ids and audit id for exact retries.
+- Recover exact concurrent retries after PostgreSQL unique/serialization/lock
+  conflicts by rolling back the stale snapshot and rereading the committed
+  idempotency result; unrelated conflicts return `ConcurrencyConflict`.
+- Add no EF model/migration, `CorrectNonWorkingDay`, NonWorkingDay UI,
+  profile/history projection or report behavior.
+
+Validation:
+
+- Focused `AddNonWorkingDayCommandContractsTests` passed 4/4 in Release.
+- Focused `PostgreSqlAddNonWorkingDayCommandTests` passed 9/9 with no skips
+  against local Docker PostgreSQL. Coverage includes exact full-range snapshot,
+  canonical recalculation, audit/idempotency persistence, Owner/input/token
+  rejection, scope drift, exact expiry, replay, concurrent same-key execution,
+  late recalculation/audit rollback and competing Membership lock handling.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal
+  --no-restore` passed.
+- Final `DOTNET_BIN=/home/genik/.dotnet/dotnet
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 295 core tests, 35 web
+  tests, 414 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was removed, so no generated code graph update is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(nonworking-days): add confirmed nonworking periods`.
+
+Next recommended step:
+
+- Add only the canonical source-preparation foundation for
+  `CorrectNonWorkingDay`: lock and read the original period plus immutable
+  application snapshot in deterministic order, distinguish active/canceled/
+  corrected states and define replace-versus-cancel preparation outcomes. Keep
+  correction writes, recalculation, audit, idempotency and UI for the following
+  bounded step.

@@ -20,5 +20,7 @@ public enum CommandErrorCode
     WarningAcknowledgementRequired,
     VisitDuringFreeze,
     ReasonRequired,
-    FreezeConflictsWithVisit
+    FreezeConflictsWithVisit,
+    PreviewExpired,
+    AffectedScopeChanged
 }
