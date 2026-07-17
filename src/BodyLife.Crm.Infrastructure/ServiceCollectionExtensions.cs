@@ -44,6 +44,10 @@ public static class ServiceCollectionExtensions
             new HmacNonWorkingDayPreviewTokenService(
                 NonWorkingDayPreviewTokenOptions.FromConfiguration(configuration),
                 provider.GetRequiredService<TimeProvider>()));
+        services.AddSingleton<INonWorkingDayCorrectionTokenService>(provider =>
+            new HmacNonWorkingDayCorrectionTokenService(
+                NonWorkingDayPreviewTokenOptions.FromConfiguration(configuration),
+                provider.GetRequiredService<TimeProvider>()));
         services.TryAddSingleton<PasswordHashingService>();
         services.AddScoped<BusinessAuditAppender>();
         services.AddScoped<

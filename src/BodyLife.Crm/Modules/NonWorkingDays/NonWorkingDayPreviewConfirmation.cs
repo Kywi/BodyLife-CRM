@@ -20,8 +20,8 @@ public sealed class NonWorkingDayPreviewConfirmation
                 nameof(confirmationToken));
         }
 
-        NonWorkingDayPreviewTokenContract.EnsureFingerprint(scopeFingerprint);
-        NonWorkingDayPreviewTokenContract.EnsureUtcWindow(issuedAt, expiresAt);
+        NonWorkingDayConfirmationTokenContract.EnsureFingerprint(scopeFingerprint);
+        NonWorkingDayConfirmationTokenContract.EnsureUtcWindow(issuedAt, expiresAt);
 
         ConfirmationToken = confirmationToken;
         ScopeFingerprint = scopeFingerprint;
@@ -38,7 +38,7 @@ public sealed class NonWorkingDayPreviewConfirmation
     public DateTimeOffset ExpiresAt { get; }
 }
 
-internal static class NonWorkingDayPreviewTokenContract
+internal static class NonWorkingDayConfirmationTokenContract
 {
     internal static void EnsureFingerprint(string scopeFingerprint)
     {
@@ -61,14 +61,14 @@ internal static class NonWorkingDayPreviewTokenContract
         if (issuedAt.Offset != TimeSpan.Zero || expiresAt.Offset != TimeSpan.Zero)
         {
             throw new ArgumentException(
-                "Preview token timestamps must use UTC.",
+                "Confirmation token timestamps must use UTC.",
                 nameof(issuedAt));
         }
 
         if (expiresAt <= issuedAt)
         {
             throw new ArgumentException(
-                "Preview token expiry must be after issue time.",
+                "Confirmation token expiry must be after issue time.",
                 nameof(expiresAt));
         }
     }

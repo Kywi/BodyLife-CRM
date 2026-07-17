@@ -56,8 +56,8 @@ public sealed class NonWorkingDayPreviewTokenValidation
                 "Authenticated token status is not supported.");
         }
 
-        NonWorkingDayPreviewTokenContract.EnsureFingerprint(scopeFingerprint);
-        NonWorkingDayPreviewTokenContract.EnsureUtcWindow(issuedAt, expiresAt);
+        NonWorkingDayConfirmationTokenContract.EnsureFingerprint(scopeFingerprint);
+        NonWorkingDayConfirmationTokenContract.EnsureUtcWindow(issuedAt, expiresAt);
         return new NonWorkingDayPreviewTokenValidation(
             status,
             scopeFingerprint,

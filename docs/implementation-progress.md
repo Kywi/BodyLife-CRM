@@ -6938,3 +6938,85 @@ Next recommended step:
   `replace_range`, preserved old scope for `replace_reason`, and no replacement
   scope for `cancel`. Keep the Owner preview query, correction writes,
   recalculation persistence, audit, idempotency and UI for later bounded steps.
+
+## Step 127 - CorrectNonWorkingDay signed confirmation contract
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue `CorrectNonWorkingDay` after Step 125 established exact old-source
+  preparation and Step 126 established Memberships-owned replacement impact.
+- Implement the ADR-016 tamper-resistant confirmation boundary before adding
+  the Owner preview query or any correction write orchestration.
+- Keep the contract mode-specific: `replace_range` binds replacement input and
+  exact new scope, `replace_reason` binds the preserved old scope, and `cancel`
+  carries no replacement scope.
+
+Scope:
+
+- Add immutable `NonWorkingDayCorrectionConfirmationMaterial` factories for
+  `replace_range`, `replace_reason` and `cancel`. Every factory requires an
+  active original source and preserves its exact period/application identity.
+- Require `replace_range` material to consume Step 126 replacement preparation,
+  match the original period id, match replacement input dates and exclude the
+  exact sorted original application id set.
+- Derive the `replace_reason` confirmed scope directly from the immutable Step
+  125 application snapshot, preserving every Membership, Client and full
+  applied range. Expose no confirmed replacement scope for `cancel`.
+- Add correction confirmation/result, validation and token-service contracts.
+  The HMAC fingerprint binds correction mode/scope behavior, full original
+  source metadata, ordered application identities and metadata, replacement
+  input, and the exact mode-specific confirmed scope.
+- Add a dedicated `bodylife-nwd-correction-v1` token prefix and
+  `bodylife.nonworking-day-correction.v1` fingerprint schema.
+  `AddNonWorkingDay` preview and correction tokens remain cryptographically
+  domain-separated even though they use the same configured signing key and
+  lifetime.
+- Extract the existing HMAC envelope authentication, canonical payload,
+  lifetime and fixed-time fingerprint comparison into one internal codec.
+  Preserve the existing Add preview prefix/schema and public behavior.
+- Register the correction token service as a lazy configured singleton beside
+  the existing Add preview token service.
+- Add no EF model/migration, correction preview query, command write, source
+  status transition, recalculation persistence, audit, idempotency or UI.
+
+Validation:
+
+- Early Release build passed with 0 warnings/errors.
+- Focused correction confirmation material tests passed 4/4 in Release.
+- Focused correction HMAC/security/DI tests passed 5/5 in Release.
+- Combined correction/Add preview token regression plus Memberships ownership
+  gate passed 15/15 with no skips.
+- `dotnet format BodyLife.Crm.sln --no-restore --verify-no-changes` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 307 core tests, 35 web
+  tests, 427 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored byte-for-byte to `HEAD`, so no generated code graph
+  update is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked graph change.
+
+Commit:
+
+- `feat(nonworking-days): sign correction confirmations`.
+
+Next recommended step:
+
+- Add only the Owner-only `PreviewCorrectNonWorkingDay` query orchestration.
+  For `replace_range`, prepare and lock all active Membership candidates through
+  Step 126 before Step 125 old-source preparation; for `replace_reason` and
+  `cancel`, preserve the exact old source/scope. Issue the Step 127 token and
+  return old/new confirmation material without source writes, recalculation
+  persistence, audit, idempotency or UI.
