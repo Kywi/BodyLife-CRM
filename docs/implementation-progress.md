@@ -6263,3 +6263,85 @@ Next recommended step:
   Membership/Client ownership, one active application per period/version and
   retained cancellation history. Keep preview scope selection/tokens,
   Add/Correct commands, recalculation orchestration and UI for later steps.
+
+## Step 119 - NonWorkingDay PostgreSQL source storage
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement only the three NonWorkingDay source tables required by the first
+  Milestone 8 task after the pure ADR-016 policy from Step 118.
+- Keep the stored application set as the immutable confirmed transaction
+  snapshot while leaving scope selection, preview fingerprints/tokens,
+  state-changing commands, Membership recalculation orchestration and UI for
+  later bounded steps.
+- Follow the accepted data-architecture field outline and existing
+  Freeze/Payment source-fact conventions without inventing a reason-code
+  vocabulary or permission behavior inside EF configuration.
+
+Scope:
+
+- Add EF records/configurations for `non_working_periods`,
+  `non_working_period_applications` and
+  `non_working_period_cancellations` under the NonWorkingDays persistence
+  boundary.
+- Constrain period ranges to inclusive `start_date <= end_date`, require a
+  non-empty reason code, reject blank optional comments and restrict lifecycle
+  status to `active`, `canceled` or `corrected`.
+- Add alternate period identity `(id, start_date, end_date)` and reference it
+  from each application through `(non_working_period_id, applied_start_date,
+  applied_end_date)`. PostgreSQL therefore rejects a clipped or widened
+  application range instead of relying on caller discipline for ADR-016's
+  full-period rule.
+- Add composite `(membership_id, client_id)` ownership against
+  `issued_memberships`, preview-before-confirm ordering and one partial unique
+  active application per period/version and Membership. Canceled/corrected
+  application rows remain insertable and explainable.
+- Add retained cancellation facts with non-empty reason, restrictive foreign
+  keys and at most one cancellation per period; no source-history delete path
+  cascades from a period, Membership, account or session.
+- Add reviewable migration
+  `20260717072704_AddNonWorkingDaySourceFacts` and four focused PostgreSQL tests
+  for DDL/indexes, inclusive ranges, exact full-period equality, cross-Client
+  ownership rejection, lifecycle values, active uniqueness and retained
+  cancellation history.
+- Add no scope reader, preview/token contract, Add/Correct command, extension
+  source provider, recalculation hook, business audit or UI behavior.
+
+Validation:
+
+- Focused `PostgreSqlNonWorkingDaysStorageTests` passed 4/4 in Release against
+  local Docker PostgreSQL; each test applied all migrations to a fresh database.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal
+  --no-restore` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 288 core tests, 35 web
+  tests, 390 PostgreSQL/architecture infrastructure tests, 37 Playwright smoke
+  tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- Rebuilt `dotnet-ef migrations has-pending-model-changes` passed with no model
+  changes since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was removed, so no generated graph update is claimed in this step.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(nonworking-days): add source storage`.
+
+Next recommended step:
+
+- Add only a PostgreSQL-backed NonWorkingDay implementation of
+  `IMembershipExtensionSourceProvider`: read full applied ranges for a
+  Membership only when both period and application are active, register it
+  beside the Freeze provider, bump the rebuild version and prove active/inactive
+  filtering plus Freeze/NonWorkingDay union in focused recalculation tests. Keep
+  preview scope selection/tokens, Add/Correct commands, audit and UI for later
+  bounded steps.
