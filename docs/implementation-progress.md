@@ -7020,3 +7020,81 @@ Next recommended step:
   `cancel`, preserve the exact old source/scope. Issue the Step 127 token and
   return old/new confirmation material without source writes, recalculation
   persistence, audit, idempotency or UI.
+
+## Step 128 - Owner CorrectNonWorkingDay preview query
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue the accepted `CorrectNonWorkingDay` sequence after exact old-source
+  preparation, Memberships-owned replacement impact and signed mode-specific
+  confirmation material were established in Steps 125-127.
+- Implement only the Owner query boundary required before command-side
+  revalidation and persistence. Queries remain free of business audit entries.
+- Preserve the ADR-016 lock order for `replace_range`: lock every active
+  replacement candidate before locking the old period and its immutable
+  application snapshot.
+
+Scope:
+
+- Add `PreviewCorrectNonWorkingDayQuery`, stable result/status contracts and a
+  `NonWorkingDayCorrectionPreview` that exposes the exact original source,
+  mode-specific replacement input/scope, replacement estimates when applicable
+  and the signed confirmation.
+- Require a canonical active Owner account/session before validating or reading
+  correction state. Validate mode-specific input shapes: inclusive dates and a
+  replacement reason for `replace_range`, preserved dates and a replacement
+  reason for `replace_reason`, and no replacement fields for `cancel`.
+- Execute preview preparation in one caller-owned `RepeatableRead` transaction.
+  `replace_range` invokes the Step 126 replacement preparer before the Step 125
+  source preparer; `replace_reason` and `cancel` prepare only the old source.
+- Map missing, canceled, already-corrected and inconsistent source outcomes to
+  explicit query failures. Issue the Step 127 HMAC token only for an active,
+  internally consistent source and exact mode-specific material.
+- Extract one infrastructure mapper for canonical Memberships impact estimates
+  so Add and correction previews expose the same display shape without
+  duplicating membership formulas.
+- Register the query handler as scoped. Add no EF model/migration, source/cache
+  writes, recalculation persistence, business audit, idempotency, command
+  handler or UI.
+
+Validation:
+
+- Early Release build passed with 0 warnings/errors.
+- Focused query contract tests passed 2/2 in Release.
+- Focused PostgreSQL/DI correction-preview tests passed 4/4 with no skips against
+  the healthy local Docker PostgreSQL service. They prove all three mode shapes,
+  canonical Owner authorization, exact old/new scopes, token validation and no
+  source/cache/audit/idempotency writes.
+- `dotnet format BodyLife.Crm.sln --no-restore --verify-no-changes` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 309 core tests, 35 web
+  tests, 430 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored byte-for-byte to `HEAD`, so no generated code graph update
+  is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked graph change.
+
+Commit:
+
+- `feat(nonworking-days): preview nonworking corrections`.
+
+Next recommended step:
+
+- Add only the `CorrectNonWorkingDayCommand` application contract: common
+  command envelope, period id, mode-specific replacement fields, correction
+  reason/comment and Step 128 confirmation token, plus canonical reread targets
+  and error taxonomy. Keep source writes, recalculation persistence, audit,
+  idempotency orchestration and UI for subsequent bounded steps.

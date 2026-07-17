@@ -87,6 +87,17 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         Assert.Equal(
             typeof(PreviewNonWorkingDayImpactQueryHandler),
             queryDescriptor.ImplementationType);
+
+        var correctionQueryServiceType = typeof(IBodyLifeQueryHandler<
+            PreviewCorrectNonWorkingDayQuery,
+            PreviewCorrectNonWorkingDayResult>);
+        var correctionQueryDescriptor = Assert.Single(
+            services,
+            candidate => candidate.ServiceType == correctionQueryServiceType);
+        Assert.Equal(ServiceLifetime.Scoped, correctionQueryDescriptor.Lifetime);
+        Assert.Equal(
+            typeof(PreviewCorrectNonWorkingDayQueryHandler),
+            correctionQueryDescriptor.ImplementationType);
     }
 
     [PostgreSqlFact]
@@ -478,6 +489,309 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
     }
 
     [PostgreSqlFact]
+    public async Task OwnerRangeCorrectionPreviewReturnsExactOldAndNewScopesWithoutWrites()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedScopeFixtureAsync(
+            database,
+            dbContext,
+            includeReplacedPeriod: true);
+        var before = await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId);
+        var tokenService = CreateCorrectionTokenService();
+        var handler = CreateCorrectionPreviewHandler(dbContext, tokenService);
+
+        var result = await handler.ExecuteAsync(
+            new PreviewCorrectNonWorkingDayQuery(
+                OwnerActor(fixture),
+                fixture.ReplacedPeriodId,
+                NonWorkingDayCorrectionMode.ReplaceRange,
+                ReplacementPeriod.StartDate,
+                ReplacementPeriod.EndDate,
+                "  maintenance  ",
+                "  Boiler replacement  "),
+            CancellationToken.None);
+
+        Assert.Equal(PreviewCorrectNonWorkingDayStatus.Success, result.Status);
+        Assert.Null(result.ErrorCode);
+        Assert.Null(result.ErrorMessage);
+        Assert.Null(result.ErrorField);
+        var preview = Assert.IsType<NonWorkingDayCorrectionPreview>(result.Preview);
+        Assert.Equal(fixture.ReplacedPeriodId, preview.PeriodId);
+        Assert.Equal(NonWorkingDayCorrectionMode.ReplaceRange, preview.Mode);
+        Assert.Equal(
+            NonWorkingDayCorrectionScopeBehavior.RecomputeReplacement,
+            preview.ScopeBehavior);
+        Assert.Equal(ProposedPeriod, preview.OriginalSource.Period);
+        Assert.Equal(3, preview.OriginalAffectedCount);
+        Assert.Equal(
+            [
+                fixture.EndBoundaryMembershipId,
+                fixture.StartBoundaryMembershipId,
+                fixture.ExtendedMembershipId,
+            ],
+            preview.OriginalSource.Applications
+                .Select(application => application.MembershipId));
+        Assert.Equal(
+            [
+                fixture.StartBoundaryReplacedApplicationId,
+                fixture.ExtendedReplacedApplicationId,
+                fixture.EndBoundaryReplacedApplicationId,
+            ],
+            preview.Material.OriginalApplicationIds);
+        Assert.Equal(ReplacementPeriod, preview.ReplacementInput!.Period);
+        Assert.Equal("maintenance", preview.ReplacementInput.ReasonCode);
+        Assert.Equal("Boiler replacement", preview.ReplacementInput.ReasonComment);
+        Assert.Equal(3, preview.ConfirmedAffectedCount);
+        Assert.Equal(
+            [
+                fixture.StartBoundaryMembershipId,
+                fixture.NoOverlapMembershipId,
+                fixture.ExtendedMembershipId,
+            ],
+            preview.ConfirmedScope!.AffectedMemberships
+                .Select(item => item.MembershipId));
+        Assert.Equal(
+            preview.ConfirmedScope.AffectedMemberships
+                .Select(item => item.MembershipId),
+            preview.ReplacementImpact.Select(item => item.MembershipId));
+        Assert.All(
+            preview.ReplacementImpact,
+            item => Assert.Equal(ReplacementPeriod, item.AppliedRange));
+        Assert.Equal(2, preview.ReplacementImpact[0].AddedUniqueExtensionDays);
+        Assert.Equal(2, preview.ReplacementImpact[1].AddedUniqueExtensionDays);
+        Assert.Equal(2, preview.ReplacementImpact[2].AddedUniqueExtensionDays);
+        Assert.Equal(TestNow, preview.Confirmation.IssuedAt);
+        Assert.Equal(TestNow.AddMinutes(5), preview.Confirmation.ExpiresAt);
+        Assert.Equal(
+            NonWorkingDayCorrectionTokenValidationStatus.Valid,
+            tokenService.Validate(
+                preview.Confirmation.ConfirmationToken,
+                preview.Material).Status);
+
+        Assert.Equal(
+            before,
+            await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId));
+        Assert.False(dbContext.ChangeTracker.HasChanges());
+        Assert.Empty(dbContext.ChangeTracker.Entries());
+        Assert.Null(dbContext.Database.CurrentTransaction);
+    }
+
+    [PostgreSqlFact]
+    public async Task ReasonAndCancelCorrectionPreviewsPreserveModeSpecificScopeWithoutWrites()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedScopeFixtureAsync(
+            database,
+            dbContext,
+            includeReplacedPeriod: true);
+        var before = await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId);
+        var tokenService = CreateCorrectionTokenService();
+        var handler = CreateCorrectionPreviewHandler(dbContext, tokenService);
+
+        var reasonResult = await handler.ExecuteAsync(
+            new PreviewCorrectNonWorkingDayQuery(
+                OwnerActor(fixture),
+                fixture.ReplacedPeriodId,
+                NonWorkingDayCorrectionMode.ReplaceReason,
+                ReplacementReasonCode: "  corrected_weather  ",
+                ReplacementReasonComment: "  Corrected explanation  "),
+            CancellationToken.None);
+
+        Assert.Equal(PreviewCorrectNonWorkingDayStatus.Success, reasonResult.Status);
+        var reasonPreview = Assert.IsType<NonWorkingDayCorrectionPreview>(
+            reasonResult.Preview);
+        Assert.Equal(
+            NonWorkingDayCorrectionScopeBehavior.PreserveConfirmedApplications,
+            reasonPreview.ScopeBehavior);
+        Assert.Equal(ProposedPeriod, reasonPreview.ReplacementInput!.Period);
+        Assert.Equal("corrected_weather", reasonPreview.ReplacementInput.ReasonCode);
+        Assert.Equal(
+            "Corrected explanation",
+            reasonPreview.ReplacementInput.ReasonComment);
+        Assert.Equal(3, reasonPreview.OriginalAffectedCount);
+        Assert.Equal(3, reasonPreview.ConfirmedAffectedCount);
+        Assert.Same(reasonPreview.Material.PreservedScope, reasonPreview.ConfirmedScope);
+        Assert.Equal(
+            reasonPreview.OriginalSource.Applications
+                .Select(application => application.MembershipId),
+            reasonPreview.ConfirmedScope!.AffectedMemberships
+                .Select(item => item.MembershipId));
+        Assert.Empty(reasonPreview.ReplacementImpact);
+        Assert.Equal(
+            NonWorkingDayCorrectionTokenValidationStatus.Valid,
+            tokenService.Validate(
+                reasonPreview.Confirmation.ConfirmationToken,
+                reasonPreview.Material).Status);
+
+        var cancelResult = await handler.ExecuteAsync(
+            new PreviewCorrectNonWorkingDayQuery(
+                OwnerActor(fixture),
+                fixture.ReplacedPeriodId,
+                NonWorkingDayCorrectionMode.Cancel),
+            CancellationToken.None);
+
+        Assert.Equal(PreviewCorrectNonWorkingDayStatus.Success, cancelResult.Status);
+        var cancelPreview = Assert.IsType<NonWorkingDayCorrectionPreview>(
+            cancelResult.Preview);
+        Assert.Equal(
+            NonWorkingDayCorrectionScopeBehavior.NoReplacement,
+            cancelPreview.ScopeBehavior);
+        Assert.Equal(3, cancelPreview.OriginalAffectedCount);
+        Assert.Equal(0, cancelPreview.ConfirmedAffectedCount);
+        Assert.Null(cancelPreview.ReplacementInput);
+        Assert.Null(cancelPreview.ConfirmedScope);
+        Assert.Empty(cancelPreview.ReplacementImpact);
+        Assert.Equal(
+            NonWorkingDayCorrectionTokenValidationStatus.Valid,
+            tokenService.Validate(
+                cancelPreview.Confirmation.ConfirmationToken,
+                cancelPreview.Material).Status);
+
+        Assert.Equal(
+            before,
+            await ReadSnapshotAsync(dbContext, fixture.ExtendedMembershipId));
+        Assert.False(dbContext.ChangeTracker.HasChanges());
+        Assert.Empty(dbContext.ChangeTracker.Entries());
+        Assert.Null(dbContext.Database.CurrentTransaction);
+    }
+
+    [PostgreSqlFact]
+    public async Task CorrectionPreviewRequiresCanonicalOwnerValidModeShapeAndSource()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedScopeFixtureAsync(
+            database,
+            dbContext,
+            includeReplacedPeriod: true);
+        var handler = CreateCorrectionPreviewHandler(
+            dbContext,
+            CreateCorrectionTokenService());
+        var owner = OwnerActor(fixture);
+        var adminShape = owner with
+        {
+            Role = ActorRole.Admin,
+            AccountKind = AccountKind.NamedAdmin,
+        };
+        var unknownOwner = new ActorContext(
+            AccountId.New(),
+            ActorRole.Owner,
+            AccountKind.Owner,
+            SessionId.New(),
+            "Unknown device");
+
+        foreach (var deniedActor in new[] { adminShape, unknownOwner })
+        {
+            var denied = await handler.ExecuteAsync(
+                new PreviewCorrectNonWorkingDayQuery(
+                    deniedActor,
+                    fixture.ReplacedPeriodId,
+                    NonWorkingDayCorrectionMode.Cancel),
+                CancellationToken.None);
+
+            Assert.Equal(
+                PreviewCorrectNonWorkingDayStatus.PermissionDenied,
+                denied.Status);
+            Assert.Equal("permission_denied", denied.ErrorCode);
+            Assert.Null(denied.Preview);
+        }
+
+        var invalidQueries = new[]
+        {
+            (
+                new PreviewCorrectNonWorkingDayQuery(
+                    owner,
+                    Guid.Empty,
+                    NonWorkingDayCorrectionMode.Cancel),
+                "periodId"),
+            (
+                new PreviewCorrectNonWorkingDayQuery(
+                    owner,
+                    fixture.ReplacedPeriodId,
+                    (NonWorkingDayCorrectionMode)99),
+                "mode"),
+            (
+                new PreviewCorrectNonWorkingDayQuery(
+                    owner,
+                    fixture.ReplacedPeriodId,
+                    NonWorkingDayCorrectionMode.ReplaceRange,
+                    ReplacementEndDate: ReplacementPeriod.EndDate,
+                    ReplacementReasonCode: "maintenance"),
+                "replacementStartDate"),
+            (
+                new PreviewCorrectNonWorkingDayQuery(
+                    owner,
+                    fixture.ReplacedPeriodId,
+                    NonWorkingDayCorrectionMode.ReplaceRange,
+                    ReplacementStartDate: ReplacementPeriod.StartDate,
+                    ReplacementReasonCode: "maintenance"),
+                "replacementEndDate"),
+            (
+                new PreviewCorrectNonWorkingDayQuery(
+                    owner,
+                    fixture.ReplacedPeriodId,
+                    NonWorkingDayCorrectionMode.ReplaceRange,
+                    ReplacementPeriod.EndDate,
+                    ReplacementPeriod.StartDate,
+                    "maintenance"),
+                "replacementEndDate"),
+            (
+                new PreviewCorrectNonWorkingDayQuery(
+                    owner,
+                    fixture.ReplacedPeriodId,
+                    NonWorkingDayCorrectionMode.ReplaceRange,
+                    ReplacementPeriod.StartDate,
+                    ReplacementPeriod.EndDate),
+                "replacementReasonCode"),
+            (
+                new PreviewCorrectNonWorkingDayQuery(
+                    owner,
+                    fixture.ReplacedPeriodId,
+                    NonWorkingDayCorrectionMode.ReplaceReason,
+                    ReplacementStartDate: ReplacementPeriod.StartDate,
+                    ReplacementReasonCode: "corrected_weather"),
+                "replacementStartDate"),
+            (
+                new PreviewCorrectNonWorkingDayQuery(
+                    owner,
+                    fixture.ReplacedPeriodId,
+                    NonWorkingDayCorrectionMode.Cancel,
+                    ReplacementReasonCode: "not_applicable"),
+                "replacementReasonCode"),
+        };
+
+        foreach (var (query, errorField) in invalidQueries)
+        {
+            var invalid = await handler.ExecuteAsync(query, CancellationToken.None);
+
+            Assert.Equal(
+                PreviewCorrectNonWorkingDayStatus.ValidationFailed,
+                invalid.Status);
+            Assert.Equal("validation_failed", invalid.ErrorCode);
+            Assert.Equal(errorField, invalid.ErrorField);
+            Assert.Null(invalid.Preview);
+        }
+
+        var missing = await handler.ExecuteAsync(
+            new PreviewCorrectNonWorkingDayQuery(
+                owner,
+                Guid.NewGuid(),
+                NonWorkingDayCorrectionMode.ReplaceReason,
+                ReplacementReasonCode: "corrected_weather"),
+            CancellationToken.None);
+
+        Assert.Equal(PreviewCorrectNonWorkingDayStatus.NotFound, missing.Status);
+        Assert.Equal("not_found", missing.ErrorCode);
+        Assert.Null(missing.Preview);
+        Assert.Null(dbContext.Database.CurrentTransaction);
+    }
+
+    [PostgreSqlFact]
     public async Task PreviewRequiresCanonicalOwnerAndValidInput()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -580,6 +894,19 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
                 ]));
     }
 
+    private static PreviewCorrectNonWorkingDayQueryHandler
+        CreateCorrectionPreviewHandler(
+            BodyLifeDbContext dbContext,
+            INonWorkingDayCorrectionTokenService tokenService)
+    {
+        return new PreviewCorrectNonWorkingDayQueryHandler(
+            dbContext,
+            CreateReplacementPreparer(dbContext),
+            new CorrectNonWorkingDaySourcePreparer(dbContext),
+            tokenService,
+            new FixedTimeProvider(TestNow));
+    }
+
     private static MembershipNonWorkingDayReplacementImpactPreparer
         CreateReplacementPreparer(BodyLifeDbContext dbContext)
     {
@@ -604,6 +931,18 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
         var signingKey = Convert.ToBase64String(
             Enumerable.Range(1, 32).Select(value => (byte)value).ToArray());
         return new HmacNonWorkingDayPreviewTokenService(
+            new NonWorkingDayPreviewTokenOptions(
+                signingKey,
+                TimeSpan.FromMinutes(5)),
+            new FixedTimeProvider(TestNow));
+    }
+
+    private static HmacNonWorkingDayCorrectionTokenService
+        CreateCorrectionTokenService()
+    {
+        var signingKey = Convert.ToBase64String(
+            Enumerable.Range(1, 32).Select(value => (byte)value).ToArray());
+        return new HmacNonWorkingDayCorrectionTokenService(
             new NonWorkingDayPreviewTokenOptions(
                 signingKey,
                 TimeSpan.FromMinutes(5)),

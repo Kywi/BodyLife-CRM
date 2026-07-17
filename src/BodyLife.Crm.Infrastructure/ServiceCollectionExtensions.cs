@@ -176,6 +176,11 @@ public static class ServiceCollectionExtensions
                 PreviewNonWorkingDayImpactResult>,
             PreviewNonWorkingDayImpactQueryHandler>();
         services.AddScoped<
+            IBodyLifeQueryHandler<
+                PreviewCorrectNonWorkingDayQuery,
+                PreviewCorrectNonWorkingDayResult>,
+            PreviewCorrectNonWorkingDayQueryHandler>();
+        services.AddScoped<
             IMembershipVisitEligibilityEvaluator,
             MembershipVisitEligibilityEvaluator>();
         services.AddScoped<IMembershipStateRecalculator, MembershipStateRecalculator>();
