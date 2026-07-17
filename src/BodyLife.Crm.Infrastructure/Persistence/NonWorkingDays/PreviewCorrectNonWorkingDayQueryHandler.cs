@@ -72,7 +72,7 @@ public sealed class PreviewCorrectNonWorkingDayQueryHandler(
             var source = sourcePreparation.Source
                 ?? throw new InvalidOperationException(
                     "Prepared NonWorkingDay correction source is missing.");
-            var material = CreateConfirmationMaterial(
+            var material = NonWorkingDayCorrectionConfirmationMaterialFactory.Create(
                 query.Mode,
                 source,
                 replacementInput,
@@ -288,36 +288,4 @@ public sealed class PreviewCorrectNonWorkingDayQueryHandler(
         };
     }
 
-    private static NonWorkingDayCorrectionConfirmationMaterial
-        CreateConfirmationMaterial(
-            NonWorkingDayCorrectionMode mode,
-            NonWorkingDayCorrectionSource source,
-            NonWorkingDayPreviewInput? replacementInput,
-            MembershipNonWorkingDayReplacementImpactPreparation? replacementImpact)
-    {
-        return mode switch
-        {
-            NonWorkingDayCorrectionMode.ReplaceRange =>
-                NonWorkingDayCorrectionConfirmationMaterial.ForReplaceRange(
-                    source,
-                    replacementInput
-                        ?? throw new InvalidOperationException(
-                            "Range replacement input is missing."),
-                    replacementImpact
-                        ?? throw new InvalidOperationException(
-                            "Range replacement impact is missing.")),
-            NonWorkingDayCorrectionMode.ReplaceReason =>
-                NonWorkingDayCorrectionConfirmationMaterial.ForReplaceReason(
-                    source,
-                    new NonWorkingDayPreviewInput(
-                        source.Period,
-                        replacementInput?.ReasonCode
-                            ?? throw new InvalidOperationException(
-                                "Reason replacement input is missing."),
-                        replacementInput.ReasonComment)),
-            NonWorkingDayCorrectionMode.Cancel =>
-                NonWorkingDayCorrectionConfirmationMaterial.ForCancel(source),
-            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
-        };
-    }
 }

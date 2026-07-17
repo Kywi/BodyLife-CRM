@@ -7248,3 +7248,89 @@ Next recommended step:
   validation to `PreviewExpired`, `AffectedScopeChanged` or validation errors.
   Keep correction/cancellation source writes, recalculation persistence,
   business audit, idempotency persistence and UI for later bounded steps.
+
+## Step 131 - CorrectNonWorkingDay current-scope revalidation
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue the accepted `CorrectNonWorkingDay` sequence after Step 130's pure
+  command preparation, adding the database-backed stale-preview boundary before
+  any correction source mutation is implemented.
+- Require a caller-owned `RepeatableRead` or `Serializable` transaction so the
+  future command handler can retain every acquired row lock through source
+  transition, Memberships recalculation, audit, idempotency and commit.
+- Preserve ADR-016 mode behavior and lock order. Range replacement locks every
+  lifecycle-active Membership candidate before the old period/application
+  source rows; reason replacement preserves the old confirmed application
+  snapshot; cancel creates no replacement scope.
+
+Scope:
+
+- Add `CorrectNonWorkingDayCommandRevalidationPreparer` and its immutable result
+  contract. Successful preparation returns the canonical Step 130 command,
+  current mode-specific confirmation material, optional range replacement
+  impact and authenticated token metadata while the caller transaction remains
+  open.
+- Revalidate the command actor against the canonical active Owner account and
+  session inside the same consistent database snapshot.
+- Reuse the Memberships-owned replacement impact preparer before the Step 125
+  source preparer for `replace_range`; prepare only the locked original source
+  for `replace_reason` and `cancel`.
+- Extract one internal correction confirmation-material factory and use it from
+  both the Owner preview query and command revalidation so token fingerprints
+  cannot drift through duplicate mode composition logic.
+- Map missing, canceled, already-corrected and inconsistent canonical sources
+  to stable command errors. Map authenticated expiry to `PreviewExpired`,
+  authenticated material/scope drift to `AffectedScopeChanged`, and malformed
+  or tampered tokens to `ValidationFailed`.
+- Register the revalidation preparer as scoped. Add no command handler, source
+  status/replacement/cancellation writes, `SaveChanges`, transaction commit,
+  EF model/migration, recalculation persistence, business audit, idempotency
+  persistence or UI.
+- Extend the PostgreSQL fixture with one replacement-only Membership and prove
+  it is locked with the old source rows. Cover caller transaction isolation,
+  active Owner authorization, all three correction modes, exact current scope,
+  invalid/expired/mismatched tokens, missing source and unchanged source/cache/
+  audit/idempotency row counts.
+
+Validation:
+
+- Early Release build passed with 0 warnings/errors.
+- Focused configured PostgreSQL correction preparation/revalidation tests passed
+  10/10 with no skips against the healthy local Docker PostgreSQL service.
+- Focused correction preview plus HMAC correction-token regression passed 15/15
+  with no skips.
+- `dotnet format BodyLife.Crm.sln --no-restore --verify-no-changes` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 334 core tests, 35 web
+  tests, 434 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored byte-for-byte to `HEAD`, so no generated code graph
+  update is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked graph change.
+
+Commit:
+
+- `feat(nonworking-days): revalidate correction commands`.
+
+Next recommended step:
+
+- Implement only the complete Owner-authorized `CorrectNonWorkingDay` backend
+  command around Step 131's open-transaction revalidation: exact idempotency
+  replay, mode-specific retained source transitions and replacement/cancellation
+  facts, synchronous recalculation of the old/new Membership union, one
+  append-only business audit event and atomic success/rollback. Keep Owner UI,
+  profile/history presentation and report changes for later bounded steps.

@@ -148,6 +148,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CancelVisitSourcePreparer>();
         services.AddScoped<CancelFreezeSourcePreparer>();
         services.AddScoped<CorrectNonWorkingDaySourcePreparer>();
+        services.AddScoped<CorrectNonWorkingDayCommandRevalidationPreparer>();
         services.AddScoped<MembershipVisitFreezeSourceReader>();
         services.AddScoped<IMembershipVisitFreezeSourceProvider>(provider =>
             provider.GetRequiredService<MembershipVisitFreezeSourceReader>());

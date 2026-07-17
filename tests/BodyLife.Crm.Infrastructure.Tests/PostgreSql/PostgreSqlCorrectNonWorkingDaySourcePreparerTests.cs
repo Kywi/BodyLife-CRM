@@ -1,9 +1,14 @@
 using System.Data;
+using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Infrastructure.Persistence.Freezes;
+using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.NonWorkingDays;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,14 +30,21 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
         "10000000-0000-0000-0000-000000000001");
     private static readonly Guid SecondClientId = Guid.Parse(
         "10000000-0000-0000-0000-000000000002");
+    private static readonly Guid ThirdClientId = Guid.Parse(
+        "10000000-0000-0000-0000-000000000003");
     private static readonly Guid FirstMembershipId = Guid.Parse(
         "20000000-0000-0000-0000-000000000001");
     private static readonly Guid SecondMembershipId = Guid.Parse(
         "20000000-0000-0000-0000-000000000002");
+    private static readonly Guid ThirdMembershipId = Guid.Parse(
+        "20000000-0000-0000-0000-000000000003");
     private static readonly Guid FirstApplicationId = Guid.Parse(
         "30000000-0000-0000-0000-000000000001");
     private static readonly Guid SecondApplicationId = Guid.Parse(
         "30000000-0000-0000-0000-000000000002");
+    private static readonly DateRange ReplacementPeriod = new(
+        new DateOnly(2026, 2, 3),
+        new DateOnly(2026, 2, 4));
 
     [PostgreSqlFact]
     public async Task PreparationRequiresAConsistentCallerTransaction()
@@ -276,14 +288,285 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
         await canceledTransaction.RollbackAsync();
     }
 
+    [PostgreSqlFact]
+    public async Task CommandRevalidationRequiresCallerOwnedConsistentTransaction()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var commandPreparation = CreateCommandPreparation(
+            fixture,
+            NonWorkingDayCorrectionMode.Cancel,
+            "bodylife-nwd-correction-v1.invalid.signature");
+        var preparer = CreateCommandRevalidationPreparer(
+            dbContext,
+            CreateCorrectionTokenService(TestNow),
+            TestNow);
+
+        var missingTransaction = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => preparer.PrepareAsync(commandPreparation));
+        Assert.Contains(
+            "caller-owned",
+            missingTransaction.Message,
+            StringComparison.OrdinalIgnoreCase);
+
+        await using var readCommitted = await dbContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        var weakIsolation = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => preparer.PrepareAsync(commandPreparation));
+        Assert.Contains(
+            "RepeatableRead",
+            weakIsolation.Message,
+            StringComparison.Ordinal);
+        await readCommitted.RollbackAsync();
+    }
+
+    [PostgreSqlFact]
+    public async Task RangeCommandRevalidationAuthenticatesExactCurrentScopeWithoutWrites()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var tokenService = CreateCorrectionTokenService(TestNow);
+        var confirmation = await IssueConfirmationAsync(
+            dbContext,
+            fixture,
+            NonWorkingDayCorrectionMode.ReplaceRange,
+            tokenService);
+        var commandPreparation = CreateCommandPreparation(
+            fixture,
+            NonWorkingDayCorrectionMode.ReplaceRange,
+            confirmation.ConfirmationToken);
+        var before = await ReadWriteCountsAsync(database);
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.RepeatableRead);
+        var result = await CreateCommandRevalidationPreparer(
+                dbContext,
+                tokenService,
+                TestNow)
+            .PrepareAsync(commandPreparation);
+
+        Assert.True(result.IsPrepared);
+        Assert.Empty(result.Errors);
+        Assert.Same(commandPreparation, result.CommandPreparation);
+        var material = Assert.IsType<NonWorkingDayCorrectionConfirmationMaterial>(
+            result.ConfirmationMaterial);
+        Assert.Equal(fixture.PeriodId, material.PeriodId);
+        Assert.Equal(NonWorkingDayCorrectionMode.ReplaceRange, material.Mode);
+        Assert.Equal(ReplacementPeriod, material.ReplacementInput!.Period);
+        Assert.Equal("maintenance", material.ReplacementInput.ReasonCode);
+        Assert.Equal(2, material.OriginalSource.Applications.Count);
+        Assert.Equal(3, material.ReplacementScope!.AffectedMemberships.Count);
+        Assert.Contains(
+            material.ReplacementScope.AffectedMemberships,
+            item => item.MembershipId == ThirdMembershipId);
+        var replacementImpact = Assert.IsType<
+            MembershipNonWorkingDayReplacementImpactPreparation>(
+                result.ReplacementImpact);
+        Assert.Equal(
+            [FirstApplicationId, SecondApplicationId],
+            replacementImpact.ExcludedApplicationIds);
+        Assert.Equal(3, replacementImpact.AffectedCount);
+        var tokenValidation = Assert.IsType<NonWorkingDayCorrectionTokenValidation>(
+            result.TokenValidation);
+        Assert.Equal(NonWorkingDayCorrectionTokenValidationStatus.Valid,
+            tokenValidation.Status);
+        Assert.Equal(confirmation.ConfirmationFingerprint,
+            tokenValidation.ConfirmationFingerprint);
+        Assert.False(dbContext.ChangeTracker.HasChanges());
+        Assert.Equal(before, await ReadWriteCountsAsync(database));
+
+        await AssertRowLockUnavailableAsync(
+            database,
+            "issued_memberships",
+            ThirdMembershipId);
+        await AssertRowLockUnavailableAsync(
+            database,
+            "non_working_periods",
+            fixture.PeriodId);
+        await AssertRowLockUnavailableAsync(
+            database,
+            "non_working_period_applications",
+            FirstApplicationId);
+
+        await transaction.RollbackAsync();
+        Assert.Equal(before, await ReadWriteCountsAsync(database));
+    }
+
+    [PostgreSqlFact]
+    public async Task ReasonAndCancelCommandRevalidationPreserveModeSpecificScope()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var tokenService = CreateCorrectionTokenService(TestNow);
+        var before = await ReadWriteCountsAsync(database);
+
+        foreach (var mode in new[]
+                 {
+                     NonWorkingDayCorrectionMode.ReplaceReason,
+                     NonWorkingDayCorrectionMode.Cancel,
+                 })
+        {
+            var confirmation = await IssueConfirmationAsync(
+                dbContext,
+                fixture,
+                mode,
+                tokenService);
+            var commandPreparation = CreateCommandPreparation(
+                fixture,
+                mode,
+                confirmation.ConfirmationToken);
+
+            await using var transaction = await dbContext.Database
+                .BeginTransactionAsync(IsolationLevel.RepeatableRead);
+            var result = await CreateCommandRevalidationPreparer(
+                    dbContext,
+                    tokenService,
+                    TestNow)
+                .PrepareAsync(commandPreparation);
+
+            Assert.True(result.IsPrepared);
+            Assert.Empty(result.Errors);
+            Assert.Null(result.ReplacementImpact);
+            Assert.Equal(
+                NonWorkingDayCorrectionTokenValidationStatus.Valid,
+                result.TokenValidation!.Status);
+            if (mode == NonWorkingDayCorrectionMode.ReplaceReason)
+            {
+                Assert.Equal(
+                    NonWorkingDayCorrectionScopeBehavior
+                        .PreserveConfirmedApplications,
+                    result.ConfirmationMaterial!.ScopeBehavior);
+                Assert.Equal(
+                    result.ConfirmationMaterial.OriginalSource.Period,
+                    result.ConfirmationMaterial.ReplacementInput!.Period);
+                Assert.Equal(
+                    [FirstMembershipId, SecondMembershipId],
+                    result.ConfirmationMaterial.PreservedScope!.AffectedMemberships
+                        .Select(item => item.MembershipId));
+            }
+            else
+            {
+                Assert.Equal(
+                    NonWorkingDayCorrectionScopeBehavior.NoReplacement,
+                    result.ConfirmationMaterial!.ScopeBehavior);
+                Assert.Null(result.ConfirmationMaterial.ReplacementInput);
+                Assert.Null(result.ConfirmationMaterial.ConfirmedScope);
+            }
+
+            Assert.Equal(before, await ReadWriteCountsAsync(database));
+            await transaction.RollbackAsync();
+        }
+
+        var owner = OwnerActor(fixture);
+        var adminPreparation = CreateCommandPreparation(
+            fixture,
+            NonWorkingDayCorrectionMode.Cancel,
+            (await IssueConfirmationAsync(
+                dbContext,
+                fixture,
+                NonWorkingDayCorrectionMode.Cancel,
+                tokenService)).ConfirmationToken,
+            owner with
+            {
+                Role = ActorRole.Admin,
+                AccountKind = AccountKind.NamedAdmin,
+            });
+        var denied = await ExecuteRevalidationAsync(
+            dbContext,
+            tokenService,
+            TestNow,
+            adminPreparation);
+
+        AssertRejected(denied, CommandErrorCode.PermissionDenied, field: null);
+        Assert.Equal(before, await ReadWriteCountsAsync(database));
+    }
+
+    [PostgreSqlFact]
+    public async Task CommandRevalidationMapsSourceAndTokenFailuresToStableErrors()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var issuingTokenService = CreateCorrectionTokenService(TestNow);
+        var confirmation = await IssueConfirmationAsync(
+            dbContext,
+            fixture,
+            NonWorkingDayCorrectionMode.ReplaceRange,
+            issuingTokenService);
+        var before = await ReadWriteCountsAsync(database);
+
+        var invalidToken = await ExecuteRevalidationAsync(
+            dbContext,
+            issuingTokenService,
+            TestNow,
+            CreateCommandPreparation(
+                fixture,
+                NonWorkingDayCorrectionMode.ReplaceRange,
+                "bodylife-nwd-correction-v1.invalid.signature"));
+        AssertRejected(
+            invalidToken,
+            CommandErrorCode.ValidationFailed,
+            "confirmationToken");
+
+        var changedMaterial = await ExecuteRevalidationAsync(
+            dbContext,
+            issuingTokenService,
+            TestNow,
+            CreateCommandPreparation(
+                fixture,
+                NonWorkingDayCorrectionMode.ReplaceRange,
+                confirmation.ConfirmationToken,
+                replacementReasonCode: "changed_maintenance"));
+        AssertRejected(
+            changedMaterial,
+            CommandErrorCode.AffectedScopeChanged,
+            "confirmationToken");
+
+        var expired = await ExecuteRevalidationAsync(
+            dbContext,
+            CreateCorrectionTokenService(TestNow.AddMinutes(6)),
+            TestNow.AddMinutes(6),
+            CreateCommandPreparation(
+                fixture,
+                NonWorkingDayCorrectionMode.ReplaceRange,
+                confirmation.ConfirmationToken));
+        AssertRejected(
+            expired,
+            CommandErrorCode.PreviewExpired,
+            "confirmationToken");
+
+        var missing = await ExecuteRevalidationAsync(
+            dbContext,
+            issuingTokenService,
+            TestNow,
+            CreateCommandPreparation(
+                fixture,
+                NonWorkingDayCorrectionMode.ReplaceRange,
+                confirmation.ConfirmationToken,
+                periodId: Guid.NewGuid()));
+        AssertRejected(missing, CommandErrorCode.NotFound, "periodId");
+
+        Assert.Equal(before, await ReadWriteCountsAsync(database));
+    }
+
     [Fact]
-    public void PersistenceRegistrationResolvesSourcePreparer()
+    public void PersistenceRegistrationResolvesCorrectionPreparers()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:BodyLife"] =
                     "Host=localhost;Database=bodylife;Username=bodylife;Password=test",
+                [$"{NonWorkingDayPreviewTokenOptions.SectionName}:"
+                    + NonWorkingDayPreviewTokenOptions.SigningKeyName] =
+                    SigningKey(),
             })
             .Build();
         var services = new ServiceCollection();
@@ -294,6 +577,9 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
         Assert.IsType<CorrectNonWorkingDaySourcePreparer>(
             scope.ServiceProvider
                 .GetRequiredService<CorrectNonWorkingDaySourcePreparer>());
+        Assert.IsType<CorrectNonWorkingDayCommandRevalidationPreparer>(
+            scope.ServiceProvider.GetRequiredService<
+                CorrectNonWorkingDayCommandRevalidationPreparer>());
     }
 
     private static async Task<SourceFixture> SeedFixtureAsync(
@@ -403,6 +689,20 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
                     'active',
                     @recorded_at,
                     @account_id,
+                    @recorded_at),
+                (
+                    @third_client_id,
+                    'Correction',
+                    'Third',
+                    null,
+                    'CORRECTION THIRD',
+                    null,
+                    null,
+                    null,
+                    null,
+                    'active',
+                    @recorded_at,
+                    @account_id,
                     @recorded_at);
 
             insert into bodylife.issued_memberships (
@@ -451,6 +751,23 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
                     'UAH',
                     '2026-01-15'::date,
                     '2026-02-13'::date,
+                    @recorded_at,
+                    @account_id,
+                    'active',
+                    'normal',
+                    null,
+                    null),
+                (
+                    @third_membership_id,
+                    @third_client_id,
+                    @membership_type_id,
+                    'Correction source fixture',
+                    30,
+                    8,
+                    1000,
+                    'UAH',
+                    '2026-02-03'::date,
+                    '2026-03-04'::date,
                     @recorded_at,
                     @account_id,
                     'active',
@@ -532,8 +849,10 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
         command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
         command.Parameters.AddWithValue("first_client_id", FirstClientId);
         command.Parameters.AddWithValue("second_client_id", SecondClientId);
+        command.Parameters.AddWithValue("third_client_id", ThirdClientId);
         command.Parameters.AddWithValue("first_membership_id", FirstMembershipId);
         command.Parameters.AddWithValue("second_membership_id", SecondMembershipId);
+        command.Parameters.AddWithValue("third_membership_id", ThirdMembershipId);
         command.Parameters.AddWithValue("first_application_id", FirstApplicationId);
         command.Parameters.AddWithValue("second_application_id", SecondApplicationId);
         command.Parameters.AddWithValue("period_id", periodId);
@@ -544,7 +863,7 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
         command.Parameters.AddWithValue("previewed_at", TestNow.AddMinutes(-5));
         command.Parameters.AddWithValue("recorded_at", TestNow);
         command.Parameters.AddWithValue("expires_at", TestNow.AddHours(12));
-        Assert.Equal(9 + (includeCancellation ? 1 : 0),
+        Assert.Equal(11 + (includeCancellation ? 1 : 0),
             await command.ExecuteNonQueryAsync());
         dbContext.ChangeTracker.Clear();
 
@@ -553,6 +872,216 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
             sessionId,
             periodId,
             cancellationId);
+    }
+
+    private static CorrectNonWorkingDayCommandRevalidationPreparer
+        CreateCommandRevalidationPreparer(
+            BodyLifeDbContext dbContext,
+            INonWorkingDayCorrectionTokenService tokenService,
+            DateTimeOffset now)
+    {
+        return new CorrectNonWorkingDayCommandRevalidationPreparer(
+            dbContext,
+            CreateReplacementPreparer(dbContext, now),
+            new CorrectNonWorkingDaySourcePreparer(dbContext),
+            tokenService,
+            new FixedTimeProvider(now));
+    }
+
+    private static MembershipNonWorkingDayReplacementImpactPreparer
+        CreateReplacementPreparer(
+            BodyLifeDbContext dbContext,
+            DateTimeOffset now)
+    {
+        var nonWorkingDaySourceReader =
+            new MembershipNonWorkingDayExtensionSourceReader(dbContext);
+        var affectedScopePreparer = new MembershipNonWorkingDayAffectedScopePreparer(
+            dbContext,
+            new MembershipStateCacheRebuilder(
+                dbContext,
+                new FixedTimeProvider(now),
+                [
+                    new MembershipFreezeExtensionSourceReader(dbContext),
+                    nonWorkingDaySourceReader,
+                ]));
+        return new MembershipNonWorkingDayReplacementImpactPreparer(
+            affectedScopePreparer,
+            nonWorkingDaySourceReader);
+    }
+
+    private static HmacNonWorkingDayCorrectionTokenService
+        CreateCorrectionTokenService(DateTimeOffset now)
+    {
+        return new HmacNonWorkingDayCorrectionTokenService(
+            new NonWorkingDayPreviewTokenOptions(
+                SigningKey(),
+                TimeSpan.FromMinutes(5)),
+            new FixedTimeProvider(now));
+    }
+
+    private static async Task<NonWorkingDayCorrectionConfirmation>
+        IssueConfirmationAsync(
+            BodyLifeDbContext dbContext,
+            SourceFixture fixture,
+            NonWorkingDayCorrectionMode mode,
+            INonWorkingDayCorrectionTokenService tokenService)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.RepeatableRead);
+        MembershipNonWorkingDayReplacementImpactPreparation? replacementImpact = null;
+        NonWorkingDayPreviewInput? replacementInput = null;
+        if (mode == NonWorkingDayCorrectionMode.ReplaceRange)
+        {
+            replacementInput = new NonWorkingDayPreviewInput(
+                ReplacementPeriod,
+                "maintenance",
+                "Boiler replacement");
+            replacementImpact = await CreateReplacementPreparer(dbContext, TestNow)
+                .PrepareReplacementImpactAsync(
+                    fixture.PeriodId,
+                    ReplacementPeriod);
+        }
+
+        var sourcePreparation = await new CorrectNonWorkingDaySourcePreparer(dbContext)
+            .PrepareAsync(fixture.PeriodId, mode);
+        var source = Assert.IsType<NonWorkingDayCorrectionSource>(
+            sourcePreparation.Source);
+        if (mode == NonWorkingDayCorrectionMode.ReplaceReason)
+        {
+            replacementInput = new NonWorkingDayPreviewInput(
+                source.Period,
+                "corrected_weather",
+                "Corrected explanation");
+        }
+
+        var material = mode switch
+        {
+            NonWorkingDayCorrectionMode.ReplaceRange =>
+                NonWorkingDayCorrectionConfirmationMaterial.ForReplaceRange(
+                    source,
+                    replacementInput!,
+                    replacementImpact!),
+            NonWorkingDayCorrectionMode.ReplaceReason =>
+                NonWorkingDayCorrectionConfirmationMaterial.ForReplaceReason(
+                    source,
+                    replacementInput!),
+            NonWorkingDayCorrectionMode.Cancel =>
+                NonWorkingDayCorrectionConfirmationMaterial.ForCancel(source),
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
+        };
+        var confirmation = tokenService.Issue(material);
+        await transaction.RollbackAsync();
+        return confirmation;
+    }
+
+    private static CorrectNonWorkingDayPreparation CreateCommandPreparation(
+        SourceFixture fixture,
+        NonWorkingDayCorrectionMode mode,
+        string confirmationToken,
+        ActorContext? actor = null,
+        string? replacementReasonCode = null,
+        Guid? periodId = null)
+    {
+        var command = new CorrectNonWorkingDayCommand(
+            new CommandEnvelope(
+                actor ?? OwnerActor(fixture),
+                new RequestCorrelationId("correct-non-working-day-revalidation"),
+                EntryOrigin.Normal,
+                TestNow,
+                "correct-non-working-day-revalidation-key",
+                "Owner corrected the closure schedule",
+                "Confirmed against the current correction preview"),
+            periodId ?? fixture.PeriodId,
+            mode,
+            mode == NonWorkingDayCorrectionMode.ReplaceRange
+                ? ReplacementPeriod.StartDate
+                : null,
+            mode == NonWorkingDayCorrectionMode.ReplaceRange
+                ? ReplacementPeriod.EndDate
+                : null,
+            mode switch
+            {
+                NonWorkingDayCorrectionMode.ReplaceRange =>
+                    replacementReasonCode ?? "maintenance",
+                NonWorkingDayCorrectionMode.ReplaceReason =>
+                    replacementReasonCode ?? "corrected_weather",
+                _ => null,
+            },
+            mode switch
+            {
+                NonWorkingDayCorrectionMode.ReplaceRange => "Boiler replacement",
+                NonWorkingDayCorrectionMode.ReplaceReason => "Corrected explanation",
+                _ => null,
+            },
+            confirmationToken);
+        var result = CorrectNonWorkingDayPreparationPolicy.Prepare(command);
+
+        Assert.True(result.IsPrepared);
+        Assert.Empty(result.Errors);
+        return Assert.IsType<CorrectNonWorkingDayPreparation>(result.Preparation);
+    }
+
+    private static async Task<CorrectNonWorkingDayCommandRevalidationResult>
+        ExecuteRevalidationAsync(
+            BodyLifeDbContext dbContext,
+            INonWorkingDayCorrectionTokenService tokenService,
+            DateTimeOffset now,
+            CorrectNonWorkingDayPreparation commandPreparation)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.RepeatableRead);
+        var result = await CreateCommandRevalidationPreparer(
+                dbContext,
+                tokenService,
+                now)
+            .PrepareAsync(commandPreparation);
+        await transaction.RollbackAsync();
+        return result;
+    }
+
+    private static ActorContext OwnerActor(SourceFixture fixture)
+    {
+        return new ActorContext(
+            new AccountId(fixture.AccountId),
+            ActorRole.Owner,
+            AccountKind.Owner,
+            new SessionId(fixture.SessionId),
+            "Owner laptop");
+    }
+
+    private static void AssertRejected(
+        CorrectNonWorkingDayCommandRevalidationResult result,
+        CommandErrorCode code,
+        string? field)
+    {
+        Assert.False(result.IsPrepared);
+        Assert.Null(result.CommandPreparation);
+        Assert.Null(result.ConfirmationMaterial);
+        Assert.Null(result.ReplacementImpact);
+        Assert.Null(result.TokenValidation);
+        var error = Assert.Single(result.Errors);
+        Assert.Equal(code, error.Code);
+        Assert.Equal(field, error.Field);
+        Assert.False(string.IsNullOrWhiteSpace(error.Message));
+    }
+
+    private static async Task<CorrectionWriteCounts> ReadWriteCountsAsync(
+        PostgreSqlTestDatabase database)
+    {
+        return new CorrectionWriteCounts(
+            await CountRowsAsync(database, "non_working_periods"),
+            await CountRowsAsync(database, "non_working_period_applications"),
+            await CountRowsAsync(database, "non_working_period_cancellations"),
+            await CountRowsAsync(database, "membership_state_cache"),
+            await CountRowsAsync(database, "membership_extension_days"),
+            await CountRowsAsync(database, "business_audit_entries"),
+            await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    private static string SigningKey()
+    {
+        return Convert.ToBase64String(
+            Enumerable.Range(1, 32).Select(value => (byte)value).ToArray());
     }
 
     private static async Task SetStatusesAsync(
@@ -624,6 +1153,15 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
         Guid SessionId,
         Guid PeriodId,
         Guid? CancellationId);
+
+    private sealed record CorrectionWriteCounts(
+        long Periods,
+        long Applications,
+        long Cancellations,
+        long StateCacheRows,
+        long ExtensionRows,
+        long AuditEntries,
+        long IdempotencyRows);
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
