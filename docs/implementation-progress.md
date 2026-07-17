@@ -6426,3 +6426,87 @@ Next recommended step:
   ADR-016 policy and return the exact ordered Membership/Client/full-range set
   without writing source/cache/audit rows. Keep public preview tokens,
   Add/Correct commands, recalculation orchestration and UI for later steps.
+
+## Step 121 - NonWorkingDay affected Membership scope preparation
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement only the internal PostgreSQL preparation boundary recommended after
+  Step 120, before public preview/token, Add/Correct command, recalculation
+  orchestration, audit or UI work.
+- Keep NonWorkingDays responsible for period/application source facts while
+  Memberships owns canonical state calculation and the ADR-016 eligibility/full-
+  period policy. Expose the result through a narrow approved Memberships
+  contract instead of letting NonWorkingDays reference formula implementations.
+- Require a caller-owned `RepeatableRead` or `Serializable` transaction so the
+  ordered candidate set and all canonical source reads share one consistent
+  PostgreSQL snapshot.
+
+Scope:
+
+- Add `IMembershipNonWorkingDayAffectedScopePreparer` and immutable
+  `MembershipNonWorkingDayAffectedScope` contract models. The contract requires
+  non-empty Membership/Client identities, unique Memberships, deterministic
+  Membership-id order and the exact full proposed period on every result item.
+- Add `MembershipNonWorkingDayAffectedScopePreparer` under Memberships
+  persistence and register the concrete/scoped interface pair. It locks every
+  lifecycle-active issued Membership in `id` order with `FOR UPDATE`, calculates
+  canonical pre-command state from current opening, adjustment, Visit, Freeze
+  and accepted NonWorkingDay sources, invokes the pure ADR-016 policy and returns
+  only eligible Membership/Client/full-range rows.
+- Split the read-only canonical calculation phase inside
+  `MembershipStateCacheRebuilder` from its existing cache/explanation persistence
+  phase. Ordinary rebuild behavior remains unchanged, while affected-scope
+  preparation can reuse the same source-based formulas without `SaveChanges`.
+- Extend the Membership formula ownership gate with only the new interface and
+  scope read models as approved cross-module contracts. The first full gate
+  correctly rejected a preparer placed under NonWorkingDays because it referenced
+  Memberships policy/state implementations; the implementation was moved back
+  under the Memberships owner before final validation.
+- Add three focused tests for DI identity, transaction/isolation guards and the
+  exact PostgreSQL scope. The database scenario covers both inclusive endpoints,
+  an inactive Client, a canceled Membership, a no-overlap active candidate,
+  accepted Freeze extension over a deliberately stale cache, deterministic
+  output, active-candidate row locks and unchanged source/cache/extension/audit/
+  idempotency state observed inside the caller transaction.
+- Add no EF model/migration, public preview query, fingerprint/token, period or
+  application write, command, audit event, recalculation orchestration or UI.
+
+Validation:
+
+- Focused `PostgreSqlNonWorkingDayAffectedScopePreparerTests` passed 3/3 in
+  Release against local Docker PostgreSQL; the focused Membership formula
+  ownership checks passed 2/2 after correcting the module boundary.
+- `dotnet format BodyLife.Crm.sln --verbosity minimal --no-restore` passed and
+  the final validation gate's `--verify-no-changes` check also passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 288 core tests, 35 web
+  tests, 395 PostgreSQL/architecture infrastructure tests, 37 Playwright smoke
+  tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- Rebuilt `dotnet-ef migrations has-pending-model-changes` passed with no model
+  changes since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was removed, so no generated graph update is claimed in this step.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(memberships): prepare nonworking day scope`.
+
+Next recommended step:
+
+- Add only a tamper-resistant, expiring NonWorkingDay preview confirmation
+  token/fingerprint foundation over normalized proposed period/reason input and
+  the exact ordered Membership/Client/full-range scope. Cover deterministic
+  fingerprints, expiry, tampering, key/configuration validation and scope/input
+  mismatch without yet adding the public preview query, Add/Correct commands,
+  source/cache/audit writes or UI.

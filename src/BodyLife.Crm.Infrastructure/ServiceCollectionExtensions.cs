@@ -146,6 +146,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MembershipNonWorkingDayExtensionSourceReader>();
         services.AddScoped<IMembershipExtensionSourceProvider>(provider =>
             provider.GetRequiredService<MembershipNonWorkingDayExtensionSourceReader>());
+        services.AddScoped<MembershipNonWorkingDayAffectedScopePreparer>();
+        services.AddScoped<IMembershipNonWorkingDayAffectedScopePreparer>(provider =>
+            provider.GetRequiredService<MembershipNonWorkingDayAffectedScopePreparer>());
         services.AddScoped<
             IMembershipVisitEligibilityEvaluator,
             MembershipVisitEligibilityEvaluator>();

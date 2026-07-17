@@ -89,6 +89,73 @@ public sealed class MembershipStateCacheRebuilder
             return MembershipStateCacheRebuildResult.MissingSource(membershipId);
         }
 
+        var canonical = await CalculateCanonicalStateAfterMembershipLockAsync(
+            source,
+            cancellationToken);
+        var calculatedState = canonical.State;
+        var extensionCalculation = canonical.ExtensionCalculation;
+        var cache = await dbContext.Set<MembershipStateCacheRecord>()
+            .SingleOrDefaultAsync(
+                state => state.MembershipId == membershipId,
+                cancellationToken);
+        var rebuildStatus = cache switch
+        {
+            null => MembershipStateCacheRebuildStatus.Created,
+            _ when Matches(cache, calculatedState) => MembershipStateCacheRebuildStatus.Verified,
+            _ => MembershipStateCacheRebuildStatus.Repaired,
+        };
+
+        if (cache is null)
+        {
+            cache = new MembershipStateCacheRecord
+            {
+                MembershipId = membershipId,
+            };
+            dbContext.Set<MembershipStateCacheRecord>().Add(cache);
+        }
+
+        var recalculatedAt = timeProvider.GetUtcNow();
+        ApplyCalculatedState(cache, calculatedState, recalculatedAt);
+        if (extensionCalculation is not null)
+        {
+            await MembershipExtensionDayWriter.ReplaceAfterMembershipLockAsync(
+                dbContext,
+                membershipId,
+                extensionCalculation,
+                recalculatedAt,
+                cancellationToken);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        if (ownedTransaction is not null)
+        {
+            await ownedTransaction.CommitAsync(cancellationToken);
+        }
+
+        return MembershipStateCacheRebuildResult.Completed(
+            rebuildStatus,
+            membershipId,
+            calculatedState,
+            recalculatedAt,
+            CurrentRecalculationVersion);
+    }
+
+    internal async Task<MembershipCanonicalStateCalculation>
+        CalculateCanonicalStateAfterMembershipLockAsync(
+            IssuedMembershipRecord source,
+            CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        if (dbContext.Database.CurrentTransaction is null)
+        {
+            throw new InvalidOperationException(
+                "Canonical Membership state calculation requires a caller-owned "
+                + "database transaction and an already locked Membership source.");
+        }
+
+        var membershipId = source.Id;
         var snapshot = new IssuedMembershipSnapshot(
             source.TypeNameSnapshot,
             source.DurationDaysSnapshot,
@@ -189,51 +256,10 @@ public sealed class MembershipStateCacheRebuilder
                     extensionCalculation);
         }
 
-        var cache = await dbContext.Set<MembershipStateCacheRecord>()
-            .SingleOrDefaultAsync(
-                state => state.MembershipId == membershipId,
-                cancellationToken);
-        var rebuildStatus = cache switch
-        {
-            null => MembershipStateCacheRebuildStatus.Created,
-            _ when Matches(cache, calculatedState) => MembershipStateCacheRebuildStatus.Verified,
-            _ => MembershipStateCacheRebuildStatus.Repaired,
-        };
-
-        if (cache is null)
-        {
-            cache = new MembershipStateCacheRecord
-            {
-                MembershipId = membershipId,
-            };
-            dbContext.Set<MembershipStateCacheRecord>().Add(cache);
-        }
-
-        var recalculatedAt = timeProvider.GetUtcNow();
-        ApplyCalculatedState(cache, calculatedState, recalculatedAt);
-        if (extensionCalculation is not null)
-        {
-            await MembershipExtensionDayWriter.ReplaceAfterMembershipLockAsync(
-                dbContext,
-                membershipId,
-                extensionCalculation,
-                recalculatedAt,
-                cancellationToken);
-        }
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        if (ownedTransaction is not null)
-        {
-            await ownedTransaction.CommitAsync(cancellationToken);
-        }
-
-        return MembershipStateCacheRebuildResult.Completed(
-            rebuildStatus,
-            membershipId,
+        return new MembershipCanonicalStateCalculation(
+            issueTerms,
             calculatedState,
-            recalculatedAt,
-            CurrentRecalculationVersion);
+            extensionCalculation);
     }
 
     private static bool Matches(
