@@ -148,6 +148,61 @@ public sealed class ClientProfileMembershipProjectionTests
     }
 
     [Fact]
+    public void ExtensionExplanationsAreGroupedIntoTheirMembershipRowsAndRemainReadOnly()
+    {
+        var collection = ClientMembershipStatesPolicy.Create(
+            ClientId,
+            AsOfDate,
+            [
+                CreateItem(
+                    CurrentMembershipId,
+                    new DateOnly(2026, 7, 1),
+                    IssuedMembershipLifecycleStatus.Active,
+                    remainingVisits: 1),
+                CreateItem(
+                    HistoricalMembershipId,
+                    new DateOnly(2026, 6, 1),
+                    IssuedMembershipLifecycleStatus.Canceled,
+                    remainingVisits: 4),
+            ]);
+        var currentFreeze = new MembershipExtensionExplanation(
+            CurrentMembershipId,
+            MembershipExtensionSourceKind.Freeze,
+            Guid.Parse("55555555-5555-5555-5555-555555555555"),
+            nonWorkingPeriodId: null,
+            new DateRange(new DateOnly(2026, 7, 10), new DateOnly(2026, 7, 12)),
+            MembershipExtensionSourceStatus.Active,
+            "Medical pause");
+        var historicalApplication = new MembershipExtensionExplanation(
+            HistoricalMembershipId,
+            MembershipExtensionSourceKind.NonWorkingDay,
+            Guid.Parse("66666666-6666-6666-6666-666666666666"),
+            Guid.Parse("77777777-7777-7777-7777-777777777777"),
+            new DateRange(new DateOnly(2026, 6, 15), new DateOnly(2026, 6, 16)),
+            MembershipExtensionSourceStatus.Corrected,
+            "repair - Floor repair");
+
+        var projection = ClientProfileMembershipProjection.Project(
+            collection,
+            [currentFreeze, historicalApplication]);
+
+        var currentSummary = projection.Timeline.Single(
+            summary => summary.MembershipId == CurrentMembershipId);
+        Assert.Same(currentSummary, projection.CurrentMembership);
+        Assert.Same(currentFreeze, Assert.Single(currentSummary.ExtensionExplanations));
+        var historicalSummary = projection.Timeline.Single(
+            summary => summary.MembershipId == HistoricalMembershipId);
+        Assert.Same(
+            historicalApplication,
+            Assert.Single(historicalSummary.ExtensionExplanations));
+
+        var explanations = Assert.IsAssignableFrom<IList<MembershipExtensionExplanation>>(
+            currentSummary.ExtensionExplanations);
+        Assert.True(explanations.IsReadOnly);
+        Assert.Throws<NotSupportedException>(() => explanations.Add(currentFreeze));
+    }
+
+    [Fact]
     public void RecalculationFailureContainsNoPartialProfile()
     {
         var result = GetClientProfileResult.RecalculationFailed();

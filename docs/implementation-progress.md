@@ -7430,3 +7430,92 @@ Next recommended step:
   facts, including range, source status and reason labels, with focused query
   and PostgreSQL tests. Keep Razor rendering, Owner NonWorkingDay management UI,
   reports and general audit/history screens for later bounded steps.
+
+## Step 133 - Client-profile extension explanation projection
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue the roadmap's `profile/history extension explanation rows` task
+  immediately after the complete Freeze and NonWorkingDay retained-source
+  workflows. This bounded step adds the backend profile projection only.
+- Preserve ADR-004 ownership: Freezes and NonWorkingDays remain owners of their
+  canonical source facts, while Memberships exposes the public explanation read
+  contract and Clients/Search only composes that contract into the profile.
+- Keep Razor/htmx rendering, Add/CancelFreeze UI, Owner NonWorkingDay management,
+  reports and the Milestone 10 general client/audit history screens outside this
+  step.
+
+Scope:
+
+- Add the public Memberships
+  `GetClientMembershipExtensionExplanations` query/result contract with an
+  immutable collection of source-kind, source/application identity, optional
+  NonWorkingDay period identity, inclusive range, effective source status and
+  normalized reason label.
+- Add the PostgreSQL query handler and scoped DI registration. It reads retained
+  `freezes` and `non_working_period_applications` joined to their canonical
+  periods, never derives extension totals or effective end dates, and returns a
+  deterministic active-first, newest-range-first order per Membership.
+- Treat a NonWorkingDay explanation as active only when both its period and
+  application are active. Any corrected component produces `Corrected`;
+  otherwise any canceled component produces `Canceled`, matching the existing
+  Memberships source-reader semantics.
+- Return only active source rows for an ordinary profile read. When
+  `IncludeHistory` is requested, return both active and retained inactive rows so
+  canceled/corrected Freeze and NonWorkingDay reasons remain explainable.
+- Extend each canonical `ClientMembershipSummary` row with its read-only source
+  explanations. `GetClientProfile` verifies client/membership ownership and
+  unique source identities, maps query failures without partial profile data,
+  and passes `IncludeHistory` through as the inactive-source switch.
+- Approve only the new public query/read-model types in the Membership formula
+  ownership architecture gate. No formula implementation, cross-module write,
+  EF model/migration, Razor view, report or audit-history query was added.
+- Add pure projection coverage plus focused PostgreSQL query/profile tests for
+  ordering, source identities, ranges, reason labels, active/inactive filtering,
+  independent period/application inactive status, authorization, validation,
+  not-found behavior, DI registration, immutable collections and atomic profile
+  failure mapping.
+
+Validation:
+
+- Early and post-fix Release builds passed with 0 warnings/errors.
+- Focused `ClientProfileMembershipProjectionTests` passed 6/6.
+- Focused extension query/profile PostgreSQL tests initially passed 19/19; after
+  reviewing independent NonWorkingDay component statuses, the final focused
+  architecture/query/profile suite passed 21/21 with no skips.
+- The first full gate correctly rejected the unreviewed public Memberships
+  contracts through `MembershipFormulaOwnershipTests`; after adding only those
+  read-contract types to the allowlist, the final gate passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 335 core tests, 35 web
+  tests, 449 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored byte-for-byte to `HEAD`, so no generated code graph update
+  is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked graph change.
+
+Commit:
+
+- `feat(memberships): expose profile extension explanations`.
+
+Next recommended step:
+
+- Render only the Step 133 extension explanation rows in the reception client
+  profile Membership timeline/panel. Show source kind, inclusive range,
+  active/canceled/corrected status and reason label in tablet-first and
+  phone-safe Razor/htmx output, with focused web and Playwright coverage. Keep
+  Add/CancelFreeze forms, Owner NonWorkingDay management, reports and general
+  audit/history screens for later bounded steps.

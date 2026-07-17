@@ -13,12 +13,35 @@ public static class ClientProfileMembershipProjection
         ]);
 
     public static ClientProfileMembershipArea Project(
-        ClientMembershipStatesReadModel stateCollection)
+        ClientMembershipStatesReadModel stateCollection,
+        IEnumerable<MembershipExtensionExplanation>? extensionExplanations = null)
     {
         ArgumentNullException.ThrowIfNull(stateCollection);
 
+        var explanationItems = extensionExplanations?.ToArray() ?? [];
+        if (explanationItems.Any(item => item is null))
+        {
+            throw new ArgumentException(
+                "Extension explanations cannot contain a missing item.",
+                nameof(extensionExplanations));
+        }
+
+        var membershipIds = stateCollection.Timeline
+            .Select(item => item.State.MembershipId)
+            .ToHashSet();
+        if (explanationItems.Any(item => !membershipIds.Contains(item.MembershipId)))
+        {
+            throw new ArgumentException(
+                "Extension explanations must belong to a projected Membership.",
+                nameof(extensionExplanations));
+        }
+
+        var explanationsByMembershipId = explanationItems.ToLookup(
+            explanation => explanation.MembershipId);
         var timeline = stateCollection.Timeline
-            .Select(ProjectSummary)
+            .Select(item => ProjectSummary(
+                item,
+                explanationsByMembershipId[item.State.MembershipId]))
             .ToArray();
         var readOnlyTimeline = Array.AsReadOnly(timeline);
         var selection = stateCollection.ActiveCandidateSelection;
@@ -64,14 +87,18 @@ public static class ClientProfileMembershipProjection
     }
 
     private static ClientMembershipSummary ProjectSummary(
-        ClientMembershipStateTimelineItem item)
+        ClientMembershipStateTimelineItem item,
+        IEnumerable<MembershipExtensionExplanation> extensionExplanations)
     {
+        var readOnlyExplanations = Array.AsReadOnly(extensionExplanations.ToArray());
+
         return new ClientMembershipSummary(
             item.State.MembershipId,
             item.State.Snapshot.TypeName,
             MapStatus(item),
             item.State.RemainingVisits,
-            item.State.EffectiveEndDate);
+            item.State.EffectiveEndDate,
+            readOnlyExplanations);
     }
 
     private static string MapStatus(ClientMembershipStateTimelineItem item)

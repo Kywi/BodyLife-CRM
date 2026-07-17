@@ -1,3 +1,5 @@
+using BodyLife.Crm.Modules.Memberships;
+
 namespace BodyLife.Crm.Modules.Clients.Search;
 
 public sealed record ClientMembershipSummary(
@@ -5,4 +7,5 @@ public sealed record ClientMembershipSummary(
     string TypeNameSnapshot,
     string Status,
     int RemainingVisits,
-    DateOnly EffectiveEndDate);
+    DateOnly EffectiveEndDate,
+    IReadOnlyList<MembershipExtensionExplanation> ExtensionExplanations);

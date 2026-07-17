@@ -11,6 +11,10 @@ public sealed class GetClientProfileQueryHandler(
     BodyLifeDbContext dbContext,
     IBodyLifeQueryHandler<GetClientMembershipStatesQuery, GetClientMembershipStatesResult>
         getClientMembershipStates,
+    IBodyLifeQueryHandler<
+        GetClientMembershipExtensionExplanationsQuery,
+        GetClientMembershipExtensionExplanationsResult>
+        getClientMembershipExtensionExplanations,
     IBodyLifeQueryHandler<GetClientVisitRowsQuery, GetClientVisitRowsResult>
         getClientVisitRows,
     IBodyLifeQueryHandler<GetClientPaymentRowsQuery, GetClientPaymentRowsResult>
@@ -119,6 +123,40 @@ public sealed class GetClientProfileQueryHandler(
             return GetClientProfileResult.RecalculationFailed();
         }
 
+        var extensionExplanationsResult =
+            await getClientMembershipExtensionExplanations.ExecuteAsync(
+                new GetClientMembershipExtensionExplanationsQuery(
+                    query.Actor,
+                    query.ClientId,
+                    IncludeInactiveSources: query.IncludeHistory),
+                cancellationToken);
+        if (extensionExplanationsResult.Status
+            != GetClientMembershipExtensionExplanationsStatus.Success)
+        {
+            return MapExtensionExplanationsFailure(extensionExplanationsResult);
+        }
+
+        if (extensionExplanationsResult.Explanations is not { } extensionExplanations
+            || extensionExplanations.ClientId != query.ClientId)
+        {
+            return GetClientProfileResult.InconsistentSource();
+        }
+
+        var membershipIds = membershipStates.Timeline
+            .Select(item => item.State.MembershipId)
+            .ToHashSet();
+        var explanationIdentities = extensionExplanations.Items
+            .Select(explanation => (
+                explanation.MembershipId,
+                explanation.SourceKind,
+                explanation.SourceId))
+            .ToArray();
+        if (explanationIdentities.Any(identity => !membershipIds.Contains(identity.MembershipId))
+            || explanationIdentities.Distinct().Count() != explanationIdentities.Length)
+        {
+            return GetClientProfileResult.InconsistentSource();
+        }
+
         ClientVisitRowsPage? recentVisits = null;
         ClientPaymentRowsPage? recentPayments = null;
         if (query.IncludeHistory)
@@ -175,7 +213,9 @@ public sealed class GetClientProfileQueryHandler(
             row.UpdatedAt,
             currentCard,
             membershipAsOfDate,
-            ClientProfileMembershipProjection.Project(membershipStates),
+            ClientProfileMembershipProjection.Project(
+                membershipStates,
+                extensionExplanations.Items),
             recentVisits,
             recentPayments,
             ClientQuerySupport.BuildWarnings(row.OperationalStatus, row.CurrentCardNumber),
@@ -219,6 +259,26 @@ public sealed class GetClientProfileQueryHandler(
                     visitRowsResult.ErrorMessage ?? "Visit history request is invalid.",
                     visitRowsResult.ErrorField),
             GetClientVisitRowsStatus.SourceInconsistent
+                => GetClientProfileResult.InconsistentSource(),
+            _ => GetClientProfileResult.InconsistentSource(),
+        };
+    }
+
+    private static GetClientProfileResult MapExtensionExplanationsFailure(
+        GetClientMembershipExtensionExplanationsResult extensionExplanationsResult)
+    {
+        return extensionExplanationsResult.Status switch
+        {
+            GetClientMembershipExtensionExplanationsStatus.PermissionDenied
+                => GetClientProfileResult.Denied(),
+            GetClientMembershipExtensionExplanationsStatus.NotFound
+                => GetClientProfileResult.Missing(),
+            GetClientMembershipExtensionExplanationsStatus.ValidationFailed
+                => GetClientProfileResult.Invalid(
+                    extensionExplanationsResult.ErrorMessage
+                        ?? "Membership extension explanation request is invalid.",
+                    extensionExplanationsResult.ErrorField),
+            GetClientMembershipExtensionExplanationsStatus.SourceInconsistent
                 => GetClientProfileResult.InconsistentSource(),
             _ => GetClientProfileResult.InconsistentSource(),
         };

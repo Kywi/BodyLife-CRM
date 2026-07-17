@@ -482,6 +482,80 @@ public sealed class PostgreSqlGetClientProfileQueryTests
     }
 
     [PostgreSqlFact]
+    public async Task ProfileMembershipRowsComposeActiveAndRequestedInactiveExtensionExplanations()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        var clientId = Guid.NewGuid();
+        await InsertClientAsync(
+            database,
+            clientId,
+            actor.AccountId.Value,
+            "Extension",
+            "Profile");
+        var membershipTypeId = await InsertMembershipTypeAsync(database);
+        var membershipId = await InsertMembershipAsync(
+            database,
+            clientId,
+            membershipTypeId,
+            actor.AccountId.Value,
+            new DateOnly(2026, 7, 1),
+            issuedAt: TestNow.AddDays(-11),
+            status: "active",
+            remainingVisits: 4);
+        var activeFreeze = new MembershipExtensionExplanation(
+            membershipId,
+            MembershipExtensionSourceKind.Freeze,
+            Guid.NewGuid(),
+            nonWorkingPeriodId: null,
+            new DateRange(new DateOnly(2026, 7, 10), new DateOnly(2026, 7, 12)),
+            MembershipExtensionSourceStatus.Active,
+            "Medical pause");
+        var correctedApplication = new MembershipExtensionExplanation(
+            membershipId,
+            MembershipExtensionSourceKind.NonWorkingDay,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new DateRange(new DateOnly(2026, 7, 5), new DateOnly(2026, 7, 6)),
+            MembershipExtensionSourceStatus.Corrected,
+            "repair - Floor repair");
+        var explanationsHandler = new StubExtensionExplanationsQueryHandler(query =>
+            GetClientMembershipExtensionExplanationsResult.Succeeded(
+                new ClientMembershipExtensionExplanations(
+                    query.ClientId,
+                    query.IncludeInactiveSources
+                        ? [activeFreeze, correctedApplication]
+                        : [activeFreeze])));
+        var handler = CreateHandler(
+            dbContext,
+            extensionExplanationsQueryHandler: explanationsHandler);
+
+        var ordinaryResult = await handler.ExecuteAsync(
+            new GetClientProfileQuery(actor, clientId),
+            CancellationToken.None);
+        var historyResult = await handler.ExecuteAsync(
+            new GetClientProfileQuery(actor, clientId, IncludeHistory: true),
+            CancellationToken.None);
+
+        AssertSuccessful(ordinaryResult);
+        Assert.Same(
+            activeFreeze,
+            Assert.Single(
+                ordinaryResult.Profile!.Membership.Timeline[0].ExtensionExplanations));
+        AssertSuccessful(historyResult);
+        Assert.Equal(
+            [activeFreeze, correctedApplication],
+            historyResult.Profile!.Membership.Timeline[0].ExtensionExplanations);
+        var capturedQuery = Assert.IsType<GetClientMembershipExtensionExplanationsQuery>(
+            explanationsHandler.LastQuery);
+        Assert.Equal(actor, capturedQuery.Actor);
+        Assert.Equal(clientId, capturedQuery.ClientId);
+        Assert.True(capturedQuery.IncludeInactiveSources);
+    }
+
+    [PostgreSqlFact]
     public async Task AmbiguousActiveMembershipsExposeNoCurrentSummaryAndServerWarning()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -638,6 +712,76 @@ public sealed class PostgreSqlGetClientProfileQueryTests
     }
 
     [PostgreSqlFact]
+    public async Task ExtensionExplanationFailuresNeverReturnPartialProfileData()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        var clientId = Guid.NewGuid();
+        await InsertClientAsync(
+            database,
+            clientId,
+            actor.AccountId.Value,
+            "Atomic",
+            "Extensions");
+        var cases = new[]
+        {
+            (
+                ExtensionResult: GetClientMembershipExtensionExplanationsResult.Denied(),
+                ProfileStatus: GetClientProfileStatus.PermissionDenied,
+                ErrorCode: "permission_denied",
+                ErrorField: (string?)null),
+            (
+                ExtensionResult:
+                    GetClientMembershipExtensionExplanationsResult.MissingClient(),
+                ProfileStatus: GetClientProfileStatus.NotFound,
+                ErrorCode: "not_found",
+                ErrorField: "clientId"),
+            (
+                ExtensionResult: GetClientMembershipExtensionExplanationsResult.Invalid(
+                    "Client id is required.",
+                    "clientId"),
+                ProfileStatus: GetClientProfileStatus.ValidationFailed,
+                ErrorCode: "validation_failed",
+                ErrorField: "clientId"),
+            (
+                ExtensionResult:
+                    GetClientMembershipExtensionExplanationsResult.InconsistentSource(),
+                ProfileStatus: GetClientProfileStatus.SourceInconsistent,
+                ErrorCode: "source_inconsistent",
+                ErrorField: (string?)null),
+            (
+                ExtensionResult: GetClientMembershipExtensionExplanationsResult.Succeeded(
+                    new ClientMembershipExtensionExplanations(
+                        Guid.NewGuid(),
+                        [])),
+                ProfileStatus: GetClientProfileStatus.SourceInconsistent,
+                ErrorCode: "source_inconsistent",
+                ErrorField: (string?)null),
+        };
+
+        foreach (var testCase in cases)
+        {
+            var result = await CreateHandler(
+                dbContext,
+                extensionExplanationsQueryHandler:
+                    new StubExtensionExplanationsQueryHandler(
+                        _ => testCase.ExtensionResult)).ExecuteAsync(
+                    new GetClientProfileQuery(actor, clientId),
+                    CancellationToken.None);
+
+            Assert.Equal(testCase.ProfileStatus, result.Status);
+            Assert.Equal(testCase.ErrorCode, result.ErrorCode);
+            Assert.Equal(testCase.ErrorField, result.ErrorField);
+            Assert.Null(result.Profile);
+        }
+
+        Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
     public async Task VisitHistoryFailuresNeverReturnPartialProfileData()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -769,6 +913,10 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         BodyLifeDbContext dbContext,
         IBodyLifeQueryHandler<GetClientMembershipStatesQuery, GetClientMembershipStatesResult>?
             membershipStatesQueryHandler = null,
+        IBodyLifeQueryHandler<
+            GetClientMembershipExtensionExplanationsQuery,
+            GetClientMembershipExtensionExplanationsResult>?
+            extensionExplanationsQueryHandler = null,
         IBodyLifeQueryHandler<GetClientVisitRowsQuery, GetClientVisitRowsResult>?
             visitRowsQueryHandler = null,
         IBodyLifeQueryHandler<GetClientPaymentRowsQuery, GetClientPaymentRowsResult>?
@@ -780,6 +928,10 @@ public sealed class PostgreSqlGetClientProfileQueryTests
             dbContext,
             membershipStatesQueryHandler
                 ?? new GetClientMembershipStatesQueryHandler(dbContext, timeProvider),
+            extensionExplanationsQueryHandler
+                ?? new GetClientMembershipExtensionExplanationsQueryHandler(
+                    dbContext,
+                    timeProvider),
             visitRowsQueryHandler
                 ?? new StubClientVisitRowsQueryHandler(
                     query => GetClientVisitRowsResult.Succeeded(
@@ -1237,6 +1389,25 @@ public sealed class PostgreSqlGetClientProfileQueryTests
             CancellationToken cancellationToken)
         {
             return Task.FromResult(result);
+        }
+    }
+
+    private sealed class StubExtensionExplanationsQueryHandler(
+        Func<
+            GetClientMembershipExtensionExplanationsQuery,
+            GetClientMembershipExtensionExplanationsResult> resultFactory)
+        : IBodyLifeQueryHandler<
+            GetClientMembershipExtensionExplanationsQuery,
+            GetClientMembershipExtensionExplanationsResult>
+    {
+        public GetClientMembershipExtensionExplanationsQuery? LastQuery { get; private set; }
+
+        public Task<GetClientMembershipExtensionExplanationsResult> ExecuteAsync(
+            GetClientMembershipExtensionExplanationsQuery query,
+            CancellationToken cancellationToken)
+        {
+            LastQuery = query;
+            return Task.FromResult(resultFactory(query));
         }
     }
 
