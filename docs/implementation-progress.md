@@ -6510,3 +6510,80 @@ Next recommended step:
   fingerprints, expiry, tampering, key/configuration validation and scope/input
   mismatch without yet adding the public preview query, Add/Correct commands,
   source/cache/audit writes or UI.
+
+## Step 122 - NonWorkingDay preview confirmation token foundation
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement only the tamper-resistant preview confirmation foundation
+  recommended after Step 121 and required by ADR-016 before the public
+  `PreviewNonWorkingDayImpact` query or any NonWorkingDay command.
+- Bind the normalized proposed period/reason input to the exact deterministic
+  Membership/Client/full-range scope already owned and prepared by Memberships.
+- Keep the token advisory and short-lived. No token can replace the command's
+  future consistent-transaction scope revalidation.
+
+Scope:
+
+- Add normalized `NonWorkingDayPreviewInput`, immutable confirmation and
+  validation result contracts plus `INonWorkingDayPreviewTokenService` under
+  NonWorkingDays. Reason code/comment values are trimmed, NFC-normalized and
+  length-bounded before fingerprinting.
+- Add a versioned canonical JSON SHA-256 scope fingerprint over the proposed
+  period/reason and every exact ordered Membership id, Client id and full
+  applied range. Any input, identity or range change produces
+  `InputOrScopeMismatch`.
+- Add an HMAC-SHA256 confirmation token with authenticated fingerprint,
+  millisecond UTC issue time and a bounded expiry. Validation uses canonical
+  token encoding and fixed-time signature/fingerprint comparisons, rejects
+  malformed/tampered/future-issued tokens and reports expiry at the exact
+  boundary before stale-scope comparison.
+- Add configuration validation under
+  `BodyLife:NonWorkingDayPreviewToken`: a secret canonical Base64 signing key of
+  32-64 bytes is required when the service is resolved; lifetime defaults to
+  five minutes and must be a whole second from one through thirty minutes. The
+  singleton registration is lazy so this preparatory step adds no committed
+  development or production secret.
+- Add eight focused infrastructure tests for deterministic fingerprints,
+  Unicode/whitespace normalization, expiry, tampering, malformed/wrong-key
+  tokens, all bound input/scope changes, contract bounds, configuration errors
+  and lazy singleton DI behavior.
+- Add no EF model/migration, PostgreSQL writes, public preview query, Owner
+  authorization, Add/Correct command, source/cache/audit mutation or UI.
+
+Validation:
+
+- Focused `NonWorkingDayPreviewTokenServiceTests` passed 8/8 in Release.
+- Scoped `dotnet format BodyLife.Crm.sln --no-restore
+  --verify-no-changes --include ...` passed for every file in this step.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 288 core tests, 35 web
+  tests, 403 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- Rebuilt `dotnet-ef migrations has-pending-model-changes` passed with no model
+  changes since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was removed, so no generated graph update is claimed in this step.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(nonworking-days): sign preview confirmation tokens`.
+
+Next recommended step:
+
+- Implement only the Owner-authorized `PreviewNonWorkingDayImpact` query as a
+  read-only consistent transaction: prepare the exact ADR-016 scope, obtain
+  Memberships-owned before/after extension estimates and overlap warnings,
+  return the ordered Membership/Client/full-range details, and issue this
+  expiring token/fingerprint. Keep Add/Correct commands, period/application
+  writes, recalculation persistence, audit and UI for later bounded steps.

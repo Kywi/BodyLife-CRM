@@ -14,6 +14,7 @@ using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
+using BodyLife.Crm.Modules.NonWorkingDays;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
 using Microsoft.Extensions.Configuration;
@@ -39,6 +40,10 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<BodyLifeDbContext>(
             options => BodyLifeDbContextOptions.Configure(options, connectionString));
         services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<INonWorkingDayPreviewTokenService>(provider =>
+            new HmacNonWorkingDayPreviewTokenService(
+                NonWorkingDayPreviewTokenOptions.FromConfiguration(configuration),
+                provider.GetRequiredService<TimeProvider>()));
         services.TryAddSingleton<PasswordHashingService>();
         services.AddScoped<BusinessAuditAppender>();
         services.AddScoped<
