@@ -6345,3 +6345,84 @@ Next recommended step:
   filtering plus Freeze/NonWorkingDay union in focused recalculation tests. Keep
   preview scope selection/tokens, Add/Correct commands, audit and UI for later
   bounded steps.
+
+## Step 120 - NonWorkingDay Membership extension source
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Implement only the NonWorkingDay-to-Memberships recalculation adapter
+  recommended after Step 119, before affected-scope preview, confirmation
+  tokens or state-changing commands.
+- Keep NonWorkingDays responsible for canonical period/application source rows
+  while Memberships remains the sole owner of calendar-day union, effective end
+  date, derived cache and explanation rows.
+- Reuse the existing `IMembershipExtensionSourceProvider` boundary and Freeze
+  provider composition instead of adding a second extension formula.
+
+Scope:
+
+- Add `MembershipNonWorkingDayExtensionSourceReader` as a transaction-bound
+  PostgreSQL implementation of `IMembershipExtensionSourceProvider`.
+- Require a caller-owned transaction after the selected Membership has been
+  locked. Read retained application/period rows in deterministic range, period
+  and application order and lock both rows with `FOR UPDATE` so recalculation
+  cannot observe a concurrent lifecycle correction halfway through its source
+  snapshot.
+- Map each application row to source type `non_working_period`, use the
+  application ID as the unique explanation identity and preserve the exact
+  stored full applied range. Build a bounded label from period range, reason
+  code and optional comment.
+- Mark contribution active only when both the application and parent period are
+  `active`; retained `canceled`/`corrected` rows remain inactive explanation
+  sources instead of disappearing from rebuildable history.
+- Register the reader beside `MembershipFreezeExtensionSourceReader` so the
+  production `MembershipStateCacheRebuilder` composes both source families.
+  Increment recalculation version from 5 to 6 because canonical derived state
+  now includes NonWorkingDay applications.
+- Add two focused PostgreSQL tests for input/transaction guards, deterministic
+  lifecycle mapping, period/application row locks, full source identity/range,
+  Freeze/NonWorkingDay overlap union, inactive explanation persistence and
+  cache/version repair. Update the existing DI assertion to require both
+  extension providers.
+- Add no EF record/configuration or migration change, affected-scope selector,
+  preview/fingerprint/token contract, Add/Correct command, audit or UI.
+
+Validation:
+
+- Focused `PostgreSqlNonWorkingDayExtensionSourceTests` passed 2/2 in Release
+  against local Docker PostgreSQL; the updated extension-provider DI assertion
+  passed 1/1.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal
+  --no-restore` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 288 core tests, 35 web
+  tests, 392 PostgreSQL/architecture infrastructure tests, 37 Playwright smoke
+  tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- Rebuilt `dotnet-ef migrations has-pending-model-changes` passed with no model
+  changes since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 95: Operation not supported`; its partial cache-index
+  change was removed, so no generated graph update is claimed in this step.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured.
+
+Commit:
+
+- `feat(memberships): include nonworking day extensions`.
+
+Next recommended step:
+
+- Add only an internal PostgreSQL affected-scope preparation boundary for a
+  proposed new NonWorkingDay period: use a caller-owned consistent transaction,
+  select lifecycle-active Membership candidates in deterministic order, rebuild
+  canonical pre-command state from currently accepted sources, invoke the pure
+  ADR-016 policy and return the exact ordered Membership/Client/full-range set
+  without writing source/cache/audit rows. Keep public preview tokens,
+  Add/Correct commands, recalculation orchestration and UI for later steps.

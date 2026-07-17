@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Freezes;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
+using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
@@ -142,6 +143,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MembershipFreezeExtensionSourceReader>();
         services.AddScoped<IMembershipExtensionSourceProvider>(provider =>
             provider.GetRequiredService<MembershipFreezeExtensionSourceReader>());
+        services.AddScoped<MembershipNonWorkingDayExtensionSourceReader>();
+        services.AddScoped<IMembershipExtensionSourceProvider>(provider =>
+            provider.GetRequiredService<MembershipNonWorkingDayExtensionSourceReader>());
         services.AddScoped<
             IMembershipVisitEligibilityEvaluator,
             MembershipVisitEligibilityEvaluator>();

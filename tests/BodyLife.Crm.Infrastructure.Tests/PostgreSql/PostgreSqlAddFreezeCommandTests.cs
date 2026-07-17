@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Freezes;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
@@ -556,9 +557,12 @@ public sealed class PostgreSqlAddFreezeCommandTests
         Assert.IsType<MembershipFreezeEligibilityPreparer>(
             scope.ServiceProvider.GetRequiredService<
                 MembershipFreezeEligibilityPreparer>());
-        Assert.IsType<MembershipFreezeExtensionSourceReader>(
-            Assert.Single(scope.ServiceProvider.GetServices<
-                IMembershipExtensionSourceProvider>()));
+        var extensionSourceProviders = scope.ServiceProvider.GetServices<
+            IMembershipExtensionSourceProvider>().ToArray();
+        Assert.Collection(
+            extensionSourceProviders,
+            source => Assert.IsType<MembershipFreezeExtensionSourceReader>(source),
+            source => Assert.IsType<MembershipNonWorkingDayExtensionSourceReader>(source));
     }
 
     private static AddFreezeCommandHandler CreateHandler(
