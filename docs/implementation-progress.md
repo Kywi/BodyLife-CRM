@@ -7098,3 +7098,74 @@ Next recommended step:
   reason/comment and Step 128 confirmation token, plus canonical reread targets
   and error taxonomy. Keep source writes, recalculation persistence, audit,
   idempotency orchestration and UI for subsequent bounded steps.
+
+## Step 129 - CorrectNonWorkingDay command contract
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue the accepted `CorrectNonWorkingDay` sequence after the Owner preview
+  query established exact mode-specific confirmation material in Step 128.
+- Define the application command boundary before implementing validation,
+  transaction orchestration or persistence, following the same incremental
+  pattern used by existing correction/cancellation workflows.
+- Keep correction reason/comment in the common `CommandEnvelope`; keep the
+  replacement period reason code/comment separate because it describes the new
+  NonWorkingDay source rather than why the Owner performed the correction.
+
+Scope:
+
+- Add `CorrectNonWorkingDayCommand` with the common operational envelope,
+  original period id, correction mode, nullable mode-specific replacement
+  dates/reason fields and the Step 128 confirmation token.
+- Preserve nullable raw command input so a later command preparation policy can
+  return stable validation errors instead of relying on constructor/model-binding
+  exceptions for invalid mode shapes.
+- Define stable entity references for the original/replacement period,
+  cancellation fact and affected Memberships. Expose the original period as the
+  canonical reread target where correction history can remain explainable.
+- Cover `replace_range`, `replace_reason` and `cancel` payload shapes, common
+  envelope metadata, idempotency key, correction reason/comment, confirmation
+  token, canonical success references and documented correction error taxonomy.
+- Add no command preparation/validation policy, authorization, handler or DI,
+  EF model/migration, source/cache write, token revalidation, recalculation,
+  business audit, idempotency persistence or UI.
+
+Validation:
+
+- Early Release build passed with 0 warnings/errors.
+- Focused `CorrectNonWorkingDayCommandContractsTests` passed 14/14 in Release.
+- `dotnet format BodyLife.Crm.sln --no-restore --verify-no-changes` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 323 core tests, 35 web
+  tests, 430 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored byte-for-byte to `HEAD`, so no generated code graph update
+  is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked graph change.
+
+Commit:
+
+- `feat(nonworking-days): define correction command contract`.
+
+Next recommended step:
+
+- Add only a pure `CorrectNonWorkingDay` command preparation/validation policy.
+  Normalize and validate the common envelope, Owner correction reason,
+  idempotency key, occurred time, confirmation token and the three mode-specific
+  replacement shapes, returning canonical prepared input and stable command
+  errors. Keep authorization lookup, PostgreSQL transactions/source writes,
+  token revalidation against current scope, recalculation, audit and UI for
+  later bounded steps.
