@@ -7169,3 +7169,82 @@ Next recommended step:
   errors. Keep authorization lookup, PostgreSQL transactions/source writes,
   token revalidation against current scope, recalculation, audit and UI for
   later bounded steps.
+
+## Step 130 - CorrectNonWorkingDay command preparation
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue the accepted `CorrectNonWorkingDay` sequence immediately after the
+  raw application command contract from Step 129, before introducing any
+  authorization lookup, consistent-snapshot orchestration or source writes.
+- Keep validation in the owning NonWorkingDays module and return stable
+  `CommandError` values rather than relying on model-binding or constructor
+  exceptions for invalid command payloads.
+- Preserve the three ADR-016 correction shapes: `replace_range` carries a new
+  inclusive range and reason, `replace_reason` carries no synthetic range, and
+  `cancel` carries no replacement input.
+
+Scope:
+
+- Add immutable `CorrectNonWorkingDayPreparation` and preparation-result
+  contracts. A prepared command exposes the canonical common envelope,
+  original period id, exact mode-specific replacement values, confirmation
+  token and canonical source/reread entity ids.
+- Add a pure `CorrectNonWorkingDayPreparationPolicy` that validates period id,
+  correction mode, actor/request envelope shape, idempotency key, entry origin,
+  required occurred time, required Owner correction reason/comment and the
+  canonical correction confirmation token format.
+- Canonicalize request correlation id, device label, idempotency key,
+  reason/comment, UTC occurred time and Unicode-normalized replacement reason
+  values. Return `ReasonRequired` for missing correction reason/comment and
+  `ValidationFailed` with stable field names for other input failures.
+- Validate all mode-specific shapes and bounds. Range replacement requires
+  valid inclusive dates plus bounded replacement reason values; reason-only
+  replacement rejects dates and exposes no synthetic range; cancel rejects all
+  non-empty replacement fields.
+- Validate actor metadata structurally but deliberately leave canonical active
+  Owner account/session authorization to the later database-backed command
+  orchestration step.
+- Add no handler or DI registration, PostgreSQL transaction/source write, EF
+  model/migration, idempotency persistence, current-scope token revalidation,
+  recalculation, business audit or UI.
+
+Validation:
+
+- Early Release build passed with 0 warnings/errors.
+- Focused `CorrectNonWorkingDayPreparationPolicyTests` passed 11/11 in Release.
+- `dotnet format BodyLife.Crm.sln --no-restore --verify-no-changes` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 334 core tests, 35 web
+  tests, 430 PostgreSQL/architecture/security infrastructure tests, 37
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local rebuild
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored byte-for-byte to `HEAD`, so no generated code graph
+  update is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked graph change.
+
+Commit:
+
+- `feat(nonworking-days): prepare correction commands`.
+
+Next recommended step:
+
+- Add only the database-backed `CorrectNonWorkingDay` command revalidation
+  preparation. Require a canonical active Owner, open a caller-owned
+  `RepeatableRead` transaction, preserve ADR-016 lock order, rebuild the exact
+  mode-specific confirmation material from current source/scope and map token
+  validation to `PreviewExpired`, `AffectedScopeChanged` or validation errors.
+  Keep correction/cancellation source writes, recalculation persistence,
+  business audit, idempotency persistence and UI for later bounded steps.
