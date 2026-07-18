@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Freezes;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Visits;
 using BodyLife.Crm.SharedKernel;
@@ -457,6 +458,18 @@ public sealed class PostgreSqlMarkVisitCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task AddFreezeQueuedBeforeMarkVisitCommitsWithoutDeadlock()
+    {
+        await AssertConcurrentFreezeVisitOrderingAsync(freezeQueuedFirst: true);
+    }
+
+    [PostgreSqlFact]
+    public async Task MarkVisitQueuedBeforeAddFreezeCommitsWithoutContradictoryFacts()
+    {
+        await AssertConcurrentFreezeVisitOrderingAsync(freezeQueuedFirst: false);
+    }
+
+    [PostgreSqlFact]
     public async Task AuditFailureRollsBackVisitConsumptionCacheAndIdempotency()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -482,6 +495,185 @@ public sealed class PostgreSqlMarkVisitCommandTests
 
         await AssertNoVisitMutationAsync(database);
         Assert.Empty(dbContext.ChangeTracker.Entries());
+    }
+
+    private static async Task AssertConcurrentFreezeVisitOrderingAsync(
+        bool freezeQueuedFirst)
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        MarkVisitFixture fixture;
+        await using (var setupContext = database.CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync();
+            fixture = await SeedFixtureAsync(database, setupContext);
+        }
+
+        await using var freezeContext = database.CreateDbContext();
+        await using var visitContext = database.CreateDbContext();
+        var freezeBackendPid = await GetBackendPidAsync(freezeContext);
+        var visitBackendPid = await GetBackendPidAsync(visitContext);
+        await using var lockConnection = new NpgsqlConnection(database.ConnectionString);
+        await lockConnection.OpenAsync();
+        await using var lockTransaction = await lockConnection.BeginTransactionAsync();
+        await using (var lockCommand = lockConnection.CreateCommand())
+        {
+            lockCommand.Transaction = lockTransaction;
+            lockCommand.CommandText =
+                "select id from bodylife.issued_memberships where id = @id for update";
+            lockCommand.Parameters.AddWithValue("id", fixture.MembershipId);
+            Assert.Equal(
+                fixture.MembershipId,
+                await lockCommand.ExecuteScalarAsync());
+        }
+
+        var freezeCommand = CreateAddFreezeCommand(
+            fixture,
+            freezeQueuedFirst ? "freeze-first" : "freeze-second");
+        var visitCommand = CreateCommand(
+            fixture,
+            freezeQueuedFirst ? "visit-second" : "visit-first",
+            VisitKind.Membership,
+            fixture.MembershipId);
+        Task<CommandResult> freezeTask;
+        Task<CommandResult> visitTask;
+
+        if (freezeQueuedFirst)
+        {
+            freezeTask = CreateAddFreezeHandler(freezeContext).ExecuteAsync(
+                freezeCommand,
+                CancellationToken.None);
+            await WaitForLockWaitAsync(database, freezeBackendPid);
+            visitTask = CreateHandler(visitContext).ExecuteAsync(
+                visitCommand,
+                CancellationToken.None);
+            await WaitForLockWaitAsync(database, visitBackendPid);
+        }
+        else
+        {
+            visitTask = CreateHandler(visitContext).ExecuteAsync(
+                visitCommand,
+                CancellationToken.None);
+            await WaitForLockWaitAsync(database, visitBackendPid);
+            freezeTask = CreateAddFreezeHandler(freezeContext).ExecuteAsync(
+                freezeCommand,
+                CancellationToken.None);
+            await WaitForLockWaitAsync(database, freezeBackendPid);
+        }
+
+        await lockTransaction.CommitAsync();
+        var results = await Task.WhenAll(freezeTask, visitTask)
+            .WaitAsync(TimeSpan.FromSeconds(15));
+        var freezeResult = results[0];
+        var visitResult = results[1];
+
+        var cache = await ReadCacheAsync(database, fixture.MembershipId);
+        if (freezeQueuedFirst)
+        {
+            AssertSuccessfulFreezeResult(freezeResult, fixture);
+            AssertError(
+                visitResult,
+                CommandErrorCode.VisitDuringFreeze,
+                "membershipId");
+            Assert.Equal(0, cache.CountedVisits);
+            Assert.Equal(8, cache.RemainingVisits);
+            Assert.Equal(1, cache.ExtensionDays);
+            Assert.Null(cache.LastCountedVisitAt);
+            Assert.Equal(0L, await CountRowsAsync(database, "visits"));
+            Assert.Equal(0L, await CountRowsAsync(database, "visit_consumptions"));
+            Assert.Equal(1L, await CountRowsAsync(database, "freezes"));
+        }
+        else
+        {
+            AssertSuccessfulResult(visitResult, fixture.ClientId);
+            AssertError(
+                freezeResult,
+                CommandErrorCode.FreezeConflictsWithVisit,
+                "range");
+            Assert.Equal(1, cache.CountedVisits);
+            Assert.Equal(7, cache.RemainingVisits);
+            Assert.Equal(0, cache.ExtensionDays);
+            Assert.Equal(VisitOccurredAt, cache.LastCountedVisitAt);
+            Assert.Equal(1L, await CountRowsAsync(database, "visits"));
+            Assert.Equal(1L, await CountRowsAsync(database, "visit_consumptions"));
+            Assert.Equal(0L, await CountRowsAsync(database, "freezes"));
+        }
+
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    private static AddFreezeCommandHandler CreateAddFreezeHandler(
+        BodyLifeDbContext dbContext)
+    {
+        var timeProvider = new FixedTimeProvider(TestNow);
+        var extensionSourceReader = new MembershipFreezeExtensionSourceReader(
+            dbContext);
+        var cacheRebuilder = new MembershipStateCacheRebuilder(
+            dbContext,
+            timeProvider,
+            [extensionSourceReader]);
+
+        return new AddFreezeCommandHandler(
+            dbContext,
+            new BusinessAuditAppender(dbContext),
+            new MembershipFreezeEligibilityPreparer(dbContext, cacheRebuilder),
+            new MembershipStateRecalculator(cacheRebuilder),
+            new GetMembershipStateQueryHandler(dbContext, timeProvider),
+            timeProvider);
+    }
+
+    private static AddFreezeCommand CreateAddFreezeCommand(
+        MarkVisitFixture fixture,
+        string idempotencyKey)
+    {
+        var visitDate = DateOnly.FromDateTime(VisitOccurredAt.UtcDateTime);
+        return new AddFreezeCommand(
+            new CommandEnvelope(
+                fixture.Actor,
+                new RequestCorrelationId($"correlation-{idempotencyKey}"),
+                EntryOrigin.Normal,
+                VisitOccurredAt,
+                idempotencyKey,
+                "Concurrent medical pause",
+                "Visit/Freeze concurrency gate"),
+            fixture.ClientId,
+            fixture.MembershipId,
+            new DateRange(visitDate, visitDate),
+            EntryBatchId: null);
+    }
+
+    private static async Task<int> GetBackendPidAsync(BodyLifeDbContext dbContext)
+    {
+        await dbContext.Database.OpenConnectionAsync();
+        await using var command = dbContext.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "select pg_backend_pid()";
+        return Convert.ToInt32(await command.ExecuteScalarAsync());
+    }
+
+    private static async Task WaitForLockWaitAsync(
+        PostgreSqlTestDatabase database,
+        int backendPid)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            "select wait_event_type = 'Lock' from pg_stat_activity where pid = @pid";
+        command.Parameters.AddWithValue("pid", backendPid);
+
+        for (var attempt = 0; attempt < 200; attempt++)
+        {
+            var waiting = await command.ExecuteScalarAsync();
+            if (waiting is true)
+            {
+                return;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(25));
+        }
+
+        throw new TimeoutException(
+            $"PostgreSQL backend {backendPid} did not enter a lock wait.");
     }
 
     private static MarkVisitCommandHandler CreateHandler(BodyLifeDbContext dbContext)
@@ -839,6 +1031,7 @@ public sealed class PostgreSqlMarkVisitCommandTests
                    first_negative_visit_id,
                    first_negative_visit_date,
                    last_counted_visit_at,
+                   extension_days,
                    recalculated_at
             from bodylife.membership_state_cache
             where membership_id = @membership_id
@@ -855,7 +1048,8 @@ public sealed class PostgreSqlMarkVisitCommandTests
             reader.IsDBNull(5)
                 ? null
                 : reader.GetFieldValue<DateTimeOffset>(5),
-            reader.GetFieldValue<DateTimeOffset>(6));
+            reader.GetInt32(6),
+            reader.GetFieldValue<DateTimeOffset>(7));
     }
 
     private static async Task<AuditRow> ReadAuditAsync(
@@ -935,6 +1129,24 @@ public sealed class PostgreSqlMarkVisitCommandTests
         Assert.Empty(result.Errors);
     }
 
+    private static void AssertSuccessfulFreezeResult(
+        CommandResult result,
+        MarkVisitFixture fixture)
+    {
+        Assert.Equal(CommandStatus.Success, result.Status);
+        Assert.True(result.PrimaryEntityId.HasValue);
+        Assert.Equal("freeze", result.PrimaryEntityId.Value.Type);
+        Assert.NotEqual(Guid.Empty, result.PrimaryEntityId.Value.Value);
+        Assert.Equal(
+            [new EntityId("membership", fixture.MembershipId)],
+            result.RelatedEntityIds);
+        Assert.Equal(
+            new EntityId("client", fixture.ClientId),
+            result.RereadTargetId);
+        Assert.True(result.AuditEntryId.HasValue);
+        Assert.Empty(result.Errors);
+    }
+
     private static void AssertError(
         CommandResult result,
         CommandErrorCode code,
@@ -983,6 +1195,7 @@ public sealed class PostgreSqlMarkVisitCommandTests
         Guid? FirstNegativeVisitId,
         DateOnly? FirstNegativeVisitDate,
         DateTimeOffset? LastCountedVisitAt,
+        int ExtensionDays,
         DateTimeOffset RecalculatedAt);
 
     private sealed record AuditRow(

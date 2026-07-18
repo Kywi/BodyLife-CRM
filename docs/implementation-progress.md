@@ -8222,3 +8222,106 @@ Next recommended step:
   roadmap criterion and required-test row. Record direct code/test evidence,
   resolve only genuine gaps, and mark Milestone 8 complete before beginning the
   Milestone 9 Reports sequence.
+
+## Step 142 - Milestone 8 acceptance closeout
+
+Status: completed. Milestone 8 is complete.
+
+Plan alignment:
+
+- Audit every Milestone 8 acceptance criterion and required-test row in
+  `implementation-roadmap.md` against direct implementation and automated-test
+  evidence before starting Reports.
+- Resolve only a demonstrated closeout gap. Do not add Report behavior, alter
+  accepted Freeze/NonWorkingDay policy, or expand the product surface during
+  the audit.
+- Preserve the existing synchronous command, Memberships formula ownership,
+  retained-source history and PostgreSQL transaction boundaries.
+
+Closeout result:
+
+- All Milestone 8 schema, command, recalculation, profile explanation, UI,
+  audit and fallback tasks have direct implementation and regression evidence.
+- The audit found one missing test row: no test ran real `AddFreeze` and
+  `MarkVisit` commands against the same Membership while both transactions were
+  queued on the canonical PostgreSQL Membership lock.
+- Add two deterministic PostgreSQL races to
+  `PostgreSqlMarkVisitCommandTests`. A third transaction holds the Membership
+  row while backend wait state proves the first and second commands are queued
+  in the intended order.
+- With AddFreeze queued first, Add commits one active Freeze and canonical
+  one-day extension; MarkVisit then returns `visit_during_freeze` with no Visit,
+  consumption, audit or idempotency success.
+- With MarkVisit queued first, Mark commits one counted Visit; AddFreeze then
+  returns `freeze_conflicts_with_visit` with no Freeze, audit or idempotency
+  success.
+- Both orderings retain exactly one successful business audit/idempotency row
+  and one consistent Membership cache. The existing runtime lock order already
+  provides the required serialization, so no product code, EF model, migration
+  or UI change is needed.
+
+Acceptance-criterion evidence:
+
+| Roadmap criterion | Direct evidence |
+|---|---|
+| Freeze ranges are inclusive and effective end changes only through Memberships recalculation. | `MembershipExtensionCalculatorTests.SingleActiveRangeExpandsBothInclusiveEdges`, `MembershipStateExtensionCalculationTests.CanonicalUnionUpdatesOnlyExtensionOwnedState` and `PostgreSqlAddFreezeCommandTests.SuccessfulFreezeCommitsUnionStateAuditAndIdempotency`. |
+| Freeze start is bounded by Membership start and locked pre-command effective end; eligible end is not clipped. | `MembershipFreezeEligibilityPolicyTests.InclusiveStartBoundsAreEligibleAndEndIsNotClipped`, its before-start/after-end cases, and `PostgreSqlMembershipStateCacheRebuildTests.CanonicalStateDrivesInclusiveFreezeRangePreparation`. |
+| Active counted Visit overlap is rejected while canceled and one-off/trial Visits do not block. | `MembershipFreezeEligibilityPolicyTests.ActiveCountedVisitOnEitherInclusiveEndpointBlocksFreeze`, `CanceledAndOutsideVisitsDoNotBlockFreeze`, `PostgreSqlAddFreezeCommandTests.EligibilityAndVisitConflictsFailWithoutFreezeMutation`, and the two new cross-command races. One-off/trial commands create no Membership consumption in `PostgreSqlMarkVisitCommandTests.OneOffAndTrialWriteOnlyVisitAndAuditFacts`. |
+| CancelFreeze preserves history and removes only its active extension contribution. | `PostgreSqlCancelFreezeCommandTests.SuccessfulCancellationCommitsHistoryStateAuditAndIdempotency`, `CancelingOverlappedFreezeKeepsRemainingActiveUnion`, and `PostgreSqlFreezesStorageTests.CancellationIsUniqueAndSourceHistoryUsesRestrictiveDeletes`. |
+| NonWorkingDay add/correction is Owner-only and requires preview plus exact-scope confirmation. | `PostgreSqlNonWorkingDayAffectedScopePreparerTests.OwnerPreviewReturnsExactImpactAndBoundTokenWithoutWrites`, `PostgreSqlAddNonWorkingDayCommandTests.OwnerInputAndTokenFailuresDoNotWriteCommandState`, correction command/token suites, and `NonWorkingDayPreviewSmokeTests.NamedAdminCannotNavigateToOrOpenNonWorkingDayPreview`. |
+| NonWorkingDay scope uses lifecycle-active Memberships with canonical inclusive overlap calculated without the proposed/replaced period. | `MembershipNonWorkingDayApplicationPolicyTests`, including lifecycle, endpoint and proposed-source exclusion cases, plus `PostgreSqlNonWorkingDayAffectedScopePreparerTests.PreparationReturnsExactCanonicalScopeWithoutWrites` and `ReplacementPreparationExcludesOnlyOldPeriodAndLocksAllCandidates`. |
+| Every confirmed NonWorkingDay application contributes its full inclusive period without Membership-boundary clipping. | `MembershipNonWorkingDayApplicationPolicyTests.PeriodEndingOnMembershipStartAppliesTheFullRange`, `PeriodStartingOnEffectiveEndAppliesTheFullRange`, and `PostgreSqlNonWorkingDaysStorageTests.ApplicationsRequireFullPeriodRangeAndMatchingMembershipClient`. |
+| Freeze and NonWorkingDay overlap counts the union of unique calendar dates. | `MembershipExtensionCalculatorTests.OverlappingActiveSourcesCountUnionAndPreserveEveryAttribution`, `MembershipNonWorkingDayImpactEstimatorTests.ActiveFreezeAndNonWorkingOverlapUseUniqueDaysAndDeterministicWarnings`, and `PostgreSqlNonWorkingDayExtensionSourceTests.RebuildUnionsFreezeAndNonWorkingDaysAndRetainsInactiveExplanations`. |
+| Confirmed NonWorkingDay application scope is immutable and remains explainable after later source changes. | `PostgreSqlAddNonWorkingDayCommandTests.SuccessfulCommandCommitsExactSnapshotStateAuditAndIdempotency`, `PostgreSqlCorrectNonWorkingDayCommandTests.ReplaceReasonPreservesExactConfirmedMembershipSnapshot`, storage lifecycle tests and the retained profile explanation query. |
+| Correct/cancel NonWorkingDay recalculates the old/new affected union. | `PostgreSqlCorrectNonWorkingDayCommandTests.ReplaceRangeCommitsNewScopeAndRecalculatesOldNewUnion`, `CancelRetainsCanceledSourcesAndCreatesCancellationFact`, and the reason-replacement snapshot case. |
+| Client profile shows active and retained Freeze/NonWorkingDay reasons and history. | `PostgreSqlGetClientMembershipExtensionExplanationsQueryTests`, client-profile projection tests and `ReceptionDashboardSmokeTests.MembershipExtensionHistoryRendersCanonicalSourcesOnTargetViewport` on tablet and phone. |
+| Recalculation and business audit commit consistently; any failure blocks success. | Add/CancelFreeze and Add/CorrectNonWorkingDay recalculation/audit rollback tests, `PostgreSqlNonWorkingDayMassRecalculationTests.CancellationAfterPartialMassRecalculationRollsBackEverything`, and both new Visit/Freeze races. |
+
+Required-test evidence:
+
+| Roadmap test row | Direct evidence |
+|---|---|
+| Domain rules | `MembershipFreezeEligibilityPolicyTests`, `MembershipExtensionCalculatorTests`, `MembershipStateExtensionCalculationTests`, `MembershipNonWorkingDayApplicationPolicyTests`, `MembershipNonWorkingDayImpactEstimatorTests` and replacement-impact tests cover inclusive ranges, eligibility, endpoints, source exclusion and union behavior. |
+| Add/CancelFreeze application behavior | `PostgreSqlAddFreezeCommandTests`, `PostgreSqlCancelFreezeCommandTests`, Membership Freeze preparation cases and the new real-command races cover permissions, validation, Membership-first source locking, Visit concurrency, idempotency, audit and rollback. |
+| Preview/Add/CorrectNonWorkingDay application behavior | Preview/correction token security suites, affected-scope preparation, `PostgreSqlAddNonWorkingDayCommandTests` and `PostgreSqlCorrectNonWorkingDayCommandTests` cover Owner policy, fingerprints, expiry, stale scope, immutable applications, overlap warnings, old/new scope and recalculation. |
+| PostgreSQL constraints and application rows | `PostgreSqlFreezesStorageTests`, `PostgreSqlNonWorkingDaysStorageTests`, extension-day storage/writer tests and migration checks run on PostgreSQL rather than an in-memory substitute. |
+| Realistic performance and transaction behavior | `PostgreSqlNonWorkingDayMassRecalculationTests` proves the 250-Membership synchronous Add/Correct budget and atomic rollback after partial work in a 120-Membership cancellation case. |
+| Tablet/phone UI | `AddFreezeSmokeTests`, `CancelFreezeSmokeTests`, `NonWorkingDayPreviewSmokeTests` and the profile extension-history smoke cover add, cancel, preview, confirm, every correction mode, stale-scope refresh, duplicate-submit protection, canonical reread and Owner-only access. |
+
+Validation:
+
+- The two new real PostgreSQL Visit/Freeze race tests passed 2/2 with no skips
+  against the healthy local Docker PostgreSQL service.
+- Focused MarkVisit, AddFreeze and CancelFreeze command coverage passed 36/36.
+- `dotnet format BodyLife.Crm.sln --no-restore --verify-no-changes --verbosity
+  minimal` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 335 core tests, 35 web
+  tests, 455 PostgreSQL/architecture/security infrastructure tests, 54
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the test change but its watcher could
+  not rebuild on this filesystem (`Errno 95: Operation not supported`). The
+  generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `test(freezes): close milestone 8 acceptance`.
+
+Next recommended step:
+
+- Start Milestone 9 with one bounded backend `GenerateDailyReport` contract and
+  composition step over the existing canonical daily Visit and Payment source
+  snapshots. Derive totals from returned rows, retain correction/cancellation
+  drill-downs and keep report UI plus threshold Membership reports for later
+  independent steps.
