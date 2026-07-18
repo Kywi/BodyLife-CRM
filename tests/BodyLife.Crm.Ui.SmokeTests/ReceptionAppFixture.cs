@@ -114,6 +114,18 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid NonWorkingDayNoOverlapMembershipId { get; private set; }
 
+    public NonWorkingDayAddSmokeScenario NonWorkingDayTabletAddScenario
+    {
+        get;
+        private set;
+    } = null!;
+
+    public NonWorkingDayAddSmokeScenario NonWorkingDayPhoneAddScenario
+    {
+        get;
+        private set;
+    } = null!;
+
     public Guid IssueMembershipTypeId { get; private set; }
 
     public Guid IssueTabletClientId { get; private set; }
@@ -435,6 +447,29 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadNonWorkingDayMutationCountsAsync();
     }
 
+    public NonWorkingDayAddSmokeScenario GetNonWorkingDayAddScenario(
+        string viewportName)
+    {
+        return viewportName switch
+        {
+            "tablet" => NonWorkingDayTabletAddScenario,
+            "phone" => NonWorkingDayPhoneAddScenario,
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(viewportName),
+                viewportName,
+                "NonWorkingDay add smoke viewport is not supported."),
+        };
+    }
+
+    public Task MoveNonWorkingDayScenarioMembershipIntoScopeAsync(
+        NonWorkingDayAddSmokeScenario scenario)
+    {
+        ArgumentNullException.ThrowIfNull(scenario);
+        return RequireDatabase().MoveIssuedMembershipStartDateAsync(
+            scenario.ScopeEntrantMembershipId,
+            scenario.Period.EndDate);
+    }
+
     public Task<long> CountPaymentCorrectionsAsync(Guid originalPaymentId)
     {
         return RequireDatabase().CountPaymentCorrectionsAsync(originalPaymentId);
@@ -613,6 +648,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
         await SeedNonWorkingDayPreviewFixturesAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
+        await SeedAddNonWorkingDayFixturesAsync(
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
@@ -1015,6 +1054,99 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             durationDays: 10);
     }
 
+    private async Task SeedAddNonWorkingDayFixturesAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        NonWorkingDayTabletAddScenario = await SeedAddNonWorkingDayScenarioAsync(
+            database,
+            ownerAccountId,
+            membershipTypeId,
+            "Tablet",
+            new DateRange(
+                new DateOnly(2041, 4, 10),
+                new DateOnly(2041, 4, 12)),
+            "+380 67 910 01");
+        NonWorkingDayPhoneAddScenario = await SeedAddNonWorkingDayScenarioAsync(
+            database,
+            ownerAccountId,
+            membershipTypeId,
+            "Phone",
+            new DateRange(
+                new DateOnly(2042, 5, 20),
+                new DateOnly(2042, 5, 22)),
+            "+380 67 920 01");
+    }
+
+    private static async Task<NonWorkingDayAddSmokeScenario>
+        SeedAddNonWorkingDayScenarioAsync(
+            PostgreSqlSmokeDatabase database,
+            Guid ownerAccountId,
+            Guid membershipTypeId,
+            string viewportLabel,
+            DateRange period,
+            string phonePrefix)
+    {
+        var slug = viewportLabel.ToLowerInvariant();
+        var endBoundaryClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Confirm",
+            $"{viewportLabel} End",
+            $"{phonePrefix} 01",
+            $"BL-NWD-{slug}-END");
+        var endBoundaryMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            endBoundaryClientId,
+            membershipTypeId,
+            $"NonWorkingDay {slug} end-boundary snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: period.StartDate.AddDays(-9),
+            durationDays: 10);
+
+        var startBoundaryClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Confirm",
+            $"{viewportLabel} Start",
+            $"{phonePrefix} 02",
+            $"BL-NWD-{slug}-START");
+        var startBoundaryMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            startBoundaryClientId,
+            membershipTypeId,
+            $"NonWorkingDay {slug} start-boundary snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: period.EndDate,
+            durationDays: 10);
+
+        var scopeEntrantClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Confirm",
+            $"{viewportLabel} Entrant",
+            $"{phonePrefix} 03",
+            $"BL-NWD-{slug}-ENTRANT");
+        var scopeEntrantMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            scopeEntrantClientId,
+            membershipTypeId,
+            $"NonWorkingDay {slug} entrant snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: period.EndDate.AddDays(1),
+            durationDays: 10);
+
+        return new NonWorkingDayAddSmokeScenario(
+            viewportLabel,
+            period,
+            ReasonCode: $"planned_closure_{slug}",
+            ReasonComment: $"{viewportLabel} confirmed closure",
+            endBoundaryClientId,
+            endBoundaryMembershipId,
+            startBoundaryClientId,
+            startBoundaryMembershipId,
+            scopeEntrantClientId,
+            scopeEntrantMembershipId);
+    }
+
     private async Task SeedReceptionClientsAsync(
         PostgreSqlSmokeDatabase database,
         Guid ownerAccountId)
@@ -1158,4 +1290,23 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     {
         return string.Join(Environment.NewLine, _output.TakeLast(80));
     }
+}
+
+public sealed record NonWorkingDayAddSmokeScenario(
+    string ViewportLabel,
+    DateRange Period,
+    string ReasonCode,
+    string ReasonComment,
+    Guid EndBoundaryClientId,
+    Guid EndBoundaryMembershipId,
+    Guid StartBoundaryClientId,
+    Guid StartBoundaryMembershipId,
+    Guid ScopeEntrantClientId,
+    Guid ScopeEntrantMembershipId)
+{
+    public string EndBoundaryClientDisplayName => $"Confirm {ViewportLabel} End";
+
+    public string StartBoundaryClientDisplayName => $"Confirm {ViewportLabel} Start";
+
+    public string ScopeEntrantClientDisplayName => $"Confirm {ViewportLabel} Entrant";
 }

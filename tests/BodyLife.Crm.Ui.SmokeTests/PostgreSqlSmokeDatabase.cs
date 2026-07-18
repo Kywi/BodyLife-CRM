@@ -919,6 +919,33 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             reader.GetInt64(4));
     }
 
+    public async Task MoveIssuedMembershipStartDateAsync(
+        Guid membershipId,
+        DateOnly startDate)
+    {
+        if (membershipId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Membership id is required.",
+                nameof(membershipId));
+        }
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.issued_memberships
+            set start_date = @start_date,
+                base_end_date = @start_date + (duration_days_snapshot - 1)
+            where id = @membership_id
+            """;
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, startDate);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        await RebuildMembershipAsync(membershipId);
+    }
+
     public async Task SeedPaymentHistoryAsync(
         Guid recordedByAccountId,
         Guid clientId,

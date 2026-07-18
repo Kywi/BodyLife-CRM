@@ -7871,3 +7871,91 @@ Next recommended step:
   `affected_scope_changed`, and render the canonical result/drill-down on
   tablet and phone. Keep `CorrectNonWorkingDay` UI for a separate bounded
   step.
+
+## Step 138 - Owner AddNonWorkingDay confirmation workflow
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue the roadmap's Owner NonWorkingDay management UI with only the
+  `AddNonWorkingDay` mutation around the Step 137 impact preview. The existing
+  command remains the authority for authorization, confirmation-token
+  verification, exact-scope revalidation, transactionality, idempotency,
+  recalculation and business audit.
+- Preserve ADR-016's immutable confirmed scope and full-period application.
+  Razor does not recalculate affected Memberships or extension state; the
+  success screen rereads committed source facts and Memberships-owned state.
+- Keep `CorrectNonWorkingDay` replace/reason/cancel UI outside this bounded
+  step.
+
+Scope:
+
+- Add an Owner-only confirmation form to `/Owner/NonWorkingDays` that carries
+  the authenticated preview token, scope fingerprint and a fresh idempotency
+  key, requires an explicit exact-scope acknowledgement and uses the shared
+  htmx drop/busy behavior to prevent duplicate submissions.
+- Refresh the canonical impact preview after validation or command failure.
+  Expired previews and changed affected scope receive specific guidance plus
+  fresh confirmation material instead of leaving a stale form actionable.
+- Add `GetNonWorkingDay` as an explicit public query and PostgreSQL handler for
+  the committed period, immutable applications, related Client display names,
+  current Membership state and the append-only add audit reference. The Owner
+  authorization and source-consistency checks are enforced server-side.
+- Validate successful command reread targets against the canonical query,
+  render the confirmed period and exact Membership drill-down, push
+  `?periodId=...` for htmx navigation and support a direct/reloaded canonical
+  result URL.
+- Extend the PostgreSQL integration suite for canonical add-query behavior,
+  Owner authorization and missing-period handling.
+- Add independent tablet and phone Playwright fixtures. Each scenario proves
+  required acknowledgement, changed-scope refresh after a concurrent
+  Membership interval change, fresh token/fingerprint/idempotency material,
+  duplicate-submit protection, one atomic source/audit/idempotency write,
+  exact full-period applications and canonical reload.
+- Visually review final 1024x768 and 390x844 screenshots. The confirmation
+  outcome, warnings and exact-scope drill-down remain readable without
+  overlap or horizontal scrolling.
+- Add no EF model or migration, correction mutation UI, report query or
+  general audit/history screen.
+
+Validation:
+
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal
+  --no-restore` and `git diff --check` passed.
+- The focused canonical PostgreSQL query test passed 1/1 against the local
+  Docker PostgreSQL service after using the same development-configuration
+  connection bridge as the shared validation script.
+- The first focused Playwright run exposed a test-only unsupported regex flag;
+  removing that locator flag left product behavior unchanged. Final focused
+  confirmation coverage passed 2/2 and the complete NonWorkingDay UI class
+  passed 5/5.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 335 core tests, 35 web
+  tests, 450 PostgreSQL/architecture/security infrastructure tests, 48
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local watcher
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored to `HEAD`, so no generated code graph update is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(nonworking-days): add owner confirmation workflow`.
+
+Next recommended step:
+
+- Add only an Owner read-only `CorrectNonWorkingDay` preview workflow around
+  the existing preview query: select an active period, choose replace range,
+  replace reason or cancel mode, and review old/new exact scopes plus canonical
+  impact on tablet and phone. Keep correction confirmation and mutation for a
+  separate bounded step.

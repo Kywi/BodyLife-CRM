@@ -1,5 +1,6 @@
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
@@ -206,6 +207,84 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task CanonicalResultQueryReadsCommittedScopeAndRequiresOwner()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var clock = new MutableTimeProvider(TestNow);
+        var tokenService = CreateTokenService(clock);
+        var preview = await IssuePreviewAsync(
+            dbContext,
+            fixture.Actor,
+            tokenService,
+            clock);
+        var commandResult = await CreateHandler(dbContext, tokenService, clock)
+            .ExecuteAsync(
+                CreateCommand(fixture, preview, "canonical-result"),
+                CancellationToken.None);
+        AssertSuccess(commandResult, FirstMembershipId, SecondMembershipId);
+        var periodId = commandResult.PrimaryEntityId!.Value.Value;
+        var handler = new GetNonWorkingDayQueryHandler(dbContext, clock);
+
+        var result = await handler.ExecuteAsync(
+            new GetNonWorkingDayQuery(fixture.Actor, periodId),
+            CancellationToken.None);
+        var adminResult = await handler.ExecuteAsync(
+            new GetNonWorkingDayQuery(
+                fixture.Actor with
+                {
+                    Role = ActorRole.Admin,
+                    AccountKind = AccountKind.NamedAdmin,
+                },
+                periodId),
+            CancellationToken.None);
+        var missingResult = await handler.ExecuteAsync(
+            new GetNonWorkingDayQuery(fixture.Actor, Guid.NewGuid()),
+            CancellationToken.None);
+
+        Assert.Equal(GetNonWorkingDayStatus.Success, result.Status);
+        var period = Assert.IsType<NonWorkingDayCanonicalPeriod>(result.Period);
+        Assert.Equal(periodId, period.PeriodId);
+        Assert.Equal(ProposedPeriod, period.Period);
+        Assert.Equal("weather_closure", period.ReasonCode);
+        Assert.Equal("Severe weather", period.ReasonComment);
+        Assert.Equal(TestNow, period.CreatedAt);
+        Assert.Equal(fixture.Actor.AccountId.Value, period.CreatedByAccountId);
+        Assert.Equal(fixture.Actor.SessionId.Value, period.SessionId);
+        Assert.Equal(NonWorkingDayCorrectionSourceStatus.Active, period.Status);
+        Assert.Equal(commandResult.AuditEntryId!.Value.Value, period.AuditEntryId);
+        Assert.Equal(2, period.AffectedCount);
+        Assert.Equal(
+            [FirstMembershipId, SecondMembershipId],
+            period.Applications.Select(application => application.MembershipId));
+        Assert.Equal(
+            ["NonWorkingDay First", "NonWorkingDay Second"],
+            period.Applications.Select(application => application.ClientDisplayName));
+        Assert.Equal(
+            [new DateOnly(2026, 2, 4), new DateOnly(2026, 2, 15)],
+            period.Applications.Select(application =>
+                application.CurrentEffectiveEndDate));
+        Assert.All(period.Applications, application =>
+        {
+            Assert.Equal(ProposedPeriod, application.AppliedRange);
+            Assert.Equal(preview.Confirmation.IssuedAt, application.PreviewedAt);
+            Assert.Equal(TestNow, application.ConfirmedAt);
+            Assert.Equal(4, application.CurrentExtensionDays);
+            Assert.Equal(TestNow, application.RecalculatedAt);
+            Assert.Equal(
+                NonWorkingDayCorrectionSourceStatus.Active,
+                application.Status);
+        });
+
+        Assert.Equal(GetNonWorkingDayStatus.PermissionDenied, adminResult.Status);
+        Assert.Null(adminResult.Period);
+        Assert.Equal(GetNonWorkingDayStatus.NotFound, missingResult.Status);
+        Assert.Null(missingResult.Period);
+    }
+
+    [PostgreSqlFact]
     public async Task ExpiredOrChangedPreviewFailsWithoutPartialWrites()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -401,7 +480,7 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
     }
 
     [Fact]
-    public void PersistenceRegistrationIncludesAddNonWorkingDayCommandHandler()
+    public void PersistenceRegistrationIncludesAddNonWorkingDayHandlers()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -419,6 +498,17 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
                 == typeof(IBodyLifeCommandHandler<AddNonWorkingDayCommand>));
         Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
         Assert.Equal(typeof(AddNonWorkingDayCommandHandler), descriptor.ImplementationType);
+
+        var queryDescriptor = Assert.Single(
+            services,
+            service => service.ServiceType
+                == typeof(IBodyLifeQueryHandler<
+                    GetNonWorkingDayQuery,
+                    GetNonWorkingDayResult>));
+        Assert.Equal(ServiceLifetime.Scoped, queryDescriptor.Lifetime);
+        Assert.Equal(
+            typeof(GetNonWorkingDayQueryHandler),
+            queryDescriptor.ImplementationType);
     }
 
     private static AddNonWorkingDayCommandHandler CreateHandler(

@@ -2,6 +2,7 @@
 @{
     var input = Model.Input;
     var preview = Model.Preview;
+    var confirmedPeriod = Model.ConfirmedPeriod;
 }
 
 <div id="non-working-day-preview-workspace"
@@ -16,7 +17,7 @@
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>Impact preview not created</strong>
+                <strong>@(Model.ErrorHeading ?? "Review this operation")</strong>
                 <ul>
                     @foreach (var message in Model.Errors
                         .Select(error => error.Message)
@@ -216,6 +217,193 @@
                     }
                 </ol>
             }
+
+            <form id="non-working-day-confirmation-form"
+                  class="non-working-day-confirmation-form"
+                  method="post"
+                  asp-page="/Owner/NonWorkingDays"
+                  asp-page-handler="Confirm"
+                  hx-post="@Url.Page("/Owner/NonWorkingDays", "Confirm")"
+                  hx-target="#non-working-day-preview-workspace"
+                  hx-swap="outerHTML"
+                  hx-sync="this:drop"
+                  hx-indicator="#non-working-day-confirmation-loading"
+                  hx-disabled-elt="find button"
+                  data-busy-form>
+                <input type="hidden"
+                       name="form.ProposedStartDate"
+                       value="@FormatDate(preview.Period.StartDate)" />
+                <input type="hidden"
+                       name="form.ProposedEndDate"
+                       value="@FormatDate(preview.Period.EndDate)" />
+                <input type="hidden"
+                       name="form.ReasonCode"
+                       value="@preview.ReasonCode" />
+                <input type="hidden"
+                       name="form.ReasonComment"
+                       value="@preview.ReasonComment" />
+                <input type="hidden"
+                       name="form.ConfirmationToken"
+                       data-confirmation-token
+                       value="@preview.Confirmation.ConfirmationToken" />
+                <input type="hidden"
+                       name="form.ScopeFingerprint"
+                       data-confirmation-scope-fingerprint
+                       value="@preview.Confirmation.ScopeFingerprint" />
+                <input type="hidden"
+                       name="form.IdempotencyKey"
+                       data-confirmation-idempotency-key
+                       value="@Model.IdempotencyKey" />
+
+                <div class="non-working-day-confirmation-review">
+                    <div>
+                        <p class="eyebrow">Final confirmation</p>
+                        <h3>Apply this exact scope</h3>
+                    </div>
+                    <p>
+                        The command will create one immutable application for each of the
+                        @preview.AffectedCount affected Memberships and synchronously recalculate their canonical state.
+                    </p>
+                </div>
+
+                <label class="acknowledgement-control non-working-day-confirmation-choice"
+                       for="non-working-day-confirmed">
+                    <input id="non-working-day-confirmed"
+                           type="checkbox"
+                           name="form.Confirmed"
+                           value="true"
+                           required />
+                    <span>
+                        I confirm this exact set of @preview.AffectedCount Memberships receives the full
+                        @FormatRange(preview.Period) period.
+                    </span>
+                </label>
+
+                <div class="action-form-footer non-working-day-confirmation-actions">
+                    <span id="non-working-day-confirmation-loading"
+                          class="request-indicator htmx-indicator"
+                          role="status"
+                          aria-live="polite">Adding period and recalculating Memberships...</span>
+                    <button type="submit"
+                            data-confirm-non-working-day-submit
+                            data-busy-text="Adding period...">Add non-working period</button>
+                </div>
+            </form>
+        </section>
+    }
+
+    @if (confirmedPeriod is not null)
+    {
+        <section class="non-working-day-confirmed-result"
+                 aria-labelledby="non-working-day-confirmed-title"
+                 data-confirmed-non-working-day
+                 data-confirmed-period-id="@confirmedPeriod.PeriodId"
+                 data-confirmed-affected-count="@confirmedPeriod.AffectedCount"
+                 data-confirmed-status="@confirmedPeriod.Status.ToString().ToLowerInvariant()"
+                 data-confirmed-audit-id="@confirmedPeriod.AuditEntryId">
+            <div class="operation-message operation-success" role="status">
+                <strong>Non-working period added</strong>
+                <span>The exact affected scope was stored and every Membership was recalculated before commit.</span>
+            </div>
+
+            <header class="non-working-day-impact-header">
+                <div>
+                    <p class="eyebrow">Canonical result</p>
+                    <h2 id="non-working-day-confirmed-title">Confirmed period</h2>
+                </div>
+                <span class="status-chip status-active">@StatusLabel(confirmedPeriod.Status)</span>
+            </header>
+
+            <dl class="non-working-day-impact-summary">
+                <div>
+                    <dt>Affected memberships</dt>
+                    <dd>@confirmedPeriod.AffectedCount</dd>
+                </div>
+                <div>
+                    <dt>Inclusive period</dt>
+                    <dd>@FormatRange(confirmedPeriod.Period)</dd>
+                </div>
+                <div>
+                    <dt>Period days</dt>
+                    <dd>@confirmedPeriod.Period.InclusiveDays</dd>
+                </div>
+                <div>
+                    <dt>Audit reference</dt>
+                    <dd>@ShortReference(confirmedPeriod.AuditEntryId)</dd>
+                </div>
+            </dl>
+
+            <dl class="non-working-day-confirmed-reason">
+                <div>
+                    <dt>Reason code</dt>
+                    <dd>@confirmedPeriod.ReasonCode</dd>
+                </div>
+                <div>
+                    <dt>Reason comment</dt>
+                    <dd>@(confirmedPeriod.ReasonComment ?? "None")</dd>
+                </div>
+            </dl>
+
+            <div class="non-working-day-scope-confirmed" role="note">
+                <strong>Exact scope captured</strong>
+                <p>
+                    Every row below is a committed application of the full period. Later Membership changes do not silently alter this snapshot.
+                </p>
+            </div>
+
+            @if (confirmedPeriod.Applications.Count == 0)
+            {
+                <p class="empty-state">This confirmed period affected no Memberships.</p>
+            }
+            else
+            {
+                <ol class="non-working-day-impact-list"
+                    aria-label="Confirmed affected Memberships">
+                    @foreach (var application in confirmedPeriod.Applications)
+                    {
+                        <li class="non-working-day-impact-row"
+                            data-confirmed-application-id="@application.ApplicationId"
+                            data-confirmed-membership-id="@application.MembershipId"
+                            data-confirmed-client-id="@application.ClientId"
+                            data-confirmed-applied-start="@FormatDate(application.AppliedRange.StartDate)"
+                            data-confirmed-applied-end="@FormatDate(application.AppliedRange.EndDate)"
+                            data-confirmed-effective-end="@FormatDate(application.CurrentEffectiveEndDate)"
+                            data-confirmed-extension-days="@application.CurrentExtensionDays">
+                            <header class="non-working-day-impact-row-header">
+                                <div>
+                                    <h3>
+                                        <a asp-page="/Reception/Index"
+                                           asp-route-clientId="@application.ClientId">@application.ClientDisplayName</a>
+                                    </h3>
+                                    <p class="non-working-day-impact-reference">
+                                        Membership @ShortReference(application.MembershipId)
+                                    </p>
+                                </div>
+                                <span class="status-chip status-active">@StatusLabel(application.Status)</span>
+                            </header>
+
+                            <dl class="non-working-day-impact-meta">
+                                <div>
+                                    <dt>Full applied range</dt>
+                                    <dd>@FormatRange(application.AppliedRange)</dd>
+                                </div>
+                                <div>
+                                    <dt>Current effective end</dt>
+                                    <dd>@FormatDate(application.CurrentEffectiveEndDate)</dd>
+                                </div>
+                                <div>
+                                    <dt>Current extension days</dt>
+                                    <dd>@application.CurrentExtensionDays</dd>
+                                </div>
+                                <div>
+                                    <dt>State recalculated</dt>
+                                    <dd>@FormatTimestamp(application.RecalculatedAt)</dd>
+                                </div>
+                            </dl>
+                        </li>
+                    }
+                </ol>
+            }
         </section>
     }
 </div>
@@ -257,6 +445,17 @@
             "non_working_day" => "Non-working period",
             "adjustment" => "Adjustment",
             _ => "Extension source",
+        };
+    }
+
+    private static string StatusLabel(NonWorkingDayCorrectionSourceStatus status)
+    {
+        return status switch
+        {
+            NonWorkingDayCorrectionSourceStatus.Active => "Active",
+            NonWorkingDayCorrectionSourceStatus.Corrected => "Corrected",
+            NonWorkingDayCorrectionSourceStatus.Canceled => "Canceled",
+            _ => "Unsupported",
         };
     }
 }

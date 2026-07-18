@@ -18,7 +18,29 @@ internal static class NonWorkingDayClientProjection
             .Select(item => item.ClientId)
             .Distinct()
             .ToArray();
-        if (clientIds.Length == 0)
+        return await LoadDisplayNamesAsync(
+            dbContext,
+            clientIds,
+            cancellationToken);
+    }
+
+    internal static async Task<IReadOnlyDictionary<Guid, string>> LoadDisplayNamesAsync(
+        BodyLifeDbContext dbContext,
+        IReadOnlyCollection<Guid> clientIds,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(dbContext);
+        ArgumentNullException.ThrowIfNull(clientIds);
+
+        if (clientIds.Any(id => id == Guid.Empty)
+            || clientIds.Distinct().Count() != clientIds.Count)
+        {
+            throw new ArgumentException(
+                "Canonical Client ids must be non-empty and unique.",
+                nameof(clientIds));
+        }
+
+        if (clientIds.Count == 0)
         {
             return new Dictionary<Guid, string>();
         }
@@ -35,7 +57,7 @@ internal static class NonWorkingDayClientProjection
             })
             .ToArrayAsync(cancellationToken);
 
-        if (clients.Length != clientIds.Length)
+        if (clients.Length != clientIds.Count)
         {
             throw new InvalidOperationException(
                 "Every affected Membership must reference a canonical Client.");

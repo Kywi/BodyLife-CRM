@@ -2037,7 +2037,8 @@ textarea:focus-visible,
 
 .non-working-day-preview-workspace,
 .non-working-day-preview-input,
-.non-working-day-impact-result {
+.non-working-day-impact-result,
+.non-working-day-confirmed-result {
   display: grid;
   gap: 18px;
 }
@@ -2185,6 +2186,95 @@ textarea:focus-visible,
   padding-left: 20px;
   gap: 5px;
   color: var(--text);
+}
+
+.non-working-day-confirmation-form {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  gap: 16px;
+}
+
+.non-working-day-confirmation-review {
+  display: flex;
+  min-width: 0;
+  gap: 18px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.non-working-day-confirmation-review h3,
+.non-working-day-confirmation-review p {
+  margin: 0;
+}
+
+.non-working-day-confirmation-review > p {
+  max-width: 620px;
+  color: var(--muted);
+}
+
+.non-working-day-confirmation-choice {
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  padding: 12px 14px;
+  align-items: flex-start;
+  background: var(--success-soft);
+  color: var(--accent-strong);
+}
+
+.non-working-day-confirmation-actions {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.non-working-day-confirmed-reason {
+  display: grid;
+  margin: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+
+.non-working-day-confirmed-reason div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.non-working-day-confirmed-reason dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.non-working-day-confirmed-reason dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.non-working-day-scope-confirmed {
+  border-left: 4px solid var(--success);
+  border-radius: 6px;
+  padding: 12px 14px;
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.non-working-day-scope-confirmed p {
+  margin: 5px 0 0;
+  color: var(--text);
+}
+
+.non-working-day-confirmed-result .operation-message {
+  display: grid;
+  gap: 3px;
+}
+
+.non-working-day-confirmed-result .operation-message span {
+  color: var(--text);
+  font-weight: 600;
 }
 
 @media (max-width: 900px) {
@@ -2387,7 +2477,8 @@ textarea:focus-visible,
   }
 
   .non-working-day-impact-header,
-  .non-working-day-impact-row-header {
+  .non-working-day-impact-row-header,
+  .non-working-day-confirmation-review {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -2402,6 +2493,18 @@ textarea:focus-visible,
   }
 
   .non-working-day-preview-actions button {
+    width: 100%;
+  }
+
+  .non-working-day-confirmed-reason {
+    grid-template-columns: 1fr;
+  }
+
+  .non-working-day-confirmation-actions {
+    flex-wrap: wrap;
+  }
+
+  .non-working-day-confirmation-actions button {
     width: 100%;
   }
 
