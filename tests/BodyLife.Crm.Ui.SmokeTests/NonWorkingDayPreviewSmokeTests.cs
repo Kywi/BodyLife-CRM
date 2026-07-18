@@ -490,6 +490,318 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
         }
     }
 
+    [Theory]
+    [InlineData("tablet", 1024, 768)]
+    [InlineData("phone", 390, 844)]
+    public async Task OwnerPreviewsEveryNonWorkingDayCorrectionModeWithoutWrites(
+        string viewportName,
+        int width,
+        int height)
+    {
+        var scenario = _app.NonWorkingDayCorrectionScenario;
+        var mutationCountsBefore = await _app.ReadNonWorkingDayMutationCountsAsync();
+        var context = await CreateContextAsync(width, height);
+
+        try
+        {
+            var page = await LoginAsync(
+                context,
+                _app.LoginName,
+                _app.Password,
+                $"{viewportName} NonWorkingDay correction preview");
+            await page.GetByRole(
+                    AriaRole.Link,
+                    new() { Name = "Non-working days", Exact = true })
+                .ClickAsync();
+            await page.WaitForURLAsync("**/Owner/NonWorkingDays");
+
+            var workspace = page.Locator(
+                "#non-working-day-correction-workspace");
+            await ExpectVisibleAsync(
+                workspace,
+                viewportName,
+                "NonWorkingDay correction workspace");
+            var form = page.Locator(
+                "#non-working-day-correction-preview-form");
+            await ExpectVisibleAsync(
+                form,
+                viewportName,
+                "NonWorkingDay correction preview form");
+            Assert.Equal(
+                1,
+                await form.Locator("input[name='__RequestVerificationToken']")
+                    .CountAsync());
+            Assert.Equal("this:replace", await form.GetAttributeAsync("hx-sync"));
+            Assert.NotNull(await form.GetAttributeAsync("data-busy-form"));
+            await form.GetByLabel("Active period", new() { Exact = true })
+                .SelectOptionAsync(scenario.PeriodId.ToString());
+            Assert.Equal(
+                FormatDate(scenario.OriginalPeriod.StartDate),
+                await form.GetByLabel("Start date", new() { Exact = true })
+                    .InputValueAsync());
+            Assert.Equal(
+                scenario.OriginalReasonCode,
+                await form.GetByLabel("Reason code", new() { Exact = true })
+                    .InputValueAsync());
+
+            await form.GetByLabel("Start date", new() { Exact = true })
+                .FillAsync(FormatDate(scenario.ReplacementPeriod.StartDate));
+            await form.GetByLabel("End date", new() { Exact = true })
+                .FillAsync(FormatDate(scenario.ReplacementPeriod.EndDate));
+            await form.GetByLabel("Reason code", new() { Exact = true })
+                .FillAsync(scenario.ReplacementReasonCode);
+            await form.GetByLabel(
+                    "Reason comment (optional)",
+                    new() { Exact = true })
+                .FillAsync(scenario.ReplacementReasonComment);
+            await SubmitHtmxCorrectionPreviewAsync(
+                page,
+                bypassValidation: true,
+                verifyBusy: false);
+
+            await ExpectVisibleAsync(
+                page.GetByText(
+                    "Correction reason is required and must be 1000 characters or fewer.",
+                    new() { Exact = true }),
+                viewportName,
+                "required correction reason error");
+            Assert.Equal(
+                0,
+                await page.Locator("[data-non-working-day-correction-preview]")
+                    .CountAsync());
+            Assert.Equal(
+                mutationCountsBefore,
+                await _app.ReadNonWorkingDayMutationCountsAsync());
+
+            form = page.Locator("#non-working-day-correction-preview-form");
+            await form.GetByLabel("Correction reason", new() { Exact = true })
+                .FillAsync(scenario.CorrectionReason);
+            await form.GetByLabel(
+                    "Correction comment (optional)",
+                    new() { Exact = true })
+                .FillAsync(scenario.CorrectionComment);
+            await DelayCorrectionPreviewRequestsAsync(page);
+            await AssertMinimumTouchTargetAsync(
+                form.GetByRole(
+                    AriaRole.Button,
+                    new() { Name = "Preview correction", Exact = true }),
+                viewportName,
+                "Preview correction button");
+            await SubmitHtmxCorrectionPreviewAsync(
+                page,
+                bypassValidation: false,
+                verifyBusy: true);
+
+            var preview = page.Locator(
+                "[data-non-working-day-correction-preview]");
+            await ExpectVisibleAsync(
+                preview,
+                viewportName,
+                "range replacement preview");
+            Assert.Equal(
+                "replace_range",
+                await preview.GetAttributeAsync("data-correction-mode"));
+            Assert.Equal(
+                "2",
+                await preview.GetAttributeAsync("data-correction-original-count"));
+            Assert.Equal(
+                "2",
+                await preview.GetAttributeAsync("data-correction-confirmed-count"));
+            Assert.Equal(
+                "recompute_replacement",
+                await preview.GetAttributeAsync("data-correction-scope-behavior"));
+            var rangeToken = await preview
+                .Locator("[data-correction-confirmation-token]")
+                .InputValueAsync();
+            var rangeFingerprint = await preview
+                .Locator("[data-correction-confirmation-fingerprint]")
+                .InputValueAsync();
+            Assert.False(string.IsNullOrWhiteSpace(rangeToken));
+            Assert.Matches(new Regex("^[0-9A-F]{64}$"), rangeFingerprint);
+            var expiresAtValue = await preview.GetAttributeAsync(
+                "data-correction-expires-at");
+            Assert.NotNull(expiresAtValue);
+            var expiresAt = DateTimeOffset.Parse(
+                expiresAtValue,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind);
+            Assert.True(expiresAt > DateTimeOffset.UtcNow);
+
+            var originalRows = preview.Locator(
+                "[data-correction-original-membership-id]");
+            Assert.Equal(2, await originalRows.CountAsync());
+            var sharedOriginalRow = preview.Locator(
+                $"[data-correction-original-membership-id='{scenario.SharedMembershipId}']");
+            await ExpectVisibleAsync(
+                sharedOriginalRow.GetByRole(
+                    AriaRole.Link,
+                    new() { Name = scenario.SharedClientDisplayName, Exact = true }),
+                viewportName,
+                "shared original Client");
+            await ExpectVisibleAsync(
+                preview.GetByRole(
+                    AriaRole.Link,
+                    new()
+                    {
+                        Name = scenario.OriginalOnlyClientDisplayName,
+                        Exact = true,
+                    }),
+                viewportName,
+                "original-only Client");
+            var replacementRows = preview.Locator(
+                "[data-correction-replacement-membership-id]");
+            Assert.Equal(2, await replacementRows.CountAsync());
+            Assert.Equal(
+                1,
+                await preview
+                    .Locator(
+                        $"[data-correction-replacement-membership-id='{scenario.SharedMembershipId}']")
+                    .CountAsync());
+            Assert.Equal(
+                0,
+                await preview.Locator(
+                        $"[data-correction-replacement-membership-id='{scenario.OriginalOnlyMembershipId}']")
+                    .CountAsync());
+            var replacementOnlyRow = preview.Locator(
+                $"[data-correction-replacement-membership-id='{scenario.ReplacementOnlyMembershipId}']");
+            await ExpectVisibleAsync(
+                replacementOnlyRow.GetByRole(
+                    AriaRole.Link,
+                    new()
+                    {
+                        Name = scenario.ReplacementOnlyClientDisplayName,
+                        Exact = true,
+                    }),
+                viewportName,
+                "replacement-only Client");
+            Assert.Equal(
+                FormatDate(scenario.ReplacementPeriod.StartDate),
+                await replacementOnlyRow.GetAttributeAsync(
+                    "data-correction-replacement-applied-start"));
+            Assert.Equal(
+                FormatDate(scenario.ReplacementPeriod.EndDate),
+                await replacementOnlyRow.GetAttributeAsync(
+                    "data-correction-replacement-applied-end"));
+            await ExpectVisibleAsync(
+                preview.GetByText(
+                    "2043-04-09 to 2043-04-12",
+                    new() { Exact = true }),
+                viewportName,
+                "shared replacement effective-end estimate");
+            Assert.Equal(
+                0,
+                await preview.Locator("[data-correction-confirmation-form]")
+                    .CountAsync());
+            await AssertFitsViewportAsync(
+                page,
+                viewportName,
+                "range replacement preview");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "non-working-day-range-correction-preview");
+
+            form = page.Locator("#non-working-day-correction-preview-form");
+            await form.GetByLabel("Replace reason", new() { Exact = true })
+                .CheckAsync();
+            Assert.Equal(
+                "false",
+                await form.Locator("[data-non-working-day-replacement-range]")
+                    .GetAttributeAsync("data-active"));
+            await form.GetByLabel("Reason code", new() { Exact = true })
+                .FillAsync("corrected_maintenance_reason");
+            await form.GetByLabel(
+                    "Reason comment (optional)",
+                    new() { Exact = true })
+                .FillAsync("Corrected maintenance explanation");
+            await SubmitHtmxCorrectionPreviewAsync(
+                page,
+                bypassValidation: false,
+                verifyBusy: false);
+
+            preview = page.Locator("[data-non-working-day-correction-preview]");
+            Assert.Equal(
+                "replace_reason",
+                await preview.GetAttributeAsync("data-correction-mode"));
+            Assert.Equal(
+                "2",
+                await preview.GetAttributeAsync("data-correction-confirmed-count"));
+            Assert.Equal(
+                "preserve_confirmed_applications",
+                await preview.GetAttributeAsync("data-correction-scope-behavior"));
+            await ExpectVisibleAsync(
+                preview.Locator("[data-correction-preserved-scope]"),
+                viewportName,
+                "preserved exact scope disclosure");
+            Assert.Equal(
+                0,
+                await preview.Locator(
+                        "[data-correction-replacement-membership-id]")
+                    .CountAsync());
+            var reasonToken = await preview
+                .Locator("[data-correction-confirmation-token]")
+                .InputValueAsync();
+            Assert.NotEqual(rangeToken, reasonToken);
+
+            form = page.Locator("#non-working-day-correction-preview-form");
+            await form.GetByLabel("Cancel period", new() { Exact = true })
+                .CheckAsync();
+            Assert.Equal(
+                "false",
+                await form.Locator("[data-non-working-day-replacement-range]")
+                    .GetAttributeAsync("data-active"));
+            Assert.Equal(
+                "false",
+                await form.Locator("[data-non-working-day-replacement-reason]")
+                    .GetAttributeAsync("data-active"));
+            Assert.True(await form.Locator(
+                    "[data-non-working-day-replacement-reason-code]")
+                .IsDisabledAsync());
+            await SubmitHtmxCorrectionPreviewAsync(
+                page,
+                bypassValidation: false,
+                verifyBusy: false);
+
+            preview = page.Locator("[data-non-working-day-correction-preview]");
+            Assert.Equal(
+                "cancel",
+                await preview.GetAttributeAsync("data-correction-mode"));
+            Assert.Equal(
+                "0",
+                await preview.GetAttributeAsync("data-correction-confirmed-count"));
+            Assert.Equal(
+                "no_replacement",
+                await preview.GetAttributeAsync("data-correction-scope-behavior"));
+            await ExpectVisibleAsync(
+                preview.Locator("[data-correction-cancel-scope]"),
+                viewportName,
+                "cancel old-scope disclosure");
+            Assert.Equal(
+                2,
+                await preview.Locator("[data-correction-original-membership-id]")
+                    .CountAsync());
+            Assert.NotEqual(
+                reasonToken,
+                await preview.Locator("[data-correction-confirmation-token]")
+                    .InputValueAsync());
+            Assert.Equal(
+                mutationCountsBefore,
+                await _app.ReadNonWorkingDayMutationCountsAsync());
+            await AssertFitsViewportAsync(
+                page,
+                viewportName,
+                "cancellation preview");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "non-working-day-cancel-correction-preview");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task NamedAdminCannotNavigateToOrOpenNonWorkingDayPreview()
     {
@@ -591,6 +903,65 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
     {
         return page.RouteAsync(
             "**/*handler=Preview*",
+            async route =>
+            {
+                await Task.Delay(500);
+                await route.ContinueAsync();
+            });
+    }
+
+    private static async Task SubmitHtmxCorrectionPreviewAsync(
+        IPage page,
+        bool bypassValidation,
+        bool verifyBusy)
+    {
+        var form = page.Locator("#non-working-day-correction-preview-form");
+        Assert.Equal("this:replace", await form.GetAttributeAsync("hx-sync"));
+        var responseTask = page.WaitForResponseAsync(response =>
+            response.Request.Method == "POST"
+            && response.Url.Contains(
+                "handler=CorrectionPreview",
+                StringComparison.OrdinalIgnoreCase));
+        Task<IJSHandle>? disabledTask = null;
+        if (verifyBusy)
+        {
+            disabledTask = page.WaitForFunctionAsync(
+                "() => document.querySelector('#non-working-day-correction-preview-form button[type=\"submit\"]')?.disabled === true");
+        }
+
+        if (bypassValidation)
+        {
+            await form.EvaluateAsync(
+                "form => { form.noValidate = true; form.requestSubmit(); }");
+        }
+        else
+        {
+            await form.GetByRole(
+                    AriaRole.Button,
+                    new() { Name = "Preview correction", Exact = true })
+                .ClickAsync();
+        }
+
+        if (disabledTask is not null)
+        {
+            await disabledTask;
+        }
+
+        var response = await responseTask;
+        Assert.True(
+            response.Ok,
+            $"htmx correction preview returned HTTP {response.Status}.");
+        Assert.True(response.Request.Headers.TryGetValue(
+            "hx-request",
+            out var htmxRequest));
+        Assert.Equal("true", htmxRequest);
+        await WaitForHtmxSettleAsync(page);
+    }
+
+    private static Task DelayCorrectionPreviewRequestsAsync(IPage page)
+    {
+        return page.RouteAsync(
+            "**/*handler=CorrectionPreview*",
             async route =>
             {
                 await Task.Delay(500);

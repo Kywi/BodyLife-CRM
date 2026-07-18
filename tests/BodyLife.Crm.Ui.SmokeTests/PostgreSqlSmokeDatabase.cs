@@ -4,6 +4,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
@@ -883,6 +884,216 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         await transaction.CommitAsync();
         await RebuildMembershipAsync(membershipId);
         return freezeId;
+    }
+
+    public async Task<Guid> SeedNonWorkingDayCorrectionPeriodAsync(
+        Guid recordedByAccountId,
+        DateRange period,
+        string reasonCode,
+        string? reasonComment,
+        IReadOnlyList<NonWorkingDayApplicationSmokeSeed> applications)
+    {
+        if (recordedByAccountId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Owner account id is required.",
+                nameof(recordedByAccountId));
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(reasonCode);
+        ArgumentNullException.ThrowIfNull(applications);
+        if (applications.Any(application => application is null)
+            || applications.Select(application => application.MembershipId)
+                .Distinct()
+                .Count() != applications.Count
+            || applications.Select(application => application.ClientId)
+                .Distinct()
+                .Count() != applications.Count)
+        {
+            throw new ArgumentException(
+                "NonWorkingDay correction applications must be unique.",
+                nameof(applications));
+        }
+
+        var periodId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var auditEntryId = Guid.NewGuid();
+        var recordedAt = TimeProvider.System.GetUtcNow();
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText =
+                """
+                insert into bodylife.sessions (
+                    id,
+                    account_id,
+                    device_label,
+                    started_at,
+                    expires_at,
+                    ended_at,
+                    last_seen_at)
+                values (
+                    @session_id,
+                    @account_id,
+                    'UI NonWorkingDay correction preview seed',
+                    @session_started_at,
+                    @session_expires_at,
+                    null,
+                    @session_started_at);
+
+                insert into bodylife.non_working_periods (
+                    id,
+                    start_date,
+                    end_date,
+                    reason_code,
+                    reason_comment,
+                    created_at,
+                    created_by_account_id,
+                    session_id,
+                    status)
+                values (
+                    @period_id,
+                    @start_date,
+                    @end_date,
+                    @reason_code,
+                    @reason_comment,
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'active');
+
+                insert into bodylife.business_audit_entries (
+                    id,
+                    action_type,
+                    entity_type,
+                    entity_id,
+                    related_entity_refs,
+                    actor_account_id,
+                    actor_account_type,
+                    actor_role,
+                    session_id,
+                    device_label,
+                    occurred_at,
+                    recorded_at,
+                    reason,
+                    comment,
+                    before_summary,
+                    after_summary,
+                    request_correlation_id,
+                    entry_origin,
+                    idempotency_key,
+                    changed_after_close)
+                values (
+                    @audit_entry_id,
+                    'non_working_day.added',
+                    'non_working_period',
+                    @period_id,
+                    '[]'::jsonb,
+                    @account_id,
+                    'owner',
+                    'owner',
+                    @session_id,
+                    'UI NonWorkingDay correction preview seed',
+                    @recorded_at,
+                    @recorded_at,
+                    @reason_code,
+                    @reason_comment,
+                    '{}'::jsonb,
+                    '{}'::jsonb,
+                    'ui-non-working-day-correction-preview-seed',
+                    'normal',
+                    null,
+                    false)
+                """;
+            command.Parameters.AddWithValue("session_id", sessionId);
+            command.Parameters.AddWithValue("account_id", recordedByAccountId);
+            command.Parameters.AddWithValue(
+                "session_started_at",
+                recordedAt.AddMinutes(-3));
+            command.Parameters.AddWithValue(
+                "session_expires_at",
+                recordedAt.AddDays(1));
+            command.Parameters.AddWithValue("period_id", periodId);
+            command.Parameters.AddWithValue("audit_entry_id", auditEntryId);
+            command.Parameters.AddWithValue(
+                "start_date",
+                NpgsqlDbType.Date,
+                period.StartDate);
+            command.Parameters.AddWithValue(
+                "end_date",
+                NpgsqlDbType.Date,
+                period.EndDate);
+            command.Parameters.AddWithValue("reason_code", reasonCode);
+            command.Parameters.AddWithValue(
+                "reason_comment",
+                NpgsqlDbType.Varchar,
+                (object?)reasonComment ?? DBNull.Value);
+            command.Parameters.AddWithValue("recorded_at", recordedAt);
+            Assert.Equal(3, await command.ExecuteNonQueryAsync());
+        }
+
+        foreach (var application in applications)
+        {
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText =
+                """
+                insert into bodylife.non_working_period_applications (
+                    id,
+                    non_working_period_id,
+                    membership_id,
+                    client_id,
+                    applied_start_date,
+                    applied_end_date,
+                    previewed_at,
+                    confirmed_at,
+                    status)
+                values (
+                    @id,
+                    @period_id,
+                    @membership_id,
+                    @client_id,
+                    @start_date,
+                    @end_date,
+                    @previewed_at,
+                    @confirmed_at,
+                    'active')
+                """;
+            command.Parameters.AddWithValue("id", Guid.NewGuid());
+            command.Parameters.AddWithValue("period_id", periodId);
+            command.Parameters.AddWithValue(
+                "membership_id",
+                application.MembershipId);
+            command.Parameters.AddWithValue("client_id", application.ClientId);
+            command.Parameters.AddWithValue(
+                "start_date",
+                NpgsqlDbType.Date,
+                period.StartDate);
+            command.Parameters.AddWithValue(
+                "end_date",
+                NpgsqlDbType.Date,
+                period.EndDate);
+            command.Parameters.AddWithValue(
+                "previewed_at",
+                recordedAt.AddMinutes(-2));
+            command.Parameters.AddWithValue(
+                "confirmed_at",
+                recordedAt.AddMinutes(-1));
+            Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        }
+
+        await transaction.CommitAsync();
+        foreach (var membershipId in applications
+            .Select(application => application.MembershipId)
+            .Order())
+        {
+            await RebuildMembershipAsync(membershipId);
+        }
+
+        return periodId;
     }
 
     public async Task<NonWorkingDayMutationCountSmokeSnapshot>
@@ -2245,3 +2456,7 @@ public sealed record NonWorkingDayMutationCountSmokeSnapshot(
     long CancellationCount,
     long AuditCount,
     long IdempotencyCount);
+
+public sealed record NonWorkingDayApplicationSmokeSeed(
+    Guid ClientId,
+    Guid MembershipId);

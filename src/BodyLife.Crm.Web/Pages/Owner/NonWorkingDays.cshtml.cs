@@ -17,16 +17,38 @@ public sealed class NonWorkingDaysModel(
     IBodyLifeQueryHandler<
         GetNonWorkingDayQuery,
         GetNonWorkingDayResult> getNonWorkingDay,
+    IBodyLifeQueryHandler<
+        GetActiveNonWorkingDaysForCorrectionQuery,
+        GetActiveNonWorkingDaysForCorrectionResult> getActiveForCorrection,
+    IBodyLifeQueryHandler<
+        PreviewCorrectNonWorkingDayQuery,
+        PreviewCorrectNonWorkingDayResult> previewCorrection,
     TimeProvider timeProvider)
     : PageModel
 {
     public NonWorkingDayPreviewWorkspaceViewModel Workspace { get; private set; }
         = NonWorkingDayPreviewWorkspaceViewModel.Empty;
 
+    public NonWorkingDayCorrectionWorkspaceViewModel CorrectionWorkspace
+    {
+        get;
+        private set;
+    } = NonWorkingDayCorrectionWorkspaceViewModel.Empty;
+
     public async Task<IActionResult> OnGetAsync(
         Guid? periodId,
         CancellationToken cancellationToken)
     {
+        var activePeriods = await GetActivePeriodsAsync(cancellationToken);
+        if (activePeriods.Status
+            == GetActiveNonWorkingDaysForCorrectionStatus.PermissionDenied)
+        {
+            return Forbid();
+        }
+
+        CorrectionWorkspace = NonWorkingDayCorrectionWorkspaceViewModel.FromList(
+            activePeriods,
+            periodId);
         if (periodId is null)
         {
             Workspace = NonWorkingDayPreviewWorkspaceViewModel.New(CurrentDate());
@@ -75,7 +97,7 @@ public sealed class NonWorkingDaysModel(
         Workspace = NonWorkingDayPreviewWorkspaceViewModel.FromPreviewResult(
             form,
             result);
-        return RenderWorkspace();
+        return await RenderWorkspaceAsync(cancellationToken);
     }
 
     public async Task<IActionResult> OnPostConfirmAsync(
@@ -124,6 +146,62 @@ public sealed class NonWorkingDaysModel(
             form,
             result.Errors,
             cancellationToken);
+    }
+
+    public async Task<IActionResult> OnPostCorrectionPreviewAsync(
+        NonWorkingDayCorrectionPreviewFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        var activePeriods = await GetActivePeriodsAsync(cancellationToken);
+        if (activePeriods.Status
+            == GetActiveNonWorkingDaysForCorrectionStatus.PermissionDenied)
+        {
+            return Forbid();
+        }
+
+        if (activePeriods.Status
+            != GetActiveNonWorkingDaysForCorrectionStatus.Success)
+        {
+            CorrectionWorkspace =
+                NonWorkingDayCorrectionWorkspaceViewModel.FromList(activePeriods);
+            return RenderCorrectionWorkspace();
+        }
+
+        var adapterErrors = ValidateCorrectionPreviewForm(form, activePeriods.Items);
+        if (adapterErrors.Count > 0)
+        {
+            CorrectionWorkspace = NonWorkingDayCorrectionWorkspaceViewModel
+                .FromValidationErrors(activePeriods, form, adapterErrors);
+            return RenderCorrectionWorkspace();
+        }
+
+        var result = await previewCorrection.ExecuteAsync(
+            CreateCorrectionPreviewQuery(form),
+            cancellationToken);
+        if (result.Status == PreviewCorrectNonWorkingDayStatus.PermissionDenied)
+        {
+            return Forbid();
+        }
+
+        GetNonWorkingDayResult? canonicalResult = null;
+        if (result.Status == PreviewCorrectNonWorkingDayStatus.Success)
+        {
+            canonicalResult = await getNonWorkingDay.ExecuteAsync(
+                new GetNonWorkingDayQuery(
+                    requestContextResolver.Require().Actor,
+                    form.PeriodId!.Value),
+                cancellationToken);
+            if (canonicalResult.Status == GetNonWorkingDayStatus.PermissionDenied)
+            {
+                return Forbid();
+            }
+        }
+
+        CorrectionWorkspace = NonWorkingDayCorrectionWorkspaceViewModel
+            .FromPreviewResult(activePeriods, form, result, canonicalResult);
+        return RenderCorrectionWorkspace();
     }
 
     private async Task<IActionResult> RenderSuccessfulConfirmationAsync(
@@ -212,7 +290,7 @@ public sealed class NonWorkingDaysModel(
             form,
             refreshedPreview,
             errors);
-        return RenderWorkspace();
+        return await RenderWorkspaceAsync(cancellationToken);
     }
 
     private Task<PreviewNonWorkingDayImpactResult> ExecutePreviewAsync(
@@ -232,11 +310,64 @@ public sealed class NonWorkingDaysModel(
             cancellationToken);
     }
 
-    private IActionResult RenderWorkspace()
+    private async Task<IActionResult> RenderWorkspaceAsync(
+        CancellationToken cancellationToken)
     {
-        return IsHtmxRequest()
-            ? Partial("_NonWorkingDayPreviewWorkspace", Workspace)
-            : Page();
+        if (IsHtmxRequest())
+        {
+            return Partial("_NonWorkingDayPreviewWorkspace", Workspace);
+        }
+
+        var activePeriods = await GetActivePeriodsAsync(cancellationToken);
+        if (activePeriods.Status
+            == GetActiveNonWorkingDaysForCorrectionStatus.PermissionDenied)
+        {
+            return Forbid();
+        }
+
+        CorrectionWorkspace = NonWorkingDayCorrectionWorkspaceViewModel.FromList(
+            activePeriods);
+        return Page();
+    }
+
+    private IActionResult RenderCorrectionWorkspace()
+    {
+        if (IsHtmxRequest())
+        {
+            return Partial(
+                "_NonWorkingDayCorrectionWorkspace",
+                CorrectionWorkspace);
+        }
+
+        Workspace = NonWorkingDayPreviewWorkspaceViewModel.New(CurrentDate());
+        return Page();
+    }
+
+    private Task<GetActiveNonWorkingDaysForCorrectionResult>
+        GetActivePeriodsAsync(CancellationToken cancellationToken)
+    {
+        return getActiveForCorrection.ExecuteAsync(
+            new GetActiveNonWorkingDaysForCorrectionQuery(
+                requestContextResolver.Require().Actor),
+            cancellationToken);
+    }
+
+    private PreviewCorrectNonWorkingDayQuery CreateCorrectionPreviewQuery(
+        NonWorkingDayCorrectionPreviewFormInput form)
+    {
+        var hasReplacementRange = form.Mode
+            == NonWorkingDayCorrectionMode.ReplaceRange;
+        var hasReplacementReason = form.Mode is
+            NonWorkingDayCorrectionMode.ReplaceRange
+            or NonWorkingDayCorrectionMode.ReplaceReason;
+        return new PreviewCorrectNonWorkingDayQuery(
+            requestContextResolver.Require().Actor,
+            form.PeriodId!.Value,
+            form.Mode,
+            hasReplacementRange ? form.ReplacementStartDate : null,
+            hasReplacementRange ? form.ReplacementEndDate : null,
+            hasReplacementReason ? form.ReplacementReasonCode : null,
+            hasReplacementReason ? form.ReplacementReasonComment : null);
     }
 
     private DateOnly CurrentDate()
@@ -314,6 +445,53 @@ public sealed class NonWorkingDaysModel(
                 CommandErrorCode.ValidationFailed,
                 "A duplicate-submit protection key is required.",
                 "idempotencyKey"));
+        }
+
+        return errors.AsReadOnly();
+    }
+
+    private static IReadOnlyList<NonWorkingDayCorrectionPreviewFormError>
+        ValidateCorrectionPreviewForm(
+            NonWorkingDayCorrectionPreviewFormInput form,
+            IReadOnlyList<ActiveNonWorkingDayForCorrection> activePeriods)
+    {
+        var errors = new List<NonWorkingDayCorrectionPreviewFormError>();
+        if (form.PeriodId is null || form.PeriodId == Guid.Empty)
+        {
+            errors.Add(new NonWorkingDayCorrectionPreviewFormError(
+                "periodId",
+                "Select an active non-working period."));
+        }
+        else if (!activePeriods.Any(period => period.PeriodId == form.PeriodId))
+        {
+            errors.Add(new NonWorkingDayCorrectionPreviewFormError(
+                "periodId",
+                "The selected period is no longer active. Refresh the list."));
+        }
+
+        if (!Enum.IsDefined(form.Mode))
+        {
+            errors.Add(new NonWorkingDayCorrectionPreviewFormError(
+                "mode",
+                "Select a supported correction mode."));
+        }
+
+        var correctionReason = form.CorrectionReason?.Trim();
+        if (string.IsNullOrWhiteSpace(correctionReason)
+            || correctionReason.Length
+                > NonWorkingDayCorrectionWorkspaceViewModel.CorrectionReasonMaxLength)
+        {
+            errors.Add(new NonWorkingDayCorrectionPreviewFormError(
+                "correctionReason",
+                $"Correction reason is required and must be {NonWorkingDayCorrectionWorkspaceViewModel.CorrectionReasonMaxLength} characters or fewer."));
+        }
+
+        if (form.CorrectionComment?.Trim().Length
+            > NonWorkingDayCorrectionWorkspaceViewModel.CorrectionCommentMaxLength)
+        {
+            errors.Add(new NonWorkingDayCorrectionPreviewFormError(
+                "correctionComment",
+                $"Correction comment must be {NonWorkingDayCorrectionWorkspaceViewModel.CorrectionCommentMaxLength} characters or fewer."));
         }
 
         return errors.AsReadOnly();

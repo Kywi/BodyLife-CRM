@@ -1,0 +1,539 @@
+@model BodyLife.Crm.Web.Pages.Owner.NonWorkingDayCorrectionWorkspaceViewModel
+@{
+    var input = Model.Input;
+    var preview = Model.Preview;
+    var canonicalSource = Model.CanonicalSource;
+    var replaceRange = input.Mode == NonWorkingDayCorrectionMode.ReplaceRange;
+    var replaceReason = input.Mode == NonWorkingDayCorrectionMode.ReplaceReason;
+    var hasReplacementReason = replaceRange || replaceReason;
+}
+
+<div id="non-working-day-correction-workspace"
+     class="non-working-day-correction-workspace"
+     data-non-working-day-correction-workspace>
+    <section class="non-working-day-correction-input"
+             aria-labelledby="non-working-day-correction-title">
+        <header class="catalog-create-header">
+            <div>
+                <p class="eyebrow">Correction review</p>
+                <h2 id="non-working-day-correction-title">Correct an existing period</h2>
+            </div>
+            <span class="status-chip status-owner">Owner only</span>
+        </header>
+
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Correction preview not created</strong>
+                <ul>
+                    @foreach (var message in Model.Errors
+                        .Select(error => error.Message)
+                        .Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (!Model.HasActivePeriods)
+        {
+            <p class="empty-state" data-no-active-non-working-periods>
+                There are no active non-working periods available for correction.
+            </p>
+        }
+        else
+        {
+            <form id="non-working-day-correction-preview-form"
+                  class="non-working-day-correction-preview-form"
+                  method="post"
+                  asp-page="/Owner/NonWorkingDays"
+                  asp-page-handler="CorrectionPreview"
+                  hx-post="@Url.Page("/Owner/NonWorkingDays", "CorrectionPreview")"
+                  hx-target="#non-working-day-correction-workspace"
+                  hx-swap="outerHTML"
+                  hx-sync="this:replace"
+                  hx-indicator="#non-working-day-correction-loading"
+                  hx-disabled-elt="find button"
+                  data-non-working-day-correction-form
+                  data-busy-form>
+                <div class="form-field">
+                    <label for="non-working-day-correction-period">Active period</label>
+                    <select id="non-working-day-correction-period"
+                            name="form.PeriodId"
+                            required
+                            data-non-working-day-correction-period>
+                        @foreach (var period in Model.ActivePeriods)
+                        {
+                            <option value="@period.PeriodId"
+                                    selected="@(period.PeriodId == input.PeriodId ? "selected" : null)"
+                                    data-period-start="@FormatDate(period.Period.StartDate)"
+                                    data-period-end="@FormatDate(period.Period.EndDate)"
+                                    data-period-reason-code="@period.ReasonCode"
+                                    data-period-reason-comment="@period.ReasonComment">
+                                @FormatRange(period.Period) | @period.ReasonCode | @period.AffectedCount Memberships
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <fieldset class="non-working-day-correction-mode">
+                    <legend>Correction mode</legend>
+                    <div class="non-working-day-correction-segments">
+                        <label>
+                            <input type="radio"
+                                   name="form.Mode"
+                                   value="@NonWorkingDayCorrectionMode.ReplaceRange"
+                                   data-non-working-day-correction-mode="replace-range"
+                                   checked="@(replaceRange ? "checked" : null)" />
+                            <span>Replace range</span>
+                        </label>
+                        <label>
+                            <input type="radio"
+                                   name="form.Mode"
+                                   value="@NonWorkingDayCorrectionMode.ReplaceReason"
+                                   data-non-working-day-correction-mode="replace-reason"
+                                   checked="@(replaceReason ? "checked" : null)" />
+                            <span>Replace reason</span>
+                        </label>
+                        <label>
+                            <input type="radio"
+                                   name="form.Mode"
+                                   value="@NonWorkingDayCorrectionMode.Cancel"
+                                   data-non-working-day-correction-mode="cancel"
+                                   checked="@(input.Mode == NonWorkingDayCorrectionMode.Cancel ? "checked" : null)" />
+                            <span>Cancel period</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <fieldset class="non-working-day-replacement-range"
+                          data-non-working-day-replacement-range
+                          data-active="@replaceRange.ToString().ToLowerInvariant()">
+                    <legend>Replacement range</legend>
+                    <div class="non-working-day-preview-grid">
+                        <div class="form-field">
+                            <label for="non-working-day-replacement-start">Start date</label>
+                            <input id="non-working-day-replacement-start"
+                                   name="form.ReplacementStartDate"
+                                   type="date"
+                                   value="@FormatDateInput(input.ReplacementStartDate)"
+                                   required="@(replaceRange ? "required" : null)"
+                                   disabled="@(!replaceRange ? "disabled" : null)"
+                                   data-non-working-day-replacement-range-input
+                                   data-non-working-day-replacement-start />
+                        </div>
+                        <div class="form-field">
+                            <label for="non-working-day-replacement-end">End date</label>
+                            <input id="non-working-day-replacement-end"
+                                   name="form.ReplacementEndDate"
+                                   type="date"
+                                   value="@FormatDateInput(input.ReplacementEndDate)"
+                                   required="@(replaceRange ? "required" : null)"
+                                   disabled="@(!replaceRange ? "disabled" : null)"
+                                   data-non-working-day-replacement-range-input
+                                   data-non-working-day-replacement-end />
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="non-working-day-replacement-reason"
+                          data-non-working-day-replacement-reason
+                          data-active="@hasReplacementReason.ToString().ToLowerInvariant()">
+                    <legend>Replacement reason</legend>
+                    <div class="non-working-day-preview-grid">
+                        <div class="form-field non-working-day-reason-code">
+                            <label for="non-working-day-replacement-reason-code">Reason code</label>
+                            <input id="non-working-day-replacement-reason-code"
+                                   name="form.ReplacementReasonCode"
+                                   type="text"
+                                   value="@input.ReplacementReasonCode"
+                                   maxlength="@NonWorkingDayCorrectionWorkspaceViewModel.ReplacementReasonCodeMaxLength"
+                                   required="@(hasReplacementReason ? "required" : null)"
+                                   disabled="@(!hasReplacementReason ? "disabled" : null)"
+                                   autocomplete="off"
+                                   data-non-working-day-replacement-reason-input
+                                   data-non-working-day-replacement-reason-required
+                                   data-non-working-day-replacement-reason-code />
+                        </div>
+                        <div class="form-field non-working-day-reason-comment">
+                            <label for="non-working-day-replacement-reason-comment">Reason comment (optional)</label>
+                            <textarea id="non-working-day-replacement-reason-comment"
+                                      name="form.ReplacementReasonComment"
+                                      rows="3"
+                                      maxlength="@NonWorkingDayCorrectionWorkspaceViewModel.ReplacementReasonCommentMaxLength"
+                                      disabled="@(!hasReplacementReason ? "disabled" : null)"
+                                      data-non-working-day-replacement-reason-input
+                                      data-non-working-day-replacement-reason-comment>@input.ReplacementReasonComment</textarea>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="non-working-day-correction-reason-grid">
+                    <div class="form-field">
+                        <label for="non-working-day-correction-reason">Correction reason</label>
+                        <input id="non-working-day-correction-reason"
+                               name="form.CorrectionReason"
+                               type="text"
+                               value="@input.CorrectionReason"
+                               maxlength="@NonWorkingDayCorrectionWorkspaceViewModel.CorrectionReasonMaxLength"
+                               required
+                               autocomplete="off" />
+                    </div>
+                    <div class="form-field">
+                        <label for="non-working-day-correction-comment">Correction comment (optional)</label>
+                        <textarea id="non-working-day-correction-comment"
+                                  name="form.CorrectionComment"
+                                  rows="3"
+                                  maxlength="@NonWorkingDayCorrectionWorkspaceViewModel.CorrectionCommentMaxLength">@input.CorrectionComment</textarea>
+                    </div>
+                </div>
+
+                <div class="non-working-day-preview-actions">
+                    <button type="submit"
+                            data-preview-non-working-day-correction-submit
+                            data-busy-text="Calculating...">Preview correction</button>
+                    <span id="non-working-day-correction-loading"
+                          class="request-indicator htmx-indicator"
+                          role="status"
+                          aria-live="polite">Calculating old and new canonical scope...</span>
+                </div>
+            </form>
+        }
+    </section>
+
+    @if (preview is not null && canonicalSource is not null)
+    {
+        <section class="non-working-day-correction-result"
+                 aria-labelledby="non-working-day-correction-result-title"
+                 data-non-working-day-correction-preview
+                 data-correction-period-id="@preview.PeriodId"
+                 data-correction-mode="@ModeValue(preview.Mode)"
+                 data-correction-original-count="@preview.OriginalAffectedCount"
+                 data-correction-confirmed-count="@preview.ConfirmedAffectedCount"
+                 data-correction-scope-behavior="@ScopeBehaviorValue(preview.ScopeBehavior)"
+                 data-correction-expires-at="@preview.Confirmation.ExpiresAt.ToString("O")">
+            <input type="hidden"
+                   data-correction-confirmation-token
+                   value="@preview.Confirmation.ConfirmationToken" />
+            <input type="hidden"
+                   data-correction-confirmation-fingerprint
+                   value="@preview.Confirmation.ConfirmationFingerprint" />
+
+            <div class="operation-message operation-info" role="status">
+                <strong>Correction preview created</strong>
+                <span>No source, application, audit or Membership state records were changed.</span>
+            </div>
+
+            <header class="non-working-day-impact-header">
+                <div>
+                    <p class="eyebrow">Owner review</p>
+                    <h2 id="non-working-day-correction-result-title">@ModeLabel(preview.Mode)</h2>
+                </div>
+                <span class="status-chip status-active">
+                    Valid until @FormatTimestamp(preview.Confirmation.ExpiresAt)
+                </span>
+            </header>
+
+            <dl class="non-working-day-impact-summary">
+                <div>
+                    <dt>Original memberships</dt>
+                    <dd>@preview.OriginalAffectedCount</dd>
+                </div>
+                <div>
+                    <dt>Confirmed new scope</dt>
+                    <dd>@preview.ConfirmedAffectedCount</dd>
+                </div>
+                <div>
+                    <dt>Scope behavior</dt>
+                    <dd>@ScopeBehaviorLabel(preview.ScopeBehavior)</dd>
+                </div>
+                <div>
+                    <dt>Correction reason</dt>
+                    <dd>@input.CorrectionReason</dd>
+                </div>
+            </dl>
+
+            <section class="non-working-day-correction-source"
+                     aria-labelledby="non-working-day-original-source-title">
+                <header class="non-working-day-correction-scope-header">
+                    <div>
+                        <p class="eyebrow">Original source</p>
+                        <h3 id="non-working-day-original-source-title">
+                            @FormatRange(canonicalSource.Period)
+                        </h3>
+                    </div>
+                    <span class="status-chip status-active">Active</span>
+                </header>
+
+                <dl class="non-working-day-confirmed-reason">
+                    <div>
+                        <dt>Reason code</dt>
+                        <dd>@canonicalSource.ReasonCode</dd>
+                    </div>
+                    <div>
+                        <dt>Reason comment</dt>
+                        <dd>@(canonicalSource.ReasonComment ?? "None")</dd>
+                    </div>
+                </dl>
+
+                <ol class="non-working-day-impact-list"
+                    aria-label="Original affected Memberships">
+                    @foreach (var application in canonicalSource.Applications)
+                    {
+                        <li class="non-working-day-impact-row"
+                            data-correction-original-membership-id="@application.MembershipId"
+                            data-correction-original-client-id="@application.ClientId"
+                            data-correction-original-applied-start="@FormatDate(application.AppliedRange.StartDate)"
+                            data-correction-original-applied-end="@FormatDate(application.AppliedRange.EndDate)">
+                            <header class="non-working-day-impact-row-header">
+                                <div>
+                                    <h3>
+                                        <a asp-page="/Reception/Index"
+                                           asp-route-clientId="@application.ClientId">@application.ClientDisplayName</a>
+                                    </h3>
+                                    <p class="non-working-day-impact-reference">
+                                        Membership @ShortReference(application.MembershipId)
+                                    </p>
+                                </div>
+                                <span class="status-chip status-active">Original scope</span>
+                            </header>
+                            <dl class="non-working-day-impact-meta">
+                                <div>
+                                    <dt>Full applied range</dt>
+                                    <dd>@FormatRange(application.AppliedRange)</dd>
+                                </div>
+                                <div>
+                                    <dt>Current effective end</dt>
+                                    <dd>@FormatDate(application.CurrentEffectiveEndDate)</dd>
+                                </div>
+                                <div>
+                                    <dt>Current extension days</dt>
+                                    <dd>@application.CurrentExtensionDays</dd>
+                                </div>
+                                <div>
+                                    <dt>Audit reference</dt>
+                                    <dd>@ShortReference(canonicalSource.AuditEntryId)</dd>
+                                </div>
+                            </dl>
+                        </li>
+                    }
+                </ol>
+            </section>
+
+            @if (preview.Mode == NonWorkingDayCorrectionMode.ReplaceRange
+                && preview.ReplacementInput is { } replacementInput)
+            {
+                <section class="non-working-day-correction-replacement"
+                         aria-labelledby="non-working-day-replacement-scope-title">
+                    <header class="non-working-day-correction-scope-header">
+                        <div>
+                            <p class="eyebrow">Replacement source</p>
+                            <h3 id="non-working-day-replacement-scope-title">
+                                @FormatRange(replacementInput.Period)
+                            </h3>
+                        </div>
+                        <span class="status-chip status-owner">
+                            @preview.ConfirmedAffectedCount Memberships
+                        </span>
+                    </header>
+
+                    <div class="non-working-day-full-period-notice" role="note">
+                        <strong>Full replacement period applies</strong>
+                        <p>
+                            Every new-scope Membership receives @FormatRange(replacementInput.Period), including endpoint-only overlaps. The original period is excluded before this impact is estimated.
+                        </p>
+                    </div>
+
+                    @if (preview.ReplacementImpact.Count == 0)
+                    {
+                        <p class="empty-state">The replacement period affects no Memberships.</p>
+                    }
+                    else
+                    {
+                        <ol class="non-working-day-impact-list"
+                            aria-label="Replacement affected Memberships">
+                            @foreach (var membership in preview.ReplacementImpact)
+                            {
+                                <li class="non-working-day-impact-row"
+                                    data-correction-replacement-membership-id="@membership.MembershipId"
+                                    data-correction-replacement-client-id="@membership.ClientId"
+                                    data-correction-replacement-applied-start="@FormatDate(membership.AppliedRange.StartDate)"
+                                    data-correction-replacement-applied-end="@FormatDate(membership.AppliedRange.EndDate)">
+                                    <header class="non-working-day-impact-row-header">
+                                        <div>
+                                            <h3>
+                                                <a asp-page="/Reception/Index"
+                                                   asp-route-clientId="@membership.ClientId">@membership.ClientDisplayName</a>
+                                            </h3>
+                                            <p class="non-working-day-impact-reference">
+                                                Membership @ShortReference(membership.MembershipId)
+                                            </p>
+                                        </div>
+                                        <span class="status-chip status-active">
+                                            +@membership.AddedUniqueExtensionDays unique days
+                                        </span>
+                                    </header>
+
+                                    <dl class="non-working-day-impact-meta">
+                                        <div>
+                                            <dt>Full applied range</dt>
+                                            <dd>@FormatRange(membership.AppliedRange)</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Effective end without original</dt>
+                                            <dd>
+                                                @FormatDate(membership.BeforeEffectiveEndDate)
+                                                to @FormatDate(membership.EstimatedAfterEffectiveEndDate)
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt>Extension days without original</dt>
+                                            <dd>
+                                                @membership.BeforeExtensionDays
+                                                to @membership.EstimatedAfterExtensionDays
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt>Existing overlap</dt>
+                                            <dd>@membership.ExistingOverlapDays days</dd>
+                                        </div>
+                                    </dl>
+
+                                    @if (membership.OverlapWarnings.Count > 0)
+                                    {
+                                        <div class="non-working-day-overlap-warning" role="note">
+                                            <strong>Existing replacement-range overlap</strong>
+                                            <ul>
+                                                @foreach (var warning in membership.OverlapWarnings)
+                                                {
+                                                    <li data-correction-overlap-source-type="@warning.SourceType"
+                                                        data-correction-overlap-source-id="@warning.SourceId">
+                                                        @SourceTypeLabel(warning.SourceType): @warning.SourceLabel,
+                                                        @FormatRange(warning.OverlapRange), @warning.OverlapDays days
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                </li>
+                            }
+                        </ol>
+                    }
+                </section>
+            }
+            else if (preview.Mode == NonWorkingDayCorrectionMode.ReplaceReason)
+            {
+                <div class="non-working-day-scope-confirmed" role="note"
+                     data-correction-preserved-scope>
+                    <strong>Exact scope and range stay unchanged</strong>
+                    <p>
+                        @preview.ConfirmedAffectedCount applications retain @FormatRange(canonicalSource.Period). Only the reason source is replaced with @preview.ReplacementInput?.ReasonCode.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="non-working-day-correction-cancel-notice" role="note"
+                     data-correction-cancel-scope>
+                    <strong>@preview.OriginalAffectedCount applications stop contributing</strong>
+                    <p>
+                        The original period and application rows remain as canceled history. Memberships will be recalculated by the command confirmation workflow.
+                    </p>
+                </div>
+            }
+        </section>
+    }
+</div>
+
+@functions {
+    private static string FormatDateInput(DateOnly? date)
+    {
+        return date?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
+            ?? string.Empty;
+    }
+
+    private static string FormatDate(DateOnly date)
+    {
+        return date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatRange(DateRange range)
+    {
+        return $"{FormatDate(range.StartDate)} to {FormatDate(range.EndDate)}";
+    }
+
+    private static string FormatTimestamp(DateTimeOffset timestamp)
+    {
+        return timestamp.UtcDateTime.ToString(
+            "yyyy-MM-dd HH:mm 'UTC'",
+            System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string ShortReference(Guid id)
+    {
+        return id.ToString("N")[..8];
+    }
+
+    private static string ModeValue(NonWorkingDayCorrectionMode mode)
+    {
+        return mode switch
+        {
+            NonWorkingDayCorrectionMode.ReplaceRange => "replace_range",
+            NonWorkingDayCorrectionMode.ReplaceReason => "replace_reason",
+            NonWorkingDayCorrectionMode.Cancel => "cancel",
+            _ => "unsupported",
+        };
+    }
+
+    private static string ModeLabel(NonWorkingDayCorrectionMode mode)
+    {
+        return mode switch
+        {
+            NonWorkingDayCorrectionMode.ReplaceRange => "Range replacement preview",
+            NonWorkingDayCorrectionMode.ReplaceReason => "Reason replacement preview",
+            NonWorkingDayCorrectionMode.Cancel => "Cancellation preview",
+            _ => "Unsupported correction preview",
+        };
+    }
+
+    private static string ScopeBehaviorValue(
+        NonWorkingDayCorrectionScopeBehavior behavior)
+    {
+        return behavior switch
+        {
+            NonWorkingDayCorrectionScopeBehavior.RecomputeReplacement =>
+                "recompute_replacement",
+            NonWorkingDayCorrectionScopeBehavior.PreserveConfirmedApplications =>
+                "preserve_confirmed_applications",
+            NonWorkingDayCorrectionScopeBehavior.NoReplacement => "no_replacement",
+            _ => "unsupported",
+        };
+    }
+
+    private static string ScopeBehaviorLabel(
+        NonWorkingDayCorrectionScopeBehavior behavior)
+    {
+        return behavior switch
+        {
+            NonWorkingDayCorrectionScopeBehavior.RecomputeReplacement =>
+                "Recompute exact replacement scope",
+            NonWorkingDayCorrectionScopeBehavior.PreserveConfirmedApplications =>
+                "Preserve exact applications",
+            NonWorkingDayCorrectionScopeBehavior.NoReplacement =>
+                "Deactivate original scope",
+            _ => "Unsupported",
+        };
+    }
+
+    private static string SourceTypeLabel(string sourceType)
+    {
+        return sourceType switch
+        {
+            "freeze" => "Freeze",
+            "non_working_day" => "Non-working period",
+            "adjustment" => "Adjustment",
+            _ => "Extension source",
+        };
+    }
+}

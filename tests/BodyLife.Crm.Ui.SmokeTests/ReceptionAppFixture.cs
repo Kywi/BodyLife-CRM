@@ -126,6 +126,12 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         private set;
     } = null!;
 
+    public NonWorkingDayCorrectionSmokeScenario NonWorkingDayCorrectionScenario
+    {
+        get;
+        private set;
+    } = null!;
+
     public Guid IssueMembershipTypeId { get; private set; }
 
     public Guid IssueTabletClientId { get; private set; }
@@ -655,6 +661,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
+        await SeedCorrectNonWorkingDayFixtureAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
         await SeedAddPaymentFixturesAsync(
             database,
             ownerResult.AccountId.Value,
@@ -1147,6 +1157,95 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             scopeEntrantMembershipId);
     }
 
+    private async Task SeedCorrectNonWorkingDayFixtureAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        var originalPeriod = new DateRange(
+            new DateOnly(2043, 3, 10),
+            new DateOnly(2043, 3, 12));
+        var replacementPeriod = new DateRange(
+            new DateOnly(2043, 3, 20),
+            new DateOnly(2043, 3, 22));
+
+        var sharedClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Correction",
+            "Shared Scope",
+            "+380 67 930 01 01",
+            "BL-NWD-CORRECT-SHARED");
+        var sharedMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            sharedClientId,
+            membershipTypeId,
+            "NonWorkingDay correction shared snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: new DateOnly(2043, 3, 1),
+            durationDays: 40);
+
+        var originalOnlyClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Correction",
+            "Original Only",
+            "+380 67 930 01 02",
+            "BL-NWD-CORRECT-OLD");
+        var originalOnlyMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            originalOnlyClientId,
+            membershipTypeId,
+            "NonWorkingDay correction original-only snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: new DateOnly(2043, 2, 20),
+            durationDays: 22);
+
+        var replacementOnlyClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Correction",
+            "Replacement Only",
+            "+380 67 930 01 03",
+            "BL-NWD-CORRECT-NEW");
+        var replacementOnlyMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            replacementOnlyClientId,
+            membershipTypeId,
+            "NonWorkingDay correction replacement-only snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: replacementPeriod.StartDate,
+            durationDays: 30);
+
+        var periodId = await database.SeedNonWorkingDayCorrectionPeriodAsync(
+            ownerAccountId,
+            originalPeriod,
+            "planned_maintenance",
+            "Original ventilation closure",
+            [
+                new NonWorkingDayApplicationSmokeSeed(
+                    sharedClientId,
+                    sharedMembershipId),
+                new NonWorkingDayApplicationSmokeSeed(
+                    originalOnlyClientId,
+                    originalOnlyMembershipId),
+            ]);
+
+        NonWorkingDayCorrectionScenario = new NonWorkingDayCorrectionSmokeScenario(
+            periodId,
+            originalPeriod,
+            replacementPeriod,
+            OriginalReasonCode: "planned_maintenance",
+            OriginalReasonComment: "Original ventilation closure",
+            ReplacementReasonCode: "rescheduled_maintenance",
+            ReplacementReasonComment: "Rescheduled ventilation closure",
+            CorrectionReason: "Owner corrected the closure plan",
+            CorrectionComment: "Reviewed exact old and new scope",
+            sharedClientId,
+            sharedMembershipId,
+            originalOnlyClientId,
+            originalOnlyMembershipId,
+            replacementOnlyClientId,
+            replacementOnlyMembershipId);
+    }
+
     private async Task SeedReceptionClientsAsync(
         PostgreSqlSmokeDatabase database,
         Guid ownerAccountId)
@@ -1309,4 +1408,29 @@ public sealed record NonWorkingDayAddSmokeScenario(
     public string StartBoundaryClientDisplayName => $"Confirm {ViewportLabel} Start";
 
     public string ScopeEntrantClientDisplayName => $"Confirm {ViewportLabel} Entrant";
+}
+
+public sealed record NonWorkingDayCorrectionSmokeScenario(
+    Guid PeriodId,
+    DateRange OriginalPeriod,
+    DateRange ReplacementPeriod,
+    string OriginalReasonCode,
+    string OriginalReasonComment,
+    string ReplacementReasonCode,
+    string ReplacementReasonComment,
+    string CorrectionReason,
+    string CorrectionComment,
+    Guid SharedClientId,
+    Guid SharedMembershipId,
+    Guid OriginalOnlyClientId,
+    Guid OriginalOnlyMembershipId,
+    Guid ReplacementOnlyClientId,
+    Guid ReplacementOnlyMembershipId)
+{
+    public string SharedClientDisplayName => "Correction Shared Scope";
+
+    public string OriginalOnlyClientDisplayName => "Correction Original Only";
+
+    public string ReplacementOnlyClientDisplayName =>
+        "Correction Replacement Only";
 }

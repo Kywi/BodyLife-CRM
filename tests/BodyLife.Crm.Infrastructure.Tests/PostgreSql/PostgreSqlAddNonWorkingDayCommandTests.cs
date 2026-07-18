@@ -285,6 +285,58 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task ActiveCorrectionListReadsCommittedPeriodsAndRequiresOwner()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var clock = new MutableTimeProvider(TestNow);
+        var tokenService = CreateTokenService(clock);
+        var preview = await IssuePreviewAsync(
+            dbContext,
+            fixture.Actor,
+            tokenService,
+            clock);
+        var commandResult = await CreateHandler(dbContext, tokenService, clock)
+            .ExecuteAsync(
+                CreateCommand(fixture, preview, "correction-list"),
+                CancellationToken.None);
+        AssertSuccess(commandResult, FirstMembershipId, SecondMembershipId);
+        var handler = new GetActiveNonWorkingDaysForCorrectionQueryHandler(
+            dbContext,
+            clock);
+
+        var result = await handler.ExecuteAsync(
+            new GetActiveNonWorkingDaysForCorrectionQuery(fixture.Actor),
+            CancellationToken.None);
+        var adminResult = await handler.ExecuteAsync(
+            new GetActiveNonWorkingDaysForCorrectionQuery(
+                fixture.Actor with
+                {
+                    Role = ActorRole.Admin,
+                    AccountKind = AccountKind.NamedAdmin,
+                }),
+            CancellationToken.None);
+
+        Assert.Equal(
+            GetActiveNonWorkingDaysForCorrectionStatus.Success,
+            result.Status);
+        var item = Assert.Single(result.Items);
+        Assert.Equal(commandResult.PrimaryEntityId!.Value.Value, item.PeriodId);
+        Assert.Equal(ProposedPeriod, item.Period);
+        Assert.Equal("weather_closure", item.ReasonCode);
+        Assert.Equal("Severe weather", item.ReasonComment);
+        Assert.Equal(TestNow, item.CreatedAt);
+        Assert.Equal(2, item.AffectedCount);
+
+        Assert.Equal(
+            GetActiveNonWorkingDaysForCorrectionStatus.PermissionDenied,
+            adminResult.Status);
+        Assert.Empty(adminResult.Items);
+    }
+
+    [PostgreSqlFact]
     public async Task ExpiredOrChangedPreviewFailsWithoutPartialWrites()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -509,6 +561,17 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
         Assert.Equal(
             typeof(GetNonWorkingDayQueryHandler),
             queryDescriptor.ImplementationType);
+
+        var correctionListDescriptor = Assert.Single(
+            services,
+            service => service.ServiceType
+                == typeof(IBodyLifeQueryHandler<
+                    GetActiveNonWorkingDaysForCorrectionQuery,
+                    GetActiveNonWorkingDaysForCorrectionResult>));
+        Assert.Equal(ServiceLifetime.Scoped, correctionListDescriptor.Lifetime);
+        Assert.Equal(
+            typeof(GetActiveNonWorkingDaysForCorrectionQueryHandler),
+            correctionListDescriptor.ImplementationType);
     }
 
     private static AddNonWorkingDayCommandHandler CreateHandler(

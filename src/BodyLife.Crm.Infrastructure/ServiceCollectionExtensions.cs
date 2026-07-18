@@ -191,6 +191,11 @@ public static class ServiceCollectionExtensions
             GetNonWorkingDayQueryHandler>();
         services.AddScoped<
             IBodyLifeQueryHandler<
+                GetActiveNonWorkingDaysForCorrectionQuery,
+                GetActiveNonWorkingDaysForCorrectionResult>,
+            GetActiveNonWorkingDaysForCorrectionQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<
                 PreviewCorrectNonWorkingDayQuery,
                 PreviewCorrectNonWorkingDayResult>,
             PreviewCorrectNonWorkingDayQueryHandler>();

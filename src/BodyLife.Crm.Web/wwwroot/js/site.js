@@ -53,6 +53,10 @@ for (const eventName of ["htmx:responseError", "htmx:sendError", "htmx:timeout"]
     if (form.matches("[data-correct-payment-form]")) {
       syncCorrectPaymentForm(form);
     }
+
+    if (form.matches("[data-non-working-day-correction-form]")) {
+      syncNonWorkingDayCorrectionForm(form);
+    }
   });
 }
 
@@ -190,6 +194,95 @@ const syncCorrectPaymentForms = (root) => {
   }
 };
 
+const syncNonWorkingDayCorrectionForm = (form) => {
+  const selectedMode = form.querySelector(
+    "[data-non-working-day-correction-mode]:checked");
+  const replaceRange = selectedMode?.dataset.nonWorkingDayCorrectionMode
+    === "replace-range";
+  const hasReplacementReason = replaceRange
+    || selectedMode?.dataset.nonWorkingDayCorrectionMode === "replace-reason";
+  const rangeFields = form.querySelector(
+    "[data-non-working-day-replacement-range]");
+  const reasonFields = form.querySelector(
+    "[data-non-working-day-replacement-reason]");
+
+  if (rangeFields instanceof HTMLElement) {
+    rangeFields.dataset.active = replaceRange ? "true" : "false";
+  }
+
+  if (reasonFields instanceof HTMLElement) {
+    reasonFields.dataset.active = hasReplacementReason ? "true" : "false";
+  }
+
+  for (const input of form.querySelectorAll(
+    "[data-non-working-day-replacement-range-input]")) {
+    input.disabled = !replaceRange;
+    input.required = replaceRange;
+  }
+
+  for (const input of form.querySelectorAll(
+    "[data-non-working-day-replacement-reason-input]")) {
+    input.disabled = !hasReplacementReason;
+    input.required = hasReplacementReason
+      && input.hasAttribute("data-non-working-day-replacement-reason-required");
+  }
+
+  const period = form.querySelector("[data-non-working-day-correction-period]");
+  const canSubmit = selectedMode instanceof HTMLInputElement
+    && period instanceof HTMLSelectElement
+    && period.value !== "";
+  for (const button of form.querySelectorAll(
+    "[data-preview-non-working-day-correction-submit]")) {
+    if (!button.hasAttribute("aria-busy")) {
+      button.disabled = !canSubmit;
+    }
+  }
+};
+
+const syncNonWorkingDayCorrectionForms = (root) => {
+  if (root instanceof HTMLFormElement
+    && root.matches("[data-non-working-day-correction-form]")) {
+    syncNonWorkingDayCorrectionForm(root);
+  }
+
+  for (const form of root.querySelectorAll?.(
+    "form[data-non-working-day-correction-form]") ?? []) {
+    syncNonWorkingDayCorrectionForm(form);
+  }
+};
+
+const resetNonWorkingDayCorrectionReplacement = (form) => {
+  const period = form.querySelector("[data-non-working-day-correction-period]");
+  if (!(period instanceof HTMLSelectElement)) {
+    return;
+  }
+
+  const selected = period.selectedOptions[0];
+  if (!(selected instanceof HTMLOptionElement)) {
+    return;
+  }
+
+  const values = [
+    ["[data-non-working-day-replacement-start]", selected.dataset.periodStart],
+    ["[data-non-working-day-replacement-end]", selected.dataset.periodEnd],
+    [
+      "[data-non-working-day-replacement-reason-code]",
+      selected.dataset.periodReasonCode,
+    ],
+    [
+      "[data-non-working-day-replacement-reason-comment]",
+      selected.dataset.periodReasonComment,
+    ],
+  ];
+  for (const [selector, value] of values) {
+    const input = form.querySelector(selector);
+    if (input instanceof HTMLInputElement
+      || input instanceof HTMLTextAreaElement) {
+      input.value = value ?? "";
+    }
+  }
+};
+
 document.addEventListener("change", (event) => {
   if (!(event.target instanceof HTMLInputElement)
     || !event.target.matches("[data-clear-card-input]")) {
@@ -199,6 +292,31 @@ document.addEventListener("change", (event) => {
   const form = event.target.closest("form[data-card-intent-form]");
   if (form instanceof HTMLFormElement) {
     syncCardIntentForm(form);
+  }
+});
+
+document.addEventListener("change", (event) => {
+  if (!(event.target instanceof HTMLInputElement)
+    || !event.target.matches("[data-non-working-day-correction-mode]")) {
+    return;
+  }
+
+  const form = event.target.closest("form[data-non-working-day-correction-form]");
+  if (form instanceof HTMLFormElement) {
+    syncNonWorkingDayCorrectionForm(form);
+  }
+});
+
+document.addEventListener("change", (event) => {
+  if (!(event.target instanceof HTMLSelectElement)
+    || !event.target.matches("[data-non-working-day-correction-period]")) {
+    return;
+  }
+
+  const form = event.target.closest("form[data-non-working-day-correction-form]");
+  if (form instanceof HTMLFormElement) {
+    resetNonWorkingDayCorrectionReplacement(form);
+    syncNonWorkingDayCorrectionForm(form);
   }
 });
 
@@ -256,9 +374,11 @@ document.addEventListener("htmx:load", (event) => {
   syncMarkVisitForms(event.detail?.elt ?? document);
   syncIssueMembershipForms(event.detail?.elt ?? document);
   syncCorrectPaymentForms(event.detail?.elt ?? document);
+  syncNonWorkingDayCorrectionForms(event.detail?.elt ?? document);
 });
 
 syncCardIntentForms(document);
 syncMarkVisitForms(document);
 syncIssueMembershipForms(document);
 syncCorrectPaymentForms(document);
+syncNonWorkingDayCorrectionForms(document);
