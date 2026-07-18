@@ -45,10 +45,18 @@ public sealed class PreviewNonWorkingDayImpactQueryHandler(
             var preparation = await impactPreparer.PrepareImpactAsync(
                 input!.Period,
                 cancellationToken);
+            var clientDisplayNames = await NonWorkingDayClientProjection.LoadDisplayNamesAsync(
+                dbContext,
+                preparation,
+                cancellationToken);
             var confirmation = previewTokenService.Issue(
                 input,
                 preparation.AffectedScope);
-            var preview = CreatePreview(input, preparation, confirmation);
+            var preview = CreatePreview(
+                input,
+                preparation,
+                clientDisplayNames,
+                confirmation);
 
             await transaction.CommitAsync(cancellationToken);
             return PreviewNonWorkingDayImpactResult.Succeeded(preview);
@@ -124,11 +132,13 @@ public sealed class PreviewNonWorkingDayImpactQueryHandler(
     private static NonWorkingDayImpactPreview CreatePreview(
         NonWorkingDayPreviewInput input,
         MembershipNonWorkingDayImpactPreparation preparation,
+        IReadOnlyDictionary<Guid, string> clientDisplayNames,
         NonWorkingDayPreviewConfirmation confirmation)
     {
         return new NonWorkingDayImpactPreview(
             input,
-            NonWorkingDayImpactPreviewMapper.Map(preparation),
+            NonWorkingDayImpactPreviewMapper.Map(preparation, clientDisplayNames),
             confirmation);
     }
+
 }

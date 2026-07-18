@@ -508,12 +508,22 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Guid clientId,
         Guid membershipTypeId,
         string typeNameSnapshot,
-        int visitsLimitSnapshot)
+        int visitsLimitSnapshot,
+        DateOnly? startDate = null,
+        int durationDays = 30)
     {
+        if (durationDays <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(durationDays),
+                durationDays,
+                "Membership duration must be positive.");
+        }
+
         var membershipId = Guid.NewGuid();
         var now = TimeProvider.System.GetUtcNow();
-        var startDate = DateOnly.FromDateTime(now.UtcDateTime).AddDays(-7);
-        const int durationDays = 30;
+        var canonicalStartDate = startDate
+            ?? DateOnly.FromDateTime(now.UtcDateTime).AddDays(-7);
 
         await using (var connection = new NpgsqlConnection(ConnectionString))
         {
@@ -562,11 +572,14 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             command.Parameters.AddWithValue("type_name_snapshot", typeNameSnapshot);
             command.Parameters.AddWithValue("duration_days_snapshot", durationDays);
             command.Parameters.AddWithValue("visits_limit_snapshot", visitsLimitSnapshot);
-            command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, startDate);
+            command.Parameters.AddWithValue(
+                "start_date",
+                NpgsqlDbType.Date,
+                canonicalStartDate);
             command.Parameters.AddWithValue(
                 "base_end_date",
                 NpgsqlDbType.Date,
-                startDate.AddDays(durationDays - 1));
+                canonicalStartDate.AddDays(durationDays - 1));
             command.Parameters.AddWithValue("issued_at", now.AddDays(-7));
             command.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
             Assert.Equal(1, await command.ExecuteNonQueryAsync());
@@ -778,13 +791,22 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Guid recordedByAccountId,
         Guid clientId,
         Guid membershipId,
-        string reason)
+        string reason,
+        DateOnly? startDate = null,
+        DateOnly? endDate = null)
     {
         var freezeId = Guid.NewGuid();
         var sessionId = Guid.NewGuid();
         var recordedAt = TimeProvider.System.GetUtcNow();
-        var startDate = DateOnly.FromDateTime(recordedAt.UtcDateTime).AddDays(1);
-        var endDate = startDate.AddDays(1);
+        var canonicalStartDate = startDate
+            ?? DateOnly.FromDateTime(recordedAt.UtcDateTime).AddDays(1);
+        var canonicalEndDate = endDate ?? canonicalStartDate.AddDays(1);
+        if (canonicalEndDate < canonicalStartDate)
+        {
+            throw new ArgumentException(
+                "Freeze end date must be on or after its start date.",
+                nameof(endDate));
+        }
 
         await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
@@ -846,8 +868,14 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue("freeze_id", freezeId);
         command.Parameters.AddWithValue("client_id", clientId);
         command.Parameters.AddWithValue("membership_id", membershipId);
-        command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, startDate);
-        command.Parameters.AddWithValue("end_date", NpgsqlDbType.Date, endDate);
+        command.Parameters.AddWithValue(
+            "start_date",
+            NpgsqlDbType.Date,
+            canonicalStartDate);
+        command.Parameters.AddWithValue(
+            "end_date",
+            NpgsqlDbType.Date,
+            canonicalEndDate);
         command.Parameters.AddWithValue("reason", reason);
         command.Parameters.AddWithValue("recorded_at", recordedAt);
 
@@ -855,6 +883,40 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         await transaction.CommitAsync();
         await RebuildMembershipAsync(membershipId);
         return freezeId;
+    }
+
+    public async Task<NonWorkingDayMutationCountSmokeSnapshot>
+        ReadNonWorkingDayMutationCountsAsync()
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                (select count(*) from bodylife.non_working_periods),
+                (select count(*) from bodylife.non_working_period_applications),
+                (select count(*) from bodylife.non_working_period_cancellations),
+                (
+                    select count(*)
+                    from bodylife.business_audit_entries
+                    where action_type like 'non_working_day.%'
+                ),
+                (
+                    select count(*)
+                    from bodylife.command_idempotency_keys
+                    where command_name in ('AddNonWorkingDay', 'CorrectNonWorkingDay')
+                )
+            """;
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+
+        return new NonWorkingDayMutationCountSmokeSnapshot(
+            reader.GetInt64(0),
+            reader.GetInt64(1),
+            reader.GetInt64(2),
+            reader.GetInt64(3),
+            reader.GetInt64(4));
     }
 
     public async Task SeedPaymentHistoryAsync(
@@ -2149,3 +2211,10 @@ public sealed record FreezeCancellationAuditSmokeSnapshot(
     string Reason,
     string? Comment,
     bool ChangedAfterClose);
+
+public sealed record NonWorkingDayMutationCountSmokeSnapshot(
+    long PeriodCount,
+    long ApplicationCount,
+    long CancellationCount,
+    long AuditCount,
+    long IdempotencyCount);

@@ -100,6 +100,20 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid CancelFreezePhoneFreezeId { get; private set; }
 
+    public DateOnly NonWorkingDayPreviewStartDate { get; private set; }
+
+    public DateOnly NonWorkingDayPreviewEndDate { get; private set; }
+
+    public Guid NonWorkingDayEndBoundaryClientId { get; private set; }
+
+    public Guid NonWorkingDayEndBoundaryMembershipId { get; private set; }
+
+    public Guid NonWorkingDayStartBoundaryClientId { get; private set; }
+
+    public Guid NonWorkingDayStartBoundaryMembershipId { get; private set; }
+
+    public Guid NonWorkingDayNoOverlapMembershipId { get; private set; }
+
     public Guid IssueMembershipTypeId { get; private set; }
 
     public Guid IssueTabletClientId { get; private set; }
@@ -415,6 +429,12 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadCancelFreezeAuditAsync(freezeId);
     }
 
+    public Task<NonWorkingDayMutationCountSmokeSnapshot>
+        ReadNonWorkingDayMutationCountsAsync()
+    {
+        return RequireDatabase().ReadNonWorkingDayMutationCountsAsync();
+    }
+
     public Task<long> CountPaymentCorrectionsAsync(Guid originalPaymentId)
     {
         return RequireDatabase().CountPaymentCorrectionsAsync(originalPaymentId);
@@ -463,6 +483,9 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
         startInfo.Environment["ASPNETCORE_URLS"] = BaseAddress.ToString().TrimEnd('/');
         startInfo.Environment["ConnectionStrings__BodyLife"] = _database.ConnectionString;
+        startInfo.Environment["BodyLife__NonWorkingDayPreviewToken__SigningKey"] =
+            Convert.ToBase64String(
+                Enumerable.Range(1, 32).Select(value => (byte)value).ToArray());
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
         startInfo.Environment["DOTNET_NOLOGO"] = "1";
 
@@ -586,6 +609,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
         await SeedCancelFreezeFixturesAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
+        await SeedNonWorkingDayPreviewFixturesAsync(
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
@@ -925,6 +952,67 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         await database.InsertExternalCountedVisitAsync(
             IssuePhoneClientId,
             IssuePhoneExistingMembershipId);
+    }
+
+    private async Task SeedNonWorkingDayPreviewFixturesAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        NonWorkingDayPreviewStartDate = new DateOnly(2040, 2, 1);
+        NonWorkingDayPreviewEndDate = new DateOnly(2040, 2, 3);
+
+        NonWorkingDayEndBoundaryClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Closure",
+            "End Boundary",
+            "+380 67 900 01 01",
+            "BL-CLOSURE-END");
+        NonWorkingDayEndBoundaryMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            NonWorkingDayEndBoundaryClientId,
+            membershipTypeId,
+            "Closure end-boundary snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: new DateOnly(2040, 1, 23),
+            durationDays: 10);
+        await database.SeedCancelableFreezeAsync(
+            ownerAccountId,
+            NonWorkingDayEndBoundaryClientId,
+            NonWorkingDayEndBoundaryMembershipId,
+            "Scheduled equipment pause",
+            startDate: new DateOnly(2040, 2, 2),
+            endDate: new DateOnly(2040, 2, 2));
+
+        NonWorkingDayStartBoundaryClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Closure",
+            "Start Boundary",
+            "+380 67 900 01 02",
+            "BL-CLOSURE-START");
+        NonWorkingDayStartBoundaryMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            NonWorkingDayStartBoundaryClientId,
+            membershipTypeId,
+            "Closure start-boundary snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: new DateOnly(2040, 2, 3),
+            durationDays: 10);
+
+        var noOverlapClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Closure",
+            "No Overlap",
+            "+380 67 900 01 03",
+            "BL-CLOSURE-NONE");
+        NonWorkingDayNoOverlapMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            noOverlapClientId,
+            membershipTypeId,
+            "Closure no-overlap snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: new DateOnly(2040, 2, 4),
+            durationDays: 10);
     }
 
     private async Task SeedReceptionClientsAsync(

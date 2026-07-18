@@ -78,10 +78,17 @@ public sealed class PreviewCorrectNonWorkingDayQueryHandler(
                 replacementInput,
                 replacementImpact);
             var confirmation = correctionTokenService.Issue(material);
+            var clientDisplayNames = replacementImpact is null
+                ? new Dictionary<Guid, string>()
+                : await NonWorkingDayClientProjection.LoadDisplayNamesAsync(
+                    dbContext,
+                    replacementImpact.ReplacementImpact,
+                    cancellationToken);
             var impactItems = replacementImpact is null
                 ? Array.Empty<NonWorkingDayImpactMembershipPreview>()
                 : NonWorkingDayImpactPreviewMapper.Map(
-                    replacementImpact.ReplacementImpact);
+                    replacementImpact.ReplacementImpact,
+                    clientDisplayNames);
             var preview = new NonWorkingDayCorrectionPreview(
                 material,
                 impactItems,

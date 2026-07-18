@@ -1,0 +1,262 @@
+@model BodyLife.Crm.Web.Pages.Owner.NonWorkingDayPreviewWorkspaceViewModel
+@{
+    var input = Model.Input;
+    var preview = Model.Preview;
+}
+
+<div id="non-working-day-preview-workspace"
+     class="non-working-day-preview-workspace"
+     data-non-working-day-preview-workspace>
+    <section class="non-working-day-preview-input" aria-labelledby="preview-impact-form-title">
+        <header class="catalog-create-header">
+            <h2 id="preview-impact-form-title">Preview closure impact</h2>
+            <span class="status-chip status-owner">Owner only</span>
+        </header>
+
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Impact preview not created</strong>
+                <ul>
+                    @foreach (var message in Model.Errors
+                        .Select(error => error.Message)
+                        .Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form id="non-working-day-preview-form"
+              class="non-working-day-preview-form"
+              method="post"
+              asp-page="/Owner/NonWorkingDays"
+              asp-page-handler="Preview"
+              hx-post="@Url.Page("/Owner/NonWorkingDays", "Preview")"
+              hx-target="#non-working-day-preview-workspace"
+              hx-swap="outerHTML"
+              hx-sync="this:replace"
+              hx-indicator="#non-working-day-preview-loading"
+              hx-disabled-elt="find button"
+              data-busy-form>
+            <div class="non-working-day-preview-grid">
+                <div class="form-field">
+                    <label for="non-working-day-start-date">Start date</label>
+                    <input id="non-working-day-start-date"
+                           name="form.ProposedStartDate"
+                           type="date"
+                           value="@FormatDateInput(input.ProposedStartDate)"
+                           required />
+                </div>
+                <div class="form-field">
+                    <label for="non-working-day-end-date">End date</label>
+                    <input id="non-working-day-end-date"
+                           name="form.ProposedEndDate"
+                           type="date"
+                           value="@FormatDateInput(input.ProposedEndDate)"
+                           required />
+                </div>
+                <div class="form-field non-working-day-reason-code">
+                    <label for="non-working-day-reason-code">Reason code</label>
+                    <input id="non-working-day-reason-code"
+                           name="form.ReasonCode"
+                           type="text"
+                           value="@input.ReasonCode"
+                           maxlength="@NonWorkingDayPreviewWorkspaceViewModel.ReasonCodeMaxLength"
+                           required
+                           autocomplete="off" />
+                </div>
+                <div class="form-field non-working-day-reason-comment">
+                    <label for="non-working-day-reason-comment">Reason comment (optional)</label>
+                    <textarea id="non-working-day-reason-comment"
+                              name="form.ReasonComment"
+                              rows="3"
+                              maxlength="@NonWorkingDayPreviewWorkspaceViewModel.ReasonCommentMaxLength">@input.ReasonComment</textarea>
+                </div>
+                <div class="non-working-day-preview-actions">
+                    <button type="submit"
+                            data-preview-non-working-day-submit
+                            data-busy-text="Calculating...">Preview impact</button>
+                    <span id="non-working-day-preview-loading"
+                          class="request-indicator"
+                          role="status">Calculating canonical impact...</span>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    @if (preview is not null)
+    {
+        <section class="non-working-day-impact-result"
+                 aria-labelledby="non-working-day-impact-title"
+                 data-non-working-day-impact-preview
+                 data-preview-period-start="@FormatDate(preview.Period.StartDate)"
+                 data-preview-period-end="@FormatDate(preview.Period.EndDate)"
+                 data-preview-affected-count="@preview.AffectedCount"
+                 data-preview-overlap-warning-count="@preview.OverlapWarningCount"
+                 data-preview-expires-at="@preview.Confirmation.ExpiresAt.ToString("O")">
+            <input type="hidden"
+                   data-preview-confirmation-token
+                   value="@preview.Confirmation.ConfirmationToken" />
+            <input type="hidden"
+                   data-preview-scope-fingerprint
+                   value="@preview.Confirmation.ScopeFingerprint" />
+
+            <header class="non-working-day-impact-header">
+                <div>
+                    <p class="eyebrow">Owner review</p>
+                    <h2 id="non-working-day-impact-title">Impact preview</h2>
+                </div>
+                <span class="status-chip status-active">
+                    Valid until @FormatTimestamp(preview.Confirmation.ExpiresAt)
+                </span>
+            </header>
+
+            <dl class="non-working-day-impact-summary">
+                <div>
+                    <dt>Affected memberships</dt>
+                    <dd>@preview.AffectedCount</dd>
+                </div>
+                <div>
+                    <dt>Inclusive period</dt>
+                    <dd>@FormatRange(preview.Period)</dd>
+                </div>
+                <div>
+                    <dt>Period days</dt>
+                    <dd>@preview.Period.InclusiveDays</dd>
+                </div>
+                <div>
+                    <dt>Overlap warnings</dt>
+                    <dd>@preview.OverlapWarningCount</dd>
+                </div>
+            </dl>
+
+            <div class="non-working-day-full-period-notice" role="note">
+                <strong>Full period applies</strong>
+                <p>
+                    Every affected Membership receives @FormatRange(preview.Period), even when it overlaps only one endpoint. Existing extension sources remain union-counted.
+                </p>
+            </div>
+
+            @if (preview.AffectedMemberships.Count == 0)
+            {
+                <p class="empty-state">No Memberships are affected by this period.</p>
+            }
+            else
+            {
+                <ol class="non-working-day-impact-list" aria-label="Affected Memberships">
+                    @foreach (var membership in preview.AffectedMemberships)
+                    {
+                        <li class="non-working-day-impact-row"
+                            data-impact-membership-id="@membership.MembershipId"
+                            data-impact-client-id="@membership.ClientId"
+                            data-impact-applied-start="@FormatDate(membership.AppliedRange.StartDate)"
+                            data-impact-applied-end="@FormatDate(membership.AppliedRange.EndDate)">
+                            <header class="non-working-day-impact-row-header">
+                                <div>
+                                    <h3>
+                                        <a asp-page="/Reception/Index"
+                                           asp-route-clientId="@membership.ClientId">@membership.ClientDisplayName</a>
+                                    </h3>
+                                    <p class="non-working-day-impact-reference">
+                                        Membership @ShortReference(membership.MembershipId)
+                                    </p>
+                                </div>
+                                <span class="status-chip status-active">
+                                    +@membership.AddedUniqueExtensionDays unique days
+                                </span>
+                            </header>
+
+                            <dl class="non-working-day-impact-meta">
+                                <div>
+                                    <dt>Full applied range</dt>
+                                    <dd>@FormatRange(membership.AppliedRange)</dd>
+                                </div>
+                                <div>
+                                    <dt>Effective end</dt>
+                                    <dd>
+                                        @FormatDate(membership.BeforeEffectiveEndDate)
+                                        to @FormatDate(membership.EstimatedAfterEffectiveEndDate)
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>Extension days</dt>
+                                    <dd>
+                                        @membership.BeforeExtensionDays
+                                        to @membership.EstimatedAfterExtensionDays
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>Existing overlap</dt>
+                                    <dd>@membership.ExistingOverlapDays days</dd>
+                                </div>
+                            </dl>
+
+                            @if (membership.OverlapWarnings.Count > 0)
+                            {
+                                <div class="non-working-day-overlap-warning" role="note">
+                                    <strong>
+                                        @membership.OverlapWarnings.Count existing extension
+                                        @(membership.OverlapWarnings.Count == 1 ? "overlap" : "overlaps")
+                                    </strong>
+                                    <ul>
+                                        @foreach (var warning in membership.OverlapWarnings)
+                                        {
+                                            <li data-overlap-source-type="@warning.SourceType"
+                                                data-overlap-source-id="@warning.SourceId">
+                                                @SourceTypeLabel(warning.SourceType): @warning.SourceLabel,
+                                                @FormatRange(warning.OverlapRange), @warning.OverlapDays days
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        </li>
+                    }
+                </ol>
+            }
+        </section>
+    }
+</div>
+
+@functions {
+    private static string FormatDateInput(DateOnly? date)
+    {
+        return date?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
+            ?? string.Empty;
+    }
+
+    private static string FormatDate(DateOnly date)
+    {
+        return date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatRange(DateRange range)
+    {
+        return $"{FormatDate(range.StartDate)} to {FormatDate(range.EndDate)}";
+    }
+
+    private static string FormatTimestamp(DateTimeOffset timestamp)
+    {
+        return timestamp.UtcDateTime.ToString(
+            "yyyy-MM-dd HH:mm 'UTC'",
+            System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string ShortReference(Guid id)
+    {
+        return id.ToString("N")[..8];
+    }
+
+    private static string SourceTypeLabel(string sourceType)
+    {
+        return sourceType switch
+        {
+            "freeze" => "Freeze",
+            "non_working_day" => "Non-working period",
+            "adjustment" => "Adjustment",
+            _ => "Extension source",
+        };
+    }
+}

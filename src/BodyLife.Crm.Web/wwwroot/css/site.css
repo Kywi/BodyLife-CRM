@@ -268,6 +268,7 @@ input[type="search"],
 input[type="text"],
 input[type="password"],
 input[type="number"],
+input[type="date"],
 input[type="datetime-local"],
 select {
   width: 100%;
@@ -2034,6 +2035,158 @@ textarea:focus-visible,
   font-size: 0.9rem;
 }
 
+.non-working-day-preview-workspace,
+.non-working-day-preview-input,
+.non-working-day-impact-result {
+  display: grid;
+  gap: 18px;
+}
+
+.non-working-day-preview-input {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.non-working-day-preview-form {
+  margin: 0;
+}
+
+.non-working-day-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.non-working-day-reason-code,
+.non-working-day-reason-comment,
+.non-working-day-preview-actions {
+  grid-column: 1 / -1;
+}
+
+.non-working-day-preview-actions {
+  display: flex;
+  min-height: 48px;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.non-working-day-impact-header,
+.non-working-day-impact-row-header {
+  display: flex;
+  min-width: 0;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.non-working-day-impact-header h2,
+.non-working-day-impact-row-header h3 {
+  margin: 0;
+}
+
+.non-working-day-impact-summary {
+  display: grid;
+  margin: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-block: 1px solid var(--line);
+}
+
+.non-working-day-impact-summary div {
+  display: grid;
+  min-width: 0;
+  padding: 14px;
+  gap: 4px;
+}
+
+.non-working-day-impact-summary div + div {
+  border-left: 1px solid var(--line);
+}
+
+.non-working-day-impact-summary dt,
+.non-working-day-impact-meta dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.non-working-day-impact-summary dd,
+.non-working-day-impact-meta dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.non-working-day-full-period-notice,
+.non-working-day-overlap-warning {
+  border-left: 4px solid var(--warning);
+  border-radius: 6px;
+  padding: 12px 14px;
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.non-working-day-full-period-notice p {
+  margin: 5px 0 0;
+  color: var(--text);
+}
+
+.non-working-day-impact-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  list-style: none;
+}
+
+.non-working-day-impact-row {
+  display: grid;
+  min-width: 0;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  gap: 14px;
+}
+
+.non-working-day-impact-row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.non-working-day-impact-row-header h3 a {
+  color: var(--accent-strong);
+  overflow-wrap: anywhere;
+}
+
+.non-working-day-impact-reference {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.85rem;
+}
+
+.non-working-day-impact-meta {
+  display: grid;
+  margin: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px 18px;
+}
+
+.non-working-day-impact-meta div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.non-working-day-overlap-warning ul {
+  display: grid;
+  margin: 8px 0 0;
+  padding-left: 20px;
+  gap: 5px;
+  color: var(--text);
+}
+
 @media (max-width: 900px) {
   .reception-workspace {
     grid-template-columns: 1fr;
@@ -2061,6 +2214,19 @@ textarea:focus-visible,
 
   .membership-type-edit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .non-working-day-impact-summary,
+  .non-working-day-impact-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .non-working-day-impact-summary div:nth-child(3) {
+    border-left: 0;
+  }
+
+  .non-working-day-impact-summary div:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
   }
 }
 
@@ -2212,6 +2378,31 @@ textarea:focus-visible,
 
   .membership-type-deactivate-grid {
     grid-template-columns: 1fr;
+  }
+
+  .non-working-day-preview-grid,
+  .non-working-day-impact-summary,
+  .non-working-day-impact-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .non-working-day-impact-header,
+  .non-working-day-impact-row-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .non-working-day-impact-summary div + div {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .non-working-day-preview-actions {
+    justify-content: stretch;
+  }
+
+  .non-working-day-preview-actions button {
+    width: 100%;
   }
 
   .form-field-span-2,

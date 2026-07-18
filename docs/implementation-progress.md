@@ -7774,3 +7774,100 @@ Next recommended step:
   warnings and expiring confirmation token, with tablet/phone Playwright
   coverage. Keep `AddNonWorkingDay` confirmation and
   `CorrectNonWorkingDay` replace/cancel UI for separate bounded steps.
+
+## Step 137 - Owner NonWorkingDay impact preview UI
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Start the roadmap's Owner NonWorkingDay management UI with only the
+  read-only `PreviewNonWorkingDayImpact` workflow. The existing query remains
+  the owner of authorization, ADR-016 affected-scope selection, impact
+  estimation and expiring confirmation material.
+- Preserve Memberships ownership: Razor renders canonical before/after
+  effective ends, extension days and overlap sources supplied by the server.
+  It does not calculate affected scope or extension effects.
+- Keep `AddNonWorkingDay` confirmation and `CorrectNonWorkingDay`
+  replace/cancel UI outside this bounded step. Preview requests create no
+  source facts, business audit or idempotency records.
+
+Scope:
+
+- Add the Owner-only `/Owner/NonWorkingDays` Razor Page and navigation entry.
+  Its anti-forgery-protected htmx POST accepts an inclusive start/end range,
+  reason code and optional comment, with server validation and a scoped busy
+  state.
+- Render the exact affected Membership count and list, full applied range,
+  inclusive period days, before/after effective end and extension days,
+  unique contribution and existing Freeze/NonWorkingDay overlap warnings.
+  Explicit copy communicates ADR-016's full-period endpoint-overlap rule.
+- Carry the opaque confirmation token and scope fingerprint in the preview
+  response and show their UTC expiry, but expose no confirmation action yet.
+- Enrich the shared NonWorkingDay impact preview model with canonical Client
+  display names. Both add and correction preview handlers resolve those names
+  inside their existing repeatable-read transactions, avoiding UUID-only
+  Owner review without changing correction semantics.
+- Document the required local signing-key environment variable and its default
+  five-minute preview lifetime without committing a secret. The Playwright
+  child application receives an isolated test-only key.
+- Extend the PostgreSQL UI fixture with a deterministic 2040 period covering
+  end-boundary overlap, start-boundary overlap, one existing Freeze overlap
+  and one excluded Membership. Add database snapshots proving invalid and
+  successful previews do not mutate NonWorkingDay, audit or idempotency data.
+- Add Owner tablet/phone Playwright coverage for anti-forgery and htmx wiring,
+  invalid-range rollback, exact affected scope, full-period values,
+  before/after projections, overlap warning, token/fingerprint/expiry,
+  touch-target size and horizontal viewport fit. Add a named-Admin denial
+  scenario for both navigation and direct route access.
+- Visually review full-page screenshots at 1024x768 and 390x844. The layout is
+  readable without overlap, preserves all warnings and actions on phone, and
+  introduces no hover-only interaction.
+- Add no NonWorkingDay mutation behavior, EF model, migration, report query or
+  general audit/history screen.
+
+Validation:
+
+- Release solution builds passed with 0 warnings/errors. The first build
+  exposed the existing correction preview's use of the shared mapper; a shared
+  Client projection fixed both preview paths without duplicating mapping.
+- `dotnet format --verify-no-changes` passed after rerunning outside the
+  filesystem sandbox that blocked Roslyn's named pipe.
+- Focused PostgreSQL affected-scope coverage passed 10/10 against the healthy
+  local Docker PostgreSQL service, including canonical Client display names.
+- The first focused Playwright run proved named-Admin denial but found the
+  deliberately unconfigured signing key when the new Owner page first resolved
+  the token service. Supplying an isolated child-process key and documenting
+  local configuration fixed startup without adding a repository secret; final
+  focused preview coverage passed 3/3.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 335 core tests, 35 web
+  tests, 449 PostgreSQL/architecture/security infrastructure tests, 46
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local watcher
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored to `HEAD`, so no generated code graph update is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(nonworking-days): add owner impact preview UI`.
+
+Next recommended step:
+
+- Add only the Owner `AddNonWorkingDay` confirmation workflow around the
+  existing command. It should consume the preview token/fingerprint and exact
+  affected scope, require explicit confirmation, use idempotency and a busy
+  state, refresh expired or changed previews on `preview_expired` and
+  `affected_scope_changed`, and render the canonical result/drill-down on
+  tablet and phone. Keep `CorrectNonWorkingDay` UI for a separate bounded
+  step.

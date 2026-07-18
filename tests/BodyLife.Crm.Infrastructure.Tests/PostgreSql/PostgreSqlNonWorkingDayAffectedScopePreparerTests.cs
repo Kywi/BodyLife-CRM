@@ -440,6 +440,7 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
             item => Assert.Equal(ProposedPeriod, item.AppliedRange));
 
         var endBoundary = preview.AffectedMemberships[0];
+        Assert.Equal("Scope End boundary", endBoundary.ClientDisplayName);
         Assert.Equal(0, endBoundary.BeforeExtensionDays);
         Assert.Equal(new DateOnly(2026, 1, 31), endBoundary.BeforeEffectiveEndDate);
         Assert.Equal(4, endBoundary.EstimatedAfterExtensionDays);
@@ -449,6 +450,7 @@ public sealed class PostgreSqlNonWorkingDayAffectedScopePreparerTests
 
         var extended = preview.AffectedMemberships[2];
         Assert.Equal(fixture.ExtendedClientId, extended.ClientId);
+        Assert.Equal("Scope Accepted extension", extended.ClientDisplayName);
         Assert.Equal(7, extended.BeforeExtensionDays);
         Assert.Equal(9, extended.EstimatedAfterExtensionDays);
         Assert.Equal(2, extended.AddedUniqueExtensionDays);

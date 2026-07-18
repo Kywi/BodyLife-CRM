@@ -23,6 +23,18 @@ Password: bodylife_dev_password
 
 The web app's Development settings already point `ConnectionStrings:BodyLife` at this database. The infrastructure test harness uses `ConnectionStrings:BodyLifeTestAdmin` to create disposable test databases during validation.
 
+Owner NonWorkingDay preview/confirmation tokens require a local signing secret.
+Generate a fresh 32-byte key for the shell that starts the web app; do not add
+the value to appsettings or git:
+
+```bash
+export BodyLife__NonWorkingDayPreviewToken__SigningKey="$(openssl rand -base64 32)"
+```
+
+The default preview lifetime is five minutes. Restarting with another key
+invalidates previews issued by the previous process, which is expected in local
+development.
+
 Run the shared validation gate:
 
 ```bash

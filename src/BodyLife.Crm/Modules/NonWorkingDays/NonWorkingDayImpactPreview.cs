@@ -62,6 +62,7 @@ public sealed class NonWorkingDayImpactMembershipPreview
     public NonWorkingDayImpactMembershipPreview(
         Guid membershipId,
         Guid clientId,
+        string clientDisplayName,
         DateRange appliedRange,
         int beforeExtensionDays,
         DateOnly beforeEffectiveEndDate,
@@ -79,6 +80,17 @@ public sealed class NonWorkingDayImpactMembershipPreview
         if (clientId == Guid.Empty)
         {
             throw new ArgumentException("Client id is required.", nameof(clientId));
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientDisplayName);
+        if (!string.Equals(
+                clientDisplayName,
+                clientDisplayName.Trim(),
+                StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Client display name must be normalized.",
+                nameof(clientDisplayName));
         }
 
         ArgumentNullException.ThrowIfNull(overlapWarnings);
@@ -108,6 +120,7 @@ public sealed class NonWorkingDayImpactMembershipPreview
 
         MembershipId = membershipId;
         ClientId = clientId;
+        ClientDisplayName = clientDisplayName;
         AppliedRange = appliedRange;
         BeforeExtensionDays = beforeExtensionDays;
         BeforeEffectiveEndDate = beforeEffectiveEndDate;
@@ -121,6 +134,8 @@ public sealed class NonWorkingDayImpactMembershipPreview
     public Guid MembershipId { get; }
 
     public Guid ClientId { get; }
+
+    public string ClientDisplayName { get; }
 
     public DateRange AppliedRange { get; }
 
