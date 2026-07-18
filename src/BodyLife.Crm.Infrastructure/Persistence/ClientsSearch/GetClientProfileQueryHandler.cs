@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
@@ -33,6 +34,9 @@ public sealed class GetClientProfileQueryHandler(
         QueryPermissionResult.Allowed(
             PaymentActionKeys.Create,
             PaymentActionKeys.AdminOrOwnerPolicy),
+        QueryPermissionResult.Allowed(
+            FreezeActionKeys.Add,
+            FreezeActionKeys.AdminOrOwnerPolicy),
     ]);
 
     public async Task<GetClientProfileResult> ExecuteAsync(

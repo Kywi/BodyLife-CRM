@@ -34,6 +34,7 @@ public sealed record ClientProfileViewModel(
     MarkVisitFormViewModel? MarkVisitForm,
     IssueMembershipFormViewModel? IssueMembershipForm,
     AddPaymentFormViewModel? AddPaymentForm,
+    AddFreezeFormViewModel? AddFreezeForm,
     IReadOnlyList<CancelVisitFormViewModel> CancelVisitForms,
     IReadOnlyList<CorrectPaymentFormViewModel> CorrectPaymentForms,
     string? OperationMessage,
@@ -46,6 +47,7 @@ public sealed record ClientProfileViewModel(
         MarkVisitForm: null,
         IssueMembershipForm: null,
         AddPaymentForm: null,
+        AddFreezeForm: null,
         CancelVisitForms: [],
         CorrectPaymentForms: [],
         OperationMessage: null,
@@ -61,6 +63,7 @@ public sealed record ClientProfileViewModel(
         MarkVisitFormViewModel? markVisitForm = null,
         IssueMembershipFormViewModel? issueMembershipForm = null,
         AddPaymentFormViewModel? addPaymentForm = null,
+        AddFreezeFormViewModel? addFreezeForm = null,
         IReadOnlyList<CancelVisitFormViewModel>? cancelVisitForms = null,
         IReadOnlyList<CorrectPaymentFormViewModel>? correctPaymentForms = null)
     {
@@ -87,6 +90,7 @@ public sealed record ClientProfileViewModel(
             markVisitForm,
             issueMembershipForm,
             addPaymentForm,
+            addFreezeForm,
             cancelVisitForms ?? [],
             correctPaymentForms ?? [],
             operationMessage,

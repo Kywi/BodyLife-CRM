@@ -1079,12 +1079,18 @@ textarea:focus-visible,
   padding: 16px;
 }
 
+#add-freeze-action-panel .command-error-summary + .warning-block,
+#add-freeze-action-panel .add-freeze-form {
+  margin-top: 14px;
+}
+
 .create-client-form,
 .update-client-form,
 .card-assignment-form,
 .issue-membership-form,
 .mark-visit-form,
 .add-payment-form,
+.add-freeze-form,
 .cancel-visit-form,
 .correct-payment-form {
   display: grid;
@@ -2136,6 +2142,7 @@ textarea:focus-visible,
   .mark-visit-form .action-form-footer,
   .issue-membership-form .action-form-footer,
   .add-payment-form .action-form-footer,
+  .add-freeze-form .action-form-footer,
   .cancel-visit-form .action-form-footer,
   .correct-payment-form .action-form-footer {
     flex-wrap: wrap;
@@ -2144,6 +2151,7 @@ textarea:focus-visible,
   .mark-visit-form .action-form-footer button,
   .issue-membership-form .action-form-footer button,
   .add-payment-form .action-form-footer button,
+  .add-freeze-form .action-form-footer button,
   .cancel-visit-form .action-form-footer button,
   .correct-payment-form .action-form-footer button {
     width: 100%;

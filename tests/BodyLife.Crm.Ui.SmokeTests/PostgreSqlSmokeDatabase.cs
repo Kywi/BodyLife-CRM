@@ -1225,6 +1225,78 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             clientId);
     }
 
+    public Task<long> CountActiveFreezesAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.freezes
+            where client_id = @client_id
+              and status = 'active'
+            """,
+            clientId);
+    }
+
+    public Task<long> CountAddFreezeAuditEntriesAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries audit
+            inner join bodylife.freezes freeze_row on freeze_row.id = audit.entity_id
+            where audit.action_type = 'freeze.added'
+              and freeze_row.client_id = @client_id
+            """,
+            clientId);
+    }
+
+    public Task<long> CountAddFreezeIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'AddFreeze'
+              and reread_target_id = @client_id
+            """,
+            clientId);
+    }
+
+    public async Task<FreezeSmokeSnapshot> ReadLatestActiveFreezeAsync(Guid clientId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                membership_id,
+                start_date,
+                end_date,
+                reason,
+                status
+            from bodylife.freezes
+            where client_id = @client_id
+              and status = 'active'
+            order by recorded_at desc, id desc
+            limit 1
+            """;
+        command.Parameters.AddWithValue("client_id", clientId);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException("The active smoke Freeze was not found.");
+        }
+
+        return new FreezeSmokeSnapshot(
+            reader.GetGuid(0),
+            reader.GetFieldValue<DateOnly>(1),
+            reader.GetFieldValue<DateOnly>(2),
+            reader.GetString(3),
+            reader.GetString(4));
+    }
+
     public Task<long> CountIssuedMembershipsAsync(Guid clientId)
     {
         return CountRowsAsync(
@@ -1877,4 +1949,11 @@ public sealed record PaymentSmokeSnapshot(
     string PaymentContext,
     Guid? MembershipId,
     string? Comment,
+    string Status);
+
+public sealed record FreezeSmokeSnapshot(
+    Guid MembershipId,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    string Reason,
     string Status);

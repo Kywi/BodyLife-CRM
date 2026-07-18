@@ -1,0 +1,130 @@
+@using System.Globalization
+@model AddFreezeFormViewModel
+@{
+    var input = Model.Input;
+    var clientKey = input.ClientId.ToString("N");
+    var startDateValue = input.StartDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    var endDateValue = input.EndDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+}
+
+<details id="add-freeze-action-panel"
+         class="profile-action-panel"
+         open="@(Model.IsOpen ? "open" : null)">
+    <summary>Add freeze</summary>
+    <div class="profile-action-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Freeze not added</strong>
+                <ul>
+                    @foreach (var message in Model.Errors
+                        .Select(AddFreezeFormViewModel.DisplayError)
+                        .Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="warning-block warning-caution">
+            <strong>Inclusive membership range</strong>
+            <span>Start must be within the selected Membership window. End may cross its current effective end date.</span>
+            <span>An active counted Membership Visit inside the range blocks the Freeze.</span>
+        </div>
+
+        <form id="add-freeze-form-@clientKey"
+              class="add-freeze-form"
+              method="post"
+              asp-page="/Reception/Index"
+              asp-page-handler="AddFreeze"
+              data-add-freeze-form
+              data-busy-form
+              hx-post="@Url.Page("/Reception/Index", "AddFreeze")"
+              hx-target="#add-freeze-action-panel"
+              hx-swap="outerHTML"
+              hx-sync="this:drop"
+              hx-indicator="#add-freeze-loading"
+              hx-disabled-elt="find button">
+            <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+            <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+            <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+            <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+            <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+            <div class="action-form-grid">
+                <div class="form-field form-field-wide">
+                    <label for="freeze-membership-@clientKey">Membership</label>
+                    <select id="freeze-membership-@clientKey"
+                            name="form.MembershipId"
+                            required>
+                        <option value="" selected="@(input.MembershipId is null ? "selected" : null)">Choose membership</option>
+                        @foreach (var membership in Model.MembershipOptions)
+                        {
+                            <option value="@membership.MembershipId"
+                                    selected="@(input.MembershipId == membership.MembershipId ? "selected" : null)">
+                                @membership.TypeNameSnapshot | @MembershipStatusLabel(membership.Status) | ends @membership.EffectiveEndDate.ToString("yyyy-MM-dd")
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="freeze-start-date-@clientKey">Freeze start date</label>
+                    <input id="freeze-start-date-@clientKey"
+                           type="date"
+                           name="form.StartDate"
+                           value="@startDateValue"
+                           required />
+                </div>
+
+                <div class="form-field">
+                    <label for="freeze-end-date-@clientKey">Freeze end date</label>
+                    <input id="freeze-end-date-@clientKey"
+                           type="date"
+                           name="form.EndDate"
+                           value="@endDateValue"
+                           required />
+                </div>
+
+                <div class="form-field form-field-wide">
+                    <label for="freeze-reason-@clientKey">Reason</label>
+                    <textarea id="freeze-reason-@clientKey"
+                              name="form.Reason"
+                              maxlength="@AddFreezeFormViewModel.ReasonMaxLength"
+                              required>@input.Reason</textarea>
+                </div>
+
+                <div class="form-field form-field-wide">
+                    <label for="freeze-comment-@clientKey">Comment (optional)</label>
+                    <textarea id="freeze-comment-@clientKey"
+                              name="form.Comment"
+                              maxlength="@AddFreezeFormViewModel.CommentMaxLength">@input.Comment</textarea>
+                </div>
+            </div>
+
+            <div class="action-form-footer">
+                <span id="add-freeze-loading"
+                      class="request-indicator htmx-indicator"
+                      role="status"
+                      aria-live="polite">Adding freeze...</span>
+                <button type="submit"
+                        data-add-freeze-submit
+                        data-busy-text="Adding...">Add freeze</button>
+            </div>
+        </form>
+    </div>
+</details>
+
+@functions {
+    private static string MembershipStatusLabel(string status)
+    {
+        return status switch
+        {
+            ClientMembershipSummaryStatusCodes.Active => "active",
+            ClientMembershipSummaryStatusCodes.Expired => "expired",
+            _ => status,
+        };
+    }
+}

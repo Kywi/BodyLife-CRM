@@ -80,6 +80,14 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid PaymentPhoneClientId { get; private set; }
 
+    public Guid FreezeTabletClientId { get; private set; }
+
+    public Guid FreezeTabletMembershipId { get; private set; }
+
+    public Guid FreezePhoneClientId { get; private set; }
+
+    public Guid FreezePhoneMembershipId { get; private set; }
+
     public Guid IssueMembershipTypeId { get; private set; }
 
     public Guid IssueTabletClientId { get; private set; }
@@ -344,6 +352,26 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadLatestActivePaymentAsync(clientId);
     }
 
+    public Task<long> CountActiveFreezesAsync(Guid clientId)
+    {
+        return RequireDatabase().CountActiveFreezesAsync(clientId);
+    }
+
+    public Task<long> CountAddFreezeAuditEntriesAsync(Guid clientId)
+    {
+        return RequireDatabase().CountAddFreezeAuditEntriesAsync(clientId);
+    }
+
+    public Task<long> CountAddFreezeIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountAddFreezeIdempotencyKeysAsync(clientId);
+    }
+
+    public Task<FreezeSmokeSnapshot> ReadLatestActiveFreezeAsync(Guid clientId)
+    {
+        return RequireDatabase().ReadLatestActiveFreezeAsync(clientId);
+    }
+
     public Task<long> CountPaymentCorrectionsAsync(Guid originalPaymentId)
     {
         return RequireDatabase().CountPaymentCorrectionsAsync(originalPaymentId);
@@ -507,6 +535,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
         await SeedMembershipExtensionHistoryFixtureAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
+        await SeedAddFreezeFixturesAsync(
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
@@ -742,6 +774,38 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "Phone",
             "+380 67 700 02 02",
             "BL-PAYMENT-PHONE");
+    }
+
+    private async Task SeedAddFreezeFixturesAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        FreezeTabletClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Freeze",
+            "Tablet",
+            "+380 67 700 03 01",
+            "BL-FREEZE-TABLET");
+        FreezeTabletMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            FreezeTabletClientId,
+            membershipTypeId,
+            "Freeze tablet snapshot",
+            visitsLimitSnapshot: 8);
+
+        FreezePhoneClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Freeze",
+            "Phone",
+            "+380 67 700 03 02",
+            "BL-FREEZE-PHONE");
+        FreezePhoneMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            FreezePhoneClientId,
+            membershipTypeId,
+            "Freeze phone snapshot",
+            visitsLimitSnapshot: 8);
     }
 
     private async Task SeedIssueMembershipFixturesAsync(

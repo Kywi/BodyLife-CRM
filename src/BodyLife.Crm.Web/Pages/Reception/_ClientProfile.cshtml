@@ -206,6 +206,11 @@
             <partial name="_MarkVisitForm" model="Model.MarkVisitForm" />
         }
 
+        @if (Model.AddFreezeForm is not null)
+        {
+            <partial name="_AddFreezeForm" model="Model.AddFreezeForm" />
+        }
+
         @if (Model.AddPaymentForm is not null)
         {
             <partial name="_AddPaymentForm" model="Model.AddPaymentForm" />

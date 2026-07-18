@@ -5,6 +5,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
@@ -80,11 +81,12 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Null(profile.RecentVisits);
         Assert.Null(profile.RecentPayments);
         Assert.Empty(profile.Warnings);
-        Assert.Equal(4, profile.AllowedActions.Items.Count);
+        Assert.Equal(5, profile.AllowedActions.Items.Count);
         Assert.True(profile.AllowedActions.IsAllowed(ClientProfileActionKeys.UpdateClient));
         Assert.True(profile.AllowedActions.IsAllowed(ClientProfileActionKeys.AssignOrChangeCard));
         Assert.True(profile.AllowedActions.IsAllowed(MembershipActionKeys.Issue));
         Assert.True(profile.AllowedActions.IsAllowed(PaymentActionKeys.Create));
+        Assert.True(profile.AllowedActions.IsAllowed(FreezeActionKeys.Add));
         Assert.All(
             profile.AllowedActions.Items,
             permission => Assert.Equal(

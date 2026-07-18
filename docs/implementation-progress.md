@@ -7592,3 +7592,91 @@ Next recommended step:
   reason, busy/duplicate-submit protection, server validation and canonical
   profile reread, with tablet/phone Playwright coverage. Keep CancelFreeze and
   Owner NonWorkingDay management UI for separate later bounded steps.
+
+## Step 135 - Reception AddFreeze workflow
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Continue the roadmap's `UI for add/cancel freeze` task with only the reception
+  AddFreeze half. The existing Milestone 8 backend command remains the sole
+  owner of authorization, idempotency, range eligibility, Visit conflict,
+  recalculation, source facts and business audit.
+- Preserve Memberships ownership: the form shows server-projected Membership
+  status/effective end and submits dates, but never predicts extension days or
+  a new effective end. Success always rereads the canonical Client profile.
+- Keep CancelFreeze and Owner NonWorkingDay management UI outside this bounded
+  step.
+
+Scope:
+
+- Add the public `freezes.add` action key and project its Admin/Owner permission
+  through `GetClientProfile`, with focused PostgreSQL permission coverage.
+- Add a reception AddFreeze view model and Razor partial. The form offers only
+  lifecycle-active Membership sources represented by active/expired profile
+  rows, keeps selection explicit, accepts inclusive start/end dates, required
+  reason and optional comment, and uses a fresh idempotency key.
+- Add the Razor Page POST adapter around the existing `AddFreezeCommand`.
+  Normal `occurred_at` is server-set; basic input validation prevents invalid
+  `DateRange` construction, while canonical range/Visit rules remain in the
+  command. Duplicate keys refresh only the form key.
+- Map stable permission, not-found, membership eligibility, Visit conflict,
+  recalculation and concurrency errors. State-dependent failures refresh the
+  entire canonical workspace; local validation keeps the editable form open.
+- Use htmx `this:drop`, disabled/busy submit state, scoped loading indicator and
+  full-workspace retarget after success. The refreshed Membership panel shows
+  the recalculated effective end and new extension explanation row.
+- Add isolated tablet/phone PostgreSQL fixtures and a Playwright theory that
+  proves invalid range rollback, one source/audit/idempotency success under a
+  repeated busy tap, exact source range/reason, two inclusive extension days,
+  canonical profile reread, touch target size and horizontal viewport fit.
+- Visually review open form/error and canonical success screenshots at 1024x768
+  and 390x844. Distinct `Freeze start date`/`Freeze end date` labels avoid
+  accessible-name collisions with IssueMembership.
+- Add no Freeze/CancelFreeze backend behavior, EF model, migration, report,
+  Owner NonWorkingDay UI or general audit/history screen.
+
+Validation:
+
+- Release solution and focused smoke-project builds passed with 0
+  warnings/errors.
+- Focused `GetClientProfile` permission coverage passed 1/1 against Docker
+  PostgreSQL.
+- The first AddFreeze Playwright run exposed reserved PostgreSQL test alias
+  `freeze`; after changing it to `freeze_row`, focused tablet/phone coverage
+  passed 2/2. The final visually polished run also passed 2/2.
+- The first full gate passed Core/Web/infrastructure but correctly found one
+  existing IssueMembership strict locator made ambiguous by the new generic
+  `Start date` label. Distinct Freeze labels fixed the accessibility collision,
+  and the combined AddFreeze/IssueMembership regression passed 4/4.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 335 core tests, 35 web
+  tests, 449 PostgreSQL/architecture/security infrastructure tests, 41
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local watcher
+  stopped with `Errno 95: Operation not supported`; its partial cache-index
+  change is excluded from this step, so no generated code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(reception): add freeze workflow`.
+
+Next recommended step:
+
+- Add only the reception `CancelFreeze` Razor/htmx action on active Freeze
+  explanation rows: source identity, explicit destructive confirmation,
+  required reason/optional comment, idempotency and busy state, canonical
+  profile reread and tablet/phone Playwright coverage. Keep Owner NonWorkingDay
+  management UI for later bounded steps.

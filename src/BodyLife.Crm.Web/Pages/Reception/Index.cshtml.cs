@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
 using BodyLife.Crm.Modules.Payments;
@@ -32,6 +33,7 @@ public sealed class IndexModel(
     IBodyLifeCommandHandler<UpdateClientCommand> updateClient,
     IBodyLifeCommandHandler<AssignOrChangeCardCommand> assignOrChangeCard,
     IBodyLifeCommandHandler<IssueMembershipCommand> issueMembership,
+    IBodyLifeCommandHandler<AddFreezeCommand> addFreeze,
     IBodyLifeCommandHandler<MarkVisitCommand> markVisit,
     IBodyLifeCommandHandler<CreatePaymentCommand> createPayment,
     IBodyLifeCommandHandler<CorrectPaymentCommand> correctPayment,
@@ -382,6 +384,48 @@ public sealed class IndexModel(
             form,
             result.Errors,
             RequiresCanonicalVisitRefresh(result.Errors),
+            cancellationToken);
+    }
+
+    public async Task<IActionResult> OnPostAddFreezeAsync(
+        AddFreezeFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        var adapterErrors = ValidateAddFreezeForm(form);
+        if (adapterErrors.Count > 0)
+        {
+            return await RenderAddFreezeErrorAsync(
+                form,
+                adapterErrors,
+                forceCanonicalRefresh: false,
+                cancellationToken);
+        }
+
+        var command = new AddFreezeCommand(
+            requestContextResolver.CreateCommandEnvelope(
+                occurredAt: timeProvider.GetUtcNow(),
+                idempotencyKey: form.IdempotencyKey,
+                reason: form.Reason,
+                comment: form.Comment),
+            form.ClientId,
+            form.MembershipId!.Value,
+            new DateRange(form.StartDate!.Value, form.EndDate!.Value));
+        var result = await addFreeze.ExecuteAsync(command, cancellationToken);
+
+        if (result.Status == CommandStatus.Success)
+        {
+            return await RenderSuccessfulAddFreezeAsync(
+                form,
+                result,
+                cancellationToken);
+        }
+
+        return await RenderAddFreezeErrorAsync(
+            form,
+            result.Errors,
+            RequiresCanonicalFreezeRefresh(result.Errors),
             cancellationToken);
     }
 
@@ -739,6 +783,54 @@ public sealed class IndexModel(
         var message = result.AuditEntryId is { } auditEntryId
             ? $"Visit marked. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
             : "Visit marked.";
+
+        if (!IsHtmxRequest())
+        {
+            ClientOperationMessage = message;
+            ClientOperationTone = "success";
+            return RedirectToCanonicalPage(ClientId);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with
+            {
+                OperationMessage = message,
+                OperationSucceeded = true,
+            },
+        };
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
+    private async Task<IActionResult> RenderSuccessfulAddFreezeAsync(
+        AddFreezeFormInput form,
+        CommandResult result,
+        CancellationToken cancellationToken)
+    {
+        if (result.PrimaryEntityId is not { } freezeId
+            || freezeId.Type != AddFreezeCommand.PrimaryEntityType
+            || freezeId.Value == Guid.Empty
+            || result.RereadTargetId is not { } rereadTarget
+            || rereadTarget.Type != AddFreezeCommand.CanonicalRereadEntityType
+            || rereadTarget.Value != form.ClientId
+            || !result.RelatedEntityIds.Any(entityId =>
+                entityId.Type == AddFreezeCommand.MembershipEntityType
+                && entityId.Value == form.MembershipId))
+        {
+            throw new InvalidOperationException(
+                "AddFreeze did not return the expected Freeze, Membership and canonical Client reread target.");
+        }
+
+        ApplySearchContext(form);
+        ClientId = rereadTarget.Value;
+        var message = result.AuditEntryId is { } auditEntryId
+            ? $"Freeze added. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
+            : "Freeze added.";
 
         if (!IsHtmxRequest())
         {
@@ -1196,6 +1288,60 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IActionResult> RenderAddFreezeErrorAsync(
+        AddFreezeFormInput form,
+        IReadOnlyList<CommandError> errors,
+        bool forceCanonicalRefresh,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+        var addFreezeForm = await BuildAddFreezeErrorFormAsync(
+            form,
+            errors,
+            cancellationToken);
+
+        if (IsHtmxRequest() && !forceCanonicalRefresh && addFreezeForm is not null)
+        {
+            return Partial("_AddFreezeForm", addFreezeForm);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        if (addFreezeForm is not null
+            && Workspace.Profile.Result?.Profile?.ClientId == form.ClientId)
+        {
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with { AddFreezeForm = addFreezeForm },
+            };
+        }
+        else
+        {
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with
+                {
+                    OperationMessage = errors
+                        .Select(AddFreezeFormViewModel.DisplayError)
+                        .FirstOrDefault()
+                        ?? "Freeze could not be added.",
+                    OperationSucceeded = false,
+                },
+            };
+        }
+
+        if (!IsHtmxRequest())
+        {
+            return Page();
+        }
+
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
     private async Task<IActionResult> RenderCorrectPaymentErrorAsync(
         CorrectPaymentFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -1477,6 +1623,48 @@ public sealed class IndexModel(
             (CommandErrorCode.ValidationFailed or CommandErrorCode.ReasonRequired));
     }
 
+    private async Task<AddFreezeFormViewModel?> BuildAddFreezeErrorFormAsync(
+        AddFreezeFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        var actor = requestContextResolver.Require().Actor;
+        var result = await getClientProfile.ExecuteAsync(
+            new GetClientProfileQuery(
+                actor,
+                form.ClientId,
+                IncludeHistory: true),
+            cancellationToken);
+
+        if (result is not
+            {
+                Status: GetClientProfileStatus.Success,
+                Profile: { } profile,
+            }
+            || !profile.AllowedActions.IsAllowed(FreezeActionKeys.Add))
+        {
+            return null;
+        }
+
+        var errorForm = AddFreezeFormViewModel.FromSubmission(form, profile, errors);
+        return errorForm.MembershipOptions.Count > 0
+            ? errorForm
+            : null;
+    }
+
+    private static bool RequiresCanonicalFreezeRefresh(
+        IReadOnlyList<CommandError> errors)
+    {
+        return errors.Any(error => error.Code is
+            CommandErrorCode.PermissionDenied
+            or CommandErrorCode.NotFound
+            or CommandErrorCode.MembershipNotEligible
+            or CommandErrorCode.FreezeConflictsWithVisit
+            or CommandErrorCode.RecalculationFailed
+            or CommandErrorCode.ConcurrencyConflict
+            or CommandErrorCode.StaleState);
+    }
+
     private async Task<AddPaymentFormViewModel?> BuildAddPaymentErrorFormAsync(
         AddPaymentFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -1652,6 +1840,76 @@ public sealed class IndexModel(
                 CommandErrorCode.ValidationFailed,
                 $"Replacement comment must be {CorrectPaymentFormViewModel.CommentMaxLength} characters or fewer.",
                 "replacement.comment"));
+        }
+
+        return errors.AsReadOnly();
+    }
+
+    private static IReadOnlyList<CommandError> ValidateAddFreezeForm(
+        AddFreezeFormInput form)
+    {
+        var errors = new List<CommandError>();
+
+        if (form.ClientId == Guid.Empty)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Client id is required.",
+                "clientId"));
+        }
+
+        if (form.MembershipId is null || form.MembershipId == Guid.Empty)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Choose a Membership for this Freeze.",
+                "membershipId"));
+        }
+
+        if (form.StartDate is null || form.StartDate == default)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Freeze start date is required.",
+                "range.startDate"));
+        }
+
+        if (form.EndDate is null || form.EndDate == default)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Freeze end date is required.",
+                "range.endDate"));
+        }
+        else if (form.StartDate is { } startDate && form.EndDate < startDate)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Freeze end date must be on or after the start date.",
+                "range"));
+        }
+
+        if (string.IsNullOrWhiteSpace(form.Reason))
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ReasonRequired,
+                "Freeze reason is required.",
+                "reason"));
+        }
+        else if (form.Reason.Trim().Length > AddFreezeFormViewModel.ReasonMaxLength)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                $"Freeze reason must be {AddFreezeFormViewModel.ReasonMaxLength} characters or fewer.",
+                "reason"));
+        }
+
+        if (form.Comment?.Trim().Length > AddFreezeFormViewModel.CommentMaxLength)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                $"Freeze comment must be {AddFreezeFormViewModel.CommentMaxLength} characters or fewer.",
+                "comment"));
         }
 
         return errors.AsReadOnly();
@@ -1882,6 +2140,7 @@ public sealed class IndexModel(
         MarkVisitFormViewModel? markVisitForm = null;
         IssueMembershipFormViewModel? issueMembershipForm = null;
         AddPaymentFormViewModel? addPaymentForm = null;
+        AddFreezeFormViewModel? addFreezeForm = null;
         IReadOnlyList<CancelVisitFormViewModel> cancelVisitForms = [];
         IReadOnlyList<CorrectPaymentFormViewModel> correctPaymentForms = [];
 
@@ -1918,6 +2177,16 @@ public sealed class IndexModel(
                     occurredAt,
                     searchContext);
             }
+            if (profile.AllowedActions.IsAllowed(FreezeActionKeys.Add))
+            {
+                var candidate = AddFreezeFormViewModel.FromProfile(
+                    profile,
+                    searchContext);
+                if (candidate.MembershipOptions.Count > 0)
+                {
+                    addFreezeForm = candidate;
+                }
+            }
             cancelVisitForms = profile.RecentVisits?.Items
                 .Where(visit => visit.Status == ClientVisitRowStatus.Active
                     && visit.AllowedActions.IsAllowed(VisitActionKeys.Cancel))
@@ -1942,6 +2211,7 @@ public sealed class IndexModel(
             markVisitForm: markVisitForm,
             issueMembershipForm: issueMembershipForm,
             addPaymentForm: addPaymentForm,
+            addFreezeForm: addFreezeForm,
             cancelVisitForms: cancelVisitForms,
             correctPaymentForms: correctPaymentForms);
     }
@@ -2004,6 +2274,14 @@ public sealed class IndexModel(
     }
 
     private void ApplySearchContext(AddPaymentFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
+    }
+
+    private void ApplySearchContext(AddFreezeFormInput form)
     {
         Query = form.SearchQuery;
         Mode = form.SearchMode;
