@@ -140,7 +140,7 @@ Metrics should be stack-agnostic signals that can later be implemented through t
 |---|---|---|
 | App availability / health check | Reception needs the app during business hours. | Investigate immediately if unavailable during working hours. |
 | Request/command error rate | Detects broken workflows and validation/concurrency regressions. | Review if errors spike or repeated system errors occur. |
-| Command latency | Slow quick actions block reception. | Review slow `MarkVisit`, `CreatePayment`, `IssueMembership`, `AddFreeze`. |
+| Command latency | Slow quick actions block reception and Owner operations. | Review slow `MarkVisit`, `CreatePayment`, `IssueMembership`, `AddFreeze`, `AddNonWorkingDay` and `CorrectNonWorkingDay`. |
 | Report latency | Daily report and drill-downs must remain usable. | Review slow `GenerateDailyReport` and membership lists. |
 | `MarkVisit` count | Baseline activity and detects outage gaps. | Compare against expected day activity and paper fallback batches. |
 | `CreatePayment` count and daily cash sum | Detects cash/report mismatch early. | Reconcile with daily report and cash drawer process. |
@@ -153,6 +153,43 @@ Metrics should be stack-agnostic signals that can later be implemented through t
 | Paper fallback batch count/open batches | Prevents unentered paper records from being forgotten. | Owner/admin review until every batch is reconciled. |
 
 Alerting/monitoring implementation is deferred until deployment is chosen. The policy requirement is that production has at least one reliable way to notice app unavailability, backup failures and repeated command/system errors.
+
+### NonWorkingDay mass recalculation fallback
+
+BodyLife CRM v1 keeps `AddNonWorkingDay` and `CorrectNonWorkingDay`
+recalculation synchronous. Preview and confirmation are separate requests, but a
+confirmed command has one PostgreSQL transaction for source/application facts,
+every affected Membership cache/explanation rebuild, business audit and
+idempotency result.
+
+The initial performance regression baseline is 250 simultaneously affected
+Memberships with a 30-second budget per confirmed Add or Correct command against
+the PostgreSQL integration environment. This is a conservative one-gym
+engineering gate, not a production SLA. Replace it with a higher
+production-like count before go-live if the migration inventory shows more than
+250 potentially affected active Memberships.
+
+Failure behavior is explicit:
+
+- If any recalculation returns an invalid/missing result, the command returns
+  `recalculation_failed` and rolls back source status, replacement/cancellation
+  facts, application rows, Membership state/explanation rows, audit and
+  idempotency together.
+- If request, hosting or operator cancellation interrupts a long command, the
+  transaction is rolled back with cleanup that does not reuse the canceled
+  token. The canceled request returns no success result.
+- The UI may show success only after transaction commit and canonical reread.
+  A timeout, disconnected response or system error must remain non-success; the
+  Owner reloads canonical state before deciding whether to retry.
+- v1 has no automatic background-job or partial batch fallback. Do not extend a
+  timeout blindly or write remaining Membership rows through a repair script.
+
+If the realistic-count gate exceeds its budget, migrated volume is above the
+tested baseline, or production latency repeatedly approaches the hosting
+timeout, block go-live for this workflow and first optimize the synchronous
+set-based/read path. Introducing asynchronous mass recalculation requires a new
+ADR and a durable pending/failed/retry contract; the UI still cannot report the
+NonWorkingDay command complete until every affected Membership is consistent.
 
 ## 4. Backup/restore
 

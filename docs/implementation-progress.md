@@ -8141,3 +8141,84 @@ Next recommended step:
   failure behavior when recalculation cannot complete. The UI must never report
   success unless every source/application, Membership state, audit and
   idempotency write commits atomically.
+
+## Step 141 - NonWorkingDay mass recalculation quality gate
+
+Status: completed. Milestone 8 remains in progress pending its acceptance
+closeout audit.
+
+Plan alignment:
+
+- Complete the roadmap's remaining explicit Milestone 8
+  performance/transaction test requirement and define the fallback behavior
+  when NonWorkingDay mass recalculation is too slow or interrupted.
+- Preserve ADR-016 and the interaction contract's v1 synchronous transaction.
+  Do not add background jobs, partial batches or a second source-of-truth state.
+- Keep Reports, general audit/history UI and production monitoring
+  implementation outside this bounded quality/operations step.
+
+Scope:
+
+- Add a PostgreSQL-backed realistic-volume suite using real Add/Correct command
+  handlers, signed previews, RepeatableRead transactions and the Memberships
+  cache rebuilder. No mock database, SQLite or EF InMemory path is used.
+- Set a conservative one-gym regression baseline of 250 simultaneously
+  affected active Memberships and a 30-second budget for each confirmed
+  `AddNonWorkingDay` and reason-replacement `CorrectNonWorkingDay` command.
+- Verify all 250 immutable applications, Membership cache rows and active/
+  inactive explanation rows, exact command result targets, complete audit
+  recalculation summaries and idempotency records after Add and correction.
+- Add a separate 120-Membership correction scenario that cancels the command
+  after 25 successful canonical cache/explanation writes. Verify the thrown
+  cancellation rolls back original source status, replacement source and
+  applications, all newer recalculation timestamps, audit and idempotency, and
+  clears the EF change tracker.
+- Define provider-neutral v1 fallback policy in `operations-design.md`: stable
+  `recalculation_failed` or cancellation means atomic rollback and no UI
+  success; canonical state must be reread before retry; async processing would
+  require a new ADR with durable pending/failed/retry state.
+- Extend command-latency operational review to Add/CorrectNonWorkingDay and
+  require the tested volume to be raised before go-live when migration
+  inventory exceeds 250 potentially affected Memberships.
+- Add no product runtime code, EF model, migration or UI change.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --verbosity minimal
+  --no-restore` and `git diff --check` passed.
+- The new focused PostgreSQL mass suite passed 2/2. The 250-Membership Add plus
+  correction case completed in approximately 6 seconds total test time, and
+  the 120-Membership cancellation/rollback case completed in approximately 6
+  seconds.
+- Combined Add, Correct and mass NonWorkingDay command regression coverage
+  passed 22/22 against the local Docker PostgreSQL service.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 335 core tests, 35 web
+  tests, 453 PostgreSQL/architecture/security infrastructure tests, 54
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the test change but its watcher could
+  not rebuild on this filesystem (`Errno 95: Operation not supported`). Its
+  generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the documentation changes but
+  stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `test(nonworking-days): add mass recalculation gate`.
+
+Next recommended step:
+
+- Perform one bounded Milestone 8 acceptance closeout audit against every
+  roadmap criterion and required-test row. Record direct code/test evidence,
+  resolve only genuine gaps, and mark Milestone 8 complete before beginning the
+  Milestone 9 Reports sequence.
