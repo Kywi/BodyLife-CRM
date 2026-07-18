@@ -8050,3 +8050,94 @@ Next recommended step:
   and business audit, refresh stale previews, and canonically reread the
   committed correction on tablet and phone. Keep reports and the general audit
   UI outside that bounded step.
+
+## Step 140 - Owner CorrectNonWorkingDay confirmation workflow
+
+Status: completed. Milestone 8 remains in progress.
+
+Plan alignment:
+
+- Complete the roadmap's Owner-only NonWorkingDay correction UI around the
+  existing Step 139 preview and `CorrectNonWorkingDay` command. The command
+  remains authoritative for authorization, signed confirmation, exact-scope
+  revalidation, idempotency, transactionality, Membership recalculation and
+  append-only business audit.
+- Preserve ADR-016 correction semantics for replace range, replace reason and
+  cancel. Razor renders canonical old/new scopes and Memberships-owned state;
+  it does not select affected Memberships or calculate extension values.
+- Keep reports and the general audit/history UI outside this bounded step.
+
+Scope:
+
+- Add a public Owner-authorized correction-outcome query and PostgreSQL handler
+  that rereads the correction audit, original source, replacement or
+  cancellation facts, immutable application rows and current Membership state.
+  It rejects mismatched audit linkage, action/mode, old/new/union scope or
+  recalculated source status as inconsistent.
+- Extract the existing period/application projection into a shared canonical
+  reader so add and correction rereads use one PostgreSQL mapping without
+  moving any business formula out of Memberships.
+- Add the anti-forgery-protected correction confirmation endpoint. It requires
+  explicit exact-scope acknowledgement, correction reason/comment, signed
+  token, canonical fingerprint shape and a fresh idempotency key, then invokes
+  only the existing command contract.
+- Validate command entity/audit/reread targets, query the committed canonical
+  outcome and require an exact affected-Membership match before rendering
+  success. htmx uses drop/busy duplicate-submit protection and pushes a
+  reloadable `periodId` plus `correctionAuditId` URL.
+- On missing acknowledgement, expired confirmation or changed scope, perform a
+  fresh server preview and issue new confirmation material. A stale-scope
+  command writes no source, application, audit or idempotency rows.
+- Render canonical original and replacement/cancellation facts, exact affected
+  Client/Membership rows, current effective end/extension state, timestamps,
+  correction reason/comment and audit reference. The canonical result appears
+  before the next correction form on tablet and phone.
+- Extend PostgreSQL coverage for all successful correction modes, canonical
+  outcome reread and named-Admin denial. Extend Playwright fixtures for isolated
+  replace-range, replace-reason, cancel and concurrent stale-scope scenarios,
+  including required acknowledgement, repeated tap and reload behavior.
+- Add no EF model, migration, report query or general audit/history screen.
+
+Validation:
+
+- Release build passed with 0 warnings/errors. `dotnet format BodyLife.Crm.sln
+  --verify-no-changes --verbosity minimal --no-restore` and
+  `git diff --check` passed.
+- Focused PostgreSQL add/query and correction/outcome regression coverage passed
+  20/20 against the local Docker PostgreSQL service.
+- Focused correction mutation Playwright coverage passed 4/4, and the complete
+  `NonWorkingDayPreviewSmokeTests` class passed 11/11.
+- Final 1024x768 replace-range, 1024x768 replace-reason, 390x844 cancellation
+  and stale-scope refresh screenshots were reviewed. They have no overlap or
+  horizontal overflow, and canonical success precedes the next correction
+  form.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 335 core tests, 35 web
+  tests, 451 PostgreSQL/architecture/security infrastructure tests, 54
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but its watcher could
+  not rebuild on this filesystem (`Errno 95: Operation not supported`). Its
+  generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(nonworking-days): add owner correction confirmation`.
+
+Next recommended step:
+
+- Add a bounded Milestone 8 mass-recalculation performance/transaction gate for
+  realistic NonWorkingDay affected-Membership counts and define the synchronous
+  failure behavior when recalculation cannot complete. The UI must never report
+  success unless every source/application, Membership state, audit and
+  idempotency write commits atomically.

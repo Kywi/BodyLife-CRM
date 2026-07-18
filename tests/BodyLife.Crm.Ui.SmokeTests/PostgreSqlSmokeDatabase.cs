@@ -1130,6 +1130,121 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             reader.GetInt64(4));
     }
 
+    public async Task<NonWorkingDayCorrectionMutationSmokeSnapshot>
+        ReadNonWorkingDayCorrectionMutationAsync(Guid originalPeriodId)
+    {
+        if (originalPeriodId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Original period id is required.",
+                nameof(originalPeriodId));
+        }
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            with correction as (
+                select
+                    audit.id,
+                    audit.action_type,
+                    audit.reason,
+                    audit.comment,
+                    nullif(
+                        audit.related_entity_refs ->> 'replacementPeriodId',
+                        '')::uuid as replacement_period_id,
+                    nullif(
+                        audit.related_entity_refs ->> 'cancellationId',
+                        '')::uuid as cancellation_id,
+                    (audit.after_summary ->> 'oldAffectedCount')::integer
+                        as old_affected_count,
+                    (audit.after_summary ->> 'newAffectedCount')::integer
+                        as new_affected_count,
+                    (audit.after_summary ->> 'affectedUnionCount')::integer
+                        as affected_union_count
+                from bodylife.business_audit_entries audit
+                where audit.entity_type = 'non_working_period'
+                  and audit.entity_id = @original_period_id
+                  and audit.action_type in (
+                      'non_working_day.corrected',
+                      'non_working_day.canceled')
+                order by audit.recorded_at desc, audit.id desc
+                limit 1
+            )
+            select
+                correction.id,
+                correction.action_type,
+                original.status,
+                correction.replacement_period_id,
+                replacement.status,
+                correction.cancellation_id,
+                (
+                    select count(*)
+                    from bodylife.non_working_period_applications application
+                    where application.non_working_period_id = original.id
+                ),
+                (
+                    select count(*)
+                    from bodylife.non_working_period_applications application
+                    where application.non_working_period_id
+                        = correction.replacement_period_id
+                ),
+                correction.reason,
+                correction.comment,
+                correction.old_affected_count,
+                correction.new_affected_count,
+                correction.affected_union_count,
+                (
+                    select count(*)
+                    from bodylife.command_idempotency_keys idempotency
+                    where idempotency.command_name = 'CorrectNonWorkingDay'
+                      and idempotency.audit_entry_id = correction.id
+                ),
+                coalesce((
+                    select bool_and(application.status = original.status)
+                    from bodylife.non_working_period_applications application
+                    where application.non_working_period_id = original.id
+                ), true),
+                coalesce((
+                    select bool_and(application.status = 'active')
+                    from bodylife.non_working_period_applications application
+                    where application.non_working_period_id
+                        = correction.replacement_period_id
+                ), true)
+            from correction
+            join bodylife.non_working_periods original
+              on original.id = @original_period_id
+            left join bodylife.non_working_periods replacement
+              on replacement.id = correction.replacement_period_id
+            """;
+        command.Parameters.AddWithValue("original_period_id", originalPeriodId);
+        await using var reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException(
+                "The canonical NonWorkingDay correction mutation was not found.");
+        }
+
+        return new NonWorkingDayCorrectionMutationSmokeSnapshot(
+            reader.GetGuid(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.IsDBNull(3) ? null : reader.GetGuid(3),
+            reader.IsDBNull(4) ? null : reader.GetString(4),
+            reader.IsDBNull(5) ? null : reader.GetGuid(5),
+            reader.GetInt64(6),
+            reader.GetInt64(7),
+            reader.GetString(8),
+            reader.GetString(9),
+            reader.GetInt32(10),
+            reader.GetInt32(11),
+            reader.GetInt32(12),
+            reader.GetInt64(13),
+            reader.GetBoolean(14),
+            reader.GetBoolean(15));
+    }
+
     public async Task MoveIssuedMembershipStartDateAsync(
         Guid membershipId,
         DateOnly startDate)
@@ -2456,6 +2571,24 @@ public sealed record NonWorkingDayMutationCountSmokeSnapshot(
     long CancellationCount,
     long AuditCount,
     long IdempotencyCount);
+
+public sealed record NonWorkingDayCorrectionMutationSmokeSnapshot(
+    Guid AuditEntryId,
+    string ActionType,
+    string OriginalStatus,
+    Guid? ReplacementPeriodId,
+    string? ReplacementStatus,
+    Guid? CancellationId,
+    long OriginalApplicationCount,
+    long ReplacementApplicationCount,
+    string CorrectionReason,
+    string CorrectionComment,
+    int OldAffectedCount,
+    int NewAffectedCount,
+    int AffectedUnionCount,
+    long IdempotencyCount,
+    bool OriginalApplicationsMatchStatus,
+    bool ReplacementApplicationsAreActive);
 
 public sealed record NonWorkingDayApplicationSmokeSeed(
     Guid ClientId,

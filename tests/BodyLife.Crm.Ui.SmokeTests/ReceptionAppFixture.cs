@@ -132,6 +132,34 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         private set;
     } = null!;
 
+    public NonWorkingDayCorrectionMutationSmokeScenario
+        NonWorkingDayTabletCorrectionMutationScenario
+    {
+        get;
+        private set;
+    } = null!;
+
+    public NonWorkingDayCorrectionMutationSmokeScenario
+        NonWorkingDayPhoneCorrectionMutationScenario
+    {
+        get;
+        private set;
+    } = null!;
+
+    public NonWorkingDayCorrectionMutationSmokeScenario
+        NonWorkingDayReasonCorrectionMutationScenario
+    {
+        get;
+        private set;
+    } = null!;
+
+    public NonWorkingDayCorrectionMutationSmokeScenario
+        NonWorkingDayStaleCorrectionMutationScenario
+    {
+        get;
+        private set;
+    } = null!;
+
     public Guid IssueMembershipTypeId { get; private set; }
 
     public Guid IssueTabletClientId { get; private set; }
@@ -476,6 +504,37 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             scenario.Period.EndDate);
     }
 
+    public NonWorkingDayCorrectionMutationSmokeScenario
+        GetNonWorkingDayCorrectionMutationScenario(string viewportName)
+    {
+        return viewportName switch
+        {
+            "tablet" => NonWorkingDayTabletCorrectionMutationScenario,
+            "phone" => NonWorkingDayPhoneCorrectionMutationScenario,
+            "reason" => NonWorkingDayReasonCorrectionMutationScenario,
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(viewportName),
+                viewportName,
+                "NonWorkingDay correction smoke viewport is not supported."),
+        };
+    }
+
+    public Task MoveNonWorkingDayCorrectionMembershipIntoScopeAsync(
+        NonWorkingDayCorrectionMutationSmokeScenario scenario)
+    {
+        ArgumentNullException.ThrowIfNull(scenario);
+        return RequireDatabase().MoveIssuedMembershipStartDateAsync(
+            scenario.ScopeEntrantMembershipId,
+            scenario.ReplacementPeriod.EndDate);
+    }
+
+    public Task<NonWorkingDayCorrectionMutationSmokeSnapshot>
+        ReadNonWorkingDayCorrectionMutationAsync(Guid originalPeriodId)
+    {
+        return RequireDatabase()
+            .ReadNonWorkingDayCorrectionMutationAsync(originalPeriodId);
+    }
+
     public Task<long> CountPaymentCorrectionsAsync(Guid originalPaymentId)
     {
         return RequireDatabase().CountPaymentCorrectionsAsync(originalPaymentId);
@@ -662,6 +721,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
         await SeedCorrectNonWorkingDayFixtureAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
+        await SeedCorrectNonWorkingDayMutationFixturesAsync(
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
@@ -1246,6 +1309,163 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             replacementOnlyMembershipId);
     }
 
+    private async Task SeedCorrectNonWorkingDayMutationFixturesAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        NonWorkingDayTabletCorrectionMutationScenario =
+            await SeedCorrectNonWorkingDayMutationScenarioAsync(
+                database,
+                ownerAccountId,
+                membershipTypeId,
+                "Tablet",
+                "TABLET",
+                2044,
+                phoneSuffix: 40);
+        NonWorkingDayPhoneCorrectionMutationScenario =
+            await SeedCorrectNonWorkingDayMutationScenarioAsync(
+                database,
+                ownerAccountId,
+                membershipTypeId,
+                "Phone",
+                "PHONE",
+                2045,
+                phoneSuffix: 50);
+        NonWorkingDayReasonCorrectionMutationScenario =
+            await SeedCorrectNonWorkingDayMutationScenarioAsync(
+                database,
+                ownerAccountId,
+                membershipTypeId,
+                "Reason",
+                "REASON",
+                2047,
+                phoneSuffix: 70);
+        NonWorkingDayStaleCorrectionMutationScenario =
+            await SeedCorrectNonWorkingDayMutationScenarioAsync(
+                database,
+                ownerAccountId,
+                membershipTypeId,
+                "Stale",
+                "STALE",
+                2046,
+                phoneSuffix: 60);
+    }
+
+    private static async Task<NonWorkingDayCorrectionMutationSmokeScenario>
+        SeedCorrectNonWorkingDayMutationScenarioAsync(
+            PostgreSqlSmokeDatabase database,
+            Guid ownerAccountId,
+            Guid membershipTypeId,
+            string label,
+            string slug,
+            int year,
+            int phoneSuffix)
+    {
+        var originalPeriod = new DateRange(
+            new DateOnly(year, 3, 10),
+            new DateOnly(year, 3, 12));
+        var replacementPeriod = new DateRange(
+            new DateOnly(year, 3, 20),
+            new DateOnly(year, 3, 22));
+
+        var sharedClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            $"Correction {label}",
+            "Shared",
+            $"+380 67 940 {phoneSuffix:00} 01",
+            $"NWC-{slug}-S");
+        var sharedMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            sharedClientId,
+            membershipTypeId,
+            $"NonWorkingDay {label} shared snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: new DateOnly(year, 3, 1),
+            durationDays: 40);
+
+        var originalOnlyClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            $"Correction {label}",
+            "Original",
+            $"+380 67 940 {phoneSuffix:00} 02",
+            $"NWC-{slug}-O");
+        var originalOnlyMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            originalOnlyClientId,
+            membershipTypeId,
+            $"NonWorkingDay {label} original-only snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: new DateOnly(year, 2, 20),
+            durationDays: 22);
+
+        var replacementOnlyClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            $"Correction {label}",
+            "Replacement",
+            $"+380 67 940 {phoneSuffix:00} 03",
+            $"NWC-{slug}-N");
+        var replacementOnlyMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            replacementOnlyClientId,
+            membershipTypeId,
+            $"NonWorkingDay {label} replacement-only snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: replacementPeriod.StartDate,
+            durationDays: 30);
+
+        var scopeEntrantClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            $"Correction {label}",
+            "Entrant",
+            $"+380 67 940 {phoneSuffix:00} 04",
+            $"NWC-{slug}-E");
+        var scopeEntrantMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            scopeEntrantClientId,
+            membershipTypeId,
+            $"NonWorkingDay {label} entrant snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: replacementPeriod.EndDate.AddDays(1),
+            durationDays: 20);
+
+        var originalReasonCode = $"planned_{slug.ToLowerInvariant()}_closure";
+        var originalReasonComment = $"Original {label} closure";
+        var periodId = await database.SeedNonWorkingDayCorrectionPeriodAsync(
+            ownerAccountId,
+            originalPeriod,
+            originalReasonCode,
+            originalReasonComment,
+            [
+                new NonWorkingDayApplicationSmokeSeed(
+                    sharedClientId,
+                    sharedMembershipId),
+                new NonWorkingDayApplicationSmokeSeed(
+                    originalOnlyClientId,
+                    originalOnlyMembershipId),
+            ]);
+
+        return new NonWorkingDayCorrectionMutationSmokeScenario(
+            label,
+            periodId,
+            originalPeriod,
+            replacementPeriod,
+            originalReasonCode,
+            originalReasonComment,
+            ReplacementReasonCode: $"corrected_{slug.ToLowerInvariant()}_closure",
+            ReplacementReasonComment: $"Corrected {label} closure",
+            CorrectionReason: $"Owner corrected the {label} closure",
+            CorrectionComment: $"Confirmed {label} old and new scope",
+            sharedClientId,
+            sharedMembershipId,
+            originalOnlyClientId,
+            originalOnlyMembershipId,
+            replacementOnlyClientId,
+            replacementOnlyMembershipId,
+            scopeEntrantClientId,
+            scopeEntrantMembershipId);
+    }
+
     private async Task SeedReceptionClientsAsync(
         PostgreSqlSmokeDatabase database,
         Guid ownerAccountId)
@@ -1433,4 +1653,36 @@ public sealed record NonWorkingDayCorrectionSmokeScenario(
 
     public string ReplacementOnlyClientDisplayName =>
         "Correction Replacement Only";
+}
+
+public sealed record NonWorkingDayCorrectionMutationSmokeScenario(
+    string Label,
+    Guid PeriodId,
+    DateRange OriginalPeriod,
+    DateRange ReplacementPeriod,
+    string OriginalReasonCode,
+    string OriginalReasonComment,
+    string ReplacementReasonCode,
+    string ReplacementReasonComment,
+    string CorrectionReason,
+    string CorrectionComment,
+    Guid SharedClientId,
+    Guid SharedMembershipId,
+    Guid OriginalOnlyClientId,
+    Guid OriginalOnlyMembershipId,
+    Guid ReplacementOnlyClientId,
+    Guid ReplacementOnlyMembershipId,
+    Guid ScopeEntrantClientId,
+    Guid ScopeEntrantMembershipId)
+{
+    public string SharedClientDisplayName => $"Correction {Label} Shared";
+
+    public string OriginalOnlyClientDisplayName =>
+        $"Correction {Label} Original";
+
+    public string ReplacementOnlyClientDisplayName =>
+        $"Correction {Label} Replacement";
+
+    public string ScopeEntrantClientDisplayName =>
+        $"Correction {Label} Entrant";
 }

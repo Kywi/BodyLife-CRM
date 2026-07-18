@@ -6,6 +6,14 @@
     var replaceRange = input.Mode == NonWorkingDayCorrectionMode.ReplaceRange;
     var replaceReason = input.Mode == NonWorkingDayCorrectionMode.ReplaceReason;
     var hasReplacementReason = replaceRange || replaceReason;
+    var previewRecalculatedCount = preview is null
+        ? 0
+        : preview.OriginalSource.Applications
+            .Select(item => item.MembershipId)
+            .Concat(preview.ConfirmedScope?.AffectedMemberships.Select(
+                item => item.MembershipId) ?? [])
+            .Distinct()
+            .Count();
 }
 
 <div id="non-working-day-correction-workspace"
@@ -24,7 +32,7 @@
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>Correction preview not created</strong>
+                <strong>@(Model.ErrorHeading ?? "Correction preview not created")</strong>
                 <ul>
                     @foreach (var message in Model.Errors
                         .Select(error => error.Message)
@@ -181,10 +189,11 @@
                                autocomplete="off" />
                     </div>
                     <div class="form-field">
-                        <label for="non-working-day-correction-comment">Correction comment (optional)</label>
+                        <label for="non-working-day-correction-comment">Correction comment</label>
                         <textarea id="non-working-day-correction-comment"
                                   name="form.CorrectionComment"
                                   rows="3"
+                                  required
                                   maxlength="@NonWorkingDayCorrectionWorkspaceViewModel.CorrectionCommentMaxLength">@input.CorrectionComment</textarea>
                     </div>
                 </div>
@@ -442,6 +451,301 @@
                     </p>
                 </div>
             }
+
+            <form id="non-working-day-correction-confirmation-form"
+                  class="non-working-day-confirmation-form non-working-day-correction-confirmation-form"
+                  method="post"
+                  asp-page="/Owner/NonWorkingDays"
+                  asp-page-handler="CorrectionConfirm"
+                  hx-post="@Url.Page("/Owner/NonWorkingDays", "CorrectionConfirm")"
+                  hx-target="#non-working-day-correction-workspace"
+                  hx-swap="outerHTML"
+                  hx-sync="this:drop"
+                  hx-indicator="#non-working-day-correction-confirmation-loading"
+                  hx-disabled-elt="find button"
+                  data-correction-confirmation-form
+                  data-correction-confirmation-mode="@ModeValue(preview.Mode)"
+                  data-busy-form>
+                <input type="hidden"
+                       name="form.PeriodId"
+                       value="@preview.PeriodId" />
+                <input type="hidden"
+                       name="form.Mode"
+                       value="@preview.Mode" />
+                @if (preview.Mode == NonWorkingDayCorrectionMode.ReplaceRange)
+                {
+                    <input type="hidden"
+                           name="form.ReplacementStartDate"
+                           value="@FormatDate(preview.ReplacementInput!.Period.StartDate)" />
+                    <input type="hidden"
+                           name="form.ReplacementEndDate"
+                           value="@FormatDate(preview.ReplacementInput.Period.EndDate)" />
+                }
+                @if (preview.Mode is NonWorkingDayCorrectionMode.ReplaceRange
+                    or NonWorkingDayCorrectionMode.ReplaceReason)
+                {
+                    <input type="hidden"
+                           name="form.ReplacementReasonCode"
+                           value="@preview.ReplacementInput!.ReasonCode" />
+                    <input type="hidden"
+                           name="form.ReplacementReasonComment"
+                           value="@preview.ReplacementInput.ReasonComment" />
+                }
+                <input type="hidden"
+                       name="form.CorrectionReason"
+                       value="@input.CorrectionReason" />
+                <input type="hidden"
+                       name="form.CorrectionComment"
+                       value="@input.CorrectionComment" />
+                <input type="hidden"
+                       name="form.ConfirmationToken"
+                       data-correction-command-token
+                       value="@preview.Confirmation.ConfirmationToken" />
+                <input type="hidden"
+                       name="form.ScopeFingerprint"
+                       data-correction-command-fingerprint
+                       value="@preview.Confirmation.ConfirmationFingerprint" />
+                <input type="hidden"
+                       name="form.IdempotencyKey"
+                       data-correction-command-idempotency-key
+                       value="@Model.IdempotencyKey" />
+
+                <div class="non-working-day-confirmation-review">
+                    <div>
+                        <p class="eyebrow">Final confirmation</p>
+                        <h3>@ConfirmationTitle(preview.Mode)</h3>
+                    </div>
+                    <p>
+                        The command will preserve the original source as history, commit the exact confirmed scope, recalculate @previewRecalculatedCount Memberships and append one Owner audit event atomically.
+                    </p>
+                </div>
+
+                <label class="acknowledgement-control non-working-day-confirmation-choice"
+                       for="non-working-day-correction-confirmed">
+                    <input id="non-working-day-correction-confirmed"
+                           type="checkbox"
+                           name="form.Confirmed"
+                           value="true"
+                           required />
+                    <span>@ConfirmationAcknowledgement(preview)</span>
+                </label>
+
+                <div class="action-form-footer non-working-day-confirmation-actions">
+                    <span id="non-working-day-correction-confirmation-loading"
+                          class="request-indicator htmx-indicator"
+                          role="status"
+                          aria-live="polite">@ConfirmationBusyLabel(preview.Mode)</span>
+                    <button type="submit"
+                            class="@(preview.Mode == NonWorkingDayCorrectionMode.Cancel ? "danger-button" : null)"
+                            data-confirm-non-working-day-correction-submit
+                            data-busy-text="Applying correction...">@ConfirmationButtonLabel(preview.Mode)</button>
+                </div>
+            </form>
+        </section>
+    }
+
+    @if (Model.ConfirmedCorrection is { } correction)
+    {
+        <section class="non-working-day-correction-confirmed-result"
+                 aria-labelledby="non-working-day-correction-confirmed-title"
+                 data-confirmed-non-working-day-correction
+                 data-confirmed-correction-mode="@ModeValue(correction.Mode)"
+                 data-confirmed-original-period-id="@correction.OriginalPeriod.PeriodId"
+                 data-confirmed-primary-entity-id="@correction.PrimaryEntityId"
+                 data-confirmed-correction-audit-id="@correction.AuditEntryId"
+                 data-confirmed-correction-original-count="@correction.OriginalAffectedCount"
+                 data-confirmed-correction-replacement-count="@correction.ReplacementAffectedCount"
+                 data-confirmed-correction-union-count="@correction.AffectedUnionCount">
+            <div class="operation-message operation-success" role="status">
+                <strong>@ConfirmedOutcomeTitle(correction.Mode)</strong>
+                <span>Source facts, exact application scope, Membership recalculation, idempotency and business audit committed together.</span>
+            </div>
+
+            <header class="non-working-day-impact-header">
+                <div>
+                    <p class="eyebrow">Canonical result</p>
+                    <h2 id="non-working-day-correction-confirmed-title">@ModeLabel(correction.Mode)</h2>
+                </div>
+                <span class="status-chip @StatusClass(correction.OriginalPeriod.Status)">
+                    @StatusLabel(correction.OriginalPeriod.Status)
+                </span>
+            </header>
+
+            <dl class="non-working-day-impact-summary">
+                <div>
+                    <dt>Original memberships</dt>
+                    <dd>@correction.OriginalAffectedCount</dd>
+                </div>
+                <div>
+                    <dt>Replacement memberships</dt>
+                    <dd>@correction.ReplacementAffectedCount</dd>
+                </div>
+                <div>
+                    <dt>Recalculated union</dt>
+                    <dd>@correction.AffectedUnionCount</dd>
+                </div>
+                <div>
+                    <dt>Audit reference</dt>
+                    <dd>@ShortReference(correction.AuditEntryId)</dd>
+                </div>
+            </dl>
+
+            <dl class="non-working-day-confirmed-reason">
+                <div>
+                    <dt>Correction reason</dt>
+                    <dd>@correction.CorrectionReason</dd>
+                </div>
+                <div>
+                    <dt>Correction comment</dt>
+                    <dd>@correction.CorrectionComment</dd>
+                </div>
+                <div>
+                    <dt>Occurred at</dt>
+                    <dd>@FormatTimestamp(correction.OccurredAt)</dd>
+                </div>
+                <div>
+                    <dt>Recorded at</dt>
+                    <dd>@FormatTimestamp(correction.RecordedAt)</dd>
+                </div>
+            </dl>
+
+            <section class="non-working-day-correction-source"
+                     aria-labelledby="non-working-day-confirmed-original-title">
+                <header class="non-working-day-correction-scope-header">
+                    <div>
+                        <p class="eyebrow">Original source retained</p>
+                        <h3 id="non-working-day-confirmed-original-title">
+                            @FormatRange(correction.OriginalPeriod.Period)
+                        </h3>
+                    </div>
+                    <span class="status-chip @StatusClass(correction.OriginalPeriod.Status)">
+                        @StatusLabel(correction.OriginalPeriod.Status)
+                    </span>
+                </header>
+                <ol class="non-working-day-impact-list"
+                    aria-label="Committed original scope">
+                    @foreach (var application in correction.OriginalPeriod.Applications)
+                    {
+                        <li class="non-working-day-impact-row"
+                            data-confirmed-correction-original-membership-id="@application.MembershipId"
+                            data-confirmed-correction-original-client-id="@application.ClientId"
+                            data-confirmed-correction-original-effective-end="@FormatDate(application.CurrentEffectiveEndDate)"
+                            data-confirmed-correction-original-extension-days="@application.CurrentExtensionDays">
+                            <header class="non-working-day-impact-row-header">
+                                <div>
+                                    <h3>
+                                        <a asp-page="/Reception/Index"
+                                           asp-route-clientId="@application.ClientId">@application.ClientDisplayName</a>
+                                    </h3>
+                                    <p class="non-working-day-impact-reference">
+                                        Membership @ShortReference(application.MembershipId)
+                                    </p>
+                                </div>
+                                <span class="status-chip @StatusClass(application.Status)">
+                                    @StatusLabel(application.Status)
+                                </span>
+                            </header>
+                            <dl class="non-working-day-impact-meta">
+                                <div>
+                                    <dt>Full applied range</dt>
+                                    <dd>@FormatRange(application.AppliedRange)</dd>
+                                </div>
+                                <div>
+                                    <dt>Current effective end</dt>
+                                    <dd>@FormatDate(application.CurrentEffectiveEndDate)</dd>
+                                </div>
+                                <div>
+                                    <dt>Current extension days</dt>
+                                    <dd>@application.CurrentExtensionDays</dd>
+                                </div>
+                                <div>
+                                    <dt>Recalculated at</dt>
+                                    <dd>@FormatTimestamp(application.RecalculatedAt)</dd>
+                                </div>
+                            </dl>
+                        </li>
+                    }
+                </ol>
+            </section>
+
+            @if (correction.ReplacementPeriod is { } replacement)
+            {
+                <section class="non-working-day-correction-replacement"
+                         aria-labelledby="non-working-day-confirmed-replacement-title">
+                    <header class="non-working-day-correction-scope-header">
+                        <div>
+                            <p class="eyebrow">Replacement source committed</p>
+                            <h3 id="non-working-day-confirmed-replacement-title">
+                                @FormatRange(replacement.Period)
+                            </h3>
+                        </div>
+                        <span class="status-chip status-active">Active</span>
+                    </header>
+                    <dl class="non-working-day-confirmed-reason">
+                        <div>
+                            <dt>Reason code</dt>
+                            <dd>@replacement.ReasonCode</dd>
+                        </div>
+                        <div>
+                            <dt>Reason comment</dt>
+                            <dd>@(replacement.ReasonComment ?? "None")</dd>
+                        </div>
+                    </dl>
+                    <ol class="non-working-day-impact-list"
+                        aria-label="Committed replacement scope">
+                        @foreach (var application in replacement.Applications)
+                        {
+                            <li class="non-working-day-impact-row"
+                                data-confirmed-correction-replacement-membership-id="@application.MembershipId"
+                                data-confirmed-correction-replacement-client-id="@application.ClientId"
+                                data-confirmed-correction-replacement-effective-end="@FormatDate(application.CurrentEffectiveEndDate)"
+                                data-confirmed-correction-replacement-extension-days="@application.CurrentExtensionDays">
+                                <header class="non-working-day-impact-row-header">
+                                    <div>
+                                        <h3>
+                                            <a asp-page="/Reception/Index"
+                                               asp-route-clientId="@application.ClientId">@application.ClientDisplayName</a>
+                                        </h3>
+                                        <p class="non-working-day-impact-reference">
+                                            Membership @ShortReference(application.MembershipId)
+                                        </p>
+                                    </div>
+                                    <span class="status-chip status-active">Active</span>
+                                </header>
+                                <dl class="non-working-day-impact-meta">
+                                    <div>
+                                        <dt>Full applied range</dt>
+                                        <dd>@FormatRange(application.AppliedRange)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Current effective end</dt>
+                                        <dd>@FormatDate(application.CurrentEffectiveEndDate)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Current extension days</dt>
+                                        <dd>@application.CurrentExtensionDays</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Recalculated at</dt>
+                                        <dd>@FormatTimestamp(application.RecalculatedAt)</dd>
+                                    </div>
+                                </dl>
+                            </li>
+                        }
+                    </ol>
+                </section>
+            }
+            else if (correction.Cancellation is { } cancellation)
+            {
+                <div class="non-working-day-correction-cancel-notice"
+                     role="note"
+                     data-confirmed-correction-cancellation-id="@cancellation.CancellationId">
+                    <strong>@correction.OriginalAffectedCount applications no longer contribute</strong>
+                    <p>
+                        Cancellation @ShortReference(cancellation.CancellationId) retained the original period and applications as canceled history. Every affected Membership above shows canonical state after recalculation.
+                    </p>
+                </div>
+            }
         </section>
     }
 </div>
@@ -494,6 +798,85 @@
             NonWorkingDayCorrectionMode.ReplaceReason => "Reason replacement preview",
             NonWorkingDayCorrectionMode.Cancel => "Cancellation preview",
             _ => "Unsupported correction preview",
+        };
+    }
+
+    private static string ConfirmationTitle(NonWorkingDayCorrectionMode mode)
+    {
+        return mode switch
+        {
+            NonWorkingDayCorrectionMode.ReplaceRange =>
+                "Apply this exact replacement scope",
+            NonWorkingDayCorrectionMode.ReplaceReason =>
+                "Replace reason for this exact scope",
+            NonWorkingDayCorrectionMode.Cancel =>
+                "Cancel this exact original scope",
+            _ => "Unsupported correction",
+        };
+    }
+
+    private static string ConfirmationAcknowledgement(
+        NonWorkingDayCorrectionPreview preview)
+    {
+        return preview.Mode switch
+        {
+            NonWorkingDayCorrectionMode.ReplaceRange =>
+                $"I confirm {preview.OriginalAffectedCount} original applications stop contributing and the exact new set of {preview.ConfirmedAffectedCount} Memberships receives the full {FormatRange(preview.ReplacementInput!.Period)} period.",
+            NonWorkingDayCorrectionMode.ReplaceReason =>
+                $"I confirm the exact {preview.ConfirmedAffectedCount} applications and full applied ranges stay unchanged while the reason is replaced.",
+            NonWorkingDayCorrectionMode.Cancel =>
+                $"I confirm all {preview.OriginalAffectedCount} original applications stop contributing and remain visible as canceled history.",
+            _ => "I confirm this correction.",
+        };
+    }
+
+    private static string ConfirmationButtonLabel(
+        NonWorkingDayCorrectionMode mode)
+    {
+        return mode switch
+        {
+            NonWorkingDayCorrectionMode.ReplaceRange => "Apply range correction",
+            NonWorkingDayCorrectionMode.ReplaceReason => "Apply reason correction",
+            NonWorkingDayCorrectionMode.Cancel => "Cancel non-working period",
+            _ => "Apply correction",
+        };
+    }
+
+    private static string ConfirmationBusyLabel(
+        NonWorkingDayCorrectionMode mode)
+    {
+        return mode == NonWorkingDayCorrectionMode.Cancel
+            ? "Canceling period and recalculating Memberships..."
+            : "Replacing period and recalculating Memberships...";
+    }
+
+    private static string ConfirmedOutcomeTitle(
+        NonWorkingDayCorrectionMode mode)
+    {
+        return mode == NonWorkingDayCorrectionMode.Cancel
+            ? "Non-working period canceled"
+            : "Non-working period corrected";
+    }
+
+    private static string StatusLabel(NonWorkingDayCorrectionSourceStatus status)
+    {
+        return status switch
+        {
+            NonWorkingDayCorrectionSourceStatus.Active => "Active",
+            NonWorkingDayCorrectionSourceStatus.Corrected => "Corrected",
+            NonWorkingDayCorrectionSourceStatus.Canceled => "Canceled",
+            _ => "Unsupported",
+        };
+    }
+
+    private static string StatusClass(NonWorkingDayCorrectionSourceStatus status)
+    {
+        return status switch
+        {
+            NonWorkingDayCorrectionSourceStatus.Active => "status-active",
+            NonWorkingDayCorrectionSourceStatus.Corrected => "status-corrected",
+            NonWorkingDayCorrectionSourceStatus.Canceled => "status-canceled",
+            _ => string.Empty,
         };
     }
 

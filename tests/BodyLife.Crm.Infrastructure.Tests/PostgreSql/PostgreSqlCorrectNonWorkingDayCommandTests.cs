@@ -1,5 +1,6 @@
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
@@ -157,6 +158,45 @@ public sealed class PostgreSqlCorrectNonWorkingDayCommandTests
             oldAffectedCount: 2,
             newAffectedCount: 3,
             affectedUnionCount: 3);
+
+        var outcome = await ReadCanonicalOutcomeAsync(
+            dbContext,
+            fixture,
+            result,
+            clock);
+        Assert.Equal(NonWorkingDayCorrectionMode.ReplaceRange, outcome.Mode);
+        Assert.Equal(fixture.PeriodId, outcome.OriginalPeriod.PeriodId);
+        Assert.Equal(
+            NonWorkingDayCorrectionSourceStatus.Corrected,
+            outcome.OriginalPeriod.Status);
+        Assert.Equal(replacementPeriodId, outcome.ReplacementPeriod?.PeriodId);
+        Assert.Equal(
+            NonWorkingDayCorrectionSourceStatus.Active,
+            outcome.ReplacementPeriod?.Status);
+        Assert.Null(outcome.Cancellation);
+        Assert.Equal(2, outcome.OriginalAffectedCount);
+        Assert.Equal(3, outcome.ReplacementAffectedCount);
+        Assert.Equal(3, outcome.AffectedUnionCount);
+        Assert.Equal(
+            [FirstMembershipId, SecondMembershipId, ThirdMembershipId],
+            outcome.AffectedMembershipIds);
+
+        var denied = await new GetNonWorkingDayCorrectionOutcomeQueryHandler(
+                dbContext,
+                clock)
+            .ExecuteAsync(
+                new GetNonWorkingDayCorrectionOutcomeQuery(
+                    fixture.Actor with
+                    {
+                        Role = ActorRole.Admin,
+                        AccountKind = AccountKind.NamedAdmin,
+                    },
+                    fixture.PeriodId,
+                    result.AuditEntryId!.Value.Value),
+                CancellationToken.None);
+        Assert.Equal(
+            GetNonWorkingDayCorrectionOutcomeStatus.PermissionDenied,
+            denied.Status);
     }
 
     [PostgreSqlFact]
@@ -250,6 +290,19 @@ public sealed class PostgreSqlCorrectNonWorkingDayCommandTests
             oldAffectedCount: 2,
             newAffectedCount: 2,
             affectedUnionCount: 2);
+
+        var outcome = await ReadCanonicalOutcomeAsync(
+            dbContext,
+            fixture,
+            result,
+            clock);
+        Assert.Equal(NonWorkingDayCorrectionMode.ReplaceReason, outcome.Mode);
+        Assert.Equal(replacementPeriodId, outcome.ReplacementPeriod?.PeriodId);
+        Assert.Equal(OriginalPeriod, outcome.ReplacementPeriod?.Period);
+        Assert.Equal("corrected_weather", outcome.ReplacementPeriod?.ReasonCode);
+        Assert.Equal(2, outcome.OriginalAffectedCount);
+        Assert.Equal(2, outcome.ReplacementAffectedCount);
+        Assert.Equal(2, outcome.AffectedUnionCount);
     }
 
     [PostgreSqlFact]
@@ -311,6 +364,21 @@ public sealed class PostgreSqlCorrectNonWorkingDayCommandTests
             oldAffectedCount: 2,
             newAffectedCount: 0,
             affectedUnionCount: 2);
+
+        var outcome = await ReadCanonicalOutcomeAsync(
+            dbContext,
+            fixture,
+            result,
+            clock);
+        Assert.Equal(NonWorkingDayCorrectionMode.Cancel, outcome.Mode);
+        Assert.Equal(
+            NonWorkingDayCorrectionSourceStatus.Canceled,
+            outcome.OriginalPeriod.Status);
+        Assert.Null(outcome.ReplacementPeriod);
+        Assert.Equal(cancellationId, outcome.Cancellation?.CancellationId);
+        Assert.Equal(2, outcome.OriginalAffectedCount);
+        Assert.Equal(0, outcome.ReplacementAffectedCount);
+        Assert.Equal(2, outcome.AffectedUnionCount);
     }
 
     [PostgreSqlFact]
@@ -537,6 +605,16 @@ public sealed class PostgreSqlCorrectNonWorkingDayCommandTests
         Assert.Equal(
             typeof(CorrectNonWorkingDayCommandHandler),
             descriptor.ImplementationType);
+
+        var queryDescriptor = Assert.Single(
+            services,
+            service => service.ServiceType == typeof(IBodyLifeQueryHandler<
+                GetNonWorkingDayCorrectionOutcomeQuery,
+                GetNonWorkingDayCorrectionOutcomeResult>));
+        Assert.Equal(ServiceLifetime.Scoped, queryDescriptor.Lifetime);
+        Assert.Equal(
+            typeof(GetNonWorkingDayCorrectionOutcomeQueryHandler),
+            queryDescriptor.ImplementationType);
     }
 
     private static CorrectNonWorkingDayCommandHandler CreateHandler(
@@ -1297,6 +1375,43 @@ public sealed class PostgreSqlCorrectNonWorkingDayCommandTests
     {
         return database.ExecuteScalarAsync<long>(
             $"select count(*) from bodylife.{tableName}");
+    }
+
+    private static async Task<NonWorkingDayCanonicalCorrection>
+        ReadCanonicalOutcomeAsync(
+            BodyLifeDbContext dbContext,
+            CorrectionFixture fixture,
+            CommandResult commandResult,
+            TimeProvider timeProvider)
+    {
+        dbContext.ChangeTracker.Clear();
+        var queryResult = await new GetNonWorkingDayCorrectionOutcomeQueryHandler(
+                dbContext,
+                timeProvider)
+            .ExecuteAsync(
+                new GetNonWorkingDayCorrectionOutcomeQuery(
+                    fixture.Actor,
+                    fixture.PeriodId,
+                    commandResult.AuditEntryId!.Value.Value),
+                CancellationToken.None);
+        Assert.Equal(
+            GetNonWorkingDayCorrectionOutcomeStatus.Success,
+            queryResult.Status);
+        Assert.NotNull(queryResult.Correction);
+        Assert.Equal(
+            commandResult.PrimaryEntityId!.Value.Value,
+            queryResult.Correction.PrimaryEntityId);
+        Assert.Equal(
+            commandResult.AuditEntryId.Value.Value,
+            queryResult.Correction.AuditEntryId);
+        Assert.Equal(
+            "Owner corrected the closure schedule",
+            queryResult.Correction.CorrectionReason);
+        Assert.Equal(
+            "Confirmed against the correction preview",
+            queryResult.Correction.CorrectionComment);
+        Assert.Equal(EntryOrigin.Normal, queryResult.Correction.EntryOrigin);
+        return queryResult.Correction;
     }
 
     private static void AssertSuccess(

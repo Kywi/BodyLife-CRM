@@ -2287,6 +2287,7 @@ textarea:focus-visible,
 .non-working-day-correction-input,
 .non-working-day-correction-preview-form,
 .non-working-day-correction-result,
+.non-working-day-correction-confirmed-result,
 .non-working-day-correction-source,
 .non-working-day-correction-replacement {
   display: grid;
@@ -2385,6 +2386,29 @@ textarea:focus-visible,
 .non-working-day-correction-result .operation-message span {
   color: var(--text);
   font-weight: 600;
+}
+
+.non-working-day-correction-confirmed-result {
+  order: -1;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 24px;
+}
+
+.non-working-day-correction-confirmed-result .operation-message {
+  display: grid;
+  gap: 3px;
+}
+
+.non-working-day-correction-confirmed-result .operation-message span {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.non-working-day-correction-confirmation-form[data-correction-confirmation-mode="cancel"]
+  .non-working-day-confirmation-choice {
+  border-left-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger-strong);
 }
 
 .non-working-day-correction-source,
