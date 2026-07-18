@@ -349,8 +349,11 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 1,
                 await history.Locator("[data-extension-source-status='corrected']").CountAsync());
 
+            var activeFreezeMetadata = history
+                .Locator("[data-extension-source-kind='freeze'][data-extension-source-status='active']")
+                .Locator(".membership-extension-meta");
             await ExpectVisibleAsync(
-                history.GetByText("Medical recovery", new() { Exact = true }),
+                activeFreezeMetadata.GetByText("Medical recovery", new() { Exact = true }),
                 viewportName,
                 "active Freeze reason");
             await ExpectVisibleAsync(

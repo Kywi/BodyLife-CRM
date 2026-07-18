@@ -34,6 +34,7 @@ public sealed class IndexModel(
     IBodyLifeCommandHandler<AssignOrChangeCardCommand> assignOrChangeCard,
     IBodyLifeCommandHandler<IssueMembershipCommand> issueMembership,
     IBodyLifeCommandHandler<AddFreezeCommand> addFreeze,
+    IBodyLifeCommandHandler<CancelFreezeCommand> cancelFreeze,
     IBodyLifeCommandHandler<MarkVisitCommand> markVisit,
     IBodyLifeCommandHandler<CreatePaymentCommand> createPayment,
     IBodyLifeCommandHandler<CorrectPaymentCommand> correctPayment,
@@ -470,6 +471,50 @@ public sealed class IndexModel(
             cancellationToken);
     }
 
+    public async Task<IActionResult> OnPostCancelFreezeAsync(
+        CancelFreezeFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(form);
+
+        if (!form.Confirmed)
+        {
+            return await RenderCancelFreezeErrorAsync(
+                form,
+                [
+                    new CommandError(
+                        CommandErrorCode.ValidationFailed,
+                        "Confirm that this Freeze should be canceled.",
+                        "confirmed"),
+                ],
+                forceCanonicalRefresh: false,
+                cancellationToken);
+        }
+
+        var command = new CancelFreezeCommand(
+            requestContextResolver.CreateCommandEnvelope(
+                occurredAt: timeProvider.GetUtcNow(),
+                idempotencyKey: form.IdempotencyKey,
+                reason: form.Reason,
+                comment: form.Comment),
+            form.FreezeId);
+        var result = await cancelFreeze.ExecuteAsync(command, cancellationToken);
+
+        if (result.Status == CommandStatus.Success)
+        {
+            return await RenderSuccessfulCancelFreezeAsync(
+                form,
+                result,
+                cancellationToken);
+        }
+
+        return await RenderCancelFreezeErrorAsync(
+            form,
+            result.Errors,
+            RequiresCanonicalCancelFreezeRefresh(result.Errors),
+            cancellationToken);
+    }
+
     public async Task<IActionResult> OnPostCreatePaymentAsync(
         AddPaymentFormInput form,
         CancellationToken cancellationToken)
@@ -831,6 +876,65 @@ public sealed class IndexModel(
         var message = result.AuditEntryId is { } auditEntryId
             ? $"Freeze added. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
             : "Freeze added.";
+
+        if (!IsHtmxRequest())
+        {
+            ClientOperationMessage = message;
+            ClientOperationTone = "success";
+            return RedirectToCanonicalPage(ClientId);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with
+            {
+                OperationMessage = message,
+                OperationSucceeded = true,
+            },
+        };
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
+    private async Task<IActionResult> RenderSuccessfulCancelFreezeAsync(
+        CancelFreezeFormInput form,
+        CommandResult result,
+        CancellationToken cancellationToken)
+    {
+        if (result.PrimaryEntityId is not { } cancellationId
+            || cancellationId.Type != CancelFreezeCommand.PrimaryEntityType
+            || cancellationId.Value == Guid.Empty
+            || result.RereadTargetId is not { } rereadTarget
+            || rereadTarget.Type != CancelFreezeCommand.CanonicalRereadEntityType
+            || rereadTarget.Value == Guid.Empty
+            || !result.RelatedEntityIds.Any(entityId =>
+                entityId.Type == CancelFreezeCommand.SourceFreezeEntityType
+                && entityId.Value == form.FreezeId))
+        {
+            throw new InvalidOperationException(
+                "CancelFreeze did not return the expected cancellation, source Freeze and canonical Client reread target.");
+        }
+
+        ApplySearchContext(form);
+        if (rereadTarget.Value != form.ClientId)
+        {
+            Query = null;
+            Mode = ClientSearchMode.Auto;
+            IncludeInactive = false;
+            PageCursor = null;
+        }
+
+        ClientId = rereadTarget.Value;
+        var outcome = result.ChangedAfterClose
+            ? "Freeze canceled after reconciled day"
+            : "Freeze canceled";
+        var message = result.AuditEntryId is { } auditEntryId
+            ? $"{outcome}. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
+            : $"{outcome}.";
 
         if (!IsHtmxRequest())
         {
@@ -1342,6 +1446,80 @@ public sealed class IndexModel(
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
+    private async Task<IActionResult> RenderCancelFreezeErrorAsync(
+        CancelFreezeFormInput form,
+        IReadOnlyList<CommandError> errors,
+        bool forceCanonicalRefresh,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+
+        if (IsHtmxRequest() && !forceCanonicalRefresh)
+        {
+            var errorForm = await BuildCancelFreezeErrorFormAsync(
+                form,
+                errors,
+                cancellationToken);
+            if (errorForm is not null)
+            {
+                return Partial("_CancelFreezeForm", errorForm);
+            }
+
+            forceCanonicalRefresh = true;
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        var currentForm = Workspace.Profile.CancelFreezeForms
+            .SingleOrDefault(candidate => candidate.Input.FreezeId == form.FreezeId);
+        if (currentForm is not null)
+        {
+            var errorForm = forceCanonicalRefresh
+                ? CancelFreezeFormViewModel.FromCanonicalRefresh(form, currentForm, errors)
+                : CancelFreezeFormViewModel.FromSubmission(
+                    form,
+                    currentForm.Membership,
+                    currentForm.Freeze,
+                    errors);
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with
+                {
+                    CancelFreezeForms = Workspace.Profile.CancelFreezeForms
+                        .Select(candidate => candidate.Input.FreezeId == form.FreezeId
+                            ? errorForm
+                            : candidate)
+                        .ToArray(),
+                },
+            };
+        }
+        else
+        {
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with
+                {
+                    OperationMessage = errors
+                        .Select(CancelFreezeFormViewModel.DisplayError)
+                        .FirstOrDefault()
+                        ?? "Freeze cancellation could not be completed.",
+                    OperationSucceeded = false,
+                },
+            };
+        }
+
+        if (!IsHtmxRequest())
+        {
+            return Page();
+        }
+
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
     private async Task<IActionResult> RenderCorrectPaymentErrorAsync(
         CorrectPaymentFormInput form,
         IReadOnlyList<CommandError> errors,
@@ -1663,6 +1841,58 @@ public sealed class IndexModel(
             or CommandErrorCode.RecalculationFailed
             or CommandErrorCode.ConcurrencyConflict
             or CommandErrorCode.StaleState);
+    }
+
+    private async Task<CancelFreezeFormViewModel?> BuildCancelFreezeErrorFormAsync(
+        CancelFreezeFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        var actor = requestContextResolver.Require().Actor;
+        var result = await getClientProfile.ExecuteAsync(
+            new GetClientProfileQuery(
+                actor,
+                form.ClientId,
+                IncludeHistory: true),
+            cancellationToken);
+
+        if (result is not
+            {
+                Status: GetClientProfileStatus.Success,
+                Profile: { } profile,
+            }
+            || !profile.AllowedActions.IsAllowed(FreezeActionKeys.Cancel))
+        {
+            return null;
+        }
+
+        var candidate = profile.Membership.Timeline
+            .SelectMany(membership => membership.ExtensionExplanations
+                .Where(explanation =>
+                    explanation.SourceKind == MembershipExtensionSourceKind.Freeze
+                    && explanation.Status == MembershipExtensionSourceStatus.Active
+                    && explanation.SourceId == form.FreezeId)
+                .Select(explanation => new
+                {
+                    Membership = membership,
+                    Freeze = explanation,
+                }))
+            .SingleOrDefault();
+
+        return candidate is null
+            ? null
+            : CancelFreezeFormViewModel.FromSubmission(
+                form,
+                candidate.Membership,
+                candidate.Freeze,
+                errors);
+    }
+
+    private static bool RequiresCanonicalCancelFreezeRefresh(
+        IReadOnlyList<CommandError> errors)
+    {
+        return errors.Any(error => error.Code is not
+            (CommandErrorCode.ValidationFailed or CommandErrorCode.ReasonRequired));
     }
 
     private async Task<AddPaymentFormViewModel?> BuildAddPaymentErrorFormAsync(
@@ -2141,6 +2371,7 @@ public sealed class IndexModel(
         IssueMembershipFormViewModel? issueMembershipForm = null;
         AddPaymentFormViewModel? addPaymentForm = null;
         AddFreezeFormViewModel? addFreezeForm = null;
+        IReadOnlyList<CancelFreezeFormViewModel> cancelFreezeForms = [];
         IReadOnlyList<CancelVisitFormViewModel> cancelVisitForms = [];
         IReadOnlyList<CorrectPaymentFormViewModel> correctPaymentForms = [];
 
@@ -2187,6 +2418,20 @@ public sealed class IndexModel(
                     addFreezeForm = candidate;
                 }
             }
+            if (profile.AllowedActions.IsAllowed(FreezeActionKeys.Cancel))
+            {
+                cancelFreezeForms = profile.Membership.Timeline
+                    .SelectMany(membership => membership.ExtensionExplanations
+                        .Where(explanation =>
+                            explanation.SourceKind == MembershipExtensionSourceKind.Freeze
+                            && explanation.Status == MembershipExtensionSourceStatus.Active)
+                        .Select(explanation => CancelFreezeFormViewModel.FromFreeze(
+                            profile.ClientId,
+                            membership,
+                            explanation,
+                            searchContext)))
+                    .ToArray();
+            }
             cancelVisitForms = profile.RecentVisits?.Items
                 .Where(visit => visit.Status == ClientVisitRowStatus.Active
                     && visit.AllowedActions.IsAllowed(VisitActionKeys.Cancel))
@@ -2212,6 +2457,7 @@ public sealed class IndexModel(
             issueMembershipForm: issueMembershipForm,
             addPaymentForm: addPaymentForm,
             addFreezeForm: addFreezeForm,
+            cancelFreezeForms: cancelFreezeForms,
             cancelVisitForms: cancelVisitForms,
             correctPaymentForms: correctPaymentForms);
     }
@@ -2282,6 +2528,14 @@ public sealed class IndexModel(
     }
 
     private void ApplySearchContext(AddFreezeFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
+    }
+
+    private void ApplySearchContext(CancelFreezeFormInput form)
     {
         Query = form.SearchQuery;
         Mode = form.SearchMode;

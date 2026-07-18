@@ -37,6 +37,9 @@ public sealed class GetClientProfileQueryHandler(
         QueryPermissionResult.Allowed(
             FreezeActionKeys.Add,
             FreezeActionKeys.AdminOrOwnerPolicy),
+        QueryPermissionResult.Allowed(
+            FreezeActionKeys.Cancel,
+            FreezeActionKeys.AdminOrOwnerPolicy),
     ]);
 
     public async Task<GetClientProfileResult> ExecuteAsync(

@@ -7680,3 +7680,97 @@ Next recommended step:
   required reason/optional comment, idempotency and busy state, canonical
   profile reread and tablet/phone Playwright coverage. Keep Owner NonWorkingDay
   management UI for later bounded steps.
+
+## Step 136 - Reception CancelFreeze workflow
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Complete the roadmap's reception `UI for add/cancel freeze` task by adding
+  only the CancelFreeze half around the existing command. The command remains
+  the sole owner of authorization, idempotency, source cancellation,
+  recalculation, business audit and changed-after-close evaluation.
+- Keep cancellation source-specific and explainable: only active Freeze
+  explanation rows expose the action, while the original source remains in the
+  canonical Membership timeline after cancellation.
+- Preserve Memberships ownership by rereading the full canonical reception
+  workspace after success or state-dependent failure. Razor does not calculate
+  extension days or the resulting effective end.
+- Keep Owner NonWorkingDay preview/add/correct management UI outside this
+  bounded step.
+
+Scope:
+
+- Add the public `freezes.cancel` action key and project its Admin/Owner
+  permission through `GetClientProfile`, with focused PostgreSQL permission
+  coverage.
+- Add a cancellation form inside each active Freeze explanation row. It shows
+  the canonical Membership, inclusive Freeze range and original reason, and
+  requires a cancellation reason plus explicit destructive confirmation;
+  comment remains optional.
+- Add the Razor Page POST adapter around the existing `CancelFreezeCommand`.
+  Normal `occurred_at` is server-set, every rendered form receives a fresh
+  idempotency key, and stable permission, validation, not-found, already
+  canceled, recalculation and concurrency outcomes are mapped without moving
+  business rules into the page.
+- Use htmx `this:drop`, disabled/busy submit state and anti-forgery protection.
+  Successful submission replaces the complete workspace with canonical state;
+  local confirmation/reason errors remain beside the submitted form.
+- Add isolated tablet/phone PostgreSQL fixtures and a Playwright theory that
+  proves confirmation-bypass rollback, unchanged source/audit/idempotency
+  counts after rejection, one committed cancellation under a repeated busy tap,
+  exact cancellation reason/comment in source and audit records, source-history
+  preservation, two-day effective-end reversal, touch target size and
+  horizontal viewport fit.
+- Visually review form/error and canonical success screenshots at 1024x768 and
+  390x844. Existing AddFreeze and extension-history smoke locators were scoped
+  to canonical metadata so the intentionally repeated cancellation context does
+  not make them ambiguous.
+- Add no CancelFreeze backend behavior, EF model, migration, report query,
+  Owner NonWorkingDay UI or general audit/history screen.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- Focused `GetClientProfile` PostgreSQL coverage passed 15/15.
+- The first focused CancelFreeze Playwright invocation used an isolated `HOME`
+  without the installed Chromium cache and stopped before app startup. Reusing
+  the normal browser cache reached the workflow; one ambiguous reason locator
+  was then scoped to canonical metadata, and final tablet/phone cancellation
+  coverage passed 2/2.
+- The first full gate found four older Playwright reason locators made ambiguous
+  by the new source context. After scoping those, the repeat found only two
+  AddFreeze inclusive-range locators with the same issue. Stable canonical data
+  attributes fixed the assertions, and focused AddFreeze regression passed 2/2
+  on the configured Docker PostgreSQL endpoint.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 335 core tests, 35 web
+  tests, 449 PostgreSQL/architecture/security infrastructure tests, 43
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local watcher
+  stopped with `Errno 1: Operation not permitted`; its partial cache-index
+  change was restored to `HEAD`, so no generated code graph update is claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(reception): add freeze cancellation workflow`.
+
+Next recommended step:
+
+- Start the Owner NonWorkingDay UI with only a Razor/htmx
+  `PreviewNonWorkingDayImpact` workflow: inclusive range and reason input,
+  affected Membership count/list, full applied-range disclosure, overlap
+  warnings and expiring confirmation token, with tablet/phone Playwright
+  coverage. Keep `AddNonWorkingDay` confirmation and
+  `CorrectNonWorkingDay` replace/cancel UI for separate bounded steps.

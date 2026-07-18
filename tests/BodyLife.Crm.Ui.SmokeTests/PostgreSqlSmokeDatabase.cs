@@ -774,6 +774,89 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         await RebuildMembershipAsync(membershipId);
     }
 
+    public async Task<Guid> SeedCancelableFreezeAsync(
+        Guid recordedByAccountId,
+        Guid clientId,
+        Guid membershipId,
+        string reason)
+    {
+        var freezeId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var recordedAt = TimeProvider.System.GetUtcNow();
+        var startDate = DateOnly.FromDateTime(recordedAt.UtcDateTime).AddDays(1);
+        var endDate = startDate.AddDays(1);
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id,
+                account_id,
+                device_label,
+                started_at,
+                expires_at,
+                ended_at,
+                last_seen_at)
+            values (
+                @session_id,
+                @account_id,
+                'UI cancel Freeze seed',
+                @session_started_at,
+                @session_expires_at,
+                null,
+                @session_started_at);
+
+            insert into bodylife.freezes (
+                id,
+                client_id,
+                membership_id,
+                start_date,
+                end_date,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id,
+                status)
+            values (
+                @freeze_id,
+                @client_id,
+                @membership_id,
+                @start_date,
+                @end_date,
+                @reason,
+                @recorded_at,
+                @recorded_at,
+                @account_id,
+                @session_id,
+                'normal',
+                null,
+                'active')
+            """;
+        command.Parameters.AddWithValue("session_id", sessionId);
+        command.Parameters.AddWithValue("account_id", recordedByAccountId);
+        command.Parameters.AddWithValue("session_started_at", recordedAt.AddMinutes(-1));
+        command.Parameters.AddWithValue("session_expires_at", recordedAt.AddDays(1));
+        command.Parameters.AddWithValue("freeze_id", freezeId);
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, startDate);
+        command.Parameters.AddWithValue("end_date", NpgsqlDbType.Date, endDate);
+        command.Parameters.AddWithValue("reason", reason);
+        command.Parameters.AddWithValue("recorded_at", recordedAt);
+
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
+        await transaction.CommitAsync();
+        await RebuildMembershipAsync(membershipId);
+        return freezeId;
+    }
+
     public async Task SeedPaymentHistoryAsync(
         Guid recordedByAccountId,
         Guid clientId,
@@ -1260,6 +1343,110 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
               and reread_target_id = @client_id
             """,
             clientId);
+    }
+
+    public Task<long> CountFreezeCancellationsAsync(Guid freezeId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.freeze_cancellations
+            where freeze_id = @freeze_id
+            """,
+            "freeze_id",
+            freezeId);
+    }
+
+    public Task<long> CountCancelFreezeAuditEntriesAsync(Guid freezeId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.business_audit_entries
+            where action_type = 'freeze.canceled'
+              and entity_id = @freeze_id
+            """,
+            "freeze_id",
+            freezeId);
+    }
+
+    public Task<long> CountCancelFreezeIdempotencyKeysAsync(Guid clientId)
+    {
+        return CountRowsAsync(
+            """
+            select count(*)
+            from bodylife.command_idempotency_keys
+            where command_name = 'CancelFreeze'
+              and reread_target_id = @client_id
+            """,
+            clientId);
+    }
+
+    public async Task<string> ReadFreezeStatusAsync(Guid freezeId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select status
+            from bodylife.freezes
+            where id = @freeze_id
+            """;
+        command.Parameters.AddWithValue("freeze_id", freezeId);
+
+        return (string)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("The smoke Freeze was not found."));
+    }
+
+    public async Task<string> ReadFreezeCancellationReasonAsync(Guid freezeId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select reason
+            from bodylife.freeze_cancellations
+            where freeze_id = @freeze_id
+            order by recorded_at desc, id desc
+            limit 1
+            """;
+        command.Parameters.AddWithValue("freeze_id", freezeId);
+
+        return (string)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException(
+                "The smoke Freeze cancellation was not found."));
+    }
+
+    public async Task<FreezeCancellationAuditSmokeSnapshot>
+        ReadCancelFreezeAuditAsync(Guid freezeId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select reason, comment, changed_after_close
+            from bodylife.business_audit_entries
+            where action_type = 'freeze.canceled'
+              and entity_id = @freeze_id
+            order by recorded_at desc, id desc
+            limit 1
+            """;
+        command.Parameters.AddWithValue("freeze_id", freezeId);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException(
+                "The smoke Freeze cancellation audit entry was not found.");
+        }
+
+        return new FreezeCancellationAuditSmokeSnapshot(
+            reader.GetString(0),
+            reader.IsDBNull(1) ? null : reader.GetString(1),
+            reader.GetBoolean(2));
     }
 
     public async Task<FreezeSmokeSnapshot> ReadLatestActiveFreezeAsync(Guid clientId)
@@ -1957,3 +2144,8 @@ public sealed record FreezeSmokeSnapshot(
     DateOnly EndDate,
     string Reason,
     string Status);
+
+public sealed record FreezeCancellationAuditSmokeSnapshot(
+    string Reason,
+    string? Comment,
+    bool ChangedAfterClose);

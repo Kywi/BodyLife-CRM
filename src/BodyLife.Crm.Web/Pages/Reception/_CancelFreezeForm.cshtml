@@ -1,0 +1,109 @@
+@model CancelFreezeFormViewModel
+@{
+    var input = Model.Input;
+    var membership = Model.Membership;
+    var freeze = Model.Freeze;
+    var freezeKey = freeze.SourceId.ToString("N");
+}
+
+<details id="cancel-freeze-panel-@freezeKey"
+         class="freeze-correction-panel"
+         data-cancel-freeze-panel
+         open="@(Model.IsOpen ? "open" : null)">
+    <summary>Cancel freeze</summary>
+    <div class="freeze-correction-content">
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="command-error-summary" role="alert">
+                <strong>Freeze not canceled</strong>
+                <ul>
+                    @foreach (var message in Model.Errors
+                        .Select(CancelFreezeFormViewModel.DisplayError)
+                        .Distinct(StringComparer.Ordinal))
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <dl class="freeze-correction-context">
+            <div>
+                <dt>Membership</dt>
+                <dd>@membership.TypeNameSnapshot</dd>
+            </div>
+            <div>
+                <dt>Inclusive range</dt>
+                <dd>@freeze.Range.StartDate.ToString("yyyy-MM-dd") to @freeze.Range.EndDate.ToString("yyyy-MM-dd")</dd>
+            </div>
+            <div>
+                <dt>Original reason</dt>
+                <dd>@freeze.ReasonLabel</dd>
+            </div>
+        </dl>
+
+        <div class="warning-block warning-danger">
+            <strong>Correction keeps history</strong>
+            <span>The Freeze remains visible as canceled and Membership extension state is recalculated.</span>
+        </div>
+
+        <form id="cancel-freeze-form-@freezeKey"
+              class="cancel-freeze-form"
+              method="post"
+              asp-page="/Reception/Index"
+              asp-page-handler="CancelFreeze"
+              data-busy-form
+              data-cancel-freeze-form
+              hx-post="@Url.Page("/Reception/Index", "CancelFreeze")"
+              hx-target="#cancel-freeze-panel-@freezeKey"
+              hx-swap="outerHTML"
+              hx-sync="this:drop"
+              hx-indicator="#cancel-freeze-loading-@freezeKey"
+              hx-disabled-elt="find button">
+            <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+            <input type="hidden" name="form.FreezeId" value="@input.FreezeId" />
+            <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+            <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+            <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+            <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+            <div class="form-field">
+                <label for="cancel-freeze-reason-@freezeKey">Cancellation reason</label>
+                <textarea id="cancel-freeze-reason-@freezeKey"
+                          name="form.Reason"
+                          maxlength="@CancelFreezeFormViewModel.ReasonMaxLength"
+                          required>@input.Reason</textarea>
+            </div>
+
+            <div class="form-field">
+                <label for="cancel-freeze-comment-@freezeKey">Cancellation comment (optional)</label>
+                <textarea id="cancel-freeze-comment-@freezeKey"
+                          name="form.Comment"
+                          maxlength="@CancelFreezeFormViewModel.CommentMaxLength">@input.Comment</textarea>
+            </div>
+
+            <label class="acknowledgement-control cancel-freeze-confirmation"
+                   for="cancel-freeze-confirmed-@freezeKey">
+                <input id="cancel-freeze-confirmed-@freezeKey"
+                       type="checkbox"
+                       name="form.Confirmed"
+                       value="true"
+                       checked="@(input.Confirmed ? "checked" : null)"
+                       required />
+                <span>I confirm this Freeze was added by mistake and should be canceled.</span>
+            </label>
+
+            <div class="action-form-footer">
+                <span id="cancel-freeze-loading-@freezeKey"
+                      class="request-indicator htmx-indicator"
+                      role="status"
+                      aria-live="polite">Canceling freeze...</span>
+                <button class="danger-button"
+                        type="submit"
+                        data-cancel-freeze-submit
+                        data-busy-text="Canceling...">Cancel freeze</button>
+            </div>
+        </form>
+    </div>
+</details>

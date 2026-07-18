@@ -4,6 +4,8 @@
     var profile = result?.Profile;
     var correctPaymentFormsByPaymentId = Model.CorrectPaymentForms.ToDictionary(
         form => form.Input.OriginalPaymentId);
+    var cancelFreezeFormsByFreezeId = Model.CancelFreezeForms.ToDictionary(
+        form => form.Input.FreezeId);
 }
 
 <section id="client-profile" class="client-profile-region" aria-label="Client profile" aria-live="polite">
@@ -187,6 +189,13 @@
                                                 <dd>@explanation.ReasonLabel</dd>
                                             </div>
                                         </dl>
+
+                                        @if (cancelFreezeFormsByFreezeId.TryGetValue(
+                                            explanation.SourceId,
+                                            out var cancelFreezeForm))
+                                        {
+                                            <partial name="_CancelFreezeForm" model="cancelFreezeForm" />
+                                        }
                                     </li>
                                 }
                             </ol>

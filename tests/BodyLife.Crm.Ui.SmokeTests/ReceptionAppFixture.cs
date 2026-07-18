@@ -88,6 +88,18 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid FreezePhoneMembershipId { get; private set; }
 
+    public Guid CancelFreezeTabletClientId { get; private set; }
+
+    public Guid CancelFreezeTabletMembershipId { get; private set; }
+
+    public Guid CancelFreezeTabletFreezeId { get; private set; }
+
+    public Guid CancelFreezePhoneClientId { get; private set; }
+
+    public Guid CancelFreezePhoneMembershipId { get; private set; }
+
+    public Guid CancelFreezePhoneFreezeId { get; private set; }
+
     public Guid IssueMembershipTypeId { get; private set; }
 
     public Guid IssueTabletClientId { get; private set; }
@@ -372,6 +384,37 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadLatestActiveFreezeAsync(clientId);
     }
 
+    public Task<long> CountFreezeCancellationsAsync(Guid freezeId)
+    {
+        return RequireDatabase().CountFreezeCancellationsAsync(freezeId);
+    }
+
+    public Task<long> CountCancelFreezeAuditEntriesAsync(Guid freezeId)
+    {
+        return RequireDatabase().CountCancelFreezeAuditEntriesAsync(freezeId);
+    }
+
+    public Task<long> CountCancelFreezeIdempotencyKeysAsync(Guid clientId)
+    {
+        return RequireDatabase().CountCancelFreezeIdempotencyKeysAsync(clientId);
+    }
+
+    public Task<string> ReadFreezeStatusAsync(Guid freezeId)
+    {
+        return RequireDatabase().ReadFreezeStatusAsync(freezeId);
+    }
+
+    public Task<string> ReadFreezeCancellationReasonAsync(Guid freezeId)
+    {
+        return RequireDatabase().ReadFreezeCancellationReasonAsync(freezeId);
+    }
+
+    public Task<FreezeCancellationAuditSmokeSnapshot> ReadCancelFreezeAuditAsync(
+        Guid freezeId)
+    {
+        return RequireDatabase().ReadCancelFreezeAuditAsync(freezeId);
+    }
+
     public Task<long> CountPaymentCorrectionsAsync(Guid originalPaymentId)
     {
         return RequireDatabase().CountPaymentCorrectionsAsync(originalPaymentId);
@@ -539,6 +582,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
         await SeedAddFreezeFixturesAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
+        await SeedCancelFreezeFixturesAsync(
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
@@ -806,6 +853,48 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             membershipTypeId,
             "Freeze phone snapshot",
             visitsLimitSnapshot: 8);
+    }
+
+    private async Task SeedCancelFreezeFixturesAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        CancelFreezeTabletClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Cancel",
+            "Freeze Tablet",
+            "+380 67 700 04 01",
+            "BL-CANCEL-FREEZE-TABLET");
+        CancelFreezeTabletMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            CancelFreezeTabletClientId,
+            membershipTypeId,
+            "Cancelable tablet snapshot",
+            visitsLimitSnapshot: 8);
+        CancelFreezeTabletFreezeId = await database.SeedCancelableFreezeAsync(
+            ownerAccountId,
+            CancelFreezeTabletClientId,
+            CancelFreezeTabletMembershipId,
+            "Tablet schedule changed");
+
+        CancelFreezePhoneClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Cancel",
+            "Freeze Phone",
+            "+380 67 700 04 02",
+            "BL-CANCEL-FREEZE-PHONE");
+        CancelFreezePhoneMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            CancelFreezePhoneClientId,
+            membershipTypeId,
+            "Cancelable phone snapshot",
+            visitsLimitSnapshot: 8);
+        CancelFreezePhoneFreezeId = await database.SeedCancelableFreezeAsync(
+            ownerAccountId,
+            CancelFreezePhoneClientId,
+            CancelFreezePhoneMembershipId,
+            "Phone schedule changed");
     }
 
     private async Task SeedIssueMembershipFixturesAsync(

@@ -2,13 +2,16 @@ using Microsoft.Playwright;
 
 namespace BodyLife.Crm.Ui.SmokeTests;
 
-public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IAsyncLifetime
+public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IAsyncLifetime
 {
+    private const string CancellationConfirmation =
+        "I confirm this Freeze was added by mistake and should be canceled.";
+
     private readonly ReceptionAppFixture _app;
     private IPlaywright? _playwright;
     private IBrowser? _browser;
 
-    public AddFreezeSmokeTests(ReceptionAppFixture app)
+    public CancelFreezeSmokeTests(ReceptionAppFixture app)
     {
         _app = app;
     }
@@ -33,29 +36,49 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
     }
 
     [Theory]
-    [InlineData("tablet", 1024, 768, "BL-FREEZE-TABLET", "Freeze Tablet")]
-    [InlineData("phone", 390, 844, "BL-FREEZE-PHONE", "Freeze Phone")]
-    public async Task OwnerAddsOneCanonicalFreezeOnTargetViewport(
+    [InlineData(
+        "tablet",
+        1024,
+        768,
+        "BL-CANCEL-FREEZE-TABLET",
+        "Cancel Freeze Tablet",
+        "Cancelable tablet snapshot",
+        "Tablet schedule changed")]
+    [InlineData(
+        "phone",
+        390,
+        844,
+        "BL-CANCEL-FREEZE-PHONE",
+        "Cancel Freeze Phone",
+        "Cancelable phone snapshot",
+        "Phone schedule changed")]
+    public async Task OwnerCancelsOneCanonicalFreezeOnTargetViewport(
         string viewportName,
         int width,
         int height,
         string cardNumber,
-        string clientDisplayName)
+        string clientDisplayName,
+        string membershipName,
+        string originalReason)
     {
         var clientId = viewportName == "tablet"
-            ? _app.FreezeTabletClientId
-            : _app.FreezePhoneClientId;
+            ? _app.CancelFreezeTabletClientId
+            : _app.CancelFreezePhoneClientId;
         var membershipId = viewportName == "tablet"
-            ? _app.FreezeTabletMembershipId
-            : _app.FreezePhoneMembershipId;
+            ? _app.CancelFreezeTabletMembershipId
+            : _app.CancelFreezePhoneMembershipId;
+        var freezeId = viewportName == "tablet"
+            ? _app.CancelFreezeTabletFreezeId
+            : _app.CancelFreezePhoneFreezeId;
         var membershipStateBefore = await _app.ReadMembershipStateAsync(membershipId);
+        var freezeBefore = await _app.ReadLatestActiveFreezeAsync(clientId);
         var context = await CreateContextAsync(width, height);
 
         try
         {
             var page = await OpenReceptionAsync(
                 context,
-                $"{viewportName} add freeze");
+                $"{viewportName} cancel freeze");
             await SubmitHtmxSearchAsync(page, cardNumber);
 
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
@@ -64,9 +87,18 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                     AriaRole.Heading,
                     new() { Name = clientDisplayName, Exact = true }),
                 viewportName,
-                "Freeze client profile");
-            var panel = profile.Locator("#add-freeze-action-panel");
-            await OpenAddFreezePanelAsync(panel, viewportName);
+                "cancel Freeze client profile");
+            var freezeRow = profile.Locator(
+                $"[data-extension-source-id='{freezeId}'][data-extension-source-status='active']");
+            await ExpectVisibleAsync(freezeRow, viewportName, "active Freeze history row");
+            await ExpectVisibleAsync(
+                freezeRow.Locator(".membership-extension-meta").First.GetByText(
+                    originalReason,
+                    new() { Exact = true }),
+                viewportName,
+                "original Freeze reason");
+
+            var panel = await OpenCancelFreezePanelAsync(freezeRow, viewportName);
             var form = panel.Locator("form");
             Assert.Equal(
                 1,
@@ -74,126 +106,114 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             Assert.Equal("this:drop", await form.GetAttributeAsync("hx-sync"));
             Assert.NotNull(await form.GetAttributeAsync("data-busy-form"));
             await ExpectVisibleAsync(
-                panel.GetByText(
-                    "Start must be within the selected Membership window. End may cross its current effective end date.",
-                    new() { Exact = true }),
+                panel.GetByText(membershipName, new() { Exact = true }),
                 viewportName,
-                "inclusive Membership range rule");
+                "affected Membership snapshot");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "An active counted Membership Visit inside the range blocks the Freeze.",
+                    $"{FormatDate(freezeBefore.StartDate)} to {FormatDate(freezeBefore.EndDate)}",
                     new() { Exact = true }),
                 viewportName,
-                "counted Visit conflict rule");
-
-            var membership = panel.GetByLabel("Membership", new() { Exact = true });
-            var membershipOption = membership.Locator("option").Filter(
-                new LocatorFilterOptions
-                {
-                    HasText = viewportName == "tablet"
-                        ? "Freeze tablet snapshot"
-                        : "Freeze phone snapshot",
-                });
-            Assert.Equal(1, await membershipOption.CountAsync());
-            await membership.SelectOptionAsync(membershipId.ToString());
+                "canonical Freeze range");
+            await ExpectVisibleAsync(
+                panel.GetByText(
+                    "The Freeze remains visible as canceled and Membership extension state is recalculated.",
+                    new() { Exact = true }),
+                viewportName,
+                "cancellation consequence warning");
 
             var idempotencyKey = await form
                 .Locator("input[name='form.IdempotencyKey']")
                 .InputValueAsync();
             Assert.False(string.IsNullOrWhiteSpace(idempotencyKey));
+            var cancellationReason = $"{viewportName} Freeze entered by mistake";
+            var cancellationComment = $"Canceled from {viewportName} reception.";
+            await panel.GetByLabel("Cancellation reason", new() { Exact = true })
+                .FillAsync(cancellationReason);
+            await panel.GetByLabel(
+                    "Cancellation comment (optional)",
+                    new() { Exact = true })
+                .FillAsync(cancellationComment);
 
-            var startDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1);
-            var endDate = startDate.AddDays(1);
-            var reason = $"{viewportName} medical pause";
-            await panel.GetByLabel("Freeze start date", new() { Exact = true })
-                .FillAsync(FormatDate(startDate));
-            await panel.GetByLabel("Freeze end date", new() { Exact = true })
-                .FillAsync(FormatDate(startDate.AddDays(-1)));
-            await panel.GetByLabel("Reason", new() { Exact = true }).FillAsync(reason);
-            await SubmitHtmxAddFreezeAsync(page);
+            await SubmitHtmxCancelFreezeAsync(
+                page,
+                freezeId,
+                bypassValidation: true,
+                verifyBusy: false);
 
-            panel = profile.Locator("#add-freeze-action-panel");
-            await ExpectVisibleAsync(
-                panel.GetByRole(AriaRole.Alert),
-                viewportName,
-                "Freeze validation error");
+            panel = freezeRow.Locator($"#cancel-freeze-panel-{freezeId:N}");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "Freeze end date must be on or after the start date.",
+                    "Confirm that this Freeze should be canceled.",
                     new() { Exact = true }),
                 viewportName,
-                "inclusive range validation");
+                "server confirmation error");
             Assert.NotNull(await panel.GetAttributeAsync("open"));
             Assert.Equal(
                 idempotencyKey,
                 await panel.Locator("input[name='form.IdempotencyKey']").InputValueAsync());
-            Assert.Equal(0L, await _app.CountActiveFreezesAsync(clientId));
-            Assert.Equal(0L, await _app.CountAddFreezeAuditEntriesAsync(clientId));
-            Assert.Equal(0L, await _app.CountAddFreezeIdempotencyKeysAsync(clientId));
+            Assert.Equal("active", await _app.ReadFreezeStatusAsync(freezeId));
+            Assert.Equal(0L, await _app.CountFreezeCancellationsAsync(freezeId));
+            Assert.Equal(0L, await _app.CountCancelFreezeAuditEntriesAsync(freezeId));
+            Assert.Equal(0L, await _app.CountCancelFreezeIdempotencyKeysAsync(clientId));
             Assert.Equal(
                 membershipStateBefore,
                 await _app.ReadMembershipStateAsync(membershipId));
 
-            await panel.GetByLabel("Freeze end date", new() { Exact = true })
-                .FillAsync(FormatDate(endDate));
-            await panel.GetByLabel("Comment (optional)", new() { Exact = true })
-                .FillAsync($"{viewportName} reception Freeze.");
-            await DelayAddFreezeRequestsAsync(page);
+            await panel.GetByRole(
+                    AriaRole.Checkbox,
+                    new() { Name = CancellationConfirmation, Exact = true })
+                .CheckAsync();
+            await DelayCancelFreezeRequestsAsync(page);
             await AssertMinimumTouchTargetAsync(
-                panel.GetByRole(AriaRole.Button, new() { Name = "Add freeze" }),
+                panel.GetByRole(AriaRole.Button, new() { Name = "Cancel freeze" }),
                 viewportName,
-                "Add Freeze button");
-            await AssertFitsViewportAsync(page, viewportName, "Add Freeze form");
-            await CaptureVisualAsync(page, viewportName, "add-freeze-form");
+                "Cancel Freeze button");
+            await AssertFitsViewportAsync(page, viewportName, "Cancel Freeze form");
+            await CaptureVisualAsync(page, viewportName, "cancel-freeze-form");
 
-            await SubmitHtmxAddFreezeAsync(page, repeatTapWhileBusy: true);
+            await SubmitHtmxCancelFreezeAsync(
+                page,
+                freezeId,
+                repeatTapWhileBusy: true);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Freeze added."),
+                profile.GetByText("Freeze canceled."),
                 viewportName,
-                "Freeze success message");
-            var freezeRow = profile.Locator(
-                "[data-extension-source-kind='freeze'][data-extension-source-status='active']");
-            await ExpectVisibleAsync(freezeRow, viewportName, "canonical Freeze history row");
+                "Freeze cancellation success message");
+            var canceledRow = profile.Locator(
+                $"[data-extension-source-id='{freezeId}'][data-extension-source-status='canceled']");
+            await ExpectVisibleAsync(canceledRow, viewportName, "canceled Freeze history row");
             await ExpectVisibleAsync(
-                freezeRow
-                    .Locator(".membership-extension-meta")
-                    .GetByText(reason, new() { Exact = true }),
+                canceledRow.GetByText("Canceled", new() { Exact = true }),
                 viewportName,
-                "canonical Freeze reason");
-            await ExpectVisibleAsync(
-                freezeRow.Locator("[data-extension-inclusive-range]"),
-                viewportName,
-                "canonical inclusive Freeze range");
+                "canceled Freeze status");
+            Assert.Equal(0, await canceledRow.Locator("[data-cancel-freeze-panel]").CountAsync());
+
+            Assert.Equal("canceled", await _app.ReadFreezeStatusAsync(freezeId));
+            Assert.Equal(1L, await _app.CountFreezeCancellationsAsync(freezeId));
+            Assert.Equal(1L, await _app.CountCancelFreezeAuditEntriesAsync(freezeId));
+            Assert.Equal(1L, await _app.CountCancelFreezeIdempotencyKeysAsync(clientId));
             Assert.Equal(
-                $"{FormatDate(startDate)} to {FormatDate(endDate)}",
-                (await freezeRow
-                    .Locator("[data-extension-inclusive-range]")
-                    .InnerTextAsync())
-                    .Trim());
-
-            Assert.Equal(1L, await _app.CountActiveFreezesAsync(clientId));
-            Assert.Equal(1L, await _app.CountAddFreezeAuditEntriesAsync(clientId));
-            Assert.Equal(1L, await _app.CountAddFreezeIdempotencyKeysAsync(clientId));
-            var freeze = await _app.ReadLatestActiveFreezeAsync(clientId);
-            Assert.Equal(membershipId, freeze.MembershipId);
-            Assert.Equal(startDate, freeze.StartDate);
-            Assert.Equal(endDate, freeze.EndDate);
-            Assert.Equal(reason, freeze.Reason);
-            Assert.Equal("active", freeze.Status);
+                cancellationReason,
+                await _app.ReadFreezeCancellationReasonAsync(freezeId));
+            var audit = await _app.ReadCancelFreezeAuditAsync(freezeId);
+            Assert.Equal(cancellationReason, audit.Reason);
+            Assert.Equal(cancellationComment, audit.Comment);
+            Assert.False(audit.ChangedAfterClose);
 
             var membershipStateAfter = await _app.ReadMembershipStateAsync(membershipId);
             Assert.Equal(
-                membershipStateBefore.EffectiveEndDate.AddDays(2),
+                membershipStateBefore.EffectiveEndDate.AddDays(-2),
                 membershipStateAfter.EffectiveEndDate);
             await ExpectVisibleAsync(
                 profile.Locator(".membership-summary-grid").GetByText(
                     FormatDate(membershipStateAfter.EffectiveEndDate),
                     new() { Exact = true }),
                 viewportName,
-                "canonical effective end date");
-            await AssertFitsViewportAsync(page, viewportName, "canonical Freeze profile");
-            await CaptureVisualAsync(page, viewportName, "add-freeze-success");
+                "recalculated effective end date");
+            await AssertFitsViewportAsync(page, viewportName, "canceled Freeze profile");
+            await CaptureVisualAsync(page, viewportName, "cancel-freeze-success");
         }
         finally
         {
@@ -248,32 +268,61 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         await WaitForHtmxSettleAsync(page);
     }
 
-    private static async Task OpenAddFreezePanelAsync(
-        ILocator panel,
+    private static async Task<ILocator> OpenCancelFreezePanelAsync(
+        ILocator freezeRow,
         string viewportName)
     {
-        await ExpectVisibleAsync(panel.Locator("summary"), viewportName, "Add Freeze action");
+        var panel = freezeRow.Locator("[data-cancel-freeze-panel]");
+        await ExpectVisibleAsync(
+            panel.Locator("summary"),
+            viewportName,
+            "Cancel Freeze action");
         if (await panel.GetAttributeAsync("open") is null)
         {
             await panel.Locator("summary").ClickAsync();
         }
 
-        await ExpectVisibleAsync(panel.Locator("form"), viewportName, "Add Freeze form");
+        await ExpectVisibleAsync(panel.Locator("form"), viewportName, "Cancel Freeze form");
+        return panel;
     }
 
-    private static async Task SubmitHtmxAddFreezeAsync(
+    private static async Task SubmitHtmxCancelFreezeAsync(
         IPage page,
-        bool repeatTapWhileBusy = false)
+        Guid freezeId,
+        bool repeatTapWhileBusy = false,
+        bool bypassValidation = false,
+        bool verifyBusy = true)
     {
-        var panel = page.Locator("#add-freeze-action-panel");
+        var panelSelector = $"#cancel-freeze-panel-{freezeId:N}";
+        var panel = page.Locator(panelSelector);
+        var form = panel.Locator("form");
+        Assert.Equal("this:drop", await form.GetAttributeAsync("hx-sync"));
+        Assert.NotNull(await form.GetAttributeAsync("data-busy-form"));
         var responseTask = page.WaitForResponseAsync(response =>
             response.Request.Method == "POST"
-            && response.Url.Contains("handler=AddFreeze", StringComparison.OrdinalIgnoreCase));
-        var disabledTask = page.WaitForFunctionAsync(
-            "() => document.querySelector('#add-freeze-action-panel button[type=\"submit\"]')?.disabled === true");
-        var submitButton = panel.Locator("[data-add-freeze-submit]");
-        await submitButton.ClickAsync();
-        await disabledTask;
+            && response.Url.Contains("handler=CancelFreeze", StringComparison.OrdinalIgnoreCase));
+        Task<IJSHandle>? disabledTask = null;
+        if (verifyBusy)
+        {
+            disabledTask = page.WaitForFunctionAsync(
+                $"() => document.querySelector('{panelSelector} button[type=\"submit\"]')?.disabled === true");
+        }
+
+        var submitButton = panel.Locator("[data-cancel-freeze-submit]");
+        if (bypassValidation)
+        {
+            await form.EvaluateAsync(
+                "form => { form.noValidate = true; form.requestSubmit(); }");
+        }
+        else
+        {
+            await submitButton.ClickAsync();
+        }
+
+        if (disabledTask is not null)
+        {
+            await disabledTask;
+        }
 
         if (repeatTapWhileBusy)
         {
@@ -285,10 +334,10 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         await WaitForHtmxSettleAsync(page);
     }
 
-    private static Task DelayAddFreezeRequestsAsync(IPage page)
+    private static Task DelayCancelFreezeRequestsAsync(IPage page)
     {
         return page.RouteAsync(
-            "**/*handler=AddFreeze*",
+            "**/*handler=CancelFreeze*",
             async route =>
             {
                 await Task.Delay(500);
