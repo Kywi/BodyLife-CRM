@@ -7519,3 +7519,76 @@ Next recommended step:
   phone-safe Razor/htmx output, with focused web and Playwright coverage. Keep
   Add/CancelFreeze forms, Owner NonWorkingDay management, reports and general
   audit/history screens for later bounded steps.
+
+## Step 134 - Reception profile extension history presentation
+
+Status: completed. Milestone 8 is in progress.
+
+Plan alignment:
+
+- Complete the roadmap's `profile/history extension explanation rows` task by
+  rendering the canonical Step 133 read model in the reception client profile.
+- Preserve Memberships ownership: Razor maps server-provided source kind,
+  inclusive range, status and reason labels only. It does not calculate
+  extension days, effective dates or source activity.
+- Keep Add/CancelFreeze forms, Owner NonWorkingDay management, reports and the
+  Milestone 10 general client/audit history screens outside this bounded step.
+
+Scope:
+
+- Add an `Extension history` section to the existing Membership panel whenever
+  the profile timeline contains extension explanations. Group rows by issued
+  Membership snapshot and retain active, canceled and corrected source rows.
+- Render each Freeze or NonWorkingDay source with its inclusive date range,
+  normalized reason label and semantic status chip. Stable source-kind,
+  source-status and source-id data attributes support focused browser checks.
+- Add compact divider-based styling inside the existing Membership panel, with
+  active/canceled/corrected status colors, long-label wrapping and single-column
+  phone metadata. No nested card or hover-only interaction was introduced.
+- Extend the PostgreSQL UI fixture with one canonical Membership containing an
+  active and canceled Freeze plus an active and corrected NonWorkingDay
+  application. Rebuild its cache through the real Freeze and NonWorkingDay
+  extension providers.
+- Add a tablet/phone Playwright scenario that verifies source kinds, all three
+  statuses, reason labels, four inclusive ranges and horizontal viewport fit.
+  Full-page screenshots were visually reviewed at 1024x768 and 390x844.
+- Add no command/action, EF model, migration, report query or audit behavior.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- The first focused Playwright run reached the new section but exposed an
+  ambiguous case-insensitive heading locator; exact accessible-name matching
+  fixed the test without changing production behavior.
+- Final focused extension-history Playwright coverage passed 2/2 with no skips
+  against the healthy local Docker PostgreSQL service.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 335 core tests, 35 web
+  tests, 449 PostgreSQL/architecture/security infrastructure tests, 39
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code change but the local watcher
+  stopped with `Errno 95: Operation not supported`; its partial cache-index
+  change is excluded from this step, so no generated code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(reception): render membership extension history`.
+
+Next recommended step:
+
+- Add only the reception `AddFreeze` Razor/htmx action around the existing
+  command: explicit eligible Membership selection, inclusive start/end dates,
+  reason, busy/duplicate-submit protection, server validation and canonical
+  profile reread, with tablet/phone Playwright coverage. Keep CancelFreeze and
+  Owner NonWorkingDay management UI for separate later bounded steps.

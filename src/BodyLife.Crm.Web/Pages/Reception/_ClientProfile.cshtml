@@ -27,6 +27,10 @@
     }
     else
     {
+        var extensionMemberships = profile.Membership.Timeline
+            .Where(membership => membership.ExtensionExplanations.Count > 0)
+            .ToArray();
+
         <header class="client-identity-header">
             <div>
                 <p class="eyebrow">Client profile</p>
@@ -127,6 +131,68 @@
                         </div>
                     }
                 </div>
+            }
+
+            @if (extensionMemberships.Length > 0)
+            {
+                <section class="membership-extension-history"
+                         aria-labelledby="membership-extension-history-title"
+                         data-membership-extension-history>
+                    <header class="membership-extension-history-header">
+                        <div>
+                            <p class="eyebrow">Membership timeline</p>
+                            <h4 id="membership-extension-history-title">Extension history</h4>
+                        </div>
+                    </header>
+
+                    @foreach (var timelineMembership in extensionMemberships)
+                    {
+                        <div class="membership-extension-group"
+                             data-membership-extension-group
+                             data-membership-id="@timelineMembership.MembershipId"
+                             data-membership-status="@timelineMembership.Status">
+                            <header class="membership-extension-group-header">
+                                <h5>@timelineMembership.TypeNameSnapshot</h5>
+                                <span class="status-chip @MembershipStatusClass(timelineMembership.Status)">
+                                    @MembershipStatusLabel(timelineMembership.Status)
+                                </span>
+                            </header>
+
+                            <ol class="membership-extension-list">
+                                @foreach (var explanation in timelineMembership.ExtensionExplanations)
+                                {
+                                    <li class="membership-extension-row @ExtensionStatusRowClass(explanation.Status)"
+                                        data-extension-source-kind="@ExtensionSourceKindCode(explanation.SourceKind)"
+                                        data-extension-source-status="@ExtensionSourceStatusCode(explanation.Status)"
+                                        data-extension-source-id="@explanation.SourceId">
+                                        <header class="membership-extension-row-header">
+                                            <div>
+                                                <p class="membership-extension-kind">Extension source</p>
+                                                <h6>@ExtensionSourceKindLabel(explanation.SourceKind)</h6>
+                                            </div>
+                                            <span class="status-chip @ExtensionSourceStatusClass(explanation.Status)">
+                                                @ExtensionSourceStatusLabel(explanation.Status)
+                                            </span>
+                                        </header>
+
+                                        <dl class="membership-extension-meta">
+                                            <div>
+                                                <dt>Inclusive range</dt>
+                                                <dd data-extension-inclusive-range>
+                                                    @explanation.Range.StartDate.ToString("yyyy-MM-dd") to @explanation.Range.EndDate.ToString("yyyy-MM-dd")
+                                                </dd>
+                                            </div>
+                                            <div>
+                                                <dt>Reason</dt>
+                                                <dd>@explanation.ReasonLabel</dd>
+                                            </div>
+                                        </dl>
+                                    </li>
+                                }
+                            </ol>
+                        </div>
+                    }
+                </section>
             }
         </section>
 
@@ -462,6 +528,87 @@
             ClientPaymentRowStatus.Canceled => "status-canceled",
             ClientPaymentRowStatus.Replaced => "status-replaced",
             _ => "status-inactive",
+        };
+    }
+
+    private static string MembershipStatusClass(string status)
+    {
+        return status switch
+        {
+            ClientMembershipSummaryStatusCodes.Active => "status-active",
+            ClientMembershipSummaryStatusCodes.Canceled => "status-canceled",
+            ClientMembershipSummaryStatusCodes.Corrected => "status-corrected",
+            _ => "status-inactive",
+        };
+    }
+
+    private static string MembershipStatusLabel(string status)
+    {
+        return status switch
+        {
+            ClientMembershipSummaryStatusCodes.Active => "Active",
+            ClientMembershipSummaryStatusCodes.Expired => "Expired",
+            ClientMembershipSummaryStatusCodes.Canceled => "Canceled",
+            ClientMembershipSummaryStatusCodes.Corrected => "Corrected",
+            _ => "Unknown",
+        };
+    }
+
+    private static string ExtensionSourceKindCode(MembershipExtensionSourceKind sourceKind)
+    {
+        return sourceKind switch
+        {
+            MembershipExtensionSourceKind.Freeze => "freeze",
+            MembershipExtensionSourceKind.NonWorkingDay => "non-working-day",
+            _ => "unknown",
+        };
+    }
+
+    private static string ExtensionSourceKindLabel(MembershipExtensionSourceKind sourceKind)
+    {
+        return sourceKind switch
+        {
+            MembershipExtensionSourceKind.Freeze => "Freeze",
+            MembershipExtensionSourceKind.NonWorkingDay => "Non-working day",
+            _ => "Unknown source",
+        };
+    }
+
+    private static string ExtensionSourceStatusCode(MembershipExtensionSourceStatus status)
+    {
+        return status.ToString().ToLowerInvariant();
+    }
+
+    private static string ExtensionSourceStatusClass(MembershipExtensionSourceStatus status)
+    {
+        return status switch
+        {
+            MembershipExtensionSourceStatus.Active => "status-active",
+            MembershipExtensionSourceStatus.Canceled => "status-canceled",
+            MembershipExtensionSourceStatus.Corrected => "status-corrected",
+            _ => "status-inactive",
+        };
+    }
+
+    private static string ExtensionStatusRowClass(MembershipExtensionSourceStatus status)
+    {
+        return status switch
+        {
+            MembershipExtensionSourceStatus.Active => "extension-status-active",
+            MembershipExtensionSourceStatus.Canceled => "extension-status-canceled",
+            MembershipExtensionSourceStatus.Corrected => "extension-status-corrected",
+            _ => "extension-status-inactive",
+        };
+    }
+
+    private static string ExtensionSourceStatusLabel(MembershipExtensionSourceStatus status)
+    {
+        return status switch
+        {
+            MembershipExtensionSourceStatus.Active => "Active",
+            MembershipExtensionSourceStatus.Canceled => "Canceled",
+            MembershipExtensionSourceStatus.Corrected => "Corrected",
+            _ => "Unknown",
         };
     }
 

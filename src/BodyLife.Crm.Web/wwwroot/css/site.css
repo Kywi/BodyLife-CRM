@@ -608,6 +608,118 @@ textarea:focus-visible,
   margin-top: 14px;
 }
 
+.membership-extension-history {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.membership-extension-history-header h4,
+.membership-extension-group-header h5,
+.membership-extension-row-header h6 {
+  margin: 0;
+}
+
+.membership-extension-history-header h4 {
+  font-size: 0.95rem;
+}
+
+.membership-extension-group {
+  min-width: 0;
+  margin-top: 14px;
+}
+
+.membership-extension-group + .membership-extension-group {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.membership-extension-group-header,
+.membership-extension-row-header {
+  display: flex;
+  min-width: 0;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.membership-extension-group-header h5,
+.membership-extension-row-header h6 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.membership-extension-group-header h5 {
+  font-size: 0.9rem;
+}
+
+.membership-extension-row-header h6 {
+  font-size: 0.95rem;
+}
+
+.membership-extension-list {
+  display: grid;
+  margin: 10px 0 0;
+  padding: 0;
+  gap: 8px;
+  list-style: none;
+}
+
+.membership-extension-row {
+  display: grid;
+  min-width: 0;
+  border-left: 3px solid var(--line);
+  padding: 10px 0 10px 12px;
+  gap: 10px;
+}
+
+.extension-status-active {
+  border-left-color: var(--success);
+}
+
+.extension-status-canceled,
+.extension-status-inactive {
+  border-left-color: var(--danger);
+}
+
+.extension-status-corrected {
+  border-left-color: var(--warning);
+}
+
+.membership-extension-kind {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.membership-extension-meta {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 8px 14px;
+}
+
+.membership-extension-meta div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.membership-extension-meta dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.membership-extension-meta dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
 .recent-visits,
 .recent-payments {
   margin-top: 18px;
@@ -1813,6 +1925,12 @@ textarea:focus-visible,
   color: var(--warning);
 }
 
+.status-corrected {
+  border-color: var(--warning);
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
 .status-owner {
   border-color: var(--restricted);
   background: #f0edfb;
@@ -1988,6 +2106,7 @@ textarea:focus-visible,
   .client-result-meta,
   .client-profile-meta,
   .membership-summary-grid,
+  .membership-extension-meta,
   .recent-visit-meta,
   .recent-payment-meta,
   .visit-correction-context,
@@ -1999,6 +2118,11 @@ textarea:focus-visible,
   .visit-membership-meta,
   .visit-kind-options {
     grid-template-columns: 1fr;
+  }
+
+  .membership-extension-group-header,
+  .membership-extension-row-header {
+    flex-wrap: wrap;
   }
 
   .form-field-wide {

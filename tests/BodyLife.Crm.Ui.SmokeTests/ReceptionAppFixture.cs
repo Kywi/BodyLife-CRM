@@ -506,6 +506,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
+        await SeedMembershipExtensionHistoryFixtureAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
         await SeedAddPaymentFixturesAsync(
             database,
             ownerResult.AccountId.Value,
@@ -689,6 +693,29 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             PaymentHistoryClientId,
             PaymentHistoryMembershipId);
+    }
+
+    private static async Task SeedMembershipExtensionHistoryFixtureAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        var clientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Extension",
+            "History",
+            "+380 67 700 01 02",
+            "BL-EXTENSION-HISTORY");
+        var membershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            clientId,
+            membershipTypeId,
+            "Extended membership snapshot",
+            visitsLimitSnapshot: 8);
+        await database.SeedMembershipExtensionHistoryAsync(
+            ownerAccountId,
+            clientId,
+            membershipId);
     }
 
     private async Task SeedAddPaymentFixturesAsync(

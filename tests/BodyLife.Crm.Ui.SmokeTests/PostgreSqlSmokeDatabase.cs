@@ -1,6 +1,9 @@
 using BodyLife.Crm.Infrastructure.Persistence;
+using BodyLife.Crm.Infrastructure.Persistence.Freezes;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Modules.Clients.Search;
+using BodyLife.Crm.Modules.Memberships;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
@@ -571,6 +574,204 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         await RebuildMembershipAsync(membershipId);
         return membershipId;
+    }
+
+    public async Task SeedMembershipExtensionHistoryAsync(
+        Guid recordedByAccountId,
+        Guid clientId,
+        Guid membershipId)
+    {
+        var sessionId = Guid.NewGuid();
+        var activeFreezeId = Guid.NewGuid();
+        var canceledFreezeId = Guid.NewGuid();
+        var activePeriodId = Guid.NewGuid();
+        var correctedPeriodId = Guid.NewGuid();
+        var recordedAt = TimeProvider.System.GetUtcNow();
+        var today = DateOnly.FromDateTime(recordedAt.UtcDateTime);
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id,
+                account_id,
+                device_label,
+                started_at,
+                expires_at,
+                ended_at,
+                last_seen_at)
+            values (
+                @session_id,
+                @account_id,
+                'UI extension history seed',
+                @session_started_at,
+                @session_expires_at,
+                null,
+                @session_started_at);
+
+            insert into bodylife.freezes (
+                id,
+                client_id,
+                membership_id,
+                start_date,
+                end_date,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id,
+                status)
+            values
+                (
+                    @active_freeze_id,
+                    @client_id,
+                    @membership_id,
+                    @active_freeze_start,
+                    @active_freeze_end,
+                    'Medical recovery',
+                    @recorded_at,
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'normal',
+                    null,
+                    'active'),
+                (
+                    @canceled_freeze_id,
+                    @client_id,
+                    @membership_id,
+                    @canceled_freeze_start,
+                    @canceled_freeze_end,
+                    'Travel plan',
+                    @recorded_at,
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'normal',
+                    null,
+                    'canceled');
+
+            insert into bodylife.non_working_periods (
+                id,
+                start_date,
+                end_date,
+                reason_code,
+                reason_comment,
+                created_at,
+                created_by_account_id,
+                session_id,
+                status)
+            values
+                (
+                    @active_period_id,
+                    @active_period_start,
+                    @active_period_end,
+                    'maintenance',
+                    'Ventilation service',
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'active'),
+                (
+                    @corrected_period_id,
+                    @corrected_period_start,
+                    @corrected_period_end,
+                    'repair',
+                    'Floor inspection',
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'corrected');
+
+            insert into bodylife.non_working_period_applications (
+                id,
+                non_working_period_id,
+                membership_id,
+                client_id,
+                applied_start_date,
+                applied_end_date,
+                previewed_at,
+                confirmed_at,
+                status)
+            values
+                (
+                    @active_application_id,
+                    @active_period_id,
+                    @membership_id,
+                    @client_id,
+                    @active_period_start,
+                    @active_period_end,
+                    @previewed_at,
+                    @confirmed_at,
+                    'active'),
+                (
+                    @corrected_application_id,
+                    @corrected_period_id,
+                    @membership_id,
+                    @client_id,
+                    @corrected_period_start,
+                    @corrected_period_end,
+                    @previewed_at,
+                    @confirmed_at,
+                    'corrected')
+            """;
+        command.Parameters.AddWithValue("session_id", sessionId);
+        command.Parameters.AddWithValue("account_id", recordedByAccountId);
+        command.Parameters.AddWithValue("session_started_at", recordedAt.AddMinutes(-1));
+        command.Parameters.AddWithValue("session_expires_at", recordedAt.AddDays(1));
+        command.Parameters.AddWithValue("recorded_at", recordedAt);
+        command.Parameters.AddWithValue("previewed_at", recordedAt.AddMinutes(-2));
+        command.Parameters.AddWithValue("confirmed_at", recordedAt.AddMinutes(-1));
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("active_freeze_id", activeFreezeId);
+        command.Parameters.AddWithValue("canceled_freeze_id", canceledFreezeId);
+        command.Parameters.AddWithValue("active_period_id", activePeriodId);
+        command.Parameters.AddWithValue("corrected_period_id", correctedPeriodId);
+        command.Parameters.AddWithValue("active_application_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("corrected_application_id", Guid.NewGuid());
+        command.Parameters.AddWithValue(
+            "active_freeze_start",
+            NpgsqlDbType.Date,
+            today.AddDays(-6));
+        command.Parameters.AddWithValue(
+            "active_freeze_end",
+            NpgsqlDbType.Date,
+            today.AddDays(-4));
+        command.Parameters.AddWithValue(
+            "canceled_freeze_start",
+            NpgsqlDbType.Date,
+            today.AddDays(-2));
+        command.Parameters.AddWithValue(
+            "canceled_freeze_end",
+            NpgsqlDbType.Date,
+            today.AddDays(-1));
+        command.Parameters.AddWithValue(
+            "active_period_start",
+            NpgsqlDbType.Date,
+            today.AddDays(-5));
+        command.Parameters.AddWithValue(
+            "active_period_end",
+            NpgsqlDbType.Date,
+            today.AddDays(-3));
+        command.Parameters.AddWithValue(
+            "corrected_period_start",
+            NpgsqlDbType.Date,
+            today.AddDays(-7));
+        command.Parameters.AddWithValue(
+            "corrected_period_end",
+            NpgsqlDbType.Date,
+            today.AddDays(-7));
+
+        Assert.Equal(7, await command.ExecuteNonQueryAsync());
+        await transaction.CommitAsync();
+        await RebuildMembershipAsync(membershipId);
     }
 
     public async Task SeedPaymentHistoryAsync(
@@ -1527,7 +1728,12 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         await using var dbContext = CreateDbContext();
         var rebuild = await new MembershipStateCacheRebuilder(
                 dbContext,
-                TimeProvider.System)
+                TimeProvider.System,
+                extensionSourceProviders:
+                [
+                    new MembershipFreezeExtensionSourceReader(dbContext),
+                    new MembershipNonWorkingDayExtensionSourceReader(dbContext),
+                ])
             .RebuildAsync(membershipId);
         Assert.True(
             rebuild.Succeeded,

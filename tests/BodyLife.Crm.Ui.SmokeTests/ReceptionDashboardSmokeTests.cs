@@ -280,6 +280,114 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         }
     }
 
+    [Theory]
+    [InlineData("tablet", 1024, 768)]
+    [InlineData("phone", 390, 844)]
+    public async Task MembershipExtensionHistoryRendersCanonicalSourcesOnTargetViewport(
+        string viewportName,
+        int width,
+        int height)
+    {
+        Assert.NotNull(_browser);
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await page.GotoAsync(_app.BaseAddress.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+            await LoginAsync(
+                page,
+                _app.LoginName,
+                _app.Password,
+                $"{viewportName} extension history smoke");
+            await SubmitHtmxSearchAsync(page, "BL-EXTENSION-HISTORY");
+
+            var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            await ExpectVisibleAsync(
+                profile.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Extension History", Exact = true }),
+                viewportName,
+                "extension-history client profile");
+            var history = profile.Locator("[data-membership-extension-history]");
+            await ExpectVisibleAsync(history, viewportName, "Membership extension history");
+            await ExpectVisibleAsync(
+                history.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Extension history", Exact = true }),
+                viewportName,
+                "extension-history heading");
+
+            Assert.Equal(
+                1,
+                await history.Locator("[data-membership-extension-group]").CountAsync());
+            var sourceRows = history.Locator(".membership-extension-row");
+            Assert.Equal(4, await sourceRows.CountAsync());
+            Assert.Equal(
+                2,
+                await history.Locator("[data-extension-source-kind='freeze']").CountAsync());
+            Assert.Equal(
+                2,
+                await history.Locator("[data-extension-source-kind='non-working-day']").CountAsync());
+            Assert.Equal(
+                2,
+                await history.Locator("[data-extension-source-status='active']").CountAsync());
+            Assert.Equal(
+                1,
+                await history.Locator("[data-extension-source-status='canceled']").CountAsync());
+            Assert.Equal(
+                1,
+                await history.Locator("[data-extension-source-status='corrected']").CountAsync());
+
+            await ExpectVisibleAsync(
+                history.GetByText("Medical recovery", new() { Exact = true }),
+                viewportName,
+                "active Freeze reason");
+            await ExpectVisibleAsync(
+                history.GetByText("Travel plan", new() { Exact = true }),
+                viewportName,
+                "canceled Freeze reason");
+            await ExpectVisibleAsync(
+                history.GetByText(
+                    "maintenance - Ventilation service",
+                    new() { Exact = true }),
+                viewportName,
+                "active NonWorkingDay reason");
+            await ExpectVisibleAsync(
+                history.GetByText(
+                    "repair - Floor inspection",
+                    new() { Exact = true }),
+                viewportName,
+                "corrected NonWorkingDay reason");
+
+            var renderedRanges = await history
+                .Locator("[data-extension-inclusive-range]")
+                .AllTextContentsAsync();
+            Assert.Equal(4, renderedRanges.Count);
+            Assert.All(
+                renderedRanges,
+                value => Assert.Matches(
+                    @"^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$",
+                    value.Trim()));
+            await AssertFitsViewportAsync(page, viewportName, "Membership extension history");
+            await CaptureVisualAsync(page, viewportName, "membership-extension-history");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task CreateClientRequiresCardAndDuplicateReviewBeforeCanonicalTabletReread()
     {
