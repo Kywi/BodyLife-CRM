@@ -17,6 +17,7 @@
                 <span class="session-id">Session @sessionId</span>
             </div>
             <nav class="shell-actions" aria-label="Session actions">
+                <a class="secondary-link" asp-page="/Reports/Daily">Daily report</a>
                 @if (actor is { Role: ActorRole.Owner, AccountKind: AccountKind.Owner })
                 {
                     <a class="secondary-link" asp-page="/Owner/MembershipTypes">Membership types</a>

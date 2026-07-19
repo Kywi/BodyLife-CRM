@@ -1,0 +1,390 @@
+@page
+@model BodyLife.Crm.Web.Pages.Reports.DailyModel
+@{
+    ViewData["Title"] = "Daily report";
+    var report = Model.Report;
+    var errorMessage = Model.LoadError ?? Model.Result?.ErrorMessage;
+}
+
+<main class="page-shell report-page" data-daily-report-page>
+    <section class="report-layout" aria-labelledby="daily-report-title">
+        <header class="report-header">
+            <div>
+                <p class="eyebrow">Reports</p>
+                <h1 id="daily-report-title">Daily report</h1>
+            </div>
+            <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+        </header>
+
+        <form class="report-filter"
+              method="get"
+              asp-page="/Reports/Daily"
+              data-busy-form>
+            <div class="report-date-field">
+                <label for="business-date">Business date</label>
+                <input id="business-date"
+                       name="date"
+                       type="date"
+                       value="@Model.BusinessDate?.ToString("yyyy-MM-dd")"
+                       required />
+            </div>
+            <button type="submit" data-busy-text="Loading...">Load report</button>
+        </form>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="warning-block warning-danger report-error" role="alert">
+                <strong>Report unavailable</strong>
+                <span>@errorMessage</span>
+            </div>
+        }
+        else if (report is not null)
+        {
+            <section class="report-summary" aria-label="Daily totals">
+                <div>
+                    <span class="report-summary-label">Visits</span>
+                    <strong data-report-visit-count>@report.VisitCount</strong>
+                </div>
+                <div>
+                    <span class="report-summary-label">Payments</span>
+                    <strong data-report-payment-count>@report.PaymentCount</strong>
+                </div>
+                <div>
+                    <span class="report-summary-label">Cash</span>
+                    <strong data-report-cash-sum>@MoneyLabel(report.DailyCashSum)</strong>
+                </div>
+                <div>
+                    <span class="report-summary-label">Day status</span>
+                    <strong>
+                        <span class="status-chip @DayStatusClass(report.DayStatus)"
+                              data-report-day-status="@report.DayStatus.ToString().ToLowerInvariant()">
+                            @DayStatusLabel(report.DayStatus)
+                        </span>
+                    </strong>
+                </div>
+            </section>
+
+            <div class="report-source-note">
+                <strong>@report.BusinessDate.ToString("yyyy-MM-dd")</strong>
+                <span>Canceled source rows remain visible below and are excluded from totals.</span>
+            </div>
+
+            <section class="report-source-section" aria-labelledby="daily-visits-title">
+                <header class="report-section-header">
+                    <div>
+                        <p class="eyebrow">Visit source facts</p>
+                        <h2 id="daily-visits-title">Visits</h2>
+                    </div>
+                </header>
+
+                @if (report.VisitRows.Count == 0)
+                {
+                    <p class="empty-state">No visits recorded for this business date.</p>
+                }
+                else
+                {
+                    <ol class="report-row-list" data-report-visit-rows>
+                        @foreach (var sourceRow in report.VisitRows)
+                        {
+                            var visit = sourceRow.Visit;
+                            <li class="report-row"
+                                data-report-visit-id="@visit.VisitId"
+                                data-report-row-status="@visit.Status.ToString().ToLowerInvariant()">
+                                <header class="report-row-header">
+                                    <div>
+                                        <p class="report-row-kind">@VisitKindLabel(visit.VisitKind)</p>
+                                        <h3>@sourceRow.ClientDisplayName</h3>
+                                    </div>
+                                    <span class="status-chip @(visit.Status == ClientVisitRowStatus.Active ? "status-active" : "status-canceled")">
+                                        @(visit.Status == ClientVisitRowStatus.Active ? "Active" : "Canceled")
+                                    </span>
+                                </header>
+
+                                <dl class="report-row-meta">
+                                    <div>
+                                        <dt>Occurred</dt>
+                                        <dd>@UtcTimestamp(visit.OccurredAt)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Recorded</dt>
+                                        <dd>@UtcTimestamp(visit.RecordedAt)</dd>
+                                    </div>
+                                    @if (visit.Consumption is { } consumption)
+                                    {
+                                        <div>
+                                            <dt>Membership</dt>
+                                            <dd>@consumption.MembershipTypeNameSnapshot</dd>
+                                        </div>
+                                    }
+                                    @if (visit.EntryOrigin != EntryOrigin.Normal)
+                                    {
+                                        <div>
+                                            <dt>Source</dt>
+                                            <dd><span class="source-label">@EntryOriginLabel(visit.EntryOrigin)</span></dd>
+                                        </div>
+                                    }
+                                </dl>
+
+                                @if (!string.IsNullOrWhiteSpace(visit.Comment))
+                                {
+                                    <p class="report-row-comment">@visit.Comment</p>
+                                }
+
+                                @if (visit.Cancellation is { } cancellation)
+                                {
+                                    <div class="report-row-event report-row-cancellation" data-report-cancellation>
+                                        <strong>Cancellation</strong>
+                                        <span>@cancellation.Reason</span>
+                                        <span>@UtcTimestamp(cancellation.RecordedAt)</span>
+                                        @if (cancellation.EntryOrigin != EntryOrigin.Normal)
+                                        {
+                                            <span class="source-label">@EntryOriginLabel(cancellation.EntryOrigin)</span>
+                                        }
+                                    </div>
+                                }
+
+                                <footer class="report-row-actions">
+                                    <a class="secondary-link"
+                                       asp-page="/Reception/Index"
+                                       asp-route-clientId="@visit.ClientId"
+                                       asp-fragment="recent-visits-title">
+                                        Open client
+                                    </a>
+                                </footer>
+                            </li>
+                        }
+                    </ol>
+                }
+            </section>
+
+            <section class="report-source-section" aria-labelledby="daily-payments-title">
+                <header class="report-section-header">
+                    <div>
+                        <p class="eyebrow">Payment source facts</p>
+                        <h2 id="daily-payments-title">Payments</h2>
+                    </div>
+                </header>
+
+                @if (report.PaymentRows.Count == 0)
+                {
+                    <p class="empty-state">No payments recorded for this business date.</p>
+                }
+                else
+                {
+                    <ol class="report-row-list" data-report-payment-rows>
+                        @foreach (var sourceRow in report.PaymentRows)
+                        {
+                            var payment = sourceRow.Payment;
+                            <li class="report-row"
+                                data-report-payment-id="@payment.PaymentId"
+                                data-report-row-status="@payment.Status.ToString().ToLowerInvariant()">
+                                <header class="report-row-header">
+                                    <div>
+                                        <p class="report-row-kind">@PaymentContextLabel(payment.PaymentContext)</p>
+                                        <h3>@sourceRow.ClientDisplayName</h3>
+                                    </div>
+                                    <div class="report-payment-heading">
+                                        <strong>@MoneyLabel(payment.Amount)</strong>
+                                        <span class="status-chip @PaymentStatusClass(payment.Status)">
+                                            @PaymentStatusLabel(payment.Status)
+                                        </span>
+                                    </div>
+                                </header>
+
+                                <dl class="report-row-meta">
+                                    <div>
+                                        <dt>Occurred</dt>
+                                        <dd>@UtcTimestamp(payment.OccurredAt)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Recorded</dt>
+                                        <dd>@UtcTimestamp(payment.RecordedAt)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Method</dt>
+                                        <dd>@PaymentMethodLabel(payment.Method)</dd>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(payment.MembershipTypeNameSnapshot))
+                                    {
+                                        <div>
+                                            <dt>Membership</dt>
+                                            <dd>@payment.MembershipTypeNameSnapshot</dd>
+                                        </div>
+                                    }
+                                    @if (payment.EntryOrigin != EntryOrigin.Normal)
+                                    {
+                                        <div>
+                                            <dt>Source</dt>
+                                            <dd><span class="source-label">@EntryOriginLabel(payment.EntryOrigin)</span></dd>
+                                        </div>
+                                    }
+                                </dl>
+
+                                @if (!string.IsNullOrWhiteSpace(payment.Comment))
+                                {
+                                    <p class="report-row-comment">@payment.Comment</p>
+                                }
+
+                                @if (payment.Cancellation is { } cancellation)
+                                {
+                                    <div class="report-row-event report-row-cancellation" data-report-cancellation>
+                                        <strong>Cancellation</strong>
+                                        <span>@cancellation.Reason</span>
+                                        <span>@UtcTimestamp(cancellation.RecordedAt)</span>
+                                        @if (cancellation.EntryOrigin != EntryOrigin.Normal)
+                                        {
+                                            <span class="source-label">@EntryOriginLabel(cancellation.EntryOrigin)</span>
+                                        }
+                                    </div>
+                                }
+
+                                @if (payment.CorrectionFromOriginal is { } correctionFromOriginal)
+                                {
+                                    <div class="report-row-event report-row-correction" data-report-correction>
+                                        <strong>Corrected replacement</strong>
+                                        <span>@correctionFromOriginal.Reason</span>
+                                        <span>Changed: @ChangedFieldsLabel(correctionFromOriginal.ChangedFields)</span>
+                                        <span>@UtcTimestamp(correctionFromOriginal.RecordedAt)</span>
+                                        @if (correctionFromOriginal.EntryOrigin != EntryOrigin.Normal)
+                                        {
+                                            <span class="source-label">@EntryOriginLabel(correctionFromOriginal.EntryOrigin)</span>
+                                        }
+                                    </div>
+                                }
+                                else if (payment.CorrectionToReplacement is { } correctionToReplacement)
+                                {
+                                    <div class="report-row-event report-row-correction" data-report-correction>
+                                        <strong>Replaced payment</strong>
+                                        <span>@correctionToReplacement.Reason</span>
+                                        <span>Changed: @ChangedFieldsLabel(correctionToReplacement.ChangedFields)</span>
+                                        <span>@UtcTimestamp(correctionToReplacement.RecordedAt)</span>
+                                        @if (correctionToReplacement.EntryOrigin != EntryOrigin.Normal)
+                                        {
+                                            <span class="source-label">@EntryOriginLabel(correctionToReplacement.EntryOrigin)</span>
+                                        }
+                                    </div>
+                                }
+
+                                <footer class="report-row-actions">
+                                    <a class="secondary-link"
+                                       asp-page="/Reception/Index"
+                                       asp-route-clientId="@payment.ClientId"
+                                       asp-fragment="recent-payments-title">
+                                        Open client
+                                    </a>
+                                </footer>
+                            </li>
+                        }
+                    </ol>
+                }
+            </section>
+        }
+    </section>
+</main>
+
+@functions {
+    private static string MoneyLabel(Money money)
+    {
+        return FormattableString.Invariant($"{money.Amount:0.00} {money.Currency}");
+    }
+
+    private static string UtcTimestamp(DateTimeOffset timestamp)
+    {
+        return $"{timestamp.UtcDateTime:yyyy-MM-dd HH:mm} UTC";
+    }
+
+    private static string DayStatusClass(DailyReportDayStatus status)
+    {
+        return status == DailyReportDayStatus.Open
+            ? "status-active"
+            : "status-corrected";
+    }
+
+    private static string DayStatusLabel(DailyReportDayStatus status)
+    {
+        return status == DailyReportDayStatus.Open
+            ? "Open"
+            : "Reconciled";
+    }
+
+    private static string VisitKindLabel(VisitKind visitKind)
+    {
+        return visitKind switch
+        {
+            VisitKind.Membership => "Membership visit",
+            VisitKind.OneOff => "One-off visit",
+            VisitKind.Trial => "Trial visit",
+            _ => "Visit",
+        };
+    }
+
+    private static string EntryOriginLabel(EntryOrigin entryOrigin)
+    {
+        return entryOrigin switch
+        {
+            EntryOrigin.Normal => "Normal",
+            EntryOrigin.ManualBackfill => "Manual backfill",
+            EntryOrigin.PaperFallback => "Paper fallback",
+            EntryOrigin.FutureImport => "Future import",
+            _ => "Unknown source",
+        };
+    }
+
+    private static string PaymentMethodLabel(PaymentMethod method)
+    {
+        return method == PaymentMethod.Cash ? "Cash" : "Unknown method";
+    }
+
+    private static string PaymentContextLabel(PaymentContext paymentContext)
+    {
+        return paymentContext switch
+        {
+            PaymentContext.MembershipSale => "Membership sale",
+            PaymentContext.OneOff => "One-off payment",
+            PaymentContext.Trial => "Trial payment",
+            PaymentContext.NegativeClosure => "Negative closure",
+            PaymentContext.Other => "Other payment",
+            _ => "Payment",
+        };
+    }
+
+    private static string PaymentStatusClass(ClientPaymentRowStatus status)
+    {
+        return status switch
+        {
+            ClientPaymentRowStatus.Active => "status-active",
+            ClientPaymentRowStatus.Canceled => "status-canceled",
+            ClientPaymentRowStatus.Replaced => "status-replaced",
+            _ => "status-inactive",
+        };
+    }
+
+    private static string PaymentStatusLabel(ClientPaymentRowStatus status)
+    {
+        return status switch
+        {
+            ClientPaymentRowStatus.Active => "Active",
+            ClientPaymentRowStatus.Canceled => "Canceled",
+            ClientPaymentRowStatus.Replaced => "Replaced",
+            _ => "Unknown",
+        };
+    }
+
+    private static string ChangedFieldsLabel(IReadOnlyList<string> changedFields)
+    {
+        return string.Join(", ", changedFields.Select(ChangedFieldLabel));
+    }
+
+    private static string ChangedFieldLabel(string changedField)
+    {
+        return changedField switch
+        {
+            "amount" => "amount",
+            "occurred_at" => "occurred time",
+            "payment_context" => "context",
+            "membership_id" => "membership",
+            "comment" => "comment",
+            _ => changedField.Replace('_', ' '),
+        };
+    }
+}

@@ -1474,6 +1474,274 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Assert.Equal(7, await command.ExecuteNonQueryAsync());
     }
 
+    public async Task SeedDailyReportAsync(
+        Guid recordedByAccountId,
+        Guid clientId,
+        DateOnly businessDate)
+    {
+        var sessionId = Guid.NewGuid();
+        var activeVisitId = Guid.NewGuid();
+        var canceledVisitId = Guid.NewGuid();
+        var originalPaymentId = Guid.NewGuid();
+        var replacementPaymentId = Guid.NewGuid();
+        var canceledPaymentId = Guid.NewGuid();
+        var dayStart = new DateTimeOffset(
+            businessDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id,
+                account_id,
+                device_label,
+                started_at,
+                expires_at,
+                ended_at,
+                last_seen_at)
+            values (
+                @session_id,
+                @account_id,
+                'UI daily report seed',
+                @session_started_at,
+                @session_expires_at,
+                @session_ended_at,
+                @session_last_seen_at);
+
+            insert into bodylife.visits (
+                id,
+                client_id,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                visit_kind,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status)
+            values
+                (
+                    @active_visit_id,
+                    @client_id,
+                    @active_visit_occurred_at,
+                    @active_visit_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'one_off',
+                    'normal',
+                    null,
+                    'Active daily report visit',
+                    'active'),
+                (
+                    @canceled_visit_id,
+                    @client_id,
+                    @canceled_visit_occurred_at,
+                    @canceled_visit_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'trial',
+                    'paper_fallback',
+                    @visit_batch_id,
+                    'Canceled daily report visit',
+                    'canceled');
+
+            insert into bodylife.visit_cancellations (
+                id,
+                visit_id,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id)
+            values (
+                @visit_cancellation_id,
+                @canceled_visit_id,
+                'Duplicate report visit',
+                @visit_cancellation_occurred_at,
+                @visit_cancellation_recorded_at,
+                @account_id,
+                @session_id,
+                'manual_backfill',
+                @visit_cancellation_batch_id);
+
+            insert into bodylife.payments (
+                id,
+                client_id,
+                membership_id,
+                amount,
+                currency,
+                method,
+                payment_context,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status)
+            values
+                (
+                    @original_payment_id,
+                    @client_id,
+                    null,
+                    1000,
+                    'UAH',
+                    'cash',
+                    'one_off',
+                    @original_payment_occurred_at,
+                    @original_payment_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'paper_fallback',
+                    @payment_batch_id,
+                    'Original daily report payment',
+                    'replaced'),
+                (
+                    @replacement_payment_id,
+                    @client_id,
+                    null,
+                    900,
+                    'UAH',
+                    'cash',
+                    'one_off',
+                    @replacement_payment_occurred_at,
+                    @replacement_payment_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'normal',
+                    null,
+                    'Replacement daily report payment',
+                    'active'),
+                (
+                    @canceled_payment_id,
+                    @client_id,
+                    null,
+                    250,
+                    'UAH',
+                    'cash',
+                    'trial',
+                    @canceled_payment_occurred_at,
+                    @canceled_payment_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'normal',
+                    null,
+                    'Canceled daily report payment',
+                    'canceled');
+
+            insert into bodylife.payment_corrections (
+                id,
+                client_id,
+                original_payment_id,
+                replacement_payment_id,
+                changed_fields,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id)
+            values (
+                @payment_correction_id,
+                @client_id,
+                @original_payment_id,
+                @replacement_payment_id,
+                @changed_fields,
+                'Corrected report amount',
+                @payment_correction_occurred_at,
+                @payment_correction_recorded_at,
+                @account_id,
+                @session_id,
+                'manual_backfill',
+                @payment_correction_batch_id);
+
+            insert into bodylife.payment_cancellations (
+                id,
+                payment_id,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id)
+            values (
+                @payment_cancellation_id,
+                @canceled_payment_id,
+                'Duplicate report payment',
+                @payment_cancellation_occurred_at,
+                @payment_cancellation_recorded_at,
+                @account_id,
+                @session_id,
+                'paper_fallback',
+                @payment_cancellation_batch_id)
+            """;
+        command.Parameters.AddWithValue("session_id", sessionId);
+        command.Parameters.AddWithValue("account_id", recordedByAccountId);
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("session_started_at", dayStart.AddHours(8));
+        command.Parameters.AddWithValue("session_expires_at", dayStart.AddHours(18));
+        command.Parameters.AddWithValue("session_ended_at", dayStart.AddHours(17));
+        command.Parameters.AddWithValue("session_last_seen_at", dayStart.AddHours(16));
+        command.Parameters.AddWithValue("active_visit_id", activeVisitId);
+        command.Parameters.AddWithValue("canceled_visit_id", canceledVisitId);
+        command.Parameters.AddWithValue("visit_cancellation_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("visit_batch_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("visit_cancellation_batch_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("active_visit_occurred_at", dayStart.AddHours(9));
+        command.Parameters.AddWithValue(
+            "active_visit_recorded_at",
+            dayStart.AddHours(9).AddMinutes(5));
+        command.Parameters.AddWithValue("canceled_visit_occurred_at", dayStart.AddHours(10));
+        command.Parameters.AddWithValue(
+            "canceled_visit_recorded_at",
+            dayStart.AddHours(10).AddMinutes(5));
+        command.Parameters.AddWithValue("visit_cancellation_occurred_at", dayStart.AddHours(11));
+        command.Parameters.AddWithValue(
+            "visit_cancellation_recorded_at",
+            dayStart.AddHours(11).AddMinutes(5));
+        command.Parameters.AddWithValue("original_payment_id", originalPaymentId);
+        command.Parameters.AddWithValue("replacement_payment_id", replacementPaymentId);
+        command.Parameters.AddWithValue("canceled_payment_id", canceledPaymentId);
+        command.Parameters.AddWithValue("payment_correction_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("payment_cancellation_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("payment_batch_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("payment_correction_batch_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("payment_cancellation_batch_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("original_payment_occurred_at", dayStart.AddHours(12));
+        command.Parameters.AddWithValue(
+            "original_payment_recorded_at",
+            dayStart.AddHours(12).AddMinutes(5));
+        command.Parameters.AddWithValue("replacement_payment_occurred_at", dayStart.AddHours(13));
+        command.Parameters.AddWithValue(
+            "replacement_payment_recorded_at",
+            dayStart.AddHours(13).AddMinutes(5));
+        command.Parameters.AddWithValue("canceled_payment_occurred_at", dayStart.AddHours(14));
+        command.Parameters.AddWithValue(
+            "canceled_payment_recorded_at",
+            dayStart.AddHours(14).AddMinutes(5));
+        command.Parameters.AddWithValue("payment_correction_occurred_at", dayStart.AddHours(15));
+        command.Parameters.AddWithValue(
+            "payment_correction_recorded_at",
+            dayStart.AddHours(15).AddMinutes(5));
+        command.Parameters.AddWithValue("payment_cancellation_occurred_at", dayStart.AddHours(16));
+        command.Parameters.AddWithValue(
+            "payment_cancellation_recorded_at",
+            dayStart.AddHours(16).AddMinutes(5));
+        command.Parameters.AddWithValue(
+            "changed_fields",
+            NpgsqlDbType.Jsonb,
+            "[\"amount\",\"occurred_at\"]");
+        Assert.Equal(9, await command.ExecuteNonQueryAsync());
+    }
+
     public async Task<Guid> InsertExternalCountedVisitAsync(
         Guid clientId,
         Guid membershipId)

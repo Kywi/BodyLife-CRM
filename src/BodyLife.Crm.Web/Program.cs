@@ -24,6 +24,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AddPageRoute("/Reception/Index", string.Empty);
     options.Conventions.AuthorizeFolder("/Owner", BodyLifeAuthorizationPolicies.OwnerOnly);
     options.Conventions.AuthorizeFolder("/Reception", BodyLifeAuthorizationPolicies.AdminOrOwner);
+    options.Conventions.AuthorizeFolder("/Reports", BodyLifeAuthorizationPolicies.AdminOrOwner);
     options.Conventions.AuthorizePage("/Logout", BodyLifeAuthorizationPolicies.AdminOrOwner);
 });
 builder.Services

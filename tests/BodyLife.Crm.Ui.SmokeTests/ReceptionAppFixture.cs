@@ -74,6 +74,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid PaymentHistoryMembershipId { get; private set; }
 
+    public DateOnly DailyReportBusinessDate { get; private set; }
+
+    public Guid DailyReportClientId { get; private set; }
+
     public Guid PaymentTabletClientId { get; private set; }
 
     public Guid PaymentTabletMembershipId { get; private set; }
@@ -700,6 +704,9 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
+        await SeedDailyReportFixtureAsync(
+            database,
+            ownerResult.AccountId.Value);
         await SeedMembershipExtensionHistoryFixtureAsync(
             database,
             ownerResult.AccountId.Value,
@@ -911,6 +918,23 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             PaymentHistoryClientId,
             PaymentHistoryMembershipId);
+    }
+
+    private async Task SeedDailyReportFixtureAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId)
+    {
+        DailyReportBusinessDate = new DateOnly(2026, 6, 15);
+        DailyReportClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Report",
+            "Daily",
+            "+380 67 700 01 03",
+            "BL-DAILY-REPORT");
+        await database.SeedDailyReportAsync(
+            ownerAccountId,
+            DailyReportClientId,
+            DailyReportBusinessDate);
     }
 
     private static async Task SeedMembershipExtensionHistoryFixtureAsync(

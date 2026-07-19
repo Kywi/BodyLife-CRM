@@ -18,6 +18,7 @@
     {
         <div class="operational-empty profile-empty">
             <h2>No client selected</h2>
+            <a class="secondary-link" asp-page="/Reports/Daily">Open daily report</a>
         </div>
     }
     else if (result.Status != GetClientProfileStatus.Success || profile is null)

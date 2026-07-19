@@ -8783,3 +8783,82 @@ Next recommended step:
 - Add one bounded server-rendered daily report page for Milestone 9 with a
   business-date filter, canonical visit/payment totals and drill-down rows,
   while leaving the three threshold-list UIs for later steps.
+
+## Step 148 - Milestone 9 daily report UI
+
+Status: completed. Milestone 9 is in progress.
+
+Plan alignment:
+
+- Implement only the roadmap's first bounded report UI over the existing
+  `GenerateDailyReport` query. Keep ending-soon, low-remaining, negative and
+  inactive report pages for independent later steps.
+- Preserve ADR-007 ownership: the Razor page renders canonical report totals
+  and source rows and does not calculate Visit, Payment or Membership truth.
+- Reuse the existing Owner/Admin query authorization and source-row action
+  permissions. This step adds no command, audit write, schema or migration.
+
+Scope:
+
+- Add the authorized `/Reports/Daily` Razor Page with a UTC business-date GET
+  filter, busy submit state and a retryable failure state that never displays
+  partial totals.
+- Render the query-provided active Visit count, active Payment count, cash sum
+  and day status in a compact operational summary.
+- Render every returned Visit and Payment source row, including canceled and
+  replaced rows, cancellation reasons, correction direction/changed fields,
+  entry-origin labels, comments and UTC occurred/recorded times.
+- Link every source row to the canonical client profile and its recent
+  Visit/Payment section. Dedicated full history/audit routes remain Milestone
+  10 work and are not invented in this step.
+- Add Daily report navigation to the authenticated app shell and reception
+  empty state, with the existing Admin-or-Owner policy applied to the Reports
+  folder.
+- Add responsive report styling for a four-value tablet summary, one-column
+  phone flow, stable touch targets and source-fact rows without horizontal
+  overflow. At tablet width the expanded Owner shell uses two rows so account,
+  session and navigation metadata stay readable.
+- Add deterministic PostgreSQL-backed UI fixtures containing one active and
+  one canceled Visit plus active, canceled and replaced/corrected Payments for
+  a fixed report date.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed.
+- Focused Playwright daily-report coverage passed 3/3 against the healthy local
+  Docker PostgreSQL service: tablet and phone canonical totals/source rows,
+  correction/cancellation explanations, profile navigation, touch targets,
+  horizontal-fit checks and an invalid-date failure with no partial totals.
+- Tablet and phone full-page screenshots were captured and reviewed. The
+  tablet shell compression found on the first pass was corrected; the second
+  pass kept account/session/navigation text readable and source labels compact.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 361 core
+  tests, 35 web tests, 479 PostgreSQL/architecture/security infrastructure
+  tests, 57 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): add daily report page`.
+
+Next recommended step:
+
+- Add one bounded server-rendered ending-soon Memberships report page with an
+  as-of date, the accepted seven-day threshold, canonical Memberships state,
+  profile navigation and bounded pagination. Keep the other report-list UIs
+  for later steps.
