@@ -72,6 +72,11 @@ public static class ServiceCollectionExtensions
             GetClientMembershipStatesQueryHandler>();
         services.AddScoped<
             IBodyLifeQueryHandler<
+                GetEndingSoonMembershipStateRowsQuery,
+                GetEndingSoonMembershipStateRowsResult>,
+            GetEndingSoonMembershipStateRowsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<
                 GetClientMembershipExtensionExplanationsQuery,
                 GetClientMembershipExtensionExplanationsResult>,
             GetClientMembershipExtensionExplanationsQueryHandler>();
@@ -102,6 +107,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeQueryHandler<GenerateDailyReportQuery, GenerateDailyReportResult>,
             GenerateDailyReportQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<
+                ListEndingSoonMembershipsQuery,
+                ListEndingSoonMembershipsResult>,
+            ListEndingSoonMembershipsQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<CreateMembershipTypeCommand>,

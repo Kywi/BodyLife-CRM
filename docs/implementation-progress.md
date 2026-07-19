@@ -8408,3 +8408,90 @@ Next recommended step:
   with the default seven-day threshold, reading Memberships-owned canonical
   state/effective end dates and reviewing the PostgreSQL query path before any
   report UI work.
+
+## Step 144 - Milestone 9 ending-soon Membership report backend
+
+Status: completed. Milestone 9 is in progress.
+
+Plan alignment:
+
+- Implement only the roadmap's bounded `ListEndingSoonMemberships` backend
+  query. Keep low-remaining, negative, inactive and report UI work for later
+  independent steps.
+- Read lifecycle and calculated values through a reviewed Memberships public
+  query contract. Reports must not calculate effective end, remaining visits,
+  warnings or extension state independently.
+- Use the existing PostgreSQL effective-end query path and add no schema,
+  migration, write workflow or business-audit side effect.
+
+Scope:
+
+- Add `GetEndingSoonMembershipStateRowsQuery` and immutable Memberships source
+  page/row/result contracts for a requested as-of date, day threshold and
+  bounded offset pagination.
+- Add a PostgreSQL Memberships query handler that authorizes the canonical
+  Owner/named Admin/shared Reception session, filters lifecycle-active
+  Memberships by inclusive cached `effective_end_date` range, and orders rows
+  by effective end, normalized client name and Membership id.
+- Fail the complete query as `recalculation_failed` when any possible
+  lifecycle-active candidate has a missing or stale Membership state cache.
+  Reconstruct every visible `MembershipStateReadModel` through the existing
+  Memberships factory, including canonical warnings and extension explanation.
+- Add `ListEndingSoonMembershipsQuery` and a Reports-owned page projection.
+  Reports retains the exact Membership state object and computes only the
+  requested `days_left = effective_end_date - as_of_date` selector value.
+- Default the report to seven days through the approved Memberships query
+  contract, enforce limit/offset bounds, return stable next offsets and reject
+  mismatched or impossible source pagination without partial rows.
+- Register both source and composite handlers as scoped services and explicitly
+  review the five new Memberships DTO/query/result types in the architecture
+  contract allowlist. Formula implementations remain forbidden outside the
+  Memberships module.
+- Reuse `ix_membership_state_cache_effective_end_date`; no EF model or migration
+  change is required.
+
+Validation:
+
+- Focused core contract coverage passed 5/5 for query defaults, canonical state
+  retention, the sole Reports-owned days-left calculation, defensive pages,
+  selector consistency and failure shapes.
+- Focused PostgreSQL report coverage passed 5/5 with no skips against the
+  healthy local Docker PostgreSQL service. It covers inclusive 0/3/7-day
+  selection, exclusion of expired/canceled/eight-day rows, deterministic name
+  ordering, threshold filtering, pagination, profile/report state agreement,
+  permissions, invalid selectors, missing/stale cache failure, DI and source
+  failure mapping.
+- The PostgreSQL `EXPLAIN (COSTS OFF)` assertion confirms the ending-soon range
+  path uses `ix_membership_state_cache_effective_end_date`.
+- The focused Membership formula ownership architecture gate passed 2/2 after
+  reviewing only the new public source contracts.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 345 core
+  tests, 35 web tests, 464 PostgreSQL/architecture/security infrastructure
+  tests, 54 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): list memberships ending soon`.
+
+Next recommended step:
+
+- Add one bounded `ListLowRemainingMemberships` backend query for Milestone 9
+  with the default `remaining_visits <= 2` threshold, consuming
+  Memberships-owned canonical state and reviewing the existing PostgreSQL
+  remaining-visits index before any report UI work.
