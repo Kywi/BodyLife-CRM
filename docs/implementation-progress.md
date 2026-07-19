@@ -8495,3 +8495,96 @@ Next recommended step:
   with the default `remaining_visits <= 2` threshold, consuming
   Memberships-owned canonical state and reviewing the existing PostgreSQL
   remaining-visits index before any report UI work.
+
+## Step 145 - Milestone 9 low-remaining Membership report backend
+
+Status: completed. Milestone 9 is in progress.
+
+Plan alignment:
+
+- Implement only the roadmap's bounded `ListLowRemainingMemberships` backend
+  query. Keep negative, inactive and report UI work for later independent
+  steps.
+- Consume a reviewed Memberships public state contract. Reports must not count
+  Visits or derive remaining visits, warnings, effective end or last counted
+  visit independently.
+- Reuse the existing PostgreSQL remaining-visits query path and add no schema,
+  migration, write workflow or business-audit side effect.
+
+Scope:
+
+- Add `GetLowRemainingMembershipStateRowsQuery` and immutable Memberships
+  source page/row/result contracts for an as-of date, remaining-visits
+  threshold and bounded offset pagination.
+- Apply the accepted literal `remaining_visits <= threshold` predicate to
+  lifecycle-active Memberships. The default threshold is `2`; zero and signed
+  negative state remain visible rather than being silently reinterpreted by
+  Reports. The later negative report will add its dedicated negative details.
+- Add a PostgreSQL Memberships query handler that authorizes the canonical
+  Owner/named Admin/shared Reception session and orders rows by remaining
+  visits, normalized client name and Membership id.
+- Fail the complete query as `recalculation_failed` when any lifecycle-active
+  Membership has a missing or stale state cache, including an unknown candidate
+  that might ultimately sit outside the requested threshold. Canceled and
+  corrected lifecycle rows do not block or enter the list.
+- Reconstruct every visible `MembershipStateReadModel` through the existing
+  Memberships factory, retaining canonical visit limit snapshot, counted and
+  remaining visits, last counted visit, effective end, warnings and extension
+  explanation.
+- Add `ListLowRemainingMembershipsQuery` and a Reports-owned page projection.
+  Reports keeps the exact Membership state object and exposes its fields
+  directly; it performs no membership calculation.
+- Enforce non-negative thresholds, limit/offset bounds, stable next offsets and
+  fail-closed source selector/pagination consistency.
+- Register both source and composite handlers as scoped services and explicitly
+  review the five new Memberships DTO/query/result types in the architecture
+  contract allowlist. Formula implementations remain forbidden outside the
+  Memberships module.
+- Reuse `ix_membership_state_cache_remaining_visits`; no EF model or migration
+  change is required.
+
+Validation:
+
+- Focused core contract coverage passed 5/5 for query defaults, exact canonical
+  state retention, literal negative/zero/two threshold semantics, defensive
+  pages, selector consistency and failure shapes.
+- Focused PostgreSQL report coverage passed 5/5 with no skips against the
+  healthy local Docker PostgreSQL service. It covers deterministic
+  `-1/0/1/1/2` ordering, exclusion of three remaining visits and canceled
+  lifecycle rows, zero-threshold filtering, pagination, profile/report state
+  agreement, permissions, invalid selectors, missing/stale cache failure, DI
+  and source failure mapping.
+- The PostgreSQL `EXPLAIN (COSTS OFF)` assertion confirms the low-remaining
+  predicate uses `ix_membership_state_cache_remaining_visits`.
+- The focused Membership formula ownership architecture gate passed 2/2 after
+  reviewing only the new public source contracts.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 350 core
+  tests, 35 web tests, 469 PostgreSQL/architecture/security infrastructure
+  tests, 54 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): list low-remaining memberships`.
+
+Next recommended step:
+
+- Add one bounded `ListNegativeClients` backend query for Milestone 9 using
+  Memberships-owned `negative_balance`, signed remaining visits and first
+  negative Visit identity/date, with a PostgreSQL partial-index review before
+  any report UI work.
