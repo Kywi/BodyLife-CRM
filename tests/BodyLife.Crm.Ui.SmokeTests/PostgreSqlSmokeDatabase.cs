@@ -1742,7 +1742,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Assert.Equal(9, await command.ExecuteNonQueryAsync());
     }
 
-    public async Task SeedLowRemainingCountedVisitsAsync(
+    public async Task<Guid[]> SeedCountedMembershipVisitsAsync(
         Guid recordedByAccountId,
         Guid clientId,
         Guid membershipId,
@@ -1754,7 +1754,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             || membershipId == Guid.Empty)
         {
             throw new ArgumentException(
-                "Low-remaining Visit seed ids must be non-empty.",
+                "Membership report Visit seed ids must be non-empty.",
                 nameof(membershipId));
         }
 
@@ -1768,6 +1768,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         var sessionId = Guid.NewGuid();
         var lastOccurredAt = firstOccurredAt.AddHours(count - 1);
+        var visitIds = new Guid[count];
 
         await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
@@ -1789,7 +1790,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 values (
                     @session_id,
                     @account_id,
-                    'UI low-remaining report seed',
+                    'UI Membership report Visit seed',
                     @started_at,
                     @expires_at,
                     @ended_at,
@@ -1806,7 +1807,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         for (var index = 0; index < count; index++)
         {
-            var visitId = Guid.NewGuid();
+            var visitId = visitIds[index] = Guid.NewGuid();
             var occurredAt = firstOccurredAt.AddHours(index);
             var recordedAt = occurredAt.AddMinutes(5);
             await using var visitCommand = connection.CreateCommand();
@@ -1835,7 +1836,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     'membership',
                     'normal',
                     null,
-                    'Low-remaining report smoke source',
+                    'Membership report smoke source',
                     'active');
 
                 insert into bodylife.visit_consumptions (
@@ -1878,6 +1879,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         await transaction.CommitAsync();
         await RebuildMembershipAsync(membershipId);
+        return visitIds;
     }
 
     public async Task<int> CountLowRemainingMembershipsAsync(int threshold)
@@ -1899,6 +1901,138 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "recalculation_version",
             MembershipStateCacheRebuilder.CurrentRecalculationVersion);
         command.Parameters.AddWithValue("threshold", threshold);
+
+        return Convert.ToInt32(await command.ExecuteScalarAsync());
+    }
+
+    public async Task SeedNegativeMembershipOpeningStateAsync(
+        Guid recordedByAccountId,
+        Guid membershipId,
+        DateOnly openingAsOfDate,
+        int declaredRemainingVisits,
+        int declaredNegativeBalance)
+    {
+        if (recordedByAccountId == Guid.Empty || membershipId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Negative opening-state seed ids must be non-empty.",
+                nameof(membershipId));
+        }
+
+        if (openingAsOfDate == default
+            || declaredRemainingVisits >= 0
+            || declaredNegativeBalance <= 0)
+        {
+            throw new ArgumentException(
+                "A negative opening state requires a date, signed remaining visits and positive negative balance.",
+                nameof(declaredRemainingVisits));
+        }
+
+        var sessionId = Guid.NewGuid();
+        var recordedAt = new DateTimeOffset(
+            openingAsOfDate.ToDateTime(new TimeOnly(12, 0), DateTimeKind.Utc));
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id,
+                account_id,
+                device_label,
+                started_at,
+                expires_at,
+                ended_at,
+                last_seen_at)
+            values (
+                @session_id,
+                @account_id,
+                'UI negative report opening seed',
+                @session_started_at,
+                @session_expires_at,
+                @session_ended_at,
+                @session_last_seen_at);
+
+            insert into bodylife.membership_opening_states (
+                id,
+                membership_id,
+                opening_as_of_date,
+                declared_remaining_visits,
+                declared_negative_balance,
+                known_effective_end_date,
+                known_extension_days,
+                source_reference,
+                reason,
+                recorded_at,
+                recorded_by_account_id,
+                recorded_session_id,
+                entry_origin,
+                entry_batch_id,
+                status)
+            values (
+                @opening_state_id,
+                @membership_id,
+                @opening_as_of_date,
+                @declared_remaining_visits,
+                @declared_negative_balance,
+                null,
+                null,
+                'UI negative report opening source',
+                'Legacy negative balance retained for report proof',
+                @recorded_at,
+                @account_id,
+                @session_id,
+                'manual_backfill',
+                @entry_batch_id,
+                'active')
+            """;
+        command.Parameters.AddWithValue("session_id", sessionId);
+        command.Parameters.AddWithValue("account_id", recordedByAccountId);
+        command.Parameters.AddWithValue("session_started_at", recordedAt.AddHours(-1));
+        command.Parameters.AddWithValue("session_expires_at", recordedAt.AddDays(1));
+        command.Parameters.AddWithValue("session_ended_at", recordedAt.AddMinutes(10));
+        command.Parameters.AddWithValue("session_last_seen_at", recordedAt.AddMinutes(5));
+        command.Parameters.AddWithValue("opening_state_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue(
+            "opening_as_of_date",
+            NpgsqlDbType.Date,
+            openingAsOfDate);
+        command.Parameters.AddWithValue(
+            "declared_remaining_visits",
+            declaredRemainingVisits);
+        command.Parameters.AddWithValue(
+            "declared_negative_balance",
+            declaredNegativeBalance);
+        command.Parameters.AddWithValue("recorded_at", recordedAt);
+        command.Parameters.AddWithValue("entry_batch_id", Guid.NewGuid());
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
+        await transaction.CommitAsync();
+
+        await RebuildMembershipAsync(membershipId);
+    }
+
+    public async Task<int> CountNegativeMembershipsAsync()
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select count(*)
+            from bodylife.issued_memberships membership
+            join bodylife.membership_state_cache cache
+                on cache.membership_id = membership.id
+            where membership.status = 'active'
+                and cache.recalculation_version = @recalculation_version
+                and cache.negative_balance > 0
+            """;
+        command.Parameters.AddWithValue(
+            "recalculation_version",
+            MembershipStateCacheRebuilder.CurrentRecalculationVersion);
 
         return Convert.ToInt32(await command.ExecuteScalarAsync());
     }

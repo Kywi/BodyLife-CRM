@@ -1,46 +1,36 @@
 @page
-@model BodyLife.Crm.Web.Pages.Reports.EndingSoonModel
+@model BodyLife.Crm.Web.Pages.Reports.NegativeClientsModel
 @{
-    ViewData["Title"] = "Memberships ending soon";
+    ViewData["Title"] = "Clients with negative visits";
     var reportPage = Model.ReportPage;
     var errorMessage = Model.LoadError ?? Model.Result?.ErrorMessage;
 }
 
-<main class="page-shell report-page" data-ending-soon-report-page>
-    <section class="report-layout" aria-labelledby="ending-soon-title">
+<main class="page-shell report-page" data-negative-clients-report-page>
+    <section class="report-layout" aria-labelledby="negative-clients-title">
         <header class="report-header">
             <div>
                 <p class="eyebrow">Reports</p>
-                <h1 id="ending-soon-title">Memberships ending soon</h1>
+                <h1 id="negative-clients-title">Clients with negative visits</h1>
             </div>
             <nav class="report-header-actions" aria-label="Report navigation">
                 <a class="secondary-link" asp-page="/Reports/Daily">Daily report</a>
+                <a class="secondary-link" asp-page="/Reports/EndingSoon">Ending soon</a>
                 <a class="secondary-link" asp-page="/Reports/LowRemaining">Low remaining</a>
-                <a class="secondary-link" asp-page="/Reports/NegativeClients">Negative clients</a>
                 <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
             </nav>
         </header>
 
-        <form class="report-filter report-list-filter"
+        <form class="report-filter"
               method="get"
-              asp-page="/Reports/EndingSoon"
+              asp-page="/Reports/NegativeClients"
               data-busy-form>
             <div class="report-date-field">
-                <label for="ending-soon-as-of">As-of date</label>
-                <input id="ending-soon-as-of"
+                <label for="negative-clients-as-of">As-of date</label>
+                <input id="negative-clients-as-of"
                        name="asOf"
                        type="date"
                        value="@Model.AsOfDate?.ToString("yyyy-MM-dd")"
-                       required />
-            </div>
-            <div class="report-threshold-field">
-                <label for="ending-soon-days">Days ahead</label>
-                <input id="ending-soon-days"
-                       name="days"
-                       type="number"
-                       value="@Model.DaysThreshold"
-                       min="0"
-                       max="@Model.MaximumDaysThreshold"
                        required />
             </div>
             <button type="submit" data-busy-text="Loading...">Load report</button>
@@ -55,52 +45,54 @@
         }
         else if (reportPage is not null)
         {
-            <div class="report-list-context" aria-label="Ending-soon report selection">
+            <div class="report-list-context" aria-label="Negative-clients report selection">
                 <span>
                     <strong>@reportPage.AsOfDate.ToString("yyyy-MM-dd")</strong>
                     as-of date
                 </span>
                 <span>
-                    <strong>@reportPage.DaysThreshold</strong>
-                    day threshold
+                    <strong>@reportPage.Items.Count</strong>
+                    clients shown
                 </span>
                 <span>
-                    <strong>@reportPage.Items.Count</strong>
-                    memberships shown
+                    <strong>@Model.CurrentPageNumber</strong>
+                    report page
                 </span>
             </div>
 
-            <section class="report-source-section" aria-labelledby="ending-soon-results-title">
+            <section class="report-source-section" aria-labelledby="negative-clients-results-title">
                 <header class="report-section-header">
                     <div>
                         <p class="eyebrow">Canonical Memberships state</p>
-                        <h2 id="ending-soon-results-title">Ending soon</h2>
+                        <h2 id="negative-clients-results-title">Negative balances</h2>
                     </div>
                 </header>
 
                 @if (reportPage.Items.Count == 0)
                 {
-                    <p class="empty-state">No active memberships end within this threshold.</p>
+                    <p class="empty-state">No active memberships have a negative visit balance.</p>
                 }
                 else
                 {
-                    <ol class="report-row-list" data-ending-soon-rows>
+                    <ol class="report-row-list" data-negative-client-rows>
                         @foreach (var row in reportPage.Items)
                         {
-                            <li class="report-row ending-soon-row"
+                            <li class="report-row negative-client-row"
                                 data-client-id="@row.ClientId"
                                 data-membership-id="@row.MembershipId"
-                                data-days-left="@row.DaysLeft"
-                                data-effective-end="@row.EffectiveEndDate.ToString("yyyy-MM-dd")"
-                                data-remaining-visits="@row.RemainingVisits">
+                                data-negative-balance="@row.NegativeBalance"
+                                data-remaining-visits="@row.RemainingVisits"
+                                data-first-negative-visit-id="@row.FirstNegativeVisitId"
+                                data-first-negative-visit-date="@row.FirstNegativeVisitDate?.ToString("yyyy-MM-dd")"
+                                data-effective-end="@row.EffectiveEndDate.ToString("yyyy-MM-dd")">
                                 <header class="report-row-header">
                                     <div>
                                         <p class="report-row-kind">@row.MembershipTypeName</p>
                                         <h3>@row.ClientDisplayName</h3>
                                     </div>
                                     <div class="report-membership-heading">
-                                        <strong>@DaysLeftLabel(row.DaysLeft)</strong>
-                                        <span class="status-chip status-corrected">Ending soon</span>
+                                        <strong>@VisitDebtLabel(row.NegativeBalance)</strong>
+                                        <span class="status-chip status-canceled">Negative</span>
                                     </div>
                                 </header>
 
@@ -110,24 +102,25 @@
                                         <dd>@(row.ClientPhone ?? "No phone")</dd>
                                     </div>
                                     <div>
-                                        <dt>Effective end</dt>
-                                        <dd>@row.EffectiveEndDate.ToString("yyyy-MM-dd")</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Days left</dt>
-                                        <dd>@row.DaysLeft</dd>
-                                    </div>
-                                    <div>
                                         <dt>Remaining visits</dt>
                                         <dd>@row.RemainingVisits</dd>
                                     </div>
-                                    @if (row.MembershipState.ExtensionDays > 0)
-                                    {
-                                        <div>
-                                            <dt>Extension days</dt>
-                                            <dd>@row.MembershipState.ExtensionDays</dd>
-                                        </div>
-                                    }
+                                    <div>
+                                        <dt>Negative balance</dt>
+                                        <dd>@row.NegativeBalance</dd>
+                                    </div>
+                                    <div>
+                                        <dt>First negative visit</dt>
+                                        <dd>@FormatFirstNegativeDate(row.FirstNegativeVisitDate)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Last counted visit</dt>
+                                        <dd>@FormatLastVisit(row.LastCountedVisitAt)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Effective end</dt>
+                                        <dd>@row.EffectiveEndDate.ToString("yyyy-MM-dd")</dd>
+                                    </div>
                                 </dl>
 
                                 @if (row.Warnings.Count > 0)
@@ -151,13 +144,13 @@
                                        asp-fragment="membership-panel-title">
                                         Open client
                                     </a>
-                                    @if (row.HasExtensionExplanation)
+                                    @if (row.FirstNegativeVisitId is not null)
                                     {
                                         <a class="secondary-link"
                                            asp-page="/Reception/Index"
                                            asp-route-clientId="@row.ClientId"
-                                           asp-fragment="membership-extension-history-title">
-                                            Extension details
+                                           asp-fragment="recent-visits-title">
+                                            View visits
                                         </a>
                                     }
                                 </footer>
@@ -168,14 +161,13 @@
 
                 @if (Model.PreviousOffset is not null || reportPage.NextOffset is not null)
                 {
-                    <nav class="report-pagination" aria-label="Ending-soon result pages">
+                    <nav class="report-pagination" aria-label="Negative-client result pages">
                         <span class="report-pagination-slot">
                             @if (Model.PreviousOffset is { } previousOffset)
                             {
                                 <a class="secondary-link"
-                                   asp-page="/Reports/EndingSoon"
+                                   asp-page="/Reports/NegativeClients"
                                    asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
-                                   asp-route-days="@reportPage.DaysThreshold"
                                    asp-route-offset="@previousOffset">
                                     Previous
                                 </a>
@@ -186,9 +178,8 @@
                             @if (reportPage.NextOffset is { } nextOffset)
                             {
                                 <a class="secondary-link"
-                                   asp-page="/Reports/EndingSoon"
+                                   asp-page="/Reports/NegativeClients"
                                    asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
-                                   asp-route-days="@reportPage.DaysThreshold"
                                    asp-route-offset="@nextOffset">
                                     Next
                                 </a>
@@ -202,14 +193,23 @@
 </main>
 
 @functions {
-    private static string DaysLeftLabel(int daysLeft)
+    private static string VisitDebtLabel(int negativeBalance)
     {
-        return daysLeft switch
-        {
-            0 => "Ends today",
-            1 => "1 day left",
-            _ => $"{daysLeft} days left",
-        };
+        return negativeBalance == 1
+            ? "1 visit owed"
+            : $"{negativeBalance} visits owed";
+    }
+
+    private static string FormatFirstNegativeDate(DateOnly? firstNegativeVisitDate)
+    {
+        return firstNegativeVisitDate?.ToString("yyyy-MM-dd") ?? "Not recorded";
+    }
+
+    private static string FormatLastVisit(DateTimeOffset? lastCountedVisitAt)
+    {
+        return lastCountedVisitAt is { } timestamp
+            ? $"{timestamp.ToUniversalTime():yyyy-MM-dd HH:mm} UTC"
+            : "No counted visits";
     }
 
     private static string WarningClass(MembershipWarningSeverity severity)

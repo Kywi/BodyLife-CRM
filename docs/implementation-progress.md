@@ -9031,3 +9031,88 @@ Next recommended step:
   date, canonical negative balance and first-negative Visit state, profile
   navigation and bounded pagination. Keep inactive-client report UI for a
   later step.
+
+## Step 151 - Milestone 9 negative-clients report UI
+
+Status: completed. Milestone 9 is in progress.
+
+Plan alignment:
+
+- Implement only the roadmap's `ListNegativeClients` UI over the existing
+  backend query. Keep inactive-client report UI for a separate later step.
+- Preserve Memberships ownership: render query-provided signed remaining
+  visits, positive negative balance, nullable first-negative Visit identity and
+  date, last counted Visit, effective end and warnings. Do not derive negative
+  state in Razor, JavaScript or the PageModel.
+- Keep lifecycle-active debt visible even when Membership date warnings also
+  apply. Do not infer closure from Payments or invent the deferred explicit
+  negative-closure workflow.
+- Reuse the Reports folder authorization and backend actor checks. This read
+  step creates no command, audit entry, schema change or migration.
+
+Scope:
+
+- Add `/Reports/NegativeClients` as a server-rendered Razor Page with an as-of
+  date and busy GET submit.
+- Request ten canonical rows per page and preserve the selected date through
+  backend-provided next-offset and bounded previous-page navigation. Query
+  failures keep the date filter available and never render partial debt rows.
+- Render client name/phone, immutable Membership type snapshot, signed
+  remaining visits, positive negative balance, nullable first-negative Visit
+  date, last counted Visit, effective end and server warnings in compact rows.
+- Link every row to the client Membership panel. Add recent-Visit navigation
+  only when Memberships supplies an exact first-negative Visit id; an honest
+  opening-state debt renders `Not recorded` and no invented Visit link.
+- Add Negative-clients navigation to the existing Daily, Ending-soon and
+  Low-remaining pages without creating a report hub or the inactive-client
+  screen prematurely.
+- Reuse the existing tablet/phone report layout, danger chips, warning blocks,
+  touch-safe row actions and responsive pagination; no new CSS or client-side
+  Membership logic was required.
+- Generalize the existing PostgreSQL counted-Visit smoke seed and add a
+  negative opening-state seed. The lazy UI scenario contains eleven
+  Visit-derived negative Memberships plus one opening-state debt and retains
+  the fixture's existing canonical negative row for realistic pagination.
+
+Validation:
+
+- Release UI smoke-test project build passed with 0 warnings and 0 errors.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed.
+- Focused Playwright negative-clients coverage passed 3/3 against the healthy
+  local Docker PostgreSQL service: tablet/phone report navigation and as-of
+  filter, canonical signed debt, exact first-negative Visit id/date, last
+  counted Visit, warnings, recent-Visit/profile navigation, honest nullable
+  opening-state provenance, bounded pagination, touch targets, horizontal-fit
+  checks and an invalid-offset failure with no partial rows.
+- Tablet and phone full-page screenshots were captured and reviewed; filters,
+  debt/provenance fields, warnings, row actions and pagination remain readable
+  without overlap or horizontal scrolling.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 361 core
+  tests, 35 web tests, 479 PostgreSQL/architecture/security infrastructure
+  tests, 66 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): add negative-clients report page`.
+
+Next recommended step:
+
+- Add one bounded server-rendered inactive-clients report page with an as-of
+  date, an explicit `14`/`30`/`60` day threshold, an include-never-visited
+  control, canonical last-Visit and Membership summary state, profile/history
+  navigation and bounded pagination.

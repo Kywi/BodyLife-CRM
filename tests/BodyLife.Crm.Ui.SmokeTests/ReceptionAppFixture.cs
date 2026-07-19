@@ -21,8 +21,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     private readonly ConcurrentQueue<string> _output = new();
     private readonly object _endingSoonReportSeedLock = new();
     private readonly object _lowRemainingReportSeedLock = new();
+    private readonly object _negativeClientsReportSeedLock = new();
     private Task<EndingSoonReportSmokeScenario>? _endingSoonReportSeedTask;
     private Task<LowRemainingReportSmokeScenario>? _lowRemainingReportSeedTask;
+    private Task<NegativeClientsReportSmokeScenario>? _negativeClientsReportSeedTask;
     private Process? _process;
     private PostgreSqlSmokeDatabase? _database;
     private Guid _ownerAccountId;
@@ -581,6 +583,16 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         }
     }
 
+    public Task<NegativeClientsReportSmokeScenario>
+        EnsureNegativeClientsReportScenarioAsync()
+    {
+        lock (_negativeClientsReportSeedLock)
+        {
+            return _negativeClientsReportSeedTask ??=
+                SeedNegativeClientsReportScenarioAsync();
+        }
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");
@@ -1085,7 +1097,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
             if (countedVisits > 0)
             {
-                await database.SeedLowRemainingCountedVisitsAsync(
+                await database.SeedCountedMembershipVisitsAsync(
                     _ownerAccountId,
                     clientId,
                     membershipId,
@@ -1119,6 +1131,96 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "Low Client 03",
             oneRemainingClientId,
             OneRemainingLastVisitAt: firstVisitAt.AddDays(2).AddHours(1));
+    }
+
+    private async Task<NegativeClientsReportSmokeScenario>
+        SeedNegativeClientsReportScenarioAsync()
+    {
+        if (_ownerAccountId == Guid.Empty || _activeMembershipTypeId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "The negative-clients report fixture dependencies are not initialized.");
+        }
+
+        const int pageSize = 10;
+        const int visitDerivedMemberships = 11;
+        var asOfDate = new DateOnly(2052, 5, 20);
+        var firstVisitAt = new DateTimeOffset(
+            2052,
+            5,
+            5,
+            9,
+            0,
+            0,
+            TimeSpan.Zero);
+        var database = RequireDatabase();
+        Guid featuredClientId = Guid.Empty;
+        Guid featuredFirstNegativeVisitId = Guid.Empty;
+
+        for (var index = 1; index <= visitDerivedMemberships; index++)
+        {
+            var clientId = await database.SeedClientAsync(
+                _ownerAccountId,
+                "Negative",
+                $"Client {index:00}",
+                $"+380 67 840 00 {index:00}",
+                $"BL-NEGATIVE-{index:00}");
+            var membershipId = await database.SeedIssuedMembershipAsync(
+                _ownerAccountId,
+                clientId,
+                _activeMembershipTypeId,
+                $"Negative plan {index:00}",
+                visitsLimitSnapshot: 2,
+                startDate: asOfDate.AddDays(-30),
+                durationDays: 90);
+            var countedVisits = index == 1 ? 5 : 4;
+            var visitIds = await database.SeedCountedMembershipVisitsAsync(
+                _ownerAccountId,
+                clientId,
+                membershipId,
+                firstVisitAt.AddDays(index - 1),
+                countedVisits);
+
+            if (index == 1)
+            {
+                featuredClientId = clientId;
+                featuredFirstNegativeVisitId = visitIds[2];
+            }
+        }
+
+        var openingClientId = await database.SeedClientAsync(
+            _ownerAccountId,
+            "Negative",
+            "Opening",
+            "+380 67 840 00 12",
+            "BL-NEGATIVE-OPENING");
+        var openingMembershipId = await database.SeedIssuedMembershipAsync(
+            _ownerAccountId,
+            openingClientId,
+            _activeMembershipTypeId,
+            "Negative opening plan",
+            visitsLimitSnapshot: 8,
+            startDate: asOfDate.AddDays(-30),
+            durationDays: 90);
+        await database.SeedNegativeMembershipOpeningStateAsync(
+            _ownerAccountId,
+            openingMembershipId,
+            asOfDate.AddDays(-1),
+            declaredRemainingVisits: -1,
+            declaredNegativeBalance: 1);
+
+        return new NegativeClientsReportSmokeScenario(
+            asOfDate,
+            pageSize,
+            await database.CountNegativeMembershipsAsync(),
+            "Negative Client 01",
+            featuredClientId,
+            featuredFirstNegativeVisitId,
+            FeaturedFirstNegativeVisitDate: new DateOnly(2052, 5, 5),
+            FeaturedLastCountedVisitAt: firstVisitAt.AddHours(4),
+            FeaturedEffectiveEndDate: new DateOnly(2052, 7, 18),
+            OpeningClientDisplayName: "Negative Opening",
+            OpeningClientId: openingClientId);
     }
 
     private static async Task SeedMembershipExtensionHistoryFixtureAsync(
@@ -1860,6 +1962,19 @@ public sealed record LowRemainingReportSmokeScenario(
     string OneRemainingClientDisplayName,
     Guid OneRemainingClientId,
     DateTimeOffset OneRemainingLastVisitAt);
+
+public sealed record NegativeClientsReportSmokeScenario(
+    DateOnly AsOfDate,
+    int PageSize,
+    int TotalMemberships,
+    string FeaturedClientDisplayName,
+    Guid FeaturedClientId,
+    Guid FeaturedFirstNegativeVisitId,
+    DateOnly FeaturedFirstNegativeVisitDate,
+    DateTimeOffset FeaturedLastCountedVisitAt,
+    DateOnly FeaturedEffectiveEndDate,
+    string OpeningClientDisplayName,
+    Guid OpeningClientId);
 
 public sealed record NonWorkingDayCorrectionSmokeScenario(
     Guid PeriodId,
