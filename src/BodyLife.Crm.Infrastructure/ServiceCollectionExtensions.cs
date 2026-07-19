@@ -82,6 +82,11 @@ public static class ServiceCollectionExtensions
             GetLowRemainingMembershipStateRowsQueryHandler>();
         services.AddScoped<
             IBodyLifeQueryHandler<
+                GetNegativeMembershipStateRowsQuery,
+                GetNegativeMembershipStateRowsResult>,
+            GetNegativeMembershipStateRowsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<
                 GetClientMembershipExtensionExplanationsQuery,
                 GetClientMembershipExtensionExplanationsResult>,
             GetClientMembershipExtensionExplanationsQueryHandler>();
@@ -122,6 +127,9 @@ public static class ServiceCollectionExtensions
                 ListLowRemainingMembershipsQuery,
                 ListLowRemainingMembershipsResult>,
             ListLowRemainingMembershipsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<ListNegativeClientsQuery, ListNegativeClientsResult>,
+            ListNegativeClientsQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<CreateMembershipTypeCommand>,

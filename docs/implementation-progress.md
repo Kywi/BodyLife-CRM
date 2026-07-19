@@ -8588,3 +8588,98 @@ Next recommended step:
   Memberships-owned `negative_balance`, signed remaining visits and first
   negative Visit identity/date, with a PostgreSQL partial-index review before
   any report UI work.
+
+## Step 146 - Milestone 9 negative-clients report backend
+
+Status: completed. Milestone 9 is in progress.
+
+Plan alignment:
+
+- Implement only the roadmap's bounded `ListNegativeClients` backend query.
+  Keep inactive-client reporting and all report UI work for later independent
+  steps.
+- Consume a reviewed Memberships public state contract. Reports must not derive
+  negative balance, remaining visits, first-negative Visit provenance,
+  effective end or warnings independently.
+- Keep lifecycle-active negative Memberships visible even when they are expired
+  by date. An ordinary Payment does not close or hide a negative balance, and
+  the deferred explicit closure workflow is not invented in this read step.
+- Reuse the existing PostgreSQL partial negative-balance index and add no
+  schema, migration, write workflow or business-audit side effect.
+
+Scope:
+
+- Add `GetNegativeMembershipStateRowsQuery` and immutable Memberships source
+  page/row/result contracts for an as-of date and bounded offset pagination.
+- Select lifecycle-active Memberships with canonical cached
+  `negative_balance > 0`; zero balances and canceled/corrected lifecycle rows
+  are excluded. Date activity is retained in the canonical state and warnings
+  but is not a negative-debt visibility filter.
+- Order rows by negative balance descending, first-negative Visit date,
+  normalized client name and Membership id, with stable limit-plus-one
+  pagination.
+- Fail the complete query as `recalculation_failed` when any lifecycle-active
+  Membership has a missing or stale current-version cache, including an unknown
+  candidate that might contain negative state.
+- Reconstruct each visible `MembershipStateReadModel` through the existing
+  Memberships factory. Preserve signed remaining visits, positive negative
+  balance, nullable first-negative Visit id/date, last counted Visit, effective
+  end and server-derived warnings exactly as the client profile query does.
+- Treat nullable first-negative provenance as an honest opening-state or
+  otherwise non-Visit-derived negative baseline; do not invent a Visit or date.
+- Add `ListNegativeClientsQuery` and a Reports-owned page projection that keeps
+  the exact Membership state object and exposes only its canonical fields.
+- Enforce as-of date and limit/offset bounds, stable next offsets and
+  fail-closed source selector/pagination consistency.
+- Register both source and report handlers as scoped services and review the
+  five new Memberships DTO/query/result types in the formula-ownership
+  architecture allowlist.
+- Reuse `ix_membership_state_cache_negative_balance_open`; no EF model or
+  migration change is required.
+
+Validation:
+
+- Focused core contract coverage passed 5/5 for defaults, exact canonical
+  negative state retention, expired negative visibility, nullable
+  first-negative provenance, defensive pages, pagination consistency and
+  failure shapes.
+- Focused PostgreSQL report coverage passed 5/5 with no skips against the
+  healthy local Docker PostgreSQL service. It covers descending balance and
+  first-date/name ordering, exclusion of zero/canceled rows, expired negative
+  visibility, nullable provenance, pagination, profile/report state agreement,
+  authorization precedence, invalid selectors, missing/stale cache failure,
+  DI and source failure mapping.
+- PostgreSQL `EXPLAIN (COSTS OFF)` confirms the negative predicate uses
+  `ix_membership_state_cache_negative_balance_open`.
+- The focused Membership formula ownership architecture gate passed 2/2 after
+  reviewing only the new public source contracts.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed as
+  part of the full gate.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 355 core
+  tests, 35 web tests, 474 PostgreSQL/architecture/security infrastructure
+  tests, 54 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): list negative clients`.
+
+Next recommended step:
+
+- Add one bounded `ListInactiveClients` backend query for Milestone 9 using the
+  accepted inactivity selector and canonical Clients/Memberships activity
+  sources before any report UI work.
