@@ -1742,6 +1742,90 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Assert.Equal(9, await command.ExecuteNonQueryAsync());
     }
 
+    public async Task SeedEndingSoonFreezeAsync(
+        Guid recordedByAccountId,
+        Guid clientId,
+        Guid membershipId,
+        DateOnly startDate,
+        DateOnly endDate)
+    {
+        if (startDate == default || endDate < startDate)
+        {
+            throw new ArgumentException(
+                "A valid inclusive ending-soon Freeze range is required.",
+                nameof(startDate));
+        }
+
+        var sessionId = Guid.NewGuid();
+        var recordedAt = TimeProvider.System.GetUtcNow();
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id,
+                account_id,
+                device_label,
+                started_at,
+                expires_at,
+                ended_at,
+                last_seen_at)
+            values (
+                @session_id,
+                @account_id,
+                'UI ending-soon report seed',
+                @session_started_at,
+                @session_expires_at,
+                null,
+                @session_last_seen_at);
+
+            insert into bodylife.freezes (
+                id,
+                client_id,
+                membership_id,
+                start_date,
+                end_date,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id,
+                status)
+            values (
+                @freeze_id,
+                @client_id,
+                @membership_id,
+                @start_date,
+                @end_date,
+                'Ending-soon extension explanation',
+                @recorded_at,
+                @recorded_at,
+                @account_id,
+                @session_id,
+                'normal',
+                null,
+                'active')
+            """;
+        command.Parameters.AddWithValue("session_id", sessionId);
+        command.Parameters.AddWithValue("account_id", recordedByAccountId);
+        command.Parameters.AddWithValue("session_started_at", recordedAt.AddMinutes(-1));
+        command.Parameters.AddWithValue("session_expires_at", recordedAt.AddDays(1));
+        command.Parameters.AddWithValue("session_last_seen_at", recordedAt);
+        command.Parameters.AddWithValue("freeze_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, startDate);
+        command.Parameters.AddWithValue("end_date", NpgsqlDbType.Date, endDate);
+        command.Parameters.AddWithValue("recorded_at", recordedAt);
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
+
+        await RebuildMembershipAsync(membershipId);
+    }
+
     public async Task<Guid> InsertExternalCountedVisitAsync(
         Guid clientId,
         Guid membershipId)

@@ -8862,3 +8862,88 @@ Next recommended step:
   as-of date, the accepted seven-day threshold, canonical Memberships state,
   profile navigation and bounded pagination. Keep the other report-list UIs
   for later steps.
+
+## Step 149 - Milestone 9 ending-soon report UI
+
+Status: completed. Milestone 9 is in progress.
+
+Plan alignment:
+
+- Implement only the roadmap's `ListEndingSoonMemberships` UI over the existing
+  backend query. Keep low-remaining, negative and inactive report pages for
+  separate later steps.
+- Preserve Memberships ownership: render query-provided effective end date,
+  days left, remaining visits, warnings and extension explanation. Do not
+  derive any Membership formula in Razor, JavaScript or the PageModel.
+- Reuse the Reports folder's existing Admin-or-Owner authorization. This read
+  step creates no command, audit entry, schema change or migration.
+
+Scope:
+
+- Add `/Reports/EndingSoon` as a server-rendered Razor Page with an as-of date,
+  configurable 0-365 day threshold defaulting to the accepted seven days, and
+  a busy GET submit that resets pagination.
+- Request ten canonical rows per page and preserve the selected date and
+  threshold through backend-provided next-offset and bounded previous-page
+  navigation. Query failures keep the filters available and never render a
+  partial Membership list.
+- Render client name/phone, immutable Membership type snapshot, effective end,
+  query-provided days left and remaining visits, server warnings and canonical
+  extension days in compact report rows.
+- Link every row to the client Membership panel and expose an extension-detail
+  link only when the query says an explanation exists.
+- Add Daily/Ending-soon report-to-report navigation without creating a broad
+  report hub or the remaining report-list screens prematurely.
+- Extend the report styles for a tablet three-value selection band, compact
+  warning chips, touch-safe row actions, phone stacking and responsive
+  previous/next pagination.
+- Add a lazy PostgreSQL-backed UI scenario with eleven active issued
+  Memberships, zero-remaining state and one active Freeze-derived extension.
+  The isolated 2050 as-of range avoids collisions with existing workflow
+  fixtures while still exercising the production query and cache rebuild path.
+
+Validation:
+
+- Release UI project build passed with 0 warnings and 0 errors.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed.
+- Focused Playwright ending-soon coverage passed 3/3 against the healthy local
+  Docker PostgreSQL service: tablet/phone date and threshold filters, default
+  seven-day results, canonical warnings/state, extension explanation/profile
+  navigation, 10+1 pagination, touch targets, horizontal-fit checks and an
+  invalid-threshold failure with no partial rows.
+- The first focused run correctly exposed overlap with an existing 2046
+  non-working-day fixture. Moving this report-only scenario to an unused 2050
+  range restored deterministic 11-row pagination without filtering legitimate
+  canonical data from the application.
+- Tablet and phone full-page screenshots were captured and reviewed; filters,
+  warnings, row actions and pagination remain readable without overlap or
+  horizontal scrolling.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 361 core
+  tests, 35 web tests, 479 PostgreSQL/architecture/security infrastructure
+  tests, 60 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): add ending-soon report page`.
+
+Next recommended step:
+
+- Add one bounded server-rendered low-remaining Memberships report page with
+  an as-of date, the accepted `remaining_visits <= 2` threshold, canonical
+  Memberships state, profile navigation and bounded pagination. Keep negative
+  and inactive report UIs for later steps.

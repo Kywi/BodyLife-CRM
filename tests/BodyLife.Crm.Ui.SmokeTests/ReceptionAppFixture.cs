@@ -19,8 +19,12 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public const string SmokeAdminPassword = "smoke admin password";
 
     private readonly ConcurrentQueue<string> _output = new();
+    private readonly object _endingSoonReportSeedLock = new();
+    private Task<EndingSoonReportSmokeScenario>? _endingSoonReportSeedTask;
     private Process? _process;
     private PostgreSqlSmokeDatabase? _database;
+    private Guid _ownerAccountId;
+    private Guid _activeMembershipTypeId;
 
     public Uri BaseAddress { get; private set; } = null!;
 
@@ -559,6 +563,14 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().CountCorrectPaymentIdempotencyKeysAsync(clientId);
     }
 
+    public Task<EndingSoonReportSmokeScenario> EnsureEndingSoonReportScenarioAsync()
+    {
+        lock (_endingSoonReportSeedLock)
+        {
+            return _endingSoonReportSeedTask ??= SeedEndingSoonReportScenarioAsync();
+        }
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");
@@ -681,6 +693,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         Assert.True(
             ownerResult.Status is OwnerBootstrapStatus.Created or OwnerBootstrapStatus.AlreadyExists,
             $"Owner bootstrap returned {ownerResult.Status}.");
+        _ownerAccountId = ownerResult.AccountId!.Value;
 
         var passwordHashingService = new PasswordHashingService();
         var credentialsBootstrapper = new OwnerCredentialsBootstrapper(
@@ -696,6 +709,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
         await SeedReceptionClientsAsync(database, ownerResult.AccountId!.Value);
         var activeMembershipTypeId = await SeedMembershipTypesAsync(database);
+        _activeMembershipTypeId = activeMembershipTypeId;
         await SeedMarkVisitFixturesAsync(
             database,
             ownerResult.AccountId.Value,
@@ -935,6 +949,73 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             DailyReportClientId,
             DailyReportBusinessDate);
+    }
+
+    private async Task<EndingSoonReportSmokeScenario>
+        SeedEndingSoonReportScenarioAsync()
+    {
+        if (_ownerAccountId == Guid.Empty || _activeMembershipTypeId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "The ending-soon report fixture dependencies are not initialized.");
+        }
+
+        const int pageSize = 10;
+        const int totalMemberships = 11;
+        const int durationDays = 30;
+        var asOfDate = new DateOnly(2050, 3, 10);
+        var database = RequireDatabase();
+        Guid zeroRemainingClientId = Guid.Empty;
+        Guid extensionClientId = Guid.Empty;
+
+        for (var index = 1; index <= totalMemberships; index++)
+        {
+            var clientId = await database.SeedClientAsync(
+                _ownerAccountId,
+                "Ending",
+                $"Client {index:00}",
+                $"+380 67 820 00 {index:00}",
+                $"BL-ENDING-{index:00}");
+            var daysLeft = (index - 1) % 8;
+            var hasExtension = index == 5;
+            var baseDaysLeft = hasExtension ? daysLeft - 2 : daysLeft;
+            var membershipId = await database.SeedIssuedMembershipAsync(
+                _ownerAccountId,
+                clientId,
+                _activeMembershipTypeId,
+                $"Ending plan {index:00}",
+                visitsLimitSnapshot: index == 1 ? 0 : 8,
+                startDate: asOfDate
+                    .AddDays(baseDaysLeft)
+                    .AddDays(-(durationDays - 1)),
+                durationDays: durationDays);
+
+            if (index == 1)
+            {
+                zeroRemainingClientId = clientId;
+            }
+
+            if (hasExtension)
+            {
+                extensionClientId = clientId;
+                await database.SeedEndingSoonFreezeAsync(
+                    _ownerAccountId,
+                    clientId,
+                    membershipId,
+                    asOfDate.AddDays(-5),
+                    asOfDate.AddDays(-4));
+            }
+        }
+
+        return new EndingSoonReportSmokeScenario(
+            asOfDate,
+            pageSize,
+            totalMemberships,
+            "Ending Client 01",
+            zeroRemainingClientId,
+            "Ending Client 05",
+            extensionClientId,
+            ExtensionEffectiveEndDate: new DateOnly(2050, 3, 14));
     }
 
     private static async Task SeedMembershipExtensionHistoryFixtureAsync(
@@ -1653,6 +1734,16 @@ public sealed record NonWorkingDayAddSmokeScenario(
 
     public string ScopeEntrantClientDisplayName => $"Confirm {ViewportLabel} Entrant";
 }
+
+public sealed record EndingSoonReportSmokeScenario(
+    DateOnly AsOfDate,
+    int PageSize,
+    int TotalMemberships,
+    string ZeroRemainingClientDisplayName,
+    Guid ZeroRemainingClientId,
+    string ExtensionClientDisplayName,
+    Guid ExtensionClientId,
+    DateOnly ExtensionEffectiveEndDate);
 
 public sealed record NonWorkingDayCorrectionSmokeScenario(
     Guid PeriodId,

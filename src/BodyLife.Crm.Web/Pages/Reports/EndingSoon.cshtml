@@ -1,0 +1,219 @@
+@page
+@model BodyLife.Crm.Web.Pages.Reports.EndingSoonModel
+@{
+    ViewData["Title"] = "Memberships ending soon";
+    var reportPage = Model.ReportPage;
+    var errorMessage = Model.LoadError ?? Model.Result?.ErrorMessage;
+}
+
+<main class="page-shell report-page" data-ending-soon-report-page>
+    <section class="report-layout" aria-labelledby="ending-soon-title">
+        <header class="report-header">
+            <div>
+                <p class="eyebrow">Reports</p>
+                <h1 id="ending-soon-title">Memberships ending soon</h1>
+            </div>
+            <nav class="report-header-actions" aria-label="Report navigation">
+                <a class="secondary-link" asp-page="/Reports/Daily">Daily report</a>
+                <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+            </nav>
+        </header>
+
+        <form class="report-filter report-list-filter"
+              method="get"
+              asp-page="/Reports/EndingSoon"
+              data-busy-form>
+            <div class="report-date-field">
+                <label for="ending-soon-as-of">As-of date</label>
+                <input id="ending-soon-as-of"
+                       name="asOf"
+                       type="date"
+                       value="@Model.AsOfDate?.ToString("yyyy-MM-dd")"
+                       required />
+            </div>
+            <div class="report-threshold-field">
+                <label for="ending-soon-days">Days ahead</label>
+                <input id="ending-soon-days"
+                       name="days"
+                       type="number"
+                       value="@Model.DaysThreshold"
+                       min="0"
+                       max="@Model.MaximumDaysThreshold"
+                       required />
+            </div>
+            <button type="submit" data-busy-text="Loading...">Load report</button>
+        </form>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="warning-block warning-danger report-error" role="alert">
+                <strong>Report unavailable</strong>
+                <span>@errorMessage</span>
+            </div>
+        }
+        else if (reportPage is not null)
+        {
+            <div class="report-list-context" aria-label="Ending-soon report selection">
+                <span>
+                    <strong>@reportPage.AsOfDate.ToString("yyyy-MM-dd")</strong>
+                    as-of date
+                </span>
+                <span>
+                    <strong>@reportPage.DaysThreshold</strong>
+                    day threshold
+                </span>
+                <span>
+                    <strong>@reportPage.Items.Count</strong>
+                    memberships shown
+                </span>
+            </div>
+
+            <section class="report-source-section" aria-labelledby="ending-soon-results-title">
+                <header class="report-section-header">
+                    <div>
+                        <p class="eyebrow">Canonical Memberships state</p>
+                        <h2 id="ending-soon-results-title">Ending soon</h2>
+                    </div>
+                </header>
+
+                @if (reportPage.Items.Count == 0)
+                {
+                    <p class="empty-state">No active memberships end within this threshold.</p>
+                }
+                else
+                {
+                    <ol class="report-row-list" data-ending-soon-rows>
+                        @foreach (var row in reportPage.Items)
+                        {
+                            <li class="report-row ending-soon-row"
+                                data-client-id="@row.ClientId"
+                                data-membership-id="@row.MembershipId"
+                                data-days-left="@row.DaysLeft"
+                                data-effective-end="@row.EffectiveEndDate.ToString("yyyy-MM-dd")"
+                                data-remaining-visits="@row.RemainingVisits">
+                                <header class="report-row-header">
+                                    <div>
+                                        <p class="report-row-kind">@row.MembershipTypeName</p>
+                                        <h3>@row.ClientDisplayName</h3>
+                                    </div>
+                                    <div class="report-membership-heading">
+                                        <strong>@DaysLeftLabel(row.DaysLeft)</strong>
+                                        <span class="status-chip status-corrected">Ending soon</span>
+                                    </div>
+                                </header>
+
+                                <dl class="report-row-meta report-membership-meta">
+                                    <div>
+                                        <dt>Phone</dt>
+                                        <dd>@(row.ClientPhone ?? "No phone")</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Effective end</dt>
+                                        <dd>@row.EffectiveEndDate.ToString("yyyy-MM-dd")</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Days left</dt>
+                                        <dd>@row.DaysLeft</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Remaining visits</dt>
+                                        <dd>@row.RemainingVisits</dd>
+                                    </div>
+                                    @if (row.MembershipState.ExtensionDays > 0)
+                                    {
+                                        <div>
+                                            <dt>Extension days</dt>
+                                            <dd>@row.MembershipState.ExtensionDays</dd>
+                                        </div>
+                                    }
+                                </dl>
+
+                                @if (row.Warnings.Count > 0)
+                                {
+                                    <ul class="warning-chip-list report-warning-list"
+                                        aria-label="Membership warnings">
+                                        @foreach (var warning in row.Warnings)
+                                        {
+                                            <li class="@WarningClass(warning.Severity)"
+                                                data-membership-warning="@warning.Code">
+                                                @warning.Message
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+
+                                <footer class="report-row-actions">
+                                    <a class="secondary-link"
+                                       asp-page="/Reception/Index"
+                                       asp-route-clientId="@row.ClientId"
+                                       asp-fragment="membership-panel-title">
+                                        Open client
+                                    </a>
+                                    @if (row.HasExtensionExplanation)
+                                    {
+                                        <a class="secondary-link"
+                                           asp-page="/Reception/Index"
+                                           asp-route-clientId="@row.ClientId"
+                                           asp-fragment="membership-extension-history-title">
+                                            Extension details
+                                        </a>
+                                    }
+                                </footer>
+                            </li>
+                        }
+                    </ol>
+                }
+
+                @if (Model.PreviousOffset is not null || reportPage.NextOffset is not null)
+                {
+                    <nav class="report-pagination" aria-label="Ending-soon result pages">
+                        <span class="report-pagination-slot">
+                            @if (Model.PreviousOffset is { } previousOffset)
+                            {
+                                <a class="secondary-link"
+                                   asp-page="/Reports/EndingSoon"
+                                   asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
+                                   asp-route-days="@reportPage.DaysThreshold"
+                                   asp-route-offset="@previousOffset">
+                                    Previous
+                                </a>
+                            }
+                        </span>
+                        <span class="result-count">Page @Model.CurrentPageNumber</span>
+                        <span class="report-pagination-slot report-pagination-next">
+                            @if (reportPage.NextOffset is { } nextOffset)
+                            {
+                                <a class="secondary-link"
+                                   asp-page="/Reports/EndingSoon"
+                                   asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
+                                   asp-route-days="@reportPage.DaysThreshold"
+                                   asp-route-offset="@nextOffset">
+                                    Next
+                                </a>
+                            }
+                        </span>
+                    </nav>
+                }
+            </section>
+        }
+    </section>
+</main>
+
+@functions {
+    private static string DaysLeftLabel(int daysLeft)
+    {
+        return daysLeft switch
+        {
+            0 => "Ends today",
+            1 => "1 day left",
+            _ => $"{daysLeft} days left",
+        };
+    }
+
+    private static string WarningClass(MembershipWarningSeverity severity)
+    {
+        return severity == MembershipWarningSeverity.Danger
+            ? "warning-chip-danger"
+            : "warning-chip-caution";
+    }
+}
