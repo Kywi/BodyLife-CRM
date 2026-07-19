@@ -1742,6 +1742,167 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Assert.Equal(9, await command.ExecuteNonQueryAsync());
     }
 
+    public async Task SeedLowRemainingCountedVisitsAsync(
+        Guid recordedByAccountId,
+        Guid clientId,
+        Guid membershipId,
+        DateTimeOffset firstOccurredAt,
+        int count)
+    {
+        if (recordedByAccountId == Guid.Empty
+            || clientId == Guid.Empty
+            || membershipId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Low-remaining Visit seed ids must be non-empty.",
+                nameof(membershipId));
+        }
+
+        if (count <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(count),
+                count,
+                "At least one counted Visit is required.");
+        }
+
+        var sessionId = Guid.NewGuid();
+        var lastOccurredAt = firstOccurredAt.AddHours(count - 1);
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+
+        await using (var sessionCommand = connection.CreateCommand())
+        {
+            sessionCommand.Transaction = transaction;
+            sessionCommand.CommandText =
+                """
+                insert into bodylife.sessions (
+                    id,
+                    account_id,
+                    device_label,
+                    started_at,
+                    expires_at,
+                    ended_at,
+                    last_seen_at)
+                values (
+                    @session_id,
+                    @account_id,
+                    'UI low-remaining report seed',
+                    @started_at,
+                    @expires_at,
+                    @ended_at,
+                    @last_seen_at)
+                """;
+            sessionCommand.Parameters.AddWithValue("session_id", sessionId);
+            sessionCommand.Parameters.AddWithValue("account_id", recordedByAccountId);
+            sessionCommand.Parameters.AddWithValue("started_at", firstOccurredAt.AddHours(-1));
+            sessionCommand.Parameters.AddWithValue("expires_at", lastOccurredAt.AddDays(1));
+            sessionCommand.Parameters.AddWithValue("ended_at", lastOccurredAt.AddMinutes(10));
+            sessionCommand.Parameters.AddWithValue("last_seen_at", lastOccurredAt.AddMinutes(5));
+            Assert.Equal(1, await sessionCommand.ExecuteNonQueryAsync());
+        }
+
+        for (var index = 0; index < count; index++)
+        {
+            var visitId = Guid.NewGuid();
+            var occurredAt = firstOccurredAt.AddHours(index);
+            var recordedAt = occurredAt.AddMinutes(5);
+            await using var visitCommand = connection.CreateCommand();
+            visitCommand.Transaction = transaction;
+            visitCommand.CommandText =
+                """
+                insert into bodylife.visits (
+                    id,
+                    client_id,
+                    occurred_at,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id,
+                    visit_kind,
+                    entry_origin,
+                    entry_batch_id,
+                    comment,
+                    status)
+                values (
+                    @visit_id,
+                    @client_id,
+                    @occurred_at,
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'membership',
+                    'normal',
+                    null,
+                    'Low-remaining report smoke source',
+                    'active');
+
+                insert into bodylife.visit_consumptions (
+                    id,
+                    visit_id,
+                    client_id,
+                    visit_kind,
+                    membership_id,
+                    consumption_type,
+                    source_fact_type,
+                    source_fact_id,
+                    recorded_at,
+                    recorded_by_account_id,
+                    recorded_session_id,
+                    status)
+                values (
+                    @consumption_id,
+                    @visit_id,
+                    @client_id,
+                    'membership',
+                    @membership_id,
+                    'counted',
+                    'visit',
+                    @visit_id,
+                    @recorded_at,
+                    @account_id,
+                    @session_id,
+                    'active')
+                """;
+            visitCommand.Parameters.AddWithValue("visit_id", visitId);
+            visitCommand.Parameters.AddWithValue("consumption_id", Guid.NewGuid());
+            visitCommand.Parameters.AddWithValue("client_id", clientId);
+            visitCommand.Parameters.AddWithValue("membership_id", membershipId);
+            visitCommand.Parameters.AddWithValue("occurred_at", occurredAt);
+            visitCommand.Parameters.AddWithValue("recorded_at", recordedAt);
+            visitCommand.Parameters.AddWithValue("account_id", recordedByAccountId);
+            visitCommand.Parameters.AddWithValue("session_id", sessionId);
+            Assert.Equal(2, await visitCommand.ExecuteNonQueryAsync());
+        }
+
+        await transaction.CommitAsync();
+        await RebuildMembershipAsync(membershipId);
+    }
+
+    public async Task<int> CountLowRemainingMembershipsAsync(int threshold)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select count(*)
+            from bodylife.issued_memberships membership
+            join bodylife.membership_state_cache cache
+                on cache.membership_id = membership.id
+            where membership.status = 'active'
+                and cache.recalculation_version = @recalculation_version
+                and cache.remaining_visits <= @threshold
+            """;
+        command.Parameters.AddWithValue(
+            "recalculation_version",
+            MembershipStateCacheRebuilder.CurrentRecalculationVersion);
+        command.Parameters.AddWithValue("threshold", threshold);
+
+        return Convert.ToInt32(await command.ExecuteScalarAsync());
+    }
+
     public async Task SeedEndingSoonFreezeAsync(
         Guid recordedByAccountId,
         Guid clientId,

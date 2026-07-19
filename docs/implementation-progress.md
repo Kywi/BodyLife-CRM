@@ -8947,3 +8947,87 @@ Next recommended step:
   an as-of date, the accepted `remaining_visits <= 2` threshold, canonical
   Memberships state, profile navigation and bounded pagination. Keep negative
   and inactive report UIs for later steps.
+
+## Step 150 - Milestone 9 low-remaining report UI
+
+Status: completed. Milestone 9 is in progress.
+
+Plan alignment:
+
+- Implement only the roadmap's `ListLowRemainingMemberships` UI over the
+  existing backend query. Keep negative and inactive report pages for separate
+  later steps.
+- Preserve Memberships ownership: render query-provided visit-limit snapshot,
+  counted visits, remaining visits, last counted visit, effective end and
+  warnings. Do not derive any Membership formula in Razor, JavaScript or the
+  PageModel.
+- Reuse the Reports folder's existing Admin-or-Owner authorization. This read
+  step creates no command, audit entry, schema change or migration.
+
+Scope:
+
+- Add `/Reports/LowRemaining` as a server-rendered Razor Page with an as-of
+  date, configurable non-negative remaining-visits threshold defaulting to the
+  accepted value of two, and a busy GET submit that resets pagination.
+- Request ten canonical rows per page and preserve the selected date and
+  threshold through backend-provided next-offset and bounded previous-page
+  navigation. Query failures keep the filters available and never render a
+  partial Membership list.
+- Render client name/phone, immutable Membership type and visit-limit
+  snapshots, counted and remaining visits, last counted visit, effective end,
+  server warnings and optional extension explanation navigation in compact
+  report rows.
+- Link every row to the client Membership panel and add Daily/Ending-soon/
+  Low-remaining report navigation without creating a broad report hub or the
+  remaining report-list screens prematurely.
+- Reuse the existing tablet/phone report layout, status chips, warning blocks,
+  touch-safe row actions and responsive pagination; no new CSS or client-side
+  Membership logic was required.
+- Add a lazy PostgreSQL-backed UI scenario with eleven issued Memberships and
+  canonical counted Visit/consumption source facts. The scenario exercises
+  negative, zero, one and two remaining visits, a real last-counted timestamp,
+  threshold filtering and 10-row pagination while retaining the fixture's
+  existing canonical rows.
+
+Validation:
+
+- Release UI smoke-test project build passed with 0 warnings and 0 errors.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed.
+- Focused Playwright low-remaining coverage passed 3/3 against the healthy
+  local Docker PostgreSQL service: tablet/phone report navigation, accepted
+  default threshold, date/threshold filters, canonical snapshot/visit state,
+  negative/zero/low warnings, last counted Visit, profile navigation, bounded
+  pagination, touch targets, horizontal-fit checks and an invalid-threshold
+  failure with no partial rows.
+- Tablet and phone full-page screenshots were captured and reviewed; filters,
+  canonical state, warnings, row actions and pagination remain readable
+  without overlap or horizontal scrolling.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 361 core
+  tests, 35 web tests, 479 PostgreSQL/architecture/security infrastructure
+  tests, 63 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): add low-remaining report page`.
+
+Next recommended step:
+
+- Add one bounded server-rendered negative-clients report page with an as-of
+  date, canonical negative balance and first-negative Visit state, profile
+  navigation and bounded pagination. Keep inactive-client report UI for a
+  later step.

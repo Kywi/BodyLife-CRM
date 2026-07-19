@@ -1,45 +1,44 @@
 @page
-@model BodyLife.Crm.Web.Pages.Reports.EndingSoonModel
+@model BodyLife.Crm.Web.Pages.Reports.LowRemainingModel
 @{
-    ViewData["Title"] = "Memberships ending soon";
+    ViewData["Title"] = "Memberships low on visits";
     var reportPage = Model.ReportPage;
     var errorMessage = Model.LoadError ?? Model.Result?.ErrorMessage;
 }
 
-<main class="page-shell report-page" data-ending-soon-report-page>
-    <section class="report-layout" aria-labelledby="ending-soon-title">
+<main class="page-shell report-page" data-low-remaining-report-page>
+    <section class="report-layout" aria-labelledby="low-remaining-title">
         <header class="report-header">
             <div>
                 <p class="eyebrow">Reports</p>
-                <h1 id="ending-soon-title">Memberships ending soon</h1>
+                <h1 id="low-remaining-title">Memberships low on visits</h1>
             </div>
             <nav class="report-header-actions" aria-label="Report navigation">
                 <a class="secondary-link" asp-page="/Reports/Daily">Daily report</a>
-                <a class="secondary-link" asp-page="/Reports/LowRemaining">Low remaining</a>
+                <a class="secondary-link" asp-page="/Reports/EndingSoon">Ending soon</a>
                 <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
             </nav>
         </header>
 
         <form class="report-filter report-list-filter"
               method="get"
-              asp-page="/Reports/EndingSoon"
+              asp-page="/Reports/LowRemaining"
               data-busy-form>
             <div class="report-date-field">
-                <label for="ending-soon-as-of">As-of date</label>
-                <input id="ending-soon-as-of"
+                <label for="low-remaining-as-of">As-of date</label>
+                <input id="low-remaining-as-of"
                        name="asOf"
                        type="date"
                        value="@Model.AsOfDate?.ToString("yyyy-MM-dd")"
                        required />
             </div>
             <div class="report-threshold-field">
-                <label for="ending-soon-days">Days ahead</label>
-                <input id="ending-soon-days"
-                       name="days"
+                <label for="low-remaining-threshold">Remaining visits at most</label>
+                <input id="low-remaining-threshold"
+                       name="remaining"
                        type="number"
-                       value="@Model.DaysThreshold"
+                       value="@Model.RemainingVisitsThreshold"
                        min="0"
-                       max="@Model.MaximumDaysThreshold"
                        required />
             </div>
             <button type="submit" data-busy-text="Loading...">Load report</button>
@@ -54,14 +53,14 @@
         }
         else if (reportPage is not null)
         {
-            <div class="report-list-context" aria-label="Ending-soon report selection">
+            <div class="report-list-context" aria-label="Low-remaining report selection">
                 <span>
                     <strong>@reportPage.AsOfDate.ToString("yyyy-MM-dd")</strong>
                     as-of date
                 </span>
                 <span>
-                    <strong>@reportPage.DaysThreshold</strong>
-                    day threshold
+                    <strong>@reportPage.RemainingVisitsThreshold</strong>
+                    remaining-visits threshold
                 </span>
                 <span>
                     <strong>@reportPage.Items.Count</strong>
@@ -69,37 +68,39 @@
                 </span>
             </div>
 
-            <section class="report-source-section" aria-labelledby="ending-soon-results-title">
+            <section class="report-source-section" aria-labelledby="low-remaining-results-title">
                 <header class="report-section-header">
                     <div>
                         <p class="eyebrow">Canonical Memberships state</p>
-                        <h2 id="ending-soon-results-title">Ending soon</h2>
+                        <h2 id="low-remaining-results-title">Low remaining visits</h2>
                     </div>
                 </header>
 
                 @if (reportPage.Items.Count == 0)
                 {
-                    <p class="empty-state">No active memberships end within this threshold.</p>
+                    <p class="empty-state">No active memberships are at or below this threshold.</p>
                 }
                 else
                 {
-                    <ol class="report-row-list" data-ending-soon-rows>
+                    <ol class="report-row-list" data-low-remaining-rows>
                         @foreach (var row in reportPage.Items)
                         {
-                            <li class="report-row ending-soon-row"
+                            <li class="report-row low-remaining-row"
                                 data-client-id="@row.ClientId"
                                 data-membership-id="@row.MembershipId"
-                                data-days-left="@row.DaysLeft"
-                                data-effective-end="@row.EffectiveEndDate.ToString("yyyy-MM-dd")"
-                                data-remaining-visits="@row.RemainingVisits">
+                                data-counted-visits="@row.CountedVisits"
+                                data-remaining-visits="@row.RemainingVisits"
+                                data-visits-limit="@row.VisitsLimitSnapshot">
                                 <header class="report-row-header">
                                     <div>
                                         <p class="report-row-kind">@row.MembershipTypeName</p>
                                         <h3>@row.ClientDisplayName</h3>
                                     </div>
                                     <div class="report-membership-heading">
-                                        <strong>@DaysLeftLabel(row.DaysLeft)</strong>
-                                        <span class="status-chip status-corrected">Ending soon</span>
+                                        <strong>@RemainingVisitsLabel(row.RemainingVisits)</strong>
+                                        <span class="status-chip @StatusChipClass(row.RemainingVisits)">
+                                            @StatusLabel(row.RemainingVisits)
+                                        </span>
                                     </div>
                                 </header>
 
@@ -109,24 +110,25 @@
                                         <dd>@(row.ClientPhone ?? "No phone")</dd>
                                     </div>
                                     <div>
-                                        <dt>Effective end</dt>
-                                        <dd>@row.EffectiveEndDate.ToString("yyyy-MM-dd")</dd>
+                                        <dt>Visit limit</dt>
+                                        <dd>@row.VisitsLimitSnapshot</dd>
                                     </div>
                                     <div>
-                                        <dt>Days left</dt>
-                                        <dd>@row.DaysLeft</dd>
+                                        <dt>Counted visits</dt>
+                                        <dd>@row.CountedVisits</dd>
                                     </div>
                                     <div>
                                         <dt>Remaining visits</dt>
                                         <dd>@row.RemainingVisits</dd>
                                     </div>
-                                    @if (row.MembershipState.ExtensionDays > 0)
-                                    {
-                                        <div>
-                                            <dt>Extension days</dt>
-                                            <dd>@row.MembershipState.ExtensionDays</dd>
-                                        </div>
-                                    }
+                                    <div>
+                                        <dt>Last counted visit</dt>
+                                        <dd>@FormatLastVisit(row.LastCountedVisitAt)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Effective end</dt>
+                                        <dd>@row.EffectiveEndDate.ToString("yyyy-MM-dd")</dd>
+                                    </div>
                                 </dl>
 
                                 @if (row.Warnings.Count > 0)
@@ -167,14 +169,14 @@
 
                 @if (Model.PreviousOffset is not null || reportPage.NextOffset is not null)
                 {
-                    <nav class="report-pagination" aria-label="Ending-soon result pages">
+                    <nav class="report-pagination" aria-label="Low-remaining result pages">
                         <span class="report-pagination-slot">
                             @if (Model.PreviousOffset is { } previousOffset)
                             {
                                 <a class="secondary-link"
-                                   asp-page="/Reports/EndingSoon"
+                                   asp-page="/Reports/LowRemaining"
                                    asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
-                                   asp-route-days="@reportPage.DaysThreshold"
+                                   asp-route-remaining="@reportPage.RemainingVisitsThreshold"
                                    asp-route-offset="@previousOffset">
                                     Previous
                                 </a>
@@ -185,9 +187,9 @@
                             @if (reportPage.NextOffset is { } nextOffset)
                             {
                                 <a class="secondary-link"
-                                   asp-page="/Reports/EndingSoon"
+                                   asp-page="/Reports/LowRemaining"
                                    asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
-                                   asp-route-days="@reportPage.DaysThreshold"
+                                   asp-route-remaining="@reportPage.RemainingVisitsThreshold"
                                    asp-route-offset="@nextOffset">
                                     Next
                                 </a>
@@ -201,14 +203,37 @@
 </main>
 
 @functions {
-    private static string DaysLeftLabel(int daysLeft)
+    private static string RemainingVisitsLabel(int remainingVisits)
     {
-        return daysLeft switch
+        return remainingVisits switch
         {
-            0 => "Ends today",
-            1 => "1 day left",
-            _ => $"{daysLeft} days left",
+            1 => "1 visit left",
+            _ => $"{remainingVisits} visits left",
         };
+    }
+
+    private static string StatusLabel(int remainingVisits)
+    {
+        return remainingVisits switch
+        {
+            < 0 => "Negative",
+            0 => "No visits",
+            _ => "Low remaining",
+        };
+    }
+
+    private static string StatusChipClass(int remainingVisits)
+    {
+        return remainingVisits <= 0
+            ? "status-canceled"
+            : "status-corrected";
+    }
+
+    private static string FormatLastVisit(DateTimeOffset? lastCountedVisitAt)
+    {
+        return lastCountedVisitAt is { } timestamp
+            ? $"{timestamp.ToUniversalTime():yyyy-MM-dd HH:mm} UTC"
+            : "No counted visits";
     }
 
     private static string WarningClass(MembershipWarningSeverity severity)

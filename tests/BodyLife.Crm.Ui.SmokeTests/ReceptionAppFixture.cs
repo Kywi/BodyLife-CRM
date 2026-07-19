@@ -20,7 +20,9 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     private readonly ConcurrentQueue<string> _output = new();
     private readonly object _endingSoonReportSeedLock = new();
+    private readonly object _lowRemainingReportSeedLock = new();
     private Task<EndingSoonReportSmokeScenario>? _endingSoonReportSeedTask;
+    private Task<LowRemainingReportSmokeScenario>? _lowRemainingReportSeedTask;
     private Process? _process;
     private PostgreSqlSmokeDatabase? _database;
     private Guid _ownerAccountId;
@@ -571,6 +573,14 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         }
     }
 
+    public Task<LowRemainingReportSmokeScenario> EnsureLowRemainingReportScenarioAsync()
+    {
+        lock (_lowRemainingReportSeedLock)
+        {
+            return _lowRemainingReportSeedTask ??= SeedLowRemainingReportScenarioAsync();
+        }
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");
@@ -1016,6 +1026,99 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "Ending Client 05",
             extensionClientId,
             ExtensionEffectiveEndDate: new DateOnly(2050, 3, 14));
+    }
+
+    private async Task<LowRemainingReportSmokeScenario>
+        SeedLowRemainingReportScenarioAsync()
+    {
+        if (_ownerAccountId == Guid.Empty || _activeMembershipTypeId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "The low-remaining report fixture dependencies are not initialized.");
+        }
+
+        const int pageSize = 10;
+        const int scenarioMemberships = 11;
+        var asOfDate = new DateOnly(2051, 4, 15);
+        var firstVisitAt = new DateTimeOffset(
+            2051,
+            4,
+            8,
+            9,
+            0,
+            0,
+            TimeSpan.Zero);
+        var database = RequireDatabase();
+        Guid negativeClientId = Guid.Empty;
+        Guid zeroClientId = Guid.Empty;
+        Guid oneRemainingClientId = Guid.Empty;
+
+        for (var index = 1; index <= scenarioMemberships; index++)
+        {
+            var clientId = await database.SeedClientAsync(
+                _ownerAccountId,
+                "Low",
+                $"Client {index:00}",
+                $"+380 67 830 00 {index:00}",
+                $"BL-LOW-{index:00}");
+            var visitsLimit = index switch
+            {
+                1 => 3,
+                2 => 2,
+                3 => 3,
+                _ => 2,
+            };
+            var countedVisits = index switch
+            {
+                1 => 5,
+                2 or 3 => 2,
+                _ => 0,
+            };
+            var membershipId = await database.SeedIssuedMembershipAsync(
+                _ownerAccountId,
+                clientId,
+                _activeMembershipTypeId,
+                $"Low visits plan {index:00}",
+                visitsLimitSnapshot: visitsLimit,
+                startDate: asOfDate.AddDays(-10),
+                durationDays: 60);
+
+            if (countedVisits > 0)
+            {
+                await database.SeedLowRemainingCountedVisitsAsync(
+                    _ownerAccountId,
+                    clientId,
+                    membershipId,
+                    firstVisitAt.AddDays(index - 1),
+                    countedVisits);
+            }
+
+            switch (index)
+            {
+                case 1:
+                    negativeClientId = clientId;
+                    break;
+                case 2:
+                    zeroClientId = clientId;
+                    break;
+                case 3:
+                    oneRemainingClientId = clientId;
+                    break;
+            }
+        }
+
+        return new LowRemainingReportSmokeScenario(
+            asOfDate,
+            pageSize,
+            await database.CountLowRemainingMembershipsAsync(threshold: 2),
+            await database.CountLowRemainingMembershipsAsync(threshold: 1),
+            "Low Client 01",
+            negativeClientId,
+            "Low Client 02",
+            zeroClientId,
+            "Low Client 03",
+            oneRemainingClientId,
+            OneRemainingLastVisitAt: firstVisitAt.AddDays(2).AddHours(1));
     }
 
     private static async Task SeedMembershipExtensionHistoryFixtureAsync(
@@ -1744,6 +1847,19 @@ public sealed record EndingSoonReportSmokeScenario(
     string ExtensionClientDisplayName,
     Guid ExtensionClientId,
     DateOnly ExtensionEffectiveEndDate);
+
+public sealed record LowRemainingReportSmokeScenario(
+    DateOnly AsOfDate,
+    int PageSize,
+    int TotalMemberships,
+    int ThresholdOneMemberships,
+    string NegativeClientDisplayName,
+    Guid NegativeClientId,
+    string ZeroClientDisplayName,
+    Guid ZeroClientId,
+    string OneRemainingClientDisplayName,
+    Guid OneRemainingClientId,
+    DateTimeOffset OneRemainingLastVisitAt);
 
 public sealed record NonWorkingDayCorrectionSmokeScenario(
     Guid PeriodId,
