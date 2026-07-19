@@ -8325,3 +8325,86 @@ Next recommended step:
   snapshots. Derive totals from returned rows, retain correction/cancellation
   drill-downs and keep report UI plus threshold Membership reports for later
   independent steps.
+
+## Step 143 - Milestone 9 daily report backend composition
+
+Status: completed. Milestone 9 is in progress.
+
+Plan alignment:
+
+- Start the roadmap's Milestone 9 with the bounded backend
+  `GenerateDailyReport` contract identified by the Milestone 8 closeout. Do not
+  add report UI, threshold Membership reports, long-period accounting or a
+  report cache in this step.
+- Compose the existing Visits and Payments public daily source queries instead
+  of duplicating their PostgreSQL projections or reading business audit as a
+  source of totals.
+- Keep every embedded total tied to the same canonical rows, retain canceled
+  and replaced source facts for explanation, and fail without a partial report
+  when either source query or their shared date/day status is inconsistent.
+
+Scope:
+
+- Add `GenerateDailyReportQuery`, result/status contracts and a Reports-owned
+  immutable `DailyReportSnapshot` with business date, day reconciliation
+  status, active Visit count, active Payment count, daily cash sum and optional
+  Visit/Payment drill-down rows.
+- Derive totals from the complete returned source rows before applying the
+  optional drill-down projection. Default report requests include drill-down;
+  summary mode keeps the canonical totals and explicitly returns
+  `DrillDownIncluded = false` with empty embedded row collections.
+- Expose retained canceled Visit rows, canceled Payment rows and both original
+  and replacement sides of Payment corrections as filtered report collections.
+- Reject mismatched business dates, mismatched Visit/Payment reconciliation
+  statuses, unknown canonical row statuses and mixed active Payment currencies
+  as `source_inconsistent` rather than returning understated totals.
+- Add a sequential composite query handler and scoped DI registration. The
+  handler stops after a failed Visit source query, maps permission/validation
+  failures, and never returns a partial authoritative report.
+- Keep day-close change markers and audit/history navigation for a later step:
+  no canonical close timestamp/source fact currently exists, so this step
+  surfaces the existing day status without fabricating changed-after-close
+  labels.
+- Add no EF model, migration, write path or query-time business audit entry.
+
+Validation:
+
+- Focused core report contract coverage passed 5/5, including defensive
+  drill-down storage, canonical total derivation, summary mode, source
+  inconsistency checks and failure shapes.
+- Focused PostgreSQL report handler coverage passed 4/4 with no skips against
+  the healthy local Docker PostgreSQL service. The canonical scenario proves
+  one active Visit, one active Payment and a `900 UAH` cash sum while retaining
+  Visit/Payment cancellations and both Payment correction rows.
+- Combined `GenerateDailyReport`, daily Visit source and daily Payment source
+  regression coverage passed 17/17, including the existing corrected-payment
+  cross-date explanation and daily query-index cases.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed:
+  Release build 0 warnings/errors, formatting/analyzers, 340 core tests, 35 web
+  tests, 459 PostgreSQL/architecture/security infrastructure tests, 54
+  Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): compose canonical daily report`.
+
+Next recommended step:
+
+- Add one bounded `ListEndingSoonMemberships` backend query for Milestone 9
+  with the default seven-day threshold, reading Memberships-owned canonical
+  state/effective end dates and reviewing the PostgreSQL query path before any
+  report UI work.

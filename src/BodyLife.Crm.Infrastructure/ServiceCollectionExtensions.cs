@@ -8,6 +8,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
 using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
+using BodyLife.Crm.Infrastructure.Persistence.Reports;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.Modules.Clients.Search;
@@ -16,6 +17,7 @@ using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
 using BodyLife.Crm.Modules.NonWorkingDays;
 using BodyLife.Crm.Modules.Payments;
+using BodyLife.Crm.Modules.Reports;
 using BodyLife.Crm.Modules.Visits;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -97,6 +99,9 @@ public static class ServiceCollectionExtensions
                 GetDailyPaymentSourceRowsQuery,
                 GetDailyPaymentSourceRowsResult>,
             GetDailyPaymentSourceRowsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<GenerateDailyReportQuery, GenerateDailyReportResult>,
+            GenerateDailyReportQueryHandler>();
         services.AddScoped<IBodyLifeCommandHandler<CreateClientCommand>, CreateClientCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<CreateMembershipTypeCommand>,
