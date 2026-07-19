@@ -8683,3 +8683,103 @@ Next recommended step:
 - Add one bounded `ListInactiveClients` backend query for Milestone 9 using the
   accepted inactivity selector and canonical Clients/Memberships activity
   sources before any report UI work.
+
+## Step 147 - Milestone 9 inactive-clients report backend
+
+Status: completed. Milestone 9 is in progress.
+
+Plan alignment:
+
+- Implement only the roadmap's bounded `ListInactiveClients` backend query.
+  Keep all report UI work for later independent steps.
+- Apply the accepted client-level inactivity selector using canonical active
+  Visits through the requested as-of date. Do not equate report inactivity with
+  the separate Client operational status.
+- Require an explicit threshold of `14`, `30` or `60` days because the standard
+  default threshold remains an accepted open product question.
+- Read current/last Membership summary through a reviewed Memberships public
+  batch state contract. Reports must not recalculate Membership state.
+- Review existing PostgreSQL query paths before adding schema. The existing
+  active-Visit partial index is sufficient, so this step adds no migration.
+
+Scope:
+
+- Add `ListInactiveClientsQuery` with as-of date, mandatory 14/30/60-day
+  threshold, include-never-visited flag and bounded offset pagination.
+- Select each Client's latest active Visit on or before the as-of date. Active
+  membership, one-off and trial Visit kinds all represent real client activity;
+  canceled Visits are excluded and future Visits do not alter an earlier
+  report date.
+- Apply the inclusive boundary
+  `as_of_date - last_counted_visit_date >= threshold`, sort known activity from
+  oldest to newest with normalized name/Client id tie-breakers, and put
+  never-visited Clients last when explicitly included.
+- Return exact last Visit id, UTC business date/time and kind for drill-down.
+  Never-visited Clients have nullable last Visit and days-inactive fields rather
+  than a synthetic date.
+- Preserve Client display name, phone, current card and operational status for
+  profile navigation and compact report display.
+- Add `GetClientMembershipReportStatesQuery`, a bounded batch Memberships read
+  contract that reconstructs each visible Client's canonical timeline through
+  the existing Memberships policy/factory and fails closed on missing or stale
+  cache rows.
+- Mark the single canonical active candidate as the report's `Current`
+  Membership summary. When there is no single current candidate, expose the
+  latest canonical timeline item as `Last`; retain a separate ambiguity flag so
+  the report never presents an arbitrary Membership as current.
+- Use server-side top-one-per-Client selection for Visit drill-down identity;
+  do not load full Visit histories into application memory.
+- Register the Memberships batch and inactive report handlers as scoped
+  services and review only the five new Memberships contracts in the formula
+  ownership allowlist.
+- Reuse `ix_visits_active_daily_report`; no EF model or migration change is
+  required.
+
+Validation:
+
+- Focused core contract coverage passed 6/6 for explicit accepted thresholds,
+  inclusive 14-day boundary, exact Visit/contact/card fields, nullable
+  never-visited state, current/last/ambiguous Membership summaries, defensive
+  pages, pagination and failure shapes.
+- Focused PostgreSQL report coverage passed 5/5 with no skips against the
+  healthy local Docker PostgreSQL service. It covers 14/30/60 thresholds,
+  oldest-first/name ordering, stable pagination, canceled Visit exclusion,
+  one-off/trial activity, future/as-of behavior, never-visited labeling,
+  operational status/contact/card output, profile/report Membership agreement,
+  authorization precedence, invalid selectors, visible missing/stale cache
+  failure and DI.
+- PostgreSQL `EXPLAIN (COSTS OFF)` confirms the canonical active-Visit aggregate
+  uses `ix_visits_active_daily_report`; no new report index is needed for this
+  query shape.
+- The focused Membership formula ownership architecture gate passed 2/2 after
+  reviewing only the new Memberships batch-read contracts.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed as
+  part of the full gate.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 361 core
+  tests, 35 web tests, 479 PostgreSQL/architecture/security infrastructure
+  tests, 54 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): list inactive clients`.
+
+Next recommended step:
+
+- Add one bounded server-rendered daily report page for Milestone 9 with a
+  business-date filter, canonical visit/payment totals and drill-down rows,
+  while leaving the three threshold-list UIs for later steps.
