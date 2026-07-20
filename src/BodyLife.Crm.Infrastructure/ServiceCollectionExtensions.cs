@@ -132,6 +132,11 @@ public static class ServiceCollectionExtensions
             GetClientFreezeHistorySourceRowsQueryHandler>();
         services.AddScoped<
             IBodyLifeQueryHandler<
+                GetClientNonWorkingDayHistorySourceRowsQuery,
+                GetClientNonWorkingDayHistorySourceRowsResult>,
+            GetClientNonWorkingDayHistorySourceRowsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<
                 GetClientPaymentRowsQuery,
                 GetClientPaymentRowsResult>,
             GetClientPaymentRowsQueryHandler>();

@@ -9911,3 +9911,97 @@ Next recommended step:
   correction/cancellation chronology, preserving the immutable affected scope
   and applied inclusive range. Keep negative closures, the final cross-module
   aggregator, global audit timeline and UI for later steps.
+
+## Step 161 - Non-working application client-history source slice
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the third Milestone 10 roadmap task with the NonWorkingDays-owned
+  portion of `GetClientHistory`, composed through the action-filtered public
+  Audit query established in Steps 156-160.
+- Preserve `non_working_day.added`, `non_working_day.corrected` and
+  `non_working_day.canceled` as separate chronological events while retaining
+  original/replacement periods, immutable confirmed applications and explicit
+  cancellation facts.
+- Keep negative closures, the final cross-module history query, global audit
+  timeline and UI outside this bounded step.
+
+Completed:
+
+- Added the public `GetClientNonWorkingDayHistorySourceRows`
+  query/result/page contract under NonWorkingDays. Rows discriminate added,
+  corrected and canceled events and attach the matching complete
+  `ClientAuditEntry`.
+- Added canonical period history with inclusive range, reason code/comment,
+  creator/session, current status/cancellation id, confirmed affected counts
+  and only the requested Client's retained application rows.
+- Added application history with Membership type-name snapshot, immutable full
+  applied range, preview/confirmation timestamps and current source status.
+- Added explicit correction history for replace-range/replace-reason old/new
+  scope and cancellation history for the retained cancellation fact. The
+  validated affected Membership union remains an immutable ordered snapshot.
+- Added the PostgreSQL handler and scoped DI registration. It requests only
+  the three NonWorkingDay actions, filters by Client/action/date before
+  pagination through Audit, then joins canonical period/application/
+  cancellation records and issued Membership snapshots.
+- Reused the existing `NonWorkingDayCorrectionSource`, application source,
+  `DateRange`, status and correction-mode contracts. Memberships remains the
+  sole owner of extension-day union and effective-end calculations.
+- Made composition fail closed for missing or duplicate period/application/
+  cancellation links, invalid full-period ranges or status transitions,
+  cross-client Membership links, changed replace-reason scope, malformed
+  old/new affected ids and disagreement between source and audit actor,
+  session, recorded time, correction reason or cancellation envelope.
+- Added core contract coverage and PostgreSQL tests for stable chronology,
+  pagination, add/replace/cancel visibility, current statuses, immutable
+  client application ranges, old/new affected counts, Membership snapshots,
+  paper-fallback/manual-backfill labels, changed-after-close metadata,
+  date/action/client filtering, orphan source, missing replacement link,
+  cancellation-envelope drift, permissions, validation, missing clients and
+  DI. Existing Audit and NonWorkingDay indexes cover this bounded query; no
+  schema, migration, UI or formula changed.
+
+Validation:
+
+- Release builds before and after test implementation passed with 0
+  warnings/errors. One intermediate build exposed two incorrectly cased named
+  arguments in the new handler; they were corrected before any test run.
+- Focused NonWorkingDay history contract coverage passed 3/3.
+- The first focused PostgreSQL run passed 5/6; its only failure was the test's
+  attempted mutation of `business_audit_entries`, correctly rejected by the
+  append-only PostgreSQL trigger. The malformed-link fixture was changed to
+  insert inconsistent audit material directly, without UPDATE/DELETE, and the
+  focused suite then passed 6/6 with no skipped tests.
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully, and
+  `git diff --check` reported no whitespace errors.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 379 core
+  tests, 35 web tests, 515 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720110933_AddBusinessAuditClientLookupIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(nonworking-days): add client history source slice`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded negative-closure client-history
+  source slice plus matching audit entries, preserving closure source facts,
+  actor/session, occurred/recorded times and entry-origin chronology. Keep the
+  final cross-module aggregator, global audit timeline and UI for later steps.
