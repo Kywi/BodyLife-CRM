@@ -154,6 +154,9 @@ public static class ServiceCollectionExtensions
             IBodyLifeQueryHandler<GenerateDailyReportQuery, GenerateDailyReportResult>,
             GenerateDailyReportQueryHandler>();
         services.AddScoped<
+            IBodyLifeQueryHandler<GetClientHistoryQuery, GetClientHistoryResult>,
+            GetClientHistoryQueryHandler>();
+        services.AddScoped<
             IBodyLifeQueryHandler<
                 ListEndingSoonMembershipsQuery,
                 ListEndingSoonMembershipsResult>,

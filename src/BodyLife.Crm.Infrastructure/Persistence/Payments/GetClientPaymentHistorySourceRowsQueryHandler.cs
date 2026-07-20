@@ -43,7 +43,8 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
                 EntityFilters,
                 ActionTypes,
                 query.Limit,
-                query.Offset),
+                query.Offset,
+                query.AuditEntryIds),
             cancellationToken);
         if (auditResult.Status != GetClientAuditEntriesStatus.Success)
         {

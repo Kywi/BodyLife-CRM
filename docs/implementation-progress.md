@@ -10005,3 +10005,86 @@ Next recommended step:
   source slice plus matching audit entries, preserving closure source facts,
   actor/session, occurred/recorded times and entry-origin chronology. Keep the
   final cross-module aggregator, global audit timeline and UI for later steps.
+
+## Step 162 - Cross-module GetClientHistory backend composition
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue the third Milestone 10 roadmap task by composing the five completed
+  canonical history-source boundaries into one paged `GetClientHistory`
+  backend for all business facts implemented through Milestones 2-9.
+- Do not implement the previously recommended negative-closure slice: the
+  exact one-off closure policy remains an open product decision in the domain
+  model, and no canonical closure tables, command or audit event writer exists.
+  A Payment or audit JSON payload must not be presented as a substitute source
+  fact. This remains an explicit incomplete dependency of the full roadmap
+  history scope.
+- Keep the global `GetAuditTimeline`, Razor/history UI, profile/report links and
+  the unresolved negative-closure workflow outside this bounded backend step.
+
+Completed:
+
+- Added the Reports-owned public `GetClientHistory` query/result/page contract
+  with typed Membership, opening-state, Visit, Payment, Freeze and
+  NonWorkingDay filters, bounded offset pagination and twelve explicit source
+  event kinds.
+- Added cross-module composition over the existing Memberships, Visits,
+  Payments, Freezes and NonWorkingDays public history-source queries. Returned
+  rows retain each complete typed canonical source row plus its matching Audit
+  envelope; Reports does not duplicate Memberships formulas or reinterpret
+  source status.
+- Preserved one global chronology by first selecting the requested Audit page
+  in `occurred_at desc`, `recorded_at desc`, `id desc` order, partitioning only
+  those selected audit ids by owning module and rebuilding the result in the
+  original Audit order.
+- Added optional exact audit-entry selectors to `GetClientAuditEntries` and all
+  five history-source query contracts. Exact selection requires offset zero,
+  a limit covering every unique non-empty id and a complete client/entity/
+  action/date match; missing selected rows fail closed instead of silently
+  shortening a cross-module page.
+- Registered `GetClientHistoryQueryHandler` as a scoped application query. It
+  calls only source modules represented on the selected page and returns no
+  partial history when authorization, validation, client existence, source
+  mapping, audit envelopes or source-page cardinality disagree.
+- Added core contract tests, pure composition/failure/DI tests, concrete
+  forwarding coverage for all five source handlers and PostgreSQL exact-id
+  filtering/validation coverage. No EF record, migration, UI, global timeline,
+  technical-log lookup or business formula changed.
+
+Validation:
+
+- Initial and post-test Release solution builds passed with 0 warnings/errors.
+- Focused Audit and `GetClientHistory` core contract coverage passed 6/6.
+- Focused composition, exact-selector PostgreSQL and Memberships ownership
+  coverage passed 10/10 with no skipped tests.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` completed
+  with exit code 0, and `git diff --check` reported no whitespace errors.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 382 core
+  tests, 35 web tests, 519 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720110933_AddBusinessAuditClientLookupIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+
+Commit:
+
+- `feat(reports): compose client history sources`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded global `GetAuditTimeline` backend
+  slice: owner/admin access, client/entity/date/action filters, stable
+  pagination and complete append-only audit envelopes. Keep timeline UI,
+  profile/report links, technical-log correlation lookup and the unresolved
+  negative-closure workflow for later decision-backed steps.

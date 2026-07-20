@@ -11,7 +11,8 @@ public sealed record GetClientAuditEntriesQuery(
     IReadOnlyCollection<ClientAuditEntityFilter>? EntityFilters = null,
     IReadOnlyCollection<string>? ActionTypes = null,
     int Limit = GetClientAuditEntriesQuery.DefaultLimit,
-    int Offset = 0)
+    int Offset = 0,
+    IReadOnlyCollection<AuditEntryId>? AuditEntryIds = null)
     : IBodyLifeQuery<GetClientAuditEntriesResult>
 {
     public const int DefaultLimit = 50;
@@ -19,4 +20,5 @@ public sealed record GetClientAuditEntriesQuery(
     public const int MaxOffset = 10_000;
     public const int MaxActionTypeCount = 50;
     public const int MaxActionTypeLength = 120;
+    public const int MaxAuditEntryIdCount = MaxLimit;
 }

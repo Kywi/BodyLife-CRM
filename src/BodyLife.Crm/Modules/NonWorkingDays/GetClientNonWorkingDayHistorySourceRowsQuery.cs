@@ -10,7 +10,8 @@ public sealed record GetClientNonWorkingDayHistorySourceRowsQuery(
     DateTimeOffset? OccurredFromInclusive = null,
     DateTimeOffset? OccurredBeforeExclusive = null,
     int Limit = GetClientNonWorkingDayHistorySourceRowsQuery.DefaultLimit,
-    int Offset = 0)
+    int Offset = 0,
+    IReadOnlyCollection<AuditEntryId>? AuditEntryIds = null)
     : IBodyLifeQuery<GetClientNonWorkingDayHistorySourceRowsResult>
 {
     public const int DefaultLimit = GetClientAuditEntriesQuery.DefaultLimit;

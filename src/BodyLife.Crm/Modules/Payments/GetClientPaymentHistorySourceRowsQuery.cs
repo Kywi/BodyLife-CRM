@@ -10,7 +10,8 @@ public sealed record GetClientPaymentHistorySourceRowsQuery(
     DateTimeOffset? OccurredFromInclusive = null,
     DateTimeOffset? OccurredBeforeExclusive = null,
     int Limit = GetClientPaymentHistorySourceRowsQuery.DefaultLimit,
-    int Offset = 0)
+    int Offset = 0,
+    IReadOnlyCollection<AuditEntryId>? AuditEntryIds = null)
     : IBodyLifeQuery<GetClientPaymentHistorySourceRowsResult>
 {
     public const int DefaultLimit = GetClientAuditEntriesQuery.DefaultLimit;

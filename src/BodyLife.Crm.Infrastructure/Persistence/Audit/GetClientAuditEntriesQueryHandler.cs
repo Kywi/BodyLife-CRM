@@ -86,6 +86,11 @@ public sealed class GetClientAuditEntriesQueryHandler(
             entries = entries.Where(entry => request.ActionTypes.Contains(entry.ActionType));
         }
 
+        if (request.AuditEntryIds.Count > 0)
+        {
+            entries = entries.Where(entry => request.AuditEntryIds.Contains(entry.Id));
+        }
+
         var storedRows = await entries
             .OrderByDescending(entry => entry.OccurredAt)
             .ThenByDescending(entry => entry.RecordedAt)
@@ -115,6 +120,12 @@ public sealed class GetClientAuditEntriesQueryHandler(
                 entry.ChangedAfterClose))
             .ToArrayAsync(cancellationToken);
         var hasMore = storedRows.Length > request.Limit;
+
+        if (request.AuditEntryIds.Count > 0
+            && (hasMore || storedRows.Length != request.AuditEntryIds.Count))
+        {
+            return GetClientAuditEntriesResult.InconsistentSource();
+        }
 
         try
         {
@@ -216,6 +227,24 @@ public sealed class GetClientAuditEntriesQueryHandler(
                 "actionTypes");
         }
 
+        var auditEntryIds = query.AuditEntryIds?.ToArray() ?? [];
+        if (auditEntryIds.Length > GetClientAuditEntriesQuery.MaxAuditEntryIdCount
+            || auditEntryIds.Any(auditEntryId => auditEntryId.Value == Guid.Empty))
+        {
+            return GetClientAuditEntriesResult.Invalid(
+                $"Audit entry ids must be non-empty and contain at most {GetClientAuditEntriesQuery.MaxAuditEntryIdCount} items.",
+                "auditEntryIds");
+        }
+
+        auditEntryIds = auditEntryIds.Distinct().ToArray();
+        if (auditEntryIds.Length > 0
+            && (query.Offset != 0 || query.Limit < auditEntryIds.Length))
+        {
+            return GetClientAuditEntriesResult.Invalid(
+                "Exact audit entry selection requires offset 0 and a limit covering every selected id.",
+                "auditEntryIds");
+        }
+
         normalized = new NormalizedClientAuditQuery(
             query.ClientId,
             occurredFromInclusive,
@@ -223,6 +252,7 @@ public sealed class GetClientAuditEntriesQueryHandler(
             entityFilters,
             entityFilters.Select(ClientAuditEntityTypes.Map).ToArray(),
             actionTypes,
+            auditEntryIds.Select(auditEntryId => auditEntryId.Value).ToArray(),
             query.Limit,
             query.Offset);
         return null;
@@ -340,6 +370,7 @@ public sealed class GetClientAuditEntriesQueryHandler(
         IReadOnlyList<ClientAuditEntityFilter> EntityFilters,
         IReadOnlyList<string> EntityTypeNames,
         IReadOnlyList<string> ActionTypes,
+        IReadOnlyList<Guid> AuditEntryIds,
         int Limit,
         int Offset);
 

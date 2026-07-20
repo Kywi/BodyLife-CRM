@@ -154,6 +154,23 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
                 [ClientAuditEntityFilter.Visit],
                 [" visit.marked ", "visit.marked"]),
             CancellationToken.None);
+        var exactVisitResult = await handler.ExecuteAsync(
+            new GetClientAuditEntriesQuery(
+                fixture.Actor,
+                fixture.ClientId,
+                rangeStart,
+                rangeEnd,
+                [ClientAuditEntityFilter.Visit],
+                ["visit.marked", "visit.canceled"],
+                Limit: 2,
+                Offset: 0,
+                AuditEntryIds:
+                [
+                    new AuditEntryId(canceledVisitId),
+                    new AuditEntryId(visitId),
+                    new AuditEntryId(canceledVisitId),
+                ]),
+            CancellationToken.None);
 
         var firstPage = AssertSuccess(firstResult, fixture.ClientId);
         Assert.Equal(
@@ -192,6 +209,14 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
         Assert.True(visit.ChangedAfterClose);
         Assert.Contains(fixture.ClientId.ToString(), visit.RelatedEntityRefsJson);
         Assert.Equal($"audit-{visitId:N}", visit.RequestCorrelationId.Value);
+
+        var exactVisitPage = AssertSuccess(exactVisitResult, fixture.ClientId);
+        Assert.Equal(
+            [visitId, canceledVisitId],
+            exactVisitPage.Items
+                .Select(item => item.AuditEntryId.Value)
+                .ToArray());
+        Assert.False(exactVisitPage.HasMore);
     }
 
     [PostgreSqlFact]
@@ -231,6 +256,25 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
                 fixture.ClientId,
                 ActionTypes: [" "]),
             CancellationToken.None);
+        var invalidAuditEntryId = await handler.ExecuteAsync(
+            new GetClientAuditEntriesQuery(
+                fixture.Actor,
+                fixture.ClientId,
+                AuditEntryIds: [new AuditEntryId(Guid.Empty)]),
+            CancellationToken.None);
+        var invalidExactOffset = await handler.ExecuteAsync(
+            new GetClientAuditEntriesQuery(
+                fixture.Actor,
+                fixture.ClientId,
+                Offset: 1,
+                AuditEntryIds: [AuditEntryId.New()]),
+            CancellationToken.None);
+        var unmatchedExactId = await handler.ExecuteAsync(
+            new GetClientAuditEntriesQuery(
+                fixture.Actor,
+                fixture.ClientId,
+                AuditEntryIds: [AuditEntryId.New()]),
+            CancellationToken.None);
         var missingClient = await handler.ExecuteAsync(
             new GetClientAuditEntriesQuery(fixture.Actor, Guid.NewGuid()),
             CancellationToken.None);
@@ -253,6 +297,17 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
             invalidActionType,
             GetClientAuditEntriesStatus.ValidationFailed,
             "actionTypes");
+        AssertFailure(
+            invalidAuditEntryId,
+            GetClientAuditEntriesStatus.ValidationFailed,
+            "auditEntryIds");
+        AssertFailure(
+            invalidExactOffset,
+            GetClientAuditEntriesStatus.ValidationFailed,
+            "auditEntryIds");
+        AssertFailure(
+            unmatchedExactId,
+            GetClientAuditEntriesStatus.SourceInconsistent);
         AssertFailure(missingClient, GetClientAuditEntriesStatus.NotFound, "clientId");
         AssertFailure(denied, GetClientAuditEntriesStatus.PermissionDenied);
     }

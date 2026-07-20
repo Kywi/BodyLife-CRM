@@ -27,6 +27,7 @@ public sealed class GetClientAuditEntriesContractsTests
             ClientAuditEntityFilter.Payment,
         };
         var actionTypes = new[] { "visit.marked", "payment.created" };
+        var auditEntryIds = new[] { AuditEntryId.New(), AuditEntryId.New() };
 
         var query = new GetClientAuditEntriesQuery(
             actor,
@@ -36,7 +37,8 @@ public sealed class GetClientAuditEntriesContractsTests
             filters,
             actionTypes,
             Limit: 25,
-            Offset: 50);
+            Offset: 0,
+            AuditEntryIds: auditEntryIds);
 
         Assert.IsAssignableFrom<IBodyLifeQuery<GetClientAuditEntriesResult>>(query);
         Assert.Same(actor, query.Actor);
@@ -45,12 +47,14 @@ public sealed class GetClientAuditEntriesContractsTests
         Assert.Equal(From.AddMonths(1), query.OccurredBeforeExclusive);
         Assert.Same(filters, query.EntityFilters);
         Assert.Same(actionTypes, query.ActionTypes);
+        Assert.Same(auditEntryIds, query.AuditEntryIds);
         Assert.Equal(25, query.Limit);
-        Assert.Equal(50, query.Offset);
+        Assert.Equal(0, query.Offset);
         Assert.Equal(50, GetClientAuditEntriesQuery.DefaultLimit);
         Assert.Equal(100, GetClientAuditEntriesQuery.MaxLimit);
         Assert.Equal(50, GetClientAuditEntriesQuery.MaxActionTypeCount);
         Assert.Equal(120, GetClientAuditEntriesQuery.MaxActionTypeLength);
+        Assert.Equal(100, GetClientAuditEntriesQuery.MaxAuditEntryIdCount);
     }
 
     [Fact]

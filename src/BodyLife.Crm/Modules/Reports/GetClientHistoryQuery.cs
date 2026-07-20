@@ -2,17 +2,17 @@ using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
-namespace BodyLife.Crm.Modules.Freezes;
+namespace BodyLife.Crm.Modules.Reports;
 
-public sealed record GetClientFreezeHistorySourceRowsQuery(
+public sealed record GetClientHistoryQuery(
     ActorContext Actor,
     Guid ClientId,
     DateTimeOffset? OccurredFromInclusive = null,
     DateTimeOffset? OccurredBeforeExclusive = null,
-    int Limit = GetClientFreezeHistorySourceRowsQuery.DefaultLimit,
-    int Offset = 0,
-    IReadOnlyCollection<AuditEntryId>? AuditEntryIds = null)
-    : IBodyLifeQuery<GetClientFreezeHistorySourceRowsResult>
+    IReadOnlyCollection<ClientHistoryEntityFilter>? EntityFilters = null,
+    int Limit = GetClientHistoryQuery.DefaultLimit,
+    int Offset = 0)
+    : IBodyLifeQuery<GetClientHistoryResult>
 {
     public const int DefaultLimit = GetClientAuditEntriesQuery.DefaultLimit;
     public const int MaxLimit = GetClientAuditEntriesQuery.MaxLimit;

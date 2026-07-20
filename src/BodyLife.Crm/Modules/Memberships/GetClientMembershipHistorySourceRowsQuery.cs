@@ -10,7 +10,8 @@ public sealed record GetClientMembershipHistorySourceRowsQuery(
     DateTimeOffset? OccurredFromInclusive = null,
     DateTimeOffset? OccurredBeforeExclusive = null,
     int Limit = GetClientMembershipHistorySourceRowsQuery.DefaultLimit,
-    int Offset = 0)
+    int Offset = 0,
+    IReadOnlyCollection<AuditEntryId>? AuditEntryIds = null)
     : IBodyLifeQuery<GetClientMembershipHistorySourceRowsResult>
 {
     public const int DefaultLimit = GetClientAuditEntriesQuery.DefaultLimit;
