@@ -9398,3 +9398,89 @@ Next recommended step:
   summaries, evaluate every implemented canonical event against it and fix
   only the first demonstrated coverage gap. Keep `GetClientHistory`, global
   timeline queries and UI outside that step.
+
+## Step 155 - Canonical business audit matrix quality gate
+
+Status: completed.
+
+Plan alignment:
+
+- Complete the second Milestone 10 roadmap task by making required audit
+  envelope fields and command-specific payload expectations executable for
+  every state-changing workflow implemented through Milestones 2-9.
+- Keep module commands responsible for their own stricter business validation,
+  while the Audit persistence boundary rejects incomplete or unregistered
+  entries before EF starts tracking them.
+- Evaluate all current command success paths through the new gate and resolve
+  only the first demonstrated gap. Keep client/global history queries, access
+  views and UI outside this step.
+
+Completed:
+
+- Added `BusinessAuditEventMatrix` with all 26 canonical action variants from
+  the 20 implemented mutation paths. Each action declares its exact primary
+  entity type and required related-reference, before/after summary,
+  explanation and idempotency payload.
+- Hardened `BusinessAuditAppender` as the common enforcement point. It now
+  rejects unknown action names, action/entity mismatches, empty actor account
+  or session ids, blank correlation ids, a missing server-recorded timestamp,
+  missing action-specific payload and non-normal entries without explicit
+  `occurred_at` plus a reason or comment.
+- Kept explanation semantics aligned with the accepted operations contract:
+  actions that require explanation accept either normalized `reason` or
+  normalized `comment`; command handlers may still require a specific reason
+  where their own workflow contract is stricter.
+- Added architecture coverage that compares every public `*AuditActions`
+  constant with the executable matrix, proves uniqueness/completeness and
+  verifies invalid entries fail before tracking.
+- Added PostgreSQL coverage that persists every canonical event and checks the
+  full shared Reception/Admin actor/session/device, occurred/recorded time,
+  origin, explanation, correlation, idempotency, related-reference,
+  before/after and changed-after-close contract.
+- The first complete command-suite run exposed one gate false positive:
+  `card.cleared` correctly supplied its required explanation through `comment`,
+  while the initial matrix revision required `reason` only. The gate was
+  corrected to the accepted reason-or-comment rule and a comment-only
+  regression assertion was added. No command-specific audit defect remained.
+- Updated `docs/audit-foundation-inventory.md`. No database schema, migration,
+  history query, Razor UI or business formula changed.
+
+Validation:
+
+- Initial matrix coverage passed 4/4, including all 26 canonical events on a
+  clean PostgreSQL database.
+- The initial full infrastructure run passed 484/485 and identified only the
+  reason-versus-comment gate mismatch described above. After correction,
+  focused matrix/card coverage passed 5/5 and the complete infrastructure suite
+  passed 485/485 against isolated Docker PostgreSQL databases.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since `20260720100603_HardenBusinessAuditAppendOnly`.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 361 core
+  tests, 35 web tests, 485 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720100603_HardenBusinessAuditAppendOnly`.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the documentation changes but
+  stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): enforce canonical event matrix`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded client-history query-readiness step:
+  map the exact client linkage in primary and `related_entity_refs` payloads,
+  define the `GetClientHistory` backend contract and prove the PostgreSQL query
+  and index shape. Add only a demonstrated index/schema change; keep global
+  timeline and UI for later steps.

@@ -36,29 +36,91 @@ public sealed class BusinessAuditAppender(BodyLifeDbContext dbContext)
             throw new ArgumentException("Audit entity id is required.", nameof(entityId));
         }
 
+        if (recordedAt == default)
+        {
+            throw new ArgumentException("Audit recorded time is required.", nameof(recordedAt));
+        }
+
+        var actor = envelope.Actor
+            ?? throw new ArgumentException("Audit actor is required.", nameof(envelope));
+        if (actor.AccountId.Value == Guid.Empty)
+        {
+            throw new ArgumentException("Audit actor account id is required.", nameof(envelope));
+        }
+
+        if (actor.SessionId.Value == Guid.Empty)
+        {
+            throw new ArgumentException("Audit actor session id is required.", nameof(envelope));
+        }
+
+        var normalizedActionType = actionType.Trim();
+        var normalizedEntityType = entityType.Trim();
+        var requestCorrelationId = envelope.RequestCorrelationId.Value?.Trim();
+        if (string.IsNullOrWhiteSpace(requestCorrelationId))
+        {
+            throw new ArgumentException(
+                "Audit request correlation id is required.",
+                nameof(envelope));
+        }
+
+        var actorAccountType = MapAccountKind(actor.AccountKind);
+        var actorRole = MapActorRole(actor.Role);
+        var entryOrigin = MapEntryOrigin(envelope.EntryOrigin);
+        var reason = NormalizeOptional(envelope.Reason);
+        var comment = NormalizeOptional(envelope.Comment);
+        var idempotencyKey = NormalizeOptional(envelope.IdempotencyKey);
+        if (envelope.EntryOrigin != EntryOrigin.Normal)
+        {
+            if (envelope.OccurredAt is null)
+            {
+                throw new ArgumentException(
+                    "Backdated audit entries require an occurred time.",
+                    nameof(envelope));
+            }
+
+            if (reason is null && comment is null)
+            {
+                throw new ArgumentException(
+                    "Backdated audit entries require a reason or comment.",
+                    nameof(envelope));
+            }
+        }
+
+        var relatedEntityRefsJson = SerializeSummary(relatedEntityRefs);
+        var beforeSummaryJson = SerializeSummary(beforeSummary);
+        var afterSummaryJson = SerializeSummary(afterSummary);
+        BusinessAuditEventMatrix.Validate(
+            normalizedActionType,
+            normalizedEntityType,
+            relatedEntityRefsJson,
+            beforeSummaryJson,
+            afterSummaryJson,
+            reason,
+            comment,
+            idempotencyKey);
+
         var auditEntryId = AuditEntryId.New();
-        var actor = envelope.Actor;
         var entry = new BusinessAuditEntryRecord
         {
             Id = auditEntryId.Value,
-            ActionType = actionType.Trim(),
-            EntityType = entityType.Trim(),
+            ActionType = normalizedActionType,
+            EntityType = normalizedEntityType,
             EntityId = entityId,
-            RelatedEntityRefsJson = SerializeSummary(relatedEntityRefs),
+            RelatedEntityRefsJson = relatedEntityRefsJson,
             ActorAccountId = actor.AccountId.Value,
-            ActorAccountType = MapAccountKind(actor.AccountKind),
-            ActorRole = MapActorRole(actor.Role),
+            ActorAccountType = actorAccountType,
+            ActorRole = actorRole,
             SessionId = actor.SessionId.Value,
             DeviceLabel = NormalizeOptional(actor.DeviceLabel),
             OccurredAt = envelope.OccurredAt ?? recordedAt,
             RecordedAt = recordedAt,
-            Reason = NormalizeOptional(envelope.Reason),
-            Comment = NormalizeOptional(envelope.Comment),
-            BeforeSummaryJson = SerializeSummary(beforeSummary),
-            AfterSummaryJson = SerializeSummary(afterSummary),
-            RequestCorrelationId = envelope.RequestCorrelationId.Value.Trim(),
-            EntryOrigin = MapEntryOrigin(envelope.EntryOrigin),
-            IdempotencyKey = NormalizeOptional(envelope.IdempotencyKey),
+            Reason = reason,
+            Comment = comment,
+            BeforeSummaryJson = beforeSummaryJson,
+            AfterSummaryJson = afterSummaryJson,
+            RequestCorrelationId = requestCorrelationId,
+            EntryOrigin = entryOrigin,
+            IdempotencyKey = idempotencyKey,
             ChangedAfterClose = changedAfterClose,
         };
 

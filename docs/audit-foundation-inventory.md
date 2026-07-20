@@ -2,8 +2,8 @@
 
 Date: 2026-07-20
 
-Status: Milestone 10 foundation inventory completed. The first identified
-append-only policy gap is addressed by
+Status: Milestone 10 foundation inventory and executable command-matrix gate
+completed. The first identified append-only policy gap is addressed by
 `20260720100603_HardenBusinessAuditAppendOnly`.
 
 ## Scope and sources
@@ -78,11 +78,31 @@ both mutation forms fail with the dedicated PostgreSQL error, and the original
 row remains unchanged. Corrections and cancellations must continue to append
 new source and audit facts.
 
+## Executable command-matrix gate
+
+`BusinessAuditEventMatrix` registers all 26 canonical action variants emitted
+by the 20 implemented state-changing workflows. The shared
+`BusinessAuditAppender` now rejects an unregistered action, the wrong primary
+entity type, a missing command-specific related/before/after payload, a missing
+idempotency key where the command requires one, or a missing explanation where
+the accepted contract requires a reason or comment.
+
+The appender also rejects empty actor account/session ids, blank request
+correlation ids, a missing server-recorded time, and non-normal entries without
+both an explicit `occurred_at` and a reason or comment. This closes the generic
+envelope-validation gap that previously depended entirely on each command's
+local validator.
+
+`BusinessAuditMatrixTests` compares every declared `*AuditActions` constant
+with the executable matrix and proves rejection happens before EF tracking.
+`PostgreSqlBusinessAuditMatrixTests` persists every canonical event and checks
+the complete shared-account/session/device, time, origin, explanation,
+correlation, idempotency, related-reference, summary and changed-after-close
+contract. The complete PostgreSQL command suite passes through the same
+appender, so command-specific success paths cannot bypass this gate.
+
 ## Remaining Milestone 10 work
 
-- Add one consolidated audit-matrix quality gate for required envelope fields
-  and command-specific summaries; current evidence is distributed across the
-  command suites.
 - Establish and test the client-history lookup shape over primary and related
   entity references, including its PostgreSQL index plan.
 - Implement `GetClientHistory`, then owner/admin `GetAuditTimeline` with the
