@@ -9484,3 +9484,91 @@ Next recommended step:
   define the `GetClientHistory` backend contract and prove the PostgreSQL query
   and index shape. Add only a demonstrated index/schema change; keep global
   timeline and UI for later steps.
+
+## Step 156 - Client-linked audit query readiness
+
+Status: completed.
+
+Plan alignment:
+
+- Start the third Milestone 10 roadmap task with the reusable Audit-module
+  backend portion of `GetClientHistory`, without pretending audit JSON is the
+  canonical source for memberships, visits, payments, freezes or non-working
+  applications.
+- Make the accepted date range, entity filters, bounded pagination,
+  entry-origin fields and newest-first business chronology explicit before the
+  full cross-module history composition.
+- Add a schema/index change only for a measured query-plan gap. Keep the full
+  history composition, global timeline and Razor/htmx UI outside this step.
+
+Completed:
+
+- Added the public `GetClientAuditEntries` query/result/page contracts under
+  the Audit module. The query accepts an active actor, client id, optional
+  half-open `occurred_at` range, typed entity filters and bounded offset/limit;
+  rows retain actor/session, occurred/recorded times, origin, related ids,
+  before/after summaries, reason/comment, correlation, idempotency and
+  changed-after-close fields.
+- Added `GetClientAuditEntriesQueryHandler` and scoped DI registration. It
+  verifies the canonical actor/session and client, then orders by
+  `occurred_at desc`, `recorded_at desc`, `id desc` and returns no partial data
+  for invalid, missing or inconsistent sources.
+- Locked client linkage to the three implemented forms: primary client entity,
+  scalar `clientId` and non-working-day `affectedClientIds`. A
+  duplicate-warning-only `matchedClientIds` relationship is deliberately not
+  treated as that client's history.
+- Captured the pre-change PostgreSQL plan: the combined primary/JSONB predicate
+  used `Seq Scan` even with `enable_seqscan = off`. Added migration
+  `20260720110933_AddBusinessAuditClientLookupIndex` with a GIN
+  `jsonb_path_ops` index on `related_entity_refs`; no source or audit columns
+  changed.
+- Added core contract coverage plus PostgreSQL behavior, validation,
+  registration, clean-migration and `EXPLAIN` index-plan coverage. No global
+  audit timeline, cross-module canonical history aggregation, UI or business
+  formula changed.
+
+Validation:
+
+- Core `GetClientAuditEntries` contract tests passed 3/3.
+- The first PostgreSQL invocation omitted the required test admin connection
+  string and correctly skipped database cases. Re-running against the healthy
+  local Docker PostgreSQL service passed focused query and migration coverage
+  5/5.
+- The generated idempotent migration SQL was reviewed and contains only the
+  guarded GIN `jsonb_path_ops` index creation plus migration-history write.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore`,
+  `dotnet-ef migrations has-pending-model-changes` and `git diff --check`
+  passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 364 core
+  tests, 35 web tests, 489 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720110933_AddBusinessAuditClientLookupIndex`.
+- Applied the new migration to the healthy local Docker development database
+  and verified both its latest migration-history row and exact GIN
+  `jsonb_path_ops` index definition.
+- Restarted the local Development app from the validated Release build at
+  `http://127.0.0.1:5080`; both `/health/live` and `/health/ready` returned 200.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the documentation changes but
+  stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): add client-linked audit query`.
+
+Next recommended step:
+
+- After this step is committed, compose one bounded first
+  `GetClientHistory` source slice from issued memberships and opening states
+  plus their matching audit entries. Keep visits/payments/freezes,
+  non-working applications, the global audit timeline and UI for subsequent
+  steps.

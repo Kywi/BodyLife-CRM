@@ -11,6 +11,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.Reports;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
@@ -52,6 +53,11 @@ public static class ServiceCollectionExtensions
                 provider.GetRequiredService<TimeProvider>()));
         services.TryAddSingleton<PasswordHashingService>();
         services.AddScoped<BusinessAuditAppender>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<
+                GetClientAuditEntriesQuery,
+                GetClientAuditEntriesResult>,
+            GetClientAuditEntriesQueryHandler>();
         services.AddScoped<
             IBodyLifeQueryHandler<FindClientDuplicateCandidatesQuery, IReadOnlyList<ClientDuplicateCandidate>>,
             FindClientDuplicateCandidatesQueryHandler>();

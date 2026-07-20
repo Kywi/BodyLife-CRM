@@ -2,9 +2,10 @@
 
 Date: 2026-07-20
 
-Status: Milestone 10 foundation inventory and executable command-matrix gate
-completed. The first identified append-only policy gap is addressed by
-`20260720100603_HardenBusinessAuditAppendOnly`.
+Status: Milestone 10 foundation inventory, executable command-matrix gate and
+client-linked audit lookup completed. Append-only hardening is addressed by
+`20260720100603_HardenBusinessAuditAppendOnly`; client-link containment lookup
+is indexed by `20260720110933_AddBusinessAuditClientLookupIndex`.
 
 ## Scope and sources
 
@@ -27,7 +28,7 @@ mutations and therefore do create business audit entries.
 | actor identity and role | `actor_account_id`, `actor_account_type`, `actor_role` | Present. Account type preserves named versus shared accountability. |
 | session and device | `session_id`, nullable `device_label` | Present. |
 | action and primary entity | `action_type`, `entity_type`, `entity_id` | Present with non-empty action/entity checks. |
-| related ids | `related_entity_refs jsonb` | Present. Query shape and indexing must be validated with the first client-history query. |
+| related ids | `related_entity_refs jsonb` | Present. The client-history audit lookup contract and GIN containment index are proven against PostgreSQL. |
 | entry origin | `entry_origin` | Present with the four accepted-value check. |
 | event and recording times | `occurred_at`, `recorded_at` | Present. |
 | before/after summary | `before_summary jsonb`, `after_summary jsonb` | Present and non-null. |
@@ -101,11 +102,43 @@ correlation, idempotency, related-reference, summary and changed-after-close
 contract. The complete PostgreSQL command suite passes through the same
 appender, so command-specific success paths cannot bypass this gate.
 
+## Client-history audit lookup readiness
+
+`GetClientAuditEntries` is the Audit module subquery for the future composed
+`GetClientHistory` backend. It requires an active Owner, named Admin or shared
+Reception/Admin session and accepts a client id, an optional half-open
+`occurred_at` range, optional typed entity filters and bounded offset/limit
+pagination. Results retain the complete audit envelope and use stable business
+chronology: `occurred_at desc`, then `recorded_at desc`, then `id desc`.
+
+The client-link predicate intentionally recognizes only these canonical forms:
+
+| Event relationship | Stored shape | Lookup rule |
+|---|---|---|
+| Client-owned actions | primary `entity_type = 'client'`, `entity_id = client id` | Existing entity timeline B-tree branch. |
+| Membership, opening-state, visit, payment and freeze actions | scalar `related_entity_refs.clientId` | JSONB containment branch. |
+| Non-working-day add/correct/cancel actions | array `related_entity_refs.affectedClientIds` | JSONB array-containment branch. |
+
+Duplicate-warning `matchedClientIds` are deliberately excluded: a client that
+was only a possible duplicate of the command target must not inherit the other
+client's business history. The first pre-change `EXPLAIN` used a sequential
+scan even with sequential scans disabled because no JSONB index existed.
+Migration `20260720110933_AddBusinessAuditClientLookupIndex` adds a GIN
+`jsonb_path_ops` index on `related_entity_refs`; PostgreSQL coverage proves the
+combined predicate uses both that index and the existing primary-entity
+timeline index.
+
+This subquery supplies audit summaries only. It does not make audit the source
+of membership, visit, payment, freeze or non-working facts. The composed
+`GetClientHistory` query must still read canonical module source records and
+attach these audit explanations.
+
 ## Remaining Milestone 10 work
 
-- Establish and test the client-history lookup shape over primary and related
-  entity references, including its PostgreSQL index plan.
-- Implement `GetClientHistory`, then owner/admin `GetAuditTimeline` with the
-  accepted visibility rules and stable newest-first ordering.
+- Compose `GetClientHistory` from canonical membership, opening-state, visit,
+  payment, freeze and non-working application source rows plus
+  `GetClientAuditEntries`; preserve corrections/cancellations and origin labels.
+- Implement owner/admin `GetAuditTimeline` with the accepted visibility rules
+  and stable newest-first ordering.
 - Add profile/report correlation links and tablet/phone history UI only after
   the query contracts are proven.
