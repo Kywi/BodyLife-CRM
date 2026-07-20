@@ -9740,3 +9740,91 @@ Next recommended step:
   preserving original/replacement/correction visibility and cross-source
   chronology. Keep freezes, non-working applications, negative closures, the
   final cross-module aggregator, global audit timeline and UI for later steps.
+
+## Step 159 - Created, corrected and canceled Payment client-history source slice
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the third Milestone 10 roadmap task with the Payments-owned portion
+  of `GetClientHistory`, composed through the action-filtered public Audit
+  query established in Steps 156-158.
+- Preserve `payment.created`, `payment.corrected` and `payment.canceled` as
+  separate chronological events while retaining the original Payment,
+  replacement Payment and correction/cancellation source facts.
+- Keep freezes, non-working applications, negative closures, the final
+  cross-module history query, global audit timeline and UI outside this step.
+
+Completed:
+
+- Added the public `GetClientPaymentHistorySourceRows` query/result/page
+  contract under Payments. Rows discriminate created, corrected and canceled
+  events and attach the matching complete `ClientAuditEntry`.
+- Added canonical Payment history details for amount, method, context,
+  optional Membership snapshot link, actor/session, occurred/recorded times,
+  entry origin/batch, comment, current status and incoming/outgoing correction
+  or cancellation references.
+- Added explicit correction history with the retained original Payment,
+  `payment_corrections` fact, changed-field list and replacement Payment; added
+  cancellation history with the retained Payment and
+  `payment_cancellations` fact.
+- Added the PostgreSQL handler and scoped DI registration. It requests only
+  `payment.created`, `payment.corrected` and `payment.canceled`, applies
+  client/action/date filtering before pagination through Audit, and preserves
+  Audit chronology across source kinds.
+- Reused the existing Payments canonical projection for status, correction,
+  cancellation, Money, method, context, Membership ownership and entry-origin
+  validation instead of introducing report/history-specific interpretations.
+- Made composition fail closed for missing/duplicate source links, malformed
+  relation keys or changed fields, invalid Payment state, cross-client source
+  drift, replacement creation-envelope drift, and disagreement between source
+  and audit action, entity, actor, session, occurred/recorded time, origin,
+  comment or correction/cancellation reason.
+- Added core contract coverage and PostgreSQL tests for chronology,
+  pagination, original/replacement/cancellation visibility, paper-fallback and
+  manual-backfill timing/origins, action/client exclusion, date ranges,
+  changed-after-close audit metadata, orphan audit, replacement-envelope
+  mismatch, permissions, validation, missing clients and DI. Existing PK,
+  unique correction/cancellation and client-timeline indexes cover this query;
+  no schema, migration, UI, report total or Memberships formula changed.
+
+Validation:
+
+- Initial and post-test Release builds passed with 0 warnings/errors.
+- Focused Payment history contract coverage passed 3/3.
+- The first focused infrastructure invocation omitted the Docker admin
+  connection string and reported four PostgreSQL cases as skipped. The
+  required connection string was then supplied and the complete focused suite
+  passed 5/5 with no skipped tests.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 373 core
+  tests, 35 web tests, 503 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720110933_AddBusinessAuditClientLookupIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(payments): add client history source slice`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded Freezes source slice for added and
+  canceled freeze facts plus matching audit entries, preserving the original
+  inclusive range, cancellation reason and entry-origin chronology. Keep
+  non-working applications, negative closures, the final cross-module
+  aggregator, global audit timeline and UI for later steps.

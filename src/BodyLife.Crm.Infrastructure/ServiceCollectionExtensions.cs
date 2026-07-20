@@ -132,6 +132,11 @@ public static class ServiceCollectionExtensions
             GetClientPaymentRowsQueryHandler>();
         services.AddScoped<
             IBodyLifeQueryHandler<
+                GetClientPaymentHistorySourceRowsQuery,
+                GetClientPaymentHistorySourceRowsResult>,
+            GetClientPaymentHistorySourceRowsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<
                 GetDailyPaymentSourceRowsQuery,
                 GetDailyPaymentSourceRowsResult>,
             GetDailyPaymentSourceRowsQueryHandler>();
