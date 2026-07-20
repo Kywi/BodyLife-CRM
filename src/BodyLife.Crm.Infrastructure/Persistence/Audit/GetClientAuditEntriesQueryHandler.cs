@@ -1,5 +1,3 @@
-using System.Text.Json;
-using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Modules.Audit;
@@ -13,9 +11,6 @@ public sealed class GetClientAuditEntriesQueryHandler(
     TimeProvider timeProvider)
     : IBodyLifeQueryHandler<GetClientAuditEntriesQuery, GetClientAuditEntriesResult>
 {
-    private static readonly JsonSerializerOptions AuditJsonOptions = new(
-        JsonSerializerDefaults.Web);
-
     public async Task<GetClientAuditEntriesResult> ExecuteAsync(
         GetClientAuditEntriesQuery query,
         CancellationToken cancellationToken)
@@ -48,23 +43,9 @@ public sealed class GetClientAuditEntriesQueryHandler(
             return GetClientAuditEntriesResult.MissingClient();
         }
 
-        var scalarClientReference = JsonSerializer.Serialize(
-            new ScalarClientReference(request.ClientId),
-            AuditJsonOptions);
-        var affectedClientReference = JsonSerializer.Serialize(
-            new AffectedClientReference([request.ClientId]),
-            AuditJsonOptions);
-        var entries = dbContext.Set<BusinessAuditEntryRecord>()
-            .AsNoTracking()
-            .Where(entry =>
-                (entry.EntityType == ClientAuditEntityTypes.Client
-                    && entry.EntityId == request.ClientId)
-                || EF.Functions.JsonContains(
-                    entry.RelatedEntityRefsJson,
-                    scalarClientReference)
-                || EF.Functions.JsonContains(
-                    entry.RelatedEntityRefsJson,
-                    affectedClientReference));
+        var entries = BusinessAuditQuerySupport.WhereLinkedToClient(
+            dbContext.Set<BusinessAuditEntryRecord>().AsNoTracking(),
+            request.ClientId);
 
         if (request.OccurredFromInclusive is { } occurredFromInclusive)
         {
@@ -266,13 +247,13 @@ public sealed class GetClientAuditEntriesQueryHandler(
             ClientAuditEntityTypes.Map(row.EntityType),
             row.EntityId,
             new AccountId(row.ActorAccountId),
-            MapAccountKind(row.ActorAccountType),
-            MapActorRole(row.ActorRole),
+            BusinessAuditQuerySupport.MapAccountKind(row.ActorAccountType),
+            BusinessAuditQuerySupport.MapActorRole(row.ActorRole),
             new SessionId(row.SessionId),
             row.DeviceLabel,
             row.OccurredAt,
             row.RecordedAt,
-            MapEntryOrigin(row.EntryOrigin),
+            BusinessAuditQuerySupport.MapEntryOrigin(row.EntryOrigin),
             row.Reason,
             row.Comment,
             row.RelatedEntityRefsJson,
@@ -281,42 +262,6 @@ public sealed class GetClientAuditEntriesQueryHandler(
             new RequestCorrelationId(row.RequestCorrelationId),
             row.IdempotencyKey,
             row.ChangedAfterClose);
-    }
-
-    private static AccountKind MapAccountKind(string accountType)
-    {
-        return accountType switch
-        {
-            "owner" => AccountKind.Owner,
-            "named_admin" => AccountKind.NamedAdmin,
-            "shared_reception_admin" => AccountKind.SharedReceptionAdmin,
-            _ => throw new InvalidOperationException(
-                $"Unsupported audit actor account type '{accountType}'."),
-        };
-    }
-
-    private static ActorRole MapActorRole(string role)
-    {
-        return role switch
-        {
-            "owner" => ActorRole.Owner,
-            "admin" => ActorRole.Admin,
-            _ => throw new InvalidOperationException(
-                $"Unsupported audit actor role '{role}'."),
-        };
-    }
-
-    private static EntryOrigin MapEntryOrigin(string entryOrigin)
-    {
-        return entryOrigin switch
-        {
-            "normal" => EntryOrigin.Normal,
-            "manual_backfill" => EntryOrigin.ManualBackfill,
-            "paper_fallback" => EntryOrigin.PaperFallback,
-            "future_import" => EntryOrigin.FutureImport,
-            _ => throw new InvalidOperationException(
-                $"Unsupported audit entry origin '{entryOrigin}'."),
-        };
     }
 
     private static class ClientAuditEntityTypes
@@ -358,10 +303,6 @@ public sealed class GetClientAuditEntriesQueryHandler(
             };
         }
     }
-
-    private sealed record ScalarClientReference(Guid ClientId);
-
-    private sealed record AffectedClientReference(IReadOnlyList<Guid> AffectedClientIds);
 
     private sealed record NormalizedClientAuditQuery(
         Guid ClientId,

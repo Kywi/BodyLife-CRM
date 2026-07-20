@@ -125,6 +125,10 @@ internal sealed class BusinessAuditEntryRecordConfiguration
             .IsDescending(false, true)
             .HasDatabaseName("ix_business_audit_entries_actor_timeline");
 
+        builder.HasIndex(entry => new { entry.RecordedAt, entry.Id })
+            .IsDescending(true, true)
+            .HasDatabaseName("ix_business_audit_entries_recorded_timeline");
+
         builder.HasIndex(entry => entry.RelatedEntityRefsJson)
             .HasMethod("gin")
             .HasOperators("jsonb_path_ops")

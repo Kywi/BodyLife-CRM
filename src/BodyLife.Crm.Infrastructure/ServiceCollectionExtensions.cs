@@ -59,6 +59,9 @@ public static class ServiceCollectionExtensions
                 GetClientAuditEntriesResult>,
             GetClientAuditEntriesQueryHandler>();
         services.AddScoped<
+            IBodyLifeQueryHandler<GetAuditTimelineQuery, GetAuditTimelineResult>,
+            GetAuditTimelineQueryHandler>();
+        services.AddScoped<
             IBodyLifeQueryHandler<FindClientDuplicateCandidatesQuery, IReadOnlyList<ClientDuplicateCandidate>>,
             FindClientDuplicateCandidatesQueryHandler>();
         services.AddScoped<

@@ -10088,3 +10088,96 @@ Next recommended step:
   pagination and complete append-only audit envelopes. Keep timeline UI,
   profile/report links, technical-log correlation lookup and the unresolved
   negative-closure workflow for later decision-backed steps.
+
+## Step 163 - Global GetAuditTimeline backend
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Complete the fourth Milestone 10 roadmap task at the backend boundary by
+  implementing `GetAuditTimeline` over canonical append-only business audit
+  entries with client/entity/date/action selectors and Owner/Admin access.
+- Use append chronology (`recorded_at desc`, `id desc`) for stable global
+  pagination while retaining both `occurred_at` and `recorded_at` in every
+  returned envelope for backfill and paper-fallback explanation.
+- Keep the owner-readable Razor timeline, related-module display labels,
+  profile/report/correction links and technical-log correlation lookup outside
+  this bounded step. Audit remains explanatory data, not report or Memberships
+  formula source truth.
+
+Completed:
+
+- Added the public Audit-owned `GetAuditTimeline` query/result/page contracts
+  with optional Client, typed entity and exact entity-id selectors, normalized
+  action filters, an inclusive/exclusive recorded-time range and bounded
+  offset pagination.
+- Added typed timeline rows carrying the complete business-audit envelope:
+  action/entity, actor account kind and role, session/device, occurred and
+  recorded times, entry origin, reason/comment, related ids, before/after
+  summaries, request correlation id, idempotency key and changed-after-close.
+- Added the PostgreSQL query handler and scoped DI registration. It validates
+  an active Owner, named Admin or shared Reception/Admin account/session,
+  rejects malformed selectors before reading rows, and distinguishes a missing
+  selected Client from an empty matching timeline.
+- Supported direct Client audit entities, scalar `clientId` references and
+  immutable `affectedClientIds` snapshots, with optional entity/date/action
+  filters intersected before pagination. Unknown stored entity/envelope enum
+  values fail closed rather than returning a partial or misleading timeline.
+- Extracted shared client-link and audit-enum mapping support from the existing
+  `GetClientAuditEntries` handler without changing its public behavior.
+- Added migration
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex` for the global
+  `(recorded_at desc, id desc)` query path, while exact entity filtering keeps
+  using the existing entity timeline index.
+- Added core contract tests and Docker-backed PostgreSQL coverage for stable
+  tie ordering/pagination, complete shared-account and paper-fallback
+  envelopes, direct/scalar/affected Client links, intersected selectors,
+  recorded-time boundaries, all three accepted account kinds, permissions,
+  validation, missing Clients, unknown source values, DI and both query plans.
+  No business audit row mutation, UI, technical-log lookup or business formula
+  was added.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors. Focused timeline
+  contract coverage passed 4/4 and focused Docker-backed PostgreSQL timeline
+  coverage passed 5/5 with no skipped tests.
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully and
+  `git diff --check` reported no whitespace errors; generated migration BOMs
+  were removed before validation.
+- Idempotent migration SQL was generated and reviewed: it contains one
+  `CREATE INDEX ... (recorded_at DESC, id DESC)` plus the guarded history
+  insert. The local Docker `bodylife_crm_dev` database passed initial apply,
+  downgrade to `20260720110933_AddBusinessAuditClientLookupIndex`, reapply to
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`, and direct catalog/
+  migration-history verification.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 386 core
+  tests, 35 web tests, 524 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): add global audit timeline query`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded owner/admin Audit Timeline Razor UI
+  slice over `GetAuditTimeline`: readable filters, stable pagination and
+  occurred/recorded/origin/shared-session labels. Keep profile/report/
+  correction links and technical-log correlation lookup for later steps.
