@@ -9828,3 +9828,86 @@ Next recommended step:
   inclusive range, cancellation reason and entry-origin chronology. Keep
   non-working applications, negative closures, the final cross-module
   aggregator, global audit timeline and UI for later steps.
+
+## Step 160 - Added and canceled Freeze client-history source slice
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the third Milestone 10 roadmap task with the Freezes-owned portion
+  of `GetClientHistory`, composed through the action-filtered public Audit
+  query established in Steps 156-159.
+- Preserve `freeze.added` and `freeze.canceled` as separate chronological
+  events while retaining the original inclusive range and cancellation fact.
+- Keep non-working applications, negative closures, the final cross-module
+  history query, global timeline and UI outside this bounded step.
+
+Completed:
+
+- Added the public `GetClientFreezeHistorySourceRows` query/result/page
+  contract under Freezes. Rows discriminate an added Freeze source from its
+  cancellation source and carry the matching complete `ClientAuditEntry`.
+- Added canonical Freeze history details for the issued Membership type-name
+  snapshot, original inclusive `DateRange`, reason, actor/session,
+  occurred/recorded times, entry origin/batch, current status and current
+  cancellation id.
+- Added explicit cancellation history with cancellation id, reason,
+  actor/session, occurred/recorded times, entry origin/batch and the retained
+  original Freeze source.
+- Added the PostgreSQL handler and scoped DI registration. It requests only
+  `freeze.added` and `freeze.canceled`, filters through Audit before
+  pagination and preserves Audit chronology across both source kinds.
+- Reused the existing `FreezeCancellationSource`, `DateRange` and status
+  contract for canonical source validation. No Memberships calculation or
+  extension-day interpretation was copied into Freezes history.
+- Made composition fail closed for missing/duplicate source links, invalid
+  ranges, origins or status/cancellation combinations, cross-client Membership
+  links and disagreement between source and audit action, entity, actor,
+  session, occurred/recorded time, origin or reason.
+- Added core contract coverage and PostgreSQL tests for chronology,
+  pagination, current active/canceled status, immutable original ranges,
+  Membership snapshots, paper-fallback/manual-backfill origins,
+  changed-after-close metadata, action/client exclusion, date filtering,
+  orphan audit, missing cancellation, envelope mismatch, permissions,
+  validation, missing clients and DI. Existing Freeze source indexes cover
+  the bounded lookup; no schema, migration, UI or Memberships formula changed.
+
+Validation:
+
+- Initial and post-test Release builds passed with 0 warnings/errors.
+- Focused Freeze history contract coverage passed 3/3.
+- Focused Docker-backed PostgreSQL Freeze history coverage passed 6/6 with no
+  skipped tests.
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully, and
+  `git diff --check` reported no whitespace errors.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 376 core
+  tests, 35 web tests, 509 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720110933_AddBusinessAuditClientLookupIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(freezes): add client history source slice`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded NonWorkingDays client-history source
+  slice for confirmed Membership applications and their period
+  correction/cancellation chronology, preserving the immutable affected scope
+  and applied inclusive range. Keep negative closures, the final cross-module
+  aggregator, global audit timeline and UI for later steps.
