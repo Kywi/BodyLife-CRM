@@ -9656,3 +9656,87 @@ Next recommended step:
   correction events and the same cross-source chronology contract. Keep
   payments, freezes, non-working applications, negative closures, the final
   cross-module aggregator, global audit timeline and UI for later steps.
+
+## Step 158 - Marked and canceled Visit client-history source slice
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the third Milestone 10 roadmap task with the Visits-owned portion
+  of `GetClientHistory`, composed through the action-filtered public Audit
+  query established in Steps 156-157.
+- Preserve `visit.marked` and `visit.canceled` as separate chronological events
+  even though both audit entries use the same Visit entity id and the canonical
+  Visit/consumption rows retain their current canceled status.
+- Keep payments, freezes, non-working applications, negative closures, the
+  final cross-module history query, global timeline and UI outside this step.
+
+Completed:
+
+- Added the public `GetClientVisitHistorySourceRows` query/result/page contract
+  under Visits. Rows discriminate a marked Visit source from its optional
+  cancellation source and carry the matching complete `ClientAuditEntry`.
+- Added canonical marked-source details for Visit kind, actor/session,
+  occurred/recorded times, batch/comment, current status, optional counted
+  Membership consumption and current cancellation id.
+- Added canonical cancellation-source details for cancellation id, reason,
+  actor/session, occurred/recorded times and entry batch. Changed-after-close
+  and audit explanation remain available through the attached audit envelope.
+- Added the PostgreSQL handler and scoped DI registration. It requests only
+  `visit.marked` and `visit.canceled`, permits one of each action for the same
+  Visit, preserves audit ordering/pagination and excludes unrelated actions and
+  clients before loading sources.
+- Made composition fail closed for missing/duplicate Visit links, invalid
+  Visit/consumption/cancellation shapes, consumption creation-envelope drift,
+  and disagreement between source and audit action, entity, actor, session,
+  occurred/recorded time, origin, comment or cancellation reason.
+- Reused the existing Visits canonical projection rules for membership versus
+  one-off/trial consumption and active/canceled status consistency. No
+  Memberships formula was copied or exposed.
+- Added core contract coverage and PostgreSQL tests for separate mark/cancel
+  events, current canceled consumption, paper-fallback timing/origin,
+  changed-after-close audit metadata, date ranges, pagination, action/client
+  exclusion, orphan audit, mismatched consumption envelope, permissions,
+  validation, missing clients and DI. No schema, migration, UI or business
+  formula changed.
+
+Validation:
+
+- Initial and post-test Release builds passed with 0 warnings/errors.
+- Focused Visits history contract coverage passed 3/3.
+- Focused PostgreSQL Visits history coverage passed 4/4, then 5/5 after the
+  explicit orphan-audit case was added. Combined final focused Visits history
+  plus Memberships ownership architecture coverage passed 7/7 with no skipped
+  tests.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 370 core
+  tests, 35 web tests, 498 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720110933_AddBusinessAuditClientLookupIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(visits): add client history source slice`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded Payments source slice for created,
+  corrected and canceled payment facts plus their matching audit entries,
+  preserving original/replacement/correction visibility and cross-source
+  chronology. Keep freezes, non-working applications, negative closures, the
+  final cross-module aggregator, global audit timeline and UI for later steps.
