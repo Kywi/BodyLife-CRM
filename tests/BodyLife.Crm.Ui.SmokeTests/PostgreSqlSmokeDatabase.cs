@@ -511,7 +511,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         string typeNameSnapshot,
         int visitsLimitSnapshot,
         DateOnly? startDate = null,
-        int durationDays = 30)
+        int durationDays = 30,
+        DateTimeOffset? issuedAt = null)
     {
         if (durationDays <= 0)
         {
@@ -525,6 +526,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var now = TimeProvider.System.GetUtcNow();
         var canonicalStartDate = startDate
             ?? DateOnly.FromDateTime(now.UtcDateTime).AddDays(-7);
+        var canonicalIssuedAt = issuedAt ?? now.AddDays(-7);
 
         await using (var connection = new NpgsqlConnection(ConnectionString))
         {
@@ -581,13 +583,142 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 "base_end_date",
                 NpgsqlDbType.Date,
                 canonicalStartDate.AddDays(durationDays - 1));
-            command.Parameters.AddWithValue("issued_at", now.AddDays(-7));
+            command.Parameters.AddWithValue("issued_at", canonicalIssuedAt);
             command.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
             Assert.Equal(1, await command.ExecuteNonQueryAsync());
         }
 
         await RebuildMembershipAsync(membershipId);
         return membershipId;
+    }
+
+    public async Task<Guid> SeedClientActivityVisitAsync(
+        Guid recordedByAccountId,
+        Guid clientId,
+        DateTimeOffset occurredAt,
+        string visitKind,
+        string status = "active")
+    {
+        if (recordedByAccountId == Guid.Empty || clientId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Client activity Visit seed ids must be non-empty.",
+                nameof(clientId));
+        }
+
+        if (visitKind is not ("one_off" or "trial"))
+        {
+            throw new ArgumentException(
+                "Client activity Visit kind must be one_off or trial.",
+                nameof(visitKind));
+        }
+
+        if (status is not ("active" or "canceled"))
+        {
+            throw new ArgumentException(
+                "Client activity Visit status must be active or canceled.",
+                nameof(status));
+        }
+
+        var visitId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var recordedAt = occurredAt.AddMinutes(5);
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id,
+                account_id,
+                device_label,
+                started_at,
+                expires_at,
+                ended_at,
+                last_seen_at)
+            values (
+                @session_id,
+                @account_id,
+                'UI inactive report Visit seed',
+                @session_started_at,
+                @session_expires_at,
+                @session_ended_at,
+                @session_last_seen_at);
+
+            insert into bodylife.visits (
+                id,
+                client_id,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                visit_kind,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status)
+            values (
+                @visit_id,
+                @client_id,
+                @occurred_at,
+                @recorded_at,
+                @account_id,
+                @session_id,
+                @visit_kind,
+                'normal',
+                null,
+                'Inactive report smoke source',
+                @status);
+
+            insert into bodylife.visit_cancellations (
+                id,
+                visit_id,
+                reason,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id)
+            select
+                @cancellation_id,
+                @visit_id,
+                'Canceled inactive report fixture Visit',
+                @cancellation_occurred_at,
+                @cancellation_recorded_at,
+                @account_id,
+                @session_id,
+                'normal',
+                null
+            where @status = 'canceled'
+            """;
+        command.Parameters.AddWithValue("session_id", sessionId);
+        command.Parameters.AddWithValue("account_id", recordedByAccountId);
+        command.Parameters.AddWithValue("session_started_at", occurredAt.AddHours(-1));
+        command.Parameters.AddWithValue("session_expires_at", occurredAt.AddDays(1));
+        command.Parameters.AddWithValue("session_ended_at", occurredAt.AddMinutes(10));
+        command.Parameters.AddWithValue("session_last_seen_at", occurredAt.AddMinutes(5));
+        command.Parameters.AddWithValue("visit_id", visitId);
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("occurred_at", occurredAt);
+        command.Parameters.AddWithValue("recorded_at", recordedAt);
+        command.Parameters.AddWithValue("visit_kind", visitKind);
+        command.Parameters.AddWithValue("status", status);
+        command.Parameters.AddWithValue("cancellation_id", Guid.NewGuid());
+        command.Parameters.AddWithValue(
+            "cancellation_occurred_at",
+            occurredAt.AddMinutes(6));
+        command.Parameters.AddWithValue(
+            "cancellation_recorded_at",
+            occurredAt.AddMinutes(7));
+        Assert.Equal(
+            status == "canceled" ? 3 : 2,
+            await command.ExecuteNonQueryAsync());
+        await transaction.CommitAsync();
+        return visitId;
     }
 
     public async Task SeedMembershipExtensionHistoryAsync(

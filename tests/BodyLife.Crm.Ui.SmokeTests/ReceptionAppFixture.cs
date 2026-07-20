@@ -22,9 +22,11 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     private readonly object _endingSoonReportSeedLock = new();
     private readonly object _lowRemainingReportSeedLock = new();
     private readonly object _negativeClientsReportSeedLock = new();
+    private readonly object _inactiveClientsReportSeedLock = new();
     private Task<EndingSoonReportSmokeScenario>? _endingSoonReportSeedTask;
     private Task<LowRemainingReportSmokeScenario>? _lowRemainingReportSeedTask;
     private Task<NegativeClientsReportSmokeScenario>? _negativeClientsReportSeedTask;
+    private Task<InactiveClientsReportSmokeScenario>? _inactiveClientsReportSeedTask;
     private Process? _process;
     private PostgreSqlSmokeDatabase? _database;
     private Guid _ownerAccountId;
@@ -590,6 +592,16 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         {
             return _negativeClientsReportSeedTask ??=
                 SeedNegativeClientsReportScenarioAsync();
+        }
+    }
+
+    public Task<InactiveClientsReportSmokeScenario>
+        EnsureInactiveClientsReportScenarioAsync()
+    {
+        lock (_inactiveClientsReportSeedLock)
+        {
+            return _inactiveClientsReportSeedTask ??=
+                SeedInactiveClientsReportScenarioAsync();
         }
     }
 
@@ -1221,6 +1233,120 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             FeaturedEffectiveEndDate: new DateOnly(2052, 7, 18),
             OpeningClientDisplayName: "Negative Opening",
             OpeningClientId: openingClientId);
+    }
+
+    private async Task<InactiveClientsReportSmokeScenario>
+        SeedInactiveClientsReportScenarioAsync()
+    {
+        if (_ownerAccountId == Guid.Empty || _activeMembershipTypeId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "The inactive-clients report fixture dependencies are not initialized.");
+        }
+
+        const int pageSize = 10;
+        int[] daysInactive = [60, 45, 30, 29, 25, 21, 20, 18, 17, 15, 14];
+        var asOfDate = new DateOnly(2025, 5, 20);
+        var database = RequireDatabase();
+        Guid featuredClientId = Guid.Empty;
+        Guid featuredLastVisitId = Guid.Empty;
+        Guid featuredMembershipId = Guid.Empty;
+        Guid lastMembershipClientId = Guid.Empty;
+        Guid lastMembershipId = Guid.Empty;
+        Guid boundaryClientId = Guid.Empty;
+
+        for (var index = 1; index <= daysInactive.Length; index++)
+        {
+            var clientId = await database.SeedClientAsync(
+                _ownerAccountId,
+                "Inactive",
+                $"Client {index:00}",
+                $"+380 67 850 00 {index:00}",
+                $"BL-INACTIVE-{index:00}",
+                operationalStatus: index == 1 ? "inactive" : "active");
+            var occurredAt = new DateTimeOffset(
+                asOfDate.AddDays(-daysInactive[index - 1])
+                    .ToDateTime(new TimeOnly(9, index), DateTimeKind.Utc));
+            var visitId = await database.SeedClientActivityVisitAsync(
+                _ownerAccountId,
+                clientId,
+                occurredAt,
+                visitKind: index == 1 ? "trial" : "one_off");
+
+            if (index == 1)
+            {
+                featuredClientId = clientId;
+                featuredLastVisitId = visitId;
+                featuredMembershipId = await database.SeedIssuedMembershipAsync(
+                    _ownerAccountId,
+                    clientId,
+                    _activeMembershipTypeId,
+                    "Inactive current plan",
+                    visitsLimitSnapshot: 8,
+                    startDate: asOfDate.AddDays(-10),
+                    durationDays: 90,
+                    issuedAt: new DateTimeOffset(
+                        asOfDate.AddDays(-11)
+                            .ToDateTime(new TimeOnly(10, 0), DateTimeKind.Utc)));
+                await database.SeedClientActivityVisitAsync(
+                    _ownerAccountId,
+                    clientId,
+                    new DateTimeOffset(
+                        asOfDate.AddDays(-1)
+                            .ToDateTime(new TimeOnly(10, 0), DateTimeKind.Utc)),
+                    visitKind: "one_off",
+                    status: "canceled");
+            }
+            else if (index == 2)
+            {
+                lastMembershipClientId = clientId;
+                lastMembershipId = await database.SeedIssuedMembershipAsync(
+                    _ownerAccountId,
+                    clientId,
+                    _activeMembershipTypeId,
+                    "Inactive last plan",
+                    visitsLimitSnapshot: 6,
+                    startDate: asOfDate.AddDays(-90),
+                    durationDays: 30,
+                    issuedAt: new DateTimeOffset(
+                        asOfDate.AddDays(-91)
+                            .ToDateTime(new TimeOnly(10, 0), DateTimeKind.Utc)));
+            }
+
+            if (index == daysInactive.Length)
+            {
+                boundaryClientId = clientId;
+            }
+        }
+
+        var neverVisitedClientId = await database.SeedClientAsync(
+            _ownerAccountId,
+            "Absent",
+            "Never",
+            "+380 67 850 00 12",
+            "BL-INACTIVE-NEVER");
+
+        return new InactiveClientsReportSmokeScenario(
+            asOfDate,
+            pageSize,
+            KnownInactiveClientCount: daysInactive.Length,
+            ThresholdThirtyClientCount: 3,
+            ThresholdSixtyClientCount: 1,
+            FeaturedClientDisplayName: "Inactive Client 01",
+            FeaturedClientId: featuredClientId,
+            FeaturedLastVisitId: featuredLastVisitId,
+            FeaturedLastVisitAt: new DateTimeOffset(
+                asOfDate.AddDays(-60)
+                    .ToDateTime(new TimeOnly(9, 1), DateTimeKind.Utc)),
+            FeaturedMembershipId: featuredMembershipId,
+            FeaturedEffectiveEndDate: asOfDate.AddDays(79),
+            LastMembershipClientDisplayName: "Inactive Client 02",
+            LastMembershipClientId: lastMembershipClientId,
+            LastMembershipId: lastMembershipId,
+            BoundaryClientDisplayName: "Inactive Client 11",
+            BoundaryClientId: boundaryClientId,
+            NeverVisitedClientDisplayName: "Absent Never",
+            NeverVisitedClientId: neverVisitedClientId);
     }
 
     private static async Task SeedMembershipExtensionHistoryFixtureAsync(
@@ -1975,6 +2101,26 @@ public sealed record NegativeClientsReportSmokeScenario(
     DateOnly FeaturedEffectiveEndDate,
     string OpeningClientDisplayName,
     Guid OpeningClientId);
+
+public sealed record InactiveClientsReportSmokeScenario(
+    DateOnly AsOfDate,
+    int PageSize,
+    int KnownInactiveClientCount,
+    int ThresholdThirtyClientCount,
+    int ThresholdSixtyClientCount,
+    string FeaturedClientDisplayName,
+    Guid FeaturedClientId,
+    Guid FeaturedLastVisitId,
+    DateTimeOffset FeaturedLastVisitAt,
+    Guid FeaturedMembershipId,
+    DateOnly FeaturedEffectiveEndDate,
+    string LastMembershipClientDisplayName,
+    Guid LastMembershipClientId,
+    Guid LastMembershipId,
+    string BoundaryClientDisplayName,
+    Guid BoundaryClientId,
+    string NeverVisitedClientDisplayName,
+    Guid NeverVisitedClientId);
 
 public sealed record NonWorkingDayCorrectionSmokeScenario(
     Guid PeriodId,

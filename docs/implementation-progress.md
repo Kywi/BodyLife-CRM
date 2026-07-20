@@ -9116,3 +9116,93 @@ Next recommended step:
   date, an explicit `14`/`30`/`60` day threshold, an include-never-visited
   control, canonical last-Visit and Membership summary state, profile/history
   navigation and bounded pagination.
+
+## Step 152 - Milestone 9 inactive-clients report UI
+
+Status: completed. Milestone 9 remains in progress pending a separate
+acceptance closeout.
+
+Plan alignment:
+
+- Implement only the roadmap's `ListInactiveClients` UI over the existing
+  PostgreSQL-backed query. Keep Milestone 9 acceptance review and Milestone 10
+  Audit/history work for later steps.
+- Preserve Visits and Memberships ownership: render query-provided last active
+  Visit, days inactive, operational status, current/last Membership summary,
+  remaining visits, effective end and warnings. Do not calculate inactivity or
+  Membership state in Razor, JavaScript or the PageModel.
+- Require an explicit `14`, `30` or `60` day selector. Do not choose a product
+  default while the standard default remains an open requirement decision.
+- Keep never-visited clients distinct with nullable Visit/date/days-inactive
+  provenance. A canceled Visit is not accepted as last activity.
+
+Scope:
+
+- Add `/Reports/InactiveClients` as a server-rendered Razor Page with an as-of
+  date, required threshold selector, include-never-visited checkbox and busy
+  GET submit. The initial page does not execute the report until a threshold is
+  selected.
+- Request ten canonical rows per page and preserve date, threshold and
+  include-never-visited state through backend-provided next-offset and bounded
+  previous-page navigation. Query failures retain all filters and never render
+  partial rows.
+- Render contact/card summary, separate Client operational status, exact last
+  active Visit id/time/kind, query-provided days inactive and current/last/no
+  Membership state. Preserve the ambiguous-current-Membership signal as a
+  visible warning rather than choosing a current Membership in the UI.
+- Link every row to the Client profile and link to recent Visits only when the
+  query supplies an exact last active Visit id. Never-visited rows have no
+  invented Visit link.
+- Add inactive-client navigation to Daily, Ending-soon, Low-remaining and
+  Negative-client report pages. Add one responsive filter grid adjustment; no
+  client-side report logic or schema change was introduced.
+- Add a lazy PostgreSQL smoke scenario with exact 14/30/60 boundaries, eleven
+  active-Visit clients for pagination, one newer canonically canceled Visit,
+  current and last Membership summaries, separate operational status and a
+  never-visited Client. The canceled fixture includes its append-only
+  `visit_cancellations` source fact so profile drill-down remains canonical.
+
+Validation:
+
+- Release UI smoke-test project build passed with 0 warnings and 0 errors.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` and
+  `git diff --check` passed.
+- Focused Playwright inactive-client coverage passed 3/3 against the healthy
+  local Docker PostgreSQL service: no implicit threshold, tablet/phone report
+  navigation, 14/30/60 filtering, inclusive boundary, canceled-Visit
+  exclusion, current/last/no Membership summaries, operational status,
+  never-visited nullable provenance, profile/recent-Visit navigation, bounded
+  pagination, filter preservation, failure-without-partial-rows, touch targets
+  and horizontal-fit checks.
+- Tablet and phone full-page screenshots were captured and reviewed; report
+  navigation, four-control filter, context, dense rows, actions and pagination
+  remain readable without overlap or horizontal scrolling.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 361 core
+  tests, 35 web tests, 479 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): add inactive-clients report page`.
+
+Next recommended step:
+
+- Perform one bounded Milestone 9 acceptance closeout: map every Reports
+  acceptance criterion and required test to concrete implementation evidence,
+  run any focused consistency checks the audit identifies and document any
+  real remaining gap before marking the milestone complete.

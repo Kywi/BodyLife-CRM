@@ -2512,6 +2512,11 @@ textarea:focus-visible,
   grid-template-columns: minmax(210px, 1fr) minmax(150px, 0.6fr) auto;
 }
 
+.report-inactive-filter {
+  max-width: 980px;
+  grid-template-columns: minmax(210px, 1fr) minmax(165px, 0.7fr) minmax(180px, auto) auto;
+}
+
 .report-error {
   max-width: 760px;
 }

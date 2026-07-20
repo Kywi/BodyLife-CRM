@@ -1,0 +1,324 @@
+@page
+@model BodyLife.Crm.Web.Pages.Reports.InactiveClientsModel
+@{
+    ViewData["Title"] = "Inactive clients";
+    var reportPage = Model.ReportPage;
+    var errorMessage = Model.LoadError ?? Model.Result?.ErrorMessage;
+}
+
+<main class="page-shell report-page" data-inactive-clients-report-page>
+    <section class="report-layout" aria-labelledby="inactive-clients-title">
+        <header class="report-header">
+            <div>
+                <p class="eyebrow">Reports</p>
+                <h1 id="inactive-clients-title">Inactive clients</h1>
+            </div>
+            <nav class="report-header-actions" aria-label="Report navigation">
+                <a class="secondary-link" asp-page="/Reports/Daily">Daily report</a>
+                <a class="secondary-link" asp-page="/Reports/EndingSoon">Ending soon</a>
+                <a class="secondary-link" asp-page="/Reports/LowRemaining">Low remaining</a>
+                <a class="secondary-link" asp-page="/Reports/NegativeClients">Negative clients</a>
+                <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+            </nav>
+        </header>
+
+        <form class="report-filter report-inactive-filter"
+              method="get"
+              asp-page="/Reports/InactiveClients"
+              data-busy-form>
+            <div class="report-date-field">
+                <label for="inactive-clients-as-of">As-of date</label>
+                <input id="inactive-clients-as-of"
+                       name="asOf"
+                       type="date"
+                       value="@Model.AsOfDate?.ToString("yyyy-MM-dd")"
+                       required />
+            </div>
+            <div class="report-threshold-field">
+                <label for="inactive-clients-threshold">Inactive for at least</label>
+                <select id="inactive-clients-threshold"
+                        name="threshold"
+                        required>
+                    <option value="" selected="@(Model.ThresholdDays is null ? "selected" : null)">
+                        Select days
+                    </option>
+                    @foreach (var threshold in InactiveClientsModel.SupportedThresholds)
+                    {
+                        <option value="@threshold"
+                                selected="@(Model.ThresholdDays == threshold ? "selected" : null)">
+                            @threshold days
+                        </option>
+                    }
+                </select>
+            </div>
+            <label class="checkbox-control" for="inactive-clients-include-no-visits">
+                <input id="inactive-clients-include-no-visits"
+                       name="includeNoVisits"
+                       type="checkbox"
+                       value="true"
+                       checked="@(Model.IncludeClientsWithNoVisits ? "checked" : null)" />
+                <span>Include never visited</span>
+            </label>
+            <button type="submit" data-busy-text="Loading...">Load report</button>
+        </form>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="warning-block warning-danger report-error" role="alert">
+                <strong>Report unavailable</strong>
+                <span>@errorMessage</span>
+            </div>
+        }
+        else if (reportPage is not null)
+        {
+            <div class="report-list-context" aria-label="Inactive-clients report selection">
+                <span>
+                    <strong>@reportPage.AsOfDate.ToString("yyyy-MM-dd")</strong>
+                    as-of date
+                </span>
+                <span>
+                    <strong>@reportPage.ThresholdDays days</strong>
+                    inactivity threshold
+                </span>
+                <span>
+                    <strong>@(reportPage.IncludesClientsWithNoVisits ? "Included" : "Excluded")</strong>
+                    never visited
+                </span>
+                <span>
+                    <strong>@Model.CurrentPageNumber</strong>
+                    report page
+                </span>
+            </div>
+
+            <section class="report-source-section" aria-labelledby="inactive-clients-results-title">
+                <header class="report-section-header">
+                    <div>
+                        <p class="eyebrow">Canonical Visits and Memberships state</p>
+                        <h2 id="inactive-clients-results-title">Inactive client list</h2>
+                    </div>
+                    <span class="result-count">@reportPage.Items.Count clients shown</span>
+                </header>
+
+                @if (reportPage.Items.Count == 0)
+                {
+                    <p class="empty-state">No clients match this inactivity threshold.</p>
+                }
+                else
+                {
+                    <ol class="report-row-list" data-inactive-client-rows>
+                        @foreach (var row in reportPage.Items)
+                        {
+                            var membership = row.MembershipSummary;
+                            <li class="report-row inactive-client-row"
+                                data-client-id="@row.ClientId"
+                                data-last-visit-id="@row.LastCountedVisit?.VisitId"
+                                data-last-visit-date="@row.LastCountedVisitDate?.ToString("yyyy-MM-dd")"
+                                data-last-visit-kind="@row.LastCountedVisit?.VisitKind"
+                                data-days-inactive="@row.DaysInactive"
+                                data-operational-status="@row.OperationalStatus"
+                                data-membership-id="@membership?.MembershipId"
+                                data-membership-summary-kind="@membership?.Kind"
+                                data-ambiguous-membership="@row.HasAmbiguousCurrentMembership.ToString().ToLowerInvariant()">
+                                <header class="report-row-header">
+                                    <div>
+                                        <p class="report-row-kind">@VisitKindLabel(row.LastCountedVisit?.VisitKind)</p>
+                                        <h3>@row.ClientDisplayName</h3>
+                                    </div>
+                                    <div class="report-membership-heading">
+                                        <strong>@InactivityLabel(row.DaysInactive)</strong>
+                                        <span class="status-chip @OperationalStatusClass(row.OperationalStatus)">
+                                            @OperationalStatusLabel(row.OperationalStatus)
+                                        </span>
+                                    </div>
+                                </header>
+
+                                <dl class="report-row-meta report-membership-meta">
+                                    <div>
+                                        <dt>Phone</dt>
+                                        <dd>@(row.ClientPhone ?? "No phone")</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Current card</dt>
+                                        <dd>@(row.CurrentCardNumber ?? "No card")</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Last active Visit</dt>
+                                        <dd>@FormatLastVisit(row.LastCountedVisit)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Days inactive</dt>
+                                        <dd>@(row.DaysInactive?.ToString() ?? "Not applicable")</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Membership summary</dt>
+                                        <dd>@MembershipSummaryLabel(membership)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Membership record</dt>
+                                        <dd>@MembershipLifecycleLabel(membership)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Remaining visits</dt>
+                                        <dd>@(membership?.RemainingVisits.ToString() ?? "Not available")</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Effective end</dt>
+                                        <dd>@(membership?.EffectiveEndDate.ToString("yyyy-MM-dd") ?? "Not available")</dd>
+                                    </div>
+                                </dl>
+
+                                @if (row.HasAmbiguousCurrentMembership)
+                                {
+                                    <div class="warning-block warning-caution report-row-event"
+                                         data-ambiguous-current-membership>
+                                        <strong>Membership selection requires review</strong>
+                                        <span>Multiple current Membership candidates exist; the last Membership summary is shown.</span>
+                                    </div>
+                                }
+
+                                @if (membership is { Warnings.Count: > 0 })
+                                {
+                                    <ul class="warning-chip-list report-warning-list"
+                                        aria-label="Membership warnings">
+                                        @foreach (var warning in membership.Warnings)
+                                        {
+                                            <li class="@WarningClass(warning.Severity)"
+                                                data-membership-warning="@warning.Code">
+                                                @warning.Message
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+
+                                <footer class="report-row-actions">
+                                    <a class="secondary-link"
+                                       asp-page="/Reception/Index"
+                                       asp-route-clientId="@row.ClientId"
+                                       asp-fragment="membership-panel-title">
+                                        Open client
+                                    </a>
+                                    @if (row.LastCountedVisit is not null)
+                                    {
+                                        <a class="secondary-link"
+                                           asp-page="/Reception/Index"
+                                           asp-route-clientId="@row.ClientId"
+                                           asp-fragment="recent-visits-title">
+                                            View visits
+                                        </a>
+                                    }
+                                </footer>
+                            </li>
+                        }
+                    </ol>
+                }
+
+                @if (Model.PreviousOffset is not null || reportPage.NextOffset is not null)
+                {
+                    <nav class="report-pagination" aria-label="Inactive-client result pages">
+                        <span class="report-pagination-slot">
+                            @if (Model.PreviousOffset is { } previousOffset)
+                            {
+                                <a class="secondary-link"
+                                   asp-page="/Reports/InactiveClients"
+                                   asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
+                                   asp-route-threshold="@reportPage.ThresholdDays"
+                                   asp-route-includeNoVisits="@reportPage.IncludesClientsWithNoVisits"
+                                   asp-route-offset="@previousOffset">
+                                    Previous
+                                </a>
+                            }
+                        </span>
+                        <span class="result-count">Page @Model.CurrentPageNumber</span>
+                        <span class="report-pagination-slot report-pagination-next">
+                            @if (reportPage.NextOffset is { } nextOffset)
+                            {
+                                <a class="secondary-link"
+                                   asp-page="/Reports/InactiveClients"
+                                   asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
+                                   asp-route-threshold="@reportPage.ThresholdDays"
+                                   asp-route-includeNoVisits="@reportPage.IncludesClientsWithNoVisits"
+                                   asp-route-offset="@nextOffset">
+                                    Next
+                                </a>
+                            }
+                        </span>
+                    </nav>
+                }
+            </section>
+        }
+    </section>
+</main>
+
+@functions {
+    private static string InactivityLabel(int? daysInactive)
+    {
+        return daysInactive is { } days
+            ? $"{days} days inactive"
+            : "Never visited";
+    }
+
+    private static string FormatLastVisit(InactiveClientLastVisit? visit)
+    {
+        return visit is null
+            ? "Never visited"
+            : $"{visit.OccurredAt.ToUniversalTime():yyyy-MM-dd HH:mm} UTC";
+    }
+
+    private static string VisitKindLabel(VisitKind? kind)
+    {
+        return kind switch
+        {
+            VisitKind.Membership => "Membership Visit",
+            VisitKind.OneOff => "One-off Visit",
+            VisitKind.Trial => "Trial Visit",
+            _ => "No Visit history",
+        };
+    }
+
+    private static string MembershipSummaryLabel(
+        InactiveClientMembershipSummary? membership)
+    {
+        if (membership is null)
+        {
+            return "No Membership";
+        }
+
+        var kind = membership.Kind == InactiveClientMembershipSummaryKind.Current
+            ? "Current"
+            : "Last";
+        return $"{kind}: {membership.MembershipTypeName}";
+    }
+
+    private static string MembershipLifecycleLabel(
+        InactiveClientMembershipSummary? membership)
+    {
+        return membership?.LifecycleStatus switch
+        {
+            IssuedMembershipLifecycleStatus.Active => "Active",
+            IssuedMembershipLifecycleStatus.Canceled => "Canceled",
+            IssuedMembershipLifecycleStatus.Corrected => "Corrected",
+            _ => "Not available",
+        };
+    }
+
+    private static string OperationalStatusLabel(ClientOperationalStatus status)
+    {
+        return status == ClientOperationalStatus.Active
+            ? "Client active"
+            : "Client inactive";
+    }
+
+    private static string OperationalStatusClass(ClientOperationalStatus status)
+    {
+        return status == ClientOperationalStatus.Active
+            ? "status-active"
+            : "status-inactive";
+    }
+
+    private static string WarningClass(MembershipWarningSeverity severity)
+    {
+        return severity == MembershipWarningSeverity.Danger
+            ? "warning-chip-danger"
+            : "warning-chip-caution";
+    }
+}
