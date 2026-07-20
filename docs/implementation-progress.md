@@ -10181,3 +10181,95 @@ Next recommended step:
   slice over `GetAuditTimeline`: readable filters, stable pagination and
   occurred/recorded/origin/shared-session labels. Keep profile/report/
   correction links and technical-log correlation lookup for later steps.
+
+## Step 164 - Owner/Admin Audit Timeline Razor UI
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue the fourth Milestone 10 task by exposing the completed
+  `GetAuditTimeline` backend through an Owner/Admin-readable server-rendered
+  Razor Page.
+- Keep global audit ordered by append chronology while making `occurred_at`,
+  `recorded_at`, `entry_origin`, shared account/session/device and
+  changed-after-close context visible without opening technical logs.
+- Keep Client History UI, profile/report/correction links, related-module
+  display-name resolution, specialized owner-readable before/after presenters
+  and technical-log correlation lookup outside this bounded step.
+
+Completed:
+
+- Added the protected `/Audit/Timeline` Razor Page and an `AdminOrOwner`
+  authorization convention for the Audit folder. The authenticated shell now
+  exposes one global `Audit timeline` navigation link to Owner, named Admin
+  and shared Reception/Admin accounts.
+- Added GET filters for optional Client id, typed entity, exact entity id,
+  recorded-from/through UTC dates and one supported business action. The Page
+  maps inclusive UI dates to the backend's inclusive/exclusive recorded-time
+  range, resets pagination on filter submit and preserves every selector on
+  Previous/Next links.
+- Added ten-row stable pagination, canonical empty/error states and readable
+  labels for all currently implemented action/entity types, account kinds,
+  roles and entry origins.
+- Made both occurred and recorded UTC timestamps, actor account/role,
+  session/device, fallback/backfill origin, reason/comment and
+  changed-after-close warnings visible on every row. Shared Reception/Admin is
+  labeled as a shared account rather than a physical person.
+- Kept related ids, full identifiers, correlation/idempotency values and
+  formatted related/before/after JSON in a collapsed `Audit envelope` detail.
+  Raw payload is available for investigation but is not the primary timeline
+  label or a report/formula source.
+- Added responsive Audit-specific styles consistent with existing report
+  screens. Filters, metadata and envelope summaries collapse from three/four
+  columns to one column on phone without nested cards or horizontal overflow.
+- Added a deterministic PostgreSQL UI fixture with twelve append-only,
+  Client-linked Visit audit entries. Its newest row is a changed-after-close
+  paper-fallback event from a real seeded shared Reception/Admin account and
+  session, with different occurred/recorded times and a complete envelope.
+- Added Playwright coverage for Owner/tablet and named-Admin/phone filtering,
+  shared-session/fallback labels, expanded envelope content, two-page filter
+  preservation, invalid-offset no-partial-data behavior and anonymous login
+  redirect. No business command, audit mutation, EF model or migration changed.
+
+Validation:
+
+- Release builds before and after fixture/test implementation passed with 0
+  warnings/errors. Focused Audit Timeline Playwright coverage passed 4/4 with
+  no skipped tests after the final ten-row pagination adjustment.
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully and
+  `git diff --check` reported no whitespace errors.
+- Screenshot-backed visual checks passed at 1024x768 tablet and 390x844 phone
+  viewports. Playwright asserted minimum 44px touch targets and no horizontal
+  document overflow with the featured audit envelope expanded; manual review
+  found no text/control overlap or hidden audit warnings.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 386 core
+  tests, 35 web tests, 524 PostgreSQL/architecture/security infrastructure
+  tests, 73 Playwright smoke tests and EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(ui): add audit timeline screen`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded Owner/Admin Client History Razor UI
+  over `GetClientHistory`, preserving typed source facts, corrections,
+  occurred/recorded times and entry-origin labels. Keep profile/report/
+  correction links, specialized before/after summaries, technical-log lookup
+  and the unresolved negative-closure workflow for later steps.

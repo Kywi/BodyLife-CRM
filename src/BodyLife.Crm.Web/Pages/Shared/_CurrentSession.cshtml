@@ -18,6 +18,7 @@
             </div>
             <nav class="shell-actions" aria-label="Session actions">
                 <a class="secondary-link" asp-page="/Reports/Daily">Daily report</a>
+                <a class="secondary-link" asp-page="/Audit/Timeline">Audit timeline</a>
                 @if (actor is { Role: ActorRole.Owner, AccountKind: AccountKind.Owner })
                 {
                     <a class="secondary-link" asp-page="/Owner/MembershipTypes">Membership types</a>

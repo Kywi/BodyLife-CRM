@@ -23,13 +23,16 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     private readonly object _lowRemainingReportSeedLock = new();
     private readonly object _negativeClientsReportSeedLock = new();
     private readonly object _inactiveClientsReportSeedLock = new();
+    private readonly object _auditTimelineSeedLock = new();
     private Task<EndingSoonReportSmokeScenario>? _endingSoonReportSeedTask;
     private Task<LowRemainingReportSmokeScenario>? _lowRemainingReportSeedTask;
     private Task<NegativeClientsReportSmokeScenario>? _negativeClientsReportSeedTask;
     private Task<InactiveClientsReportSmokeScenario>? _inactiveClientsReportSeedTask;
+    private Task<AuditTimelineSmokeScenario>? _auditTimelineSeedTask;
     private Process? _process;
     private PostgreSqlSmokeDatabase? _database;
     private Guid _ownerAccountId;
+    private Guid _sharedAdminAccountId;
     private Guid _activeMembershipTypeId;
 
     public Uri BaseAddress { get; private set; } = null!;
@@ -605,6 +608,17 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         }
     }
 
+    public Task<AuditTimelineSmokeScenario> EnsureAuditTimelineScenarioAsync()
+    {
+        lock (_auditTimelineSeedLock)
+        {
+            return _auditTimelineSeedTask ??=
+                RequireDatabase().SeedAuditTimelineAsync(
+                    _ownerAccountId,
+                    _sharedAdminAccountId);
+        }
+    }
+
     public async Task InitializeAsync()
     {
         BaseAddress = new Uri($"http://127.0.0.1:{FindAvailablePort()}");
@@ -826,6 +840,13 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             SmokeAdminLoginName,
             SmokeAdminPassword);
         Assert.Equal(StaffCredentialsStatus.Configured, staffCredentialsResult.Status);
+
+        var sharedAdminResult = await lifecycleService.CreateStaffAccountAsync(
+            ownerEnvelope,
+            AccountKind.SharedReceptionAdmin,
+            "Smoke Shared Reception");
+        Assert.Equal(StaffAccountLifecycleStatus.Created, sharedAdminResult.Status);
+        _sharedAdminAccountId = sharedAdminResult.AccountId!.Value;
     }
 
     private static async Task<Guid> SeedMembershipTypesAsync(PostgreSqlSmokeDatabase database)
@@ -2121,6 +2142,20 @@ public sealed record InactiveClientsReportSmokeScenario(
     Guid BoundaryClientId,
     string NeverVisitedClientDisplayName,
     Guid NeverVisitedClientId);
+
+public sealed record AuditTimelineSmokeScenario(
+    Guid ClientId,
+    DateOnly RecordedDate,
+    int PageSize,
+    int TotalEntries,
+    Guid FeaturedAuditEntryId,
+    Guid FeaturedEntityId,
+    Guid SharedAccountId,
+    Guid SharedSessionId,
+    string SharedDeviceLabel,
+    DateTimeOffset FeaturedOccurredAt,
+    DateTimeOffset FeaturedRecordedAt,
+    string FeaturedCorrelationId);
 
 public sealed record NonWorkingDayCorrectionSmokeScenario(
     Guid PeriodId,

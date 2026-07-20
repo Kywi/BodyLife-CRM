@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Freezes;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
@@ -502,6 +503,253 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         await transaction.CommitAsync();
         return clientId;
+    }
+
+    public async Task<AuditTimelineSmokeScenario> SeedAuditTimelineAsync(
+        Guid ownerAccountId,
+        Guid sharedAdminAccountId)
+    {
+        if (ownerAccountId == Guid.Empty || sharedAdminAccountId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Audit timeline actor ids must be non-empty.",
+                nameof(ownerAccountId));
+        }
+
+        const int pageSize = 10;
+        const int totalEntries = 12;
+        const string sharedDeviceLabel = "Shared front desk tablet";
+        const string featuredCorrelationId = "audit-ui-paper-fallback";
+        var recordedDate = new DateOnly(2026, 7, 18);
+        var recordedBase = new DateTimeOffset(
+            recordedDate,
+            new TimeOnly(9, 0),
+            TimeSpan.Zero);
+        var clientId = await SeedClientAsync(
+            ownerAccountId,
+            "Audit",
+            "Timeline",
+            "+380 67 880 00 01",
+            "BL-AUDIT-TIMELINE");
+        var ownerSessionId = Guid.NewGuid();
+        var sharedSessionId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var featuredAuditEntryId = Guid.Empty;
+        var featuredEntityId = Guid.Empty;
+        var featuredOccurredAt = default(DateTimeOffset);
+        var featuredRecordedAt = default(DateTimeOffset);
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using (var sessionCommand = connection.CreateCommand())
+        {
+            sessionCommand.Transaction = transaction;
+            sessionCommand.CommandText =
+                """
+                insert into bodylife.sessions (
+                    id,
+                    account_id,
+                    device_label,
+                    started_at,
+                    expires_at,
+                    ended_at,
+                    last_seen_at)
+                values
+                    (
+                        @owner_session_id,
+                        @owner_account_id,
+                        'Owner audit workstation',
+                        @started_at,
+                        @expires_at,
+                        @last_seen_at,
+                        @last_seen_at),
+                    (
+                        @shared_session_id,
+                        @shared_account_id,
+                        @shared_device_label,
+                        @started_at,
+                        @expires_at,
+                        @last_seen_at,
+                        @last_seen_at)
+                """;
+            sessionCommand.Parameters.AddWithValue(
+                "owner_session_id",
+                ownerSessionId);
+            sessionCommand.Parameters.AddWithValue(
+                "owner_account_id",
+                ownerAccountId);
+            sessionCommand.Parameters.AddWithValue(
+                "shared_session_id",
+                sharedSessionId);
+            sessionCommand.Parameters.AddWithValue(
+                "shared_account_id",
+                sharedAdminAccountId);
+            sessionCommand.Parameters.AddWithValue(
+                "shared_device_label",
+                sharedDeviceLabel);
+            sessionCommand.Parameters.AddWithValue(
+                "started_at",
+                recordedBase.AddHours(-1));
+            sessionCommand.Parameters.AddWithValue(
+                "expires_at",
+                recordedBase.AddDays(30));
+            sessionCommand.Parameters.AddWithValue(
+                "last_seen_at",
+                recordedBase);
+            Assert.Equal(2, await sessionCommand.ExecuteNonQueryAsync());
+        }
+
+        for (var index = 0; index < totalEntries; index++)
+        {
+            var isFeatured = index == totalEntries - 1;
+            var auditEntryId = Guid.NewGuid();
+            var entityId = Guid.NewGuid();
+            var recordedAt = recordedBase.AddMinutes(index);
+            var occurredAt = isFeatured
+                ? recordedAt.AddDays(-2)
+                : recordedAt.AddMinutes(-5);
+            var actorAccountId = isFeatured
+                ? sharedAdminAccountId
+                : ownerAccountId;
+            var actorAccountType = isFeatured
+                ? "shared_reception_admin"
+                : "owner";
+            var actorRole = isFeatured ? "admin" : "owner";
+            var sessionId = isFeatured ? sharedSessionId : ownerSessionId;
+            var deviceLabel = isFeatured
+                ? sharedDeviceLabel
+                : "Owner audit workstation";
+            var entryOrigin = isFeatured ? "paper_fallback" : "normal";
+            var reason = isFeatured ? "Recovered from paper register" : null;
+            var comment = isFeatured
+                ? "Entered after reception connectivity returned"
+                : null;
+            var correlationId = isFeatured
+                ? featuredCorrelationId
+                : $"audit-ui-{index:D2}";
+            var relatedEntityRefs = JsonSerializer.Serialize(new
+            {
+                clientId,
+                membershipId,
+            });
+            var beforeSummary = JsonSerializer.Serialize(new
+            {
+                remainingVisits = 10 - index,
+            });
+            var afterSummary = JsonSerializer.Serialize(new
+            {
+                remainingVisits = 9 - index,
+            });
+
+            await using var auditCommand = connection.CreateCommand();
+            auditCommand.Transaction = transaction;
+            auditCommand.CommandText =
+                """
+                insert into bodylife.business_audit_entries (
+                    id,
+                    action_type,
+                    entity_type,
+                    entity_id,
+                    related_entity_refs,
+                    actor_account_id,
+                    actor_account_type,
+                    actor_role,
+                    session_id,
+                    device_label,
+                    occurred_at,
+                    recorded_at,
+                    reason,
+                    comment,
+                    before_summary,
+                    after_summary,
+                    request_correlation_id,
+                    entry_origin,
+                    idempotency_key,
+                    changed_after_close)
+                values (
+                    @id,
+                    'visit.marked',
+                    'visit',
+                    @entity_id,
+                    @related_entity_refs,
+                    @actor_account_id,
+                    @actor_account_type,
+                    @actor_role,
+                    @session_id,
+                    @device_label,
+                    @occurred_at,
+                    @recorded_at,
+                    @reason,
+                    @comment,
+                    @before_summary,
+                    @after_summary,
+                    @request_correlation_id,
+                    @entry_origin,
+                    @idempotency_key,
+                    @changed_after_close)
+                """;
+            auditCommand.Parameters.AddWithValue("id", auditEntryId);
+            auditCommand.Parameters.AddWithValue("entity_id", entityId);
+            auditCommand.Parameters.Add(
+                "related_entity_refs",
+                NpgsqlDbType.Jsonb).Value = relatedEntityRefs;
+            auditCommand.Parameters.AddWithValue(
+                "actor_account_id",
+                actorAccountId);
+            auditCommand.Parameters.AddWithValue(
+                "actor_account_type",
+                actorAccountType);
+            auditCommand.Parameters.AddWithValue("actor_role", actorRole);
+            auditCommand.Parameters.AddWithValue("session_id", sessionId);
+            auditCommand.Parameters.AddWithValue("device_label", deviceLabel);
+            auditCommand.Parameters.AddWithValue("occurred_at", occurredAt);
+            auditCommand.Parameters.AddWithValue("recorded_at", recordedAt);
+            auditCommand.Parameters.Add("reason", NpgsqlDbType.Varchar).Value =
+                reason ?? (object)DBNull.Value;
+            auditCommand.Parameters.Add("comment", NpgsqlDbType.Varchar).Value =
+                comment ?? (object)DBNull.Value;
+            auditCommand.Parameters.Add(
+                "before_summary",
+                NpgsqlDbType.Jsonb).Value = beforeSummary;
+            auditCommand.Parameters.Add(
+                "after_summary",
+                NpgsqlDbType.Jsonb).Value = afterSummary;
+            auditCommand.Parameters.AddWithValue(
+                "request_correlation_id",
+                correlationId);
+            auditCommand.Parameters.AddWithValue("entry_origin", entryOrigin);
+            auditCommand.Parameters.AddWithValue(
+                "idempotency_key",
+                $"audit-ui-key-{index:D2}");
+            auditCommand.Parameters.AddWithValue(
+                "changed_after_close",
+                isFeatured);
+            Assert.Equal(1, await auditCommand.ExecuteNonQueryAsync());
+
+            if (isFeatured)
+            {
+                featuredAuditEntryId = auditEntryId;
+                featuredEntityId = entityId;
+                featuredOccurredAt = occurredAt;
+                featuredRecordedAt = recordedAt;
+            }
+        }
+
+        await transaction.CommitAsync();
+        return new AuditTimelineSmokeScenario(
+            clientId,
+            recordedDate,
+            pageSize,
+            totalEntries,
+            featuredAuditEntryId,
+            featuredEntityId,
+            sharedAdminAccountId,
+            sharedSessionId,
+            sharedDeviceLabel,
+            featuredOccurredAt,
+            featuredRecordedAt,
+            featuredCorrelationId);
     }
 
     public async Task<Guid> SeedIssuedMembershipAsync(
