@@ -8,5 +8,6 @@ public sealed record GetClientProfileQuery(
     Guid ClientId,
     DateOnly? MembershipAsOfDate = null,
     bool IncludeHistory = false,
-    bool IncludeDrillDowns = false)
+    bool IncludeDrillDowns = false,
+    Guid? RequiredPaymentId = null)
     : IBodyLifeQuery<GetClientProfileResult>;

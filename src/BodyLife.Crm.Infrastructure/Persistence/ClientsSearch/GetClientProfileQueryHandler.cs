@@ -72,6 +72,13 @@ public sealed class GetClientProfileQueryHandler(
                 "membershipAsOfDate");
         }
 
+        if (query.RequiredPaymentId == Guid.Empty)
+        {
+            return GetClientProfileResult.Invalid(
+                "Required Payment id must not be empty when supplied.",
+                "requiredPaymentId");
+        }
+
         if (query.IncludeDrillDowns)
         {
             return GetClientProfileResult.Invalid(
@@ -185,7 +192,10 @@ public sealed class GetClientProfileQueryHandler(
             recentVisits = visitRows;
 
             var paymentRowsResult = await getClientPaymentRows.ExecuteAsync(
-                new GetClientPaymentRowsQuery(query.Actor, query.ClientId),
+                new GetClientPaymentRowsQuery(
+                    query.Actor,
+                    query.ClientId,
+                    RequiredPaymentId: query.RequiredPaymentId),
                 cancellationToken);
             if (paymentRowsResult.Status != GetClientPaymentRowsStatus.Success)
             {

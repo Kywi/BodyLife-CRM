@@ -59,6 +59,9 @@ public sealed class IndexModel(
     [BindProperty(SupportsGet = true, Name = "clientId")]
     public Guid? ClientId { get; set; }
 
+    [BindProperty(SupportsGet = true, Name = "correctPaymentId")]
+    public Guid? CorrectPaymentId { get; set; }
+
     [TempData]
     public string? ClientOperationMessage { get; set; }
 
@@ -100,7 +103,8 @@ public sealed class IndexModel(
             new GetClientProfileQuery(
                 actor,
                 ClientId ?? Guid.Empty,
-                IncludeHistory: true),
+                IncludeHistory: true,
+                RequiredPaymentId: CorrectPaymentId),
             cancellationToken);
         SetHtmxPushUrl(result.Profile?.ClientId ?? ClientId);
 
@@ -2327,7 +2331,8 @@ public sealed class IndexModel(
                 new GetClientProfileQuery(
                     actor,
                     profileClientId.Value,
-                    IncludeHistory: true),
+                    IncludeHistory: true,
+                    RequiredPaymentId: CorrectPaymentId),
                 cancellationToken);
         }
 
@@ -2444,7 +2449,10 @@ public sealed class IndexModel(
                 .Select(payment => CorrectPaymentFormViewModel.FromPayment(
                     payment,
                     profile,
-                    searchContext))
+                    searchContext) with
+                {
+                    IsOpen = payment.PaymentId == CorrectPaymentId,
+                })
                 .ToArray() ?? [];
         }
 

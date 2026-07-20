@@ -173,28 +173,66 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
                 viewportName,
                 "Payment cancellation reason");
 
-            var profileLinks = page.Locator(".report-row-actions .secondary-link");
+            var profileLinks = page.GetByRole(
+                AriaRole.Link,
+                new() { Name = "Open client", Exact = true });
             Assert.Equal(5, await profileLinks.CountAsync());
             await AssertMinimumTouchTargetsAsync(
                 profileLinks,
                 viewportName,
                 "report profile link");
+            var activePaymentRow = page.Locator(
+                "[data-report-payment-rows] > .report-row[data-report-row-status='active']");
+            var correctionLaunch = activePaymentRow.GetByRole(
+                AriaRole.Link,
+                new() { Name = "Correct payment", Exact = true });
+            Assert.Equal(
+                1,
+                await page.Locator("[data-report-correct-payment]").CountAsync());
+            Assert.Equal(
+                0,
+                await page.Locator(
+                    "[data-report-payment-rows] > .report-row:not([data-report-row-status='active']) [data-report-correct-payment]")
+                    .CountAsync());
+            await AssertMinimumTouchTargetAsync(
+                correctionLaunch,
+                viewportName,
+                "report Payment correction launch");
             await AssertFitsViewportAsync(page, viewportName, "daily report");
             await CaptureVisualAsync(page, viewportName, "daily-report");
 
-            await visitRows.First
-                .GetByRole(AriaRole.Link, new() { Name = "Open client", Exact = true })
-                .ClickAsync();
+            var activePaymentId = Guid.Parse(
+                Assert.IsType<string>(
+                    await activePaymentRow.GetAttributeAsync("data-report-payment-id")));
+            await correctionLaunch.ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             Assert.Contains(
                 $"clientId={_app.DailyReportClientId}",
                 page.Url,
                 StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(
+                $"correctPaymentId={activePaymentId}",
+                page.Url,
+                StringComparison.OrdinalIgnoreCase);
+            Assert.EndsWith(
+                $"#correct-payment-panel-{activePaymentId:N}",
+                page.Url,
+                StringComparison.OrdinalIgnoreCase);
             await ExpectVisibleAsync(
                 page.GetByRole(AriaRole.Heading, new() { Name = "Report Daily", Exact = true }),
                 viewportName,
                 "report Client profile");
+            var correctionPanel = page.Locator(
+                $"#correct-payment-panel-{activePaymentId:N}[open]");
+            await ExpectVisibleAsync(
+                correctionPanel.GetByText("Original amount", new() { Exact = true }),
+                viewportName,
+                "opened report Payment correction form");
+            await ExpectVisibleAsync(
+                correctionPanel.GetByText("900 UAH", new() { Exact = true }),
+                viewportName,
+                "report Payment correction amount");
             await AssertFitsViewportAsync(page, viewportName, "report Client profile");
         }
         finally

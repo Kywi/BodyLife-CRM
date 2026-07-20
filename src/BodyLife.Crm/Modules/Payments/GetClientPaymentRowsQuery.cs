@@ -6,7 +6,8 @@ namespace BodyLife.Crm.Modules.Payments;
 public sealed record GetClientPaymentRowsQuery(
     ActorContext Actor,
     Guid ClientId,
-    int Limit = 20)
+    int Limit = 20,
+    Guid? RequiredPaymentId = null)
     : IBodyLifeQuery<GetClientPaymentRowsResult>
 {
     public const int DefaultLimit = 20;

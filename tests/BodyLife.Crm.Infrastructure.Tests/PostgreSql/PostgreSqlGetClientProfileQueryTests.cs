@@ -308,7 +308,11 @@ public sealed class PostgreSqlGetClientProfileQueryTests
             dbContext,
             visitRowsQueryHandler: visitRowsHandler,
             paymentRowsQueryHandler: paymentRowsHandler).ExecuteAsync(
-                new GetClientProfileQuery(actor, clientId, IncludeHistory: true),
+                new GetClientProfileQuery(
+                    actor,
+                    clientId,
+                    IncludeHistory: true,
+                    RequiredPaymentId: paymentId),
                 CancellationToken.None);
 
         AssertSuccessful(result);
@@ -332,6 +336,7 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Equal(
             GetClientPaymentRowsQuery.DefaultLimit,
             capturedPaymentQuery.Limit);
+        Assert.Equal(paymentId, capturedPaymentQuery.RequiredPaymentId);
         Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
     }
 

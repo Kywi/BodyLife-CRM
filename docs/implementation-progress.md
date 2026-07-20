@@ -9206,3 +9206,113 @@ Next recommended step:
   acceptance criterion and required test to concrete implementation evidence,
   run any focused consistency checks the audit identifies and document any
   real remaining gap before marking the milestone complete.
+
+## Step 153 - Milestone 9 acceptance closeout
+
+Status: completed. Milestone 9 is complete.
+
+Plan alignment:
+
+- Audit every Milestone 9 task, acceptance criterion and required-test row
+  against direct implementation and automated-test evidence before beginning
+  Business audit/history UI.
+- Resolve only demonstrated Reports gaps. Preserve canonical Visits/Payments
+  source facts, Memberships formula ownership, report fail-closed behavior and
+  server-rendered permission decisions.
+- Keep the dedicated audit timeline and audit-backed navigation in Milestone
+  10. Milestone 9 links to retained profile/source history and never reads
+  business audit as report truth.
+
+Closeout result:
+
+- All five roadmap reports now have PostgreSQL-backed query composition,
+  server-rendered tablet/phone UI, filters, bounded pagination where required,
+  canonical source/state drill-down and fail-closed error handling.
+- The audit found a missing daily-report correction launch. Active Payment
+  rows now render `Correct payment` only when the canonical query permission
+  allows it; canceled, replaced and otherwise denied rows expose no action.
+- The report deep link carries the exact Payment id to the client profile,
+  opens its existing correction form and keeps the command workflow,
+  idempotency, canonical reread and audit behavior owned by Payments.
+- `GetClientPaymentRowsQuery` can include one exact client-owned Payment beyond
+  its normal recent-history limit. The selected row still passes the same
+  correction/cancellation consistency mapping and does not alter normal
+  `HasMore` semantics; a Payment belonging to another client is not exposed.
+- The audit added a direct PostgreSQL comparison between a low-remaining
+  report row and the client profile at the identical Membership as-of date.
+  Membership id, issue-time type snapshot, remaining visits and effective end
+  agree because both paths consume canonical Memberships state.
+- No Membership formula, report cache, JavaScript business state, schema
+  change or migration was added in this closeout.
+
+Acceptance-criterion evidence:
+
+| Roadmap criterion | Direct evidence |
+|---|---|
+| Daily Visit count excludes canceled Visits and equals active drill-down rows. | `PostgreSqlGetDailyVisitSourceRowsQueryTests.QueryTotalsEqualActiveDrillDownAndRetainCanceledSourceRows`, `PostgreSqlGenerateDailyReportQueryTests.ReportTotalsEqualActiveRowsAndRetainCorrectionAndCancellationFacts` and the Daily report smoke test compare the displayed total with active/canceled source rows. |
+| Daily Payment count and cash exclude canceled/replaced Payments and equal active drill-down rows. | `PostgreSqlGetDailyPaymentSourceRowsQueryTests.QueryTotalsEqualActiveDrillDownAndRetainCorrectionAndCancellationRows`, the composed daily-report test and the Daily UI smoke assert one active row, retained canceled/replaced rows and `900.00 UAH`. |
+| Corrected amount/date keeps old and new affected report dates explainable. | `PostgreSqlGetDailyPaymentSourceRowsQueryTests.CorrectionAcrossDatesKeepsBothBusinessDatesExplainable` plus retained incoming/outgoing correction projections and Daily UI labels preserve both source Payments, changed fields, reason and timestamps. |
+| Ending-soon, low-remaining and negative reports use Memberships state without duplicated formulas. | The three report contract suites retain canonical `MembershipStateReadModel`; their PostgreSQL `QueryUsesCanonical...` tests compare report rows with Memberships public state. Reports only calculate bounded presentation fields such as `days_left`. |
+| Inactive clients exclude canceled Visits from last activity. | `PostgreSqlListInactiveClientsQueryTests.QueryUsesActiveVisitsWithStableThresholdOrderingAndMembershipSummary` and the inactive-client tablet/phone smoke cover exact 14/30/60 boundaries while a newer canceled Visit does not become last activity. |
+| Every total has source/history drill-down. | Daily rows inline retained Visit/Payment, cancellation and correction facts and link to the client profile. Threshold UIs link to Membership, extension or exact Visit history where the canonical query supplies an identity. Dedicated business-audit timeline links remain explicitly owned by Milestone 10. |
+| Client profile and report Membership values agree for the same date. | New `PostgreSqlListLowRemainingMembershipsQueryTests.ClientProfileAndReportAgreeForTheSameMembershipDate` resolves both registered handlers at one as-of date and compares Membership identity, type snapshot, remaining visits and effective end. |
+| Query failure never presents partial totals as authoritative. | Daily and every threshold contract/PostgreSQL suite has `FailuresNever...` or `SourceFailuresNever...` coverage; invalid-selector UI smokes retain filters and render no report summary/rows. |
+
+Required-test evidence:
+
+| Roadmap test row | Direct evidence |
+|---|---|
+| Daily consistency | Daily Visit, Payment and composed report PostgreSQL suites prove source-row equality, cash arithmetic, retained cancellations/corrections, cross-date correction explanation and whole-result failure behavior. |
+| No independent report formulas | Ending-soon, low-remaining and negative contract suites accept canonical Membership state; PostgreSQL suites compare report rows against Memberships queries, including the new same-date profile comparison. |
+| Every threshold query | `PostgreSqlListEndingSoonMembershipsQueryTests`, `PostgreSqlListLowRemainingMembershipsQueryTests`, `PostgreSqlListNegativeClientsQueryTests` and `PostgreSqlListInactiveClientsQueryTests` cover filtering, stable ordering, pagination, authorization, validation, stale/missing cache and no-partial-data behavior. |
+| PostgreSQL paths and indexes | Daily source tests assert `ix_visits_daily_source` and `ix_payments_daily_source`; threshold suites assert effective-end, remaining-visits, negative-balance and active-Visit query plans, including `ix_visits_active_daily_report`. |
+| Report UI and correction launch | Five Playwright report suites cover tablet/phone filters, rows, warnings, pagination and profile/source links. `DailyReportSmokeTests.DailyReportShowsCanonicalTotalsAndSourceRowsOnTargetViewport` now proves the permission-aware correction link opens the exact canonical Payment form on both target viewports. |
+| Changed-after-close compatibility | Daily source/contract tests cover open/reconciled day-state composition and permission differences; correction/cancellation command suites already persist `ChangedAfterClose`. No day-close source fact exists yet, so the roadmap's optional reconciliation display remains compatible rather than inventing one in Reports. |
+
+Validation:
+
+- Release build passed with 0 warnings and 0 errors.
+- Focused profile/Payment/report PostgreSQL coverage passed 28/28 against the
+  healthy local Docker PostgreSQL service. This includes exact selected
+  Payment inclusion beyond the normal limit and the same-date profile/report
+  consistency test.
+- Focused Daily report Playwright coverage passed 3/3: tablet/phone canonical
+  totals, permission-aware correction launch, exact form opening and invalid
+  date fail-closed behavior.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` and
+  `git diff --check` passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 361 core
+  tests, 35 web tests, 480 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260717072704_AddNonWorkingDaySourceFacts`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): complete milestone 9 acceptance`.
+
+Remaining roadmap work:
+
+- Milestone 9 has no known acceptance gap. The owner/admin business audit
+  timeline, audit-specific report links and correlation investigation path
+  remain intentionally deferred to Milestone 10.
+
+Next recommended step:
+
+- Start Milestone 10 with one bounded audit-foundation inventory: map every
+  implemented state-changing command to the operations audit matrix and the
+  current `business_audit_entries` schema, then resolve only the first concrete
+  schema or append-only-policy gap before implementing history queries or UI.

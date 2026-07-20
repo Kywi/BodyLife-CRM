@@ -4,6 +4,7 @@ using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.Reports;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Reports;
 using BodyLife.Crm.SharedKernel;
@@ -188,6 +189,59 @@ public sealed class PostgreSqlListLowRemainingMembershipsQueryTests
             0L,
             await database.ExecuteScalarAsync<long>(
                 "select count(*) from bodylife.business_audit_entries"));
+    }
+
+    [PostgreSqlFact]
+    public async Task ClientProfileAndReportAgreeForTheSameMembershipDate()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var migrationContext = database.CreateDbContext();
+        await migrationContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, migrationContext);
+        var membership = await InsertMembershipAsync(
+            database,
+            fixture,
+            "Shared",
+            remainingVisits: 1);
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:BodyLife"] = database.ConnectionString,
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddSingleton<TimeProvider>(new FixedTimeProvider(TestNow));
+        services.AddBodyLifePersistence(configuration);
+        await using var provider = services.BuildServiceProvider();
+        await using var scope = provider.CreateAsyncScope();
+        var reportHandler = scope.ServiceProvider.GetRequiredService<
+            IBodyLifeQueryHandler<
+                ListLowRemainingMembershipsQuery,
+                ListLowRemainingMembershipsResult>>();
+        var profileHandler = scope.ServiceProvider.GetRequiredService<
+            IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult>>();
+
+        var reportResult = await reportHandler.ExecuteAsync(
+            new ListLowRemainingMembershipsQuery(fixture.Actor, AsOfDate),
+            CancellationToken.None);
+        var profileResult = await profileHandler.ExecuteAsync(
+            new GetClientProfileQuery(
+                fixture.Actor,
+                membership.ClientId,
+                MembershipAsOfDate: AsOfDate),
+            CancellationToken.None);
+
+        AssertSuccessful(reportResult);
+        var reportRow = Assert.Single(reportResult.Page!.Items);
+        Assert.Equal(GetClientProfileStatus.Success, profileResult.Status);
+        var profile = Assert.IsType<ClientProfile>(profileResult.Profile);
+        Assert.Equal(AsOfDate, profile.MembershipAsOfDate);
+        var profileMembership = Assert.IsType<ClientMembershipSummary>(
+            profile.Membership.CurrentMembership);
+        Assert.Equal(reportRow.MembershipId, profileMembership.MembershipId);
+        Assert.Equal(reportRow.MembershipTypeName, profileMembership.TypeNameSnapshot);
+        Assert.Equal(reportRow.RemainingVisits, profileMembership.RemainingVisits);
+        Assert.Equal(reportRow.EffectiveEndDate, profileMembership.EffectiveEndDate);
     }
 
     [PostgreSqlFact]
@@ -499,6 +553,7 @@ public sealed class PostgreSqlListLowRemainingMembershipsQueryTests
         var effectiveEndDate = AsOfDate.AddDays(20);
         var baseEndDate = effectiveEndDate.AddDays(-extensionDays);
         var membership = new SeededMembership(
+            clientId,
             membershipId,
             effectiveEndDate,
             remainingVisits,
@@ -810,6 +865,7 @@ public sealed class PostgreSqlListLowRemainingMembershipsQueryTests
         Guid MembershipTypeId);
 
     private sealed record SeededMembership(
+        Guid ClientId,
         Guid MembershipId,
         DateOnly EffectiveEndDate,
         int RemainingVisits,

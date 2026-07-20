@@ -41,6 +41,13 @@ public sealed class GetClientPaymentRowsQueryHandler(
                 "limit");
         }
 
+        if (query.RequiredPaymentId == Guid.Empty)
+        {
+            return GetClientPaymentRowsResult.Invalid(
+                "Required Payment id must not be empty when supplied.",
+                "requiredPaymentId");
+        }
+
         var clientExists = await dbContext.Set<ClientRecord>()
             .AsNoTracking()
             .AnyAsync(client => client.Id == query.ClientId, cancellationToken);
@@ -49,38 +56,72 @@ public sealed class GetClientPaymentRowsQueryHandler(
             return GetClientPaymentRowsResult.MissingClient();
         }
 
-        var sourceRows = await (
+        var sourceQuery =
             from payment in dbContext.Set<PaymentRecord>().AsNoTracking()
             join membership in dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
                 on payment.MembershipId equals (Guid?)membership.Id
                 into memberships
             from membership in memberships.DefaultIfEmpty()
             where payment.ClientId == query.ClientId
-            orderby payment.OccurredAt descending,
-                payment.RecordedAt descending,
-                payment.Id descending
-            select new PaymentQuerySupport.CanonicalPaymentSourceRow(
-                payment.Id,
-                payment.ClientId,
-                payment.MembershipId,
-                membership == null ? null : membership.ClientId,
-                membership == null ? null : membership.TypeNameSnapshot,
-                payment.Amount,
-                payment.Currency,
-                payment.Method,
-                payment.PaymentContext,
-                payment.OccurredAt,
-                payment.RecordedAt,
-                payment.RecordedByAccountId,
-                payment.SessionId,
-                payment.EntryOrigin,
-                payment.EntryBatchId,
-                payment.Comment,
-                payment.Status))
+            select new { Payment = payment, Membership = membership };
+        var sourceRows = await sourceQuery
+            .OrderByDescending(source => source.Payment.OccurredAt)
+            .ThenByDescending(source => source.Payment.RecordedAt)
+            .ThenByDescending(source => source.Payment.Id)
+            .Select(source => new PaymentQuerySupport.CanonicalPaymentSourceRow(
+                source.Payment.Id,
+                source.Payment.ClientId,
+                source.Payment.MembershipId,
+                source.Membership == null ? null : source.Membership.ClientId,
+                source.Membership == null ? null : source.Membership.TypeNameSnapshot,
+                source.Payment.Amount,
+                source.Payment.Currency,
+                source.Payment.Method,
+                source.Payment.PaymentContext,
+                source.Payment.OccurredAt,
+                source.Payment.RecordedAt,
+                source.Payment.RecordedByAccountId,
+                source.Payment.SessionId,
+                source.Payment.EntryOrigin,
+                source.Payment.EntryBatchId,
+                source.Payment.Comment,
+                source.Payment.Status))
             .Take(query.Limit + 1)
             .ToListAsync(cancellationToken);
         var hasMore = sourceRows.Count > query.Limit;
         var visibleRows = sourceRows.Take(query.Limit).ToArray();
+        if (query.RequiredPaymentId is { } requiredPaymentId
+            && visibleRows.All(row => row.PaymentId != requiredPaymentId))
+        {
+            var requiredRow = await sourceQuery
+                .Where(source => source.Payment.Id == requiredPaymentId)
+                .Select(source => new PaymentQuerySupport.CanonicalPaymentSourceRow(
+                    source.Payment.Id,
+                    source.Payment.ClientId,
+                    source.Payment.MembershipId,
+                    source.Membership == null ? null : source.Membership.ClientId,
+                    source.Membership == null
+                        ? null
+                        : source.Membership.TypeNameSnapshot,
+                    source.Payment.Amount,
+                    source.Payment.Currency,
+                    source.Payment.Method,
+                    source.Payment.PaymentContext,
+                    source.Payment.OccurredAt,
+                    source.Payment.RecordedAt,
+                    source.Payment.RecordedByAccountId,
+                    source.Payment.SessionId,
+                    source.Payment.EntryOrigin,
+                    source.Payment.EntryBatchId,
+                    source.Payment.Comment,
+                    source.Payment.Status))
+                .SingleOrDefaultAsync(cancellationToken);
+            if (requiredRow is not null)
+            {
+                visibleRows = [.. visibleRows, requiredRow];
+            }
+        }
+
         if (visibleRows.Length == 0)
         {
             return GetClientPaymentRowsResult.Succeeded(

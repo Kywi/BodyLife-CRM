@@ -181,6 +181,7 @@
                         @foreach (var sourceRow in report.PaymentRows)
                         {
                             var payment = sourceRow.Payment;
+                            var paymentKey = payment.PaymentId.ToString("N");
                             <li class="report-row"
                                 data-report-payment-id="@payment.PaymentId"
                                 data-report-row-status="@payment.Status.ToString().ToLowerInvariant()">
@@ -272,6 +273,18 @@
                                 }
 
                                 <footer class="report-row-actions">
+                                    @if (payment.Status == ClientPaymentRowStatus.Active
+                                        && payment.AllowedActions.IsAllowed(PaymentActionKeys.Correct))
+                                    {
+                                        <a class="secondary-link"
+                                           asp-page="/Reception/Index"
+                                           asp-route-clientId="@payment.ClientId"
+                                           asp-route-correctPaymentId="@payment.PaymentId"
+                                           asp-fragment="correct-payment-panel-@paymentKey"
+                                           data-report-correct-payment>
+                                            Correct payment
+                                        </a>
+                                    }
                                     <a class="secondary-link"
                                        asp-page="/Reception/Index"
                                        asp-route-clientId="@payment.ClientId"

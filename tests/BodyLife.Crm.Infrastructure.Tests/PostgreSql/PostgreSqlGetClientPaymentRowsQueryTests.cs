@@ -246,11 +246,19 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
             TestNow,
             paymentId: thirdId);
 
-        var result = await CreateHandler(dbContext).ExecuteAsync(
+        var handler = CreateHandler(dbContext);
+        var result = await handler.ExecuteAsync(
             new GetClientPaymentRowsQuery(
                 fixture.Actor,
                 fixture.ClientId,
                 Limit: 2),
+            CancellationToken.None);
+        var selectedResult = await handler.ExecuteAsync(
+            new GetClientPaymentRowsQuery(
+                fixture.Actor,
+                fixture.ClientId,
+                Limit: 2,
+                RequiredPaymentId: firstId),
             CancellationToken.None);
 
         var page = AssertSuccess(result, fixture.ClientId);
@@ -258,6 +266,11 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Assert.Equal(
             [thirdId, secondId],
             page.Items.Select(row => row.PaymentId).ToArray());
+        var selectedPage = AssertSuccess(selectedResult, fixture.ClientId);
+        Assert.True(selectedPage.HasMore);
+        Assert.Equal(
+            [thirdId, secondId, firstId],
+            selectedPage.Items.Select(row => row.PaymentId).ToArray());
     }
 
     [PostgreSqlFact]
@@ -361,6 +374,12 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
                 fixture.ClientId,
                 Limit: GetClientPaymentRowsQuery.MaxLimit + 1),
             CancellationToken.None);
+        var invalidRequiredPaymentId = await handler.ExecuteAsync(
+            new GetClientPaymentRowsQuery(
+                fixture.Actor,
+                fixture.ClientId,
+                RequiredPaymentId: Guid.Empty),
+            CancellationToken.None);
         var missingClient = await handler.ExecuteAsync(
             new GetClientPaymentRowsQuery(fixture.Actor, Guid.NewGuid()),
             CancellationToken.None);
@@ -382,6 +401,10 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
             invalidHighLimit,
             GetClientPaymentRowsStatus.ValidationFailed,
             "limit");
+        AssertFailure(
+            invalidRequiredPaymentId,
+            GetClientPaymentRowsStatus.ValidationFailed,
+            "requiredPaymentId");
         AssertFailure(
             missingClient,
             GetClientPaymentRowsStatus.NotFound,
