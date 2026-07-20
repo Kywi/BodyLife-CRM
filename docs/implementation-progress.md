@@ -9572,3 +9572,87 @@ Next recommended step:
   plus their matching audit entries. Keep visits/payments/freezes,
   non-working applications, the global audit timeline and UI for subsequent
   steps.
+
+## Step 157 - Membership and opening-state client-history source slice
+
+Status: completed.
+
+Plan alignment:
+
+- Continue the third Milestone 10 roadmap task with the first canonical
+  `GetClientHistory` source slice owned by Memberships and composed through the
+  public Audit query from Step 156.
+- Keep issued Membership snapshots and opening declarations as source truth;
+  use audit only for actor/session, business chronology, entry origin and
+  explanation metadata.
+- Keep visits, payments, freezes, non-working applications, negative closures,
+  the final cross-module history query, global timeline and UI outside this
+  bounded step.
+
+Completed:
+
+- Extended `GetClientAuditEntries` with normalized, bounded action-type
+  filters. Filtering occurs in PostgreSQL before stable
+  `occurred_at desc`, `recorded_at desc`, `id desc` pagination, and the page
+  echoes the normalized selectors.
+- Added the public `GetClientMembershipHistorySourceRows` query/result/page
+  contract under Memberships. Its rows expose either the immutable issued
+  MembershipType snapshot or the canonical opening declaration together with
+  the matching complete `ClientAuditEntry` envelope.
+- Added the PostgreSQL handler and scoped DI registration. It requests only
+  `membership.issued` and `membership_opening_state.created`, loads source
+  records by primary key, preserves audit chronology and shows distinct
+  `occurred_at`/`recorded_at` plus `entry_origin` values.
+- Made composition fail closed for missing/duplicate source links, invalid
+  lifecycle/source values, issue-date arithmetic mismatches and disagreement
+  between source and audit entity, actor, session, recorded time or origin.
+- Added the complete read-only contract to the Memberships architecture
+  allowlist; no formula implementation was exposed outside Memberships.
+- Added core contract tests and PostgreSQL coverage for action filtering before
+  pagination, canonical snapshot/declaration mapping, other-client exclusion,
+  date ranges, origins, permissions, validation, missing clients, DI and orphan
+  audit failure. No database schema, migration, UI or membership formula
+  changed.
+
+Validation:
+
+- Core Audit and Membership history contract coverage passed 6/6.
+- The first focused infrastructure invocation omitted the Docker admin
+  connection string and reported six PostgreSQL cases as skipped. The required
+  connection string was then supplied and the focused Audit/history suite
+  passed 8/8 with no skipped tests.
+- The first full gate passed behavior tests but correctly failed the
+  Memberships ownership architecture check because the new public query/result
+  had not yet been approved. The complete history-source contract was added to
+  the explicit allowlist, and focused architecture/Audit/history coverage then
+  passed 10/10.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 367 core
+  tests, 35 web tests, 493 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720110933_AddBusinessAuditClientLookupIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(memberships): add client history source slice`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded Visits source slice for marked and
+  canceled visit facts plus their matching audit entries, preserving separate
+  correction events and the same cross-source chronology contract. Keep
+  payments, freezes, non-working applications, negative closures, the final
+  cross-module aggregator, global audit timeline and UI for later steps.

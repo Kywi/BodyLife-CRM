@@ -81,6 +81,11 @@ public sealed class GetClientAuditEntriesQueryHandler(
             entries = entries.Where(entry => request.EntityTypeNames.Contains(entry.EntityType));
         }
 
+        if (request.ActionTypes.Count > 0)
+        {
+            entries = entries.Where(entry => request.ActionTypes.Contains(entry.ActionType));
+        }
+
         var storedRows = await entries
             .OrderByDescending(entry => entry.OccurredAt)
             .ThenByDescending(entry => entry.RecordedAt)
@@ -122,6 +127,7 @@ public sealed class GetClientAuditEntriesQueryHandler(
                 request.OccurredFromInclusive,
                 request.OccurredBeforeExclusive,
                 request.EntityFilters,
+                request.ActionTypes,
                 request.Offset,
                 items,
                 hasMore);
@@ -183,12 +189,40 @@ public sealed class GetClientAuditEntriesQueryHandler(
         }
 
         entityFilters = entityFilters.Distinct().ToArray();
+        var actionTypes = query.ActionTypes?.ToArray() ?? [];
+        if (actionTypes.Length > GetClientAuditEntriesQuery.MaxActionTypeCount)
+        {
+            return GetClientAuditEntriesResult.Invalid(
+                $"Action types cannot contain more than {GetClientAuditEntriesQuery.MaxActionTypeCount} items.",
+                "actionTypes");
+        }
+
+        if (actionTypes.Any(string.IsNullOrWhiteSpace))
+        {
+            return GetClientAuditEntriesResult.Invalid(
+                $"Action types must be non-blank and at most {GetClientAuditEntriesQuery.MaxActionTypeLength} characters.",
+                "actionTypes");
+        }
+
+        actionTypes = actionTypes
+            .Select(actionType => actionType.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        if (actionTypes.Any(actionType =>
+                actionType.Length > GetClientAuditEntriesQuery.MaxActionTypeLength))
+        {
+            return GetClientAuditEntriesResult.Invalid(
+                $"Action types must be non-blank and at most {GetClientAuditEntriesQuery.MaxActionTypeLength} characters.",
+                "actionTypes");
+        }
+
         normalized = new NormalizedClientAuditQuery(
             query.ClientId,
             occurredFromInclusive,
             occurredBeforeExclusive,
             entityFilters,
             entityFilters.Select(ClientAuditEntityTypes.Map).ToArray(),
+            actionTypes,
             query.Limit,
             query.Offset);
         return null;
@@ -305,6 +339,7 @@ public sealed class GetClientAuditEntriesQueryHandler(
         DateTimeOffset? OccurredBeforeExclusive,
         IReadOnlyList<ClientAuditEntityFilter> EntityFilters,
         IReadOnlyList<string> EntityTypeNames,
+        IReadOnlyList<string> ActionTypes,
         int Limit,
         int Offset);
 

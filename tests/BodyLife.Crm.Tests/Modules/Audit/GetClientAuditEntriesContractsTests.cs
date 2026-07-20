@@ -26,6 +26,7 @@ public sealed class GetClientAuditEntriesContractsTests
             ClientAuditEntityFilter.Visit,
             ClientAuditEntityFilter.Payment,
         };
+        var actionTypes = new[] { "visit.marked", "payment.created" };
 
         var query = new GetClientAuditEntriesQuery(
             actor,
@@ -33,6 +34,7 @@ public sealed class GetClientAuditEntriesContractsTests
             From,
             From.AddMonths(1),
             filters,
+            actionTypes,
             Limit: 25,
             Offset: 50);
 
@@ -42,10 +44,13 @@ public sealed class GetClientAuditEntriesContractsTests
         Assert.Equal(From, query.OccurredFromInclusive);
         Assert.Equal(From.AddMonths(1), query.OccurredBeforeExclusive);
         Assert.Same(filters, query.EntityFilters);
+        Assert.Same(actionTypes, query.ActionTypes);
         Assert.Equal(25, query.Limit);
         Assert.Equal(50, query.Offset);
         Assert.Equal(50, GetClientAuditEntriesQuery.DefaultLimit);
         Assert.Equal(100, GetClientAuditEntriesQuery.MaxLimit);
+        Assert.Equal(50, GetClientAuditEntriesQuery.MaxActionTypeCount);
+        Assert.Equal(120, GetClientAuditEntriesQuery.MaxActionTypeLength);
     }
 
     [Fact]
@@ -57,6 +62,11 @@ public sealed class GetClientAuditEntriesContractsTests
             ClientAuditEntityFilter.Visit,
             ClientAuditEntityFilter.Visit,
         };
+        var actionTypes = new List<string>
+        {
+            " visit.marked ",
+            "visit.marked",
+        };
         var row = CreateEntry(ClientAuditEntityFilter.Visit);
         var rows = new List<ClientAuditEntry> { row };
 
@@ -65,16 +75,19 @@ public sealed class GetClientAuditEntriesContractsTests
             From,
             From.AddMonths(1),
             filters,
+            actionTypes,
             offset: 10,
             rows,
             hasMore: true);
         filters.Clear();
+        actionTypes.Clear();
         rows.Clear();
 
         Assert.Equal(clientId, page.ClientId);
         Assert.Equal(From, page.OccurredFromInclusive);
         Assert.Equal(From.AddMonths(1), page.OccurredBeforeExclusive);
         Assert.Equal([ClientAuditEntityFilter.Visit], page.EntityFilters);
+        Assert.Equal(["visit.marked"], page.ActionTypes);
         Assert.Same(row, Assert.Single(page.Items));
         Assert.Equal(10, page.Offset);
         Assert.True(page.HasMore);

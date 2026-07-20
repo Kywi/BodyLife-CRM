@@ -102,6 +102,11 @@ public static class ServiceCollectionExtensions
                 GetClientMembershipExtensionExplanationsResult>,
             GetClientMembershipExtensionExplanationsQueryHandler>();
         services.AddScoped<
+            IBodyLifeQueryHandler<
+                GetClientMembershipHistorySourceRowsQuery,
+                GetClientMembershipHistorySourceRowsResult>,
+            GetClientMembershipHistorySourceRowsQueryHandler>();
+        services.AddScoped<
             IBodyLifeQueryHandler<PreviewIssueMembershipQuery, PreviewIssueMembershipResult>,
             PreviewIssueMembershipQueryHandler>();
         services.AddScoped<

@@ -9,6 +9,7 @@ public sealed record GetClientAuditEntriesQuery(
     DateTimeOffset? OccurredFromInclusive = null,
     DateTimeOffset? OccurredBeforeExclusive = null,
     IReadOnlyCollection<ClientAuditEntityFilter>? EntityFilters = null,
+    IReadOnlyCollection<string>? ActionTypes = null,
     int Limit = GetClientAuditEntriesQuery.DefaultLimit,
     int Offset = 0)
     : IBodyLifeQuery<GetClientAuditEntriesResult>
@@ -16,4 +17,6 @@ public sealed record GetClientAuditEntriesQuery(
     public const int DefaultLimit = 50;
     public const int MaxLimit = 100;
     public const int MaxOffset = 10_000;
+    public const int MaxActionTypeCount = 50;
+    public const int MaxActionTypeLength = 120;
 }

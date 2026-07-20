@@ -38,6 +38,7 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
         var directId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         var visitId = Guid.Parse("00000000-0000-0000-0000-000000000002");
         var nonWorkingDayId = Guid.Parse("00000000-0000-0000-0000-000000000003");
+        var canceledVisitId = Guid.Parse("00000000-0000-0000-0000-000000000004");
         var rangeStart = TestNow.AddHours(-4);
         var rangeEnd = TestNow;
 
@@ -77,6 +78,16 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
             },
             TestNow.AddHours(-1),
             TestNow.AddMinutes(-59));
+        await InsertAuditAsync(
+            database,
+            fixture,
+            canceledVisitId,
+            "visit.canceled",
+            "visit",
+            Guid.NewGuid(),
+            new { ClientId = fixture.ClientId, MembershipId = Guid.NewGuid() },
+            TestNow.AddHours(-2),
+            TestNow.AddHours(-1).AddMinutes(-59));
         await InsertAuditAsync(
             database,
             fixture,
@@ -134,6 +145,15 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
                 rangeEnd,
                 [ClientAuditEntityFilter.Visit]),
             CancellationToken.None);
+        var markedVisitResult = await handler.ExecuteAsync(
+            new GetClientAuditEntriesQuery(
+                fixture.Actor,
+                fixture.ClientId,
+                rangeStart,
+                rangeEnd,
+                [ClientAuditEntityFilter.Visit],
+                [" visit.marked ", "visit.marked"]),
+            CancellationToken.None);
 
         var firstPage = AssertSuccess(firstResult, fixture.ClientId);
         Assert.Equal(
@@ -145,13 +165,20 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
         Assert.Equal(rangeEnd, firstPage.OccurredBeforeExclusive);
 
         var secondPage = AssertSuccess(secondResult, fixture.ClientId);
-        Assert.Equal(directId, Assert.Single(secondPage.Items).AuditEntryId.Value);
+        Assert.Equal(
+            [canceledVisitId, directId],
+            secondPage.Items.Select(item => item.AuditEntryId.Value).ToArray());
         Assert.False(secondPage.HasMore);
         Assert.Null(secondPage.NextOffset);
 
         var visitPage = AssertSuccess(visitResult, fixture.ClientId);
         Assert.Equal([ClientAuditEntityFilter.Visit], visitPage.EntityFilters);
-        var visit = Assert.Single(visitPage.Items);
+        Assert.Equal(
+            [visitId, canceledVisitId],
+            visitPage.Items.Select(item => item.AuditEntryId.Value).ToArray());
+        var markedVisitPage = AssertSuccess(markedVisitResult, fixture.ClientId);
+        Assert.Equal(["visit.marked"], markedVisitPage.ActionTypes);
+        var visit = Assert.Single(markedVisitPage.Items);
         Assert.Equal(visitId, visit.AuditEntryId.Value);
         Assert.Equal("visit.marked", visit.ActionType);
         Assert.Equal(ClientAuditEntityFilter.Visit, visit.EntityType);
@@ -198,6 +225,12 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
                 fixture.ClientId,
                 Limit: GetClientAuditEntriesQuery.MaxLimit + 1),
             CancellationToken.None);
+        var invalidActionType = await handler.ExecuteAsync(
+            new GetClientAuditEntriesQuery(
+                fixture.Actor,
+                fixture.ClientId,
+                ActionTypes: [" "]),
+            CancellationToken.None);
         var missingClient = await handler.ExecuteAsync(
             new GetClientAuditEntriesQuery(fixture.Actor, Guid.NewGuid()),
             CancellationToken.None);
@@ -216,6 +249,10 @@ public sealed class PostgreSqlGetClientAuditEntriesQueryTests
             GetClientAuditEntriesStatus.ValidationFailed,
             "entityFilters");
         AssertFailure(invalidLimit, GetClientAuditEntriesStatus.ValidationFailed, "limit");
+        AssertFailure(
+            invalidActionType,
+            GetClientAuditEntriesStatus.ValidationFailed,
+            "actionTypes");
         AssertFailure(missingClient, GetClientAuditEntriesStatus.NotFound, "clientId");
         AssertFailure(denied, GetClientAuditEntriesStatus.PermissionDenied);
     }
