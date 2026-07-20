@@ -9316,3 +9316,85 @@ Next recommended step:
   implemented state-changing command to the operations audit matrix and the
   current `business_audit_entries` schema, then resolve only the first concrete
   schema or append-only-policy gap before implementing history queries or UI.
+
+## Step 154 - Business audit foundation inventory and append-only hardening
+
+Status: completed.
+
+Plan alignment:
+
+- Start Milestone 10 with its first roadmap task: finalize the
+  `business_audit_entries` schema and harden its append-only policy before any
+  history query or UI is introduced.
+- Map every currently implemented business mutation to the accepted operations
+  audit matrix, including ADR-010 opening-state and Owner staff-management
+  extensions, and preserve authentication/session events as technical rather
+  than business audit.
+- Resolve only the first demonstrated foundation gap in this step. Defer
+  consolidated command-field coverage, history query contracts, access views
+  and tablet/phone UI to following Milestone 10 steps.
+
+Completed:
+
+- Added `docs/audit-foundation-inventory.md` as the durable schema and command
+  inventory. All accepted required audit fields map to the current PostgreSQL
+  columns, and all 20 implemented state-changing paths map to their canonical
+  action names, persistence owners and focused PostgreSQL evidence.
+- Confirmed that `BusinessAuditAppender` is the single record mapper and that
+  successful command paths add audit rows through the same `BodyLifeDbContext`
+  transaction as source facts, recalculation and idempotency state.
+- Identified the first concrete gap: application code only appended audit rows,
+  but PostgreSQL still allowed direct `UPDATE` and `DELETE` statements against
+  `bodylife.business_audit_entries`.
+- Added migration `20260720100603_HardenBusinessAuditAppendOnly`. Its
+  statement-level PostgreSQL trigger rejects every `UPDATE` or `DELETE`, even
+  when a predicate would match no rows; the down migration removes trigger and
+  function in dependency order.
+- Added `PostgreSqlBusinessAuditAppendOnlyTests` to prove valid insert behavior,
+  rejection of both mutation forms and preservation of the original row. The
+  clean-database migration test now requires the hardening migration.
+- Applied the migration to the healthy local Docker development PostgreSQL
+  database. No audit/history query, Razor UI, business formula or unrelated
+  module behavior changed.
+
+Validation:
+
+- Focused migration and append-only PostgreSQL coverage passed 2/2 against
+  isolated databases created from the local Docker PostgreSQL service.
+- The local development database completed an explicit latest-to-previous
+  downgrade and previous-to-latest reapply cycle for the new migration.
+- Idempotent production-review SQL generation succeeded, and inspection
+  confirmed the guarded function/trigger plus migration-history write.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes --no-restore` passed after
+  removing the BOM emitted by the migration scaffolder; `git diff --check`
+  passed.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0: Release build 0 warnings/errors, formatting/analyzers, 361 core
+  tests, 35 web tests, 481 PostgreSQL/architecture/security infrastructure
+  tests, 69 Playwright smoke tests and EF migration listing through
+  `20260720100603_HardenBusinessAuditAppendOnly`.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the documentation changes but
+  stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): harden business audit append-only policy`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded audit-matrix quality gate: define a
+  consolidated contract for required envelope fields and command-specific
+  summaries, evaluate every implemented canonical event against it and fix
+  only the first demonstrated coverage gap. Keep `GetClientHistory`, global
+  timeline queries and UI outside that step.
