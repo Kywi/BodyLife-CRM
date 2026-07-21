@@ -1286,6 +1286,152 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         }
     }
 
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
+    public async Task StaffCredentialChangesShowOnlyStateAndSessionImpact(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var staff = scenario.Explanations.StaffAccounts;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} staff credential audit smoke");
+
+            var configuration = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "StaffAccount",
+                "staff_credentials.configured",
+                staff.CredentialsConfiguredAuditEntryId,
+                "staff-credentials-configured",
+                viewportName,
+                entityId: staff.StaffAccountId);
+            await ExpectVisibleAsync(
+                configuration.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Staff credentials configured", Exact = true }),
+                viewportName,
+                "Credential configuration explanation title");
+            Assert.Equal(
+                "Not configured",
+                await ExplanationFactAsync(
+                    configuration,
+                    "Before configuration",
+                    "Credential state"));
+            Assert.Equal(
+                "Configured",
+                await ExplanationFactAsync(
+                    configuration,
+                    "After configuration",
+                    "Credential state"));
+            Assert.Equal(
+                "0",
+                await ExplanationFactAsync(
+                    configuration,
+                    "After configuration",
+                    "Active sessions ended"));
+            await ExpectVisibleAsync(
+                configuration.GetByText("Credential state", new() { Exact = true }).Last,
+                viewportName,
+                "Credential configuration changed field");
+            var configurationEnvelope = configuration
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await configurationEnvelope.GetAttributeAsync("open"));
+            Assert.False(await configurationEnvelope.Locator(".audit-json-grid").IsVisibleAsync());
+            await AssertFitsViewportAsync(page, viewportName, "Credential configuration");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "staff-credential-configuration-explanation");
+
+            var reset = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "StaffAccount",
+                "staff_credentials.reset",
+                staff.CredentialsResetAuditEntryId,
+                "staff-credentials-reset",
+                viewportName,
+                entityId: staff.StaffAccountId);
+            await ExpectVisibleAsync(
+                reset.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Staff credentials reset", Exact = true }),
+                viewportName,
+                "Credential reset explanation title");
+            Assert.Equal(
+                "Configured",
+                await ExplanationFactAsync(reset, "Before reset", "Credential state"));
+            Assert.Equal(
+                "Configured",
+                await ExplanationFactAsync(reset, "After reset", "Credential state"));
+            Assert.Equal(
+                staff.CredentialResetEndedSessionCount.ToString(
+                    CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    reset,
+                    "After reset",
+                    "Active sessions ended"));
+            await ExpectVisibleAsync(
+                reset.GetByText(
+                    "Credentials, Active sessions",
+                    new() { Exact = true }),
+                viewportName,
+                "Credential reset changed fields");
+            var resetRow = reset.Locator("xpath=ancestor::li");
+            await ExpectVisibleAsync(
+                resetRow.GetByText(staff.CredentialResetReason, new() { Exact = true }),
+                viewportName,
+                "Credential reset reason");
+            var resetEnvelope = resetRow.Locator(".audit-envelope-details");
+            var envelopeToggle = resetEnvelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "Credential reset audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                resetEnvelope.Locator(".audit-json-grid"),
+                viewportName,
+                "Credential reset raw envelope");
+            var envelopeText = await resetEnvelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains("credentialsConfigured", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("endedSessionCount", envelopeText, StringComparison.Ordinal);
+            Assert.DoesNotContain("loginName", envelopeText, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("password", envelopeText, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("hash", envelopeText, StringComparison.OrdinalIgnoreCase);
+            await AssertFitsViewportAsync(page, viewportName, "Credential reset");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "staff-credential-reset-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task InvalidOffsetKeepsAuditFiltersAndReturnsNoPartialTimeline()
     {

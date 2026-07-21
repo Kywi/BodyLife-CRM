@@ -1186,14 +1186,20 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         const string originalStaffDisplayName = "Main Admin";
         const string updatedStaffDisplayName = "Evening Admin";
         const string staffDeactivationReason = "Staff member left the gym";
+        const string credentialResetReason = "Scheduled credential rotation";
         const int endedStaffSessionCount = 2;
+        const int credentialResetEndedSessionCount = 2;
         var staffAccountId = Guid.NewGuid();
         var staffDisplayNameUpdatedAuditEntryId = Guid.NewGuid();
         var staffDeactivatedAuditEntryId = Guid.NewGuid();
         var staffActivatedAuditEntryId = Guid.NewGuid();
+        var credentialsConfiguredAuditEntryId = Guid.NewGuid();
+        var credentialsResetAuditEntryId = Guid.NewGuid();
         var staffDisplayNameUpdatedAt = recordedBase.AddHours(13);
         var staffDeactivatedAt = recordedBase.AddHours(14);
         var staffActivatedAt = recordedBase.AddHours(15);
+        var credentialsConfiguredAt = recordedBase.AddHours(16);
+        var credentialsResetAt = recordedBase.AddHours(17);
 
         AuditSeed[] explanationSeeds =
         [
@@ -1622,6 +1628,52 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     EndedSessionCount = 0,
                 },
                 ChangedAfterClose: false),
+            new(
+                credentialsConfiguredAuditEntryId,
+                "staff_credentials.configured",
+                "staff_account",
+                staffAccountId,
+                new { },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                credentialsConfiguredAt,
+                credentialsConfiguredAt,
+                "normal",
+                Reason: null,
+                Comment: null,
+                BeforeSummary: new { CredentialsConfigured = false },
+                AfterSummary: new
+                {
+                    CredentialsConfigured = true,
+                    EndedSessionCount = 0,
+                },
+                ChangedAfterClose: false),
+            new(
+                credentialsResetAuditEntryId,
+                "staff_credentials.reset",
+                "staff_account",
+                staffAccountId,
+                new { },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                credentialsResetAt,
+                credentialsResetAt,
+                "normal",
+                credentialResetReason,
+                "All active sessions revoked",
+                new { CredentialsConfigured = true },
+                new
+                {
+                    CredentialsConfigured = true,
+                    EndedSessionCount = credentialResetEndedSessionCount,
+                },
+                ChangedAfterClose: false),
         ];
 
         foreach (var explanationSeed in explanationSeeds)
@@ -1700,7 +1752,11 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     staffDeactivatedAuditEntryId,
                     staffDeactivationReason,
                     endedStaffSessionCount,
-                    staffActivatedAuditEntryId)));
+                    staffActivatedAuditEntryId,
+                    credentialsConfiguredAuditEntryId,
+                    credentialsResetAuditEntryId,
+                    credentialResetReason,
+                    credentialResetEndedSessionCount)));
     }
 
     public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(

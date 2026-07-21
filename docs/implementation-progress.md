@@ -11139,3 +11139,90 @@ Next recommended step:
   login names, passwords and hashes never appear in either the primary
   explanation or stored audit envelope. Keep staff-account creation,
   audit-noise review and technical-log correlation lookup for later steps.
+
+## Step 175 - Staff credential audit explanations
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue only the credential portion of the sixth Milestone 10 task by
+  replacing raw JSON as the primary explanation for
+  `staff_credentials.configured` and `staff_credentials.reset` Timeline rows.
+- Present only command-owned credential-state and ended-session summaries
+  inside the existing Owner/Admin-controlled Audit Timeline. Login names,
+  passwords and password hashes must remain absent from both the readable
+  explanation and the stored business-audit envelope.
+- Preserve the complete append-only audit envelope as collapsed secondary
+  support detail. Keep staff-account creation, audit-noise review and
+  technical-log correlation lookup outside this bounded step.
+
+Completed:
+
+- Extended the typed, fail-closed staff-account audit explanation factory and
+  wired both credential action/entity pairs into the existing Audit Timeline
+  presenter.
+- Added `Before configuration`/`After configuration` sections that require a
+  Not-configured-to-Configured transition and a non-negative ended-session
+  count. The summary explicitly states that login names, passwords and hashes
+  are not included.
+- Added `Before reset`/`After reset` sections that require the stored
+  Configured-to-Configured transition, a non-negative ended-session count and
+  the command-required reset reason. Changed-field labels describe only the
+  credential replacement and active-session impact.
+- Added seven Web presenter cases covering configuration, session impact,
+  reset, missing-reason rejection, negative-count rejection and wrong-entity
+  fail-closed behavior.
+- Extended the PostgreSQL-backed Audit Timeline fixture with two isolated,
+  production-shaped credential envelopes containing only credential state and
+  ended-session count. Added Owner/tablet plus named-Admin/phone Playwright
+  coverage over exact entity/action filtering, state/session facts, reset
+  reason, collapsed-envelope behavior, secret-key omission and horizontal fit.
+- Retained the production-service PostgreSQL test that proves submitted login
+  names/passwords and stored password hashes are absent from the complete
+  persisted credential-audit text, while the allowed state/session fields are
+  present.
+- Kept credential commands, authentication storage, persistence schema, EF
+  model, Razor markup and CSS unchanged.
+
+Validation:
+
+- Focused `AuditEntryExplanationViewModelTests` passed 49/49; focused new
+  credential explanation Playwright coverage passed 2/2; the complete
+  `AuditTimelineSmokeTests` regression passed 18/18 with no skipped tests.
+- Screenshot-backed visual checks passed for credential configuration and
+  reset at 1024x768 Owner/tablet and 390x844 named-Admin/phone viewports.
+  State/session facts remain readable, the raw envelope is collapsed by
+  default and available on demand, credential secrets are absent,
+  controls/text do not overlap and Playwright found no horizontal overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 84 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 96 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain staff credential changes`.
+
+Next recommended step:
+
+- Continue the sixth Milestone 10 task with one bounded staff-account creation
+  slice: add an owner-readable creation summary for `staff_account.created`
+  using only the stored display name, account type and active state, while
+  preserving role-controlled access and showing no credential material. Keep
+  audit-noise review and technical-log correlation lookup for later steps.

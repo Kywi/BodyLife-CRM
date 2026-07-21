@@ -920,6 +920,137 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Readable change summary unavailable", explanation.Title);
     }
 
+    [Fact]
+    public void StaffCredentialConfigurationShowsStateWithoutSecretValues()
+    {
+        var accountId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_credentials.configured",
+                    AuditTimelineEntityType.StaffAccount,
+                    accountId,
+                    new { CredentialsConfigured = false },
+                    new
+                    {
+                        CredentialsConfigured = true,
+                        EndedSessionCount = 0,
+                    },
+                    reason: null,
+                    comment: null)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("staff-credentials-configured", explanation.Kind);
+        Assert.Equal("Not configured", FactValue(
+            explanation.BeforeFacts,
+            "Credential state"));
+        Assert.Equal("Configured", FactValue(
+            explanation.AfterFacts,
+            "Credential state"));
+        Assert.Equal("0", FactValue(explanation.AfterFacts, "Active sessions ended"));
+        Assert.Equal("Credential state", explanation.ChangedFields);
+        Assert.All(
+            explanation.BeforeFacts.Concat(explanation.AfterFacts),
+            fact =>
+            {
+                Assert.DoesNotContain("login", fact.Label, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("password", fact.Label, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("hash", fact.Label, StringComparison.OrdinalIgnoreCase);
+            });
+    }
+
+    [Fact]
+    public void StaffCredentialConfigurationCanShowEndedSessionImpact()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_credentials.configured",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { CredentialsConfigured = false },
+                    new
+                    {
+                        CredentialsConfigured = true,
+                        EndedSessionCount = 2,
+                    })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("2", FactValue(explanation.AfterFacts, "Active sessions ended"));
+        Assert.Equal("Credential state, Active sessions", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void StaffCredentialResetShowsReplacementAndEndedSessions()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_credentials.reset",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { CredentialsConfigured = true },
+                    new
+                    {
+                        CredentialsConfigured = true,
+                        EndedSessionCount = 3,
+                    },
+                    reason: "Rotate shared credentials")));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("staff-credentials-reset", explanation.Kind);
+        Assert.Equal("Configured", FactValue(
+            explanation.BeforeFacts,
+            "Credential state"));
+        Assert.Equal("Configured", FactValue(
+            explanation.AfterFacts,
+            "Credential state"));
+        Assert.Equal("3", FactValue(explanation.AfterFacts, "Active sessions ended"));
+        Assert.Equal("Credentials, Active sessions", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void StaffCredentialResetWithoutRequiredReasonFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_credentials.reset",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { CredentialsConfigured = true },
+                    new
+                    {
+                        CredentialsConfigured = true,
+                        EndedSessionCount = 1,
+                    },
+                    reason: null)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void StaffCredentialSummaryWithNegativeSessionCountFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_credentials.configured",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { CredentialsConfigured = false },
+                    new
+                    {
+                        CredentialsConfigured = true,
+                        EndedSessionCount = -1,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
     [Theory]
     [InlineData("client.updated", AuditTimelineEntityType.Payment)]
     [InlineData("card.assigned", AuditTimelineEntityType.Payment)]
@@ -928,6 +1059,8 @@ public sealed class AuditEntryExplanationViewModelTests
     [InlineData("staff_account.display_name_updated", AuditTimelineEntityType.Client)]
     [InlineData("staff_account.activated", AuditTimelineEntityType.Client)]
     [InlineData("staff_account.deactivated", AuditTimelineEntityType.Client)]
+    [InlineData("staff_credentials.configured", AuditTimelineEntityType.Client)]
+    [InlineData("staff_credentials.reset", AuditTimelineEntityType.Client)]
     [InlineData("membership_type.edited", AuditTimelineEntityType.Client)]
     [InlineData("membership_type.deactivated", AuditTimelineEntityType.Client)]
     [InlineData("non_working_day.corrected", AuditTimelineEntityType.Payment)]

@@ -2237,7 +2237,11 @@ public sealed record StaffAccountAuditExplanationSmokeScenario(
     Guid DeactivatedAuditEntryId,
     string DeactivationReason,
     int EndedSessionCount,
-    Guid ActivatedAuditEntryId);
+    Guid ActivatedAuditEntryId,
+    Guid CredentialsConfiguredAuditEntryId,
+    Guid CredentialsResetAuditEntryId,
+    string CredentialResetReason,
+    int CredentialResetEndedSessionCount);
 
 public sealed record ClientHistorySmokeScenario(
     Guid ClientId,

@@ -96,6 +96,74 @@ internal static class StaffAccountAuditExplanationFactory
             IsAvailable: true);
     }
 
+    internal static AuditEntryExplanationViewModel CreateCredentialConfiguration(
+        AuditTimelineEntry entry,
+        JsonElement before,
+        JsonElement after)
+    {
+        var accountId = RequireAccountId(entry.EntityId);
+        var original = ReadCredentialState(before, requireEndedSessionCount: false);
+        var configured = ReadCredentialState(after, requireEndedSessionCount: true);
+
+        if (original.CredentialsConfigured || !configured.CredentialsConfigured)
+        {
+            throw new JsonException("Staff credential configuration summary is inconsistent.");
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "staff-credentials-configured",
+            "Staff credentials configured",
+            "The staff account now has configured sign-in credentials. Audit stores only credential state and session impact; login names, passwords and hashes are not included.",
+            "Before configuration",
+            "After configuration",
+            CredentialFacts(accountId, original.CredentialsConfigured),
+            [
+                .. CredentialFacts(accountId, configured.CredentialsConfigured),
+                Fact(
+                    "Active sessions ended",
+                    configured.EndedSessionCount.ToString(CultureInfo.InvariantCulture)),
+            ],
+            ChangedFields: configured.EndedSessionCount > 0
+                ? "Credential state, Active sessions"
+                : "Credential state",
+            IsAvailable: true);
+    }
+
+    internal static AuditEntryExplanationViewModel CreateCredentialReset(
+        AuditTimelineEntry entry,
+        JsonElement before,
+        JsonElement after)
+    {
+        var accountId = RequireAccountId(entry.EntityId);
+        var original = ReadCredentialState(before, requireEndedSessionCount: false);
+        var reset = ReadCredentialState(after, requireEndedSessionCount: true);
+
+        if (!original.CredentialsConfigured
+            || !reset.CredentialsConfigured
+            || string.IsNullOrWhiteSpace(entry.Reason))
+        {
+            throw new JsonException("Staff credential reset summary is inconsistent.");
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "staff-credentials-reset",
+            "Staff credentials reset",
+            "The configured credentials were replaced and active sessions were ended as recorded. Login names, passwords and hashes are deliberately absent from business audit.",
+            "Before reset",
+            "After reset",
+            CredentialFacts(accountId, original.CredentialsConfigured),
+            [
+                .. CredentialFacts(accountId, reset.CredentialsConfigured),
+                Fact(
+                    "Active sessions ended",
+                    reset.EndedSessionCount.ToString(CultureInfo.InvariantCulture)),
+            ],
+            ChangedFields: reset.EndedSessionCount > 0
+                ? "Credentials, Active sessions"
+                : "Credentials",
+            IsAvailable: true);
+    }
+
     private static string ReadDisplayName(JsonElement summary)
     {
         var dto = Deserialize<DisplayNameDto>(summary);
@@ -125,6 +193,24 @@ internal static class StaffAccountAuditExplanationFactory
             dto.EndedSessionCount ?? 0);
     }
 
+    private static CredentialStateSnapshot ReadCredentialState(
+        JsonElement summary,
+        bool requireEndedSessionCount)
+    {
+        var dto = Deserialize<CredentialStateDto>(summary);
+        if (dto.CredentialsConfigured is null
+            || (requireEndedSessionCount && dto.EndedSessionCount is null)
+            || (!requireEndedSessionCount && dto.EndedSessionCount is not null)
+            || dto.EndedSessionCount < 0)
+        {
+            throw new JsonException("Staff credential-state summary is inconsistent.");
+        }
+
+        return new CredentialStateSnapshot(
+            dto.CredentialsConfigured.Value,
+            dto.EndedSessionCount ?? 0);
+    }
+
     private static IReadOnlyList<AuditEntryExplanationFactViewModel> StaffProfileFacts(
         Guid accountId,
         string displayName)
@@ -144,6 +230,19 @@ internal static class StaffAccountAuditExplanationFactory
         [
             Fact("Staff account", TimelineModel.ShortId(accountId)),
             Fact("Status", isActive ? "Active" : "Inactive"),
+        ];
+    }
+
+    private static IReadOnlyList<AuditEntryExplanationFactViewModel> CredentialFacts(
+        Guid accountId,
+        bool credentialsConfigured)
+    {
+        return
+        [
+            Fact("Staff account", TimelineModel.ShortId(accountId)),
+            Fact(
+                "Credential state",
+                credentialsConfigured ? "Configured" : "Not configured"),
         ];
     }
 
@@ -177,7 +276,18 @@ internal static class StaffAccountAuditExplanationFactory
         public int? EndedSessionCount { get; init; }
     }
 
+    private sealed class CredentialStateDto
+    {
+        public bool? CredentialsConfigured { get; init; }
+
+        public int? EndedSessionCount { get; init; }
+    }
+
     private sealed record ActiveStateSnapshot(
         bool IsActive,
+        int EndedSessionCount);
+
+    private sealed record CredentialStateSnapshot(
+        bool CredentialsConfigured,
         int EndedSessionCount);
 }

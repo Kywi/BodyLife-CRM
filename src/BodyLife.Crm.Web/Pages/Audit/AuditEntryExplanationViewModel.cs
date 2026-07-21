@@ -31,6 +31,8 @@ public sealed record AuditEntryExplanationViewModel(
             "staff_account.display_name_updated" => "staff-account-display-name-updated",
             "staff_account.activated" => "staff-account-activated",
             "staff_account.deactivated" => "staff-account-deactivated",
+            "staff_credentials.configured" => "staff-credentials-configured",
+            "staff_credentials.reset" => "staff-credentials-reset",
             "non_working_day.corrected" => "non-working-day-corrected",
             "non_working_day.canceled" => "non-working-day-canceled",
             "freeze.canceled" => "freeze-canceled",
@@ -90,6 +92,18 @@ public sealed record AuditEntryExplanationViewModel(
                 "staff_account.deactivated"
                     when entry.EntityType == AuditTimelineEntityType.StaffAccount
                     => StaffAccountAuditExplanationFactory.CreateDeactivation(
+                        entry,
+                        before.RootElement,
+                        after.RootElement),
+                "staff_credentials.configured"
+                    when entry.EntityType == AuditTimelineEntityType.StaffAccount
+                    => StaffAccountAuditExplanationFactory.CreateCredentialConfiguration(
+                        entry,
+                        before.RootElement,
+                        after.RootElement),
+                "staff_credentials.reset"
+                    when entry.EntityType == AuditTimelineEntityType.StaffAccount
+                    => StaffAccountAuditExplanationFactory.CreateCredentialReset(
                         entry,
                         before.RootElement,
                         after.RootElement),
