@@ -1,0 +1,183 @@
+using System.Globalization;
+using System.Text.Json;
+using BodyLife.Crm.Modules.Audit;
+
+namespace BodyLife.Crm.Web.Pages.Audit;
+
+internal static class StaffAccountAuditExplanationFactory
+{
+    private static readonly JsonSerializerOptions AuditJsonOptions =
+        new(JsonSerializerDefaults.Web);
+
+    internal static AuditEntryExplanationViewModel CreateDisplayNameUpdate(
+        AuditTimelineEntry entry,
+        JsonElement before,
+        JsonElement after)
+    {
+        var accountId = RequireAccountId(entry.EntityId);
+        var originalDisplayName = ReadDisplayName(before);
+        var updatedDisplayName = ReadDisplayName(after);
+        var displayNameChanged = originalDisplayName != updatedDisplayName;
+
+        return new AuditEntryExplanationViewModel(
+            "staff-account-display-name-updated",
+            "Staff display name updated",
+            displayNameChanged
+                ? "The stored snapshots show the staff display-name change. Login and password data are outside this business summary."
+                : "The command recorded identical before/after display names. The unchanged stored value remains explicit for audit review, and login/password data are outside this summary.",
+            "Original staff profile",
+            "Updated staff profile",
+            StaffProfileFacts(accountId, originalDisplayName),
+            StaffProfileFacts(accountId, updatedDisplayName),
+            ChangedFields: displayNameChanged ? "Display name" : null,
+            IsAvailable: true);
+    }
+
+    internal static AuditEntryExplanationViewModel CreateActivation(
+        AuditTimelineEntry entry,
+        JsonElement before,
+        JsonElement after)
+    {
+        var accountId = RequireAccountId(entry.EntityId);
+        var original = ReadActiveState(before, requireEndedSessionCount: false);
+        var activated = ReadActiveState(after, requireEndedSessionCount: true);
+
+        if (original.IsActive
+            || !activated.IsActive
+            || activated.EndedSessionCount != 0)
+        {
+            throw new JsonException("Staff activation summary is inconsistent.");
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "staff-account-activated",
+            "Staff account activated",
+            "The stored account state changed from Inactive to Active. Credential values are not part of this lifecycle summary.",
+            "Before activation",
+            "After activation",
+            StaffStateFacts(accountId, original.IsActive),
+            StaffStateFacts(accountId, activated.IsActive),
+            ChangedFields: "Account status",
+            IsAvailable: true);
+    }
+
+    internal static AuditEntryExplanationViewModel CreateDeactivation(
+        AuditTimelineEntry entry,
+        JsonElement before,
+        JsonElement after)
+    {
+        var accountId = RequireAccountId(entry.EntityId);
+        var original = ReadActiveState(before, requireEndedSessionCount: false);
+        var deactivated = ReadActiveState(after, requireEndedSessionCount: true);
+
+        if (!original.IsActive
+            || deactivated.IsActive
+            || string.IsNullOrWhiteSpace(entry.Reason))
+        {
+            throw new JsonException("Staff deactivation summary is inconsistent.");
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "staff-account-deactivated",
+            "Staff account deactivated",
+            "The account is now Inactive. The stored ended-session count explains the immediate access impact without exposing credential material.",
+            "Before deactivation",
+            "After deactivation",
+            StaffStateFacts(accountId, original.IsActive),
+            [
+                .. StaffStateFacts(accountId, deactivated.IsActive),
+                Fact(
+                    "Active sessions ended",
+                    deactivated.EndedSessionCount.ToString(CultureInfo.InvariantCulture)),
+            ],
+            ChangedFields: deactivated.EndedSessionCount > 0
+                ? "Account status, Active sessions"
+                : "Account status",
+            IsAvailable: true);
+    }
+
+    private static string ReadDisplayName(JsonElement summary)
+    {
+        var dto = Deserialize<DisplayNameDto>(summary);
+        if (string.IsNullOrWhiteSpace(dto.DisplayName))
+        {
+            throw new JsonException("Staff display name is required.");
+        }
+
+        return dto.DisplayName;
+    }
+
+    private static ActiveStateSnapshot ReadActiveState(
+        JsonElement summary,
+        bool requireEndedSessionCount)
+    {
+        var dto = Deserialize<ActiveStateDto>(summary);
+        if (dto.IsActive is null
+            || (requireEndedSessionCount && dto.EndedSessionCount is null)
+            || (!requireEndedSessionCount && dto.EndedSessionCount is not null)
+            || dto.EndedSessionCount < 0)
+        {
+            throw new JsonException("Staff active-state summary is inconsistent.");
+        }
+
+        return new ActiveStateSnapshot(
+            dto.IsActive.Value,
+            dto.EndedSessionCount ?? 0);
+    }
+
+    private static IReadOnlyList<AuditEntryExplanationFactViewModel> StaffProfileFacts(
+        Guid accountId,
+        string displayName)
+    {
+        return
+        [
+            Fact("Staff account", TimelineModel.ShortId(accountId)),
+            Fact("Display name", displayName),
+        ];
+    }
+
+    private static IReadOnlyList<AuditEntryExplanationFactViewModel> StaffStateFacts(
+        Guid accountId,
+        bool isActive)
+    {
+        return
+        [
+            Fact("Staff account", TimelineModel.ShortId(accountId)),
+            Fact("Status", isActive ? "Active" : "Inactive"),
+        ];
+    }
+
+    private static Guid RequireAccountId(Guid accountId)
+    {
+        return accountId != Guid.Empty
+            ? accountId
+            : throw new JsonException("Staff account id is required.");
+    }
+
+    private static T Deserialize<T>(JsonElement element)
+    {
+        return element.Deserialize<T>(AuditJsonOptions)
+            ?? throw new JsonException("The staff audit summary is required.");
+    }
+
+    private static AuditEntryExplanationFactViewModel Fact(string label, string value)
+    {
+        return new AuditEntryExplanationFactViewModel(label, value);
+    }
+
+    private sealed class DisplayNameDto
+    {
+        public string? DisplayName { get; init; }
+    }
+
+    private sealed class ActiveStateDto
+    {
+        public bool? IsActive { get; init; }
+
+        public int? EndedSessionCount { get; init; }
+    }
+
+    private sealed record ActiveStateSnapshot(
+        bool IsActive,
+        int EndedSessionCount);
+}

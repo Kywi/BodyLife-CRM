@@ -1183,6 +1183,18 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "BLAUDIT20040",
             replacementCardAt);
 
+        const string originalStaffDisplayName = "Main Admin";
+        const string updatedStaffDisplayName = "Evening Admin";
+        const string staffDeactivationReason = "Staff member left the gym";
+        const int endedStaffSessionCount = 2;
+        var staffAccountId = Guid.NewGuid();
+        var staffDisplayNameUpdatedAuditEntryId = Guid.NewGuid();
+        var staffDeactivatedAuditEntryId = Guid.NewGuid();
+        var staffActivatedAuditEntryId = Guid.NewGuid();
+        var staffDisplayNameUpdatedAt = recordedBase.AddHours(13);
+        var staffDeactivatedAt = recordedBase.AddHours(14);
+        var staffActivatedAt = recordedBase.AddHours(15);
+
         AuditSeed[] explanationSeeds =
         [
             new(
@@ -1545,6 +1557,71 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 replacementCard,
                 new { },
                 ChangedAfterClose: false),
+            new(
+                staffDisplayNameUpdatedAuditEntryId,
+                "staff_account.display_name_updated",
+                "staff_account",
+                staffAccountId,
+                new { },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                staffDisplayNameUpdatedAt,
+                staffDisplayNameUpdatedAt,
+                "normal",
+                Reason: null,
+                Comment: null,
+                BeforeSummary: new { DisplayName = originalStaffDisplayName },
+                AfterSummary: new { DisplayName = updatedStaffDisplayName },
+                ChangedAfterClose: false),
+            new(
+                staffDeactivatedAuditEntryId,
+                "staff_account.deactivated",
+                "staff_account",
+                staffAccountId,
+                new { },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                staffDeactivatedAt,
+                staffDeactivatedAt,
+                "normal",
+                staffDeactivationReason,
+                "Active sessions ended immediately",
+                new { IsActive = true },
+                new
+                {
+                    IsActive = false,
+                    EndedSessionCount = endedStaffSessionCount,
+                },
+                ChangedAfterClose: false),
+            new(
+                staffActivatedAuditEntryId,
+                "staff_account.activated",
+                "staff_account",
+                staffAccountId,
+                new { },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                staffActivatedAt,
+                staffActivatedAt,
+                "normal",
+                Reason: null,
+                Comment: null,
+                BeforeSummary: new { IsActive = false },
+                AfterSummary: new
+                {
+                    IsActive = true,
+                    EndedSessionCount = 0,
+                },
+                ChangedAfterClose: false),
         ];
 
         foreach (var explanationSeed in explanationSeeds)
@@ -1614,7 +1691,16 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     cardChangedAuditEntryId,
                     cardClearedAuditEntryId,
                     assignedCardNumber,
-                    replacementCardNumber)));
+                    replacementCardNumber),
+                StaffAccounts: new StaffAccountAuditExplanationSmokeScenario(
+                    staffAccountId,
+                    staffDisplayNameUpdatedAuditEntryId,
+                    originalStaffDisplayName,
+                    updatedStaffDisplayName,
+                    staffDeactivatedAuditEntryId,
+                    staffDeactivationReason,
+                    endedStaffSessionCount,
+                    staffActivatedAuditEntryId)));
     }
 
     public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(

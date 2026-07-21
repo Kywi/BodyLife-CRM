@@ -28,6 +28,9 @@ public sealed record AuditEntryExplanationViewModel(
             "card.assigned" => "card-assigned",
             "card.changed" => "card-changed",
             "card.cleared" => "card-cleared",
+            "staff_account.display_name_updated" => "staff-account-display-name-updated",
+            "staff_account.activated" => "staff-account-activated",
+            "staff_account.deactivated" => "staff-account-deactivated",
             "non_working_day.corrected" => "non-working-day-corrected",
             "non_working_day.canceled" => "non-working-day-canceled",
             "freeze.canceled" => "freeze-canceled",
@@ -70,6 +73,24 @@ public sealed record AuditEntryExplanationViewModel(
                     => ClientAuditExplanationFactory.CreateCardClear(
                         entry,
                         related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
+                "staff_account.display_name_updated"
+                    when entry.EntityType == AuditTimelineEntityType.StaffAccount
+                    => StaffAccountAuditExplanationFactory.CreateDisplayNameUpdate(
+                        entry,
+                        before.RootElement,
+                        after.RootElement),
+                "staff_account.activated"
+                    when entry.EntityType == AuditTimelineEntityType.StaffAccount
+                    => StaffAccountAuditExplanationFactory.CreateActivation(
+                        entry,
+                        before.RootElement,
+                        after.RootElement),
+                "staff_account.deactivated"
+                    when entry.EntityType == AuditTimelineEntityType.StaffAccount
+                    => StaffAccountAuditExplanationFactory.CreateDeactivation(
+                        entry,
                         before.RootElement,
                         after.RootElement),
                 "membership_type.edited"

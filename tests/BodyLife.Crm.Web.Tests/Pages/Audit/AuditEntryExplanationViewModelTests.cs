@@ -793,11 +793,141 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Current card", explanation.ChangedFields);
     }
 
+    [Fact]
+    public void StaffDisplayNameUpdateShowsStoredBeforeAndAfterProfiles()
+    {
+        var accountId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_account.display_name_updated",
+                    AuditTimelineEntityType.StaffAccount,
+                    accountId,
+                    new { DisplayName = "Main Admin" },
+                    new { DisplayName = "Evening Admin" })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("staff-account-display-name-updated", explanation.Kind);
+        Assert.Equal("Original staff profile", explanation.BeforeLabel);
+        Assert.Equal("Updated staff profile", explanation.AfterLabel);
+        Assert.Equal(
+            accountId.ToString("N")[..8],
+            FactValue(explanation.BeforeFacts, "Staff account"));
+        Assert.Equal("Main Admin", FactValue(explanation.BeforeFacts, "Display name"));
+        Assert.Equal("Evening Admin", FactValue(explanation.AfterFacts, "Display name"));
+        Assert.Equal("Display name", explanation.ChangedFields);
+        Assert.DoesNotContain(
+            explanation.AfterFacts,
+            fact => fact.Label.Contains("password", StringComparison.OrdinalIgnoreCase)
+                || fact.Label.Contains("login", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void StaffDisplayNameUpdateKeepsIdenticalStoredSnapshotsReadable()
+    {
+        var accountId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_account.display_name_updated",
+                    AuditTimelineEntityType.StaffAccount,
+                    accountId,
+                    new { DisplayName = "Main Admin" },
+                    new { DisplayName = "Main Admin" })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Null(explanation.ChangedFields);
+        Assert.Contains("identical before/after", explanation.Narrative);
+    }
+
+    [Fact]
+    public void StaffActivationShowsInactiveToActiveTransition()
+    {
+        var accountId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_account.activated",
+                    AuditTimelineEntityType.StaffAccount,
+                    accountId,
+                    new { IsActive = false },
+                    new
+                    {
+                        IsActive = true,
+                        EndedSessionCount = 0,
+                    },
+                    reason: null,
+                    comment: null)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("staff-account-activated", explanation.Kind);
+        Assert.Equal("Inactive", FactValue(explanation.BeforeFacts, "Status"));
+        Assert.Equal("Active", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal("Account status", explanation.ChangedFields);
+        Assert.DoesNotContain(
+            explanation.AfterFacts,
+            fact => fact.Label == "Active sessions ended");
+    }
+
+    [Fact]
+    public void StaffDeactivationShowsEndedSessionImpact()
+    {
+        var accountId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_account.deactivated",
+                    AuditTimelineEntityType.StaffAccount,
+                    accountId,
+                    new { IsActive = true },
+                    new
+                    {
+                        IsActive = false,
+                        EndedSessionCount = 2,
+                    },
+                    reason: "Staff member left the gym")));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("staff-account-deactivated", explanation.Kind);
+        Assert.Equal("Active", FactValue(explanation.BeforeFacts, "Status"));
+        Assert.Equal("Inactive", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal("2", FactValue(explanation.AfterFacts, "Active sessions ended"));
+        Assert.Equal("Account status, Active sessions", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void StaffDeactivationWithoutRequiredReasonFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_account.deactivated",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { IsActive = true },
+                    new
+                    {
+                        IsActive = false,
+                        EndedSessionCount = 1,
+                    },
+                    reason: null)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
     [Theory]
     [InlineData("client.updated", AuditTimelineEntityType.Payment)]
     [InlineData("card.assigned", AuditTimelineEntityType.Payment)]
     [InlineData("card.changed", AuditTimelineEntityType.Payment)]
     [InlineData("card.cleared", AuditTimelineEntityType.Payment)]
+    [InlineData("staff_account.display_name_updated", AuditTimelineEntityType.Client)]
+    [InlineData("staff_account.activated", AuditTimelineEntityType.Client)]
+    [InlineData("staff_account.deactivated", AuditTimelineEntityType.Client)]
     [InlineData("membership_type.edited", AuditTimelineEntityType.Client)]
     [InlineData("membership_type.deactivated", AuditTimelineEntityType.Client)]
     [InlineData("non_working_day.corrected", AuditTimelineEntityType.Payment)]

@@ -1115,6 +1115,177 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         }
     }
 
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
+    public async Task StaffAccountSettingsLeadWithReadableProfileAndAccessChanges(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var staff = scenario.Explanations.StaffAccounts;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} staff account audit smoke");
+
+            var displayNameUpdate = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "StaffAccount",
+                "staff_account.display_name_updated",
+                staff.DisplayNameUpdatedAuditEntryId,
+                "staff-account-display-name-updated",
+                viewportName,
+                entityId: staff.StaffAccountId);
+            await ExpectVisibleAsync(
+                displayNameUpdate.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Staff display name updated", Exact = true }),
+                viewportName,
+                "Staff display-name explanation title");
+            Assert.Equal(
+                staff.StaffAccountId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    displayNameUpdate,
+                    "Original staff profile",
+                    "Staff account"));
+            Assert.Equal(
+                staff.OriginalDisplayName,
+                await ExplanationFactAsync(
+                    displayNameUpdate,
+                    "Original staff profile",
+                    "Display name"));
+            Assert.Equal(
+                staff.UpdatedDisplayName,
+                await ExplanationFactAsync(
+                    displayNameUpdate,
+                    "Updated staff profile",
+                    "Display name"));
+            await ExpectVisibleAsync(
+                displayNameUpdate.GetByText("Display name", new() { Exact = true }).Last,
+                viewportName,
+                "Staff display-name changed field");
+            var displayNameEnvelope = displayNameUpdate
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await displayNameEnvelope.GetAttributeAsync("open"));
+            Assert.False(await displayNameEnvelope.Locator(".audit-json-grid").IsVisibleAsync());
+            await AssertFitsViewportAsync(page, viewportName, "Staff display-name explanation");
+            await CaptureVisualAsync(page, viewportName, "staff-display-name-explanation");
+
+            var deactivation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "StaffAccount",
+                "staff_account.deactivated",
+                staff.DeactivatedAuditEntryId,
+                "staff-account-deactivated",
+                viewportName,
+                entityId: staff.StaffAccountId);
+            await ExpectVisibleAsync(
+                deactivation.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Staff account deactivated", Exact = true }),
+                viewportName,
+                "Staff deactivation explanation title");
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(
+                    deactivation,
+                    "Before deactivation",
+                    "Status"));
+            Assert.Equal(
+                "Inactive",
+                await ExplanationFactAsync(
+                    deactivation,
+                    "After deactivation",
+                    "Status"));
+            Assert.Equal(
+                staff.EndedSessionCount.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    deactivation,
+                    "After deactivation",
+                    "Active sessions ended"));
+            await ExpectVisibleAsync(
+                deactivation.GetByText(
+                    "Account status, Active sessions",
+                    new() { Exact = true }),
+                viewportName,
+                "Staff deactivation changed fields");
+            var deactivationRow = deactivation.Locator("xpath=ancestor::li");
+            await ExpectVisibleAsync(
+                deactivationRow.GetByText(staff.DeactivationReason, new() { Exact = true }),
+                viewportName,
+                "Staff deactivation reason");
+            var deactivationEnvelope = deactivationRow.Locator(".audit-envelope-details");
+            var envelopeToggle = deactivationEnvelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "Staff deactivation audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                deactivationEnvelope.Locator(".audit-json-grid"),
+                viewportName,
+                "Staff deactivation raw envelope");
+            var envelopeText = await deactivationEnvelope
+                .Locator(".audit-json-grid")
+                .InnerTextAsync();
+            Assert.Contains("endedSessionCount", envelopeText, StringComparison.Ordinal);
+            Assert.DoesNotContain("password", envelopeText, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("loginName", envelopeText, StringComparison.OrdinalIgnoreCase);
+            await AssertFitsViewportAsync(page, viewportName, "Staff deactivation explanation");
+            await CaptureVisualAsync(page, viewportName, "staff-deactivation-explanation");
+
+            var activation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "StaffAccount",
+                "staff_account.activated",
+                staff.ActivatedAuditEntryId,
+                "staff-account-activated",
+                viewportName,
+                entityId: staff.StaffAccountId);
+            Assert.Equal(
+                "Inactive",
+                await ExplanationFactAsync(activation, "Before activation", "Status"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(activation, "After activation", "Status"));
+            Assert.Equal(
+                0,
+                await activation.GetByText(
+                    "Active sessions ended",
+                    new() { Exact = true }).CountAsync());
+            await ExpectVisibleAsync(
+                activation.GetByText("Account status", new() { Exact = true }),
+                viewportName,
+                "Staff activation changed field");
+            await AssertFitsViewportAsync(page, viewportName, "Staff activation explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task InvalidOffsetKeepsAuditFiltersAndReturnsNoPartialTimeline()
     {

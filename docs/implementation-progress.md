@@ -11053,3 +11053,89 @@ Next recommended step:
   activation/deactivation while preserving role-controlled access and showing
   no credential material. Keep credential configuration/reset explanations,
   audit-noise review and technical-log correlation lookup for later steps.
+
+## Step 174 - Staff account profile and status audit explanations
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue only the staff profile/status portion of the sixth Milestone 10
+  task by replacing raw JSON as the primary explanation for
+  `staff_account.display_name_updated`, `staff_account.activated` and
+  `staff_account.deactivated` Timeline rows.
+- Present only command-owned display-name, active-state and ended-session
+  summaries inside the existing Owner/Admin-controlled Audit Timeline. Do not
+  infer account type, lifecycle timestamps or credential state that is absent
+  from the stored business summary.
+- Preserve the complete append-only audit envelope as collapsed secondary
+  support detail. Keep credential configuration/reset explanations,
+  audit-noise review and technical-log correlation lookup outside this step.
+
+Completed:
+
+- Added a typed, fail-closed staff-account audit explanation factory and wired
+  the three action/entity pairs into the existing Audit Timeline presenter.
+- Added `Original staff profile`/`Updated staff profile` sections for stored
+  display-name snapshots. A legitimate same-value command record remains
+  readable with no fabricated changed-field label so later audit-noise review
+  can evaluate it honestly.
+- Added `Before activation`/`After activation` sections that require the stored
+  Inactive-to-Active transition and zero ended sessions.
+- Added `Before deactivation`/`After deactivation` sections that require the
+  stored Active-to-Inactive transition, a non-negative ended-session count and
+  the command-required deactivation reason. The session impact is shown
+  without exposing login, password or hash material.
+- Added eight Web presenter cases covering changed and identical display-name
+  snapshots, activation, deactivation session impact, missing-reason rejection
+  and wrong-entity fail-closed behavior.
+- Extended the PostgreSQL-backed Audit Timeline fixture with three isolated,
+  production-shaped staff-account envelopes and added Owner/tablet plus named-
+  Admin/phone Playwright coverage over exact entity/action filtering, stored
+  profile/state/session facts, reason visibility, collapsed raw-envelope
+  behavior, credential omission and horizontal fit.
+- Kept Users/Roles commands, credential handling, persistence schema, EF model,
+  Razor markup and CSS unchanged.
+
+Validation:
+
+- Focused `AuditEntryExplanationViewModelTests` passed 42/42; focused new staff-
+  account explanation Playwright coverage passed 2/2; the complete
+  `AuditTimelineSmokeTests` regression passed 16/16 with no skipped tests.
+- Screenshot-backed visual checks passed for display-name update and account
+  deactivation at 1024x768 Owner/tablet and 390x844 named-Admin/phone
+  viewports. Profile/status/session facts remain readable, the raw envelope is
+  collapsed by default and available on demand, credential values are absent,
+  controls/text do not overlap and Playwright found no horizontal overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 77 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 94 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain staff account changes`.
+
+Next recommended step:
+
+- Continue the sixth Milestone 10 task with one bounded credential-audit slice:
+  add owner-readable state/session-impact summaries for
+  `staff_credentials.configured` and `staff_credentials.reset`, while proving
+  login names, passwords and hashes never appear in either the primary
+  explanation or stored audit envelope. Keep staff-account creation,
+  audit-noise review and technical-log correlation lookup for later steps.
