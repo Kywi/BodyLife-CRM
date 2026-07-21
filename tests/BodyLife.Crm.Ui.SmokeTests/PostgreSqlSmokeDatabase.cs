@@ -527,6 +527,10 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         const decimal originalPaymentAmount = 1200m;
         const decimal replacementPaymentAmount = 950m;
         const decimal canceledPaymentAmount = 500m;
+        const string originalMembershipTypeName = "Eight visits";
+        const string updatedMembershipTypeName = "Evening Twelve";
+        const decimal originalMembershipTypePrice = 1200m;
+        const decimal updatedMembershipTypePrice = 1600.50m;
         var recordedDate = new DateOnly(2026, 7, 18);
         var recordedBase = new DateTimeOffset(
             recordedDate,
@@ -840,6 +844,40 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "One-off cash payment",
             "active");
 
+        var membershipTypeId = Guid.NewGuid();
+        var membershipTypeEditAuditEntryId = Guid.NewGuid();
+        var membershipTypeDeactivationAuditEntryId = Guid.NewGuid();
+        var membershipTypeCreatedAt = recordedBase.AddDays(-60);
+        var originalMembershipTypeUpdatedAt = recordedBase.AddDays(-10);
+        var membershipTypeEditedAt = recordedBase.AddHours(4);
+        var membershipTypeDeactivatedAt = recordedBase.AddHours(5);
+        var originalMembershipType = new AuditMembershipTypeSummarySeed(
+            originalMembershipTypeName,
+            DurationDays: 30,
+            VisitsLimit: 8,
+            new AuditMoneySummarySeed(originalMembershipTypePrice, "UAH"),
+            IsActive: true,
+            "Original catalog values",
+            membershipTypeCreatedAt,
+            originalMembershipTypeUpdatedAt,
+            DeactivatedAt: null);
+        var editedMembershipType = new AuditMembershipTypeSummarySeed(
+            updatedMembershipTypeName,
+            DurationDays: 45,
+            VisitsLimit: 12,
+            new AuditMoneySummarySeed(updatedMembershipTypePrice, "UAH"),
+            IsActive: true,
+            "Future evening sales",
+            membershipTypeCreatedAt,
+            membershipTypeEditedAt,
+            DeactivatedAt: null);
+        var deactivatedMembershipType = editedMembershipType with
+        {
+            IsActive = false,
+            UpdatedAt = membershipTypeDeactivatedAt,
+            DeactivatedAt = membershipTypeDeactivatedAt,
+        };
+
         AuditSeed[] explanationSeeds =
         [
             new(
@@ -989,6 +1027,44 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     Payment = paymentToCancel with { Status = "canceled" },
                 },
                 ChangedAfterClose: false),
+            new(
+                membershipTypeEditAuditEntryId,
+                "membership_type.edited",
+                "membership_type",
+                membershipTypeId,
+                new { },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                membershipTypeEditedAt.AddMinutes(-5),
+                membershipTypeEditedAt,
+                "normal",
+                "Updated future offer",
+                "Owner approved catalog changes",
+                originalMembershipType,
+                editedMembershipType,
+                ChangedAfterClose: false),
+            new(
+                membershipTypeDeactivationAuditEntryId,
+                "membership_type.deactivated",
+                "membership_type",
+                membershipTypeId,
+                new { },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                membershipTypeDeactivatedAt.AddMinutes(-5),
+                membershipTypeDeactivatedAt,
+                "normal",
+                "Retired future offer",
+                "Existing memberships remain valid",
+                editedMembershipType,
+                deactivatedMembershipType,
+                ChangedAfterClose: false),
         ];
 
         foreach (var explanationSeed in explanationSeeds)
@@ -1014,6 +1090,12 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 visitCancellationAuditEntryId,
                 paymentCorrectionAuditEntryId,
                 paymentCancellationAuditEntryId,
+                membershipTypeEditAuditEntryId,
+                membershipTypeDeactivationAuditEntryId,
+                originalMembershipTypeName,
+                updatedMembershipTypeName,
+                originalMembershipTypePrice,
+                updatedMembershipTypePrice,
                 originalPaymentAmount,
                 replacementPaymentAmount,
                 canceledPaymentAmount,
@@ -4843,6 +4925,21 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Guid? EntryBatchId,
         string? Comment,
         string Status);
+
+    private sealed record AuditMembershipTypeSummarySeed(
+        string Name,
+        int DurationDays,
+        int VisitsLimit,
+        AuditMoneySummarySeed Price,
+        bool IsActive,
+        string? Comment,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset UpdatedAt,
+        DateTimeOffset? DeactivatedAt);
+
+    private sealed record AuditMoneySummarySeed(
+        decimal Amount,
+        string Currency);
 }
 
 public sealed record MembershipTypeSmokeSnapshot(

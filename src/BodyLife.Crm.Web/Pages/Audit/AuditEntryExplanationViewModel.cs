@@ -21,6 +21,8 @@ public sealed record AuditEntryExplanationViewModel(
 
         var kind = entry.ActionType switch
         {
+            "membership_type.edited" => "membership-type-edited",
+            "membership_type.deactivated" => "membership-type-deactivated",
             "visit.canceled" => "visit-canceled",
             "payment.corrected" => "payment-corrected",
             "payment.canceled" => "payment-canceled",
@@ -37,6 +39,12 @@ public sealed record AuditEntryExplanationViewModel(
             using var after = JsonDocument.Parse(entry.AfterSummaryJson);
             return entry.ActionType switch
             {
+                "membership_type.edited"
+                    when entry.EntityType == AuditTimelineEntityType.MembershipType
+                    => CreateMembershipTypeEdit(before.RootElement, after.RootElement),
+                "membership_type.deactivated"
+                    when entry.EntityType == AuditTimelineEntityType.MembershipType
+                    => CreateMembershipTypeDeactivation(before.RootElement, after.RootElement),
                 "visit.canceled" when entry.EntityType == AuditTimelineEntityType.Visit
                     => CreateVisitCancellation(entry, before.RootElement, after.RootElement),
                 "payment.corrected" when entry.EntityType == AuditTimelineEntityType.Payment
@@ -50,6 +58,74 @@ public sealed record AuditEntryExplanationViewModel(
         {
             return Unavailable(kind);
         }
+    }
+
+    private static AuditEntryExplanationViewModel CreateMembershipTypeEdit(
+        JsonElement before,
+        JsonElement after)
+    {
+        var original = ReadMembershipTypeCatalog(before);
+        var updated = ReadMembershipTypeCatalog(after);
+        var changedFields = MembershipTypeChangedFields(original, updated);
+
+        if (!original.HasValidLifecycle()
+            || !updated.HasValidLifecycle()
+            || original.IsActive != updated.IsActive
+            || original.CreatedAt != updated.CreatedAt
+            || original.DeactivatedAt != updated.DeactivatedAt
+            || updated.UpdatedAt <= original.UpdatedAt
+            || changedFields.Count == 0)
+        {
+            throw new JsonException("Membership type edit summary is inconsistent.");
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "membership-type-edited",
+            "Membership type catalog updated",
+            "The catalog values changed for future Membership issues. Already issued Membership snapshots remain unchanged.",
+            "Original catalog",
+            "Updated catalog",
+            MembershipTypeFacts(original),
+            MembershipTypeFacts(updated),
+            string.Join(", ", changedFields),
+            IsAvailable: true);
+    }
+
+    private static AuditEntryExplanationViewModel CreateMembershipTypeDeactivation(
+        JsonElement before,
+        JsonElement after)
+    {
+        var original = ReadMembershipTypeCatalog(before);
+        var deactivated = ReadMembershipTypeCatalog(after);
+
+        if (!original.HasValidLifecycle()
+            || !deactivated.HasValidLifecycle()
+            || !original.IsActive
+            || deactivated.IsActive
+            || original.CatalogValues() != deactivated.CatalogValues()
+            || original.CreatedAt != deactivated.CreatedAt
+            || original.DeactivatedAt is not null
+            || deactivated.DeactivatedAt != deactivated.UpdatedAt
+            || deactivated.UpdatedAt <= original.UpdatedAt)
+        {
+            throw new JsonException("Membership type deactivation summary is inconsistent.");
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "membership-type-deactivated",
+            "Membership type deactivated",
+            "The catalog record and already issued Membership history remain preserved. This type is no longer available for future ordinary issue.",
+            "Before deactivation",
+            "After deactivation",
+            MembershipTypeFacts(original),
+            [
+                .. MembershipTypeFacts(deactivated),
+                Fact(
+                    "Deactivated",
+                    TimelineModel.TimestampLabel(deactivated.DeactivatedAt.Value)),
+            ],
+            ChangedFields: "Catalog status",
+            IsAvailable: true);
     }
 
     private static AuditEntryExplanationViewModel CreateVisitCancellation(
@@ -219,6 +295,76 @@ public sealed record AuditEntryExplanationViewModel(
             Fact("Method", PaymentMethodLabel(payment.Method)),
             Fact("Status", StatusLabel(payment.Status)),
         ];
+    }
+
+    private static IReadOnlyList<AuditEntryExplanationFactViewModel> MembershipTypeFacts(
+        MembershipTypeCatalogSnapshot membershipType)
+    {
+        return
+        [
+            Fact("Name", membershipType.Name),
+            Fact(
+                "Duration",
+                $"{membershipType.DurationDays.ToString(CultureInfo.InvariantCulture)} days"),
+            Fact(
+                "Visit limit",
+                membershipType.VisitsLimit.ToString(CultureInfo.InvariantCulture)),
+            Fact(
+                "Price",
+                MoneyLabel(membershipType.PriceAmount, membershipType.PriceCurrency)),
+            Fact("Status", membershipType.IsActive ? "Active" : "Inactive"),
+            Fact("Catalog comment", membershipType.Comment ?? "None"),
+        ];
+    }
+
+    private static MembershipTypeCatalogSnapshot ReadMembershipTypeCatalog(JsonElement summary)
+    {
+        var price = RequireObject(summary, "price");
+        return new MembershipTypeCatalogSnapshot(
+            RequireString(summary, "name"),
+            RequirePositiveInt32(summary, "durationDays"),
+            RequireNonNegativeInt32(summary, "visitsLimit"),
+            RequireNonNegativeDecimal(price, "amount"),
+            RequireString(price, "currency"),
+            RequireBoolean(summary, "isActive"),
+            RequireNullableString(summary, "comment"),
+            RequireTimestamp(summary, "createdAt"),
+            RequireTimestamp(summary, "updatedAt"),
+            RequireNullableTimestamp(summary, "deactivatedAt"));
+    }
+
+    private static IReadOnlyList<string> MembershipTypeChangedFields(
+        MembershipTypeCatalogSnapshot original,
+        MembershipTypeCatalogSnapshot updated)
+    {
+        var changedFields = new List<string>();
+        if (original.Name != updated.Name)
+        {
+            changedFields.Add("Name");
+        }
+
+        if (original.DurationDays != updated.DurationDays)
+        {
+            changedFields.Add("Duration");
+        }
+
+        if (original.VisitsLimit != updated.VisitsLimit)
+        {
+            changedFields.Add("Visit limit");
+        }
+
+        if (original.PriceAmount != updated.PriceAmount
+            || original.PriceCurrency != updated.PriceCurrency)
+        {
+            changedFields.Add("Price");
+        }
+
+        if (original.Comment != updated.Comment)
+        {
+            changedFields.Add("Catalog comment");
+        }
+
+        return changedFields;
     }
 
     private static PaymentSnapshot ReadPayment(JsonElement payment)
@@ -398,6 +544,43 @@ public sealed record AuditEntryExplanationViewModel(
         return result;
     }
 
+    private static DateTimeOffset? RequireNullableTimestamp(
+        JsonElement parent,
+        string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value))
+        {
+            throw new JsonException($"Audit summary property '{propertyName}' is required.");
+        }
+
+        if (value.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (value.ValueKind != JsonValueKind.String
+            || !value.TryGetDateTimeOffset(out var result)
+            || result == default)
+        {
+            throw new JsonException(
+                $"Audit summary property '{propertyName}' has an invalid value.");
+        }
+
+        return result;
+    }
+
+    private static bool RequireBoolean(JsonElement parent, string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value)
+            || (value.ValueKind != JsonValueKind.True
+                && value.ValueKind != JsonValueKind.False))
+        {
+            throw new JsonException($"Audit summary property '{propertyName}' is required.");
+        }
+
+        return value.GetBoolean();
+    }
+
     private static decimal RequireDecimal(JsonElement parent, string propertyName)
     {
         if (!parent.TryGetProperty(propertyName, out var value)
@@ -411,11 +594,48 @@ public sealed record AuditEntryExplanationViewModel(
         return result;
     }
 
+    private static decimal RequireNonNegativeDecimal(
+        JsonElement parent,
+        string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Number
+            || !value.TryGetDecimal(out var result)
+            || result < 0)
+        {
+            throw new JsonException($"Audit summary property '{propertyName}' is required.");
+        }
+
+        return result;
+    }
+
     private static int RequireInt32(JsonElement parent, string propertyName)
     {
         if (!parent.TryGetProperty(propertyName, out var value)
             || value.ValueKind != JsonValueKind.Number
             || !value.TryGetInt32(out var result))
+        {
+            throw new JsonException($"Audit summary property '{propertyName}' is required.");
+        }
+
+        return result;
+    }
+
+    private static int RequirePositiveInt32(JsonElement parent, string propertyName)
+    {
+        var result = RequireInt32(parent, propertyName);
+        if (result <= 0)
+        {
+            throw new JsonException($"Audit summary property '{propertyName}' is required.");
+        }
+
+        return result;
+    }
+
+    private static int RequireNonNegativeInt32(JsonElement parent, string propertyName)
+    {
+        var result = RequireInt32(parent, propertyName);
+        if (result < 0)
         {
             throw new JsonException($"Audit summary property '{propertyName}' is required.");
         }
@@ -537,6 +757,46 @@ public sealed record AuditEntryExplanationViewModel(
         string PaymentContext,
         DateTimeOffset OccurredAt,
         string Status);
+
+    private sealed record MembershipTypeCatalogSnapshot(
+        string Name,
+        int DurationDays,
+        int VisitsLimit,
+        decimal PriceAmount,
+        string PriceCurrency,
+        bool IsActive,
+        string? Comment,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset UpdatedAt,
+        DateTimeOffset? DeactivatedAt)
+    {
+        internal bool HasValidLifecycle()
+        {
+            return CreatedAt <= UpdatedAt
+                && (IsActive
+                    ? DeactivatedAt is null
+                    : DeactivatedAt is not null && DeactivatedAt >= CreatedAt);
+        }
+
+        internal MembershipTypeCatalogValues CatalogValues()
+        {
+            return new MembershipTypeCatalogValues(
+                Name,
+                DurationDays,
+                VisitsLimit,
+                PriceAmount,
+                PriceCurrency,
+                Comment);
+        }
+    }
+
+    private sealed record MembershipTypeCatalogValues(
+        string Name,
+        int DurationDays,
+        int VisitsLimit,
+        decimal PriceAmount,
+        string PriceCurrency,
+        string? Comment);
 
     private sealed record MembershipStateSnapshot(
         int RemainingVisits,

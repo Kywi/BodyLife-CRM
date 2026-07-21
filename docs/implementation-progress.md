@@ -10710,3 +10710,89 @@ Next recommended step:
   `membership_type.edited` and `membership_type.deactivated` while retaining
   the complete raw envelope as secondary detail. Keep other settings changes,
   audit-noise review and technical-log correlation lookup for later steps.
+
+## Step 170 - MembershipType audit explanations
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue only the MembershipType catalog portion of the sixth Milestone 10
+  task by replacing raw JSON as the primary explanation for
+  `membership_type.edited` and `membership_type.deactivated` Timeline rows.
+- Present the command-owned stored catalog/lifecycle snapshots without
+  changing MembershipType commands, recalculating Membership state or
+  reinterpreting already issued Membership snapshots.
+- Preserve the complete append-only audit envelope as collapsed secondary
+  support detail. Keep other settings explanations, audit-noise review and
+  technical-log correlation lookup outside this bounded step.
+
+Completed:
+
+- Extended the typed Audit Timeline explanation presenter with fail-closed
+  support for MembershipType edit and deactivation events. It validates
+  positive duration, non-negative visit limit/price, catalog fields,
+  lifecycle consistency, preserved creation/deactivation state and monotonic
+  stored update timestamps before rendering owner-facing values.
+- Added `Original catalog`/`Updated catalog` sections for edits with name,
+  duration, visit limit, price, active status and catalog comment. Changed
+  fields are derived only by comparing the two stored audit snapshots, and the
+  explanation explicitly preserves already issued Membership snapshots.
+- Added `Before deactivation`/`After deactivation` sections that prove the
+  catalog values remain unchanged while status moves from Active to Inactive
+  and the stored deactivation timestamp is shown. The raw related/before/after
+  JSON remains collapsed by default and available through `Audit envelope`.
+- Added five Web presenter cases covering both successful explanations,
+  catalog changed-field labels, lifecycle mutation rejection and wrong-entity
+  fail-closed behavior.
+- Extended the PostgreSQL-backed Audit Timeline fixture with production-shaped
+  edit/deactivation envelopes and added Owner/tablet plus named-Admin/phone
+  Playwright coverage over action/entity filtering, exact stored values,
+  status transition, raw-envelope availability and horizontal fit.
+- Corrected the shared comparison-band alignment so asymmetric before/after
+  fact lists start at the top on tablet while retaining sequential phone
+  sections.
+
+Validation:
+
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully and the
+  Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 14/14; focused new
+  MembershipType explanation Playwright coverage passed 2/2; the complete
+  `AuditTimelineSmokeTests` regression passed 8/8 with no skipped tests.
+- Screenshot-backed visual checks passed for edit and deactivation at 1024x768
+  Owner/tablet and 390x844 named-Admin/phone viewports. Comparisons align from
+  the top, phone facts remain sequential and readable, the raw envelope is
+  collapsed by default, and Playwright found no horizontal document overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 49 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 86 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain membership type changes`.
+
+Next recommended step:
+
+- Continue the sixth Milestone 10 task with one bounded settings explanation
+  slice: add owner-readable original/replacement or cancellation summaries for
+  `non_working_day.corrected` and `non_working_day.canceled`, including the
+  stored affected-scope counts, while keeping recalculation formulas out of
+  Audit UI. Keep freeze cancellation, audit-noise review and technical-log
+  correlation lookup for later steps.

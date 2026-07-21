@@ -413,6 +413,162 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         }
     }
 
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
+    public async Task MembershipTypeSettingsEntriesLeadWithReadableCatalogChanges(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} membership type audit smoke");
+
+            var editExplanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "MembershipType",
+                "membership_type.edited",
+                scenario.Explanations.MembershipTypeEditAuditEntryId,
+                "membership-type-edited",
+                viewportName);
+            await ExpectVisibleAsync(
+                editExplanation.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Membership type catalog updated", Exact = true }),
+                viewportName,
+                "Membership type edit explanation title");
+            Assert.Equal(
+                scenario.Explanations.OriginalMembershipTypeName,
+                await ExplanationFactAsync(editExplanation, "Original catalog", "Name"));
+            Assert.Equal(
+                "30 days",
+                await ExplanationFactAsync(editExplanation, "Original catalog", "Duration"));
+            Assert.Equal(
+                MoneyLabel(scenario.Explanations.OriginalMembershipTypePrice),
+                await ExplanationFactAsync(editExplanation, "Original catalog", "Price"));
+            Assert.Equal(
+                scenario.Explanations.UpdatedMembershipTypeName,
+                await ExplanationFactAsync(editExplanation, "Updated catalog", "Name"));
+            Assert.Equal(
+                "45 days",
+                await ExplanationFactAsync(editExplanation, "Updated catalog", "Duration"));
+            Assert.Equal(
+                "12",
+                await ExplanationFactAsync(editExplanation, "Updated catalog", "Visit limit"));
+            Assert.Equal(
+                MoneyLabel(scenario.Explanations.UpdatedMembershipTypePrice),
+                await ExplanationFactAsync(editExplanation, "Updated catalog", "Price"));
+            await ExpectVisibleAsync(
+                editExplanation.GetByText(
+                    "Name, Duration, Visit limit, Price, Catalog comment",
+                    new() { Exact = true }),
+                viewportName,
+                "Membership type changed fields");
+
+            var editRow = editExplanation.Locator("xpath=ancestor::li");
+            var envelope = editRow.Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "Membership type edit audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "Membership type edit raw envelope");
+            Assert.Contains(
+                "durationDays",
+                await envelope.Locator(".audit-json-grid").InnerTextAsync(),
+                StringComparison.Ordinal);
+            await AssertFitsViewportAsync(page, viewportName, "Membership type edit explanation");
+            await CaptureVisualAsync(page, viewportName, "membership-type-edit-explanation");
+
+            var deactivationExplanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "MembershipType",
+                "membership_type.deactivated",
+                scenario.Explanations.MembershipTypeDeactivationAuditEntryId,
+                "membership-type-deactivated",
+                viewportName);
+            await ExpectVisibleAsync(
+                deactivationExplanation.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Membership type deactivated", Exact = true }),
+                viewportName,
+                "Membership type deactivation explanation title");
+            Assert.Equal(
+                scenario.Explanations.UpdatedMembershipTypeName,
+                await ExplanationFactAsync(
+                    deactivationExplanation,
+                    "Before deactivation",
+                    "Name"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(
+                    deactivationExplanation,
+                    "Before deactivation",
+                    "Status"));
+            Assert.Equal(
+                scenario.Explanations.UpdatedMembershipTypeName,
+                await ExplanationFactAsync(
+                    deactivationExplanation,
+                    "After deactivation",
+                    "Name"));
+            Assert.Equal(
+                "Inactive",
+                await ExplanationFactAsync(
+                    deactivationExplanation,
+                    "After deactivation",
+                    "Status"));
+            Assert.NotEmpty(
+                await ExplanationFactAsync(
+                    deactivationExplanation,
+                    "After deactivation",
+                    "Deactivated"));
+            await ExpectVisibleAsync(
+                deactivationExplanation.GetByText(
+                    "Catalog status",
+                    new() { Exact = true }),
+                viewportName,
+                "Membership type deactivation changed field");
+            await AssertFitsViewportAsync(
+                page,
+                viewportName,
+                "Membership type deactivation explanation");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "membership-type-deactivation-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task InvalidOffsetKeepsAuditFiltersAndReturnsNoPartialTimeline()
     {
@@ -507,17 +663,20 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
 
     private async Task<ILocator> OpenExplanationAsync(
         IPage page,
-        Guid clientId,
+        Guid? clientId,
         string entity,
         string action,
         Guid auditEntryId,
         string explanationKind,
         string viewportName)
     {
+        var clientFilter = clientId is { } value
+            ? $"clientId={value}&"
+            : string.Empty;
         await page.GotoAsync(
             new Uri(
                 _app.BaseAddress,
-                $"/Audit/Timeline?clientId={clientId}&entity={entity}&action={action}")
+                $"/Audit/Timeline?{clientFilter}entity={entity}&action={action}")
                 .ToString(),
             new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 

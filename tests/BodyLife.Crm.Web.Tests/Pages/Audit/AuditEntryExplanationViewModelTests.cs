@@ -214,7 +214,122 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Payment status", explanation.ChangedFields);
     }
 
+    [Fact]
+    public void MembershipTypeEditShowsChangedFutureCatalogValues()
+    {
+        var membershipTypeId = Guid.NewGuid();
+        var original = MembershipType(
+            "Eight visits",
+            durationDays: 30,
+            visitsLimit: 8,
+            priceAmount: 1200m,
+            comment: "Original catalog values");
+        var updated = original with
+        {
+            Name = "Evening Twelve",
+            DurationDays = 45,
+            VisitsLimit = 12,
+            Price = new MembershipTypePriceAuditFixture(1600.50m, "UAH"),
+            Comment = "Future evening sales",
+            UpdatedAt = original.UpdatedAt.AddDays(1),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_type.edited",
+                    AuditTimelineEntityType.MembershipType,
+                    membershipTypeId,
+                    original,
+                    updated)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-type-edited", explanation.Kind);
+        Assert.Equal("Original catalog", explanation.BeforeLabel);
+        Assert.Equal("Updated catalog", explanation.AfterLabel);
+        Assert.Equal("Eight visits", FactValue(explanation.BeforeFacts, "Name"));
+        Assert.Equal("30 days", FactValue(explanation.BeforeFacts, "Duration"));
+        Assert.Equal("1200 UAH", FactValue(explanation.BeforeFacts, "Price"));
+        Assert.Equal("Evening Twelve", FactValue(explanation.AfterFacts, "Name"));
+        Assert.Equal("45 days", FactValue(explanation.AfterFacts, "Duration"));
+        Assert.Equal("1600.5 UAH", FactValue(explanation.AfterFacts, "Price"));
+        Assert.Equal("Active", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal(
+            "Name, Duration, Visit limit, Price, Catalog comment",
+            explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void MembershipTypeDeactivationShowsPreservedCatalogAndStatusTransition()
+    {
+        var membershipTypeId = Guid.NewGuid();
+        var original = MembershipType(
+            "Eight visits",
+            durationDays: 30,
+            visitsLimit: 8,
+            priceAmount: 1200m,
+            comment: null);
+        var deactivatedAt = original.UpdatedAt.AddHours(1);
+        var deactivated = original with
+        {
+            IsActive = false,
+            UpdatedAt = deactivatedAt,
+            DeactivatedAt = deactivatedAt,
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_type.deactivated",
+                    AuditTimelineEntityType.MembershipType,
+                    membershipTypeId,
+                    original,
+                    deactivated)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-type-deactivated", explanation.Kind);
+        Assert.Equal("Eight visits", FactValue(explanation.BeforeFacts, "Name"));
+        Assert.Equal("Active", FactValue(explanation.BeforeFacts, "Status"));
+        Assert.Equal("None", FactValue(explanation.BeforeFacts, "Catalog comment"));
+        Assert.Equal("Eight visits", FactValue(explanation.AfterFacts, "Name"));
+        Assert.Equal("Inactive", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal("Catalog status", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void MembershipTypeEditWithLifecycleMutationFailsClosed()
+    {
+        var original = MembershipType(
+            "Eight visits",
+            durationDays: 30,
+            visitsLimit: 8,
+            priceAmount: 1200m,
+            comment: null);
+        var deactivatedAt = original.UpdatedAt.AddHours(1);
+        var invalidEdit = original with
+        {
+            Name = "Evening Eight",
+            IsActive = false,
+            UpdatedAt = deactivatedAt,
+            DeactivatedAt = deactivatedAt,
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_type.edited",
+                    AuditTimelineEntityType.MembershipType,
+                    Guid.NewGuid(),
+                    original,
+                    invalidEdit)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
     [Theory]
+    [InlineData("membership_type.edited", AuditTimelineEntityType.Client)]
+    [InlineData("membership_type.deactivated", AuditTimelineEntityType.Client)]
     [InlineData("visit.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("payment.corrected", AuditTimelineEntityType.Visit)]
     [InlineData("payment.canceled", AuditTimelineEntityType.Visit)]
@@ -361,6 +476,25 @@ public sealed class AuditEntryExplanationViewModelTests
             status);
     }
 
+    private static MembershipTypeAuditFixture MembershipType(
+        string name,
+        int durationDays,
+        int visitsLimit,
+        decimal priceAmount,
+        string? comment)
+    {
+        return new MembershipTypeAuditFixture(
+            name,
+            durationDays,
+            visitsLimit,
+            new MembershipTypePriceAuditFixture(priceAmount, "UAH"),
+            IsActive: true,
+            comment,
+            OriginalOccurredAt.AddDays(-30),
+            OriginalOccurredAt.AddDays(-1),
+            DeactivatedAt: null);
+    }
+
     private static string FactValue(
         IEnumerable<AuditEntryExplanationFactViewModel> facts,
         string label)
@@ -384,4 +518,19 @@ public sealed class AuditEntryExplanationViewModelTests
         Guid? EntryBatchId,
         string? Comment,
         string Status);
+
+    private sealed record MembershipTypeAuditFixture(
+        string Name,
+        int DurationDays,
+        int VisitsLimit,
+        MembershipTypePriceAuditFixture Price,
+        bool IsActive,
+        string? Comment,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset UpdatedAt,
+        DateTimeOffset? DeactivatedAt);
+
+    private sealed record MembershipTypePriceAuditFixture(
+        decimal Amount,
+        string Currency);
 }
