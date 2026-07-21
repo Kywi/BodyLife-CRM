@@ -5460,6 +5460,54 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return await command.ExecuteScalarAsync() as string;
     }
 
+    public async Task<AuditCorrelationSmokeSnapshot?> ReadAuditByCorrelationAsync(
+        string actionType,
+        string requestCorrelationId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select
+                id,
+                action_type,
+                entity_type,
+                entity_id,
+                request_correlation_id,
+                reason,
+                comment,
+                before_summary::text,
+                after_summary::text
+            from bodylife.business_audit_entries
+            where action_type = @action_type
+              and request_correlation_id = @request_correlation_id
+            order by recorded_at desc, id desc
+            limit 1
+            """;
+        command.Parameters.AddWithValue("action_type", actionType);
+        command.Parameters.AddWithValue(
+            "request_correlation_id",
+            requestCorrelationId);
+
+        await using var reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        return new AuditCorrelationSmokeSnapshot(
+            reader.GetGuid(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.GetGuid(3),
+            reader.GetString(4),
+            reader.IsDBNull(5) ? null : reader.GetString(5),
+            reader.IsDBNull(6) ? null : reader.GetString(6),
+            reader.GetString(7),
+            reader.GetString(8));
+    }
+
     private async Task RebuildMembershipAsync(Guid membershipId)
     {
         await using var dbContext = CreateDbContext();
@@ -5747,6 +5795,17 @@ public sealed record FreezeCancellationAuditSmokeSnapshot(
     string Reason,
     string? Comment,
     bool ChangedAfterClose);
+
+public sealed record AuditCorrelationSmokeSnapshot(
+    Guid AuditEntryId,
+    string ActionType,
+    string EntityType,
+    Guid EntityId,
+    string RequestCorrelationId,
+    string? Reason,
+    string? Comment,
+    string BeforeSummaryJson,
+    string AfterSummaryJson);
 
 public sealed record NonWorkingDayMutationCountSmokeSnapshot(
     long PeriodCount,

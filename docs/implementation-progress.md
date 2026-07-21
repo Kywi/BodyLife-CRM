@@ -11319,3 +11319,82 @@ Next recommended step:
   free of business comments, secrets and unnecessary PII; do not add an in-app
   log viewer or treat logs as business truth. Leave the final audit-noise
   review for the following step.
+
+## Step 177 - Audit-to-technical-log support correlation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Completed the dedicated Milestone 10 support-investigation task and required
+  technical-log correlation smoke test without starting the final audit-noise
+  review or any Milestone 11 backup/restore work.
+- Used the accepted audit `request_correlation_id` as the bridge to structured
+  runtime diagnostics while preserving business audit and canonical records as
+  the source of truth.
+- Kept technical logs operator-only and PII-minimal. No technical-log viewer,
+  support ticketing feature, schema change or new business workflow was added.
+
+Completed:
+
+- Promoted `request_correlation_id` from the ambient JSON console scope into an
+  explicit structured field on every request outcome record. Existing
+  correlation scope/environment behavior remains intact.
+- Added one real Kestrel/Razor/Playwright/PostgreSQL smoke scenario that sends a
+  caller-provided correlation header on a successful staff-account deactivation
+  command, then proves the persisted `staff_account.deactivated` audit entry and
+  matching technical `POST` outcome log carry the exact same id.
+- Made the smoke privacy boundary observable: the private deactivation reason is
+  retained in role-controlled business audit, while that reason, the staff
+  display name, login password and reason/comment/password/token fields are
+  absent from the matching technical log.
+- Extended the UI fixture with parameterized audit lookup and structural JSON
+  console parsing. The smoke selects logs by category, exact correlation id,
+  method and route instead of free-text matching personal data.
+- Added `docs/support-correlation-runbook.md` and linked it from the canonical
+  support investigation steps. The runbook defines exact-field lookup,
+  environment/time narrowing, safe incident-note fields, short-retention
+  behavior and the rule that logs never reconstruct business history.
+- Kept command handling, business-audit persistence, authorization, Razor UI,
+  EF model and migrations unchanged.
+
+Validation:
+
+- The first Release build found one nullable-flow error in the new JSON parser;
+  explicit null guards fixed it, and the repeated solution build passed with 0
+  warnings/errors.
+- The focused `TechnicalLogCorrelationSmokeTests` run passed 1/1 against Docker
+  PostgreSQL and the real JSON console provider.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 91 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 99 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the documentation changes but
+  stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(ops): prove audit log correlation`.
+
+Next recommended step:
+
+- Complete the final unfinished Milestone 10 task with a bounded audit-noise
+  review: compare the canonical audit matrix with Timeline presentation, find
+  any important action still relying on raw JSON as its primary Owner/Admin
+  explanation, and close only the highest-priority remaining gap. Confirm that
+  queries and low-level technical events do not pollute business history; do
+  not start Milestone 11 until the Milestone 10 acceptance criteria are
+  reviewed.

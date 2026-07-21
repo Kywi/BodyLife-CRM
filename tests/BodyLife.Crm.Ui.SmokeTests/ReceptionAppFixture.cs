@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
@@ -13,6 +14,9 @@ namespace BodyLife.Crm.Ui.SmokeTests;
 
 public sealed class ReceptionAppFixture : IAsyncLifetime
 {
+    private const string RequestOutcomeLoggingCategory =
+        "BodyLife.Crm.Web.Operations.RequestOutcomeLoggingMiddleware";
+
     public const string SmokeLoginName = "owner";
     public const string SmokePassword = "correct horse battery";
     public const string SmokeAdminLoginName = "named.admin";
@@ -631,6 +635,46 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
                     _sharedAdminAccountId,
                     _activeMembershipTypeId);
         }
+    }
+
+    public Task<AuditCorrelationSmokeSnapshot?> ReadAuditByCorrelationAsync(
+        string actionType,
+        string requestCorrelationId)
+    {
+        return RequireDatabase().ReadAuditByCorrelationAsync(
+            actionType,
+            requestCorrelationId);
+    }
+
+    public async Task<RequestOutcomeLogSmokeSnapshot> WaitForRequestOutcomeLogAsync(
+        string requestCorrelationId,
+        string method,
+        string routeFragment)
+    {
+        var timeout = Stopwatch.StartNew();
+
+        while (timeout.Elapsed < TimeSpan.FromSeconds(10))
+        {
+            foreach (var line in _output.Reverse())
+            {
+                var snapshot = TryReadRequestOutcomeLog(
+                    line,
+                    requestCorrelationId,
+                    method,
+                    routeFragment);
+                if (snapshot is not null)
+                {
+                    return snapshot;
+                }
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+        }
+
+        throw new TimeoutException(
+            $"Timed out waiting for request outcome log correlation " +
+            $"'{requestCorrelationId}' on {method} {routeFragment}." +
+            $"{Environment.NewLine}{CapturedOutput()}");
     }
 
     public async Task InitializeAsync()
@@ -2076,6 +2120,79 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         }
     }
 
+    private static RequestOutcomeLogSmokeSnapshot? TryReadRequestOutcomeLog(
+        string line,
+        string requestCorrelationId,
+        string method,
+        string routeFragment)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(line);
+            var root = document.RootElement;
+            if (!string.Equals(
+                    ReadStringProperty(root, "Category"),
+                    RequestOutcomeLoggingCategory,
+                    StringComparison.Ordinal)
+                || !root.TryGetProperty("State", out var state))
+            {
+                return null;
+            }
+
+            var loggedCorrelationId = ReadStringProperty(
+                state,
+                "request_correlation_id");
+            var loggedMethod = ReadStringProperty(state, "method");
+            var routeOrCommand = ReadStringProperty(state, "route_or_command");
+            if (loggedCorrelationId is null
+                || !string.Equals(
+                    loggedCorrelationId,
+                    requestCorrelationId,
+                    StringComparison.Ordinal)
+                || loggedMethod is null
+                || !string.Equals(loggedMethod, method, StringComparison.OrdinalIgnoreCase)
+                || routeOrCommand is null
+                || !routeOrCommand.Contains(routeFragment, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            if (!state.TryGetProperty("status_code", out var statusCodeProperty)
+                || !statusCodeProperty.TryGetInt32(out var statusCode))
+            {
+                return null;
+            }
+
+            var outcome = ReadStringProperty(state, "outcome");
+            var errorClass = ReadStringProperty(state, "error_class");
+            if (outcome is null || errorClass is null)
+            {
+                return null;
+            }
+
+            return new RequestOutcomeLogSmokeSnapshot(
+                line,
+                loggedCorrelationId,
+                routeOrCommand,
+                loggedMethod,
+                statusCode,
+                outcome,
+                errorClass);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static string? ReadStringProperty(JsonElement element, string propertyName)
+    {
+        return element.TryGetProperty(propertyName, out var property)
+            && property.ValueKind == JsonValueKind.String
+                ? property.GetString()
+                : null;
+    }
+
     private string CapturedOutput()
     {
         return string.Join(Environment.NewLine, _output.TakeLast(80));
@@ -2244,6 +2361,15 @@ public sealed record StaffAccountAuditExplanationSmokeScenario(
     Guid CredentialsResetAuditEntryId,
     string CredentialResetReason,
     int CredentialResetEndedSessionCount);
+
+public sealed record RequestOutcomeLogSmokeSnapshot(
+    string RawJson,
+    string RequestCorrelationId,
+    string RouteOrCommand,
+    string Method,
+    int StatusCode,
+    string Outcome,
+    string ErrorClass);
 
 public sealed record ClientHistorySmokeScenario(
     Guid ClientId,

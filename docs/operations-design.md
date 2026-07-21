@@ -343,7 +343,7 @@ Support starts by classifying the report:
 
 1. Capture who reported the issue, when, affected date, client/card if known, command/action and expected vs actual result.
 2. Use UI queries first: client profile, history, audit timeline and daily report drill-down.
-3. Use `request_correlation_id` from audit or command result to inspect technical logs when needed.
+3. Use `request_correlation_id` from audit or command result to inspect technical logs when needed; follow the provider-neutral [support correlation lookup runbook](support-correlation-runbook.md).
 4. Do not treat logs as business truth if audit/source records disagree.
 5. Identify whether the fix is a normal correction command, owner-only correction, restore incident or paper reconciliation.
 6. For corrections, require reason/comment and show expected affected membership/report consequences before commit where the command contract supports it.

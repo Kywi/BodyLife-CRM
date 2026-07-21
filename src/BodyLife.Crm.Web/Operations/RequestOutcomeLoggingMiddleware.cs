@@ -32,6 +32,8 @@ internal sealed class RequestOutcomeLoggingMiddleware(
                 : "system_error";
             var errorClass = exception?.GetType().Name ?? ResolveErrorClass(statusCode);
             var routeOrCommand = ResolveRouteOrCommand(context);
+            var requestCorrelationId =
+                RequestCorrelationMiddleware.GetCorrelationId(context).Value;
             var logLevel = statusCode >= StatusCodes.Status500InternalServerError
                 ? LogLevel.Error
                 : statusCode >= StatusCodes.Status400BadRequest
@@ -41,7 +43,8 @@ internal sealed class RequestOutcomeLoggingMiddleware(
             logger.Log(
                 logLevel,
                 exception,
-                "HTTP request completed route_or_command={route_or_command} method={method} status_code={status_code} duration_ms={duration_ms} outcome={outcome} error_class={error_class}",
+                "HTTP request completed request_correlation_id={request_correlation_id} route_or_command={route_or_command} method={method} status_code={status_code} duration_ms={duration_ms} outcome={outcome} error_class={error_class}",
+                requestCorrelationId,
                 routeOrCommand,
                 context.Request.Method,
                 statusCode,
