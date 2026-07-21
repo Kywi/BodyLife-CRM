@@ -153,8 +153,26 @@
                                     <a class="secondary-link"
                                        asp-page="/Reception/Index"
                                        asp-route-clientId="@visit.ClientId"
-                                       asp-fragment="recent-visits-title">
+                                       asp-fragment="recent-visits-title"
+                                       data-report-client-link>
                                         Open client
+                                    </a>
+                                    <a class="secondary-link"
+                                       asp-page="/Audit/ClientHistory"
+                                       asp-route-clientId="@visit.ClientId"
+                                       asp-route-entity="@ClientHistoryEntityFilter.Visit"
+                                       asp-route-from="@report.BusinessDate.ToString("yyyy-MM-dd")"
+                                       asp-route-to="@report.BusinessDate.ToString("yyyy-MM-dd")"
+                                       data-report-history-link>
+                                        Client history
+                                    </a>
+                                    <a class="secondary-link"
+                                       asp-page="/Audit/Timeline"
+                                       asp-route-clientId="@visit.ClientId"
+                                       asp-route-entity="@AuditTimelineEntityType.Visit"
+                                       asp-route-entityId="@visit.VisitId"
+                                       data-report-audit-link>
+                                        Audit timeline
                                     </a>
                                 </footer>
                             </li>
@@ -182,6 +200,9 @@
                         {
                             var payment = sourceRow.Payment;
                             var paymentKey = payment.PaymentId.ToString("N");
+                            var paymentAuditEntityId =
+                                payment.CorrectionFromOriginal?.OriginalPaymentId
+                                ?? payment.PaymentId;
                             <li class="report-row"
                                 data-report-payment-id="@payment.PaymentId"
                                 data-report-row-status="@payment.Status.ToString().ToLowerInvariant()">
@@ -288,8 +309,26 @@
                                     <a class="secondary-link"
                                        asp-page="/Reception/Index"
                                        asp-route-clientId="@payment.ClientId"
-                                       asp-fragment="recent-payments-title">
+                                       asp-fragment="recent-payments-title"
+                                       data-report-client-link>
                                         Open client
+                                    </a>
+                                    <a class="secondary-link"
+                                       asp-page="/Audit/ClientHistory"
+                                       asp-route-clientId="@payment.ClientId"
+                                       asp-route-entity="@ClientHistoryEntityFilter.Payment"
+                                       asp-route-from="@report.BusinessDate.ToString("yyyy-MM-dd")"
+                                       asp-route-to="@report.BusinessDate.ToString("yyyy-MM-dd")"
+                                       data-report-history-link>
+                                        Client history
+                                    </a>
+                                    <a class="secondary-link"
+                                       asp-page="/Audit/Timeline"
+                                       asp-route-clientId="@payment.ClientId"
+                                       asp-route-entity="@AuditTimelineEntityType.Payment"
+                                       asp-route-entityId="@paymentAuditEntityId"
+                                       data-report-audit-link>
+                                        Audit timeline
                                     </a>
                                 </footer>
                             </li>

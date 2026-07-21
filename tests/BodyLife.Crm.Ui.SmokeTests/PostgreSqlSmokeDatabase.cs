@@ -2687,15 +2687,36 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var sessionId = Guid.NewGuid();
         var activeVisitId = Guid.NewGuid();
         var canceledVisitId = Guid.NewGuid();
+        var visitCancellationId = Guid.NewGuid();
         var originalPaymentId = Guid.NewGuid();
         var replacementPaymentId = Guid.NewGuid();
         var canceledPaymentId = Guid.NewGuid();
+        var paymentCorrectionId = Guid.NewGuid();
+        var paymentCancellationId = Guid.NewGuid();
         var dayStart = new DateTimeOffset(
             businessDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        var activeVisitOccurredAt = dayStart.AddHours(9);
+        var activeVisitRecordedAt = activeVisitOccurredAt.AddMinutes(5);
+        var canceledVisitOccurredAt = dayStart.AddHours(10);
+        var canceledVisitRecordedAt = canceledVisitOccurredAt.AddMinutes(5);
+        var visitCancellationOccurredAt = dayStart.AddHours(11);
+        var visitCancellationRecordedAt = visitCancellationOccurredAt.AddMinutes(5);
+        var originalPaymentOccurredAt = dayStart.AddHours(12);
+        var originalPaymentRecordedAt = originalPaymentOccurredAt.AddMinutes(5);
+        var replacementPaymentOccurredAt = dayStart.AddHours(13);
+        var replacementPaymentRecordedAt = replacementPaymentOccurredAt.AddMinutes(5);
+        var canceledPaymentOccurredAt = dayStart.AddHours(14);
+        var canceledPaymentRecordedAt = canceledPaymentOccurredAt.AddMinutes(5);
+        var paymentCorrectionOccurredAt = dayStart.AddHours(15);
+        var paymentCorrectionRecordedAt = paymentCorrectionOccurredAt.AddMinutes(5);
+        var paymentCancellationOccurredAt = dayStart.AddHours(16);
+        var paymentCancellationRecordedAt = paymentCancellationOccurredAt.AddMinutes(5);
 
         await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             """
             insert into bodylife.sessions (
@@ -2897,54 +2918,207 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue("session_last_seen_at", dayStart.AddHours(16));
         command.Parameters.AddWithValue("active_visit_id", activeVisitId);
         command.Parameters.AddWithValue("canceled_visit_id", canceledVisitId);
-        command.Parameters.AddWithValue("visit_cancellation_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("visit_cancellation_id", visitCancellationId);
         command.Parameters.AddWithValue("visit_batch_id", Guid.NewGuid());
         command.Parameters.AddWithValue("visit_cancellation_batch_id", Guid.NewGuid());
-        command.Parameters.AddWithValue("active_visit_occurred_at", dayStart.AddHours(9));
+        command.Parameters.AddWithValue("active_visit_occurred_at", activeVisitOccurredAt);
+        command.Parameters.AddWithValue("active_visit_recorded_at", activeVisitRecordedAt);
+        command.Parameters.AddWithValue("canceled_visit_occurred_at", canceledVisitOccurredAt);
+        command.Parameters.AddWithValue("canceled_visit_recorded_at", canceledVisitRecordedAt);
         command.Parameters.AddWithValue(
-            "active_visit_recorded_at",
-            dayStart.AddHours(9).AddMinutes(5));
-        command.Parameters.AddWithValue("canceled_visit_occurred_at", dayStart.AddHours(10));
-        command.Parameters.AddWithValue(
-            "canceled_visit_recorded_at",
-            dayStart.AddHours(10).AddMinutes(5));
-        command.Parameters.AddWithValue("visit_cancellation_occurred_at", dayStart.AddHours(11));
+            "visit_cancellation_occurred_at",
+            visitCancellationOccurredAt);
         command.Parameters.AddWithValue(
             "visit_cancellation_recorded_at",
-            dayStart.AddHours(11).AddMinutes(5));
+            visitCancellationRecordedAt);
         command.Parameters.AddWithValue("original_payment_id", originalPaymentId);
         command.Parameters.AddWithValue("replacement_payment_id", replacementPaymentId);
         command.Parameters.AddWithValue("canceled_payment_id", canceledPaymentId);
-        command.Parameters.AddWithValue("payment_correction_id", Guid.NewGuid());
-        command.Parameters.AddWithValue("payment_cancellation_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("payment_correction_id", paymentCorrectionId);
+        command.Parameters.AddWithValue("payment_cancellation_id", paymentCancellationId);
         command.Parameters.AddWithValue("payment_batch_id", Guid.NewGuid());
         command.Parameters.AddWithValue("payment_correction_batch_id", Guid.NewGuid());
         command.Parameters.AddWithValue("payment_cancellation_batch_id", Guid.NewGuid());
-        command.Parameters.AddWithValue("original_payment_occurred_at", dayStart.AddHours(12));
+        command.Parameters.AddWithValue(
+            "original_payment_occurred_at",
+            originalPaymentOccurredAt);
         command.Parameters.AddWithValue(
             "original_payment_recorded_at",
-            dayStart.AddHours(12).AddMinutes(5));
-        command.Parameters.AddWithValue("replacement_payment_occurred_at", dayStart.AddHours(13));
+            originalPaymentRecordedAt);
+        command.Parameters.AddWithValue(
+            "replacement_payment_occurred_at",
+            replacementPaymentOccurredAt);
         command.Parameters.AddWithValue(
             "replacement_payment_recorded_at",
-            dayStart.AddHours(13).AddMinutes(5));
-        command.Parameters.AddWithValue("canceled_payment_occurred_at", dayStart.AddHours(14));
+            replacementPaymentRecordedAt);
+        command.Parameters.AddWithValue(
+            "canceled_payment_occurred_at",
+            canceledPaymentOccurredAt);
         command.Parameters.AddWithValue(
             "canceled_payment_recorded_at",
-            dayStart.AddHours(14).AddMinutes(5));
-        command.Parameters.AddWithValue("payment_correction_occurred_at", dayStart.AddHours(15));
+            canceledPaymentRecordedAt);
+        command.Parameters.AddWithValue(
+            "payment_correction_occurred_at",
+            paymentCorrectionOccurredAt);
         command.Parameters.AddWithValue(
             "payment_correction_recorded_at",
-            dayStart.AddHours(15).AddMinutes(5));
-        command.Parameters.AddWithValue("payment_cancellation_occurred_at", dayStart.AddHours(16));
+            paymentCorrectionRecordedAt);
+        command.Parameters.AddWithValue(
+            "payment_cancellation_occurred_at",
+            paymentCancellationOccurredAt);
         command.Parameters.AddWithValue(
             "payment_cancellation_recorded_at",
-            dayStart.AddHours(16).AddMinutes(5));
+            paymentCancellationRecordedAt);
         command.Parameters.AddWithValue(
             "changed_fields",
             NpgsqlDbType.Jsonb,
             "[\"amount\",\"occurred_at\"]");
         Assert.Equal(9, await command.ExecuteNonQueryAsync());
+
+        var clientReference = new { clientId };
+        ClientHistoryAuditSeed[] auditSeeds =
+        [
+            new(
+                Guid.NewGuid(),
+                "visit.marked",
+                "visit",
+                activeVisitId,
+                clientReference,
+                recordedByAccountId,
+                "owner",
+                "owner",
+                sessionId,
+                "UI daily report seed",
+                activeVisitOccurredAt,
+                activeVisitRecordedAt,
+                "normal",
+                Reason: null,
+                "Active daily report visit",
+                new { },
+                new { visitKind = "one_off" },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "visit.marked",
+                "visit",
+                canceledVisitId,
+                clientReference,
+                recordedByAccountId,
+                "owner",
+                "owner",
+                sessionId,
+                "UI daily report seed",
+                canceledVisitOccurredAt,
+                canceledVisitRecordedAt,
+                "paper_fallback",
+                Reason: null,
+                "Canceled daily report visit",
+                new { },
+                new { visitKind = "trial" },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "visit.canceled",
+                "visit",
+                canceledVisitId,
+                clientReference,
+                recordedByAccountId,
+                "owner",
+                "owner",
+                sessionId,
+                "UI daily report seed",
+                visitCancellationOccurredAt,
+                visitCancellationRecordedAt,
+                "manual_backfill",
+                "Duplicate report visit",
+                Comment: null,
+                new { status = "active" },
+                new { status = "canceled" },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "payment.created",
+                "payment",
+                originalPaymentId,
+                clientReference,
+                recordedByAccountId,
+                "owner",
+                "owner",
+                sessionId,
+                "UI daily report seed",
+                originalPaymentOccurredAt,
+                originalPaymentRecordedAt,
+                "paper_fallback",
+                Reason: null,
+                "Original daily report payment",
+                new { },
+                new { amount = 1000m },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "payment.corrected",
+                "payment",
+                originalPaymentId,
+                clientReference,
+                recordedByAccountId,
+                "owner",
+                "owner",
+                sessionId,
+                "UI daily report seed",
+                paymentCorrectionOccurredAt,
+                paymentCorrectionRecordedAt,
+                "manual_backfill",
+                "Corrected report amount",
+                Comment: null,
+                new { amount = 1000m },
+                new { amount = 900m },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "payment.created",
+                "payment",
+                canceledPaymentId,
+                clientReference,
+                recordedByAccountId,
+                "owner",
+                "owner",
+                sessionId,
+                "UI daily report seed",
+                canceledPaymentOccurredAt,
+                canceledPaymentRecordedAt,
+                "normal",
+                Reason: null,
+                "Canceled daily report payment",
+                new { },
+                new { amount = 250m },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "payment.canceled",
+                "payment",
+                canceledPaymentId,
+                clientReference,
+                recordedByAccountId,
+                "owner",
+                "owner",
+                sessionId,
+                "UI daily report seed",
+                paymentCancellationOccurredAt,
+                paymentCancellationRecordedAt,
+                "paper_fallback",
+                "Duplicate report payment",
+                Comment: null,
+                new { status = "active" },
+                new { status = "canceled" },
+                ChangedAfterClose: false),
+        ];
+
+        foreach (var auditSeed in auditSeeds)
+        {
+            await InsertClientHistoryAuditAsync(connection, transaction, auditSeed);
+        }
+
+        await transaction.CommitAsync();
     }
 
     public async Task<Guid[]> SeedCountedMembershipVisitsAsync(

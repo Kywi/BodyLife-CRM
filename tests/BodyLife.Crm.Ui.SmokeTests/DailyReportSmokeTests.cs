@@ -177,10 +177,58 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
                 AriaRole.Link,
                 new() { Name = "Open client", Exact = true });
             Assert.Equal(5, await profileLinks.CountAsync());
+            Assert.Equal(5, await page.Locator("[data-report-client-link]").CountAsync());
+            Assert.Equal(5, await page.Locator("[data-report-history-link]").CountAsync());
+            Assert.Equal(5, await page.Locator("[data-report-audit-link]").CountAsync());
             await AssertMinimumTouchTargetsAsync(
-                profileLinks,
+                page.Locator(
+                    "[data-report-client-link], [data-report-history-link], [data-report-audit-link]"),
                 viewportName,
-                "report profile link");
+                "report record link");
+
+            for (var index = 0; index < await visitRows.CountAsync(); index++)
+            {
+                var visitRow = visitRows.Nth(index);
+                var visitId = Guid.Parse(
+                    Assert.IsType<string>(
+                        await visitRow.GetAttributeAsync("data-report-visit-id")));
+                await AssertHistoryRouteAsync(
+                    visitRow.Locator("[data-report-history-link]"),
+                    _app.DailyReportClientId,
+                    "Visit",
+                    selectedDate);
+                await AssertAuditRouteAsync(
+                    visitRow.Locator("[data-report-audit-link]"),
+                    _app.DailyReportClientId,
+                    "Visit",
+                    visitId);
+            }
+
+            var replacedPaymentRow = page.Locator(
+                "[data-report-payment-rows] > .report-row[data-report-row-status='replaced']");
+            var originalPaymentId = Guid.Parse(
+                Assert.IsType<string>(
+                    await replacedPaymentRow.GetAttributeAsync("data-report-payment-id")));
+            for (var index = 0; index < await paymentRows.CountAsync(); index++)
+            {
+                var paymentRow = paymentRows.Nth(index);
+                var paymentId = Guid.Parse(
+                    Assert.IsType<string>(
+                        await paymentRow.GetAttributeAsync("data-report-payment-id")));
+                var paymentStatus = Assert.IsType<string>(
+                    await paymentRow.GetAttributeAsync("data-report-row-status"));
+                await AssertHistoryRouteAsync(
+                    paymentRow.Locator("[data-report-history-link]"),
+                    _app.DailyReportClientId,
+                    "Payment",
+                    selectedDate);
+                await AssertAuditRouteAsync(
+                    paymentRow.Locator("[data-report-audit-link]"),
+                    _app.DailyReportClientId,
+                    "Payment",
+                    paymentStatus == "active" ? originalPaymentId : paymentId);
+            }
+
             var activePaymentRow = page.Locator(
                 "[data-report-payment-rows] > .report-row[data-report-row-status='active']");
             var correctionLaunch = activePaymentRow.GetByRole(
@@ -200,6 +248,77 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
                 "report Payment correction launch");
             await AssertFitsViewportAsync(page, viewportName, "daily report");
             await CaptureVisualAsync(page, viewportName, "daily-report");
+
+            var reportUrl = page.Url;
+            await canceledVisit.Locator("[data-report-history-link]").ClickAsync();
+            await page.WaitForURLAsync("**/Audit/ClientHistory?**");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await ExpectVisibleAsync(
+                page.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Client history", Exact = true }),
+                viewportName,
+                "report-linked Client history");
+            Assert.Equal(
+                _app.DailyReportClientId.ToString(),
+                await page.GetByLabel("Client ID", new() { Exact = true })
+                    .InputValueAsync());
+            Assert.Equal(
+                "Visit",
+                await page.GetByLabel("Source type", new() { Exact = true })
+                    .InputValueAsync());
+            Assert.Equal(
+                selectedDate,
+                await page.GetByLabel("Occurred from (UTC)", new() { Exact = true })
+                    .InputValueAsync());
+            Assert.Equal(
+                selectedDate,
+                await page.GetByLabel("Occurred through (UTC)", new() { Exact = true })
+                    .InputValueAsync());
+            Assert.True(
+                await page.Locator("[data-client-history-list] > [data-client-history-row]")
+                    .CountAsync() > 0,
+                "Date-scoped Visit history should retain canonical source rows.");
+
+            await page.GotoAsync(
+                reportUrl,
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            activePaymentRow = page.Locator(
+                "[data-report-payment-rows] > .report-row[data-report-row-status='active']");
+            await activePaymentRow.Locator("[data-report-audit-link]").ClickAsync();
+            await page.WaitForURLAsync("**/Audit/Timeline?**");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await ExpectVisibleAsync(
+                page.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Audit timeline", Exact = true }),
+                viewportName,
+                "report-linked Audit timeline");
+            Assert.Equal(
+                _app.DailyReportClientId.ToString(),
+                await page.GetByLabel("Client ID", new() { Exact = true })
+                    .InputValueAsync());
+            Assert.Equal(
+                "Payment",
+                await page.GetByLabel("Entity type", new() { Exact = true })
+                    .InputValueAsync());
+            Assert.Equal(
+                originalPaymentId.ToString(),
+                await page.GetByLabel("Entity ID", new() { Exact = true })
+                    .InputValueAsync());
+            Assert.True(
+                await page.Locator("[data-audit-entry-list] > [data-audit-entry-id]")
+                    .CountAsync() > 0,
+                "Exact Payment Audit timeline should retain matching canonical entries.");
+
+            await page.GotoAsync(
+                reportUrl,
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            activePaymentRow = page.Locator(
+                "[data-report-payment-rows] > .report-row[data-report-row-status='active']");
+            correctionLaunch = activePaymentRow.GetByRole(
+                AriaRole.Link,
+                new() { Name = "Correct payment", Exact = true });
 
             var activePaymentId = Guid.Parse(
                 Assert.IsType<string>(
@@ -361,6 +480,31 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
         Assert.True(
             bounds.Height >= 44,
             $"{label} should be at least 44px high on {viewportName}, but was {bounds.Height:F1}px.");
+    }
+
+    private static async Task AssertHistoryRouteAsync(
+        ILocator link,
+        Guid clientId,
+        string entity,
+        string businessDate)
+    {
+        var href = Assert.IsType<string>(await link.GetAttributeAsync("href"));
+        Assert.Contains($"clientId={clientId}", href, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains($"entity={entity}", href, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains($"from={businessDate}", href, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains($"to={businessDate}", href, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task AssertAuditRouteAsync(
+        ILocator link,
+        Guid clientId,
+        string entity,
+        Guid entityId)
+    {
+        var href = Assert.IsType<string>(await link.GetAttributeAsync("href"));
+        Assert.Contains($"clientId={clientId}", href, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains($"entity={entity}", href, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains($"entityId={entityId}", href, StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task CaptureVisualAsync(

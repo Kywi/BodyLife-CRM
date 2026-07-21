@@ -10449,3 +10449,89 @@ Next recommended step:
   selected business date and source context. Keep correction-form links,
   specialized before/after summaries and technical-log correlation lookup for
   later steps.
+
+## Step 167 - Daily report history and audit navigation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue only the report drill-down portion of the fifth Milestone 10 task:
+  connect canonical Daily Report Visit and Payment rows to Client profile,
+  Client History and Audit Timeline explanations.
+- Preserve the selected report business date and source family in Client
+  History links, and preserve the exact source entity in Audit Timeline links.
+  Keep report totals and membership formulas unchanged.
+- Keep correction-form links, specialized owner-readable before/after
+  presenters and technical-log correlation lookup outside this bounded step.
+
+Completed:
+
+- Retained the existing Client profile action on every Daily Report Visit and
+  Payment source row and added `Client history` plus `Audit timeline` actions
+  alongside it.
+- Generated Visit history links with Client id, Visit entity filter and
+  occurred-from/through dates equal to the selected report business date.
+  Visit audit links carry Client id, Visit entity type and the exact Visit id.
+- Generated Payment history links with Client id, Payment entity filter and
+  the selected business date. Payment audit links carry the exact canonical
+  audit primary entity: an active correction replacement links through its
+  original Payment id, while ordinary/canceled/original rows use their own id.
+- Kept all links as read-only navigation into the existing `AdminOrOwner`
+  pages. Audit is used only for explanation; no report total, source status or
+  Membership state is read from audit or recalculated in Razor.
+- Extended the deterministic Daily Report PostgreSQL fixture with matching
+  append-only `visit.marked`, `visit.canceled`, `payment.created`,
+  `payment.corrected` and `payment.canceled` audit envelopes. Source facts and
+  audits now seed atomically in one transaction with identical actor, session,
+  origin and occurred/recorded timestamps.
+- Extended tablet/phone Daily Report Playwright coverage to verify all five
+  profile, five history and five audit links, every generated selector, 44px
+  touch targets and real navigation. The test opens date-scoped Visit history,
+  exact original-Payment correction audit, then returns and proves the existing
+  report correction launch still works.
+
+Validation:
+
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully and the
+  Release solution build passed with 0 warnings/errors.
+- The first focused Daily Report run correctly failed 2/3 because its direct
+  source fixture lacked the audit envelopes required by `GetClientHistory`.
+  The fixture was made production-consistent instead of weakening the UI
+  assertion; the rerun passed 3/3 with no skipped tests.
+- Screenshot-backed visual checks passed at 1024x768 tablet and 390x844 phone.
+  Tablet actions wrap compactly, phone actions become full-width, correction/
+  cancellation explanations remain above navigation, and Playwright found no
+  horizontal document overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 35 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 80 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(reports): link daily rows to audit records`.
+
+Next recommended step:
+
+- Finish the navigation portion of the fifth Milestone 10 task with one
+  bounded correction-form slice: add Client History and exact Audit Timeline
+  links beside existing Visit cancellation and Payment correction forms,
+  preserving the original source id and Client context. Keep specialized
+  before/after presenters and technical-log correlation lookup for later
+  steps.
