@@ -435,11 +435,92 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Readable change summary unavailable", explanation.Title);
     }
 
+    [Fact]
+    public void FreezeCancellationShowsPreservedRangeAndStoredMembershipState()
+    {
+        var fixture = FreezeCancellationAudit(membershipStateChanges: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "freeze.canceled",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("freeze-canceled", explanation.Kind);
+        Assert.Equal("Original freeze", explanation.BeforeLabel);
+        Assert.Equal("After cancellation", explanation.AfterLabel);
+        Assert.Equal(
+            "2026-02-10 to 2026-02-12",
+            FactValue(explanation.BeforeFacts, "Period"));
+        Assert.Equal("3", FactValue(explanation.BeforeFacts, "Inclusive days"));
+        Assert.Equal("Medical recovery", FactValue(explanation.BeforeFacts, "Freeze reason"));
+        Assert.Equal("Active", FactValue(explanation.BeforeFacts, "Status"));
+        Assert.Equal("5", FactValue(explanation.BeforeFacts, "Extension days"));
+        Assert.Equal("2026-03-05", FactValue(explanation.BeforeFacts, "Effective end"));
+        Assert.Equal("Preserved", FactValue(explanation.AfterFacts, "Original fact"));
+        Assert.Equal("Canceled", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal("2", FactValue(explanation.AfterFacts, "Extension days"));
+        Assert.Equal("2026-03-02", FactValue(explanation.AfterFacts, "Effective end"));
+        Assert.Equal(
+            "Freeze status, Membership extension state",
+            explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void FreezeCancellationAllowsUnchangedStateWhenOverlapRemains()
+    {
+        var fixture = FreezeCancellationAudit(membershipStateChanges: false);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "freeze.canceled",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            FactValue(explanation.BeforeFacts, "Extension days"),
+            FactValue(explanation.AfterFacts, "Extension days"));
+        Assert.Equal(
+            FactValue(explanation.BeforeFacts, "Effective end"),
+            FactValue(explanation.AfterFacts, "Effective end"));
+        Assert.Equal("Freeze status", explanation.ChangedFields);
+        Assert.Contains("overlapping active extensions", explanation.Narrative);
+    }
+
+    [Fact]
+    public void FreezeCancellationWithMismatchedMembershipStateFailsClosed()
+    {
+        var fixture = FreezeCancellationAudit(
+            membershipStateChanges: true,
+            mismatchAfterMembership: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "freeze.canceled",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
     [Theory]
     [InlineData("membership_type.edited", AuditTimelineEntityType.Client)]
     [InlineData("membership_type.deactivated", AuditTimelineEntityType.Client)]
     [InlineData("non_working_day.corrected", AuditTimelineEntityType.Payment)]
     [InlineData("non_working_day.canceled", AuditTimelineEntityType.Payment)]
+    [InlineData("freeze.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("visit.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("payment.corrected", AuditTimelineEntityType.Visit)]
     [InlineData("payment.canceled", AuditTimelineEntityType.Visit)]
@@ -764,6 +845,79 @@ public sealed class AuditEntryExplanationViewModelTests
             canceledAfter);
     }
 
+    private static FreezeCancellationAuditFixture FreezeCancellationAudit(
+        bool membershipStateChanges,
+        bool mismatchAfterMembership = false)
+    {
+        var freezeId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var startDate = new DateOnly(2026, 2, 10);
+        var endDate = new DateOnly(2026, 2, 12);
+        var original = new FreezeSourceAuditFixture(
+            freezeId,
+            clientId,
+            membershipId,
+            startDate,
+            endDate,
+            InclusiveDays: 3,
+            "Medical recovery",
+            OriginalOccurredAt.AddDays(-20),
+            OriginalOccurredAt.AddDays(-20).AddMinutes(5),
+            "normal",
+            EntryBatchId: null,
+            "active");
+        var beforeMembership = new FreezeMembershipStateAuditFixture(
+            membershipId,
+            clientId,
+            RemainingVisits: 7,
+            NegativeBalance: 0,
+            ExtensionDays: 5,
+            new DateOnly(2026, 3, 5),
+            ["ending_soon"]);
+        var afterMembership = beforeMembership with
+        {
+            MembershipId = mismatchAfterMembership ? Guid.NewGuid() : membershipId,
+            ExtensionDays = membershipStateChanges ? 2 : beforeMembership.ExtensionDays,
+            EffectiveEndDate = membershipStateChanges
+                ? new DateOnly(2026, 3, 2)
+                : beforeMembership.EffectiveEndDate,
+        };
+        var before = new
+        {
+            Freeze = original,
+            MembershipState = beforeMembership,
+        };
+        var after = new
+        {
+            Cancellation = new
+            {
+                CancellationId = Guid.NewGuid(),
+                FreezeId = freezeId,
+                Reason = "Correction reason",
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "normal",
+                EntryBatchId = (Guid?)null,
+                ChangedAfterClose = false,
+            },
+            Freeze = new
+            {
+                FreezeId = freezeId,
+                ClientId = clientId,
+                MembershipId = membershipId,
+                StartDate = startDate,
+                EndDate = endDate,
+                InclusiveDays = 3,
+                Reason = "Medical recovery",
+                Status = "canceled",
+            },
+            MembershipState = afterMembership,
+        };
+
+        return new FreezeCancellationAuditFixture(freezeId, before, after);
+    }
+
     private static NonWorkingDayBeforeApplicationAuditFixture BeforeApplication(
         Guid membershipId,
         Guid clientId,
@@ -867,4 +1021,32 @@ public sealed class AuditEntryExplanationViewModelTests
         Guid ClientId,
         DateOnly AppliedStartDate,
         DateOnly AppliedEndDate);
+
+    private sealed record FreezeCancellationAuditFixture(
+        Guid FreezeId,
+        object Before,
+        object After);
+
+    private sealed record FreezeSourceAuditFixture(
+        Guid FreezeId,
+        Guid ClientId,
+        Guid MembershipId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        int InclusiveDays,
+        string Reason,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string Status);
+
+    private sealed record FreezeMembershipStateAuditFixture(
+        Guid MembershipId,
+        Guid ClientId,
+        int RemainingVisits,
+        int NegativeBalance,
+        int ExtensionDays,
+        DateOnly EffectiveEndDate,
+        string[] Warnings);
 }

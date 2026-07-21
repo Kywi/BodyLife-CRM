@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.Audit;
 
 namespace BodyLife.Crm.Web.Pages.Audit;
@@ -25,6 +26,7 @@ public sealed record AuditEntryExplanationViewModel(
             "membership_type.deactivated" => "membership-type-deactivated",
             "non_working_day.corrected" => "non-working-day-corrected",
             "non_working_day.canceled" => "non-working-day-canceled",
+            "freeze.canceled" => "freeze-canceled",
             "visit.canceled" => "visit-canceled",
             "payment.corrected" => "payment-corrected",
             "payment.canceled" => "payment-canceled",
@@ -56,6 +58,11 @@ public sealed record AuditEntryExplanationViewModel(
                 "non_working_day.canceled"
                     when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
                     => NonWorkingDayAuditExplanationFactory.CreateCancellation(
+                        entry,
+                        before.RootElement,
+                        after.RootElement),
+                "freeze.canceled" when entry.EntityType == AuditTimelineEntityType.Freeze
+                    => CreateFreezeCancellation(
                         entry,
                         before.RootElement,
                         after.RootElement),
@@ -207,6 +214,92 @@ public sealed record AuditEntryExplanationViewModel(
             ChangedFields: membershipId is null
                 ? "Visit status"
                 : "Visit status, consumption status, Membership state",
+            IsAvailable: true);
+    }
+
+    private static AuditEntryExplanationViewModel CreateFreezeCancellation(
+        AuditTimelineEntry entry,
+        JsonElement before,
+        JsonElement after)
+    {
+        var originalElement = RequireObject(before, "freeze");
+        var canceledElement = RequireObject(after, "freeze");
+        var cancellation = RequireObject(after, "cancellation");
+        var original = ReadFreeze(originalElement);
+        var canceled = ReadFreeze(canceledElement);
+        var beforeMembership = ReadFreezeMembershipState(before);
+        var afterMembership = ReadFreezeMembershipState(after);
+        var originalEntryOrigin = RequireString(originalElement, "entryOrigin");
+        var originalEntryBatchId = RequireNullableGuid(originalElement, "entryBatchId");
+        var cancellationEntryOrigin = RequireString(cancellation, "entryOrigin");
+        var cancellationEntryBatchId = RequireNullableGuid(cancellation, "entryBatchId");
+        var cancellationRecordedAt = RequireTimestamp(cancellation, "recordedAt");
+
+        _ = RequireTimestamp(originalElement, "occurredAt");
+        _ = RequireTimestamp(originalElement, "recordedAt");
+        ValidateEntryBatch(originalEntryOrigin, originalEntryBatchId);
+        ValidateEntryBatch(cancellationEntryOrigin, cancellationEntryBatchId);
+
+        if (original.FreezeId != entry.EntityId
+            || canceled.FreezeId != original.FreezeId
+            || RequireGuid(cancellation, "freezeId") != original.FreezeId
+            || RequireGuid(cancellation, "cancellationId") == Guid.Empty
+            || original.Status != "active"
+            || canceled.Status != "canceled"
+            || (canceled with { Status = "active" }) != original
+            || beforeMembership.MembershipId != original.MembershipId
+            || afterMembership.MembershipId != original.MembershipId
+            || beforeMembership.ClientId != original.ClientId
+            || afterMembership.ClientId != original.ClientId
+            || beforeMembership.RemainingVisits != afterMembership.RemainingVisits
+            || beforeMembership.NegativeBalance != afterMembership.NegativeBalance
+            || afterMembership.ExtensionDays > beforeMembership.ExtensionDays
+            || afterMembership.EffectiveEndDate > beforeMembership.EffectiveEndDate
+            || RequireString(cancellation, "reason") != entry.Reason
+            || RequireTimestamp(cancellation, "occurredAt") != entry.OccurredAt
+            || cancellationRecordedAt != entry.RecordedAt
+            || cancellationEntryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || RequireBoolean(cancellation, "changedAfterClose")
+                != entry.ChangedAfterClose)
+        {
+            throw new JsonException("Freeze cancellation summary is inconsistent.");
+        }
+
+        var membershipStateChanged =
+            beforeMembership.ExtensionDays != afterMembership.ExtensionDays
+            || beforeMembership.EffectiveEndDate != afterMembership.EffectiveEndDate;
+
+        return new AuditEntryExplanationViewModel(
+            "freeze-canceled",
+            "Original Freeze preserved; cancellation added",
+            "The original Freeze remains in history with Canceled status. The stored before/after Membership state comes from canonical recalculation; overlapping active extensions can leave the effective end unchanged.",
+            "Original freeze",
+            "After cancellation",
+            [
+                Fact("Period", FreezeRangeLabel(original)),
+                Fact(
+                    "Inclusive days",
+                    original.InclusiveDays.ToString(CultureInfo.InvariantCulture)),
+                Fact("Freeze reason", original.Reason),
+                Fact("Status", "Active"),
+                Fact("Original entry origin", StoredEntryOriginLabel(originalEntryOrigin)),
+                Fact(
+                    "Extension days",
+                    beforeMembership.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+                Fact("Effective end", DateLabel(beforeMembership.EffectiveEndDate)),
+            ],
+            [
+                Fact("Original fact", "Preserved"),
+                Fact("Status", "Canceled"),
+                Fact(
+                    "Extension days",
+                    afterMembership.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+                Fact("Effective end", DateLabel(afterMembership.EffectiveEndDate)),
+                Fact("Cancellation recorded", TimelineModel.TimestampLabel(cancellationRecordedAt)),
+            ],
+            ChangedFields: membershipStateChanged
+                ? "Freeze status, Membership extension state"
+                : "Freeze status",
             IsAvailable: true);
     }
 
@@ -394,6 +487,43 @@ public sealed record AuditEntryExplanationViewModel(
             RequireString(payment, "status"));
     }
 
+    private static FreezeSnapshot ReadFreeze(JsonElement freeze)
+    {
+        var startDate = RequireDateOnly(freeze, "startDate");
+        var endDate = RequireDateOnly(freeze, "endDate");
+        var inclusiveDays = RequirePositiveInt32(freeze, "inclusiveDays");
+        if (startDate > endDate
+            || inclusiveDays != endDate.DayNumber - startDate.DayNumber + 1)
+        {
+            throw new JsonException("Freeze range summary is inconsistent.");
+        }
+
+        return new FreezeSnapshot(
+            RequireGuid(freeze, "freezeId"),
+            RequireGuid(freeze, "clientId"),
+            RequireGuid(freeze, "membershipId"),
+            startDate,
+            endDate,
+            inclusiveDays,
+            RequireString(freeze, "reason"),
+            RequireString(freeze, "status"));
+    }
+
+    private static FreezeMembershipStateSnapshot ReadFreezeMembershipState(
+        JsonElement summary)
+    {
+        var state = RequireObject(summary, "membershipState");
+        var snapshot = new FreezeMembershipStateSnapshot(
+            RequireGuid(state, "membershipId"),
+            RequireGuid(state, "clientId"),
+            RequireInt32(state, "remainingVisits"),
+            RequireNonNegativeInt32(state, "negativeBalance"),
+            RequireNonNegativeInt32(state, "extensionDays"),
+            RequireDateOnly(state, "effectiveEndDate"));
+        _ = RequireStringArray(state, "warnings");
+        return snapshot;
+    }
+
     private static MembershipStateSnapshot? ReadMembershipState(
         JsonElement summary,
         Guid? membershipId)
@@ -558,6 +688,24 @@ public sealed record AuditEntryExplanationViewModel(
         return result;
     }
 
+    private static DateOnly RequireDateOnly(JsonElement parent, string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value)
+            || value.ValueKind != JsonValueKind.String
+            || !DateOnly.TryParseExact(
+                value.GetString(),
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var result)
+            || result == default)
+        {
+            throw new JsonException($"Audit summary property '{propertyName}' is required.");
+        }
+
+        return result;
+    }
+
     private static DateTimeOffset? RequireNullableTimestamp(
         JsonElement parent,
         string propertyName)
@@ -688,6 +836,49 @@ public sealed record AuditEntryExplanationViewModel(
         return $"{amount.ToString("0.##", CultureInfo.InvariantCulture)} {currency.ToUpperInvariant()}";
     }
 
+    private static string FreezeRangeLabel(FreezeSnapshot freeze)
+    {
+        return $"{DateLabel(freeze.StartDate)} to {DateLabel(freeze.EndDate)}";
+    }
+
+    private static string DateLabel(DateOnly date)
+    {
+        return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    private static void ValidateEntryBatch(string entryOrigin, Guid? entryBatchId)
+    {
+        _ = StoredEntryOriginLabel(entryOrigin);
+        if (entryOrigin == "normal" && entryBatchId is not null)
+        {
+            throw new JsonException("A normal Freeze audit summary cannot reference an entry batch.");
+        }
+    }
+
+    private static string EntryOriginValue(EntryOrigin entryOrigin)
+    {
+        return entryOrigin switch
+        {
+            EntryOrigin.Normal => "normal",
+            EntryOrigin.ManualBackfill => "manual_backfill",
+            EntryOrigin.PaperFallback => "paper_fallback",
+            EntryOrigin.FutureImport => "future_import",
+            _ => throw new JsonException("Entry origin is not supported."),
+        };
+    }
+
+    private static string StoredEntryOriginLabel(string entryOrigin)
+    {
+        return entryOrigin switch
+        {
+            "normal" => "Normal entry",
+            "manual_backfill" => "Manual backfill",
+            "paper_fallback" => "Paper fallback",
+            "future_import" => "Future import",
+            _ => throw new JsonException("Stored entry origin is not supported."),
+        };
+    }
+
     private static string OptionalIdLabel(Guid? id)
     {
         return id is { } value ? TimelineModel.ShortId(value) : "No Membership";
@@ -771,6 +962,24 @@ public sealed record AuditEntryExplanationViewModel(
         string PaymentContext,
         DateTimeOffset OccurredAt,
         string Status);
+
+    private sealed record FreezeSnapshot(
+        Guid FreezeId,
+        Guid ClientId,
+        Guid MembershipId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        int InclusiveDays,
+        string Reason,
+        string Status);
+
+    private sealed record FreezeMembershipStateSnapshot(
+        Guid MembershipId,
+        Guid ClientId,
+        int RemainingVisits,
+        int NegativeBalance,
+        int ExtensionDays,
+        DateOnly EffectiveEndDate);
 
     private sealed record MembershipTypeCatalogSnapshot(
         string Name,

@@ -2187,7 +2187,8 @@ public sealed record AuditExplanationSmokeScenario(
     decimal CanceledPaymentAmount,
     int BeforeVisitRemaining,
     int AfterVisitRemaining,
-    NonWorkingDayAuditExplanationSmokeScenario NonWorkingDays);
+    NonWorkingDayAuditExplanationSmokeScenario NonWorkingDays,
+    FreezeCancellationAuditExplanationSmokeScenario FreezeCancellation);
 
 public sealed record NonWorkingDayAuditExplanationSmokeScenario(
     Guid CorrectedAuditEntryId,
@@ -2201,6 +2202,16 @@ public sealed record NonWorkingDayAuditExplanationSmokeScenario(
     Guid CanceledOriginalPeriodId,
     DateRange CanceledPeriod,
     int CanceledAffectedCount);
+
+public sealed record FreezeCancellationAuditExplanationSmokeScenario(
+    Guid AuditEntryId,
+    Guid FreezeId,
+    DateRange Range,
+    string Reason,
+    int BeforeExtensionDays,
+    int AfterExtensionDays,
+    DateOnly BeforeEffectiveEndDate,
+    DateOnly AfterEffectiveEndDate);
 
 public sealed record ClientHistorySmokeScenario(
     Guid ClientId,

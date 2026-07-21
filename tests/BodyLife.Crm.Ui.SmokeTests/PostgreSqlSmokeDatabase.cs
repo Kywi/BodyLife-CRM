@@ -1051,6 +1051,75 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             },
         };
 
+        var freezeCancellationAuditEntryId = Guid.NewGuid();
+        var canceledFreezeId = Guid.NewGuid();
+        var freezeCancellationId = Guid.NewGuid();
+        var canceledFreezeClientId = Guid.NewGuid();
+        var canceledFreezeMembershipId = Guid.NewGuid();
+        var canceledFreezeRange = new DateRange(
+            new DateOnly(2026, 8, 20),
+            new DateOnly(2026, 8, 22));
+        var freezeCancellationOccurredAt = recordedBase.AddHours(8);
+        var freezeCancellationRecordedAt = freezeCancellationOccurredAt.AddMinutes(5);
+        var freezeCancellationReason = "Freeze dates were entered incorrectly";
+        var freezeSource = new AuditFreezeSourceSummarySeed(
+            canceledFreezeId,
+            canceledFreezeClientId,
+            canceledFreezeMembershipId,
+            canceledFreezeRange.StartDate,
+            canceledFreezeRange.EndDate,
+            InclusiveDays: 3,
+            "Medical recovery",
+            recordedBase.AddDays(-12),
+            recordedBase.AddDays(-12).AddMinutes(5),
+            "normal",
+            EntryBatchId: null,
+            "active");
+        var freezeBeforeMembership = new AuditFreezeMembershipStateSummarySeed(
+            canceledFreezeMembershipId,
+            canceledFreezeClientId,
+            RemainingVisits: 6,
+            NegativeBalance: 0,
+            ExtensionDays: 7,
+            new DateOnly(2026, 9, 7),
+            ["ending_soon"]);
+        var freezeAfterMembership = freezeBeforeMembership with
+        {
+            ExtensionDays = 4,
+            EffectiveEndDate = new DateOnly(2026, 9, 4),
+        };
+        var freezeBefore = new
+        {
+            Freeze = freezeSource,
+            MembershipState = freezeBeforeMembership,
+        };
+        var freezeAfter = new
+        {
+            Cancellation = new
+            {
+                CancellationId = freezeCancellationId,
+                FreezeId = canceledFreezeId,
+                Reason = freezeCancellationReason,
+                OccurredAt = freezeCancellationOccurredAt,
+                RecordedAt = freezeCancellationRecordedAt,
+                EntryOrigin = "normal",
+                EntryBatchId = (Guid?)null,
+                ChangedAfterClose = false,
+            },
+            Freeze = new
+            {
+                FreezeId = canceledFreezeId,
+                ClientId = canceledFreezeClientId,
+                MembershipId = canceledFreezeMembershipId,
+                StartDate = canceledFreezeRange.StartDate,
+                EndDate = canceledFreezeRange.EndDate,
+                InclusiveDays = canceledFreezeRange.InclusiveDays,
+                Reason = freezeSource.Reason,
+                Status = "canceled",
+            },
+            MembershipState = freezeAfterMembership,
+        };
+
         AuditSeed[] explanationSeeds =
         [
             new(
@@ -1294,6 +1363,30 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 canceledBefore,
                 canceledAfter,
                 ChangedAfterClose: false),
+            new(
+                freezeCancellationAuditEntryId,
+                "freeze.canceled",
+                "freeze",
+                canceledFreezeId,
+                new
+                {
+                    ClientId = canceledFreezeClientId,
+                    MembershipId = canceledFreezeMembershipId,
+                    CancellationId = freezeCancellationId,
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                freezeCancellationOccurredAt,
+                freezeCancellationRecordedAt,
+                "normal",
+                freezeCancellationReason,
+                "Owner confirmed the Freeze cancellation",
+                freezeBefore,
+                freezeAfter,
+                ChangedAfterClose: false),
         ];
 
         foreach (var explanationSeed in explanationSeeds)
@@ -1341,7 +1434,16 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     nonWorkingDayCanceledAuditEntryId,
                     canceledPeriodId,
                     canceledPeriod,
-                    canceledApplications.Length)));
+                    canceledApplications.Length),
+                FreezeCancellation: new FreezeCancellationAuditExplanationSmokeScenario(
+                    freezeCancellationAuditEntryId,
+                    canceledFreezeId,
+                    canceledFreezeRange,
+                    freezeSource.Reason,
+                    freezeBeforeMembership.ExtensionDays,
+                    freezeAfterMembership.ExtensionDays,
+                    freezeBeforeMembership.EffectiveEndDate,
+                    freezeAfterMembership.EffectiveEndDate)));
     }
 
     public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(
@@ -5216,6 +5318,29 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Guid ClientId,
         DateOnly AppliedStartDate,
         DateOnly AppliedEndDate);
+
+    private sealed record AuditFreezeSourceSummarySeed(
+        Guid FreezeId,
+        Guid ClientId,
+        Guid MembershipId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        int InclusiveDays,
+        string Reason,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string Status);
+
+    private sealed record AuditFreezeMembershipStateSummarySeed(
+        Guid MembershipId,
+        Guid ClientId,
+        int RemainingVisits,
+        int NegativeBalance,
+        int ExtensionDays,
+        DateOnly EffectiveEndDate,
+        string[] Warnings);
 
     private sealed record AuditMoneySummarySeed(
         decimal Amount,

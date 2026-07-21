@@ -10882,3 +10882,87 @@ Next recommended step:
   cancellation fact and stored before/after Membership effective-end summary
   without recalculating extension rules in Audit UI. Keep audit-noise review
   and technical-log correlation lookup for later steps.
+
+## Step 172 - Freeze cancellation audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue only the Freeze cancellation portion of the sixth Milestone 10 task
+  by replacing raw JSON as the primary explanation for `freeze.canceled`
+  Timeline rows.
+- Present the command-owned source Freeze, separate cancellation fact and
+  stored before/after Membership state without subtracting Freeze days or
+  recalculating extension unions in Audit UI.
+- Preserve the complete append-only audit envelope as collapsed secondary
+  support detail. Keep other client/settings explanations, audit-noise review
+  and technical-log correlation lookup outside this bounded step.
+
+Completed:
+
+- Added a fail-closed Freeze cancellation presenter that validates the source,
+  cancellation and Timeline Freeze ids; preserved client/Membership/range/
+  reason values; active-to-canceled status transition; inclusive range shape;
+  cancellation reason/timestamps/origin/changed-after-close metadata; and
+  before/after Membership identity before rendering owner-facing values.
+- Added `Original freeze`/`After cancellation` sections showing the inclusive
+  period, original Freeze reason and entry origin, preserved source fact,
+  status transition, stored extension days, stored effective end and
+  cancellation recorded time.
+- Derived the changed-field label only from stored Membership snapshots. An
+  overlap case with unchanged extension days/effective end remains valid and
+  reports only the Freeze status change, avoiding a naive range-day
+  subtraction.
+- Added four Web presenter cases covering a stored Membership state change,
+  unchanged state under overlapping extensions, mismatched Membership
+  fail-closed behavior and wrong-entity fail-closed behavior.
+- Extended the PostgreSQL-backed Audit Timeline fixture with a production-
+  shaped `CancelFreeze` envelope and added Owner/tablet plus named-Admin/phone
+  Playwright coverage over entity/action filtering, exact range and state
+  facts, preservation semantics, raw-envelope availability and horizontal fit.
+- Kept `CancelFreeze`, Memberships recalculation, persistence schema, EF model,
+  Razor markup and CSS unchanged.
+
+Validation:
+
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully and the
+  Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 24/24; focused new
+  Freeze cancellation explanation Playwright coverage passed 2/2; the complete
+  `AuditTimelineSmokeTests` regression passed 12/12 with no skipped tests.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports. Range and Membership state facts remain
+  readable, raw JSON is collapsed by default and available on demand,
+  controls/text do not overlap and Playwright found no horizontal overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 59 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 90 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain freeze cancellation`.
+
+Next recommended step:
+
+- Continue the sixth Milestone 10 task with one bounded client/card explanation
+  slice: add owner-readable before/after summaries for `client.updated` and
+  card assignment/change/clear events while preserving role-controlled PII and
+  keeping raw envelopes secondary. Keep audit-noise review and technical-log
+  correlation lookup for later steps.
