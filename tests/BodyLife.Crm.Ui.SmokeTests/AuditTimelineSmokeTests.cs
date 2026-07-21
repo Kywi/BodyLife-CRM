@@ -925,6 +925,196 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         }
     }
 
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
+    public async Task ClientAndCardChangesLeadWithReadableStoredSnapshots(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var clientAndCards = scenario.Explanations.ClientAndCards;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} client and card audit smoke");
+
+            var clientUpdate = await OpenExplanationAsync(
+                page,
+                clientAndCards.ClientId,
+                "Client",
+                "client.updated",
+                clientAndCards.ClientUpdateAuditEntryId,
+                "client-updated",
+                viewportName);
+            await ExpectVisibleAsync(
+                clientUpdate.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Client profile updated", Exact = true }),
+                viewportName,
+                "Client update explanation title");
+            Assert.Equal(
+                clientAndCards.OriginalDisplayName,
+                await ExplanationFactAsync(clientUpdate, "Original profile", "Name"));
+            Assert.Equal(
+                clientAndCards.OriginalPhone,
+                await ExplanationFactAsync(clientUpdate, "Original profile", "Phone"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(
+                    clientUpdate,
+                    "Original profile",
+                    "Operational status"));
+            Assert.Equal(
+                clientAndCards.UpdatedDisplayName,
+                await ExplanationFactAsync(clientUpdate, "Updated profile", "Name"));
+            Assert.Equal(
+                clientAndCards.UpdatedPhone,
+                await ExplanationFactAsync(clientUpdate, "Updated profile", "Phone"));
+            Assert.Equal(
+                "Inactive",
+                await ExplanationFactAsync(
+                    clientUpdate,
+                    "Updated profile",
+                    "Operational status"));
+            Assert.Equal(
+                "1",
+                await ExplanationFactAsync(
+                    clientUpdate,
+                    "Updated profile",
+                    "Warnings acknowledged"));
+            Assert.Equal(
+                $"Duplicate phone for Client {clientAndCards.MatchedClientId.ToString("N")[..8]}: Confirmed family member",
+                await ExplanationFactAsync(
+                    clientUpdate,
+                    "Updated profile",
+                    "Acknowledgement details"));
+            await ExpectVisibleAsync(
+                clientUpdate.GetByText(
+                    "Name, Phone, Operational status, Comment, Duplicate warnings acknowledged",
+                    new() { Exact = true }),
+                viewportName,
+                "Client update changed fields");
+            var clientUpdateEnvelope = clientUpdate
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await clientUpdateEnvelope.GetAttributeAsync("open"));
+            Assert.False(await clientUpdateEnvelope.Locator(".audit-json-grid").IsVisibleAsync());
+            await AssertFitsViewportAsync(page, viewportName, "Client update explanation");
+            await CaptureVisualAsync(page, viewportName, "client-update-explanation");
+
+            var cardAssignment = await OpenExplanationAsync(
+                page,
+                clientAndCards.ClientId,
+                "Client",
+                "card.assigned",
+                clientAndCards.CardAssignedAuditEntryId,
+                "card-assigned",
+                viewportName);
+            await ExpectVisibleAsync(
+                cardAssignment.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Card assigned to Client", Exact = true }),
+                viewportName,
+                "Card assignment explanation title");
+            Assert.Equal(
+                "None",
+                await ExplanationFactAsync(
+                    cardAssignment,
+                    "Before assignment",
+                    "Current card"));
+            Assert.Equal(
+                clientAndCards.AssignedCardNumber,
+                await ExplanationFactAsync(cardAssignment, "Current card", "Card number"));
+
+            var cardChange = await OpenExplanationAsync(
+                page,
+                clientAndCards.ClientId,
+                "Client",
+                "card.changed",
+                clientAndCards.CardChangedAuditEntryId,
+                "card-changed",
+                viewportName);
+            Assert.Equal(
+                clientAndCards.AssignedCardNumber,
+                await ExplanationFactAsync(cardChange, "Previous card", "Card number"));
+            Assert.Equal(
+                clientAndCards.ReplacementCardNumber,
+                await ExplanationFactAsync(cardChange, "Current card", "Card number"));
+            await ExpectVisibleAsync(
+                cardChange.GetByText(
+                    "Card number, Card assignment",
+                    new() { Exact = true }),
+                viewportName,
+                "Card change changed fields");
+            var cardChangeEnvelope = cardChange
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await cardChangeEnvelope.GetAttributeAsync("open"));
+            var cardEnvelopeToggle = cardChangeEnvelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                cardEnvelopeToggle,
+                viewportName,
+                "Card change audit envelope");
+            await cardEnvelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                cardChangeEnvelope.Locator(".audit-json-grid"),
+                viewportName,
+                "Card change raw envelope");
+            Assert.Contains(
+                "cardNumberNormalized",
+                await cardChangeEnvelope.Locator(".audit-json-grid").InnerTextAsync(),
+                StringComparison.Ordinal);
+
+            var cardClear = await OpenExplanationAsync(
+                page,
+                clientAndCards.ClientId,
+                "Client",
+                "card.cleared",
+                clientAndCards.CardClearedAuditEntryId,
+                "card-cleared",
+                viewportName);
+            Assert.Equal(
+                clientAndCards.ReplacementCardNumber,
+                await ExplanationFactAsync(cardClear, "Previous card", "Card number"));
+            Assert.Equal(
+                "Preserved in history",
+                await ExplanationFactAsync(
+                    cardClear,
+                    "After clearing",
+                    "Previous assignment"));
+            Assert.Equal(
+                "None",
+                await ExplanationFactAsync(cardClear, "After clearing", "Current card"));
+            await ExpectVisibleAsync(
+                cardClear.GetByText("Current card", new() { Exact = true }).Last,
+                viewportName,
+                "Card clear changed field");
+            await AssertFitsViewportAsync(page, viewportName, "Card clear explanation");
+            await CaptureVisualAsync(page, viewportName, "card-clear-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task InvalidOffsetKeepsAuditFiltersAndReturnsNoPartialTimeline()
     {

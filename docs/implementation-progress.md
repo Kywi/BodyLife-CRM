@@ -10966,3 +10966,90 @@ Next recommended step:
   card assignment/change/clear events while preserving role-controlled PII and
   keeping raw envelopes secondary. Keep audit-noise review and technical-log
   correlation lookup for later steps.
+
+## Step 173 - Client and card audit explanations
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue only the client/card portion of the sixth Milestone 10 task by
+  replacing raw JSON as the primary explanation for `client.updated`,
+  `card.assigned`, `card.changed` and `card.cleared` Timeline rows.
+- Present stored Client identity/contact/status snapshots and raw reception-
+  facing card values only inside the existing Owner/Admin-controlled Audit
+  Timeline. Do not copy normalization rules into the presenter or expose the
+  normalized card value as a primary business fact.
+- Preserve the complete append-only audit envelope as collapsed secondary
+  support detail. Keep staff-account settings explanations, audit-noise review
+  and technical-log correlation lookup outside this bounded step.
+
+Completed:
+
+- Added a typed, fail-closed Client audit explanation factory and wired the
+  four action/entity pairs into the existing Audit Timeline presenter.
+- Added `Original profile`/`Updated profile` sections for Client updates. They
+  show stored name, phone, operational status, comment and update timestamp;
+  changed fields come only from snapshot comparison, and acknowledgement-only
+  updates remain valid.
+- Validated duplicate-warning acknowledgement ids/counts, matched Client ids,
+  known warning types and non-empty reasons before showing a readable warning
+  count and details. Inconsistent stored references fall back to the existing
+  safe unavailable-summary state.
+- Added assignment/change/clear explanations that validate the stored
+  previous/current assignment references, timestamps, required change/clear
+  explanation and lifecycle shape. Raw card numbers and short assignment ids
+  are primary facts; normalized values remain available only in the collapsed
+  raw envelope. Same-number reissue is represented as a new assignment rather
+  than a fabricated card-number change.
+- Added ten Web presenter cases covering profile changes, acknowledgement-only
+  updates, inconsistent references, assignment/change/clear, same-number
+  reissue and wrong-entity fail-closed behavior.
+- Extended the PostgreSQL-backed Audit Timeline fixture with four isolated,
+  production-shaped Client/card envelopes and added Owner/tablet plus named-
+  Admin/phone Playwright coverage over exact filters, stored values,
+  preservation semantics, collapsed raw-envelope behavior and horizontal fit.
+- Kept Client/card commands, normalization, persistence schema, EF model,
+  Razor markup and CSS unchanged.
+
+Validation:
+
+- Focused `AuditEntryExplanationViewModelTests` passed 34/34; focused new
+  Client/card explanation Playwright coverage passed 2/2; the complete
+  `AuditTimelineSmokeTests` regression passed 14/14 with no skipped tests.
+- Screenshot-backed visual checks passed for Client update and card clear at
+  1024x768 Owner/tablet and 390x844 named-Admin/phone viewports. Identity/card
+  facts remain readable, raw JSON is collapsed by default and available on
+  demand, controls/text do not overlap and Playwright found no horizontal
+  document overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 69 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 92 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain client and card changes`.
+
+Next recommended step:
+
+- Continue the sixth Milestone 10 task with one bounded staff-account settings
+  slice: add owner-readable before/after summaries for display-name updates and
+  activation/deactivation while preserving role-controlled access and showing
+  no credential material. Keep credential configuration/reset explanations,
+  audit-noise review and technical-log correlation lookup for later steps.

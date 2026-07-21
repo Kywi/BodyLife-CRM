@@ -542,6 +542,12 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "Timeline",
             "+380 67 880 00 01",
             "BL-AUDIT-TIMELINE");
+        var clientChangeClientId = await SeedClientAsync(
+            ownerAccountId,
+            "Kovalchuk",
+            "Iryna",
+            "+38 (067) 765-43-21",
+            "BL-AUDIT-CLIENT-CURRENT");
         var ownerSessionId = Guid.NewGuid();
         var sharedSessionId = Guid.NewGuid();
         var membershipId = Guid.NewGuid();
@@ -1120,6 +1126,63 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             MembershipState = freezeAfterMembership,
         };
 
+        const string originalClientDisplayName = "Koval Iryna";
+        const string updatedClientDisplayName = "Kovalchuk Iryna Mykolaivna";
+        const string originalClientPhone = "067 111 22 33";
+        const string updatedClientPhone = "+38 (067) 765-43-21";
+        const string assignedCardNumber = "BL AUDIT 100-20";
+        const string replacementCardNumber = "BL AUDIT 200-40";
+        var clientUpdateAuditEntryId = Guid.NewGuid();
+        var duplicateAcknowledgementId = Guid.NewGuid();
+        var matchedClientId = Guid.NewGuid();
+        var clientUpdatedAt = recordedBase.AddHours(9);
+        var clientUpdateBefore = new
+        {
+            Surname = "Koval",
+            Name = "Iryna",
+            Patronymic = (string?)null,
+            Phone = originalClientPhone,
+            OperationalStatus = "active",
+            Comment = "Prefers morning visits",
+            UpdatedAt = recordedBase.AddDays(-1),
+        };
+        var clientUpdateAfter = new
+        {
+            Surname = "Kovalchuk",
+            Name = "Iryna",
+            Patronymic = "Mykolaivna",
+            Phone = updatedClientPhone,
+            OperationalStatus = "inactive",
+            Comment = "Paused by Owner request",
+            UpdatedAt = clientUpdatedAt,
+            DuplicateWarningAcknowledgements = new[]
+            {
+                new
+                {
+                    WarningType = "duplicate_phone",
+                    MatchedClientId = matchedClientId,
+                    Reason = "Confirmed family member",
+                },
+            },
+        };
+
+        var cardAssignedAuditEntryId = Guid.NewGuid();
+        var cardChangedAuditEntryId = Guid.NewGuid();
+        var cardClearedAuditEntryId = Guid.NewGuid();
+        var assignedCardAt = recordedBase.AddHours(10);
+        var replacementCardAt = recordedBase.AddHours(11);
+        var cardClearedAt = recordedBase.AddHours(12);
+        var assignedCard = new AuditCardAssignmentSummarySeed(
+            Guid.NewGuid(),
+            assignedCardNumber,
+            "BLAUDIT10020",
+            assignedCardAt);
+        var replacementCard = new AuditCardAssignmentSummarySeed(
+            Guid.NewGuid(),
+            replacementCardNumber,
+            "BLAUDIT20040",
+            replacementCardAt);
+
         AuditSeed[] explanationSeeds =
         [
             new(
@@ -1387,6 +1450,101 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 freezeBefore,
                 freezeAfter,
                 ChangedAfterClose: false),
+            new(
+                clientUpdateAuditEntryId,
+                "client.updated",
+                "client",
+                clientChangeClientId,
+                new
+                {
+                    DuplicateWarningAcknowledgementIds = new[]
+                    {
+                        duplicateAcknowledgementId,
+                    },
+                    MatchedClientIds = new[] { matchedClientId },
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                clientUpdatedAt.AddMinutes(-5),
+                clientUpdatedAt,
+                "normal",
+                "Owner confirmed profile correction",
+                "Duplicate warning reviewed",
+                clientUpdateBefore,
+                clientUpdateAfter,
+                ChangedAfterClose: false),
+            new(
+                cardAssignedAuditEntryId,
+                "card.assigned",
+                "client",
+                clientChangeClientId,
+                new
+                {
+                    PreviousCardAssignmentId = (Guid?)null,
+                    CurrentCardAssignmentId = (Guid?)assignedCard.Id,
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                assignedCardAt,
+                assignedCardAt.AddMinutes(5),
+                "normal",
+                Reason: null,
+                Comment: null,
+                BeforeSummary: new { },
+                AfterSummary: assignedCard,
+                ChangedAfterClose: false),
+            new(
+                cardChangedAuditEntryId,
+                "card.changed",
+                "client",
+                clientChangeClientId,
+                new
+                {
+                    PreviousCardAssignmentId = (Guid?)assignedCard.Id,
+                    CurrentCardAssignmentId = (Guid?)replacementCard.Id,
+                },
+                sharedAdminAccountId,
+                "shared_reception_admin",
+                "admin",
+                sharedSessionId,
+                sharedDeviceLabel,
+                replacementCardAt,
+                replacementCardAt.AddMinutes(5),
+                "normal",
+                "Physical card replaced",
+                "Reception issued a replacement",
+                assignedCard,
+                replacementCard,
+                ChangedAfterClose: false),
+            new(
+                cardClearedAuditEntryId,
+                "card.cleared",
+                "client",
+                clientChangeClientId,
+                new
+                {
+                    PreviousCardAssignmentId = (Guid?)replacementCard.Id,
+                    CurrentCardAssignmentId = (Guid?)null,
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                cardClearedAt,
+                cardClearedAt.AddMinutes(5),
+                "normal",
+                "Client returned the card",
+                "Current assignment cleared",
+                replacementCard,
+                new { },
+                ChangedAfterClose: false),
         ];
 
         foreach (var explanationSeed in explanationSeeds)
@@ -1443,7 +1601,20 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     freezeBeforeMembership.ExtensionDays,
                     freezeAfterMembership.ExtensionDays,
                     freezeBeforeMembership.EffectiveEndDate,
-                    freezeAfterMembership.EffectiveEndDate)));
+                    freezeAfterMembership.EffectiveEndDate),
+                ClientAndCards: new ClientCardAuditExplanationSmokeScenario(
+                    clientChangeClientId,
+                    clientUpdateAuditEntryId,
+                    originalClientDisplayName,
+                    updatedClientDisplayName,
+                    originalClientPhone,
+                    updatedClientPhone,
+                    matchedClientId,
+                    cardAssignedAuditEntryId,
+                    cardChangedAuditEntryId,
+                    cardClearedAuditEntryId,
+                    assignedCardNumber,
+                    replacementCardNumber)));
     }
 
     public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(
@@ -5279,6 +5450,12 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt,
         DateTimeOffset? DeactivatedAt);
+
+    private sealed record AuditCardAssignmentSummarySeed(
+        Guid Id,
+        string CardNumber,
+        string CardNumberNormalized,
+        DateTimeOffset AssignedAt);
 
     private sealed record AuditNonWorkingDaySourcePeriodSummarySeed(
         Guid PeriodId,

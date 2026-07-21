@@ -24,6 +24,10 @@ public sealed record AuditEntryExplanationViewModel(
         {
             "membership_type.edited" => "membership-type-edited",
             "membership_type.deactivated" => "membership-type-deactivated",
+            "client.updated" => "client-updated",
+            "card.assigned" => "card-assigned",
+            "card.changed" => "card-changed",
+            "card.cleared" => "card-cleared",
             "non_working_day.corrected" => "non-working-day-corrected",
             "non_working_day.canceled" => "non-working-day-canceled",
             "freeze.canceled" => "freeze-canceled",
@@ -39,10 +43,35 @@ public sealed record AuditEntryExplanationViewModel(
 
         try
         {
+            using var related = JsonDocument.Parse(entry.RelatedEntityRefsJson);
             using var before = JsonDocument.Parse(entry.BeforeSummaryJson);
             using var after = JsonDocument.Parse(entry.AfterSummaryJson);
             return entry.ActionType switch
             {
+                "client.updated" when entry.EntityType == AuditTimelineEntityType.Client
+                    => ClientAuditExplanationFactory.CreateClientUpdate(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
+                "card.assigned" when entry.EntityType == AuditTimelineEntityType.Client
+                    => ClientAuditExplanationFactory.CreateCardAssignment(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
+                "card.changed" when entry.EntityType == AuditTimelineEntityType.Client
+                    => ClientAuditExplanationFactory.CreateCardChange(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
+                "card.cleared" when entry.EntityType == AuditTimelineEntityType.Client
+                    => ClientAuditExplanationFactory.CreateCardClear(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
                 "membership_type.edited"
                     when entry.EntityType == AuditTimelineEntityType.MembershipType
                     => CreateMembershipTypeEdit(before.RootElement, after.RootElement),
