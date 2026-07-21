@@ -21,6 +21,268 @@ public sealed class AuditEntryExplanationViewModelTests
         TimeSpan.Zero);
 
     [Fact]
+    public void MembershipVisitShowsConsumptionAcknowledgementAndStoredStateChange()
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var consumptionId = Guid.NewGuid();
+        var before = VisitMarkedMembershipState(
+            membershipId,
+            countedVisits: 8,
+            remainingVisits: 0,
+            negativeBalance: 0,
+            warnings: ["membership_zero_remaining"]);
+        var afterState = VisitMarkedMembershipState(
+            membershipId,
+            countedVisits: 9,
+            remainingVisits: -1,
+            negativeBalance: 1,
+            firstNegativeVisitId: visitId,
+            firstNegativeVisitDate: DateOnly.FromDateTime(
+                OriginalOccurredAt.UtcDateTime),
+            warnings: ["membership_negative_balance"]);
+        var after = VisitMarkedAfter(
+            visitId,
+            clientId,
+            "membership",
+            membershipId,
+            consumptionId,
+            acknowledgements: ["zero_remaining"],
+            membershipState: afterState);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "visit.marked",
+                    AuditTimelineEntityType.Visit,
+                    visitId,
+                    before,
+                    after,
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)membershipId,
+                        ConsumptionId = (Guid?)consumptionId,
+                    })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("visit-marked", explanation.Kind);
+        Assert.Equal(
+            "Membership visit and consumption recorded",
+            explanation.Title);
+        Assert.Equal("Before visit", explanation.BeforeLabel);
+        Assert.Equal("Recorded visit", explanation.AfterLabel);
+        Assert.Equal("0", FactValue(explanation.BeforeFacts, "Remaining visits"));
+        Assert.Equal(
+            "Zero remaining",
+            FactValue(explanation.BeforeFacts, "Membership warnings"));
+        Assert.Equal(
+            "Membership visit",
+            FactValue(explanation.AfterFacts, "Visit type"));
+        Assert.Equal(
+            $"Counted / {consumptionId.ToString("N")[..8]}",
+            FactValue(explanation.AfterFacts, "Consumption"));
+        Assert.Equal(
+            "Zero remaining",
+            FactValue(explanation.AfterFacts, "Warning acknowledgements"));
+        Assert.Equal("-1", FactValue(explanation.AfterFacts, "Remaining visits"));
+        Assert.Equal("1", FactValue(explanation.AfterFacts, "Negative balance"));
+        Assert.Equal(
+            OriginalOccurredAt.ToString("yyyy-MM-dd"),
+            FactValue(explanation.AfterFacts, "First negative visit date"));
+        Assert.Equal(
+            "Negative balance",
+            FactValue(explanation.AfterFacts, "Membership warnings"));
+        Assert.Equal(
+            "Visit, counted consumption, Membership state",
+            explanation.ChangedFields);
+        Assert.Contains("does not recalculate", explanation.Narrative);
+    }
+
+    [Theory]
+    [InlineData("one_off", "One-off visit", "Explicit one-off context")]
+    [InlineData("trial", "Trial visit", "Explicit trial context")]
+    public void NonMembershipVisitShowsExplicitContextWithoutInventingConsumption(
+        string visitKind,
+        string expectedKind,
+        string expectedSelection)
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "visit.marked",
+                    AuditTimelineEntityType.Visit,
+                    visitId,
+                    new { },
+                    VisitMarkedAfter(
+                        visitId,
+                        clientId,
+                        visitKind,
+                        membershipId: null,
+                        consumptionId: null),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)null,
+                        ConsumptionId = (Guid?)null,
+                    })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(expectedKind, FactValue(explanation.AfterFacts, "Visit type"));
+        Assert.Equal("No Membership", FactValue(explanation.AfterFacts, "Membership"));
+        Assert.Equal("Not applicable", FactValue(explanation.AfterFacts, "Consumption"));
+        Assert.Equal(expectedSelection, FactValue(explanation.AfterFacts, "Selection"));
+        Assert.Equal(
+            "None",
+            FactValue(explanation.AfterFacts, "Warning acknowledgements"));
+        Assert.DoesNotContain(
+            explanation.AfterFacts,
+            fact => fact.Label == "Remaining visits");
+        Assert.Equal("Visit only", explanation.ChangedFields);
+        Assert.Contains("without Membership consumption", explanation.Narrative);
+    }
+
+    [Fact]
+    public void MarkedVisitWithMismatchedRelatedClientFailsClosed()
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "visit.marked",
+                    AuditTimelineEntityType.Visit,
+                    visitId,
+                    new { },
+                    VisitMarkedAfter(
+                        visitId,
+                        clientId,
+                        "one_off",
+                        membershipId: null,
+                        consumptionId: null),
+                    related: new
+                    {
+                        ClientId = Guid.NewGuid(),
+                        MembershipId = (Guid?)null,
+                        ConsumptionId = (Guid?)null,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void MembershipVisitWithoutCountedConsumptionFailsClosed()
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var before = VisitMarkedMembershipState(
+            membershipId,
+            countedVisits: 0,
+            remainingVisits: 8,
+            negativeBalance: 0);
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "visit.marked",
+                    AuditTimelineEntityType.Visit,
+                    visitId,
+                    before,
+                    VisitMarkedAfter(
+                        visitId,
+                        clientId,
+                        "membership",
+                        membershipId,
+                        consumptionId: null,
+                        membershipState: before),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)membershipId,
+                        ConsumptionId = (Guid?)null,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void NonMembershipVisitWithMembershipStateFailsClosed()
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "visit.marked",
+                    AuditTimelineEntityType.Visit,
+                    visitId,
+                    new { },
+                    VisitMarkedAfter(
+                        visitId,
+                        clientId,
+                        "trial",
+                        membershipId: null,
+                        consumptionId: null,
+                        membershipState: VisitMarkedMembershipState(
+                            Guid.NewGuid(),
+                            countedVisits: 0,
+                            remainingVisits: 0,
+                            negativeBalance: 0)),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)null,
+                        ConsumptionId = (Guid?)null,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void MarkedVisitWithUnknownAcknowledgementFailsClosed()
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var consumptionId = Guid.NewGuid();
+        var state = VisitMarkedMembershipState(
+            membershipId,
+            countedVisits: 1,
+            remainingVisits: 0,
+            negativeBalance: 0);
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "visit.marked",
+                    AuditTimelineEntityType.Visit,
+                    visitId,
+                    state,
+                    VisitMarkedAfter(
+                        visitId,
+                        clientId,
+                        "membership",
+                        membershipId,
+                        consumptionId,
+                        acknowledgements: ["manager_override"],
+                        membershipState: state),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)membershipId,
+                        ConsumptionId = (Guid?)consumptionId,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void VisitCancellationShowsPreservedFactAndStoredMembershipStateChange()
     {
         var visitId = Guid.NewGuid();
@@ -1448,6 +1710,7 @@ public sealed class AuditEntryExplanationViewModelTests
     [InlineData("non_working_day.corrected", AuditTimelineEntityType.Payment)]
     [InlineData("non_working_day.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("freeze.canceled", AuditTimelineEntityType.Payment)]
+    [InlineData("visit.marked", AuditTimelineEntityType.Payment)]
     [InlineData("visit.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("payment.corrected", AuditTimelineEntityType.Visit)]
     [InlineData("payment.canceled", AuditTimelineEntityType.Visit)]
@@ -1488,8 +1751,8 @@ public sealed class AuditEntryExplanationViewModelTests
     {
         Assert.Null(AuditEntryExplanationViewModel.Create(
             Entry(
-                "visit.marked",
-                AuditTimelineEntityType.Visit,
+                "client.created",
+                AuditTimelineEntityType.Client,
                 Guid.NewGuid(),
                 new { },
                 new { })));
@@ -1573,6 +1836,63 @@ public sealed class AuditEntryExplanationViewModelTests
                 LastCountedVisitAt = (DateTimeOffset?)null,
                 RecalculationVersion = 1,
             },
+        };
+    }
+
+    private static object VisitMarkedAfter(
+        Guid visitId,
+        Guid clientId,
+        string visitKind,
+        Guid? membershipId,
+        Guid? consumptionId,
+        IReadOnlyList<string>? acknowledgements = null,
+        object? membershipState = null)
+    {
+        return new
+        {
+            Visit = new
+            {
+                VisitId = visitId,
+                ClientId = clientId,
+                VisitKind = visitKind,
+                MembershipId = membershipId,
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "normal",
+                EntryBatchId = (Guid?)null,
+                Comment = "Correction comment",
+                Status = "active",
+                ConsumptionId = consumptionId,
+                Acknowledgements = acknowledgements ?? [],
+                Selection = visitKind == "membership"
+                    ? "explicit_membership"
+                    : "explicit_non_membership_context",
+            },
+            MembershipState = membershipState,
+        };
+    }
+
+    private static object VisitMarkedMembershipState(
+        Guid membershipId,
+        int countedVisits,
+        int remainingVisits,
+        int negativeBalance,
+        Guid? firstNegativeVisitId = null,
+        DateOnly? firstNegativeVisitDate = null,
+        IReadOnlyList<string>? warnings = null)
+    {
+        return new
+        {
+            MembershipId = membershipId,
+            CountedVisits = countedVisits,
+            RemainingVisits = remainingVisits,
+            NegativeBalance = negativeBalance,
+            FirstNegativeVisitId = firstNegativeVisitId,
+            FirstNegativeVisitDate = firstNegativeVisitDate,
+            ExtensionDays = 0,
+            EffectiveEndDate = new DateOnly(2026, 8, 30),
+            LastCountedVisitAt = (DateTimeOffset?)OriginalOccurredAt,
+            Warnings = warnings ?? [],
         };
     }
 

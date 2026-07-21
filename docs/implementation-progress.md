@@ -11492,3 +11492,104 @@ Next recommended step:
   consumption, warning-acknowledgement and before/after Membership state facts
   without recalculating remaining visits. Leave the other six raw-only actions
   and the final Milestone 10 acceptance review for later steps.
+
+## Step 179 - Marked Visit audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continued only the final Milestone 10 audit-noise review and closed the
+  planned `visit.marked` gap. No remaining creation event, final Milestone 10
+  acceptance review or Milestone 11 work was started.
+- Implemented the operations audit-matrix summary for Client, controlled Visit
+  kind, explicit Membership/non-membership selection, optional counted
+  consumption, occurred time, accepted warning acknowledgements and stored
+  before/after Membership state.
+- Kept Memberships as the sole owner of counted/remaining/negative state. The
+  Timeline reads persisted audit values and does not reproduce recalculation or
+  warning derivation formulas.
+
+Completed:
+
+- Added a fail-closed `visit.marked` Timeline explanation that distinguishes
+  Membership, one-off and trial Visits. It validates the audit entity, related
+  Client/Membership/consumption references, source timestamps, entry origin,
+  comment, status and explicit selection context before presenting facts.
+- For Membership Visits, shows the explicitly selected Membership, created
+  counted-consumption reference, accepted expired/zero/negative warning
+  acknowledgements and compact stored before/after counted visits, remaining
+  visits, negative balance, first-negative date and warnings.
+- For one-off/trial Visits, explicitly shows that no Membership, consumption or
+  Membership state exists. Inconsistent state, unknown warning codes, duplicate
+  acknowledgements, mismatched references and malformed source summaries fail
+  closed to the existing unavailable state.
+- Parses but leaves extension days, effective end, first-negative Visit id and
+  last-counted timestamp in the collapsed raw envelope because they are not the
+  primary change explanation for this command. No Membership formula was added
+  to Web code.
+- Added eight Web presenter cases for Membership, one-off and trial success,
+  wrong entity, relationship mismatch, missing consumption, invented
+  non-membership state and unsupported acknowledgement handling.
+- Strengthened the real PostgreSQL `MarkVisit` command tests to pin the exact
+  three-reference payload, ten-field Membership summaries, thirteen-field Visit
+  summary, explicit selection, warning acknowledgement and null Membership/
+  consumption semantics for both non-membership kinds.
+- Converted the twelve existing Audit Timeline pagination seeds from legacy
+  placeholder JSON to production-shaped one-off/trial payloads so recognizing
+  `visit.marked` does not add unavailable-summary noise to the normal Timeline.
+- Added an isolated production-shaped Membership Visit seed plus Owner/tablet
+  and named-Admin/phone Playwright coverage over exact filtering, consumption,
+  warning acknowledgement, stored state, collapsed raw envelope, touch target
+  and viewport fit.
+- Kept command handling, Visit and consumption persistence, Membership
+  recalculation, Razor markup, CSS, authorization, EF model and migrations
+  unchanged.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors. Focused
+  `AuditEntryExplanationViewModelTests` passed 72/72 and the two strengthened
+  real PostgreSQL `MarkVisit` workflow tests passed 2/2.
+- Focused marked-Visit Playwright coverage passed 2/2. The complete
+  `AuditTimelineSmokeTests` regression passed 24/24 with no skipped tests,
+  including the converted pagination payloads.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports. Both explanations remain readable, the phone
+  layout stacks without overlap, the raw envelope stays secondary, the toggle
+  retains its touch target and Playwright found no horizontal overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 107 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 103 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed before the progress
+  update.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain marked visits`.
+
+Next recommended step:
+
+- Continue the bounded audit-noise review with `payment.created`, the remaining
+  high-frequency cash source event. Add a compact Owner/Admin explanation for
+  amount/currency, cash context, Client/optional Membership, occurred time and
+  source status without turning audit into report truth. Leave
+  `client.created`, `membership_type.created`,
+  `membership_opening_state.created`, `freeze.added` and
+  `non_working_day.added`, plus the final Milestone 10 acceptance review, for
+  later steps.

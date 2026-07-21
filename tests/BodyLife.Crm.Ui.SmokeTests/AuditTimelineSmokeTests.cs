@@ -36,6 +36,187 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
     [Theory]
     [InlineData("owner-tablet", 1024, 768, true)]
     [InlineData("admin-phone", 390, 844, false)]
+    public async Task MarkedMembershipVisitShowsConsumptionAndStoredStateChange(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var visit = scenario.Explanations.VisitMark;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} marked Visit audit smoke");
+
+            var explanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "Visit",
+                "visit.marked",
+                visit.AuditEntryId,
+                "visit-marked",
+                viewportName,
+                entityId: visit.VisitId);
+            await ExpectVisibleAsync(
+                explanation.GetByRole(
+                    AriaRole.Heading,
+                    new()
+                    {
+                        Name = "Membership visit and consumption recorded",
+                        Exact = true,
+                    }),
+                viewportName,
+                "marked Membership Visit explanation title");
+            Assert.Equal(
+                visit.MembershipId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before visit",
+                    "Membership"));
+            Assert.Equal(
+                "Not present",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before visit",
+                    "Consumption"));
+            Assert.Equal(
+                visit.BeforeCountedVisits.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before visit",
+                    "Counted visits"));
+            Assert.Equal(
+                visit.BeforeRemainingVisits.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before visit",
+                    "Remaining visits"));
+            Assert.Equal(
+                "Zero remaining",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before visit",
+                    "Membership warnings"));
+            Assert.Equal(
+                "Membership visit",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "Visit type"));
+            Assert.Equal(
+                visit.ClientId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "Client"));
+            Assert.Equal(
+                $"Counted / {visit.ConsumptionId.ToString("N")[..8]}",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "Consumption"));
+            Assert.Equal(
+                "Explicit Membership",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "Selection"));
+            Assert.Equal(
+                "Zero remaining",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "Warning acknowledgements"));
+            Assert.Equal(
+                visit.AfterCountedVisits.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "Counted visits"));
+            Assert.Equal(
+                visit.AfterRemainingVisits.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "Remaining visits"));
+            Assert.Equal(
+                visit.AfterNegativeBalance.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "Negative balance"));
+            Assert.Equal(
+                visit.FirstNegativeVisitDate.ToString(
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "First negative visit date"));
+            Assert.Equal(
+                "Negative balance",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded visit",
+                    "Membership warnings"));
+            await ExpectVisibleAsync(
+                explanation.GetByText(
+                    "Visit, counted consumption, Membership state",
+                    new() { Exact = true }).Last,
+                viewportName,
+                "marked Visit changed fields");
+
+            var primaryFacts = string.Join(
+                ' ',
+                await explanation.Locator(".audit-change-facts").AllInnerTextsAsync());
+            Assert.DoesNotContain("lastCountedVisitAt", primaryFacts, StringComparison.Ordinal);
+            Assert.DoesNotContain("extensionDays", primaryFacts, StringComparison.Ordinal);
+            var envelope = explanation
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "marked Visit audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "marked Visit raw envelope");
+            var envelopeText = await envelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains("firstNegativeVisitId", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("lastCountedVisitAt", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("extensionDays", envelopeText, StringComparison.Ordinal);
+            await AssertFitsViewportAsync(page, viewportName, "marked Visit explanation");
+            await CaptureVisualAsync(page, viewportName, "marked-visit-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
     public async Task MembershipIssueLeadsWithImmutableTermsAndInitialState(
         string viewportName,
         int width,
@@ -379,7 +560,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 "request correlation id");
             var envelopeText = await featured.Locator(".audit-json-grid").InnerTextAsync();
             Assert.Contains(scenario.ClientId.ToString(), envelopeText, StringComparison.Ordinal);
-            Assert.Contains("remainingVisits", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("explicit_non_membership_context", envelopeText, StringComparison.Ordinal);
             await AssertFitsViewportAsync(page, viewportName, "expanded audit envelope");
             await CaptureVisualAsync(page, viewportName, "audit-timeline");
 

@@ -2308,7 +2308,22 @@ public sealed record AuditExplanationSmokeScenario(
     FreezeCancellationAuditExplanationSmokeScenario FreezeCancellation,
     ClientCardAuditExplanationSmokeScenario ClientAndCards,
     StaffAccountAuditExplanationSmokeScenario StaffAccounts,
+    VisitMarkAuditExplanationSmokeScenario VisitMark,
     MembershipIssueAuditExplanationSmokeScenario MembershipIssue);
+
+public sealed record VisitMarkAuditExplanationSmokeScenario(
+    Guid AuditEntryId,
+    Guid VisitId,
+    Guid ClientId,
+    Guid MembershipId,
+    Guid ConsumptionId,
+    DateTimeOffset OccurredAt,
+    int BeforeCountedVisits,
+    int BeforeRemainingVisits,
+    int AfterCountedVisits,
+    int AfterRemainingVisits,
+    int AfterNegativeBalance,
+    DateOnly FirstNegativeVisitDate);
 
 public sealed record MembershipIssueAuditExplanationSmokeScenario(
     Guid AuditEntryId,

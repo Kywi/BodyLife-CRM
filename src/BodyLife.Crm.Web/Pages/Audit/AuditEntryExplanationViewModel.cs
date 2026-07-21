@@ -38,6 +38,7 @@ public sealed record AuditEntryExplanationViewModel(
             "non_working_day.corrected" => "non-working-day-corrected",
             "non_working_day.canceled" => "non-working-day-canceled",
             "freeze.canceled" => "freeze-canceled",
+            "visit.marked" => "visit-marked",
             "visit.canceled" => "visit-canceled",
             "payment.corrected" => "payment-corrected",
             "payment.canceled" => "payment-canceled",
@@ -145,6 +146,12 @@ public sealed record AuditEntryExplanationViewModel(
                         entry,
                         before.RootElement,
                         after.RootElement),
+                "visit.marked" when entry.EntityType == AuditTimelineEntityType.Visit
+                    => CreateVisitMarked(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
                 "visit.canceled" when entry.EntityType == AuditTimelineEntityType.Visit
                     => CreateVisitCancellation(entry, before.RootElement, after.RootElement),
                 "payment.corrected" when entry.EntityType == AuditTimelineEntityType.Payment
@@ -225,6 +232,123 @@ public sealed record AuditEntryExplanationViewModel(
                     TimelineModel.TimestampLabel(deactivated.DeactivatedAt.Value)),
             ],
             ChangedFields: "Catalog status",
+            IsAvailable: true);
+    }
+
+    private static AuditEntryExplanationViewModel CreateVisitMarked(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        var relatedClientId = RequireGuid(related, "clientId");
+        var relatedMembershipId = RequireNullableGuid(related, "membershipId");
+        var relatedConsumptionId = RequireNullableGuid(related, "consumptionId");
+        var visit = ReadMarkedVisit(RequireObject(after, "visit"));
+        var afterStateElement = RequireNullableObject(after, "membershipState");
+
+        ValidateEntryBatch(visit.EntryOrigin, visit.EntryBatchId);
+        if (visit.VisitId != entry.EntityId
+            || visit.ClientId != relatedClientId
+            || visit.MembershipId != relatedMembershipId
+            || visit.ConsumptionId != relatedConsumptionId
+            || visit.OccurredAt != entry.OccurredAt
+            || visit.RecordedAt != entry.RecordedAt
+            || visit.EntryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || visit.Comment != entry.Comment
+            || visit.Status != "active")
+        {
+            throw new JsonException("Marked Visit summary identity is inconsistent.");
+        }
+
+        VisitMarkedMembershipStateSnapshot? beforeState = null;
+        VisitMarkedMembershipStateSnapshot? afterState = null;
+        if (visit.VisitKind == "membership")
+        {
+            beforeState = ReadVisitMarkedMembershipState(before);
+            afterState = afterStateElement is null
+                ? throw new JsonException(
+                    "A Membership Visit requires stored Membership state.")
+                : ReadVisitMarkedMembershipState(afterStateElement.Value);
+
+            if (visit.MembershipId is null
+                || visit.ConsumptionId is null
+                || visit.Selection != "explicit_membership"
+                || beforeState.MembershipId != visit.MembershipId
+                || afterState.MembershipId != visit.MembershipId
+                || beforeState.ExtensionDays != afterState.ExtensionDays
+                || beforeState.EffectiveEndDate != afterState.EffectiveEndDate)
+            {
+                throw new JsonException(
+                    "Membership Visit state or consumption is inconsistent.");
+            }
+        }
+        else if (visit.VisitKind is "one_off" or "trial")
+        {
+            if (before.ValueKind != JsonValueKind.Object
+                || before.EnumerateObject().Any()
+                || afterStateElement is not null
+                || visit.MembershipId is not null
+                || visit.ConsumptionId is not null
+                || visit.Selection != "explicit_non_membership_context"
+                || visit.Acknowledgements.Count != 0)
+            {
+                throw new JsonException(
+                    "A non-membership Visit cannot include Membership state or consumption.");
+            }
+        }
+        else
+        {
+            throw new JsonException("Visit kind is not supported.");
+        }
+
+        var visitKindLabel = VisitKindLabel(visit.VisitKind);
+        var acknowledgementLabel = VisitAcknowledgementsLabel(
+            visit.Acknowledgements);
+        List<AuditEntryExplanationFactViewModel> beforeFacts =
+        [
+            Fact("Visit", "Not present"),
+            Fact("Membership", OptionalIdLabel(visit.MembershipId)),
+            Fact(
+                "Consumption",
+                visit.ConsumptionId is null ? "Not applicable" : "Not present"),
+        ];
+        AddVisitMarkedMembershipFacts(beforeFacts, beforeState);
+
+        List<AuditEntryExplanationFactViewModel> afterFacts =
+        [
+            Fact("Visit type", visitKindLabel),
+            Fact("Visit", TimelineModel.ShortId(visit.VisitId)),
+            Fact("Client", TimelineModel.ShortId(visit.ClientId)),
+            Fact("Occurred", TimelineModel.TimestampLabel(visit.OccurredAt)),
+            Fact("Status", "Active"),
+            Fact("Membership", OptionalIdLabel(visit.MembershipId)),
+            Fact(
+                "Consumption",
+                visit.ConsumptionId is { } consumptionId
+                    ? $"Counted / {TimelineModel.ShortId(consumptionId)}"
+                    : "Not applicable"),
+            Fact("Selection", VisitSelectionLabel(visit.VisitKind)),
+            Fact("Warning acknowledgements", acknowledgementLabel),
+        ];
+        AddVisitMarkedMembershipFacts(afterFacts, afterState);
+
+        var isMembershipVisit = visit.MembershipId is not null;
+        return new AuditEntryExplanationViewModel(
+            "visit-marked",
+            isMembershipVisit
+                ? "Membership visit and consumption recorded"
+                : $"{visitKindLabel} recorded",
+            isMembershipVisit
+                ? "The Membership was selected explicitly. The counted consumption and stored before/after Membership values come from the successful command; this view does not recalculate them."
+                : $"The {visitKindLabel.ToLowerInvariant()} was recorded in an explicit non-membership context, without Membership consumption or recalculation.",
+            "Before visit",
+            "Recorded visit",
+            beforeFacts,
+            afterFacts,
+            ChangedFields: isMembershipVisit
+                ? "Visit, counted consumption, Membership state"
+                : "Visit only",
             IsAvailable: true);
     }
 
@@ -801,6 +925,80 @@ public sealed record AuditEntryExplanationViewModel(
         return snapshot;
     }
 
+    private static VisitMarkedSnapshot ReadMarkedVisit(JsonElement visit)
+    {
+        return new VisitMarkedSnapshot(
+            RequireGuid(visit, "visitId"),
+            RequireGuid(visit, "clientId"),
+            RequireString(visit, "visitKind"),
+            RequireNullableGuid(visit, "membershipId"),
+            RequireTimestamp(visit, "occurredAt"),
+            RequireTimestamp(visit, "recordedAt"),
+            RequireString(visit, "entryOrigin"),
+            RequireNullableGuid(visit, "entryBatchId"),
+            RequireNullableString(visit, "comment"),
+            RequireString(visit, "status"),
+            RequireNullableGuid(visit, "consumptionId"),
+            RequireStringArray(visit, "acknowledgements"),
+            RequireString(visit, "selection"));
+    }
+
+    private static VisitMarkedMembershipStateSnapshot ReadVisitMarkedMembershipState(
+        JsonElement state)
+    {
+        var firstNegativeVisitId = RequireNullableGuid(
+            state,
+            "firstNegativeVisitId");
+        var firstNegativeVisitDate = RequireNullableDateOnly(
+            state,
+            "firstNegativeVisitDate");
+        if ((firstNegativeVisitId is null) != (firstNegativeVisitDate is null))
+        {
+            throw new JsonException(
+                "First-negative Visit metadata is incomplete.");
+        }
+
+        return new VisitMarkedMembershipStateSnapshot(
+            RequireGuid(state, "membershipId"),
+            RequireNonNegativeInt32(state, "countedVisits"),
+            RequireInt32(state, "remainingVisits"),
+            RequireNonNegativeInt32(state, "negativeBalance"),
+            firstNegativeVisitId,
+            firstNegativeVisitDate,
+            RequireNonNegativeInt32(state, "extensionDays"),
+            RequireDateOnly(state, "effectiveEndDate"),
+            RequireNullableTimestamp(state, "lastCountedVisitAt"),
+            RequireStringArray(state, "warnings"));
+    }
+
+    private static void AddVisitMarkedMembershipFacts(
+        ICollection<AuditEntryExplanationFactViewModel> facts,
+        VisitMarkedMembershipStateSnapshot? state)
+    {
+        if (state is null)
+        {
+            return;
+        }
+
+        facts.Add(Fact(
+            "Counted visits",
+            state.CountedVisits.ToString(CultureInfo.InvariantCulture)));
+        facts.Add(Fact(
+            "Remaining visits",
+            state.RemainingVisits.ToString(CultureInfo.InvariantCulture)));
+        facts.Add(Fact(
+            "Negative balance",
+            state.NegativeBalance.ToString(CultureInfo.InvariantCulture)));
+        facts.Add(Fact(
+            "First negative visit date",
+            state.FirstNegativeVisitDate is { } date
+                ? DateLabel(date)
+                : "Not recorded"));
+        facts.Add(Fact(
+            "Membership warnings",
+            MembershipWarningsLabel(state.Warnings)));
+    }
+
     private static MembershipStateSnapshot? ReadMembershipState(
         JsonElement summary,
         Guid? membershipId)
@@ -1158,7 +1356,7 @@ public sealed record AuditEntryExplanationViewModel(
         _ = StoredEntryOriginLabel(entryOrigin);
         if (entryOrigin == "normal" && entryBatchId is not null)
         {
-            throw new JsonException("A normal Freeze audit summary cannot reference an entry batch.");
+            throw new JsonException("A normal audit summary cannot reference an entry batch.");
         }
     }
 
@@ -1200,6 +1398,65 @@ public sealed record AuditEntryExplanationViewModel(
             "trial" => "Trial visit",
             _ => throw new JsonException("Visit kind is not supported."),
         };
+    }
+
+    private static string VisitSelectionLabel(string visitKind)
+    {
+        return visitKind switch
+        {
+            "membership" => "Explicit Membership",
+            "one_off" => "Explicit one-off context",
+            "trial" => "Explicit trial context",
+            _ => throw new JsonException("Visit kind is not supported."),
+        };
+    }
+
+    private static string VisitAcknowledgementsLabel(
+        IReadOnlyList<string> acknowledgements)
+    {
+        return LabelsOrNone(
+            acknowledgements,
+            acknowledgement => acknowledgement switch
+            {
+                "expired" => "Expired membership",
+                "zero_remaining" => "Zero remaining",
+                "negative_remaining" => "Negative balance",
+                _ => throw new JsonException(
+                    "Visit warning acknowledgement is not supported."),
+            });
+    }
+
+    private static string MembershipWarningsLabel(IReadOnlyList<string> warnings)
+    {
+        return LabelsOrNone(
+            warnings,
+            warning => warning switch
+            {
+                "membership_negative_balance" => "Negative balance",
+                "membership_expired_by_date" => "Expired membership",
+                "membership_zero_remaining" => "Zero remaining",
+                "membership_ending_soon" => "Ending soon",
+                "membership_low_remaining" => "Low remaining",
+                _ => throw new JsonException("Membership warning is not supported."),
+            });
+    }
+
+    private static string LabelsOrNone(
+        IReadOnlyList<string> values,
+        Func<string, string> label)
+    {
+        if (values.Count == 0)
+        {
+            return "None";
+        }
+
+        var distinct = values.Distinct(StringComparer.Ordinal).ToArray();
+        if (distinct.Length != values.Count)
+        {
+            throw new JsonException("Audit summary values must be unique.");
+        }
+
+        return string.Join(", ", values.Select(label));
     }
 
     private static string ConsumptionStatusLabel(string? value)
@@ -1392,6 +1649,33 @@ public sealed record AuditEntryExplanationViewModel(
     private sealed record MembershipStateSnapshot(
         int RemainingVisits,
         int NegativeBalance);
+
+    private sealed record VisitMarkedSnapshot(
+        Guid VisitId,
+        Guid ClientId,
+        string VisitKind,
+        Guid? MembershipId,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment,
+        string Status,
+        Guid? ConsumptionId,
+        IReadOnlyList<string> Acknowledgements,
+        string Selection);
+
+    private sealed record VisitMarkedMembershipStateSnapshot(
+        Guid MembershipId,
+        int CountedVisits,
+        int RemainingVisits,
+        int NegativeBalance,
+        Guid? FirstNegativeVisitId,
+        DateOnly? FirstNegativeVisitDate,
+        int ExtensionDays,
+        DateOnly EffectiveEndDate,
+        DateTimeOffset? LastCountedVisitAt,
+        IReadOnlyList<string> Warnings);
 }
 
 public sealed record AuditEntryExplanationFactViewModel(

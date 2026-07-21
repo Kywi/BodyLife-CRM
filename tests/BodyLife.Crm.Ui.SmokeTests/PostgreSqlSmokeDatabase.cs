@@ -645,18 +645,34 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             var correlationId = isFeatured
                 ? featuredCorrelationId
                 : $"audit-ui-{index:D2}";
+            var visitKind = index % 2 == 0 ? "one_off" : "trial";
+            var entryBatchId = isFeatured ? Guid.NewGuid() : (Guid?)null;
             var relatedEntityRefs = JsonSerializer.Serialize(new
             {
                 clientId,
-                membershipId,
+                membershipId = (Guid?)null,
+                consumptionId = (Guid?)null,
             });
-            var beforeSummary = JsonSerializer.Serialize(new
-            {
-                remainingVisits = 10 - index,
-            });
+            var beforeSummary = JsonSerializer.Serialize(new { });
             var afterSummary = JsonSerializer.Serialize(new
             {
-                remainingVisits = 9 - index,
+                Visit = new
+                {
+                    VisitId = entityId,
+                    ClientId = clientId,
+                    VisitKind = visitKind,
+                    MembershipId = (Guid?)null,
+                    OccurredAt = occurredAt,
+                    RecordedAt = recordedAt,
+                    EntryOrigin = entryOrigin,
+                    EntryBatchId = entryBatchId,
+                    Comment = comment,
+                    Status = "active",
+                    ConsumptionId = (Guid?)null,
+                    Acknowledgements = Array.Empty<string>(),
+                    Selection = "explicit_non_membership_context",
+                },
+                MembershipState = (object?)null,
             });
 
             await using var auditCommand = connection.CreateCommand();
@@ -785,6 +801,49 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             EffectiveEndDate = membershipEffectiveEndDate,
             LastCountedVisitAt = (DateTimeOffset?)null,
             Warnings = Array.Empty<string>(),
+        };
+
+        var visitMarkAuditEntryId = Guid.NewGuid();
+        var markedVisitId = Guid.NewGuid();
+        var markedVisitClientId = Guid.NewGuid();
+        var markedVisitMembershipId = Guid.NewGuid();
+        var markedVisitConsumptionId = Guid.NewGuid();
+        var markedVisitOccurredAt = recordedBase.AddHours(12);
+        var markedVisitRecordedAt = markedVisitOccurredAt.AddMinutes(5);
+        var markedVisitEffectiveEndDate = recordedDate.AddDays(14);
+        var markedVisitFirstNegativeDate = DateOnly.FromDateTime(
+            markedVisitOccurredAt.UtcDateTime);
+        const int markedVisitBeforeCounted = 8;
+        const int markedVisitBeforeRemaining = 0;
+        const int markedVisitAfterCounted = 9;
+        const int markedVisitAfterRemaining = -1;
+        const int markedVisitAfterNegative = 1;
+        const string markedVisitComment = "Zero balance accepted at reception";
+        var markedVisitBeforeState = new
+        {
+            MembershipId = markedVisitMembershipId,
+            CountedVisits = markedVisitBeforeCounted,
+            RemainingVisits = markedVisitBeforeRemaining,
+            NegativeBalance = 0,
+            FirstNegativeVisitId = (Guid?)null,
+            FirstNegativeVisitDate = (DateOnly?)null,
+            ExtensionDays = 0,
+            EffectiveEndDate = markedVisitEffectiveEndDate,
+            LastCountedVisitAt = (DateTimeOffset?)recordedBase.AddDays(-1),
+            Warnings = new[] { "membership_zero_remaining" },
+        };
+        var markedVisitAfterState = new
+        {
+            MembershipId = markedVisitMembershipId,
+            CountedVisits = markedVisitAfterCounted,
+            RemainingVisits = markedVisitAfterRemaining,
+            NegativeBalance = markedVisitAfterNegative,
+            FirstNegativeVisitId = (Guid?)markedVisitId,
+            FirstNegativeVisitDate = (DateOnly?)markedVisitFirstNegativeDate,
+            ExtensionDays = 0,
+            EffectiveEndDate = markedVisitEffectiveEndDate,
+            LastCountedVisitAt = (DateTimeOffset?)markedVisitOccurredAt,
+            Warnings = new[] { "membership_negative_balance" },
         };
 
         var paymentCorrectionAuditEntryId = Guid.NewGuid();
@@ -1219,6 +1278,49 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         AuditSeed[] explanationSeeds =
         [
+            new(
+                visitMarkAuditEntryId,
+                "visit.marked",
+                "visit",
+                markedVisitId,
+                new
+                {
+                    ClientId = markedVisitClientId,
+                    MembershipId = (Guid?)markedVisitMembershipId,
+                    ConsumptionId = (Guid?)markedVisitConsumptionId,
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                markedVisitOccurredAt,
+                markedVisitRecordedAt,
+                "normal",
+                Reason: null,
+                markedVisitComment,
+                markedVisitBeforeState,
+                new
+                {
+                    Visit = new
+                    {
+                        VisitId = markedVisitId,
+                        ClientId = markedVisitClientId,
+                        VisitKind = "membership",
+                        MembershipId = (Guid?)markedVisitMembershipId,
+                        OccurredAt = markedVisitOccurredAt,
+                        RecordedAt = markedVisitRecordedAt,
+                        EntryOrigin = "normal",
+                        EntryBatchId = (Guid?)null,
+                        Comment = markedVisitComment,
+                        Status = "active",
+                        ConsumptionId = (Guid?)markedVisitConsumptionId,
+                        Acknowledgements = new[] { "zero_remaining" },
+                        Selection = "explicit_membership",
+                    },
+                    MembershipState = markedVisitAfterState,
+                },
+                ChangedAfterClose: false),
             new(
                 membershipIssueAuditEntryId,
                 "membership.issued",
@@ -1856,6 +1958,19 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     credentialsResetAuditEntryId,
                     credentialResetReason,
                     credentialResetEndedSessionCount),
+                VisitMark: new VisitMarkAuditExplanationSmokeScenario(
+                    visitMarkAuditEntryId,
+                    markedVisitId,
+                    markedVisitClientId,
+                    markedVisitMembershipId,
+                    markedVisitConsumptionId,
+                    markedVisitOccurredAt,
+                    markedVisitBeforeCounted,
+                    markedVisitBeforeRemaining,
+                    markedVisitAfterCounted,
+                    markedVisitAfterRemaining,
+                    markedVisitAfterNegative,
+                    markedVisitFirstNegativeDate),
                 MembershipIssue: new MembershipIssueAuditExplanationSmokeScenario(
                     membershipIssueAuditEntryId,
                     issuedMembershipId,

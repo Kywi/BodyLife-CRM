@@ -92,27 +92,93 @@ public sealed class PostgreSqlMarkVisitCommandTests
         Assert.Equal(TestNow, audit.RecordedAt);
         Assert.Equal("normal", audit.EntryOrigin);
         Assert.Equal("membership-success", audit.IdempotencyKey);
+        using (var related = JsonDocument.Parse(audit.RelatedEntityRefs))
+        {
+            Assert.Equal(3, related.RootElement.EnumerateObject().Count());
+            Assert.Equal(
+                fixture.ClientId,
+                related.RootElement.GetProperty("clientId").GetGuid());
+            Assert.Equal(
+                fixture.MembershipId,
+                related.RootElement.GetProperty("membershipId").GetGuid());
+            Assert.Equal(
+                consumption.Id,
+                related.RootElement.GetProperty("consumptionId").GetGuid());
+        }
+
         using (var before = JsonDocument.Parse(audit.BeforeSummary))
         {
+            Assert.Equal(10, before.RootElement.EnumerateObject().Count());
+            Assert.Equal(
+                fixture.MembershipId,
+                before.RootElement.GetProperty("membershipId").GetGuid());
+            Assert.Equal(0, before.RootElement.GetProperty("countedVisits").GetInt32());
             Assert.Equal(
                 1,
                 before.RootElement.GetProperty("remainingVisits").GetInt32());
+            Assert.Equal(
+                0,
+                before.RootElement.GetProperty("negativeBalance").GetInt32());
+            Assert.Equal(
+                [MembershipWarningCodes.LowRemaining],
+                before.RootElement
+                    .GetProperty("warnings")
+                    .EnumerateArray()
+                    .Select(item => item.GetString()!)
+                    .ToArray());
         }
 
         using (var after = JsonDocument.Parse(audit.AfterSummary))
         {
+            Assert.Equal(2, after.RootElement.EnumerateObject().Count());
             var visitSummary = after.RootElement.GetProperty("visit");
+            Assert.Equal(13, visitSummary.EnumerateObject().Count());
             Assert.Equal(visitId, visitSummary.GetProperty("visitId").GetGuid());
+            Assert.Equal(
+                fixture.ClientId,
+                visitSummary.GetProperty("clientId").GetGuid());
+            Assert.Equal("membership", visitSummary.GetProperty("visitKind").GetString());
+            Assert.Equal(
+                fixture.MembershipId,
+                visitSummary.GetProperty("membershipId").GetGuid());
+            Assert.Equal(
+                VisitOccurredAt,
+                visitSummary.GetProperty("occurredAt").GetDateTimeOffset());
+            Assert.Equal(
+                TestNow,
+                visitSummary.GetProperty("recordedAt").GetDateTimeOffset());
+            Assert.Equal("normal", visitSummary.GetProperty("entryOrigin").GetString());
+            Assert.Equal(JsonValueKind.Null, visitSummary.GetProperty("entryBatchId").ValueKind);
+            Assert.Equal(
+                "Front desk Visit",
+                visitSummary.GetProperty("comment").GetString());
+            Assert.Equal("active", visitSummary.GetProperty("status").GetString());
             Assert.Equal(
                 consumption.Id,
                 visitSummary.GetProperty("consumptionId").GetGuid());
             Assert.Empty(visitSummary.GetProperty("acknowledgements").EnumerateArray());
             Assert.Equal(
+                "explicit_membership",
+                visitSummary.GetProperty("selection").GetString());
+            var membershipState = after.RootElement.GetProperty("membershipState");
+            Assert.Equal(10, membershipState.EnumerateObject().Count());
+            Assert.Equal(
+                fixture.MembershipId,
+                membershipState.GetProperty("membershipId").GetGuid());
+            Assert.Equal(1, membershipState.GetProperty("countedVisits").GetInt32());
+            Assert.Equal(
                 0,
-                after.RootElement
-                    .GetProperty("membershipState")
-                    .GetProperty("remainingVisits")
-                    .GetInt32());
+                membershipState.GetProperty("remainingVisits").GetInt32());
+            Assert.Equal(
+                0,
+                membershipState.GetProperty("negativeBalance").GetInt32());
+            Assert.Equal(
+                [MembershipWarningCodes.ZeroRemaining],
+                membershipState
+                    .GetProperty("warnings")
+                    .EnumerateArray()
+                    .Select(item => item.GetString()!)
+                    .ToArray());
         }
 
         Assert.Equal(1L, await CountRowsAsync(database, "visits"));
@@ -230,6 +296,52 @@ public sealed class PostgreSqlMarkVisitCommandTests
         Assert.Equal(0L, await CountRowsAsync(database, "membership_state_cache"));
         Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(2L, await CountRowsAsync(database, "command_idempotency_keys"));
+
+        foreach (var (result, expectedKind) in new[]
+                 {
+                     (oneOff, "one_off"),
+                     (trial, "trial"),
+                 })
+        {
+            var audit = await ReadAuditAsync(
+                database,
+                result.AuditEntryId!.Value.Value);
+            using var related = JsonDocument.Parse(audit.RelatedEntityRefs);
+            Assert.Equal(3, related.RootElement.EnumerateObject().Count());
+            Assert.Equal(
+                fixture.ClientId,
+                related.RootElement.GetProperty("clientId").GetGuid());
+            Assert.Equal(
+                JsonValueKind.Null,
+                related.RootElement.GetProperty("membershipId").ValueKind);
+            Assert.Equal(
+                JsonValueKind.Null,
+                related.RootElement.GetProperty("consumptionId").ValueKind);
+
+            using var before = JsonDocument.Parse(audit.BeforeSummary);
+            Assert.Empty(before.RootElement.EnumerateObject());
+            using var after = JsonDocument.Parse(audit.AfterSummary);
+            Assert.Equal(2, after.RootElement.EnumerateObject().Count());
+            var visitSummary = after.RootElement.GetProperty("visit");
+            Assert.Equal(13, visitSummary.EnumerateObject().Count());
+            Assert.Equal(
+                result.PrimaryEntityId!.Value.Value,
+                visitSummary.GetProperty("visitId").GetGuid());
+            Assert.Equal(expectedKind, visitSummary.GetProperty("visitKind").GetString());
+            Assert.Equal(
+                JsonValueKind.Null,
+                visitSummary.GetProperty("membershipId").ValueKind);
+            Assert.Equal(
+                JsonValueKind.Null,
+                visitSummary.GetProperty("consumptionId").ValueKind);
+            Assert.Empty(visitSummary.GetProperty("acknowledgements").EnumerateArray());
+            Assert.Equal(
+                "explicit_non_membership_context",
+                visitSummary.GetProperty("selection").GetString());
+            Assert.Equal(
+                JsonValueKind.Null,
+                after.RootElement.GetProperty("membershipState").ValueKind);
+        }
     }
 
     [PostgreSqlFact]
@@ -1069,6 +1181,7 @@ public sealed class PostgreSqlMarkVisitCommandTests
                    entry_origin,
                    reason,
                    idempotency_key,
+                   related_entity_refs::text,
                    before_summary::text,
                    after_summary::text
             from bodylife.business_audit_entries
@@ -1087,7 +1200,8 @@ public sealed class PostgreSqlMarkVisitCommandTests
             reader.IsDBNull(6) ? null : reader.GetString(6),
             reader.IsDBNull(7) ? null : reader.GetString(7),
             reader.GetString(8),
-            reader.GetString(9));
+            reader.GetString(9),
+            reader.GetString(10));
     }
 
     private static async Task ExecuteNonQueryAsync(
@@ -1207,6 +1321,7 @@ public sealed class PostgreSqlMarkVisitCommandTests
         string EntryOrigin,
         string? Reason,
         string? IdempotencyKey,
+        string RelatedEntityRefs,
         string BeforeSummary,
         string AfterSummary);
 
