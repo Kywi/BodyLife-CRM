@@ -112,6 +112,36 @@ public sealed class GetClientMembershipHistorySourceRowsContractsTests
         });
     }
 
+    [Fact]
+    public void OpeningStateHistorySourceExposesItsDeclarationAsScalarSnapshotValues()
+    {
+        var openingAsOfDate = new DateOnly(2026, 6, 30);
+        var knownEffectiveEndDate = new DateOnly(2026, 8, 15);
+        var declaration = MembershipOpeningState.FromDeclaration(
+            openingAsOfDate,
+            declaredRemainingVisits: -3,
+            knownEffectiveEndDate,
+            knownExtensionDays: 4);
+        var source = new MembershipOpeningStateHistorySource(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            declaration,
+            "legacy-register-42",
+            "Initial migration",
+            From,
+            AccountId.New(),
+            SessionId.New(),
+            EntryBatchId: null,
+            MembershipOpeningStateSourceStatus.Active);
+
+        Assert.Equal(openingAsOfDate, source.OpeningAsOfDate);
+        Assert.Equal(-3, source.DeclaredRemainingVisits);
+        Assert.Equal(3, source.DeclaredNegativeBalance);
+        Assert.Equal(knownEffectiveEndDate, source.KnownEffectiveEndDate);
+        Assert.Equal(4, source.KnownExtensionDays);
+    }
+
     private static ClientMembershipHistorySourceRow CreateIssuedRow(Guid clientId)
     {
         var membershipId = Guid.NewGuid();

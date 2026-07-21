@@ -24,11 +24,13 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     private readonly object _negativeClientsReportSeedLock = new();
     private readonly object _inactiveClientsReportSeedLock = new();
     private readonly object _auditTimelineSeedLock = new();
+    private readonly object _clientHistorySeedLock = new();
     private Task<EndingSoonReportSmokeScenario>? _endingSoonReportSeedTask;
     private Task<LowRemainingReportSmokeScenario>? _lowRemainingReportSeedTask;
     private Task<NegativeClientsReportSmokeScenario>? _negativeClientsReportSeedTask;
     private Task<InactiveClientsReportSmokeScenario>? _inactiveClientsReportSeedTask;
     private Task<AuditTimelineSmokeScenario>? _auditTimelineSeedTask;
+    private Task<ClientHistorySmokeScenario>? _clientHistorySeedTask;
     private Process? _process;
     private PostgreSqlSmokeDatabase? _database;
     private Guid _ownerAccountId;
@@ -616,6 +618,18 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
                 RequireDatabase().SeedAuditTimelineAsync(
                     _ownerAccountId,
                     _sharedAdminAccountId);
+        }
+    }
+
+    public Task<ClientHistorySmokeScenario> EnsureClientHistoryScenarioAsync()
+    {
+        lock (_clientHistorySeedLock)
+        {
+            return _clientHistorySeedTask ??=
+                RequireDatabase().SeedClientHistoryAsync(
+                    _ownerAccountId,
+                    _sharedAdminAccountId,
+                    _activeMembershipTypeId);
         }
     }
 
@@ -2156,6 +2170,22 @@ public sealed record AuditTimelineSmokeScenario(
     DateTimeOffset FeaturedOccurredAt,
     DateTimeOffset FeaturedRecordedAt,
     string FeaturedCorrelationId);
+
+public sealed record ClientHistorySmokeScenario(
+    Guid ClientId,
+    string ClientDisplayName,
+    string CardNumber,
+    DateOnly OccurredDate,
+    int PageSize,
+    int TotalEntries,
+    Guid FeaturedAuditEntryId,
+    Guid OriginalPaymentAuditEntryId,
+    Guid SharedSessionId,
+    string SharedDeviceLabel,
+    DateTimeOffset FeaturedOccurredAt,
+    DateTimeOffset FeaturedRecordedAt,
+    decimal OriginalPaymentAmount,
+    decimal ReplacementPaymentAmount);
 
 public sealed record NonWorkingDayCorrectionSmokeScenario(
     Guid PeriodId,

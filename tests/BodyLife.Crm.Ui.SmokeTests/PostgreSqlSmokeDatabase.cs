@@ -752,6 +752,832 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             featuredCorrelationId);
     }
 
+    public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(
+        Guid ownerAccountId,
+        Guid sharedAdminAccountId,
+        Guid membershipTypeId)
+    {
+        if (ownerAccountId == Guid.Empty
+            || sharedAdminAccountId == Guid.Empty
+            || membershipTypeId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Client history fixture ids must be non-empty.",
+                nameof(ownerAccountId));
+        }
+
+        const int pageSize = 10;
+        const int totalEntries = 12;
+        const string clientDisplayName = "History Evidence";
+        const string cardNumber = "BL-CLIENT-HISTORY";
+        const string ownerDeviceLabel = "Owner history workstation";
+        const string sharedDeviceLabel = "Shared history tablet";
+        const decimal originalPaymentAmount = 1200m;
+        const decimal replacementPaymentAmount = 950m;
+        var occurredDate = new DateOnly(2026, 7, 18);
+        var eventBase = new DateTimeOffset(
+            occurredDate,
+            new TimeOnly(7, 0),
+            TimeSpan.Zero);
+        var clientId = await SeedClientAsync(
+            ownerAccountId,
+            "History",
+            "Evidence",
+            "+380 67 880 00 02",
+            cardNumber);
+        var membershipIssuedAt = eventBase.AddHours(3).AddMinutes(5);
+        var membershipId = await SeedIssuedMembershipAsync(
+            ownerAccountId,
+            clientId,
+            membershipTypeId,
+            "Client history monthly",
+            visitsLimitSnapshot: 12,
+            startDate: new DateOnly(2026, 7, 1),
+            durationDays: 30,
+            issuedAt: membershipIssuedAt);
+
+        var ownerSessionId = Guid.NewGuid();
+        var sharedSessionId = Guid.NewGuid();
+        var openingStateId = Guid.NewGuid();
+        var canceledVisitId = Guid.NewGuid();
+        var canceledVisitCancellationId = Guid.NewGuid();
+        var genericVisitIds = Enumerable.Range(0, 3)
+            .Select(_ => Guid.NewGuid())
+            .ToArray();
+        var originalPaymentId = Guid.NewGuid();
+        var replacementPaymentId = Guid.NewGuid();
+        var paymentCorrectionId = Guid.NewGuid();
+        var paymentCorrectionBatchId = Guid.NewGuid();
+        var freezeId = Guid.NewGuid();
+        var freezeCancellationId = Guid.NewGuid();
+        var nonWorkingPeriodId = Guid.NewGuid();
+        var nonWorkingApplicationId = Guid.NewGuid();
+
+        var openingOccurredAt = eventBase.AddHours(4);
+        var openingRecordedAt = openingOccurredAt.AddMinutes(5);
+        var visitOccurredAt = eventBase.AddHours(5);
+        var visitRecordedAt = visitOccurredAt.AddMinutes(5);
+        var visitCanceledAt = eventBase.AddHours(6);
+        var visitCancellationRecordedAt = visitCanceledAt.AddMinutes(5);
+        var freezeOccurredAt = eventBase.AddHours(7);
+        var freezeRecordedAt = freezeOccurredAt.AddMinutes(5);
+        var freezeCanceledAt = eventBase.AddHours(8);
+        var freezeCancellationRecordedAt = freezeCanceledAt.AddMinutes(5);
+        var originalPaymentOccurredAt = eventBase.AddHours(9);
+        var originalPaymentRecordedAt = originalPaymentOccurredAt.AddMinutes(5);
+        var featuredOccurredAt = eventBase.AddHours(10);
+        var featuredRecordedAt = featuredOccurredAt.AddDays(2).AddMinutes(5);
+        var nonWorkingOccurredAt = eventBase.AddHours(11);
+        var nonWorkingRecordedAt = nonWorkingOccurredAt.AddMinutes(5);
+        var featuredAuditEntryId = Guid.NewGuid();
+        var originalPaymentAuditEntryId = Guid.NewGuid();
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using (var sourceCommand = connection.CreateCommand())
+        {
+            sourceCommand.Transaction = transaction;
+            sourceCommand.CommandText =
+                """
+                insert into bodylife.sessions (
+                    id,
+                    account_id,
+                    device_label,
+                    started_at,
+                    expires_at,
+                    ended_at,
+                    last_seen_at)
+                values
+                    (
+                        @owner_session_id,
+                        @owner_account_id,
+                        @owner_device_label,
+                        @session_started_at,
+                        @session_expires_at,
+                        @session_ended_at,
+                        @session_ended_at),
+                    (
+                        @shared_session_id,
+                        @shared_account_id,
+                        @shared_device_label,
+                        @session_started_at,
+                        @session_expires_at,
+                        @session_ended_at,
+                        @session_ended_at);
+
+                insert into bodylife.membership_opening_states (
+                    id,
+                    membership_id,
+                    opening_as_of_date,
+                    declared_remaining_visits,
+                    declared_negative_balance,
+                    known_effective_end_date,
+                    known_extension_days,
+                    source_reference,
+                    reason,
+                    recorded_at,
+                    recorded_by_account_id,
+                    recorded_session_id,
+                    entry_origin,
+                    entry_batch_id,
+                    status)
+                values (
+                    @opening_state_id,
+                    @membership_id,
+                    @opening_as_of_date,
+                    -2,
+                    2,
+                    @known_effective_end_date,
+                    3,
+                    'paper-ledger-history-42',
+                    'Opening balance from legacy ledger',
+                    @opening_recorded_at,
+                    @owner_account_id,
+                    @owner_session_id,
+                    'manual_backfill',
+                    @opening_batch_id,
+                    'active');
+
+                insert into bodylife.visits (
+                    id,
+                    client_id,
+                    occurred_at,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id,
+                    visit_kind,
+                    entry_origin,
+                    entry_batch_id,
+                    comment,
+                    status)
+                values
+                    (
+                        @canceled_visit_id,
+                        @client_id,
+                        @visit_occurred_at,
+                        @visit_recorded_at,
+                        @owner_account_id,
+                        @owner_session_id,
+                        'one_off',
+                        'normal',
+                        null,
+                        'Original front desk check-in',
+                        'canceled'),
+                    (
+                        @generic_visit_1_id,
+                        @client_id,
+                        @generic_visit_1_occurred_at,
+                        @generic_visit_1_recorded_at,
+                        @owner_account_id,
+                        @owner_session_id,
+                        'one_off',
+                        'normal',
+                        null,
+                        'Earlier source visit 1',
+                        'active'),
+                    (
+                        @generic_visit_2_id,
+                        @client_id,
+                        @generic_visit_2_occurred_at,
+                        @generic_visit_2_recorded_at,
+                        @owner_account_id,
+                        @owner_session_id,
+                        'one_off',
+                        'normal',
+                        null,
+                        'Earlier source visit 2',
+                        'active'),
+                    (
+                        @generic_visit_3_id,
+                        @client_id,
+                        @generic_visit_3_occurred_at,
+                        @generic_visit_3_recorded_at,
+                        @owner_account_id,
+                        @owner_session_id,
+                        'one_off',
+                        'normal',
+                        null,
+                        'Earlier source visit 3',
+                        'active');
+
+                insert into bodylife.visit_cancellations (
+                    id,
+                    visit_id,
+                    reason,
+                    occurred_at,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id,
+                    entry_origin,
+                    entry_batch_id)
+                values (
+                    @visit_cancellation_id,
+                    @canceled_visit_id,
+                    'Duplicate reception check-in',
+                    @visit_canceled_at,
+                    @visit_cancellation_recorded_at,
+                    @owner_account_id,
+                    @owner_session_id,
+                    'normal',
+                    null);
+
+                insert into bodylife.payments (
+                    id,
+                    client_id,
+                    membership_id,
+                    amount,
+                    currency,
+                    method,
+                    payment_context,
+                    occurred_at,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id,
+                    entry_origin,
+                    entry_batch_id,
+                    comment,
+                    status)
+                values
+                    (
+                        @original_payment_id,
+                        @client_id,
+                        @membership_id,
+                        @original_payment_amount,
+                        'UAH',
+                        'cash',
+                        'membership_sale',
+                        @original_payment_occurred_at,
+                        @original_payment_recorded_at,
+                        @owner_account_id,
+                        @owner_session_id,
+                        'normal',
+                        null,
+                        'Original cash amount',
+                        'replaced'),
+                    (
+                        @replacement_payment_id,
+                        @client_id,
+                        @membership_id,
+                        @replacement_payment_amount,
+                        'UAH',
+                        'cash',
+                        'membership_sale',
+                        @featured_occurred_at,
+                        @featured_recorded_at,
+                        @shared_account_id,
+                        @shared_session_id,
+                        'paper_fallback',
+                        @payment_correction_batch_id,
+                        'Corrected cash amount from paper register',
+                        'active');
+
+                insert into bodylife.payment_corrections (
+                    id,
+                    client_id,
+                    original_payment_id,
+                    replacement_payment_id,
+                    changed_fields,
+                    reason,
+                    occurred_at,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id,
+                    entry_origin,
+                    entry_batch_id)
+                values (
+                    @payment_correction_id,
+                    @client_id,
+                    @original_payment_id,
+                    @replacement_payment_id,
+                    '["amount","occurred_at"]'::jsonb,
+                    'Cash amount was entered incorrectly',
+                    @featured_occurred_at,
+                    @featured_recorded_at,
+                    @shared_account_id,
+                    @shared_session_id,
+                    'paper_fallback',
+                    @payment_correction_batch_id);
+
+                insert into bodylife.freezes (
+                    id,
+                    client_id,
+                    membership_id,
+                    start_date,
+                    end_date,
+                    reason,
+                    occurred_at,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id,
+                    entry_origin,
+                    entry_batch_id,
+                    status)
+                values (
+                    @freeze_id,
+                    @client_id,
+                    @membership_id,
+                    @freeze_start_date,
+                    @freeze_end_date,
+                    'Travel recovery window',
+                    @freeze_occurred_at,
+                    @freeze_recorded_at,
+                    @owner_account_id,
+                    @owner_session_id,
+                    'normal',
+                    null,
+                    'canceled');
+
+                insert into bodylife.freeze_cancellations (
+                    id,
+                    freeze_id,
+                    reason,
+                    occurred_at,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id,
+                    entry_origin,
+                    entry_batch_id)
+                values (
+                    @freeze_cancellation_id,
+                    @freeze_id,
+                    'Travel was canceled',
+                    @freeze_canceled_at,
+                    @freeze_cancellation_recorded_at,
+                    @owner_account_id,
+                    @owner_session_id,
+                    'normal',
+                    null);
+
+                insert into bodylife.non_working_periods (
+                    id,
+                    start_date,
+                    end_date,
+                    reason_code,
+                    reason_comment,
+                    created_at,
+                    created_by_account_id,
+                    session_id,
+                    status)
+                values (
+                    @non_working_period_id,
+                    @non_working_start_date,
+                    @non_working_end_date,
+                    'maintenance',
+                    'Ventilation service',
+                    @non_working_recorded_at,
+                    @owner_account_id,
+                    @owner_session_id,
+                    'active');
+
+                insert into bodylife.non_working_period_applications (
+                    id,
+                    non_working_period_id,
+                    membership_id,
+                    client_id,
+                    applied_start_date,
+                    applied_end_date,
+                    previewed_at,
+                    confirmed_at,
+                    status)
+                values (
+                    @non_working_application_id,
+                    @non_working_period_id,
+                    @membership_id,
+                    @client_id,
+                    @non_working_start_date,
+                    @non_working_end_date,
+                    @non_working_previewed_at,
+                    @non_working_recorded_at,
+                    'active')
+                """;
+            sourceCommand.Parameters.AddWithValue("owner_session_id", ownerSessionId);
+            sourceCommand.Parameters.AddWithValue("owner_account_id", ownerAccountId);
+            sourceCommand.Parameters.AddWithValue("owner_device_label", ownerDeviceLabel);
+            sourceCommand.Parameters.AddWithValue("shared_session_id", sharedSessionId);
+            sourceCommand.Parameters.AddWithValue("shared_account_id", sharedAdminAccountId);
+            sourceCommand.Parameters.AddWithValue("shared_device_label", sharedDeviceLabel);
+            sourceCommand.Parameters.AddWithValue("session_started_at", eventBase.AddHours(-1));
+            sourceCommand.Parameters.AddWithValue("session_expires_at", eventBase.AddDays(30));
+            sourceCommand.Parameters.AddWithValue("session_ended_at", featuredRecordedAt.AddMinutes(30));
+            sourceCommand.Parameters.AddWithValue("opening_state_id", openingStateId);
+            sourceCommand.Parameters.AddWithValue("membership_id", membershipId);
+            sourceCommand.Parameters.AddWithValue(
+                "opening_as_of_date",
+                NpgsqlDbType.Date,
+                new DateOnly(2026, 7, 15));
+            sourceCommand.Parameters.AddWithValue(
+                "known_effective_end_date",
+                NpgsqlDbType.Date,
+                new DateOnly(2026, 8, 2));
+            sourceCommand.Parameters.AddWithValue("opening_recorded_at", openingRecordedAt);
+            sourceCommand.Parameters.AddWithValue("opening_batch_id", Guid.NewGuid());
+            sourceCommand.Parameters.AddWithValue("canceled_visit_id", canceledVisitId);
+            sourceCommand.Parameters.AddWithValue("client_id", clientId);
+            sourceCommand.Parameters.AddWithValue("visit_occurred_at", visitOccurredAt);
+            sourceCommand.Parameters.AddWithValue("visit_recorded_at", visitRecordedAt);
+            for (var index = 0; index < genericVisitIds.Length; index++)
+            {
+                sourceCommand.Parameters.AddWithValue(
+                    $"generic_visit_{index + 1}_id",
+                    genericVisitIds[index]);
+                sourceCommand.Parameters.AddWithValue(
+                    $"generic_visit_{index + 1}_occurred_at",
+                    eventBase.AddHours(index));
+                sourceCommand.Parameters.AddWithValue(
+                    $"generic_visit_{index + 1}_recorded_at",
+                    eventBase.AddHours(index).AddMinutes(5));
+            }
+
+            sourceCommand.Parameters.AddWithValue(
+                "visit_cancellation_id",
+                canceledVisitCancellationId);
+            sourceCommand.Parameters.AddWithValue("visit_canceled_at", visitCanceledAt);
+            sourceCommand.Parameters.AddWithValue(
+                "visit_cancellation_recorded_at",
+                visitCancellationRecordedAt);
+            sourceCommand.Parameters.AddWithValue("original_payment_id", originalPaymentId);
+            sourceCommand.Parameters.AddWithValue("replacement_payment_id", replacementPaymentId);
+            sourceCommand.Parameters.AddWithValue("original_payment_amount", originalPaymentAmount);
+            sourceCommand.Parameters.AddWithValue(
+                "replacement_payment_amount",
+                replacementPaymentAmount);
+            sourceCommand.Parameters.AddWithValue(
+                "original_payment_occurred_at",
+                originalPaymentOccurredAt);
+            sourceCommand.Parameters.AddWithValue(
+                "original_payment_recorded_at",
+                originalPaymentRecordedAt);
+            sourceCommand.Parameters.AddWithValue("featured_occurred_at", featuredOccurredAt);
+            sourceCommand.Parameters.AddWithValue("featured_recorded_at", featuredRecordedAt);
+            sourceCommand.Parameters.AddWithValue(
+                "payment_correction_batch_id",
+                paymentCorrectionBatchId);
+            sourceCommand.Parameters.AddWithValue("payment_correction_id", paymentCorrectionId);
+            sourceCommand.Parameters.AddWithValue("freeze_id", freezeId);
+            sourceCommand.Parameters.AddWithValue(
+                "freeze_start_date",
+                NpgsqlDbType.Date,
+                new DateOnly(2026, 7, 10));
+            sourceCommand.Parameters.AddWithValue(
+                "freeze_end_date",
+                NpgsqlDbType.Date,
+                new DateOnly(2026, 7, 12));
+            sourceCommand.Parameters.AddWithValue("freeze_occurred_at", freezeOccurredAt);
+            sourceCommand.Parameters.AddWithValue("freeze_recorded_at", freezeRecordedAt);
+            sourceCommand.Parameters.AddWithValue(
+                "freeze_cancellation_id",
+                freezeCancellationId);
+            sourceCommand.Parameters.AddWithValue("freeze_canceled_at", freezeCanceledAt);
+            sourceCommand.Parameters.AddWithValue(
+                "freeze_cancellation_recorded_at",
+                freezeCancellationRecordedAt);
+            sourceCommand.Parameters.AddWithValue(
+                "non_working_period_id",
+                nonWorkingPeriodId);
+            sourceCommand.Parameters.AddWithValue(
+                "non_working_start_date",
+                NpgsqlDbType.Date,
+                new DateOnly(2026, 7, 20));
+            sourceCommand.Parameters.AddWithValue(
+                "non_working_end_date",
+                NpgsqlDbType.Date,
+                new DateOnly(2026, 7, 21));
+            sourceCommand.Parameters.AddWithValue(
+                "non_working_recorded_at",
+                nonWorkingRecordedAt);
+            sourceCommand.Parameters.AddWithValue(
+                "non_working_application_id",
+                nonWorkingApplicationId);
+            sourceCommand.Parameters.AddWithValue(
+                "non_working_previewed_at",
+                nonWorkingRecordedAt.AddMinutes(-30));
+            Assert.Equal(15, await sourceCommand.ExecuteNonQueryAsync());
+        }
+
+        var clientReference = new { clientId, membershipId };
+        ClientHistoryAuditSeed[] auditSeeds =
+        [
+            new(
+                Guid.NewGuid(),
+                "membership.issued",
+                "membership",
+                membershipId,
+                clientReference,
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                eventBase.AddHours(3),
+                membershipIssuedAt,
+                "normal",
+                Reason: null,
+                "UI smoke issued snapshot",
+                new { },
+                new { typeName = "Client history monthly" },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "membership_opening_state.created",
+                "membership_opening_state",
+                openingStateId,
+                clientReference,
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                openingOccurredAt,
+                openingRecordedAt,
+                "manual_backfill",
+                "Opening balance from legacy ledger",
+                "Recorded from paper ledger",
+                new { },
+                new { declaredRemainingVisits = -2 },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "visit.marked",
+                "visit",
+                canceledVisitId,
+                clientReference,
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                visitOccurredAt,
+                visitRecordedAt,
+                "normal",
+                Reason: null,
+                "Original front desk check-in",
+                new { },
+                new { visitKind = "one_off" },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "visit.canceled",
+                "visit",
+                canceledVisitId,
+                clientReference,
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                visitCanceledAt,
+                visitCancellationRecordedAt,
+                "normal",
+                "Duplicate reception check-in",
+                "Original visit remains preserved",
+                new { status = "active" },
+                new { status = "canceled" },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "freeze.added",
+                "freeze",
+                freezeId,
+                clientReference,
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                freezeOccurredAt,
+                freezeRecordedAt,
+                "normal",
+                "Travel recovery window",
+                Comment: null,
+                new { },
+                new { status = "active" },
+                ChangedAfterClose: false),
+            new(
+                Guid.NewGuid(),
+                "freeze.canceled",
+                "freeze",
+                freezeId,
+                clientReference,
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                freezeCanceledAt,
+                freezeCancellationRecordedAt,
+                "normal",
+                "Travel was canceled",
+                "Original freeze remains preserved",
+                new { status = "active" },
+                new { status = "canceled" },
+                ChangedAfterClose: false),
+            new(
+                originalPaymentAuditEntryId,
+                "payment.created",
+                "payment",
+                originalPaymentId,
+                clientReference,
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                originalPaymentOccurredAt,
+                originalPaymentRecordedAt,
+                "normal",
+                Reason: null,
+                "Original cash amount",
+                new { },
+                new { amount = originalPaymentAmount },
+                ChangedAfterClose: false),
+            new(
+                featuredAuditEntryId,
+                "payment.corrected",
+                "payment",
+                originalPaymentId,
+                clientReference,
+                sharedAdminAccountId,
+                "shared_reception_admin",
+                "admin",
+                sharedSessionId,
+                sharedDeviceLabel,
+                featuredOccurredAt,
+                featuredRecordedAt,
+                "paper_fallback",
+                "Cash amount was entered incorrectly",
+                "Entered after reception connectivity returned",
+                new { amount = originalPaymentAmount },
+                new { amount = replacementPaymentAmount },
+                ChangedAfterClose: true),
+            new(
+                Guid.NewGuid(),
+                "non_working_day.added",
+                "non_working_period",
+                nonWorkingPeriodId,
+                new
+                {
+                    affectedMembershipIds = new[] { membershipId },
+                    affectedClientIds = new[] { clientId },
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                nonWorkingOccurredAt,
+                nonWorkingRecordedAt,
+                "normal",
+                Reason: null,
+                "Ventilation service",
+                new { },
+                new { affectedMembershipCount = 1 },
+                ChangedAfterClose: false),
+        ];
+
+        for (var index = 0; index < genericVisitIds.Length; index++)
+        {
+            var occurredAt = eventBase.AddHours(index);
+            auditSeeds =
+            [
+                .. auditSeeds,
+                new ClientHistoryAuditSeed(
+                    Guid.NewGuid(),
+                    "visit.marked",
+                    "visit",
+                    genericVisitIds[index],
+                    clientReference,
+                    ownerAccountId,
+                    "owner",
+                    "owner",
+                    ownerSessionId,
+                    ownerDeviceLabel,
+                    occurredAt,
+                    occurredAt.AddMinutes(5),
+                    "normal",
+                    Reason: null,
+                    $"Earlier source visit {index + 1}",
+                    new { },
+                    new { visitKind = "one_off" },
+                    ChangedAfterClose: false),
+            ];
+        }
+
+        Assert.Equal(totalEntries, auditSeeds.Length);
+        foreach (var auditSeed in auditSeeds)
+        {
+            await InsertClientHistoryAuditAsync(
+                connection,
+                transaction,
+                auditSeed);
+        }
+
+        await transaction.CommitAsync();
+        await RebuildMembershipAsync(membershipId);
+
+        return new ClientHistorySmokeScenario(
+            clientId,
+            clientDisplayName,
+            cardNumber,
+            occurredDate,
+            pageSize,
+            totalEntries,
+            featuredAuditEntryId,
+            originalPaymentAuditEntryId,
+            sharedSessionId,
+            sharedDeviceLabel,
+            featuredOccurredAt,
+            featuredRecordedAt,
+            originalPaymentAmount,
+            replacementPaymentAmount);
+    }
+
+    private static async Task InsertClientHistoryAuditAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        ClientHistoryAuditSeed seed)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            insert into bodylife.business_audit_entries (
+                id,
+                action_type,
+                entity_type,
+                entity_id,
+                related_entity_refs,
+                actor_account_id,
+                actor_account_type,
+                actor_role,
+                session_id,
+                device_label,
+                occurred_at,
+                recorded_at,
+                reason,
+                comment,
+                before_summary,
+                after_summary,
+                request_correlation_id,
+                entry_origin,
+                idempotency_key,
+                changed_after_close)
+            values (
+                @id,
+                @action_type,
+                @entity_type,
+                @entity_id,
+                @related_entity_refs,
+                @actor_account_id,
+                @actor_account_type,
+                @actor_role,
+                @session_id,
+                @device_label,
+                @occurred_at,
+                @recorded_at,
+                @reason,
+                @comment,
+                @before_summary,
+                @after_summary,
+                @request_correlation_id,
+                @entry_origin,
+                @idempotency_key,
+                @changed_after_close)
+            """;
+        command.Parameters.AddWithValue("id", seed.AuditEntryId);
+        command.Parameters.AddWithValue("action_type", seed.ActionType);
+        command.Parameters.AddWithValue("entity_type", seed.EntityType);
+        command.Parameters.AddWithValue("entity_id", seed.EntityId);
+        command.Parameters.Add("related_entity_refs", NpgsqlDbType.Jsonb).Value =
+            JsonSerializer.Serialize(seed.RelatedEntityRefs);
+        command.Parameters.AddWithValue("actor_account_id", seed.ActorAccountId);
+        command.Parameters.AddWithValue("actor_account_type", seed.ActorAccountType);
+        command.Parameters.AddWithValue("actor_role", seed.ActorRole);
+        command.Parameters.AddWithValue("session_id", seed.SessionId);
+        command.Parameters.AddWithValue("device_label", seed.DeviceLabel);
+        command.Parameters.AddWithValue("occurred_at", seed.OccurredAt);
+        command.Parameters.AddWithValue("recorded_at", seed.RecordedAt);
+        command.Parameters.Add("reason", NpgsqlDbType.Varchar).Value =
+            seed.Reason ?? (object)DBNull.Value;
+        command.Parameters.Add("comment", NpgsqlDbType.Varchar).Value =
+            seed.Comment ?? (object)DBNull.Value;
+        command.Parameters.Add("before_summary", NpgsqlDbType.Jsonb).Value =
+            JsonSerializer.Serialize(seed.BeforeSummary);
+        command.Parameters.Add("after_summary", NpgsqlDbType.Jsonb).Value =
+            JsonSerializer.Serialize(seed.AfterSummary);
+        command.Parameters.AddWithValue(
+            "request_correlation_id",
+            $"client-history-{seed.AuditEntryId:N}");
+        command.Parameters.AddWithValue("entry_origin", seed.EntryOrigin);
+        command.Parameters.AddWithValue(
+            "idempotency_key",
+            $"client-history-key-{seed.AuditEntryId:N}");
+        command.Parameters.AddWithValue(
+            "changed_after_close",
+            seed.ChangedAfterClose);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
     public async Task<Guid> SeedIssuedMembershipAsync(
         Guid issuedByAccountId,
         Guid clientId,
@@ -3537,6 +4363,26 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
     }
 
     private sealed record ActiveSessionActor(Guid SessionId, Guid AccountId);
+
+    private sealed record ClientHistoryAuditSeed(
+        Guid AuditEntryId,
+        string ActionType,
+        string EntityType,
+        Guid EntityId,
+        object RelatedEntityRefs,
+        Guid ActorAccountId,
+        string ActorAccountType,
+        string ActorRole,
+        Guid SessionId,
+        string DeviceLabel,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        string EntryOrigin,
+        string? Reason,
+        string? Comment,
+        object BeforeSummary,
+        object AfterSummary,
+        bool ChangedAfterClose);
 }
 
 public sealed record MembershipTypeSmokeSnapshot(

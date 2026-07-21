@@ -13,4 +13,15 @@ public sealed record MembershipOpeningStateHistorySource(
     AccountId RecordedByAccountId,
     SessionId RecordedSessionId,
     Guid? EntryBatchId,
-    MembershipOpeningStateSourceStatus Status);
+    MembershipOpeningStateSourceStatus Status)
+{
+    public DateOnly OpeningAsOfDate => Declaration.OpeningAsOfDate;
+
+    public int DeclaredRemainingVisits => Declaration.DeclaredRemainingVisits;
+
+    public int DeclaredNegativeBalance => Declaration.DeclaredNegativeBalance;
+
+    public DateOnly? KnownEffectiveEndDate => Declaration.KnownEffectiveEndDate;
+
+    public int? KnownExtensionDays => Declaration.KnownExtensionDays;
+}

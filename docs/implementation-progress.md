@@ -10273,3 +10273,101 @@ Next recommended step:
   occurred/recorded times and entry-origin labels. Keep profile/report/
   correction links, specialized before/after summaries, technical-log lookup
   and the unresolved negative-closure workflow for later steps.
+
+## Step 165 - Owner/Admin Client History Razor UI
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue the third Milestone 10 task by exposing the completed
+  `GetClientHistory` backend as an Owner/Admin-readable server-rendered Razor
+  Page over canonical source facts and their matching Audit envelopes.
+- Cover the history UI portion of the fifth task without yet adding inbound
+  links from profile, report drill-down or correction forms.
+- Keep negative-closure history blocked on its unresolved product policy and
+  canonical source workflow. Keep specialized audit before/after presenters,
+  technical-log correlation lookup and the remaining links for later bounded
+  steps.
+
+Completed:
+
+- Added the protected `/Audit/ClientHistory` Razor Page under the existing
+  `AdminOrOwner` Audit-folder convention. It accepts a required Client id,
+  optional typed entity filter, occurred-from/through UTC dates and stable
+  ten-row offset pagination while preserving selectors on navigation.
+- Added a canonical Client identity summary through `GetClientProfile` and
+  fail-closed empty/error states. A failed profile reread does not replace a
+  valid history result, and invalid selectors or inconsistent source rows
+  never render partial business history.
+- Added typed presentation for issued Membership snapshots, opening states,
+  Visits, Payments, Freezes and applied NonWorkingDays. Original,
+  correction/replacement and cancellation facts remain distinct; no audit JSON
+  or UI formula is used as source truth.
+- Exposed status, occurred/recorded timestamps, entry origin,
+  changed-after-close context, reason/comment, actor account kind and role,
+  shared Reception/Admin account/session/device labels and collapsed canonical
+  identifiers for every row.
+- Extended the approved `MembershipOpeningStateHistorySource` contract with
+  scalar declaration snapshot accessors so Web presentation does not reference
+  the Memberships-owned `MembershipOpeningState` implementation. Added a core
+  contract test for the exact scalar projection; persistence and formulas did
+  not change.
+- Added responsive Client History styles with tablet, two-column and phone
+  layouts. The filter, identity, typed fact and correction sections remain
+  readable without nested cards, horizontal overflow or hover-only actions.
+- Added a deterministic PostgreSQL UI fixture with twelve canonical history
+  events spanning all six entity families, two-page chronology, original and
+  canceled Visit/Freeze facts, corrected Payment replacement, opening state,
+  NonWorkingDay application and a changed-after-close paper-fallback event
+  from a real shared Reception/Admin session.
+- Added five Playwright cases covering Owner/tablet and named-Admin/phone,
+  typed source facts, correction/cancellation preservation, fallback/shared
+  session labels, pagination/filter preservation, malformed offsets, unknown
+  Clients and anonymous login redirect. No command, audit mutation, EF model
+  or migration changed.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors. Focused Memberships
+  ownership coverage passed 2/2, history contract coverage passed 4/4 and
+  Client History Playwright coverage passed 5/5 with no skipped tests. An
+  initial Playwright invocation omitted the required Docker connection string
+  and stopped before test setup; the correctly configured rerun passed.
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully and
+  `git diff --check` reported no whitespace errors.
+- Screenshot-backed visual checks passed at 1024x768 tablet and 390x844 phone
+  viewports. Playwright also asserted minimum touch-target sizing and no
+  horizontal document overflow; manual review found no overlap or hidden
+  history context.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 35 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 78 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(ui): add client history screen`.
+
+Next recommended step:
+
+- Continue Milestone 10 with one bounded navigation slice: add protected
+  Owner/Admin links from the reception Client profile to this Client History
+  and the filtered Audit Timeline, preserving the Client id. Keep report
+  drill-down links, correction-form links, specialized before/after summaries
+  and technical-log correlation lookup for subsequent steps.
