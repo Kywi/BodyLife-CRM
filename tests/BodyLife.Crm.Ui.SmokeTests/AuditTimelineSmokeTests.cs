@@ -81,7 +81,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 viewportName,
                 "audit timeline heading");
             await ExpectVisibleAsync(
-                page.GetByText(
+                page.GetByLabel("Current session").GetByText(
                     useOwner ? "BodyLife Owner" : "Smoke Named Admin",
                     new() { Exact = true }),
                 viewportName,
@@ -1108,6 +1108,123 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 "Card clear changed field");
             await AssertFitsViewportAsync(page, viewportName, "Card clear explanation");
             await CaptureVisualAsync(page, viewportName, "card-clear-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
+    public async Task StaffAccountCreationShowsProfileWithoutCredentialMaterial(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var staff = scenario.Explanations.StaffAccounts;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} staff account creation audit smoke");
+
+            var creation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "StaffAccount",
+                "staff_account.created",
+                staff.CreatedAuditEntryId,
+                "staff-account-created",
+                viewportName,
+                entityId: staff.StaffAccountId);
+            await ExpectVisibleAsync(
+                creation.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Staff account created", Exact = true }),
+                viewportName,
+                "Staff account creation explanation title");
+            Assert.Equal(
+                "Not present",
+                await ExplanationFactAsync(creation, "Before creation", "Account state"));
+            Assert.Equal(
+                staff.StaffAccountId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    creation,
+                    "Created staff account",
+                    "Staff account"));
+            Assert.Equal(
+                staff.OriginalDisplayName,
+                await ExplanationFactAsync(
+                    creation,
+                    "Created staff account",
+                    "Display name"));
+            Assert.Equal(
+                "Named Admin",
+                await ExplanationFactAsync(
+                    creation,
+                    "Created staff account",
+                    "Account type"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(creation, "Created staff account", "Status"));
+            await ExpectVisibleAsync(
+                creation.GetByText("Staff account", new() { Exact = true }).Last,
+                viewportName,
+                "Staff account creation changed field");
+            var primaryFacts = string.Join(
+                ' ',
+                await creation.Locator(".audit-change-facts dt").AllInnerTextsAsync());
+            Assert.DoesNotContain("credential", primaryFacts, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("login", primaryFacts, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("password", primaryFacts, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("hash", primaryFacts, StringComparison.OrdinalIgnoreCase);
+
+            var creationRow = creation.Locator("xpath=ancestor::li");
+            var creationEnvelope = creationRow.Locator(".audit-envelope-details");
+            Assert.Null(await creationEnvelope.GetAttributeAsync("open"));
+            Assert.False(await creationEnvelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = creationEnvelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "Staff account creation audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                creationEnvelope.Locator(".audit-json-grid"),
+                viewportName,
+                "Staff account creation raw envelope");
+            var envelopeText = await creationEnvelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains("displayName", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("accountType", envelopeText, StringComparison.Ordinal);
+            Assert.Contains(staff.CreatedAccountType, envelopeText, StringComparison.Ordinal);
+            Assert.Contains("role", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("isActive", envelopeText, StringComparison.Ordinal);
+            Assert.DoesNotContain("credential", envelopeText, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("loginName", envelopeText, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("password", envelopeText, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("hash", envelopeText, StringComparison.OrdinalIgnoreCase);
+            await AssertFitsViewportAsync(page, viewportName, "Staff account creation");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "staff-account-creation-explanation");
         }
         finally
         {

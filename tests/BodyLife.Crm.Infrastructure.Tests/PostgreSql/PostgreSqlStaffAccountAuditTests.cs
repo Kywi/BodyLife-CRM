@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
@@ -74,7 +75,21 @@ public sealed class PostgreSqlStaffAccountAuditTests
         Assert.Equal("normal", createdAudit.EntryOrigin);
         Assert.Equal("Owner account maintenance", createdAudit.Reason);
         Assert.Equal("Scheduled staff change", createdAudit.Comment);
-        Assert.Contains("Main Admin", createdAudit.AfterSummary, StringComparison.Ordinal);
+        Assert.Equal("{}", createdAudit.BeforeSummary);
+        using var createdSummary = JsonDocument.Parse(createdAudit.AfterSummary);
+        Assert.Equal(JsonValueKind.Object, createdSummary.RootElement.ValueKind);
+        Assert.Equal(4, createdSummary.RootElement.EnumerateObject().Count());
+        Assert.Equal(
+            "Main Admin",
+            createdSummary.RootElement.GetProperty("displayName").GetString());
+        Assert.Equal(
+            "named_admin",
+            createdSummary.RootElement.GetProperty("accountType").GetString());
+        Assert.Equal("admin", createdSummary.RootElement.GetProperty("role").GetString());
+        Assert.True(createdSummary.RootElement.GetProperty("isActive").GetBoolean());
+        Assert.False(createdSummary.RootElement.TryGetProperty("loginName", out _));
+        Assert.False(createdSummary.RootElement.TryGetProperty("password", out _));
+        Assert.False(createdSummary.RootElement.TryGetProperty("passwordHash", out _));
     }
 
     [PostgreSqlFact]
@@ -327,6 +342,7 @@ public sealed class PostgreSqlStaffAccountAuditTests
                    entry_origin,
                    reason,
                    comment,
+                   before_summary::text,
                    after_summary::text
             from bodylife.business_audit_entries
             where id = @id
@@ -349,7 +365,8 @@ public sealed class PostgreSqlStaffAccountAuditTests
             reader.GetString(9),
             reader.GetString(10),
             reader.GetString(11),
-            reader.GetString(12));
+            reader.GetString(12),
+            reader.GetString(13));
     }
 
     private static Task<string?> ReadCredentialAuditTextAsync(PostgreSqlTestDatabase database)
@@ -441,6 +458,7 @@ public sealed class PostgreSqlStaffAccountAuditTests
         string EntryOrigin,
         string Reason,
         string Comment,
+        string BeforeSummary,
         string AfterSummary);
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider

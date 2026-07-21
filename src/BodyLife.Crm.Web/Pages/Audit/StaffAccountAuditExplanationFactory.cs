@@ -9,6 +9,31 @@ internal static class StaffAccountAuditExplanationFactory
     private static readonly JsonSerializerOptions AuditJsonOptions =
         new(JsonSerializerDefaults.Web);
 
+    internal static AuditEntryExplanationViewModel CreateAccountCreation(
+        AuditTimelineEntry entry,
+        JsonElement before,
+        JsonElement after)
+    {
+        var accountId = RequireAccountId(entry.EntityId);
+        var created = ReadCreatedAccount(before, after);
+
+        return new AuditEntryExplanationViewModel(
+            "staff-account-created",
+            "Staff account created",
+            "A new active staff account was created with the stored display name and account type. Sign-in credentials are configured separately and are not part of this business summary.",
+            "Before creation",
+            "Created staff account",
+            [Fact("Account state", "Not present")],
+            [
+                Fact("Staff account", TimelineModel.ShortId(accountId)),
+                Fact("Display name", created.DisplayName),
+                Fact("Account type", created.AccountTypeLabel),
+                Fact("Status", created.IsActive ? "Active" : "Inactive"),
+            ],
+            ChangedFields: "Staff account",
+            IsAvailable: true);
+    }
+
     internal static AuditEntryExplanationViewModel CreateDisplayNameUpdate(
         AuditTimelineEntry entry,
         JsonElement before,
@@ -175,6 +200,50 @@ internal static class StaffAccountAuditExplanationFactory
         return dto.DisplayName;
     }
 
+    private static CreatedAccountSnapshot ReadCreatedAccount(
+        JsonElement before,
+        JsonElement after)
+    {
+        if (before.ValueKind != JsonValueKind.Object
+            || before.EnumerateObject().Any()
+            || after.ValueKind != JsonValueKind.Object)
+        {
+            throw new JsonException("Staff account creation summary is inconsistent.");
+        }
+
+        var properties = after
+            .EnumerateObject()
+            .Select(property => property.Name)
+            .ToArray();
+        if (properties.Length != 4
+            || !properties.Contains("displayName", StringComparer.Ordinal)
+            || !properties.Contains("accountType", StringComparer.Ordinal)
+            || !properties.Contains("role", StringComparer.Ordinal)
+            || !properties.Contains("isActive", StringComparer.Ordinal))
+        {
+            throw new JsonException("Staff account creation fields are inconsistent.");
+        }
+
+        var dto = Deserialize<CreatedAccountDto>(after);
+        var accountTypeLabel = dto.AccountType switch
+        {
+            "named_admin" => "Named Admin",
+            "shared_reception_admin" => "Shared Reception/Admin",
+            _ => throw new JsonException("Staff account type is not manageable."),
+        };
+        if (string.IsNullOrWhiteSpace(dto.DisplayName)
+            || dto.Role != "admin"
+            || dto.IsActive != true)
+        {
+            throw new JsonException("Created staff account state is inconsistent.");
+        }
+
+        return new CreatedAccountSnapshot(
+            dto.DisplayName,
+            accountTypeLabel,
+            dto.IsActive.Value);
+    }
+
     private static ActiveStateSnapshot ReadActiveState(
         JsonElement summary,
         bool requireEndedSessionCount)
@@ -269,6 +338,17 @@ internal static class StaffAccountAuditExplanationFactory
         public string? DisplayName { get; init; }
     }
 
+    private sealed class CreatedAccountDto
+    {
+        public string? DisplayName { get; init; }
+
+        public string? AccountType { get; init; }
+
+        public string? Role { get; init; }
+
+        public bool? IsActive { get; init; }
+    }
+
     private sealed class ActiveStateDto
     {
         public bool? IsActive { get; init; }
@@ -286,6 +366,11 @@ internal static class StaffAccountAuditExplanationFactory
     private sealed record ActiveStateSnapshot(
         bool IsActive,
         int EndedSessionCount);
+
+    private sealed record CreatedAccountSnapshot(
+        string DisplayName,
+        string AccountTypeLabel,
+        bool IsActive);
 
     private sealed record CredentialStateSnapshot(
         bool CredentialsConfigured,

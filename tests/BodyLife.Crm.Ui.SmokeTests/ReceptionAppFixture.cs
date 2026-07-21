@@ -2231,6 +2231,8 @@ public sealed record ClientCardAuditExplanationSmokeScenario(
 
 public sealed record StaffAccountAuditExplanationSmokeScenario(
     Guid StaffAccountId,
+    Guid CreatedAuditEntryId,
+    string CreatedAccountType,
     Guid DisplayNameUpdatedAuditEntryId,
     string OriginalDisplayName,
     string UpdatedDisplayName,

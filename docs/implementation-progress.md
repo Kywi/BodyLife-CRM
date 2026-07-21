@@ -11226,3 +11226,96 @@ Next recommended step:
   using only the stored display name, account type and active state, while
   preserving role-controlled access and showing no credential material. Keep
   audit-noise review and technical-log correlation lookup for later steps.
+
+## Step 176 - Staff account creation audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Complete only the staff-account creation tail of the sixth Milestone 10 task
+  by replacing raw JSON as the primary explanation for
+  `staff_account.created` Timeline rows.
+- Present the command-owned empty pre-creation state and stored display name,
+  account type and active state inside the existing Owner/Admin-controlled
+  Audit Timeline. Validate the stored Admin role without presenting or
+  inferring any sign-in credential material.
+- Preserve the complete append-only audit envelope as collapsed secondary
+  support detail. Keep the support correlation path and final audit-noise
+  review outside this bounded step.
+
+Completed:
+
+- Wired `staff_account.created` into the typed Audit Timeline presenter and
+  added a fail-closed creation factory. It requires an empty `before` summary
+  and the exact production `displayName`, `accountType`, `role` and `isActive`
+  payload shape.
+- Added `Before creation`/`Created staff account` sections showing that no
+  account existed before the command, followed by the short account id,
+  display name, owner-readable account type and Active status. Only
+  `named_admin` and `shared_reception_admin` with role `admin` and active state
+  are accepted.
+- Added seven Web presenter cases covering both manageable account types,
+  primary-fact credential omission, unsupported account type, invalid role,
+  inactive creation, non-empty before state and wrong-entity fail-closed
+  behavior.
+- Strengthened the real-service PostgreSQL audit test to prove the persisted
+  creation event has an empty before summary and exactly four expected after
+  fields, including explicit absence of login name, password and password
+  hash fields.
+- Extended the PostgreSQL-backed Audit Timeline fixture with one isolated,
+  production-shaped creation event and added Owner/tablet plus named-
+  Admin/phone Playwright coverage over exact filtering, creation facts,
+  collapsed raw-envelope behavior, secret-key omission and horizontal fit.
+- Scoped the pre-existing broad Timeline viewer-name assertion to the current
+  session region now that the same staff display name can legitimately appear
+  in the readable creation fact.
+- Kept staff lifecycle commands, credential handling, persistence schema, EF
+  model, Razor markup and CSS unchanged.
+
+Validation:
+
+- Focused `AuditEntryExplanationViewModelTests` passed 56/56 and the focused
+  real-service PostgreSQL lifecycle audit test passed 1/1.
+- The first focused creation Playwright run exposed a strict test locator that
+  matched both before/after fact lists; after scoping it to all fact labels,
+  the rerun passed 2/2. The affected broad Timeline test passed 2/2 after its
+  viewer-name assertion was scoped, and the complete `AuditTimelineSmokeTests`
+  regression passed 20/20 with no skipped tests.
+- Screenshot-backed visual checks passed for account creation at 1024x768
+  Owner/tablet and 390x844 named-Admin/phone viewports. Creation facts and the
+  expanded envelope remain readable, credential material is absent,
+  controls/text do not overlap and Playwright found no horizontal overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 91 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 98 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain staff account creation`.
+
+Next recommended step:
+
+- Begin the next unfinished Milestone 10 task with one bounded support-
+  correlation slice: prove a successful audited command and its structured
+  technical request log share the same `request_correlation_id`, document the
+  operator lookup path and add the required smoke test. Keep technical logs
+  free of business comments, secrets and unnecessary PII; do not add an in-app
+  log viewer or treat logs as business truth. Leave the final audit-noise
+  review for the following step.

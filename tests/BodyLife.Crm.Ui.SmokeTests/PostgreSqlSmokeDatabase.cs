@@ -1185,16 +1185,19 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         const string originalStaffDisplayName = "Main Admin";
         const string updatedStaffDisplayName = "Evening Admin";
+        const string createdStaffAccountType = "named_admin";
         const string staffDeactivationReason = "Staff member left the gym";
         const string credentialResetReason = "Scheduled credential rotation";
         const int endedStaffSessionCount = 2;
         const int credentialResetEndedSessionCount = 2;
         var staffAccountId = Guid.NewGuid();
+        var staffCreatedAuditEntryId = Guid.NewGuid();
         var staffDisplayNameUpdatedAuditEntryId = Guid.NewGuid();
         var staffDeactivatedAuditEntryId = Guid.NewGuid();
         var staffActivatedAuditEntryId = Guid.NewGuid();
         var credentialsConfiguredAuditEntryId = Guid.NewGuid();
         var credentialsResetAuditEntryId = Guid.NewGuid();
+        var staffCreatedAt = recordedBase.AddHours(12).AddMinutes(30);
         var staffDisplayNameUpdatedAt = recordedBase.AddHours(13);
         var staffDeactivatedAt = recordedBase.AddHours(14);
         var staffActivatedAt = recordedBase.AddHours(15);
@@ -1564,6 +1567,31 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 new { },
                 ChangedAfterClose: false),
             new(
+                staffCreatedAuditEntryId,
+                "staff_account.created",
+                "staff_account",
+                staffAccountId,
+                new { },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                staffCreatedAt,
+                staffCreatedAt,
+                "normal",
+                Reason: null,
+                Comment: null,
+                BeforeSummary: new { },
+                AfterSummary: new
+                {
+                    DisplayName = originalStaffDisplayName,
+                    AccountType = createdStaffAccountType,
+                    Role = "admin",
+                    IsActive = true,
+                },
+                ChangedAfterClose: false),
+            new(
                 staffDisplayNameUpdatedAuditEntryId,
                 "staff_account.display_name_updated",
                 "staff_account",
@@ -1746,6 +1774,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     replacementCardNumber),
                 StaffAccounts: new StaffAccountAuditExplanationSmokeScenario(
                     staffAccountId,
+                    staffCreatedAuditEntryId,
+                    createdStaffAccountType,
                     staffDisplayNameUpdatedAuditEntryId,
                     originalStaffDisplayName,
                     updatedStaffDisplayName,

@@ -824,6 +824,122 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void StaffAccountCreationShowsStoredActiveNamedAdminProfile()
+    {
+        var accountId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_account.created",
+                    AuditTimelineEntityType.StaffAccount,
+                    accountId,
+                    new { },
+                    new
+                    {
+                        DisplayName = "Main Admin",
+                        AccountType = "named_admin",
+                        Role = "admin",
+                        IsActive = true,
+                    },
+                    reason: null,
+                    comment: null)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("staff-account-created", explanation.Kind);
+        Assert.Equal("Before creation", explanation.BeforeLabel);
+        Assert.Equal("Created staff account", explanation.AfterLabel);
+        Assert.Equal("Not present", FactValue(explanation.BeforeFacts, "Account state"));
+        Assert.Equal(
+            accountId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Staff account"));
+        Assert.Equal("Main Admin", FactValue(explanation.AfterFacts, "Display name"));
+        Assert.Equal("Named Admin", FactValue(explanation.AfterFacts, "Account type"));
+        Assert.Equal("Active", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal("Staff account", explanation.ChangedFields);
+        Assert.DoesNotContain(
+            explanation.AfterFacts,
+            fact => fact.Label.Contains("credential", StringComparison.OrdinalIgnoreCase)
+                || fact.Label.Contains("login", StringComparison.OrdinalIgnoreCase)
+                || fact.Label.Contains("password", StringComparison.OrdinalIgnoreCase)
+                || fact.Label.Contains("hash", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void StaffAccountCreationMapsSharedReceptionAdminAccountType()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_account.created",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { },
+                    new
+                    {
+                        DisplayName = "Front desk shared",
+                        AccountType = "shared_reception_admin",
+                        Role = "admin",
+                        IsActive = true,
+                    })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            "Shared Reception/Admin",
+            FactValue(explanation.AfterFacts, "Account type"));
+    }
+
+    [Theory]
+    [InlineData("owner", "admin", true)]
+    [InlineData("named_admin", "owner", true)]
+    [InlineData("named_admin", "admin", false)]
+    public void InconsistentStaffAccountCreationFailsClosed(
+        string accountType,
+        string role,
+        bool isActive)
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_account.created",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { },
+                    new
+                    {
+                        DisplayName = "Main Admin",
+                        AccountType = accountType,
+                        Role = role,
+                        IsActive = isActive,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void StaffAccountCreationWithNonEmptyBeforeSummaryFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "staff_account.created",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { IsActive = false },
+                    new
+                    {
+                        DisplayName = "Main Admin",
+                        AccountType = "named_admin",
+                        Role = "admin",
+                        IsActive = true,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void StaffDisplayNameUpdateKeepsIdenticalStoredSnapshotsReadable()
     {
         var accountId = Guid.NewGuid();
@@ -1056,6 +1172,7 @@ public sealed class AuditEntryExplanationViewModelTests
     [InlineData("card.assigned", AuditTimelineEntityType.Payment)]
     [InlineData("card.changed", AuditTimelineEntityType.Payment)]
     [InlineData("card.cleared", AuditTimelineEntityType.Payment)]
+    [InlineData("staff_account.created", AuditTimelineEntityType.Client)]
     [InlineData("staff_account.display_name_updated", AuditTimelineEntityType.Client)]
     [InlineData("staff_account.activated", AuditTimelineEntityType.Client)]
     [InlineData("staff_account.deactivated", AuditTimelineEntityType.Client)]
