@@ -290,6 +290,119 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
         }
     }
 
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
+    public async Task ProfileRecordLinksPreserveClientScopeForHistoryAndAudit(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureClientHistoryScenarioAsync();
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} profile record links smoke");
+            await OpenClientProfileAsync(
+                page,
+                scenario.CardNumber,
+                scenario.ClientDisplayName);
+
+            var profileUrl = page.Url;
+            var profile = page.GetByRole(
+                AriaRole.Region,
+                new() { Name = "Client profile", Exact = true });
+            var records = profile.GetByRole(
+                AriaRole.Navigation,
+                new() { Name = "Client records", Exact = true });
+            await ExpectVisibleAsync(records, viewportName, "Client record navigation");
+
+            var historyLink = records.GetByRole(
+                AriaRole.Link,
+                new() { Name = "Client history", Exact = true });
+            var auditLink = records.GetByRole(
+                AriaRole.Link,
+                new() { Name = "Audit timeline", Exact = true });
+            await AssertClientScopedLinkAsync(
+                historyLink,
+                scenario.ClientId,
+                viewportName,
+                "Client history link");
+            await AssertClientScopedLinkAsync(
+                auditLink,
+                scenario.ClientId,
+                viewportName,
+                "Audit timeline link");
+            await AssertFitsViewportAsync(page, viewportName, "profile record navigation");
+            await CaptureVisualAsync(page, viewportName, "profile-record-links");
+
+            await historyLink.ClickAsync();
+            await page.WaitForURLAsync("**/Audit/ClientHistory?**");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await ExpectVisibleAsync(
+                page.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Client history", Exact = true }),
+                viewportName,
+                "linked Client history");
+            Assert.Equal(
+                scenario.ClientId.ToString(),
+                await page.GetByLabel("Client ID", new() { Exact = true })
+                    .InputValueAsync());
+
+            await page.GotoAsync(
+                profileUrl,
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            profile = page.GetByRole(
+                AriaRole.Region,
+                new() { Name = "Client profile", Exact = true });
+            records = profile.GetByRole(
+                AriaRole.Navigation,
+                new() { Name = "Client records", Exact = true });
+            auditLink = records.GetByRole(
+                AriaRole.Link,
+                new() { Name = "Audit timeline", Exact = true });
+
+            await auditLink.ClickAsync();
+            await page.WaitForURLAsync("**/Audit/Timeline?**");
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await ExpectVisibleAsync(
+                page.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Audit timeline", Exact = true }),
+                viewportName,
+                "linked Audit timeline");
+            Assert.Equal(
+                scenario.ClientId.ToString(),
+                await page.GetByLabel("Client ID", new() { Exact = true })
+                    .InputValueAsync());
+            Assert.True(
+                await page.Locator("[data-audit-entry-list] > [data-audit-entry-id]")
+                    .CountAsync() > 0,
+                "Client-scoped Audit timeline should retain matching canonical entries.");
+            await AssertFitsViewportAsync(page, viewportName, "linked Audit timeline");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task InvalidOffsetKeepsHistoryFiltersAndReturnsNoPartialRows()
     {
@@ -414,6 +527,52 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
         await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
+    }
+
+    private static async Task OpenClientProfileAsync(
+        IPage page,
+        string cardNumber,
+        string displayName)
+    {
+        await page.GetByRole(
+                AriaRole.Searchbox,
+                new() { Name = "Client search" })
+            .FillAsync(cardNumber);
+        var responseTask = page.WaitForResponseAsync(response =>
+            response.Request.Method == "GET"
+            && response.Url.Contains("handler=Search", StringComparison.OrdinalIgnoreCase));
+        await page.GetByRole(
+                AriaRole.Button,
+                new() { Name = "Search", Exact = true })
+            .ClickAsync();
+        var response = await responseTask;
+        Assert.True(response.Ok, $"Profile search returned HTTP {response.Status}.");
+        Assert.Equal("true", response.Request.Headers["hx-request"]);
+        await page.WaitForFunctionAsync(
+            "() => document.querySelector('.htmx-request') === null");
+        await page.GetByRole(
+                AriaRole.Region,
+                new() { Name = "Client profile", Exact = true })
+            .GetByRole(
+                AriaRole.Heading,
+                new() { Name = displayName, Exact = true })
+            .WaitForAsync();
+    }
+
+    private static async Task AssertClientScopedLinkAsync(
+        ILocator link,
+        Guid clientId,
+        string viewportName,
+        string label)
+    {
+        await ExpectVisibleAsync(link, viewportName, label);
+        await AssertMinimumTouchTargetAsync(link, viewportName, label);
+        var href = await link.GetAttributeAsync("href");
+        Assert.NotNull(href);
+        Assert.Contains(
+            $"clientId={clientId}",
+            href,
+            StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task ExpectVisibleAsync(

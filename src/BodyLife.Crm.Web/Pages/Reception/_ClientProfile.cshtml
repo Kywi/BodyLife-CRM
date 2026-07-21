@@ -456,6 +456,23 @@
             </section>
         }
 
+        <nav class="profile-record-links"
+             aria-label="Client records"
+             data-client-record-links>
+            <a class="secondary-link"
+               asp-page="/Audit/ClientHistory"
+               asp-route-clientId="@profile.ClientId"
+               data-client-history-link>
+                Client history
+            </a>
+            <a class="secondary-link"
+               asp-page="/Audit/Timeline"
+               asp-route-clientId="@profile.ClientId"
+               data-client-audit-link>
+                Audit timeline
+            </a>
+        </nav>
+
         @if (Model.UpdateClientForm is not null)
         {
             <partial name="_UpdateClientForm" model="Model.UpdateClientForm" />
