@@ -4,6 +4,9 @@
     var input = Model.Input;
     var payment = Model.Payment;
     var paymentKey = payment.PaymentId.ToString("N");
+    var occurredDate = payment.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd");
+    var auditEntityId = payment.CorrectionFromOriginal?.OriginalPaymentId
+        ?? input.OriginalPaymentId;
     var amountValue = input.ReplacementAmount?.ToString(CultureInfo.InvariantCulture);
     var occurredAtValue = input.ReplacementOccurredAtUtc?.ToString(
         "yyyy-MM-ddTHH:mm",
@@ -50,6 +53,28 @@
                 <dd>Cash</dd>
             </div>
         </dl>
+
+        <nav class="correction-record-links"
+             aria-label="Payment correction records"
+             data-correction-record-links>
+            <a class="secondary-link"
+               asp-page="/Audit/ClientHistory"
+               asp-route-clientId="@input.ClientId"
+               asp-route-entity="@ClientHistoryEntityFilter.Payment"
+               asp-route-from="@occurredDate"
+               asp-route-to="@occurredDate"
+               data-correction-history-link>
+                Client history
+            </a>
+            <a class="secondary-link"
+               asp-page="/Audit/Timeline"
+               asp-route-clientId="@input.ClientId"
+               asp-route-entity="@AuditTimelineEntityType.Payment"
+               asp-route-entityId="@auditEntityId"
+               data-correction-audit-link>
+                Audit timeline
+            </a>
+        </nav>
 
         <div class="warning-block warning-danger">
             <strong>Correction keeps history</strong>

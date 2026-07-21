@@ -10535,3 +10535,84 @@ Next recommended step:
   preserving the original source id and Client context. Keep specialized
   before/after presenters and technical-log correlation lookup for later
   steps.
+
+## Step 168 - Correction form history and audit navigation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Finish the navigation portion of the fifth Milestone 10 task with only its
+  correction-form slice: connect existing Visit cancellation and Payment
+  correction panels to the completed Client History and Audit Timeline pages.
+- Preserve canonical Client, source-family, occurred-date and exact audit
+  entity context in server-generated routes. Keep all navigation read-only and
+  retain the existing command confirmation, idempotency and canonical reread
+  behavior.
+- Keep owner-readable before/after presenters for corrections/cancellations
+  and settings/catalog changes, plus technical-log correlation lookup, outside
+  this bounded step.
+
+Completed:
+
+- Added `Client history` and `Audit timeline` links immediately above the
+  warning and fields in every expanded Visit cancellation panel. History is
+  filtered by Client, Visit and the source occurred date; Audit is filtered by
+  Client, Visit and the exact Visit id.
+- Added equivalent links to every expanded Payment correction/cancellation
+  panel. A replacement Payment deliberately targets its immutable original
+  Payment id because `payment.corrected` uses that original as the primary
+  audit entity; ordinary source rows retain their own Payment id.
+- Kept the links outside the mutation forms, so they cannot submit a command
+  or alter antiforgery, confirmation, authorization, reason/comment,
+  idempotency or canonical reread behavior.
+- Added a compact responsive correction-record link group using existing
+  secondary controls. Both links remain at least 44px high, share available
+  width on tablet/phone and wrap without changing the source-row layout.
+- Added Owner/tablet and named-Admin/phone Playwright coverage over the real
+  htmx reception flow. It opens active Visit and replacement-Payment panels,
+  verifies all route filters and exact ids, navigates to both Client History
+  and Audit Timeline destinations and confirms matching canonical rows.
+
+Validation:
+
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully and the
+  Release solution build passed with 0 warnings/errors.
+- Focused correction-record navigation Playwright coverage passed 2/2 after
+  tightening the replacement-Payment hidden-id assertion to exact equality.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports for both Visit and Payment panels. Links remain
+  readable 44px touch targets, warning/forms stay unobscured and Playwright
+  found no horizontal document overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 35 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 82 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration.
+- `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(ui): link correction forms to audit records`.
+
+Next recommended step:
+
+- Continue the sixth Milestone 10 task with one bounded explanation slice:
+  present owner-readable before/after summaries for Visit cancellations and
+  Payment corrections/cancellations in Audit Timeline while preserving the
+  complete raw envelope as secondary detail. Keep settings/catalog presenters
+  and technical-log correlation lookup for subsequent steps.
