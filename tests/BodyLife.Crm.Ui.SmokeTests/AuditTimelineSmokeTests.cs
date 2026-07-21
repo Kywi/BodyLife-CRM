@@ -569,6 +569,215 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         }
     }
 
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
+    public async Task NonWorkingDayChangesLeadWithReadablePeriodAndScopeSummaries(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var nonWorkingDays = scenario.Explanations.NonWorkingDays;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} non-working day audit smoke");
+
+            var correctionExplanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "NonWorkingPeriod",
+                "non_working_day.corrected",
+                nonWorkingDays.CorrectedAuditEntryId,
+                "non-working-day-corrected",
+                viewportName,
+                entityId: nonWorkingDays.CorrectedOriginalPeriodId);
+            await ExpectVisibleAsync(
+                correctionExplanation.GetByRole(
+                    AriaRole.Heading,
+                    new()
+                    {
+                        Name = "Original non-working period preserved; replacement added",
+                        Exact = true,
+                    }),
+                viewportName,
+                "Non-working day correction explanation title");
+            Assert.Equal(
+                $"{nonWorkingDays.CorrectedOriginalPeriod.StartDate:yyyy-MM-dd} to {nonWorkingDays.CorrectedOriginalPeriod.EndDate:yyyy-MM-dd}",
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Original period",
+                    "Period"));
+            Assert.Equal(
+                nonWorkingDays.CorrectedOldAffectedCount.ToString(
+                    CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Original period",
+                    "Affected memberships"));
+            Assert.Equal(
+                "Weather Closure",
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Original period",
+                    "Reason code"));
+            Assert.Equal(
+                "Date range replaced",
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Replacement period",
+                    "Correction type"));
+            Assert.Equal(
+                $"{nonWorkingDays.CorrectedReplacementPeriod.StartDate:yyyy-MM-dd} to {nonWorkingDays.CorrectedReplacementPeriod.EndDate:yyyy-MM-dd}",
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Replacement period",
+                    "Period"));
+            Assert.Equal(
+                nonWorkingDays.CorrectedNewAffectedCount.ToString(
+                    CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Replacement period",
+                    "Affected memberships"));
+            Assert.Equal(
+                "Maintenance",
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Replacement period",
+                    "Reason code"));
+            Assert.Equal(
+                $"{nonWorkingDays.CorrectedAffectedUnionCount} of {nonWorkingDays.CorrectedAffectedUnionCount}",
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Replacement period",
+                    "Recalculated memberships"));
+            await ExpectVisibleAsync(
+                correctionExplanation.GetByText(
+                    "Date range, Reason, Affected scope",
+                    new() { Exact = true }),
+                viewportName,
+                "Non-working day correction changed fields");
+
+            var correctionRow = correctionExplanation.Locator("xpath=ancestor::li");
+            var envelope = correctionRow.Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "Non-working day correction audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "Non-working day correction raw envelope");
+            Assert.Contains(
+                "replacementApplications",
+                await envelope.Locator(".audit-json-grid").InnerTextAsync(),
+                StringComparison.Ordinal);
+            await AssertFitsViewportAsync(
+                page,
+                viewportName,
+                "Non-working day correction explanation");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "non-working-day-correction-explanation");
+
+            var cancellationExplanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "NonWorkingPeriod",
+                "non_working_day.canceled",
+                nonWorkingDays.CanceledAuditEntryId,
+                "non-working-day-canceled",
+                viewportName,
+                entityId: nonWorkingDays.CanceledOriginalPeriodId);
+            await ExpectVisibleAsync(
+                cancellationExplanation.GetByRole(
+                    AriaRole.Heading,
+                    new()
+                    {
+                        Name = "Original non-working period preserved; cancellation added",
+                        Exact = true,
+                    }),
+                viewportName,
+                "Non-working day cancellation explanation title");
+            Assert.Equal(
+                $"{nonWorkingDays.CanceledPeriod.StartDate:yyyy-MM-dd} to {nonWorkingDays.CanceledPeriod.EndDate:yyyy-MM-dd}",
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "Original period",
+                    "Period"));
+            Assert.Equal(
+                nonWorkingDays.CanceledAffectedCount.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "Original period",
+                    "Affected memberships"));
+            Assert.Equal(
+                "Preserved",
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "After cancellation",
+                    "Original fact"));
+            Assert.Equal(
+                "Canceled",
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "After cancellation",
+                    "Status"));
+            Assert.Equal(
+                "0",
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "After cancellation",
+                    "Active applications"));
+            Assert.Equal(
+                $"{nonWorkingDays.CanceledAffectedCount} of {nonWorkingDays.CanceledAffectedCount}",
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "After cancellation",
+                    "Recalculated memberships"));
+            await ExpectVisibleAsync(
+                cancellationExplanation.GetByText(
+                    "Period status, Active affected scope",
+                    new() { Exact = true }),
+                viewportName,
+                "Non-working day cancellation changed fields");
+            await AssertFitsViewportAsync(
+                page,
+                viewportName,
+                "Non-working day cancellation explanation");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "non-working-day-cancellation-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task InvalidOffsetKeepsAuditFiltersAndReturnsNoPartialTimeline()
     {
@@ -668,15 +877,19 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         string action,
         Guid auditEntryId,
         string explanationKind,
-        string viewportName)
+        string viewportName,
+        Guid? entityId = null)
     {
         var clientFilter = clientId is { } value
             ? $"clientId={value}&"
             : string.Empty;
+        var entityIdFilter = entityId is { } id
+            ? $"entityId={id}&"
+            : string.Empty;
         await page.GotoAsync(
             new Uri(
                 _app.BaseAddress,
-                $"/Audit/Timeline?{clientFilter}entity={entity}&action={action}")
+                $"/Audit/Timeline?{clientFilter}{entityIdFilter}entity={entity}&action={action}")
                 .ToString(),
             new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 

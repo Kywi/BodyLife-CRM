@@ -327,9 +327,119 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Readable change summary unavailable", explanation.Title);
     }
 
+    [Fact]
+    public void NonWorkingDayRangeCorrectionShowsReplacementAndStoredAffectedCounts()
+    {
+        var fixture = NonWorkingDayAudit(replaceReason: false);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.corrected",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.CorrectedAfter)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("non-working-day-corrected", explanation.Kind);
+        Assert.Equal("Original period", explanation.BeforeLabel);
+        Assert.Equal("Replacement period", explanation.AfterLabel);
+        Assert.Equal(
+            "2026-01-30 to 2026-02-02",
+            FactValue(explanation.BeforeFacts, "Period"));
+        Assert.Equal("Weather Closure", FactValue(explanation.BeforeFacts, "Reason code"));
+        Assert.Equal("2", FactValue(explanation.BeforeFacts, "Affected memberships"));
+        Assert.Equal(
+            "Date range replaced",
+            FactValue(explanation.AfterFacts, "Correction type"));
+        Assert.Equal("Corrected", FactValue(explanation.AfterFacts, "Original status"));
+        Assert.Equal(
+            "2026-02-03 to 2026-02-04",
+            FactValue(explanation.AfterFacts, "Period"));
+        Assert.Equal("Maintenance", FactValue(explanation.AfterFacts, "Reason code"));
+        Assert.Equal("3", FactValue(explanation.AfterFacts, "Affected memberships"));
+        Assert.Equal("3 of 3", FactValue(explanation.AfterFacts, "Recalculated memberships"));
+        Assert.Equal("Date range, Reason, Affected scope", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void NonWorkingDayReasonCorrectionRequiresPreservedRangeAndScope()
+    {
+        var fixture = NonWorkingDayAudit(replaceReason: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.corrected",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.CorrectedAfter)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            "Reason replaced",
+            FactValue(explanation.AfterFacts, "Correction type"));
+        Assert.Equal(
+            FactValue(explanation.BeforeFacts, "Period"),
+            FactValue(explanation.AfterFacts, "Period"));
+        Assert.Equal("Corrected Weather", FactValue(explanation.AfterFacts, "Reason code"));
+        Assert.Equal("2", FactValue(explanation.AfterFacts, "Affected memberships"));
+        Assert.Equal("Reason", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void NonWorkingDayCancellationShowsPreservedPeriodAndScopeRemoval()
+    {
+        var fixture = NonWorkingDayAudit(replaceReason: false);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.canceled",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.CanceledBefore,
+                    fixture.CanceledAfter)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("non-working-day-canceled", explanation.Kind);
+        Assert.Equal("Original period", explanation.BeforeLabel);
+        Assert.Equal("After cancellation", explanation.AfterLabel);
+        Assert.Equal("2", FactValue(explanation.BeforeFacts, "Affected memberships"));
+        Assert.Equal("Preserved", FactValue(explanation.AfterFacts, "Original fact"));
+        Assert.Equal("Canceled", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal("0", FactValue(explanation.AfterFacts, "Active applications"));
+        Assert.Equal("2 of 2", FactValue(explanation.AfterFacts, "Recalculated memberships"));
+        Assert.Equal("Period status, Active affected scope", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void NonWorkingDayCorrectionWithInconsistentRecalculationFailsClosed()
+    {
+        var fixture = NonWorkingDayAudit(
+            replaceReason: false,
+            correctionSucceededCountDelta: -1);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.corrected",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.CorrectedAfter)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
     [Theory]
     [InlineData("membership_type.edited", AuditTimelineEntityType.Client)]
     [InlineData("membership_type.deactivated", AuditTimelineEntityType.Client)]
+    [InlineData("non_working_day.corrected", AuditTimelineEntityType.Payment)]
+    [InlineData("non_working_day.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("visit.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("payment.corrected", AuditTimelineEntityType.Visit)]
     [InlineData("payment.canceled", AuditTimelineEntityType.Visit)]
@@ -495,6 +605,184 @@ public sealed class AuditEntryExplanationViewModelTests
             DeactivatedAt: null);
     }
 
+    private static NonWorkingDayAuditFixture NonWorkingDayAudit(
+        bool replaceReason,
+        int correctionSucceededCountDelta = 0)
+    {
+        var periodId = Guid.NewGuid();
+        var originalStartDate = new DateOnly(2026, 1, 30);
+        var originalEndDate = new DateOnly(2026, 2, 2);
+        var replacementStartDate = replaceReason
+            ? originalStartDate
+            : new DateOnly(2026, 2, 3);
+        var replacementEndDate = replaceReason
+            ? originalEndDate
+            : new DateOnly(2026, 2, 4);
+        var firstMembershipId = Guid.NewGuid();
+        var secondMembershipId = Guid.NewGuid();
+        var thirdMembershipId = Guid.NewGuid();
+        var firstClientId = Guid.NewGuid();
+        var secondClientId = Guid.NewGuid();
+        var thirdClientId = Guid.NewGuid();
+        var createdByAccountId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var createdAt = OriginalOccurredAt.AddDays(-30);
+        var previewedAt = OriginalOccurredAt.AddHours(-1);
+        var confirmedAt = OriginalOccurredAt.AddMinutes(5);
+        var originalPeriod = new NonWorkingDaySourcePeriodAuditFixture(
+            periodId,
+            originalStartDate,
+            originalEndDate,
+            InclusiveDays: 4,
+            "weather_closure",
+            "Snow closure",
+            createdAt,
+            createdByAccountId,
+            sessionId,
+            "active");
+        NonWorkingDayBeforeApplicationAuditFixture[] originalApplications =
+        [
+            BeforeApplication(
+                firstMembershipId,
+                firstClientId,
+                originalStartDate,
+                originalEndDate,
+                previewedAt,
+                confirmedAt),
+            BeforeApplication(
+                secondMembershipId,
+                secondClientId,
+                originalStartDate,
+                originalEndDate,
+                previewedAt,
+                confirmedAt),
+        ];
+        var replacementMembershipIds = replaceReason
+            ? new[] { firstMembershipId, secondMembershipId }
+            : new[] { firstMembershipId, secondMembershipId, thirdMembershipId };
+        var replacementClientIds = replaceReason
+            ? new[] { firstClientId, secondClientId }
+            : new[] { firstClientId, secondClientId, thirdClientId };
+        var replacementApplications = replacementMembershipIds
+            .Zip(
+                replacementClientIds,
+                (membershipId, clientId) => new NonWorkingDayReplacementApplicationAuditFixture(
+                    Guid.NewGuid(),
+                    membershipId,
+                    clientId,
+                    replacementStartDate,
+                    replacementEndDate))
+            .ToArray();
+        var replacementPeriod = new NonWorkingDayReplacementPeriodAuditFixture(
+            Guid.NewGuid(),
+            replacementStartDate,
+            replacementEndDate,
+            InclusiveDays: replaceReason ? 4 : 2,
+            replaceReason ? "corrected_weather" : "maintenance",
+            replaceReason ? "Corrected forecast" : "Boiler replacement",
+            confirmedAt,
+            "active");
+        var affectedUnionIds = originalApplications
+            .Select(application => application.MembershipId)
+            .Concat(replacementMembershipIds)
+            .Distinct()
+            .ToArray();
+        var before = new
+        {
+            Period = originalPeriod,
+            Applications = originalApplications,
+            Preview = new
+            {
+                ConfirmationFingerprint = "non-working-day-test-fingerprint",
+                IssuedAt = previewedAt,
+                ExpiresAt = confirmedAt.AddMinutes(10),
+                OldAffectedCount = originalApplications.Length,
+                NewAffectedCount = replacementApplications.Length,
+            },
+        };
+        var canceledBefore = new
+        {
+            Period = originalPeriod,
+            Applications = originalApplications,
+            Preview = new
+            {
+                ConfirmationFingerprint = "non-working-day-cancel-test-fingerprint",
+                IssuedAt = previewedAt,
+                ExpiresAt = confirmedAt.AddMinutes(10),
+                OldAffectedCount = originalApplications.Length,
+                NewAffectedCount = 0,
+            },
+        };
+        var correctedAfter = new
+        {
+            Mode = replaceReason ? "replace_reason" : "replace_range",
+            OriginalPeriod = originalPeriod with { Status = "corrected" },
+            ReplacementPeriod = replacementPeriod,
+            ReplacementApplications = replacementApplications,
+            Cancellation = (object?)null,
+            OldAffectedCount = originalApplications.Length,
+            NewAffectedCount = replacementApplications.Length,
+            AffectedUnionCount = affectedUnionIds.Length,
+            Recalculation = new
+            {
+                RequestedCount = affectedUnionIds.Length,
+                SucceededCount = affectedUnionIds.Length + correctionSucceededCountDelta,
+                MembershipIds = affectedUnionIds,
+            },
+        };
+        var canceledAfter = new
+        {
+            Mode = "cancel",
+            OriginalPeriod = originalPeriod with { Status = "canceled" },
+            ReplacementPeriod = (object?)null,
+            ReplacementApplications =
+                Array.Empty<NonWorkingDayReplacementApplicationAuditFixture>(),
+            Cancellation = new
+            {
+                CancellationId = Guid.NewGuid(),
+                NonWorkingPeriodId = periodId,
+                Reason = "Correction reason",
+                RecordedAt = confirmedAt,
+            },
+            OldAffectedCount = originalApplications.Length,
+            NewAffectedCount = 0,
+            AffectedUnionCount = originalApplications.Length,
+            Recalculation = new
+            {
+                RequestedCount = originalApplications.Length,
+                SucceededCount = originalApplications.Length,
+                MembershipIds = originalApplications
+                    .Select(application => application.MembershipId)
+                    .ToArray(),
+            },
+        };
+        return new NonWorkingDayAuditFixture(
+            periodId,
+            before,
+            canceledBefore,
+            correctedAfter,
+            canceledAfter);
+    }
+
+    private static NonWorkingDayBeforeApplicationAuditFixture BeforeApplication(
+        Guid membershipId,
+        Guid clientId,
+        DateOnly startDate,
+        DateOnly endDate,
+        DateTimeOffset previewedAt,
+        DateTimeOffset confirmedAt)
+    {
+        return new NonWorkingDayBeforeApplicationAuditFixture(
+            Guid.NewGuid(),
+            membershipId,
+            clientId,
+            startDate,
+            endDate,
+            previewedAt,
+            confirmedAt,
+            "active");
+    }
+
     private static string FactValue(
         IEnumerable<AuditEntryExplanationFactViewModel> facts,
         string label)
@@ -533,4 +821,50 @@ public sealed class AuditEntryExplanationViewModelTests
     private sealed record MembershipTypePriceAuditFixture(
         decimal Amount,
         string Currency);
+
+    private sealed record NonWorkingDayAuditFixture(
+        Guid PeriodId,
+        object Before,
+        object CanceledBefore,
+        object CorrectedAfter,
+        object CanceledAfter);
+
+    private sealed record NonWorkingDaySourcePeriodAuditFixture(
+        Guid PeriodId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        int InclusiveDays,
+        string ReasonCode,
+        string? ReasonComment,
+        DateTimeOffset CreatedAt,
+        Guid CreatedByAccountId,
+        Guid SessionId,
+        string Status);
+
+    private sealed record NonWorkingDayReplacementPeriodAuditFixture(
+        Guid PeriodId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        int InclusiveDays,
+        string ReasonCode,
+        string? ReasonComment,
+        DateTimeOffset CreatedAt,
+        string Status);
+
+    private sealed record NonWorkingDayBeforeApplicationAuditFixture(
+        Guid ApplicationId,
+        Guid MembershipId,
+        Guid ClientId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        DateTimeOffset PreviewedAt,
+        DateTimeOffset ConfirmedAt,
+        string Status);
+
+    private sealed record NonWorkingDayReplacementApplicationAuditFixture(
+        Guid ApplicationId,
+        Guid MembershipId,
+        Guid ClientId,
+        DateOnly AppliedStartDate,
+        DateOnly AppliedEndDate);
 }

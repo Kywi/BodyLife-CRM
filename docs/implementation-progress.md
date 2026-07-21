@@ -10796,3 +10796,89 @@ Next recommended step:
   stored affected-scope counts, while keeping recalculation formulas out of
   Audit UI. Keep freeze cancellation, audit-noise review and technical-log
   correlation lookup for later steps.
+
+## Step 171 - NonWorkingDay correction audit explanations
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue only the NonWorkingDay settings portion of the sixth Milestone 10
+  task by replacing raw JSON as the primary explanation for
+  `non_working_day.corrected` and `non_working_day.canceled` Timeline rows.
+- Present command-owned source-period, immutable affected-scope and stored
+  recalculation summaries without deriving Membership extension days or
+  duplicating Memberships formulas in Audit UI.
+- Preserve the complete append-only audit envelope as collapsed secondary
+  support detail. Keep Freeze cancellation, audit-noise review and technical-
+  log correlation lookup outside this bounded step.
+
+Completed:
+
+- Added a typed, fail-closed NonWorkingDay audit explanation presenter. It
+  validates the original period identity and status, full-period application
+  snapshots, old/new/union affected counts, replacement or cancellation fact,
+  and successful recalculation membership ids before rendering owner-facing
+  values.
+- Added `Original period`/`Replacement period` sections for range and reason
+  corrections. They show the stored inclusive range, reason, affected counts,
+  statuses, correction mode and recalculation count; changed fields are
+  derived only from the two stored snapshots.
+- Added `Original period`/`After cancellation` sections that explain the
+  preserved source period and applications, separate cancellation fact,
+  removal of the active scope and stored recalculation count. The complete
+  related/before/after JSON remains available through the collapsed
+  `Audit envelope` disclosure.
+- Added six Web presenter cases covering range replacement, reason-only
+  replacement, cancellation, inconsistent recalculation and wrong-entity
+  fail-closed behavior.
+- Extended the PostgreSQL-backed Audit Timeline fixture with production-shaped
+  correction/cancellation envelopes and added Owner/tablet plus named-
+  Admin/phone Playwright coverage over exact entity filtering, stored period
+  and affected-count facts, preservation semantics, raw-envelope availability
+  and horizontal fit.
+- Kept NonWorkingDay commands, persistence schema, EF model and Memberships
+  recalculation behavior unchanged.
+
+Validation:
+
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully and the
+  Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 20/20; focused new
+  NonWorkingDay explanation Playwright coverage passed 2/2; the complete
+  `AuditTimelineSmokeTests` regression passed 10/10 with no skipped tests.
+- Screenshot-backed visual checks passed for correction and cancellation at
+  1024x768 Owner/tablet and 390x844 named-Admin/phone viewports. Period and
+  scope facts remain readable, the raw envelope is collapsed by default,
+  controls/text do not overlap and Playwright found no horizontal overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 55 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 88 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain non-working day changes`.
+
+Next recommended step:
+
+- Continue the sixth Milestone 10 task with one bounded correction explanation
+  slice for `freeze.canceled`: show the preserved Freeze range, separate
+  cancellation fact and stored before/after Membership effective-end summary
+  without recalculating extension rules in Audit UI. Keep audit-noise review
+  and technical-log correlation lookup for later steps.

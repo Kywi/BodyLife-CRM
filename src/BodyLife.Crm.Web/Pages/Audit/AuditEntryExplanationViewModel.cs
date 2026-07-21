@@ -23,6 +23,8 @@ public sealed record AuditEntryExplanationViewModel(
         {
             "membership_type.edited" => "membership-type-edited",
             "membership_type.deactivated" => "membership-type-deactivated",
+            "non_working_day.corrected" => "non-working-day-corrected",
+            "non_working_day.canceled" => "non-working-day-canceled",
             "visit.canceled" => "visit-canceled",
             "payment.corrected" => "payment-corrected",
             "payment.canceled" => "payment-canceled",
@@ -45,6 +47,18 @@ public sealed record AuditEntryExplanationViewModel(
                 "membership_type.deactivated"
                     when entry.EntityType == AuditTimelineEntityType.MembershipType
                     => CreateMembershipTypeDeactivation(before.RootElement, after.RootElement),
+                "non_working_day.corrected"
+                    when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
+                    => NonWorkingDayAuditExplanationFactory.CreateCorrection(
+                        entry,
+                        before.RootElement,
+                        after.RootElement),
+                "non_working_day.canceled"
+                    when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
+                    => NonWorkingDayAuditExplanationFactory.CreateCancellation(
+                        entry,
+                        before.RootElement,
+                        after.RootElement),
                 "visit.canceled" when entry.EntityType == AuditTimelineEntityType.Visit
                     => CreateVisitCancellation(entry, before.RootElement, after.RootElement),
                 "payment.corrected" when entry.EntityType == AuditTimelineEntityType.Payment

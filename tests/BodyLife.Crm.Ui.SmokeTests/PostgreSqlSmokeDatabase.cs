@@ -878,6 +878,179 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             DeactivatedAt = membershipTypeDeactivatedAt,
         };
 
+        var nonWorkingDayCorrectedAuditEntryId = Guid.NewGuid();
+        var correctedOriginalPeriodId = Guid.NewGuid();
+        var correctedReplacementPeriodId = Guid.NewGuid();
+        var correctedOriginalPeriod = new DateRange(
+            new DateOnly(2026, 8, 1),
+            new DateOnly(2026, 8, 3));
+        var correctedReplacementPeriod = new DateRange(
+            new DateOnly(2026, 8, 4),
+            new DateOnly(2026, 8, 5));
+        var correctedAt = recordedBase.AddHours(6);
+        Guid[] correctedOldMembershipIds = [Guid.NewGuid(), Guid.NewGuid()];
+        Guid[] correctedNewMembershipIds =
+        [
+            correctedOldMembershipIds[0],
+            correctedOldMembershipIds[1],
+            Guid.NewGuid(),
+        ];
+        Guid[] correctedOldClientIds = [Guid.NewGuid(), Guid.NewGuid()];
+        Guid[] correctedNewClientIds =
+        [
+            correctedOldClientIds[0],
+            correctedOldClientIds[1],
+            Guid.NewGuid(),
+        ];
+        var correctedSource = new AuditNonWorkingDaySourcePeriodSummarySeed(
+            correctedOriginalPeriodId,
+            correctedOriginalPeriod.StartDate,
+            correctedOriginalPeriod.EndDate,
+            InclusiveDays: 3,
+            "weather_closure",
+            "Storm closure",
+            recordedBase.AddDays(-20),
+            ownerAccountId,
+            ownerSessionId,
+            "active");
+        var correctedOldApplications = correctedOldMembershipIds
+            .Zip(
+                correctedOldClientIds,
+                (affectedMembershipId, affectedClientId) =>
+                    new AuditNonWorkingDayBeforeApplicationSummarySeed(
+                        Guid.NewGuid(),
+                        affectedMembershipId,
+                        affectedClientId,
+                        correctedOriginalPeriod.StartDate,
+                        correctedOriginalPeriod.EndDate,
+                        correctedSource.CreatedAt.AddMinutes(-5),
+                        correctedSource.CreatedAt,
+                        "active"))
+            .ToArray();
+        var correctedReplacement = new AuditNonWorkingDayReplacementPeriodSummarySeed(
+            correctedReplacementPeriodId,
+            correctedReplacementPeriod.StartDate,
+            correctedReplacementPeriod.EndDate,
+            InclusiveDays: 2,
+            "maintenance",
+            "Boiler replacement",
+            correctedAt,
+            "active");
+        var correctedNewApplications = correctedNewMembershipIds
+            .Zip(
+                correctedNewClientIds,
+                (affectedMembershipId, affectedClientId) =>
+                    new AuditNonWorkingDayReplacementApplicationSummarySeed(
+                        Guid.NewGuid(),
+                        affectedMembershipId,
+                        affectedClientId,
+                        correctedReplacementPeriod.StartDate,
+                        correctedReplacementPeriod.EndDate))
+            .ToArray();
+        var correctedBefore = new
+        {
+            Period = correctedSource,
+            Applications = correctedOldApplications,
+            Preview = new
+            {
+                ConfirmationFingerprint = "audit-ui-non-working-correction",
+                IssuedAt = correctedAt.AddMinutes(-10),
+                ExpiresAt = correctedAt.AddMinutes(5),
+                OldAffectedCount = correctedOldApplications.Length,
+                NewAffectedCount = correctedNewApplications.Length,
+            },
+        };
+        var correctedAfter = new
+        {
+            Mode = "replace_range",
+            OriginalPeriod = correctedSource with { Status = "corrected" },
+            ReplacementPeriod = correctedReplacement,
+            ReplacementApplications = correctedNewApplications,
+            Cancellation = (object?)null,
+            OldAffectedCount = correctedOldApplications.Length,
+            NewAffectedCount = correctedNewApplications.Length,
+            AffectedUnionCount = correctedNewMembershipIds.Length,
+            Recalculation = new
+            {
+                RequestedCount = correctedNewMembershipIds.Length,
+                SucceededCount = correctedNewMembershipIds.Length,
+                MembershipIds = correctedNewMembershipIds,
+            },
+        };
+
+        var nonWorkingDayCanceledAuditEntryId = Guid.NewGuid();
+        var canceledPeriodId = Guid.NewGuid();
+        var nonWorkingDayCancellationId = Guid.NewGuid();
+        var canceledPeriod = new DateRange(
+            new DateOnly(2026, 8, 10),
+            new DateOnly(2026, 8, 11));
+        var nonWorkingDayCanceledAt = recordedBase.AddHours(7);
+        Guid[] canceledMembershipIds = [Guid.NewGuid(), Guid.NewGuid()];
+        Guid[] canceledClientIds = [Guid.NewGuid(), Guid.NewGuid()];
+        var canceledSource = new AuditNonWorkingDaySourcePeriodSummarySeed(
+            canceledPeriodId,
+            canceledPeriod.StartDate,
+            canceledPeriod.EndDate,
+            InclusiveDays: 2,
+            "renovation",
+            "Floor refinishing",
+            recordedBase.AddDays(-18),
+            ownerAccountId,
+            ownerSessionId,
+            "active");
+        var canceledApplications = canceledMembershipIds
+            .Zip(
+                canceledClientIds,
+                (affectedMembershipId, affectedClientId) =>
+                    new AuditNonWorkingDayBeforeApplicationSummarySeed(
+                        Guid.NewGuid(),
+                        affectedMembershipId,
+                        affectedClientId,
+                        canceledPeriod.StartDate,
+                        canceledPeriod.EndDate,
+                        canceledSource.CreatedAt.AddMinutes(-5),
+                        canceledSource.CreatedAt,
+                        "active"))
+            .ToArray();
+        var canceledBefore = new
+        {
+            Period = canceledSource,
+            Applications = canceledApplications,
+            Preview = new
+            {
+                ConfirmationFingerprint = "audit-ui-non-working-cancellation",
+                IssuedAt = nonWorkingDayCanceledAt.AddMinutes(-10),
+                ExpiresAt = nonWorkingDayCanceledAt.AddMinutes(5),
+                OldAffectedCount = canceledApplications.Length,
+                NewAffectedCount = 0,
+            },
+        };
+        var nonWorkingDayCancellationReason = "Closure no longer required";
+        var canceledAfter = new
+        {
+            Mode = "cancel",
+            OriginalPeriod = canceledSource with { Status = "canceled" },
+            ReplacementPeriod = (object?)null,
+            ReplacementApplications =
+                Array.Empty<AuditNonWorkingDayReplacementApplicationSummarySeed>(),
+            Cancellation = new
+            {
+                CancellationId = nonWorkingDayCancellationId,
+                NonWorkingPeriodId = canceledPeriodId,
+                Reason = nonWorkingDayCancellationReason,
+                RecordedAt = nonWorkingDayCanceledAt,
+            },
+            OldAffectedCount = canceledApplications.Length,
+            NewAffectedCount = 0,
+            AffectedUnionCount = canceledMembershipIds.Length,
+            Recalculation = new
+            {
+                RequestedCount = canceledMembershipIds.Length,
+                SucceededCount = canceledMembershipIds.Length,
+                MembershipIds = canceledMembershipIds,
+            },
+        };
+
         AuditSeed[] explanationSeeds =
         [
             new(
@@ -1065,6 +1238,62 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 editedMembershipType,
                 deactivatedMembershipType,
                 ChangedAfterClose: false),
+            new(
+                nonWorkingDayCorrectedAuditEntryId,
+                "non_working_day.corrected",
+                "non_working_period",
+                correctedOriginalPeriodId,
+                new
+                {
+                    OriginalPeriodId = correctedOriginalPeriodId,
+                    ReplacementPeriodId = (Guid?)correctedReplacementPeriodId,
+                    CancellationId = (Guid?)null,
+                    OldMembershipIds = correctedOldMembershipIds,
+                    NewMembershipIds = correctedNewMembershipIds,
+                    AffectedMembershipIds = correctedNewMembershipIds,
+                    AffectedClientIds = correctedNewClientIds,
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                correctedAt.AddMinutes(-5),
+                correctedAt,
+                "normal",
+                "Closure schedule changed",
+                "Confirmed against the correction preview",
+                correctedBefore,
+                correctedAfter,
+                ChangedAfterClose: false),
+            new(
+                nonWorkingDayCanceledAuditEntryId,
+                "non_working_day.canceled",
+                "non_working_period",
+                canceledPeriodId,
+                new
+                {
+                    OriginalPeriodId = canceledPeriodId,
+                    ReplacementPeriodId = (Guid?)null,
+                    CancellationId = (Guid?)nonWorkingDayCancellationId,
+                    OldMembershipIds = canceledMembershipIds,
+                    NewMembershipIds = Array.Empty<Guid>(),
+                    AffectedMembershipIds = canceledMembershipIds,
+                    AffectedClientIds = canceledClientIds,
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                nonWorkingDayCanceledAt.AddMinutes(-5),
+                nonWorkingDayCanceledAt,
+                "normal",
+                nonWorkingDayCancellationReason,
+                "Owner confirmed cancellation",
+                canceledBefore,
+                canceledAfter,
+                ChangedAfterClose: false),
         ];
 
         foreach (var explanationSeed in explanationSeeds)
@@ -1100,7 +1329,19 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 replacementPaymentAmount,
                 canceledPaymentAmount,
                 BeforeVisitRemaining: -1,
-                AfterVisitRemaining: 0));
+                AfterVisitRemaining: 0,
+                NonWorkingDays: new NonWorkingDayAuditExplanationSmokeScenario(
+                    nonWorkingDayCorrectedAuditEntryId,
+                    correctedOriginalPeriodId,
+                    correctedOriginalPeriod,
+                    correctedReplacementPeriod,
+                    correctedOldApplications.Length,
+                    correctedNewApplications.Length,
+                    correctedNewMembershipIds.Length,
+                    nonWorkingDayCanceledAuditEntryId,
+                    canceledPeriodId,
+                    canceledPeriod,
+                    canceledApplications.Length)));
     }
 
     public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(
@@ -4936,6 +5177,45 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt,
         DateTimeOffset? DeactivatedAt);
+
+    private sealed record AuditNonWorkingDaySourcePeriodSummarySeed(
+        Guid PeriodId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        int InclusiveDays,
+        string ReasonCode,
+        string? ReasonComment,
+        DateTimeOffset CreatedAt,
+        Guid CreatedByAccountId,
+        Guid SessionId,
+        string Status);
+
+    private sealed record AuditNonWorkingDayReplacementPeriodSummarySeed(
+        Guid PeriodId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        int InclusiveDays,
+        string ReasonCode,
+        string? ReasonComment,
+        DateTimeOffset CreatedAt,
+        string Status);
+
+    private sealed record AuditNonWorkingDayBeforeApplicationSummarySeed(
+        Guid ApplicationId,
+        Guid MembershipId,
+        Guid ClientId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        DateTimeOffset PreviewedAt,
+        DateTimeOffset ConfirmedAt,
+        string Status);
+
+    private sealed record AuditNonWorkingDayReplacementApplicationSummarySeed(
+        Guid ApplicationId,
+        Guid MembershipId,
+        Guid ClientId,
+        DateOnly AppliedStartDate,
+        DateOnly AppliedEndDate);
 
     private sealed record AuditMoneySummarySeed(
         decimal Amount,

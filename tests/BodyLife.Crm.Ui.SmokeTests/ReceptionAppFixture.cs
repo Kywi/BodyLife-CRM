@@ -2186,7 +2186,21 @@ public sealed record AuditExplanationSmokeScenario(
     decimal ReplacementPaymentAmount,
     decimal CanceledPaymentAmount,
     int BeforeVisitRemaining,
-    int AfterVisitRemaining);
+    int AfterVisitRemaining,
+    NonWorkingDayAuditExplanationSmokeScenario NonWorkingDays);
+
+public sealed record NonWorkingDayAuditExplanationSmokeScenario(
+    Guid CorrectedAuditEntryId,
+    Guid CorrectedOriginalPeriodId,
+    DateRange CorrectedOriginalPeriod,
+    DateRange CorrectedReplacementPeriod,
+    int CorrectedOldAffectedCount,
+    int CorrectedNewAffectedCount,
+    int CorrectedAffectedUnionCount,
+    Guid CanceledAuditEntryId,
+    Guid CanceledOriginalPeriodId,
+    DateRange CanceledPeriod,
+    int CanceledAffectedCount);
 
 public sealed record ClientHistorySmokeScenario(
     Guid ClientId,
