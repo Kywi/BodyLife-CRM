@@ -135,6 +135,7 @@
                     <ol class="audit-entry-list" data-audit-entry-list>
                         @foreach (var entry in timelinePage.Items)
                         {
+                            var explanation = AuditEntryExplanationViewModel.Create(entry);
                             <li class="audit-entry @TimelineModel.EntryClass(entry)"
                                 data-audit-entry-id="@entry.AuditEntryId.Value"
                                 data-action-type="@entry.ActionType"
@@ -204,6 +205,59 @@
                                         <strong>Comment</strong>
                                         <span>@entry.Comment</span>
                                     </div>
+                                }
+
+                                @if (explanation is not null)
+                                {
+                                    <section class="audit-change-explanation @(explanation.IsAvailable ? string.Empty : "audit-change-explanation-unavailable")"
+                                             aria-label="Business change explanation"
+                                             data-audit-change-explanation
+                                             data-explanation-kind="@explanation.Kind"
+                                             data-explanation-available="@explanation.IsAvailable.ToString().ToLowerInvariant()">
+                                        <header>
+                                            <p class="eyebrow">Business change</p>
+                                            <h4>@explanation.Title</h4>
+                                        </header>
+                                        <p class="audit-change-narrative">@explanation.Narrative</p>
+
+                                        @if (explanation.IsAvailable)
+                                        {
+                                            <div class="audit-change-columns">
+                                                <section aria-label="@explanation.BeforeLabel">
+                                                    <h5>@explanation.BeforeLabel</h5>
+                                                    <dl class="audit-change-facts">
+                                                        @foreach (var fact in explanation.BeforeFacts)
+                                                        {
+                                                            <div>
+                                                                <dt>@fact.Label</dt>
+                                                                <dd>@fact.Value</dd>
+                                                            </div>
+                                                        }
+                                                    </dl>
+                                                </section>
+                                                <section aria-label="@explanation.AfterLabel">
+                                                    <h5>@explanation.AfterLabel</h5>
+                                                    <dl class="audit-change-facts">
+                                                        @foreach (var fact in explanation.AfterFacts)
+                                                        {
+                                                            <div>
+                                                                <dt>@fact.Label</dt>
+                                                                <dd>@fact.Value</dd>
+                                                            </div>
+                                                        }
+                                                    </dl>
+                                                </section>
+                                            </div>
+
+                                            @if (!string.IsNullOrWhiteSpace(explanation.ChangedFields))
+                                            {
+                                                <p class="audit-change-fields">
+                                                    <strong>Changed fields</strong>
+                                                    <span>@explanation.ChangedFields</span>
+                                                </p>
+                                            }
+                                        }
+                                    </section>
                                 }
 
                                 <details class="audit-envelope-details">

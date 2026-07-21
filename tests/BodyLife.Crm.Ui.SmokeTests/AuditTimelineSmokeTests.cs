@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Playwright;
 
 namespace BodyLife.Crm.Ui.SmokeTests;
@@ -235,6 +236,183 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         }
     }
 
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
+    public async Task CorrectionEntriesLeadWithOwnerReadableBeforeAndAfterSummaries(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} audit explanations smoke");
+
+            var visitExplanation = await OpenExplanationAsync(
+                page,
+                scenario.ClientId,
+                "Visit",
+                "visit.canceled",
+                scenario.Explanations.VisitCancellationAuditEntryId,
+                "visit-canceled",
+                viewportName);
+            await ExpectVisibleAsync(
+                visitExplanation.GetByRole(
+                    AriaRole.Heading,
+                    new()
+                    {
+                        Name = "Original Visit preserved; cancellation added",
+                        Exact = true,
+                    }),
+                viewportName,
+                "Visit cancellation explanation title");
+            Assert.Equal(
+                scenario.Explanations.BeforeVisitRemaining.ToString(),
+                await ExplanationFactAsync(
+                    visitExplanation,
+                    "Original visit",
+                    "Remaining visits"));
+            Assert.Equal(
+                scenario.Explanations.AfterVisitRemaining.ToString(),
+                await ExplanationFactAsync(
+                    visitExplanation,
+                    "After cancellation",
+                    "Remaining visits"));
+            Assert.Equal(
+                "Preserved",
+                await ExplanationFactAsync(
+                    visitExplanation,
+                    "After cancellation",
+                    "Original fact"));
+            await ExpectVisibleAsync(
+                visitExplanation.GetByText(
+                    "Visit status, consumption status, Membership state",
+                    new() { Exact = true }),
+                viewportName,
+                "Visit changed fields");
+            await AssertFitsViewportAsync(page, viewportName, "Visit explanation");
+            await CaptureVisualAsync(page, viewportName, "visit-cancellation-explanation");
+
+            var correctionExplanation = await OpenExplanationAsync(
+                page,
+                scenario.ClientId,
+                "Payment",
+                "payment.corrected",
+                scenario.Explanations.PaymentCorrectionAuditEntryId,
+                "payment-corrected",
+                viewportName);
+            Assert.Equal(
+                MoneyLabel(scenario.Explanations.OriginalPaymentAmount),
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Original payment",
+                    "Amount"));
+            Assert.Equal(
+                MoneyLabel(scenario.Explanations.ReplacementPaymentAmount),
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Replacement payment",
+                    "Amount"));
+            Assert.Equal(
+                "Replaced",
+                await ExplanationFactAsync(
+                    correctionExplanation,
+                    "Replacement payment",
+                    "Original status"));
+            await ExpectVisibleAsync(
+                correctionExplanation.GetByText(
+                    "Amount, Occurred time, Comment",
+                    new() { Exact = true }),
+                viewportName,
+                "Payment correction changed fields");
+
+            var correctionRow = correctionExplanation.Locator("xpath=ancestor::li");
+            var envelope = correctionRow.Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "Payment correction audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "Payment correction raw envelope");
+            Assert.Contains(
+                "replacementPayment",
+                await envelope.Locator(".audit-json-grid").InnerTextAsync(),
+                StringComparison.Ordinal);
+            await AssertFitsViewportAsync(page, viewportName, "Payment correction explanation");
+            await CaptureVisualAsync(page, viewportName, "payment-correction-explanation");
+
+            var cancellationExplanation = await OpenExplanationAsync(
+                page,
+                scenario.ClientId,
+                "Payment",
+                "payment.canceled",
+                scenario.Explanations.PaymentCancellationAuditEntryId,
+                "payment-canceled",
+                viewportName);
+            var canceledAmount = MoneyLabel(
+                scenario.Explanations.CanceledPaymentAmount);
+            Assert.Equal(
+                canceledAmount,
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "Original payment",
+                    "Amount"));
+            Assert.Equal(
+                canceledAmount,
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "After cancellation",
+                    "Amount"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "Original payment",
+                    "Status"));
+            Assert.Equal(
+                "Canceled",
+                await ExplanationFactAsync(
+                    cancellationExplanation,
+                    "After cancellation",
+                    "Status"));
+            await ExpectVisibleAsync(
+                cancellationExplanation.GetByText(
+                    "Payment status",
+                    new() { Exact = true }),
+                viewportName,
+                "Payment cancellation changed fields");
+            await AssertFitsViewportAsync(page, viewportName, "Payment cancellation explanation");
+            await CaptureVisualAsync(page, viewportName, "payment-cancellation-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task InvalidOffsetKeepsAuditFiltersAndReturnsNoPartialTimeline()
     {
@@ -325,6 +503,58 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
+    }
+
+    private async Task<ILocator> OpenExplanationAsync(
+        IPage page,
+        Guid clientId,
+        string entity,
+        string action,
+        Guid auditEntryId,
+        string explanationKind,
+        string viewportName)
+    {
+        await page.GotoAsync(
+            new Uri(
+                _app.BaseAddress,
+                $"/Audit/Timeline?clientId={clientId}&entity={entity}&action={action}")
+                .ToString(),
+            new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+
+        var rows = page.Locator("[data-audit-entry-list] > .audit-entry");
+        Assert.Equal(1, await rows.CountAsync());
+        var row = page.Locator($"[data-audit-entry-id='{auditEntryId}']");
+        var explanation = row.Locator("[data-audit-change-explanation]");
+        await ExpectVisibleAsync(
+            explanation,
+            viewportName,
+            $"{action} readable explanation");
+        Assert.Equal(
+            explanationKind,
+            await explanation.GetAttributeAsync("data-explanation-kind"));
+        Assert.Equal(
+            "true",
+            await explanation.GetAttributeAsync("data-explanation-available"));
+        Assert.Null(
+            await row.Locator(".audit-envelope-details").GetAttributeAsync("open"));
+        return explanation;
+    }
+
+    private static async Task<string> ExplanationFactAsync(
+        ILocator explanation,
+        string columnLabel,
+        string factLabel)
+    {
+        var column = explanation.GetByRole(
+            AriaRole.Region,
+            new() { Name = columnLabel, Exact = true });
+        var term = column.GetByText(factLabel, new() { Exact = true });
+        return await term.Locator("xpath=following-sibling::dd").InnerTextAsync();
+    }
+
+    private static string MoneyLabel(decimal amount)
+    {
+        return $"{amount.ToString("0.##", CultureInfo.InvariantCulture)} UAH";
     }
 
     private static async Task ExpectVisibleAsync(

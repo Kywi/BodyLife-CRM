@@ -3004,6 +3004,104 @@ textarea:focus-visible,
   overflow-wrap: anywhere;
 }
 
+.audit-change-explanation {
+  display: grid;
+  min-width: 0;
+  gap: 12px;
+  border-block: 1px solid var(--line);
+  padding-block: 14px;
+}
+
+.audit-change-explanation header {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.audit-change-explanation h4,
+.audit-change-explanation h5,
+.audit-change-narrative,
+.audit-change-fields {
+  margin: 0;
+}
+
+.audit-change-explanation h4 {
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+}
+
+.audit-change-narrative {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.audit-change-columns {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--surface-muted);
+}
+
+.audit-change-columns > section {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+  padding: 12px;
+}
+
+.audit-change-columns > section + section {
+  border-left: 1px solid var(--line);
+}
+
+.audit-change-explanation h5 {
+  font-size: 0.9rem;
+}
+
+.audit-change-facts {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+.audit-change-facts div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.audit-change-facts dt {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.audit-change-facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.audit-change-fields {
+  display: grid;
+  border-left: 4px solid var(--warning);
+  border-radius: 6px;
+  padding: 9px 11px;
+  gap: 2px;
+  background: var(--warning-soft);
+}
+
+.audit-change-fields span {
+  overflow-wrap: anywhere;
+}
+
+.audit-change-explanation-unavailable {
+  border-left: 4px solid var(--danger);
+  padding-left: 12px;
+}
+
 .audit-envelope-details {
   border-top: 1px solid var(--line);
   padding-top: 4px;
@@ -3399,8 +3497,15 @@ textarea:focus-visible,
   .audit-filter-grid,
   .audit-context,
   .audit-entry-meta,
-  .audit-envelope-meta {
+  .audit-envelope-meta,
+  .audit-change-columns,
+  .audit-change-facts {
     grid-template-columns: 1fr;
+  }
+
+  .audit-change-columns > section + section {
+    border-top: 1px solid var(--line);
+    border-left: 0;
   }
 
   .client-history-filter-grid,

@@ -16,6 +16,9 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 {
     private const string AdminConnectionStringEnvironmentVariable = "BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING";
 
+    private static readonly JsonSerializerOptions AuditJsonOptions =
+        new(JsonSerializerDefaults.Web);
+
     private PostgreSqlSmokeDatabase(string adminConnectionString, string databaseName)
     {
         AdminConnectionStringValue = adminConnectionString;
@@ -518,8 +521,12 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         const int pageSize = 10;
         const int totalEntries = 12;
+        const string ownerDeviceLabel = "Owner audit workstation";
         const string sharedDeviceLabel = "Shared front desk tablet";
         const string featuredCorrelationId = "audit-ui-paper-fallback";
+        const decimal originalPaymentAmount = 1200m;
+        const decimal replacementPaymentAmount = 950m;
+        const decimal canceledPaymentAmount = 500m;
         var recordedDate = new DateOnly(2026, 7, 18);
         var recordedBase = new DateTimeOffset(
             recordedDate,
@@ -736,6 +743,259 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             }
         }
 
+        var visitCancellationAuditEntryId = Guid.NewGuid();
+        var visitId = Guid.NewGuid();
+        var consumptionId = Guid.NewGuid();
+        var cancellationId = Guid.NewGuid();
+        var visitOccurredAt = recordedBase.AddHours(-2);
+        var visitCanceledAt = recordedBase.AddHours(1);
+        var membershipEffectiveEndDate = recordedDate.AddDays(14);
+        var beforeMembershipState = new
+        {
+            MembershipId = membershipId,
+            CountedVisits = 9,
+            RemainingVisits = -1,
+            NegativeBalance = 1,
+            FirstNegativeVisitId = (Guid?)visitId,
+            FirstNegativeVisitDate = (DateOnly?)recordedDate,
+            ExtensionDays = 0,
+            EffectiveEndDate = membershipEffectiveEndDate,
+            LastCountedVisitAt = (DateTimeOffset?)visitOccurredAt,
+            Warnings = new[] { "negative_visits" },
+        };
+        var afterMembershipState = new
+        {
+            MembershipId = membershipId,
+            CountedVisits = 8,
+            RemainingVisits = 0,
+            NegativeBalance = 0,
+            FirstNegativeVisitId = (Guid?)null,
+            FirstNegativeVisitDate = (DateOnly?)null,
+            ExtensionDays = 0,
+            EffectiveEndDate = membershipEffectiveEndDate,
+            LastCountedVisitAt = (DateTimeOffset?)null,
+            Warnings = Array.Empty<string>(),
+        };
+
+        var paymentCorrectionAuditEntryId = Guid.NewGuid();
+        var originalPaymentId = Guid.NewGuid();
+        var replacementPaymentId = Guid.NewGuid();
+        var paymentCorrectionId = Guid.NewGuid();
+        var originalPaymentOccurredAt = recordedBase.AddHours(-3);
+        var originalPaymentRecordedAt = originalPaymentOccurredAt.AddMinutes(5);
+        var replacementPaymentOccurredAt = recordedBase.AddHours(-1);
+        var paymentCorrectionRecordedAt = recordedBase.AddHours(2);
+        var originalPayment = new AuditPaymentSummarySeed(
+            originalPaymentId,
+            clientId,
+            membershipId,
+            originalPaymentAmount,
+            "UAH",
+            "cash",
+            "membership_sale",
+            originalPaymentOccurredAt,
+            originalPaymentRecordedAt,
+            ownerAccountId,
+            ownerSessionId,
+            "normal",
+            EntryBatchId: null,
+            "Original cash amount",
+            "active");
+        var replacementPayment = new AuditPaymentSummarySeed(
+            replacementPaymentId,
+            clientId,
+            membershipId,
+            replacementPaymentAmount,
+            "UAH",
+            "cash",
+            "membership_sale",
+            replacementPaymentOccurredAt,
+            paymentCorrectionRecordedAt,
+            sharedAdminAccountId,
+            sharedSessionId,
+            "normal",
+            EntryBatchId: null,
+            "Corrected cash amount",
+            "active");
+
+        var paymentCancellationAuditEntryId = Guid.NewGuid();
+        var canceledPaymentId = Guid.NewGuid();
+        var paymentCancellationId = Guid.NewGuid();
+        var canceledPaymentOccurredAt = recordedBase.AddHours(-4);
+        var paymentCancellationRecordedAt = recordedBase.AddHours(3);
+        var paymentToCancel = new AuditPaymentSummarySeed(
+            canceledPaymentId,
+            clientId,
+            MembershipId: null,
+            canceledPaymentAmount,
+            "UAH",
+            "cash",
+            "one_off",
+            canceledPaymentOccurredAt,
+            canceledPaymentOccurredAt.AddMinutes(5),
+            ownerAccountId,
+            ownerSessionId,
+            "normal",
+            EntryBatchId: null,
+            "One-off cash payment",
+            "active");
+
+        AuditSeed[] explanationSeeds =
+        [
+            new(
+                visitCancellationAuditEntryId,
+                "visit.canceled",
+                "visit",
+                visitId,
+                new
+                {
+                    ClientId = clientId,
+                    MembershipId = membershipId,
+                    ActiveConsumptionId = consumptionId,
+                    CancellationId = cancellationId,
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                visitCanceledAt,
+                visitCanceledAt.AddMinutes(5),
+                "normal",
+                "Mistaken reception entry",
+                "Cancellation requested at reception",
+                new
+                {
+                    Visit = new
+                    {
+                        VisitId = visitId,
+                        ClientId = clientId,
+                        VisitKind = "membership",
+                        MembershipId = membershipId,
+                        ConsumptionId = consumptionId,
+                        OccurredAt = visitOccurredAt,
+                        RecordedAt = visitOccurredAt.AddMinutes(5),
+                        EntryOrigin = "normal",
+                        EntryBatchId = (Guid?)null,
+                        Comment = "Original membership Visit",
+                        Status = "active",
+                        ConsumptionStatus = "active",
+                    },
+                    MembershipState = beforeMembershipState,
+                },
+                new
+                {
+                    Cancellation = new
+                    {
+                        CancellationId = cancellationId,
+                        VisitId = visitId,
+                        Reason = "Mistaken reception entry",
+                        OccurredAt = visitCanceledAt,
+                        RecordedAt = visitCanceledAt.AddMinutes(5),
+                        EntryOrigin = "normal",
+                        EntryBatchId = (Guid?)null,
+                        ChangedAfterClose = false,
+                    },
+                    Visit = new
+                    {
+                        VisitId = visitId,
+                        Status = "canceled",
+                        ConsumptionId = consumptionId,
+                        ConsumptionStatus = "canceled",
+                    },
+                    MembershipState = afterMembershipState,
+                },
+                ChangedAfterClose: false),
+            new(
+                paymentCorrectionAuditEntryId,
+                "payment.corrected",
+                "payment",
+                originalPaymentId,
+                new
+                {
+                    ClientId = clientId,
+                    OriginalPaymentId = originalPaymentId,
+                    OriginalMembershipId = membershipId,
+                    ReplacementPaymentId = replacementPaymentId,
+                    ReplacementMembershipId = membershipId,
+                    CorrectionId = paymentCorrectionId,
+                },
+                sharedAdminAccountId,
+                "shared_reception_admin",
+                "admin",
+                sharedSessionId,
+                sharedDeviceLabel,
+                replacementPaymentOccurredAt,
+                paymentCorrectionRecordedAt,
+                "normal",
+                "Cash amount was entered incorrectly",
+                "Replacement confirmed against receipt",
+                new { Payment = originalPayment },
+                new
+                {
+                    Correction = new
+                    {
+                        CorrectionId = paymentCorrectionId,
+                        OriginalPaymentId = originalPaymentId,
+                        ReplacementPaymentId = replacementPaymentId,
+                        ChangedFields = new[] { "amount", "occurred_at", "comment" },
+                        Reason = "Cash amount was entered incorrectly",
+                        OccurredAt = replacementPaymentOccurredAt,
+                        RecordedAt = paymentCorrectionRecordedAt,
+                        EntryOrigin = "normal",
+                        EntryBatchId = (Guid?)null,
+                        ChangedAfterClose = false,
+                    },
+                    OriginalPayment = originalPayment with { Status = "replaced" },
+                    ReplacementPayment = replacementPayment,
+                },
+                ChangedAfterClose: false),
+            new(
+                paymentCancellationAuditEntryId,
+                "payment.canceled",
+                "payment",
+                canceledPaymentId,
+                new
+                {
+                    ClientId = clientId,
+                    PaymentId = canceledPaymentId,
+                    MembershipId = (Guid?)null,
+                    CancellationId = paymentCancellationId,
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                paymentCancellationRecordedAt.AddMinutes(-5),
+                paymentCancellationRecordedAt,
+                "normal",
+                "Payment entered by mistake",
+                "Owner confirmed cancellation",
+                new { Payment = paymentToCancel },
+                new
+                {
+                    Cancellation = new
+                    {
+                        CancellationId = paymentCancellationId,
+                        PaymentId = canceledPaymentId,
+                        Reason = "Payment entered by mistake",
+                        OccurredAt = paymentCancellationRecordedAt.AddMinutes(-5),
+                        RecordedAt = paymentCancellationRecordedAt,
+                        EntryOrigin = "normal",
+                        EntryBatchId = (Guid?)null,
+                        ChangedAfterClose = false,
+                    },
+                    Payment = paymentToCancel with { Status = "canceled" },
+                },
+                ChangedAfterClose: false),
+        ];
+
+        foreach (var explanationSeed in explanationSeeds)
+        {
+            await InsertAuditSeedAsync(connection, transaction, explanationSeed);
+        }
+
         await transaction.CommitAsync();
         return new AuditTimelineSmokeScenario(
             clientId,
@@ -749,7 +1009,16 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             sharedDeviceLabel,
             featuredOccurredAt,
             featuredRecordedAt,
-            featuredCorrelationId);
+            featuredCorrelationId,
+            new AuditExplanationSmokeScenario(
+                visitCancellationAuditEntryId,
+                paymentCorrectionAuditEntryId,
+                paymentCancellationAuditEntryId,
+                originalPaymentAmount,
+                replacementPaymentAmount,
+                canceledPaymentAmount,
+                BeforeVisitRemaining: -1,
+                AfterVisitRemaining: 0));
     }
 
     public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(
@@ -1256,7 +1525,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         }
 
         var clientReference = new { clientId, membershipId };
-        ClientHistoryAuditSeed[] auditSeeds =
+        AuditSeed[] auditSeeds =
         [
             new(
                 Guid.NewGuid(),
@@ -1441,7 +1710,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             auditSeeds =
             [
                 .. auditSeeds,
-                new ClientHistoryAuditSeed(
+                new AuditSeed(
                     Guid.NewGuid(),
                     "visit.marked",
                     "visit",
@@ -1466,7 +1735,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Assert.Equal(totalEntries, auditSeeds.Length);
         foreach (var auditSeed in auditSeeds)
         {
-            await InsertClientHistoryAuditAsync(
+            await InsertAuditSeedAsync(
                 connection,
                 transaction,
                 auditSeed);
@@ -1492,10 +1761,10 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             replacementPaymentAmount);
     }
 
-    private static async Task InsertClientHistoryAuditAsync(
+    private static async Task InsertAuditSeedAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
-        ClientHistoryAuditSeed seed)
+        AuditSeed seed)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
@@ -1549,7 +1818,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue("entity_type", seed.EntityType);
         command.Parameters.AddWithValue("entity_id", seed.EntityId);
         command.Parameters.Add("related_entity_refs", NpgsqlDbType.Jsonb).Value =
-            JsonSerializer.Serialize(seed.RelatedEntityRefs);
+            JsonSerializer.Serialize(seed.RelatedEntityRefs, AuditJsonOptions);
         command.Parameters.AddWithValue("actor_account_id", seed.ActorAccountId);
         command.Parameters.AddWithValue("actor_account_type", seed.ActorAccountType);
         command.Parameters.AddWithValue("actor_role", seed.ActorRole);
@@ -1562,9 +1831,9 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.Add("comment", NpgsqlDbType.Varchar).Value =
             seed.Comment ?? (object)DBNull.Value;
         command.Parameters.Add("before_summary", NpgsqlDbType.Jsonb).Value =
-            JsonSerializer.Serialize(seed.BeforeSummary);
+            JsonSerializer.Serialize(seed.BeforeSummary, AuditJsonOptions);
         command.Parameters.Add("after_summary", NpgsqlDbType.Jsonb).Value =
-            JsonSerializer.Serialize(seed.AfterSummary);
+            JsonSerializer.Serialize(seed.AfterSummary, AuditJsonOptions);
         command.Parameters.AddWithValue(
             "request_correlation_id",
             $"client-history-{seed.AuditEntryId:N}");
@@ -2976,7 +3245,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         Assert.Equal(9, await command.ExecuteNonQueryAsync());
 
         var clientReference = new { clientId };
-        ClientHistoryAuditSeed[] auditSeeds =
+        AuditSeed[] auditSeeds =
         [
             new(
                 Guid.NewGuid(),
@@ -3115,7 +3384,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         foreach (var auditSeed in auditSeeds)
         {
-            await InsertClientHistoryAuditAsync(connection, transaction, auditSeed);
+            await InsertAuditSeedAsync(connection, transaction, auditSeed);
         }
 
         await transaction.CommitAsync();
@@ -4538,7 +4807,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
     private sealed record ActiveSessionActor(Guid SessionId, Guid AccountId);
 
-    private sealed record ClientHistoryAuditSeed(
+    private sealed record AuditSeed(
         Guid AuditEntryId,
         string ActionType,
         string EntityType,
@@ -4557,6 +4826,23 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         object BeforeSummary,
         object AfterSummary,
         bool ChangedAfterClose);
+
+    private sealed record AuditPaymentSummarySeed(
+        Guid PaymentId,
+        Guid ClientId,
+        Guid? MembershipId,
+        decimal Amount,
+        string Currency,
+        string Method,
+        string PaymentContext,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        Guid RecordedByAccountId,
+        Guid SessionId,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment,
+        string Status);
 }
 
 public sealed record MembershipTypeSmokeSnapshot(

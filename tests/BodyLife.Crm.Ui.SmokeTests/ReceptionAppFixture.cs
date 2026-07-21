@@ -2169,7 +2169,18 @@ public sealed record AuditTimelineSmokeScenario(
     string SharedDeviceLabel,
     DateTimeOffset FeaturedOccurredAt,
     DateTimeOffset FeaturedRecordedAt,
-    string FeaturedCorrelationId);
+    string FeaturedCorrelationId,
+    AuditExplanationSmokeScenario Explanations);
+
+public sealed record AuditExplanationSmokeScenario(
+    Guid VisitCancellationAuditEntryId,
+    Guid PaymentCorrectionAuditEntryId,
+    Guid PaymentCancellationAuditEntryId,
+    decimal OriginalPaymentAmount,
+    decimal ReplacementPaymentAmount,
+    decimal CanceledPaymentAmount,
+    int BeforeVisitRemaining,
+    int AfterVisitRemaining);
 
 public sealed record ClientHistorySmokeScenario(
     Guid ClientId,

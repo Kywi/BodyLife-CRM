@@ -10616,3 +10616,97 @@ Next recommended step:
   Payment corrections/cancellations in Audit Timeline while preserving the
   complete raw envelope as secondary detail. Keep settings/catalog presenters
   and technical-log correlation lookup for subsequent steps.
+
+## Step 169 - Visit and Payment audit explanations
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Continue only the Visit/Payment portion of the sixth Milestone 10 task:
+  replace raw JSON as the primary explanation for `visit.canceled`,
+  `payment.corrected` and `payment.canceled` Audit Timeline entries.
+- Present stored audit before/after state without recalculating Membership or
+  report truth. Preserve the complete append-only audit envelope as collapsed
+  secondary support detail.
+- Keep MembershipType and other settings/catalog presenters, audit-noise
+  review and technical-log correlation lookup outside this bounded step.
+
+Completed:
+
+- Added a presentation-only, typed audit explanation model for the three
+  supported correction/cancellation actions. It validates the expected entity
+  and source ids, original/replacement statuses, Visit consumption state,
+  stored Membership state, Payment amount/date/context and correction field
+  list before rendering any owner-facing values.
+- Added a fail-closed unavailable state for malformed, mismatched or incomplete
+  supported payloads. Unsupported actions retain their existing Timeline
+  rendering for later presenter slices.
+- Added owner-readable `Original` and `After` sections ahead of the raw audit
+  envelope. Visit cancellation shows preservation, status/consumption and the
+  stored remaining/negative state; Payment correction shows original versus
+  replacement cash facts and changed fields; Payment cancellation shows the
+  preserved cash fact with its status transition.
+- Kept reason, comment, actor/account/session/device, occurred/recorded times,
+  entry origin and changed-after-close labels in their existing primary audit
+  positions. The raw related/before/after JSON remains available through the
+  44px `Audit envelope` disclosure and is collapsed by default.
+- Added responsive unframed explanation bands: two columns on tablet/desktop,
+  sequential sections on phone, wrapping fact values and no nested cards.
+- Added nine Web presenter tests for membership and one-off Visit cancellation,
+  Payment replacement/cancellation, changed-field labels, malformed JSON,
+  entity mismatch and unsupported actions.
+- Extended the PostgreSQL-backed Audit Timeline fixture with production-shaped
+  command envelopes for all three actions and added Owner/tablet plus named-
+  Admin/phone Playwright coverage that reads both columns, verifies exact
+  stored values, proves the raw envelope is secondary but available, and checks
+  horizontal fit.
+
+Validation:
+
+- `dotnet format BodyLife.Crm.sln --no-restore` completed successfully and the
+  Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 9/9; focused new
+  correction-explanation Playwright coverage passed 2/2; the complete
+  `AuditTimelineSmokeTests` regression passed 6/6 with no skipped tests.
+- Screenshot-backed visual checks passed for Visit cancellation, Payment
+  correction and Payment cancellation at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports. Before/after sections remain readable, raw JSON
+  stays collapsed by default, controls/text do not overlap and Playwright found
+  no horizontal document overflow.
+- The first full validation run built cleanly and passed 387 core, 44 web and
+  523/524 infrastructure tests, but the unrelated
+  `RealisticScopeAddAndCorrectionMeetSynchronousBudget` timing assertion took
+  30.50s against its 30s budget. No Audit code participates in that workflow.
+- After stopping the local dev server, the exact PostgreSQL timing test passed
+  in 21s. A complete clean rerun of `CONFIGURATION=Release
+  DOTNET_ROOT=/home/genik/.dotnet DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 44 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 84 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain visit and payment corrections`.
+
+Next recommended step:
+
+- Continue the sixth Milestone 10 task with one bounded catalog explanation
+  slice: add owner-readable before/after summaries for
+  `membership_type.edited` and `membership_type.deactivated` while retaining
+  the complete raw envelope as secondary detail. Keep other settings changes,
+  audit-noise review and technical-log correlation lookup for later steps.
