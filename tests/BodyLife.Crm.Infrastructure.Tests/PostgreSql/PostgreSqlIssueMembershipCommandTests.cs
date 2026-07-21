@@ -102,30 +102,54 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         Assert.Equal("{}", audit.BeforeSummary);
 
         using var related = JsonDocument.Parse(audit.RelatedEntityRefs);
+        Assert.Equal(3, related.RootElement.EnumerateObject().Count());
         Assert.Equal(
             fixture.ClientId,
             related.RootElement.GetProperty("clientId").GetGuid());
         Assert.Equal(
             fixture.MembershipTypeId,
             related.RootElement.GetProperty("membershipTypeId").GetGuid());
+        Assert.Equal(
+            JsonValueKind.Null,
+            related.RootElement.GetProperty("paymentId").ValueKind);
 
         using var after = JsonDocument.Parse(audit.AfterSummary);
         var summary = after.RootElement;
+        Assert.Equal(12, summary.EnumerateObject().Count());
         Assert.Equal(membershipId, summary.GetProperty("membershipId").GetGuid());
+        Assert.Equal(fixture.ClientId, summary.GetProperty("clientId").GetGuid());
+        Assert.Equal(
+            fixture.MembershipTypeId,
+            summary.GetProperty("membershipTypeId").GetGuid());
         Assert.Equal("2026-08-01", summary.GetProperty("startDate").GetString());
         Assert.Equal("2026-08-30", summary.GetProperty("baseEndDate").GetString());
+        Assert.Equal(TestNow, summary.GetProperty("issuedAt").GetDateTimeOffset());
+        Assert.Equal("active", summary.GetProperty("status").GetString());
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("negativeHandlingDecision").ValueKind);
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("existingNegativeState").ValueKind);
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("payment").ValueKind);
         var snapshot = summary.GetProperty("snapshot");
+        Assert.Equal(5, snapshot.EnumerateObject().Count());
         Assert.Equal("Eight visits / 30 days", snapshot.GetProperty("typeName").GetString());
         Assert.Equal(30, snapshot.GetProperty("durationDays").GetInt32());
         Assert.Equal(8, snapshot.GetProperty("visitsLimit").GetInt32());
         Assert.Equal(1200m, snapshot.GetProperty("priceAmount").GetDecimal());
         Assert.Equal("UAH", snapshot.GetProperty("priceCurrency").GetString());
         var initialState = summary.GetProperty("initialState");
+        Assert.Equal(8, initialState.EnumerateObject().Count());
+        Assert.Equal(0, initialState.GetProperty("countedVisits").GetInt32());
         Assert.Equal(8, initialState.GetProperty("remainingVisits").GetInt32());
         Assert.Equal(0, initialState.GetProperty("negativeBalance").GetInt32());
+        Assert.Equal(
+            JsonValueKind.Null,
+            initialState.GetProperty("firstNegativeVisitDate").ValueKind);
+        Assert.Equal(0, initialState.GetProperty("extensionDays").GetInt32());
+        Assert.Equal(
+            "2026-08-30",
+            initialState.GetProperty("effectiveEndDate").GetString());
+        Assert.Equal(
+            JsonValueKind.Null,
+            initialState.GetProperty("lastCountedVisitAt").ValueKind);
         Assert.Equal(
             MembershipStateCacheRebuilder.CurrentRecalculationVersion,
             initialState.GetProperty("recalculationVersion").GetInt32());

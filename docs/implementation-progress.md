@@ -11398,3 +11398,97 @@ Next recommended step:
   queries and low-level technical events do not pollute business history; do
   not start Milestone 11 until the Milestone 10 acceptance criteria are
   reviewed.
+
+## Step 178 - Membership issue audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Began the final Milestone 10 audit-noise review by comparing the 26 canonical
+  audit actions with the typed Timeline presenter. Eight important creation or
+  quick-action events still relied on the collapsed raw envelope as their only
+  detailed explanation: `client.created`, `membership_type.created`,
+  `membership.issued`, `membership_opening_state.created`, `visit.marked`,
+  `payment.created`, `freeze.added` and `non_working_day.added`.
+- Closed only the highest-risk gap in this step: `membership.issued`, whose
+  immutable issue-time catalog terms and stored initial Membership state are
+  central to later date, visit-limit and price disputes.
+- Kept the Timeline as a view over stored audit facts. No Membership formula,
+  recalculation rule or optimistic state was added to Web code, and Milestone
+  11 was not started.
+
+Completed:
+
+- Added a fail-closed `membership.issued` Timeline explanation that requires an
+  empty pre-creation summary and consistent audit entity, Client,
+  MembershipType and optional Payment references.
+- Made the issue-time type name, duration, visit limit and price snapshot the
+  primary Owner/Admin facts, together with stored start/base-end dates, active
+  status and initial counted/remaining/negative/extension/effective-end state.
+  The presenter reads these stored values and does not recompute any Membership
+  formula.
+- Added readable handling for an optional membership-sale cash Payment and the
+  explicit existing-negative decision/state. Unsupported payment context,
+  mismatched references, incomplete negative context, malformed dates or a
+  non-empty before summary fail closed to the existing unavailable state.
+- Kept technical `recalculationVersion` and the complete JSON payload in the
+  collapsed Audit envelope rather than presenting them as primary business
+  change facts.
+- Added eight Web presenter cases covering the ordinary issue, optional Payment,
+  existing-negative decision, relationship mismatches, non-empty before state,
+  incomplete negative pairs, invalid payment context and wrong entity type.
+- Strengthened the real `IssueMembership` PostgreSQL command test to pin the
+  complete related-reference, top-level snapshot and initial-state payload
+  shape consumed by the presenter.
+- Added one isolated production-shaped Audit Timeline seed plus Owner/tablet and
+  named-Admin/phone Playwright coverage over exact filters, immutable terms,
+  stored initial state, collapsed raw-envelope behavior and horizontal fit.
+- Kept command handling, Membership persistence/recalculation, Razor markup,
+  CSS, authorization, EF model and migrations unchanged.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors. Focused
+  `AuditEntryExplanationViewModelTests` passed 64/64, the strengthened real
+  `NamedAdminIssuesSnapshotCacheAuditAndIdempotencyAtomically` PostgreSQL test
+  passed 1/1, and focused Membership issue Playwright coverage passed 2/2.
+- The complete `AuditTimelineSmokeTests` regression passed 22/22 with no skipped
+  tests, confirming the isolated issue seed did not alter existing pagination,
+  filters or explanation scenarios.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports. Snapshot and initial-state facts remain readable,
+  the phone layout stacks cleanly, the raw envelope is secondary, controls/text
+  do not overlap and Playwright found no horizontal overflow.
+- Final `CONFIGURATION=Release DOTNET_ROOT=/home/genik/.dotnet
+  DOTNET_BIN=/home/genik/.dotnet/dotnet
+  DOTNET_CLI_HOME=/tmp/bodylife-dotnet-home
+  NUGET_PACKAGES=/home/genik/.nuget/packages
+  BODYLIFE_SKIP_PLAYWRIGHT_BROWSER_INSTALL=1 ./scripts/validate.sh` passed with
+  exit code 0 against Docker PostgreSQL: Release build 0 warnings/errors,
+  formatting/analyzers, 387 core tests, 99 web tests, 524 PostgreSQL/
+  architecture/security infrastructure tests, 101 Playwright smoke tests and
+  EF migration listing through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- `dotnet-ef migrations has-pending-model-changes` passed with no model changes
+  since the latest migration, and `git diff --check` passed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after the progress documentation change
+  but stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain membership issue`.
+
+Next recommended step:
+
+- Continue the bounded audit-noise review with `visit.marked`, the highest-
+  volume remaining raw-only action. Add a compact Owner/Admin explanation that
+  distinguishes Membership, one-off and trial Visits and reads stored
+  consumption, warning-acknowledgement and before/after Membership state facts
+  without recalculating remaining visits. Leave the other six raw-only actions
+  and the final Milestone 10 acceptance review for later steps.

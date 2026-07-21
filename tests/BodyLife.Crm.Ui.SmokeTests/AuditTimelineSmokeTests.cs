@@ -36,6 +36,179 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
     [Theory]
     [InlineData("owner-tablet", 1024, 768, true)]
     [InlineData("admin-phone", 390, 844, false)]
+    public async Task MembershipIssueLeadsWithImmutableTermsAndInitialState(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var issue = scenario.Explanations.MembershipIssue;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} Membership issue audit smoke");
+
+            var explanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "Membership",
+                "membership.issued",
+                issue.AuditEntryId,
+                "membership-issued",
+                viewportName,
+                entityId: issue.MembershipId);
+            await ExpectVisibleAsync(
+                explanation.GetByRole(
+                    AriaRole.Heading,
+                    new()
+                    {
+                        Name = "Membership issued with immutable terms",
+                        Exact = true,
+                    }),
+                viewportName,
+                "Membership issue explanation title");
+            Assert.Equal(
+                "Not present",
+                await ExplanationFactAsync(explanation, "Before issue", "Membership"));
+            Assert.Equal(
+                "None",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before issue",
+                    "Existing negative balance"));
+            Assert.Equal(
+                issue.MembershipId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Membership"));
+            Assert.Equal(
+                issue.ClientId.ToString("N")[..8],
+                await ExplanationFactAsync(explanation, "Issued Membership", "Client"));
+            Assert.Equal(
+                issue.MembershipTypeId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Membership type"));
+            Assert.Equal(
+                issue.TypeName,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Type snapshot"));
+            Assert.Equal(
+                $"{issue.DurationDays} days",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Duration"));
+            Assert.Equal(
+                issue.VisitsLimit.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Visit limit"));
+            Assert.Equal(
+                $"{issue.PriceAmount.ToString("0.##", CultureInfo.InvariantCulture)} " +
+                issue.PriceCurrency,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Snapshot price"));
+            Assert.Equal(
+                issue.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Start date"));
+            Assert.Equal(
+                issue.BaseEndDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Base end date"));
+            Assert.Equal(
+                issue.InitialRemainingVisits.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Initial remaining visits"));
+            Assert.Equal(
+                issue.InitialEffectiveEndDate.ToString(
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Initial effective end date"));
+            Assert.Equal(
+                "Not required",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Issued Membership",
+                    "Negative handling"));
+            Assert.Equal(
+                "None",
+                await ExplanationFactAsync(explanation, "Issued Membership", "Payment"));
+            await ExpectVisibleAsync(
+                explanation.GetByText("Issued Membership", new() { Exact = true }).Last,
+                viewportName,
+                "Membership issue changed field");
+
+            var primaryFacts = string.Join(
+                ' ',
+                await explanation.Locator(".audit-change-facts").AllInnerTextsAsync());
+            Assert.DoesNotContain(
+                "recalculationVersion",
+                primaryFacts,
+                StringComparison.Ordinal);
+            var envelope = explanation
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "Membership issue audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "Membership issue raw envelope");
+            var envelopeText = await envelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains("snapshot", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("initialState", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("recalculationVersion", envelopeText, StringComparison.Ordinal);
+            await AssertFitsViewportAsync(page, viewportName, "Membership issue explanation");
+            await CaptureVisualAsync(page, viewportName, "membership-issue-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
     public async Task OwnerAndAdminCanInspectFilteredAppendOnlyTimeline(
         string viewportName,
         int width,

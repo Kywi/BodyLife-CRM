@@ -24,6 +24,7 @@ public sealed record AuditEntryExplanationViewModel(
         {
             "membership_type.edited" => "membership-type-edited",
             "membership_type.deactivated" => "membership-type-deactivated",
+            "membership.issued" => "membership-issued",
             "client.updated" => "client-updated",
             "card.assigned" => "card-assigned",
             "card.changed" => "card-changed",
@@ -120,6 +121,13 @@ public sealed record AuditEntryExplanationViewModel(
                 "membership_type.deactivated"
                     when entry.EntityType == AuditTimelineEntityType.MembershipType
                     => CreateMembershipTypeDeactivation(before.RootElement, after.RootElement),
+                "membership.issued"
+                    when entry.EntityType == AuditTimelineEntityType.Membership
+                    => CreateMembershipIssue(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
                 "non_working_day.corrected"
                     when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
                     => NonWorkingDayAuditExplanationFactory.CreateCorrection(
@@ -447,6 +455,127 @@ public sealed record AuditEntryExplanationViewModel(
             IsAvailable: true);
     }
 
+    private static AuditEntryExplanationViewModel CreateMembershipIssue(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        if (before.ValueKind != JsonValueKind.Object
+            || before.EnumerateObject().Any())
+        {
+            throw new JsonException(
+                "A Membership issue cannot have a pre-existing Membership summary.");
+        }
+
+        var relatedClientId = RequireGuid(related, "clientId");
+        var relatedMembershipTypeId = RequireGuid(related, "membershipTypeId");
+        var relatedPaymentId = RequireNullableGuid(related, "paymentId");
+        var issue = ReadMembershipIssue(after);
+
+        if (issue.MembershipId != entry.EntityId
+            || issue.ClientId != relatedClientId
+            || issue.MembershipTypeId != relatedMembershipTypeId
+            || issue.Payment?.PaymentId != relatedPaymentId
+            || issue.StartDate > issue.BaseEndDate
+            || issue.IssuedAt != entry.RecordedAt
+            || issue.Status != "active"
+            || (issue.NegativeHandlingDecision is null)
+                != (issue.ExistingNegativeState is null))
+        {
+            throw new JsonException("Membership issue summary identity is inconsistent.");
+        }
+
+        var negativeHandling = MembershipNegativeHandlingLabel(
+            issue.NegativeHandlingDecision);
+        List<AuditEntryExplanationFactViewModel> beforeFacts =
+        [
+            Fact("Membership", "Not present"),
+            Fact(
+                "Existing negative balance",
+                issue.ExistingNegativeState is null
+                    ? "None"
+                    : issue.ExistingNegativeState.NegativeBalance.ToString(
+                        CultureInfo.InvariantCulture)),
+        ];
+        if (issue.ExistingNegativeState is { } existingNegativeState)
+        {
+            beforeFacts.Add(Fact(
+                "First negative visit date",
+                DateLabel(existingNegativeState.FirstNegativeVisitDate)));
+        }
+
+        List<AuditEntryExplanationFactViewModel> afterFacts =
+        [
+            Fact("Membership", TimelineModel.ShortId(issue.MembershipId)),
+            Fact("Client", TimelineModel.ShortId(issue.ClientId)),
+            Fact("Membership type", TimelineModel.ShortId(issue.MembershipTypeId)),
+            Fact("Type snapshot", issue.Snapshot.TypeName),
+            Fact(
+                "Duration",
+                $"{issue.Snapshot.DurationDays.ToString(CultureInfo.InvariantCulture)} days"),
+            Fact(
+                "Visit limit",
+                issue.Snapshot.VisitsLimit.ToString(CultureInfo.InvariantCulture)),
+            Fact(
+                "Snapshot price",
+                MoneyLabel(
+                    issue.Snapshot.PriceAmount,
+                    issue.Snapshot.PriceCurrency)),
+            Fact("Start date", DateLabel(issue.StartDate)),
+            Fact("Base end date", DateLabel(issue.BaseEndDate)),
+            Fact("Status", MembershipStatusLabel(issue.Status)),
+            Fact(
+                "Initial counted visits",
+                issue.InitialState.CountedVisits.ToString(CultureInfo.InvariantCulture)),
+            Fact(
+                "Initial remaining visits",
+                issue.InitialState.RemainingVisits.ToString(CultureInfo.InvariantCulture)),
+            Fact(
+                "Initial negative balance",
+                issue.InitialState.NegativeBalance.ToString(CultureInfo.InvariantCulture)),
+            Fact(
+                "Initial extension days",
+                issue.InitialState.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+            Fact(
+                "Initial effective end date",
+                DateLabel(issue.InitialState.EffectiveEndDate)),
+            Fact("Negative handling", negativeHandling),
+        ];
+        if (issue.InitialState.FirstNegativeVisitDate is { } firstNegativeVisitDate)
+        {
+            afterFacts.Add(Fact(
+                "Initial first negative visit date",
+                DateLabel(firstNegativeVisitDate)));
+        }
+
+        if (issue.Payment is null)
+        {
+            afterFacts.Add(Fact("Payment", "None"));
+        }
+        else
+        {
+            afterFacts.Add(Fact(
+                "Payment",
+                $"{MoneyLabel(issue.Payment.Amount, issue.Payment.Currency)} / " +
+                PaymentMethodLabel(issue.Payment.Method)));
+            afterFacts.Add(Fact(
+                "Payment record",
+                TimelineModel.ShortId(issue.Payment.PaymentId)));
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "membership-issued",
+            "Membership issued with immutable terms",
+            "The issue-time terms and stored initial Membership state are shown. Later MembershipType catalog edits do not rewrite this snapshot.",
+            "Before issue",
+            "Issued Membership",
+            beforeFacts,
+            afterFacts,
+            ChangedFields: "Issued Membership",
+            IsAvailable: true);
+    }
+
     private static AuditEntryExplanationViewModel Unavailable(string kind)
     {
         return new AuditEntryExplanationViewModel(
@@ -493,6 +622,83 @@ public sealed record AuditEntryExplanationViewModel(
             Fact("Status", membershipType.IsActive ? "Active" : "Inactive"),
             Fact("Catalog comment", membershipType.Comment ?? "None"),
         ];
+    }
+
+    private static MembershipIssueSnapshot ReadMembershipIssue(JsonElement summary)
+    {
+        var snapshot = RequireObject(summary, "snapshot");
+        var initialState = RequireObject(summary, "initialState");
+
+        return new MembershipIssueSnapshot(
+            RequireGuid(summary, "membershipId"),
+            RequireGuid(summary, "clientId"),
+            RequireGuid(summary, "membershipTypeId"),
+            new MembershipIssueTermsSnapshot(
+                RequireString(snapshot, "typeName"),
+                RequirePositiveInt32(snapshot, "durationDays"),
+                RequireNonNegativeInt32(snapshot, "visitsLimit"),
+                RequireNonNegativeDecimal(snapshot, "priceAmount"),
+                RequireString(snapshot, "priceCurrency")),
+            RequireDateOnly(summary, "startDate"),
+            RequireDateOnly(summary, "baseEndDate"),
+            RequireTimestamp(summary, "issuedAt"),
+            RequireString(summary, "status"),
+            RequireNullableString(summary, "negativeHandlingDecision"),
+            ReadExistingNegativeState(summary),
+            ReadMembershipIssuePayment(summary),
+            ReadMembershipIssueInitialState(initialState));
+    }
+
+    private static MembershipIssueExistingNegativeStateSnapshot?
+        ReadExistingNegativeState(JsonElement summary)
+    {
+        var existingState = RequireNullableObject(summary, "existingNegativeState");
+        return existingState is null
+            ? null
+            : new MembershipIssueExistingNegativeStateSnapshot(
+                RequirePositiveInt32(existingState.Value, "negativeBalance"),
+                RequireDateOnly(existingState.Value, "firstNegativeVisitDate"));
+    }
+
+    private static MembershipIssuePaymentSnapshot? ReadMembershipIssuePayment(
+        JsonElement summary)
+    {
+        var payment = RequireNullableObject(summary, "payment");
+        if (payment is null)
+        {
+            return null;
+        }
+
+        var result = new MembershipIssuePaymentSnapshot(
+            RequireGuid(payment.Value, "paymentId"),
+            RequireDecimal(payment.Value, "amount"),
+            RequireString(payment.Value, "currency"),
+            RequireString(payment.Value, "method"));
+        _ = RequireGuid(payment.Value, "paymentAuditEntryId");
+        var paymentContext = RequireString(payment.Value, "paymentContext");
+        _ = RequireTimestamp(payment.Value, "occurredAt");
+
+        if (result.Method != "cash" || paymentContext != "membership_sale")
+        {
+            throw new JsonException("Membership issue payment summary is inconsistent.");
+        }
+
+        return result;
+    }
+
+    private static MembershipIssueInitialStateSnapshot ReadMembershipIssueInitialState(
+        JsonElement initialState)
+    {
+        var result = new MembershipIssueInitialStateSnapshot(
+            RequireNonNegativeInt32(initialState, "countedVisits"),
+            RequireInt32(initialState, "remainingVisits"),
+            RequireNonNegativeInt32(initialState, "negativeBalance"),
+            RequireNullableDateOnly(initialState, "firstNegativeVisitDate"),
+            RequireNonNegativeInt32(initialState, "extensionDays"),
+            RequireDateOnly(initialState, "effectiveEndDate"));
+        _ = RequireNullableTimestamp(initialState, "lastCountedVisitAt");
+        _ = RequirePositiveInt32(initialState, "recalculationVersion");
+        return result;
     }
 
     private static MembershipTypeCatalogSnapshot ReadMembershipTypeCatalog(JsonElement summary)
@@ -777,6 +983,36 @@ public sealed record AuditEntryExplanationViewModel(
         return result;
     }
 
+    private static DateOnly? RequireNullableDateOnly(
+        JsonElement parent,
+        string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value))
+        {
+            throw new JsonException($"Audit summary property '{propertyName}' is required.");
+        }
+
+        if (value.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (value.ValueKind != JsonValueKind.String
+            || !DateOnly.TryParseExact(
+                value.GetString(),
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var result)
+            || result == default)
+        {
+            throw new JsonException(
+                $"Audit summary property '{propertyName}' has an invalid value.");
+        }
+
+        return result;
+    }
+
     private static DateTimeOffset? RequireNullableTimestamp(
         JsonElement parent,
         string propertyName)
@@ -999,6 +1235,28 @@ public sealed record AuditEntryExplanationViewModel(
         };
     }
 
+    private static string MembershipStatusLabel(string value)
+    {
+        return value switch
+        {
+            "active" => "Active",
+            _ => throw new JsonException("Membership status is not supported."),
+        };
+    }
+
+    private static string MembershipNegativeHandlingLabel(string? value)
+    {
+        return value switch
+        {
+            null => "Not required",
+            "leave_visible" => "Existing negative balance left visible",
+            "cover_with_new_membership" => "Covered by the new Membership",
+            "record_explicit_closure" => "Explicit negative closure recorded",
+            _ => throw new JsonException(
+                "Membership negative handling decision is not supported."),
+        };
+    }
+
     private static string StatusLabel(string value)
     {
         return value switch
@@ -1033,6 +1291,45 @@ public sealed record AuditEntryExplanationViewModel(
         string PaymentContext,
         DateTimeOffset OccurredAt,
         string Status);
+
+    private sealed record MembershipIssueSnapshot(
+        Guid MembershipId,
+        Guid ClientId,
+        Guid MembershipTypeId,
+        MembershipIssueTermsSnapshot Snapshot,
+        DateOnly StartDate,
+        DateOnly BaseEndDate,
+        DateTimeOffset IssuedAt,
+        string Status,
+        string? NegativeHandlingDecision,
+        MembershipIssueExistingNegativeStateSnapshot? ExistingNegativeState,
+        MembershipIssuePaymentSnapshot? Payment,
+        MembershipIssueInitialStateSnapshot InitialState);
+
+    private sealed record MembershipIssueTermsSnapshot(
+        string TypeName,
+        int DurationDays,
+        int VisitsLimit,
+        decimal PriceAmount,
+        string PriceCurrency);
+
+    private sealed record MembershipIssueExistingNegativeStateSnapshot(
+        int NegativeBalance,
+        DateOnly FirstNegativeVisitDate);
+
+    private sealed record MembershipIssuePaymentSnapshot(
+        Guid PaymentId,
+        decimal Amount,
+        string Currency,
+        string Method);
+
+    private sealed record MembershipIssueInitialStateSnapshot(
+        int CountedVisits,
+        int RemainingVisits,
+        int NegativeBalance,
+        DateOnly? FirstNegativeVisitDate,
+        int ExtensionDays,
+        DateOnly EffectiveEndDate);
 
     private sealed record FreezeSnapshot(
         Guid FreezeId,

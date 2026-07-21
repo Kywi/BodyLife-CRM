@@ -1183,6 +1183,19 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "BLAUDIT20040",
             replacementCardAt);
 
+        const string issuedTypeName = "Audit eight visits";
+        const int issuedDurationDays = 30;
+        const int issuedVisitsLimit = 8;
+        const decimal issuedPriceAmount = 1200m;
+        const string issuedPriceCurrency = "UAH";
+        const int issuedInitialRemainingVisits = 8;
+        var membershipIssueAuditEntryId = Guid.NewGuid();
+        var issuedMembershipId = Guid.NewGuid();
+        var issuedMembershipTypeId = Guid.NewGuid();
+        var issuedStartDate = new DateOnly(2026, 8, 1);
+        var issuedBaseEndDate = new DateOnly(2026, 8, 30);
+        var issuedAt = recordedBase.AddHours(12).AddMinutes(15);
+
         const string originalStaffDisplayName = "Main Admin";
         const string updatedStaffDisplayName = "Evening Admin";
         const string createdStaffAccountType = "named_admin";
@@ -1206,6 +1219,62 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         AuditSeed[] explanationSeeds =
         [
+            new(
+                membershipIssueAuditEntryId,
+                "membership.issued",
+                "membership",
+                issuedMembershipId,
+                new
+                {
+                    ClientId = clientId,
+                    MembershipTypeId = issuedMembershipTypeId,
+                    PaymentId = (Guid?)null,
+                },
+                sharedAdminAccountId,
+                "shared_reception_admin",
+                "admin",
+                sharedSessionId,
+                sharedDeviceLabel,
+                issuedAt,
+                issuedAt,
+                "normal",
+                Reason: null,
+                "Immutable terms captured at reception",
+                new { },
+                new
+                {
+                    MembershipId = issuedMembershipId,
+                    ClientId = clientId,
+                    MembershipTypeId = issuedMembershipTypeId,
+                    Snapshot = new
+                    {
+                        TypeName = issuedTypeName,
+                        DurationDays = issuedDurationDays,
+                        VisitsLimit = issuedVisitsLimit,
+                        PriceAmount = issuedPriceAmount,
+                        PriceCurrency = issuedPriceCurrency,
+                    },
+                    StartDate = issuedStartDate,
+                    BaseEndDate = issuedBaseEndDate,
+                    IssuedAt = issuedAt,
+                    Status = "active",
+                    NegativeHandlingDecision = (string?)null,
+                    ExistingNegativeState = (object?)null,
+                    Payment = (object?)null,
+                    InitialState = new
+                    {
+                        CountedVisits = 0,
+                        RemainingVisits = issuedInitialRemainingVisits,
+                        NegativeBalance = 0,
+                        FirstNegativeVisitDate = (DateOnly?)null,
+                        ExtensionDays = 0,
+                        EffectiveEndDate = issuedBaseEndDate,
+                        LastCountedVisitAt = (DateTimeOffset?)null,
+                        RecalculationVersion =
+                            MembershipStateCacheRebuilder.CurrentRecalculationVersion,
+                    },
+                },
+                ChangedAfterClose: false),
             new(
                 visitCancellationAuditEntryId,
                 "visit.canceled",
@@ -1786,7 +1855,21 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     credentialsConfiguredAuditEntryId,
                     credentialsResetAuditEntryId,
                     credentialResetReason,
-                    credentialResetEndedSessionCount)));
+                    credentialResetEndedSessionCount),
+                MembershipIssue: new MembershipIssueAuditExplanationSmokeScenario(
+                    membershipIssueAuditEntryId,
+                    issuedMembershipId,
+                    clientId,
+                    issuedMembershipTypeId,
+                    issuedTypeName,
+                    issuedDurationDays,
+                    issuedVisitsLimit,
+                    issuedPriceAmount,
+                    issuedPriceCurrency,
+                    issuedStartDate,
+                    issuedBaseEndDate,
+                    issuedInitialRemainingVisits,
+                    issuedBaseEndDate)));
     }
 
     public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(

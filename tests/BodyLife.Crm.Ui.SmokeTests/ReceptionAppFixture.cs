@@ -2307,7 +2307,23 @@ public sealed record AuditExplanationSmokeScenario(
     NonWorkingDayAuditExplanationSmokeScenario NonWorkingDays,
     FreezeCancellationAuditExplanationSmokeScenario FreezeCancellation,
     ClientCardAuditExplanationSmokeScenario ClientAndCards,
-    StaffAccountAuditExplanationSmokeScenario StaffAccounts);
+    StaffAccountAuditExplanationSmokeScenario StaffAccounts,
+    MembershipIssueAuditExplanationSmokeScenario MembershipIssue);
+
+public sealed record MembershipIssueAuditExplanationSmokeScenario(
+    Guid AuditEntryId,
+    Guid MembershipId,
+    Guid ClientId,
+    Guid MembershipTypeId,
+    string TypeName,
+    int DurationDays,
+    int VisitsLimit,
+    decimal PriceAmount,
+    string PriceCurrency,
+    DateOnly StartDate,
+    DateOnly BaseEndDate,
+    int InitialRemainingVisits,
+    DateOnly InitialEffectiveEndDate);
 
 public sealed record NonWorkingDayAuditExplanationSmokeScenario(
     Guid CorrectedAuditEntryId,

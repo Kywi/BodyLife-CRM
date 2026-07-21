@@ -215,6 +215,270 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void MembershipIssueShowsImmutableTermsAndStoredInitialState()
+    {
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership.issued",
+                    AuditTimelineEntityType.Membership,
+                    membershipId,
+                    new { },
+                    MembershipIssueSummary(
+                        membershipId,
+                        clientId,
+                        membershipTypeId),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipTypeId = membershipTypeId,
+                        PaymentId = (Guid?)null,
+                    },
+                    reason: null,
+                    comment: "Front desk issue")));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-issued", explanation.Kind);
+        Assert.Equal("Before issue", explanation.BeforeLabel);
+        Assert.Equal("Issued Membership", explanation.AfterLabel);
+        Assert.Equal("Not present", FactValue(explanation.BeforeFacts, "Membership"));
+        Assert.Equal(
+            "None",
+            FactValue(explanation.BeforeFacts, "Existing negative balance"));
+        Assert.Equal(
+            membershipId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Membership"));
+        Assert.Equal(
+            clientId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Client"));
+        Assert.Equal(
+            membershipTypeId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Membership type"));
+        Assert.Equal(
+            "Eight visits / 30 days",
+            FactValue(explanation.AfterFacts, "Type snapshot"));
+        Assert.Equal("30 days", FactValue(explanation.AfterFacts, "Duration"));
+        Assert.Equal("8", FactValue(explanation.AfterFacts, "Visit limit"));
+        Assert.Equal("1200 UAH", FactValue(explanation.AfterFacts, "Snapshot price"));
+        Assert.Equal("2026-08-01", FactValue(explanation.AfterFacts, "Start date"));
+        Assert.Equal("2026-08-30", FactValue(explanation.AfterFacts, "Base end date"));
+        Assert.Equal("Active", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal(
+            "8",
+            FactValue(explanation.AfterFacts, "Initial remaining visits"));
+        Assert.Equal(
+            "2026-08-30",
+            FactValue(explanation.AfterFacts, "Initial effective end date"));
+        Assert.Equal(
+            "Not required",
+            FactValue(explanation.AfterFacts, "Negative handling"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Payment"));
+        Assert.Equal("Issued Membership", explanation.ChangedFields);
+        Assert.Contains("do not rewrite", explanation.Narrative, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MembershipIssueShowsPaymentAndExistingNegativeDecision()
+    {
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+        var paymentId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership.issued",
+                    AuditTimelineEntityType.Membership,
+                    membershipId,
+                    new { },
+                    MembershipIssueSummary(
+                        membershipId,
+                        clientId,
+                        membershipTypeId,
+                        negativeHandlingDecision: "leave_visible",
+                        existingNegativeState: new
+                        {
+                            NegativeBalance = 2,
+                            FirstNegativeVisitDate = new DateOnly(2026, 7, 29),
+                        },
+                        payment: new
+                        {
+                            PaymentId = paymentId,
+                            PaymentAuditEntryId = Guid.NewGuid(),
+                            Amount = 1200m,
+                            Currency = "UAH",
+                            Method = "cash",
+                            PaymentContext = "membership_sale",
+                            OccurredAt = OriginalOccurredAt,
+                        }),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipTypeId = membershipTypeId,
+                        PaymentId = (Guid?)paymentId,
+                    })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            "2",
+            FactValue(explanation.BeforeFacts, "Existing negative balance"));
+        Assert.Equal(
+            "2026-07-29",
+            FactValue(explanation.BeforeFacts, "First negative visit date"));
+        Assert.Equal(
+            "Existing negative balance left visible",
+            FactValue(explanation.AfterFacts, "Negative handling"));
+        Assert.Equal("1200 UAH / Cash", FactValue(explanation.AfterFacts, "Payment"));
+        Assert.Equal(
+            paymentId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Payment record"));
+    }
+
+    [Fact]
+    public void MembershipIssueWithMismatchedRelatedClientFailsClosed()
+    {
+        var membershipId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership.issued",
+                    AuditTimelineEntityType.Membership,
+                    membershipId,
+                    new { },
+                    MembershipIssueSummary(
+                        membershipId,
+                        Guid.NewGuid(),
+                        membershipTypeId),
+                    related: new
+                    {
+                        ClientId = Guid.NewGuid(),
+                        MembershipTypeId = membershipTypeId,
+                        PaymentId = (Guid?)null,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void MembershipIssueWithNonEmptyBeforeSummaryFailsClosed()
+    {
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership.issued",
+                    AuditTimelineEntityType.Membership,
+                    membershipId,
+                    new { Status = "pending" },
+                    MembershipIssueSummary(
+                        membershipId,
+                        clientId,
+                        membershipTypeId),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipTypeId = membershipTypeId,
+                        PaymentId = (Guid?)null,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MembershipIssueRequiresNegativeDecisionAndStateTogether(
+        bool includeDecision)
+    {
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership.issued",
+                    AuditTimelineEntityType.Membership,
+                    membershipId,
+                    new { },
+                    MembershipIssueSummary(
+                        membershipId,
+                        clientId,
+                        membershipTypeId,
+                        negativeHandlingDecision: includeDecision
+                            ? "leave_visible"
+                            : null,
+                        existingNegativeState: includeDecision
+                            ? null
+                            : new
+                            {
+                                NegativeBalance = 2,
+                                FirstNegativeVisitDate = new DateOnly(2026, 7, 29),
+                            }),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipTypeId = membershipTypeId,
+                        PaymentId = (Guid?)null,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void MembershipIssueRejectsNonMembershipSalePaymentSummary()
+    {
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+        var paymentId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership.issued",
+                    AuditTimelineEntityType.Membership,
+                    membershipId,
+                    new { },
+                    MembershipIssueSummary(
+                        membershipId,
+                        clientId,
+                        membershipTypeId,
+                        payment: new
+                        {
+                            PaymentId = paymentId,
+                            PaymentAuditEntryId = Guid.NewGuid(),
+                            Amount = 1200m,
+                            Currency = "UAH",
+                            Method = "cash",
+                            PaymentContext = "one_off",
+                            OccurredAt = OriginalOccurredAt,
+                        }),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipTypeId = membershipTypeId,
+                        PaymentId = (Guid?)paymentId,
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void MembershipTypeEditShowsChangedFutureCatalogValues()
     {
         var membershipTypeId = Guid.NewGuid();
@@ -1180,6 +1444,7 @@ public sealed class AuditEntryExplanationViewModelTests
     [InlineData("staff_credentials.reset", AuditTimelineEntityType.Client)]
     [InlineData("membership_type.edited", AuditTimelineEntityType.Client)]
     [InlineData("membership_type.deactivated", AuditTimelineEntityType.Client)]
+    [InlineData("membership.issued", AuditTimelineEntityType.Client)]
     [InlineData("non_working_day.corrected", AuditTimelineEntityType.Payment)]
     [InlineData("non_working_day.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("freeze.canceled", AuditTimelineEntityType.Payment)]
@@ -1267,6 +1532,48 @@ public sealed class AuditEntryExplanationViewModelTests
     private static string Serialize(object value)
     {
         return JsonSerializer.Serialize(value, AuditJsonOptions);
+    }
+
+    private static object MembershipIssueSummary(
+        Guid membershipId,
+        Guid clientId,
+        Guid membershipTypeId,
+        string? negativeHandlingDecision = null,
+        object? existingNegativeState = null,
+        object? payment = null)
+    {
+        return new
+        {
+            MembershipId = membershipId,
+            ClientId = clientId,
+            MembershipTypeId = membershipTypeId,
+            Snapshot = new
+            {
+                TypeName = "Eight visits / 30 days",
+                DurationDays = 30,
+                VisitsLimit = 8,
+                PriceAmount = 1200m,
+                PriceCurrency = "UAH",
+            },
+            StartDate = new DateOnly(2026, 8, 1),
+            BaseEndDate = new DateOnly(2026, 8, 30),
+            IssuedAt = OriginalOccurredAt.AddMinutes(5),
+            Status = "active",
+            NegativeHandlingDecision = negativeHandlingDecision,
+            ExistingNegativeState = existingNegativeState,
+            Payment = payment,
+            InitialState = new
+            {
+                CountedVisits = 0,
+                RemainingVisits = 8,
+                NegativeBalance = 0,
+                FirstNegativeVisitDate = (DateOnly?)null,
+                ExtensionDays = 0,
+                EffectiveEndDate = new DateOnly(2026, 8, 30),
+                LastCountedVisitAt = (DateTimeOffset?)null,
+                RecalculationVersion = 1,
+            },
+        };
     }
 
     private static object Visit(
