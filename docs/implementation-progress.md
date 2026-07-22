@@ -11792,3 +11792,71 @@ Next recommended step:
 - Continue the audit-noise review with `membership_opening_state.created`.
   Explain the imported opening Membership snapshot/state while preserving its
   explicit opening-state origin and Memberships-owned derived values.
+
+## Step 183 - Created Membership Opening State audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Closed only the planned `membership_opening_state.created` audit-noise gap.
+  The remaining two raw-only creation events and the Milestone 10 acceptance
+  review remain in scope; Milestone 11 was not started.
+- Preserved the canonical boundary between the manual-backfill opening source
+  declaration and rebuildable `membership_state_cache` values.
+- Reused the Memberships-owned `MembershipOpeningState.FromStoredSource`
+  validator instead of duplicating negative-balance rules in the Web layer.
+
+Completed:
+
+- Added a fail-closed `membership_opening_state.created` Timeline explanation
+  that requires an empty before-summary, manual-backfill origin and reason,
+  exact Opening State/Membership/Client relationships, valid source
+  declaration, supported entry batch and active source status.
+- Shows opening as-of date, signed remaining visits, declared negative balance,
+  optional known effective end/extension, source reference, batch, origin,
+  occurred time and the separately labeled Memberships recalculation result.
+- Added seven presenter cases covering a complete negative declaration,
+  omitted optional known values, relationship mismatch, domain-invalid
+  declaration, wrong origin, non-empty before state and wrong entity type.
+- Strengthened the real PostgreSQL
+  `CreateMembershipOpeningState` workflow test to pin the complete two-reference
+  and twelve-field source/recalculation audit payload.
+- Added an isolated production-shaped Timeline seed plus Owner/tablet and
+  named-Admin/phone Playwright coverage for source/recalculation separation,
+  collapsed raw envelope, touch target and viewport fit.
+- Kept opening-state command behavior, canonical source persistence,
+  recalculation, Razor markup, CSS, authorization, EF model and migrations
+  unchanged.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 100/100 and the
+  strengthened real
+  `NamedAdminCreatesSourceRebuildsCacheAndWritesAuditAndIdempotency`
+  PostgreSQL test passed 1/1.
+- Focused created-opening-state Playwright coverage passed 2/2 and the complete
+  `AuditTimelineSmokeTests` regression passed 32/32 with no skipped tests.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports with no overlap or horizontal overflow.
+- The repository-wide `./scripts/validate.sh` gate is intentionally deferred to
+  the requested final Milestone 10 acceptance review after all remaining
+  raw-only events are closed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this Step 183 progress update but
+  stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain membership opening state`.
+
+Next recommended step:
+
+- Continue the audit-noise review with `freeze.added`. Explain the immutable
+  inclusive Freeze source range and resulting Membership state without
+  duplicating extension-day formulas outside Memberships.

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.Audit;
+using BodyLife.Crm.Modules.Memberships;
 
 namespace BodyLife.Crm.Web.Pages.Audit;
 
@@ -26,6 +27,7 @@ public sealed record AuditEntryExplanationViewModel(
             "membership_type.edited" => "membership-type-edited",
             "membership_type.deactivated" => "membership-type-deactivated",
             "membership.issued" => "membership-issued",
+            "membership_opening_state.created" => "membership-opening-state-created",
             "client.created" => "client-created",
             "client.updated" => "client-updated",
             "card.assigned" => "card-assigned",
@@ -141,6 +143,13 @@ public sealed record AuditEntryExplanationViewModel(
                 "membership.issued"
                     when entry.EntityType == AuditTimelineEntityType.Membership
                     => CreateMembershipIssue(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
+                "membership_opening_state.created"
+                    when entry.EntityType == AuditTimelineEntityType.MembershipOpeningState
+                    => CreateMembershipOpeningState(
                         entry,
                         related.RootElement,
                         before.RootElement,
@@ -266,6 +275,97 @@ public sealed record AuditEntryExplanationViewModel(
             MembershipTypeFacts(original),
             MembershipTypeFacts(updated),
             string.Join(", ", changedFields),
+            IsAvailable: true);
+    }
+
+    private static AuditEntryExplanationViewModel CreateMembershipOpeningState(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        if (before.ValueKind != JsonValueKind.Object
+            || before.EnumerateObject().Any()
+            || entry.EntityId == Guid.Empty
+            || entry.EntryOrigin != EntryOrigin.ManualBackfill
+            || string.IsNullOrWhiteSpace(entry.Reason))
+        {
+            throw new JsonException("Membership opening-state envelope is inconsistent.");
+        }
+
+        var relatedClientId = RequireGuid(related, "clientId");
+        var relatedMembershipId = RequireGuid(related, "membershipId");
+        var created = ReadMembershipOpeningStateCreation(after);
+        ValidateEntryBatch("manual_backfill", created.EntryBatchId);
+
+        if (created.OpeningStateId != entry.EntityId
+            || created.ClientId != relatedClientId
+            || created.MembershipId != relatedMembershipId
+            || created.Status != "active")
+        {
+            throw new JsonException("Membership opening-state identity is inconsistent.");
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "membership-opening-state-created",
+            "Membership opening state recorded",
+            "The manual-backfill declaration is a canonical source fact. Recalculated Membership values are shown separately as rebuildable Memberships-owned state.",
+            "Before declaration",
+            "Recorded opening state",
+            [
+                Fact("Opening state", "Not present"),
+                Fact("Membership", TimelineModel.ShortId(created.MembershipId)),
+            ],
+            [
+                Fact("Opening state", TimelineModel.ShortId(created.OpeningStateId)),
+                Fact("Membership", TimelineModel.ShortId(created.MembershipId)),
+                Fact("Client", TimelineModel.ShortId(created.ClientId)),
+                Fact("Opening as of", DateLabel(created.OpeningAsOfDate)),
+                Fact(
+                    "Declared remaining visits",
+                    created.DeclaredRemainingVisits.ToString(CultureInfo.InvariantCulture)),
+                Fact(
+                    "Declared negative balance",
+                    created.DeclaredNegativeBalance.ToString(CultureInfo.InvariantCulture)),
+                Fact(
+                    "Known effective end",
+                    created.KnownEffectiveEndDate is { } knownEnd
+                        ? DateLabel(knownEnd)
+                        : "Not declared"),
+                Fact(
+                    "Known extension",
+                    created.KnownExtensionDays is { } knownExtension
+                        ? $"{knownExtension.ToString(CultureInfo.InvariantCulture)} days"
+                        : "Not declared"),
+                Fact("Source reference", created.SourceReference),
+                Fact(
+                    "Entry batch",
+                    created.EntryBatchId is { } entryBatchId
+                        ? TimelineModel.ShortId(entryBatchId)
+                        : "None"),
+                Fact("Entry origin", StoredEntryOriginLabel("manual_backfill")),
+                Fact("Occurred", TimelineModel.TimestampLabel(entry.OccurredAt)),
+                Fact("Source status", StatusLabel(created.Status)),
+                Fact(
+                    "Recalculated remaining visits",
+                    created.RecalculatedState.RemainingVisits.ToString(
+                        CultureInfo.InvariantCulture)),
+                Fact(
+                    "Recalculated negative balance",
+                    created.RecalculatedState.NegativeBalance.ToString(
+                        CultureInfo.InvariantCulture)),
+                Fact(
+                    "Recalculated effective end",
+                    DateLabel(created.RecalculatedState.EffectiveEndDate)),
+                Fact(
+                    "Recalculated extension",
+                    $"{created.RecalculatedState.ExtensionDays.ToString(CultureInfo.InvariantCulture)} days"),
+                Fact(
+                    "Recalculation version",
+                    created.RecalculatedState.RecalculationVersion.ToString(
+                        CultureInfo.InvariantCulture)),
+            ],
+            ChangedFields: "Opening state, Membership state cache",
             IsAvailable: true);
     }
 
@@ -899,6 +999,58 @@ public sealed record AuditEntryExplanationViewModel(
             ReadMembershipIssueInitialState(initialState));
     }
 
+    private static MembershipOpeningStateCreationSnapshot
+        ReadMembershipOpeningStateCreation(JsonElement summary)
+    {
+        var openingAsOfDate = RequireDateOnly(summary, "openingAsOfDate");
+        var declaredRemainingVisits = RequireInt32(summary, "declaredRemainingVisits");
+        var declaredNegativeBalance = RequireNonNegativeInt32(
+            summary,
+            "declaredNegativeBalance");
+        var knownEffectiveEndDate = RequireNullableDateOnly(
+            summary,
+            "knownEffectiveEndDate");
+        var knownExtensionDays = RequireNullableNonNegativeInt32(
+            summary,
+            "knownExtensionDays");
+
+        try
+        {
+            _ = MembershipOpeningState.FromStoredSource(
+                openingAsOfDate,
+                declaredRemainingVisits,
+                declaredNegativeBalance,
+                knownEffectiveEndDate,
+                knownExtensionDays);
+        }
+        catch (ArgumentException exception)
+        {
+            throw new JsonException(
+                "Membership opening-state declaration is invalid.",
+                exception);
+        }
+
+        var recalculated = RequireObject(summary, "recalculatedState");
+        return new MembershipOpeningStateCreationSnapshot(
+            RequireGuid(summary, "openingStateId"),
+            RequireGuid(summary, "membershipId"),
+            RequireGuid(summary, "clientId"),
+            openingAsOfDate,
+            declaredRemainingVisits,
+            declaredNegativeBalance,
+            knownEffectiveEndDate,
+            knownExtensionDays,
+            RequireString(summary, "sourceReference"),
+            RequireNullableGuid(summary, "entryBatchId"),
+            RequireString(summary, "status"),
+            new MembershipOpeningStateRecalculatedSnapshot(
+                RequireInt32(recalculated, "remainingVisits"),
+                RequireNonNegativeInt32(recalculated, "negativeBalance"),
+                RequireDateOnly(recalculated, "effectiveEndDate"),
+                RequireNonNegativeInt32(recalculated, "extensionDays"),
+                RequirePositiveInt32(recalculated, "recalculationVersion")));
+    }
+
     private static MembershipIssueExistingNegativeStateSnapshot?
         ReadExistingNegativeState(JsonElement summary)
     {
@@ -1460,6 +1612,31 @@ public sealed record AuditEntryExplanationViewModel(
         return result;
     }
 
+    private static int? RequireNullableNonNegativeInt32(
+        JsonElement parent,
+        string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value))
+        {
+            throw new JsonException($"Audit summary property '{propertyName}' is required.");
+        }
+
+        if (value.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (value.ValueKind != JsonValueKind.Number
+            || !value.TryGetInt32(out var result)
+            || result < 0)
+        {
+            throw new JsonException(
+                $"Audit summary property '{propertyName}' has an invalid value.");
+        }
+
+        return result;
+    }
+
     private static IReadOnlyList<string> RequireStringArray(
         JsonElement parent,
         string propertyName)
@@ -1810,6 +1987,27 @@ public sealed record AuditEntryExplanationViewModel(
         decimal PriceAmount,
         string PriceCurrency,
         string? Comment);
+
+    private sealed record MembershipOpeningStateCreationSnapshot(
+        Guid OpeningStateId,
+        Guid MembershipId,
+        Guid ClientId,
+        DateOnly OpeningAsOfDate,
+        int DeclaredRemainingVisits,
+        int DeclaredNegativeBalance,
+        DateOnly? KnownEffectiveEndDate,
+        int? KnownExtensionDays,
+        string SourceReference,
+        Guid? EntryBatchId,
+        string Status,
+        MembershipOpeningStateRecalculatedSnapshot RecalculatedState);
+
+    private sealed record MembershipOpeningStateRecalculatedSnapshot(
+        int RemainingVisits,
+        int NegativeBalance,
+        DateOnly EffectiveEndDate,
+        int ExtensionDays,
+        int RecalculationVersion);
 
     private sealed record MembershipStateSnapshot(
         int RemainingVisits,

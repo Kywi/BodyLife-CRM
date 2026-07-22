@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
@@ -105,6 +106,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         Assert.Equal("{}", audit.BeforeSummary);
 
         using var related = JsonDocument.Parse(audit.RelatedEntityRefs);
+        Assert.Equal(2, related.RootElement.EnumerateObject().Count());
         Assert.Equal(
             membership.ClientId,
             related.RootElement.GetProperty("clientId").GetGuid());
@@ -114,17 +116,46 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
 
         using var after = JsonDocument.Parse(audit.AfterSummary);
         var summary = after.RootElement;
+        Assert.Equal(12, summary.EnumerateObject().Count());
         Assert.Equal(
             openingStateId,
             summary.GetProperty("openingStateId").GetGuid());
+        Assert.Equal(
+            membership.MembershipId,
+            summary.GetProperty("membershipId").GetGuid());
+        Assert.Equal(
+            membership.ClientId,
+            summary.GetProperty("clientId").GetGuid());
+        Assert.Equal(
+            TestOpeningAsOfDate,
+            DateOnly.ParseExact(
+                summary.GetProperty("openingAsOfDate").GetString()!,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture));
         Assert.Equal(-2, summary.GetProperty("declaredRemainingVisits").GetInt32());
         Assert.Equal(2, summary.GetProperty("declaredNegativeBalance").GetInt32());
         Assert.Equal(
+            new DateOnly(2026, 8, 3),
+            DateOnly.ParseExact(
+                summary.GetProperty("knownEffectiveEndDate").GetString()!,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture));
+        Assert.Equal(4, summary.GetProperty("knownExtensionDays").GetInt32());
+        Assert.Equal(
             "Paper register 2026, page 12",
             summary.GetProperty("sourceReference").GetString());
+        Assert.Equal(entryBatchId, summary.GetProperty("entryBatchId").GetGuid());
+        Assert.Equal("active", summary.GetProperty("status").GetString());
         var recalculated = summary.GetProperty("recalculatedState");
+        Assert.Equal(5, recalculated.EnumerateObject().Count());
         Assert.Equal(-2, recalculated.GetProperty("remainingVisits").GetInt32());
         Assert.Equal(2, recalculated.GetProperty("negativeBalance").GetInt32());
+        Assert.Equal(
+            new DateOnly(2026, 8, 3),
+            DateOnly.ParseExact(
+                recalculated.GetProperty("effectiveEndDate").GetString()!,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture));
         Assert.Equal(4, recalculated.GetProperty("extensionDays").GetInt32());
         Assert.Equal(
             MembershipStateCacheRebuilder.CurrentRecalculationVersion,

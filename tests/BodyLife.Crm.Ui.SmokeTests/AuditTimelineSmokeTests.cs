@@ -678,6 +678,184 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
     [Theory]
     [InlineData("owner-tablet", 1024, 768, true)]
     [InlineData("admin-phone", 390, 844, false)]
+    public async Task CreatedMembershipOpeningStateSeparatesSourceFromRecalculation(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var opening = scenario.Explanations.MembershipOpeningStateCreation;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} created Membership opening-state audit smoke");
+
+            var explanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "MembershipOpeningState",
+                "membership_opening_state.created",
+                opening.AuditEntryId,
+                "membership-opening-state-created",
+                viewportName,
+                entityId: opening.OpeningStateId);
+            await ExpectVisibleAsync(
+                explanation.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Membership opening state recorded", Exact = true }),
+                viewportName,
+                "created Membership opening-state explanation title");
+            Assert.Equal(
+                "Not present",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before declaration",
+                    "Opening state"));
+            Assert.Equal(
+                opening.OpeningStateId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Opening state"));
+            Assert.Equal(
+                opening.MembershipId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Membership"));
+            Assert.Equal(
+                opening.ClientId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Client"));
+            Assert.Equal(
+                opening.OpeningAsOfDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Opening as of"));
+            Assert.Equal(
+                opening.DeclaredRemainingVisits.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Declared remaining visits"));
+            Assert.Equal(
+                opening.DeclaredNegativeBalance.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Declared negative balance"));
+            Assert.Equal(
+                opening.KnownEffectiveEndDate.ToString(
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Known effective end"));
+            Assert.Equal(
+                $"{opening.KnownExtensionDays.ToString(CultureInfo.InvariantCulture)} days",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Known extension"));
+            Assert.Equal(
+                opening.SourceReference,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Source reference"));
+            Assert.Equal(
+                opening.EntryBatchId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Entry batch"));
+            Assert.Equal(
+                "Manual backfill",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Entry origin"));
+            Assert.Equal(
+                $"{opening.OccurredAt:yyyy-MM-dd HH:mm:ss} UTC",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Occurred"));
+            Assert.Equal(
+                opening.DeclaredRemainingVisits.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Recalculated remaining visits"));
+            Assert.Equal(
+                opening.RecalculationVersion.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded opening state",
+                    "Recalculation version"));
+            await ExpectVisibleAsync(
+                explanation.GetByText(
+                    "Opening state, Membership state cache",
+                    new() { Exact = true }),
+                viewportName,
+                "created Membership opening-state changed fields");
+
+            var envelope = explanation
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "created Membership opening-state audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "created Membership opening-state raw envelope");
+            var envelopeText = await envelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains("sourceReference", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("recalculatedState", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("entryBatchId", envelopeText, StringComparison.Ordinal);
+            await AssertFitsViewportAsync(
+                page,
+                viewportName,
+                "created Membership opening-state explanation");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "membership-opening-state-created-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
     public async Task OwnerAndAdminCanInspectFilteredAppendOnlyTimeline(
         string viewportName,
         int width,

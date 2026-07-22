@@ -943,6 +943,266 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void MembershipOpeningStateCreationShowsDeclarationAndRecalculatedState()
+    {
+        var openingStateId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var entryBatchId = Guid.NewGuid();
+        var openingAsOfDate = new DateOnly(2026, 7, 13);
+        var knownEffectiveEndDate = new DateOnly(2026, 8, 3);
+        var after = MembershipOpeningStateCreationSummary(
+            openingStateId,
+            membershipId,
+            clientId,
+            openingAsOfDate,
+            declaredRemainingVisits: -2,
+            declaredNegativeBalance: 2,
+            knownEffectiveEndDate,
+            knownExtensionDays: 4,
+            entryBatchId,
+            recalculatedRemainingVisits: -2,
+            recalculatedNegativeBalance: 2,
+            recalculatedEffectiveEndDate: knownEffectiveEndDate,
+            recalculatedExtensionDays: 4);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_opening_state.created",
+                    AuditTimelineEntityType.MembershipOpeningState,
+                    openingStateId,
+                    new { },
+                    after,
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = membershipId,
+                    },
+                    reason: "Opening history is incomplete",
+                    comment: "Launch backfill",
+                    entryOrigin: EntryOrigin.ManualBackfill)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-opening-state-created", explanation.Kind);
+        Assert.Equal("Membership opening state recorded", explanation.Title);
+        Assert.Equal("Not present", FactValue(explanation.BeforeFacts, "Opening state"));
+        Assert.Equal(
+            openingStateId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Opening state"));
+        Assert.Equal(
+            membershipId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Membership"));
+        Assert.Equal(
+            clientId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Client"));
+        Assert.Equal("2026-07-13", FactValue(explanation.AfterFacts, "Opening as of"));
+        Assert.Equal("-2", FactValue(explanation.AfterFacts, "Declared remaining visits"));
+        Assert.Equal("2", FactValue(explanation.AfterFacts, "Declared negative balance"));
+        Assert.Equal("2026-08-03", FactValue(explanation.AfterFacts, "Known effective end"));
+        Assert.Equal("4 days", FactValue(explanation.AfterFacts, "Known extension"));
+        Assert.Equal(
+            entryBatchId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Entry batch"));
+        Assert.Equal("Manual backfill", FactValue(explanation.AfterFacts, "Entry origin"));
+        Assert.Equal("-2", FactValue(explanation.AfterFacts, "Recalculated remaining visits"));
+        Assert.Equal("2", FactValue(explanation.AfterFacts, "Recalculated negative balance"));
+        Assert.Equal(
+            "Opening state, Membership state cache",
+            explanation.ChangedFields);
+        Assert.Contains("canonical source fact", explanation.Narrative);
+        Assert.Contains("rebuildable", explanation.Narrative);
+    }
+
+    [Fact]
+    public void MembershipOpeningStateCreationWithoutOptionalKnownValuesDoesNotInventThem()
+    {
+        var openingStateId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var after = MembershipOpeningStateCreationSummary(
+            openingStateId,
+            membershipId,
+            clientId,
+            new DateOnly(2026, 7, 13),
+            declaredRemainingVisits: 5,
+            declaredNegativeBalance: 0,
+            knownEffectiveEndDate: null,
+            knownExtensionDays: null,
+            entryBatchId: null,
+            recalculatedRemainingVisits: 5,
+            recalculatedNegativeBalance: 0,
+            recalculatedEffectiveEndDate: new DateOnly(2026, 7, 30),
+            recalculatedExtensionDays: 0);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_opening_state.created",
+                    AuditTimelineEntityType.MembershipOpeningState,
+                    openingStateId,
+                    new { },
+                    after,
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = membershipId,
+                    },
+                    reason: "Opening history is incomplete",
+                    entryOrigin: EntryOrigin.ManualBackfill)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            "Not declared",
+            FactValue(explanation.AfterFacts, "Known effective end"));
+        Assert.Equal(
+            "Not declared",
+            FactValue(explanation.AfterFacts, "Known extension"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Entry batch"));
+    }
+
+    [Fact]
+    public void MembershipOpeningStateCreationWithMismatchedRelationshipFailsClosed()
+    {
+        var openingStateId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var after = MembershipOpeningStateCreationSummary(
+            openingStateId,
+            membershipId,
+            clientId,
+            new DateOnly(2026, 7, 13),
+            declaredRemainingVisits: 5,
+            declaredNegativeBalance: 0,
+            knownEffectiveEndDate: null,
+            knownExtensionDays: null,
+            entryBatchId: null,
+            recalculatedRemainingVisits: 5,
+            recalculatedNegativeBalance: 0,
+            recalculatedEffectiveEndDate: new DateOnly(2026, 7, 30),
+            recalculatedExtensionDays: 0);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_opening_state.created",
+                    AuditTimelineEntityType.MembershipOpeningState,
+                    openingStateId,
+                    new { },
+                    after,
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = Guid.NewGuid(),
+                    },
+                    reason: "Opening history is incomplete",
+                    entryOrigin: EntryOrigin.ManualBackfill)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void MembershipOpeningStateCreationWithInvalidDeclarationFailsClosed()
+    {
+        var openingStateId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var after = MembershipOpeningStateCreationSummary(
+            openingStateId,
+            membershipId,
+            clientId,
+            new DateOnly(2026, 7, 13),
+            declaredRemainingVisits: -2,
+            declaredNegativeBalance: 1,
+            knownEffectiveEndDate: null,
+            knownExtensionDays: null,
+            entryBatchId: null,
+            recalculatedRemainingVisits: -2,
+            recalculatedNegativeBalance: 2,
+            recalculatedEffectiveEndDate: new DateOnly(2026, 7, 30),
+            recalculatedExtensionDays: 0);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_opening_state.created",
+                    AuditTimelineEntityType.MembershipOpeningState,
+                    openingStateId,
+                    new { },
+                    after,
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = membershipId,
+                    },
+                    reason: "Opening history is incomplete",
+                    entryOrigin: EntryOrigin.ManualBackfill)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void MembershipOpeningStateCreationOutsideManualBackfillFailsClosed()
+    {
+        var openingStateId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var after = MembershipOpeningStateCreationSummary(
+            openingStateId,
+            membershipId,
+            clientId,
+            new DateOnly(2026, 7, 13),
+            declaredRemainingVisits: 5,
+            declaredNegativeBalance: 0,
+            knownEffectiveEndDate: null,
+            knownExtensionDays: null,
+            entryBatchId: null,
+            recalculatedRemainingVisits: 5,
+            recalculatedNegativeBalance: 0,
+            recalculatedEffectiveEndDate: new DateOnly(2026, 7, 30),
+            recalculatedExtensionDays: 0);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_opening_state.created",
+                    AuditTimelineEntityType.MembershipOpeningState,
+                    openingStateId,
+                    new { },
+                    after,
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = membershipId,
+                    },
+                    reason: "Opening history is incomplete")));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void MembershipOpeningStateCreationWithPreExistingSummaryFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_opening_state.created",
+                    AuditTimelineEntityType.MembershipOpeningState,
+                    Guid.NewGuid(),
+                    new { Status = "existing" },
+                    new { },
+                    related: new { },
+                    reason: "Opening history is incomplete",
+                    entryOrigin: EntryOrigin.ManualBackfill)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void MembershipTypeEditShowsChangedFutureCatalogValues()
     {
         var membershipTypeId = Guid.NewGuid();
@@ -2241,6 +2501,9 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Theory]
+    [InlineData(
+        "membership_opening_state.created",
+        AuditTimelineEntityType.Membership)]
     [InlineData("membership_type.created", AuditTimelineEntityType.Payment)]
     [InlineData("client.updated", AuditTimelineEntityType.Payment)]
     [InlineData("client.created", AuditTimelineEntityType.Payment)]
@@ -2317,7 +2580,10 @@ public sealed class AuditEntryExplanationViewModelTests
         bool serialize = true,
         object? related = null,
         string? reason = "Correction reason",
-        string? comment = "Correction comment")
+        string? comment = "Correction comment",
+        EntryOrigin entryOrigin = EntryOrigin.Normal,
+        DateTimeOffset? occurredAt = null,
+        DateTimeOffset? recordedAt = null)
     {
         return new AuditTimelineEntry(
             AuditEntryId.New(),
@@ -2329,9 +2595,9 @@ public sealed class AuditEntryExplanationViewModelTests
             ActorRole.Owner,
             SessionId.New(),
             "Owner workstation",
-            OriginalOccurredAt,
-            OriginalOccurredAt.AddMinutes(5),
-            EntryOrigin.Normal,
+            occurredAt ?? OriginalOccurredAt,
+            recordedAt ?? OriginalOccurredAt.AddMinutes(5),
+            entryOrigin,
             reason,
             comment,
             related is null ? "{}" : Serialize(related),
@@ -2384,6 +2650,45 @@ public sealed class AuditEntryExplanationViewModelTests
                 ExtensionDays = 0,
                 EffectiveEndDate = new DateOnly(2026, 8, 30),
                 LastCountedVisitAt = (DateTimeOffset?)null,
+                RecalculationVersion = 1,
+            },
+        };
+    }
+
+    private static object MembershipOpeningStateCreationSummary(
+        Guid openingStateId,
+        Guid membershipId,
+        Guid clientId,
+        DateOnly openingAsOfDate,
+        int declaredRemainingVisits,
+        int declaredNegativeBalance,
+        DateOnly? knownEffectiveEndDate,
+        int? knownExtensionDays,
+        Guid? entryBatchId,
+        int recalculatedRemainingVisits,
+        int recalculatedNegativeBalance,
+        DateOnly recalculatedEffectiveEndDate,
+        int recalculatedExtensionDays)
+    {
+        return new
+        {
+            OpeningStateId = openingStateId,
+            MembershipId = membershipId,
+            ClientId = clientId,
+            OpeningAsOfDate = openingAsOfDate,
+            DeclaredRemainingVisits = declaredRemainingVisits,
+            DeclaredNegativeBalance = declaredNegativeBalance,
+            KnownEffectiveEndDate = knownEffectiveEndDate,
+            KnownExtensionDays = knownExtensionDays,
+            SourceReference = "Paper register 2026, page 12",
+            EntryBatchId = entryBatchId,
+            Status = "active",
+            RecalculatedState = new
+            {
+                RemainingVisits = recalculatedRemainingVisits,
+                NegativeBalance = recalculatedNegativeBalance,
+                EffectiveEndDate = recalculatedEffectiveEndDate,
+                ExtensionDays = recalculatedExtensionDays,
                 RecalculationVersion = 1,
             },
         };

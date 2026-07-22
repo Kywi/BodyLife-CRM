@@ -1290,6 +1290,23 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var issuedBaseEndDate = new DateOnly(2026, 8, 30);
         var issuedAt = recordedBase.AddHours(12).AddMinutes(15);
 
+        const int openingDeclaredRemainingVisits = -2;
+        const int openingDeclaredNegativeBalance = 2;
+        const int openingKnownExtensionDays = 4;
+        const string openingSourceReference = "Paper register 2026, page 12";
+        var openingStateAuditEntryId = Guid.NewGuid();
+        var openingStateId = Guid.NewGuid();
+        var openingMembershipId = Guid.NewGuid();
+        var openingClientId = Guid.NewGuid();
+        var openingEntryBatchId = Guid.NewGuid();
+        var openingAsOfDate = new DateOnly(2026, 7, 10);
+        var openingKnownEffectiveEndDate = new DateOnly(2026, 8, 3);
+        var openingOccurredAt = new DateTimeOffset(
+            openingAsOfDate,
+            new TimeOnly(9, 0),
+            TimeSpan.Zero);
+        var openingRecordedAt = recordedBase.AddHours(12).AddMinutes(20);
+
         const string originalStaffDisplayName = "Main Admin";
         const string updatedStaffDisplayName = "Evening Admin";
         const string createdStaffAccountType = "named_admin";
@@ -1448,6 +1465,51 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                         ExtensionDays = 0,
                         EffectiveEndDate = issuedBaseEndDate,
                         LastCountedVisitAt = (DateTimeOffset?)null,
+                        RecalculationVersion =
+                            MembershipStateCacheRebuilder.CurrentRecalculationVersion,
+                    },
+                },
+                ChangedAfterClose: false),
+            new(
+                openingStateAuditEntryId,
+                "membership_opening_state.created",
+                "membership_opening_state",
+                openingStateId,
+                new
+                {
+                    ClientId = openingClientId,
+                    MembershipId = openingMembershipId,
+                },
+                sharedAdminAccountId,
+                "shared_reception_admin",
+                "admin",
+                sharedSessionId,
+                sharedDeviceLabel,
+                openingOccurredAt,
+                openingRecordedAt,
+                "manual_backfill",
+                "Active membership history before launch is incomplete",
+                "Launch backfill",
+                new { },
+                new
+                {
+                    OpeningStateId = openingStateId,
+                    MembershipId = openingMembershipId,
+                    ClientId = openingClientId,
+                    OpeningAsOfDate = openingAsOfDate,
+                    DeclaredRemainingVisits = openingDeclaredRemainingVisits,
+                    DeclaredNegativeBalance = openingDeclaredNegativeBalance,
+                    KnownEffectiveEndDate = openingKnownEffectiveEndDate,
+                    KnownExtensionDays = (int?)openingKnownExtensionDays,
+                    SourceReference = openingSourceReference,
+                    EntryBatchId = (Guid?)openingEntryBatchId,
+                    Status = "active",
+                    RecalculatedState = new
+                    {
+                        RemainingVisits = openingDeclaredRemainingVisits,
+                        NegativeBalance = openingDeclaredNegativeBalance,
+                        EffectiveEndDate = openingKnownEffectiveEndDate,
+                        ExtensionDays = openingKnownExtensionDays,
                         RecalculationVersion =
                             MembershipStateCacheRebuilder.CurrentRecalculationVersion,
                     },
@@ -2153,7 +2215,22 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     createdMembershipType.Price.Amount,
                     createdMembershipType.Price.Currency,
                     createdMembershipType.Comment!,
-                    createdMembershipTypeAt)));
+                    createdMembershipTypeAt),
+                MembershipOpeningStateCreation:
+                    new MembershipOpeningStateCreationAuditExplanationSmokeScenario(
+                        openingStateAuditEntryId,
+                        openingStateId,
+                        openingMembershipId,
+                        openingClientId,
+                        openingAsOfDate,
+                        openingDeclaredRemainingVisits,
+                        openingDeclaredNegativeBalance,
+                        openingKnownEffectiveEndDate,
+                        openingKnownExtensionDays,
+                        openingSourceReference,
+                        openingEntryBatchId,
+                        openingOccurredAt,
+                        MembershipStateCacheRebuilder.CurrentRecalculationVersion)));
     }
 
     public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(
