@@ -2023,7 +2023,7 @@ public sealed class IndexModel(
                 "replacement.membershipId"));
         }
 
-        if (form.ReplacementOccurredAtUtc is not { } occurredAtUtc)
+        if (form.ReplacementOccurredAtLocal is not { } occurredAtLocal)
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
@@ -2032,9 +2032,18 @@ public sealed class IndexModel(
         }
         else
         {
-            replacementOccurredAt = new DateTimeOffset(
-                DateTime.SpecifyKind(occurredAtUtc, DateTimeKind.Unspecified),
-                TimeSpan.Zero);
+            try
+            {
+                replacementOccurredAt = BusinessTimeZone.ConvertLocalToUtc(
+                    DateTime.SpecifyKind(occurredAtLocal, DateTimeKind.Unspecified));
+            }
+            catch (ArgumentException)
+            {
+                errors.Add(new CommandError(
+                    CommandErrorCode.ValidationFailed,
+                    "Replacement Payment occurred time is not a valid Kyiv local time.",
+                    "replacement.occurredAt.localTime"));
+            }
         }
 
         if (form.ReplacementComment?.Trim().Length
@@ -2152,7 +2161,7 @@ public sealed class IndexModel(
                 "membershipId"));
         }
 
-        if (form.OccurredAtUtc is not { } occurredAtUtc)
+        if (form.OccurredAtLocal is not { } occurredAtLocal)
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
@@ -2161,25 +2170,34 @@ public sealed class IndexModel(
         }
         else
         {
-            occurredAt = new DateTimeOffset(
-                DateTime.SpecifyKind(occurredAtUtc, DateTimeKind.Unspecified),
-                TimeSpan.Zero);
-            var occurredDate = DateOnly.FromDateTime(occurredAt.UtcDateTime);
-            var currentDate = DateOnly.FromDateTime(now.UtcDateTime);
+            try
+            {
+                occurredAt = BusinessTimeZone.ConvertLocalToUtc(
+                    DateTime.SpecifyKind(occurredAtLocal, DateTimeKind.Unspecified));
+                var occurredDate = BusinessTimeZone.GetBusinessDate(occurredAt);
+                var currentDate = BusinessTimeZone.GetBusinessDate(now);
 
-            if (occurredDate != currentDate)
-            {
-                errors.Add(new CommandError(
-                    CommandErrorCode.ValidationFailed,
-                    "This form accepts normal same-day Payments only.",
-                    "occurredAt"));
+                if (occurredDate != currentDate)
+                {
+                    errors.Add(new CommandError(
+                        CommandErrorCode.ValidationFailed,
+                        "This form accepts normal same-day Payments only.",
+                        "occurredAt"));
+                }
+                else if (occurredAt > now.AddMinutes(1))
+                {
+                    errors.Add(new CommandError(
+                        CommandErrorCode.ValidationFailed,
+                        "Payment occurred time cannot be in the future.",
+                        "occurredAt"));
+                }
             }
-            else if (occurredAt > now.AddMinutes(1))
+            catch (ArgumentException)
             {
                 errors.Add(new CommandError(
                     CommandErrorCode.ValidationFailed,
-                    "Payment occurred time cannot be in the future.",
-                    "occurredAt"));
+                    "Payment occurred time is not a valid Kyiv local time.",
+                    "occurredAt.localTime"));
             }
         }
 
@@ -2372,7 +2390,7 @@ public sealed class IndexModel(
             {
                 issueMembershipForm = await BuildInitialIssueMembershipFormAsync(
                     profile.ClientId,
-                    DateOnly.FromDateTime(occurredAt.UtcDateTime),
+                    BusinessTimeZone.GetBusinessDate(occurredAt),
                     searchContext,
                     cancellationToken);
             }

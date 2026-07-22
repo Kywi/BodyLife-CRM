@@ -1,3 +1,4 @@
+using BodyLife.Crm.SharedKernel;
 using Microsoft.Playwright;
 
 namespace BodyLife.Crm.Ui.SmokeTests;
@@ -102,7 +103,7 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 .InputValueAsync();
             Assert.False(string.IsNullOrWhiteSpace(idempotencyKey));
 
-            var startDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1);
+            var startDate = BusinessTimeZone.GetBusinessDate(DateTimeOffset.UtcNow).AddDays(1);
             var endDate = startDate.AddDays(1);
             var reason = $"{viewportName} medical pause";
             await panel.GetByLabel("Freeze start date", new() { Exact = true })

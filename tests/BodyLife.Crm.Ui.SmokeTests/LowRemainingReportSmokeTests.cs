@@ -196,7 +196,7 @@ public sealed class LowRemainingReportSmokeTests : IClassFixture<ReceptionAppFix
                 await oneRemainingRow.GetAttributeAsync("data-remaining-visits"));
             await ExpectVisibleAsync(
                 oneRemainingRow.GetByText(
-                    $"{scenario.OneRemainingLastVisitAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
+                    BodyLife.Crm.SharedKernel.BusinessTimeZone.ConvertInstantToLocal(scenario.OneRemainingLastVisitAt).ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture)),
                     new() { Exact = true }),
                 viewportName,
                 "last counted Visit");

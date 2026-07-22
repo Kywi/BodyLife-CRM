@@ -133,30 +133,32 @@ public sealed class TimelineModel(
         out DateTimeOffset? recordedFromInclusive,
         out DateTimeOffset? recordedBeforeExclusive)
     {
-        recordedFromInclusive = fromDate is { } from
-            ? ToUtcStartOfDay(from)
-            : null;
-        if (toDate is null)
+        recordedFromInclusive = null;
+        recordedBeforeExclusive = null;
+        if (!IsSupportedBusinessDate(fromDate)
+            || !IsSupportedBusinessDate(toDate)
+            || fromDate is { } selectedFrom
+                && toDate is { } selectedTo
+                && selectedTo < selectedFrom)
         {
-            recordedBeforeExclusive = null;
-            return true;
-        }
-
-        if (toDate == DateOnly.MaxValue)
-        {
-            recordedBeforeExclusive = null;
             return false;
         }
 
-        recordedBeforeExclusive = ToUtcStartOfDay(toDate.Value.AddDays(1));
+        if (fromDate is { } from)
+        {
+            recordedFromInclusive = BusinessTimeZone.GetUtcDayRange(from).FromInclusive;
+        }
+
+        if (toDate is { } to)
+        {
+            recordedBeforeExclusive = BusinessTimeZone.GetUtcDayRange(to).ToExclusive;
+        }
+
         return true;
     }
 
-    private static DateTimeOffset ToUtcStartOfDay(DateOnly date)
-    {
-        return new DateTimeOffset(
-            date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
-    }
+    private static bool IsSupportedBusinessDate(DateOnly? value) => !value.HasValue
+        || value.Value != default && value.Value != DateOnly.MaxValue;
 
     private static string? NormalizeOptional(string? value)
     {

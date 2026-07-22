@@ -5,7 +5,7 @@
     var input = Model.Input;
     var visit = Model.Visit;
     var visitKey = visit.VisitId.ToString("N");
-    var occurredDate = visit.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd");
+    var occurredDate = BodyLife.Crm.SharedKernel.BusinessTimeZone.GetBusinessDate(visit.OccurredAt).ToString("yyyy-MM-dd");
     var contextLabel = visit.Consumption?.MembershipTypeNameSnapshot
         ?? VisitKindLabel(visit.VisitKind);
 }

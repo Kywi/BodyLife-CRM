@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.SharedKernel;
 using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +54,7 @@ public sealed class LowRemainingModel(
             return;
         }
 
-        AsOfDate ??= DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        AsOfDate ??= BusinessTimeZone.GetBusinessDate(timeProvider.GetUtcNow());
         RemainingVisitsThreshold ??=
             GetLowRemainingMembershipStateRowsQuery.DefaultRemainingVisitsThreshold;
         Offset ??= 0;

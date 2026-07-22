@@ -6,7 +6,7 @@
     var input = Model.Input;
     var clientKey = input.ClientId.ToString("N");
     var amountValue = input.Amount?.ToString(CultureInfo.InvariantCulture);
-    var occurredAtValue = input.OccurredAtUtc?.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+    var occurredAtValue = input.OccurredAtLocal?.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
 }
 
 <details id="add-payment-action-panel"
@@ -108,10 +108,10 @@
                 </div>
 
                 <div class="form-field form-field-wide">
-                    <label for="payment-occurred-at-@clientKey">@L["Payment.OccurredUtc"]</label>
+                    <label for="payment-occurred-at-@clientKey">@L["Payment.OccurredLocal"]</label>
                     <input id="payment-occurred-at-@clientKey"
                            type="datetime-local"
-                           name="form.OccurredAtUtc"
+                           name="form.OccurredAtLocal"
                            value="@occurredAtValue"
                            step="60"
                            required />

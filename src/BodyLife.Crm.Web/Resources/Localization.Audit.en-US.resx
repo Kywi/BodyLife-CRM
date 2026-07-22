@@ -13,10 +13,10 @@
   <data name="SourceType"><value>Source type</value></data>
   <data name="AllEntities"><value>All entities</value></data>
   <data name="AllSourceFacts"><value>All source facts</value></data>
-  <data name="RecordedFrom"><value>Recorded from (UTC)</value></data>
-  <data name="RecordedThrough"><value>Recorded through (UTC)</value></data>
-  <data name="OccurredFrom"><value>Occurred from (UTC)</value></data>
-  <data name="OccurredThrough"><value>Occurred through (UTC)</value></data>
+  <data name="RecordedFrom"><value>Recorded from</value></data>
+  <data name="RecordedThrough"><value>Recorded through</value></data>
+  <data name="OccurredFrom"><value>Occurred from</value></data>
+  <data name="OccurredThrough"><value>Occurred through</value></data>
   <data name="BusinessAction"><value>Business action</value></data>
   <data name="AllActions"><value>All actions</value></data>
   <data name="Apply"><value>Apply filters</value></data>

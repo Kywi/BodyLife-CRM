@@ -337,11 +337,11 @@ public sealed class CorrectionRecordNavigationSmokeTests
             await page.GetByLabel("Source type", new() { Exact = true }).InputValueAsync());
         Assert.Equal(
             occurredDate,
-            await page.GetByLabel("Occurred from (UTC)", new() { Exact = true })
+            await page.GetByLabel("Occurred from", new() { Exact = true })
                 .InputValueAsync());
         Assert.Equal(
             occurredDate,
-            await page.GetByLabel("Occurred through (UTC)", new() { Exact = true })
+            await page.GetByLabel("Occurred through", new() { Exact = true })
                 .InputValueAsync());
         Assert.True(
             await page.Locator("[data-client-history-list] > [data-client-history-row]")

@@ -170,6 +170,9 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                 await panel.GetByLabel(
                     "Replacement comment (optional)",
                     new() { Exact = true }).FillAsync(replacementComment);
+                await panel.GetByLabel(
+                    "Replacement occurred",
+                    new() { Exact = true }).FillAsync("2026-10-25T03:30");
             }
 
             await DelayCorrectPaymentRequestsAsync(page);
@@ -240,6 +243,9 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                 Assert.Equal(replacementAmount, replacement.Amount);
                 Assert.Equal("other", replacement.PaymentContext);
                 Assert.Equal(replacementComment, replacement.Comment);
+                Assert.Equal(
+                    new DateTimeOffset(2026, 10, 25, 0, 30, 0, TimeSpan.Zero),
+                    replacement.OccurredAt);
             }
             else
             {

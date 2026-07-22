@@ -24,6 +24,8 @@ public static class ReceptionCommandErrorLocalizer
             (CommandErrorCode.ValidationFailed, "replacement.paymentContext") => "Error.Validation.PaymentContext",
         (CommandErrorCode.ValidationFailed, "occurredAt") or
             (CommandErrorCode.ValidationFailed, "replacement.occurredAt") => "Error.Validation.OccurredAt",
+        (CommandErrorCode.ValidationFailed, "occurredAt.localTime") or
+            (CommandErrorCode.ValidationFailed, "replacement.occurredAt.localTime") => "Error.Validation.LocalTime",
         (CommandErrorCode.ValidationFailed, "comment") or
             (CommandErrorCode.ValidationFailed, "envelope.comment") or
             (CommandErrorCode.ValidationFailed, "replacement.comment") => "Error.Validation.Comment",

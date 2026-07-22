@@ -99,10 +99,10 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
             var clientId = page.GetByLabel("Client ID", new() { Exact = true });
             var sourceType = page.GetByLabel("Source type", new() { Exact = true });
             var occurredFrom = page.GetByLabel(
-                "Occurred from (UTC)",
+                "Occurred from",
                 new() { Exact = true });
             var occurredThrough = page.GetByLabel(
-                "Occurred through (UTC)",
+                "Occurred through",
                 new() { Exact = true });
             var loadHistory = page.GetByRole(
                 AriaRole.Button,
@@ -174,13 +174,13 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
                 "shared session label");
             await ExpectVisibleAsync(
                 featured.GetByText(
-                    $"{scenario.FeaturedOccurredAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
+                    BodyLife.Crm.SharedKernel.BusinessTimeZone.ConvertInstantToLocal(scenario.FeaturedOccurredAt).ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture)),
                     new() { Exact = true }).First,
                 viewportName,
                 "fallback occurred time");
             await ExpectVisibleAsync(
                 featured.GetByText(
-                    $"{scenario.FeaturedRecordedAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
+                    BodyLife.Crm.SharedKernel.BusinessTimeZone.ConvertInstantToLocal(scenario.FeaturedRecordedAt).ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture)),
                     new() { Exact = true }),
                 viewportName,
                 "fallback recorded time");
@@ -444,7 +444,7 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
                     .InputValueAsync());
             Assert.Equal(
                 occurredDate,
-                await page.GetByLabel("Occurred from (UTC)", new() { Exact = true })
+                await page.GetByLabel("Occurred from", new() { Exact = true })
                     .InputValueAsync());
             Assert.Equal(0, await page.Locator("[data-client-history-list]").CountAsync());
             await AssertFitsViewportAsync(page, "tablet", "invalid history filter");

@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Payments;
+using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Web.Pages.Reception;
 
@@ -42,7 +43,7 @@ public sealed record CorrectPaymentFormViewModel(
                 ReplacementAmount = payment.Amount.Amount,
                 ReplacementPaymentContext = payment.PaymentContext,
                 ReplacementMembershipId = payment.MembershipId,
-                ReplacementOccurredAtUtc = payment.OccurredAt.UtcDateTime,
+                ReplacementOccurredAtLocal = BusinessTimeZone.ConvertInstantToLocal(payment.OccurredAt),
                 ReplacementComment = payment.Comment,
                 IdempotencyKey = Guid.NewGuid().ToString("N"),
                 SearchQuery = searchContext.Query,
@@ -127,7 +128,7 @@ public sealed record CorrectPaymentFormViewModel(
             ReplacementAmount = input.ReplacementAmount,
             ReplacementPaymentContext = paymentContext,
             ReplacementMembershipId = membershipId,
-            ReplacementOccurredAtUtc = input.ReplacementOccurredAtUtc,
+            ReplacementOccurredAtLocal = input.ReplacementOccurredAtLocal,
             ReplacementComment = input.ReplacementComment,
             Reason = input.Reason,
             Comment = input.Comment,
@@ -193,7 +194,7 @@ public sealed class CorrectPaymentFormInput
 
     public Guid? ReplacementMembershipId { get; set; }
 
-    public DateTime? ReplacementOccurredAtUtc { get; set; }
+    public DateTime? ReplacementOccurredAtLocal { get; set; }
 
     public string? ReplacementComment { get; set; }
 

@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.SharedKernel;
 using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +37,7 @@ public sealed class DailyModel(
             return;
         }
 
-        BusinessDate ??= DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        BusinessDate ??= BusinessTimeZone.GetBusinessDate(timeProvider.GetUtcNow());
         Result = await generateDailyReport.ExecuteAsync(
             new GenerateDailyReportQuery(
                 requestContextResolver.Require().Actor,

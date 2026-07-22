@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Payments;
+using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Web.Pages.Reception;
 
@@ -32,7 +33,7 @@ public sealed record AddPaymentFormViewModel(
             new AddPaymentFormInput
             {
                 ClientId = profile.ClientId,
-                OccurredAtUtc = occurredAt.UtcDateTime,
+                OccurredAtLocal = BusinessTimeZone.ConvertInstantToLocal(occurredAt),
                 IdempotencyKey = Guid.NewGuid().ToString("N"),
                 SearchQuery = searchContext.Query,
                 SearchMode = searchContext.Mode,
@@ -74,7 +75,7 @@ public sealed record AddPaymentFormViewModel(
                 Amount = input.Amount,
                 PaymentContext = paymentContext,
                 MembershipId = membershipId,
-                OccurredAtUtc = input.OccurredAtUtc,
+                OccurredAtLocal = input.OccurredAtLocal,
                 Comment = input.Comment,
                 IdempotencyKey = idempotencyKey,
                 SearchQuery = input.SearchQuery,
@@ -99,7 +100,7 @@ public sealed class AddPaymentFormInput
 
     public Guid? MembershipId { get; set; }
 
-    public DateTime? OccurredAtUtc { get; set; }
+    public DateTime? OccurredAtLocal { get; set; }
 
     public string? Comment { get; set; }
 

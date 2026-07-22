@@ -156,7 +156,7 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                 "first-negative Visit date");
             await ExpectVisibleAsync(
                 featuredRow.GetByText(
-                    $"{scenario.FeaturedLastCountedVisitAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
+                    BodyLife.Crm.SharedKernel.BusinessTimeZone.ConvertInstantToLocal(scenario.FeaturedLastCountedVisitAt).ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture)),
                     new() { Exact = true }),
                 viewportName,
                 "last counted Visit");

@@ -1082,10 +1082,10 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
             var clientId = page.GetByLabel("Client ID", new() { Exact = true });
             var entityType = page.GetByLabel("Entity type", new() { Exact = true });
             var recordedFrom = page.GetByLabel(
-                "Recorded from (UTC)",
+                "Recorded from",
                 new() { Exact = true });
             var recordedThrough = page.GetByLabel(
-                "Recorded through (UTC)",
+                "Recorded through",
                 new() { Exact = true });
             var action = page.GetByLabel("Business action", new() { Exact = true });
             var applyFilters = page.GetByRole(
@@ -2865,7 +2865,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 StringComparison.Ordinal);
             Assert.Equal(
                 recordedDate,
-                await page.GetByLabel("Recorded from (UTC)", new() { Exact = true })
+                await page.GetByLabel("Recorded from", new() { Exact = true })
                     .InputValueAsync());
             Assert.Equal(
                 "visit.marked",
@@ -2990,7 +2990,8 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
 
     private static string TimestampLabel(DateTimeOffset timestamp)
     {
-        return $"{timestamp.UtcDateTime.ToString("g", WorkflowCulture)} UTC";
+        return BodyLife.Crm.SharedKernel.BusinessTimeZone.ConvertInstantToLocal(timestamp)
+            .ToString("g", WorkflowCulture);
     }
 
     private static string DaysLabel(int days)

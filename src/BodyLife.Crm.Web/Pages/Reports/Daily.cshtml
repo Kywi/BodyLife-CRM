@@ -107,11 +107,11 @@
                                 <dl class="report-row-meta">
                                     <div>
                                         <dt>@L["Meta.Occurred"]</dt>
-                                        <dd>@UtcTimestamp(visit.OccurredAt)</dd>
+                                        <dd>@LocalTimestamp(visit.OccurredAt)</dd>
                                     </div>
                                     <div>
                                         <dt>@L["Meta.Recorded"]</dt>
-                                        <dd>@UtcTimestamp(visit.RecordedAt)</dd>
+                                        <dd>@LocalTimestamp(visit.RecordedAt)</dd>
                                     </div>
                                     @if (visit.Consumption is { } consumption)
                                     {
@@ -139,7 +139,7 @@
                                     <div class="report-row-event report-row-cancellation" data-report-cancellation>
                                         <strong>@L["Status.Cancellation"]</strong>
                                         <span>@cancellation.Reason</span>
-                                        <span>@UtcTimestamp(cancellation.RecordedAt)</span>
+                                        <span>@LocalTimestamp(cancellation.RecordedAt)</span>
                                         @if (cancellation.EntryOrigin != EntryOrigin.Normal)
                                         {
                                             <span class="source-label">@EntryOriginLabel(cancellation.EntryOrigin)</span>
@@ -219,11 +219,11 @@
                                 <dl class="report-row-meta">
                                     <div>
                                         <dt>@L["Meta.Occurred"]</dt>
-                                        <dd>@UtcTimestamp(payment.OccurredAt)</dd>
+                                        <dd>@LocalTimestamp(payment.OccurredAt)</dd>
                                     </div>
                                     <div>
                                         <dt>@L["Meta.Recorded"]</dt>
-                                        <dd>@UtcTimestamp(payment.RecordedAt)</dd>
+                                        <dd>@LocalTimestamp(payment.RecordedAt)</dd>
                                     </div>
                                     <div>
                                         <dt>@L["Payment.Method"]</dt>
@@ -255,7 +255,7 @@
                                     <div class="report-row-event report-row-cancellation" data-report-cancellation>
                                         <strong>@L["Status.Cancellation"]</strong>
                                         <span>@cancellation.Reason</span>
-                                        <span>@UtcTimestamp(cancellation.RecordedAt)</span>
+                                        <span>@LocalTimestamp(cancellation.RecordedAt)</span>
                                         @if (cancellation.EntryOrigin != EntryOrigin.Normal)
                                         {
                                             <span class="source-label">@EntryOriginLabel(cancellation.EntryOrigin)</span>
@@ -269,7 +269,7 @@
                                         <strong>@L["CorrectedReplacement"]</strong>
                                         <span>@correctionFromOriginal.Reason</span>
                                         <span>@L["Status.Changed"]: @ChangedFieldsLabel(correctionFromOriginal.ChangedFields)</span>
-                                        <span>@UtcTimestamp(correctionFromOriginal.RecordedAt)</span>
+                                        <span>@LocalTimestamp(correctionFromOriginal.RecordedAt)</span>
                                         @if (correctionFromOriginal.EntryOrigin != EntryOrigin.Normal)
                                         {
                                             <span class="source-label">@EntryOriginLabel(correctionFromOriginal.EntryOrigin)</span>
@@ -282,7 +282,7 @@
                                         <strong>@L["ReplacedPayment"]</strong>
                                         <span>@correctionToReplacement.Reason</span>
                                         <span>@L["Status.Changed"]: @ChangedFieldsLabel(correctionToReplacement.ChangedFields)</span>
-                                        <span>@UtcTimestamp(correctionToReplacement.RecordedAt)</span>
+                                        <span>@LocalTimestamp(correctionToReplacement.RecordedAt)</span>
                                         @if (correctionToReplacement.EntryOrigin != EntryOrigin.Normal)
                                         {
                                             <span class="source-label">@EntryOriginLabel(correctionToReplacement.EntryOrigin)</span>
@@ -343,7 +343,7 @@
         return ReportsPresentation.Money(money);
     }
 
-    private static string UtcTimestamp(DateTimeOffset timestamp)
+    private static string LocalTimestamp(DateTimeOffset timestamp)
     {
         return ReportsPresentation.Timestamp(timestamp);
     }

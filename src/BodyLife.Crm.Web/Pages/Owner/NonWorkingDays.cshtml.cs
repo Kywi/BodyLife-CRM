@@ -624,7 +624,7 @@ public sealed class NonWorkingDaysModel(
 
     private DateOnly CurrentDate()
     {
-        return DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        return BusinessTimeZone.GetBusinessDate(timeProvider.GetUtcNow());
     }
 
     private bool IsHtmxRequest()

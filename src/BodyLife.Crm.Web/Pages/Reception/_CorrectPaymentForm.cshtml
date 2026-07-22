@@ -6,11 +6,11 @@
     var input = Model.Input;
     var payment = Model.Payment;
     var paymentKey = payment.PaymentId.ToString("N");
-    var occurredDate = payment.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd");
+    var occurredDate = BodyLife.Crm.SharedKernel.BusinessTimeZone.GetBusinessDate(payment.OccurredAt).ToString("yyyy-MM-dd");
     var auditEntityId = payment.CorrectionFromOriginal?.OriginalPaymentId
         ?? input.OriginalPaymentId;
     var amountValue = input.ReplacementAmount?.ToString(CultureInfo.InvariantCulture);
-    var occurredAtValue = input.ReplacementOccurredAtUtc?.ToString(
+    var occurredAtValue = input.ReplacementOccurredAtLocal?.ToString(
         "yyyy-MM-ddTHH:mm",
         CultureInfo.InvariantCulture);
     var replaceMode = input.Mode != PaymentCorrectionMode.Cancel;
@@ -183,10 +183,10 @@
                     </div>
 
                     <div class="form-field form-field-wide">
-                        <label for="replacement-occurred-at-@paymentKey">@L["Payment.ReplacementOccurredUtc"]</label>
+                        <label for="replacement-occurred-at-@paymentKey">@L["Payment.ReplacementOccurredLocal"]</label>
                         <input id="replacement-occurred-at-@paymentKey"
                                type="datetime-local"
-                               name="form.ReplacementOccurredAtUtc"
+                               name="form.ReplacementOccurredAtLocal"
                                value="@occurredAtValue"
                                step="60"
                                data-payment-replacement-input

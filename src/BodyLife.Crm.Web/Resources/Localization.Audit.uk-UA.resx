@@ -13,10 +13,10 @@
   <data name="SourceType"><value>Тип джерела</value></data>
   <data name="AllEntities"><value>Усі сутності</value></data>
   <data name="AllSourceFacts"><value>Усі факти-джерела</value></data>
-  <data name="RecordedFrom"><value>Час запису від (UTC)</value></data>
-  <data name="RecordedThrough"><value>Час запису до (UTC)</value></data>
-  <data name="OccurredFrom"><value>Час події від (UTC)</value></data>
-  <data name="OccurredThrough"><value>Час події до (UTC)</value></data>
+  <data name="RecordedFrom"><value>Час запису від</value></data>
+  <data name="RecordedThrough"><value>Час запису до</value></data>
+  <data name="OccurredFrom"><value>Час події від</value></data>
+  <data name="OccurredThrough"><value>Час події до</value></data>
   <data name="BusinessAction"><value>Бізнес-дія</value></data>
   <data name="AllActions"><value>Усі дії</value></data>
   <data name="Apply"><value>Застосувати фільтри</value></data>

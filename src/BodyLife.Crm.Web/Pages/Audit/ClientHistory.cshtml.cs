@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Clients.Search;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.SharedKernel;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -144,31 +145,32 @@ public sealed class ClientHistoryModel(
         out DateTimeOffset? occurredFromInclusive,
         out DateTimeOffset? occurredBeforeExclusive)
     {
-        occurredFromInclusive = fromDate is { } from
-            ? ToUtcStartOfDay(from)
-            : null;
-        if (toDate is null)
+        occurredFromInclusive = null;
+        occurredBeforeExclusive = null;
+        if (!IsSupportedBusinessDate(fromDate)
+            || !IsSupportedBusinessDate(toDate)
+            || fromDate is { } selectedFrom
+                && toDate is { } selectedTo
+                && selectedTo < selectedFrom)
         {
-            occurredBeforeExclusive = null;
-            return true;
-        }
-
-        if (toDate == DateOnly.MaxValue
-            || fromDate is { } selectedFrom && toDate < selectedFrom)
-        {
-            occurredBeforeExclusive = null;
             return false;
         }
 
-        occurredBeforeExclusive = ToUtcStartOfDay(toDate.Value.AddDays(1));
+        if (fromDate is { } from)
+        {
+            occurredFromInclusive = BusinessTimeZone.GetUtcDayRange(from).FromInclusive;
+        }
+
+        if (toDate is { } to)
+        {
+            occurredBeforeExclusive = BusinessTimeZone.GetUtcDayRange(to).ToExclusive;
+        }
+
         return true;
     }
 
-    private static DateTimeOffset ToUtcStartOfDay(DateOnly date)
-    {
-        return new DateTimeOffset(
-            date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
-    }
+    private static bool IsSupportedBusinessDate(DateOnly? value) => !value.HasValue
+        || value.Value != default && value.Value != DateOnly.MaxValue;
 }
 
 public sealed record ClientHistoryEntityOption(

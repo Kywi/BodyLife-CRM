@@ -811,8 +811,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var markedVisitOccurredAt = recordedBase.AddHours(12);
         var markedVisitRecordedAt = markedVisitOccurredAt.AddMinutes(5);
         var markedVisitEffectiveEndDate = recordedDate.AddDays(14);
-        var markedVisitFirstNegativeDate = DateOnly.FromDateTime(
-            markedVisitOccurredAt.UtcDateTime);
+        var markedVisitFirstNegativeDate = BusinessTimeZone.GetBusinessDate(markedVisitOccurredAt);
         const int markedVisitBeforeCounted = 8;
         const int markedVisitBeforeRemaining = 0;
         const int markedVisitAfterCounted = 9;
@@ -3262,7 +3261,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var membershipId = Guid.NewGuid();
         var now = TimeProvider.System.GetUtcNow();
         var canonicalStartDate = startDate
-            ?? DateOnly.FromDateTime(now.UtcDateTime).AddDays(-7);
+            ?? BusinessTimeZone.GetBusinessDate(now).AddDays(-7);
         var canonicalIssuedAt = issuedAt ?? now.AddDays(-7);
 
         await using (var connection = new NpgsqlConnection(ConnectionString))
@@ -3469,7 +3468,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var activePeriodId = Guid.NewGuid();
         var correctedPeriodId = Guid.NewGuid();
         var recordedAt = TimeProvider.System.GetUtcNow();
-        var today = DateOnly.FromDateTime(recordedAt.UtcDateTime);
+        var today = BusinessTimeZone.GetBusinessDate(recordedAt);
 
         await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
@@ -3668,7 +3667,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var sessionId = Guid.NewGuid();
         var recordedAt = TimeProvider.System.GetUtcNow();
         var canonicalStartDate = startDate
-            ?? DateOnly.FromDateTime(recordedAt.UtcDateTime).AddDays(1);
+            ?? BusinessTimeZone.GetBusinessDate(recordedAt).AddDays(1);
         var canonicalEndDate = endDate ?? canonicalStartDate.AddDays(1);
         if (canonicalEndDate < canonicalStartDate)
         {
@@ -5253,7 +5252,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
     {
         var freezeId = Guid.NewGuid();
         var recordedAt = TimeProvider.System.GetUtcNow();
-        var visitDate = DateOnly.FromDateTime(recordedAt.UtcDateTime);
+        var visitDate = BusinessTimeZone.GetBusinessDate(recordedAt);
 
         await using (var connection = new NpgsqlConnection(ConnectionString))
         {
@@ -5710,7 +5709,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 payment_context,
                 membership_id,
                 comment,
-                status
+                status,
+                occurred_at
             from bodylife.payments
             where client_id = @client_id
               and status = 'active'
@@ -5731,7 +5731,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             reader.GetString(2),
             reader.IsDBNull(3) ? null : reader.GetGuid(3),
             reader.IsDBNull(4) ? null : reader.GetString(4),
-            reader.GetString(5));
+            reader.GetString(5),
+            reader.GetFieldValue<DateTimeOffset>(6));
     }
 
     public Task<long> CountPaymentCorrectionsAsync(Guid originalPaymentId)
@@ -6408,7 +6409,8 @@ public sealed record PaymentSmokeSnapshot(
     string PaymentContext,
     Guid? MembershipId,
     string? Comment,
-    string Status);
+    string Status,
+    DateTimeOffset OccurredAt);
 
 public sealed record FreezeSmokeSnapshot(
     Guid MembershipId,

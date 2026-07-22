@@ -119,7 +119,7 @@
   <data name="Payment.MembershipOptional" xml:space="preserve"><value>Абонемент (необов’язково)</value></data>
   <data name="Payment.NoMembership" xml:space="preserve"><value>Без абонемента</value></data>
   <data name="Payment.Ends" xml:space="preserve"><value>до</value></data>
-  <data name="Payment.OccurredUtc" xml:space="preserve"><value>Час події (UTC)</value></data>
+  <data name="Payment.OccurredLocal" xml:space="preserve"><value>Час події</value></data>
   <data name="Payment.Adding" xml:space="preserve"><value>Додавання платежу…</value></data>
   <data name="Payment.Context.MembershipSale" xml:space="preserve"><value>Продаж абонемента</value></data>
   <data name="Payment.Context.OneOff" xml:space="preserve"><value>Разове</value></data>
@@ -142,7 +142,7 @@
   <data name="Payment.ReplacementAmountUah" xml:space="preserve"><value>Сума заміни (UAH)</value></data>
   <data name="Payment.ReplacementContext" xml:space="preserve"><value>Контекст заміни</value></data>
   <data name="Payment.ReplacementMembershipOptional" xml:space="preserve"><value>Абонемент для заміни (необов’язково)</value></data>
-  <data name="Payment.ReplacementOccurredUtc" xml:space="preserve"><value>Час платежу-замінника (UTC)</value></data>
+  <data name="Payment.ReplacementOccurredLocal" xml:space="preserve"><value>Час платежу-замінника</value></data>
   <data name="Payment.ReplacementCommentOptional" xml:space="preserve"><value>Коментар до заміни (необов’язково)</value></data>
   <data name="Payment.CorrectionCommentOptional" xml:space="preserve"><value>Коментар до виправлення (необов’язково)</value></data>
   <data name="Payment.CorrectionConfirm" xml:space="preserve"><value>Підтверджую виправлення платежу зі збереженням початкової історії.</value></data>
@@ -319,6 +319,7 @@
   <data name="Error.Validation.CorrectionMode" xml:space="preserve"><value>Виберіть заміну або скасування.</value></data>
   <data name="Error.Validation.PaymentContext" xml:space="preserve"><value>Виберіть підтримуваний контекст платежу.</value></data>
   <data name="Error.Validation.OccurredAt" xml:space="preserve"><value>Вкажіть коректний час події для цієї дії.</value></data>
+  <data name="Error.Validation.LocalTime" xml:space="preserve"><value>Вкажіть коректний місцевий час: такого часу не існує через перехід на літній час.</value></data>
   <data name="Error.Validation.Comment" xml:space="preserve"><value>Коментар задовгий або некоректний.</value></data>
   <data name="Error.Validation.OriginalPayment" xml:space="preserve"><value>Потрібно вказати початковий платіж.</value></data>
   <data name="Error.Validation.ReplacementMembership" xml:space="preserve"><value>Виберіть коректний абонемент для заміни або залиште поле порожнім.</value></data>

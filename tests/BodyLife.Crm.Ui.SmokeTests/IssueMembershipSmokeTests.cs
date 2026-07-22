@@ -1,4 +1,5 @@
 using System.Globalization;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.Playwright;
 
 namespace BodyLife.Crm.Ui.SmokeTests;
@@ -95,7 +96,7 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
                 viewportName,
                 "server snapshot price");
 
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var today = BusinessTimeZone.GetBusinessDate(DateTimeOffset.UtcNow);
             var probeDate = today.AddDays(1);
             await RefreshPreviewDateAsync(page, probeDate);
             panel = profile.Locator("#issue-membership-action-panel");

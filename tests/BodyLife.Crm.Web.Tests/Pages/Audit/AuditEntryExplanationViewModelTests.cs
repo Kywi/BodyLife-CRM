@@ -98,8 +98,7 @@ public sealed class AuditEntryExplanationViewModelTests
             remainingVisits: -1,
             negativeBalance: 1,
             firstNegativeVisitId: visitId,
-            firstNegativeVisitDate: DateOnly.FromDateTime(
-                OriginalOccurredAt.UtcDateTime),
+            firstNegativeVisitDate: BusinessTimeZone.GetBusinessDate(OriginalOccurredAt),
             warnings: ["membership_negative_balance"]);
         var after = VisitMarkedAfter(
             visitId,
@@ -1348,7 +1347,7 @@ public sealed class AuditEntryExplanationViewModelTests
             "Before noon only",
             FactValue(explanation.AfterFacts, "Catalog comment"));
         Assert.Equal(
-            "7/18/2026 9:05\u202fAM UTC",
+            "7/18/2026 12:05\u202fPM",
             FactValue(explanation.AfterFacts, "Created"));
         Assert.Equal("Membership type catalog", explanation.ChangedFields);
         Assert.Contains("already issued Membership snapshots", explanation.Narrative);
@@ -1384,7 +1383,7 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.True(explanation.IsAvailable);
         Assert.Equal("Inactive", FactValue(explanation.AfterFacts, "Status"));
         Assert.Equal(
-            "7/18/2026 9:05\u202fAM UTC",
+            "7/18/2026 12:05\u202fPM",
             FactValue(explanation.AfterFacts, "Deactivated"));
     }
 

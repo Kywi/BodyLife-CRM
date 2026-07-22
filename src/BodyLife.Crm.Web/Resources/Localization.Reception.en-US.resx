@@ -119,7 +119,7 @@
   <data name="Payment.MembershipOptional" xml:space="preserve"><value>Membership (optional)</value></data>
   <data name="Payment.NoMembership" xml:space="preserve"><value>No membership</value></data>
   <data name="Payment.Ends" xml:space="preserve"><value>ends</value></data>
-  <data name="Payment.OccurredUtc" xml:space="preserve"><value>Event time (UTC)</value></data>
+  <data name="Payment.OccurredLocal" xml:space="preserve"><value>Event time</value></data>
   <data name="Payment.Adding" xml:space="preserve"><value>Adding payment…</value></data>
   <data name="Payment.Context.MembershipSale" xml:space="preserve"><value>Membership sale</value></data>
   <data name="Payment.Context.OneOff" xml:space="preserve"><value>One-off</value></data>
@@ -142,7 +142,7 @@
   <data name="Payment.ReplacementAmountUah" xml:space="preserve"><value>Replacement amount (UAH)</value></data>
   <data name="Payment.ReplacementContext" xml:space="preserve"><value>Replacement context</value></data>
   <data name="Payment.ReplacementMembershipOptional" xml:space="preserve"><value>Replacement membership (optional)</value></data>
-  <data name="Payment.ReplacementOccurredUtc" xml:space="preserve"><value>Replacement occurred (UTC)</value></data>
+  <data name="Payment.ReplacementOccurredLocal" xml:space="preserve"><value>Replacement occurred</value></data>
   <data name="Payment.ReplacementCommentOptional" xml:space="preserve"><value>Replacement comment (optional)</value></data>
   <data name="Payment.CorrectionCommentOptional" xml:space="preserve"><value>Correction comment (optional)</value></data>
   <data name="Payment.CorrectionConfirm" xml:space="preserve"><value>I confirm this payment should be corrected and its original history preserved.</value></data>
@@ -319,6 +319,7 @@
   <data name="Error.Validation.CorrectionMode" xml:space="preserve"><value>Choose replace or cancel.</value></data>
   <data name="Error.Validation.PaymentContext" xml:space="preserve"><value>Choose a supported payment context.</value></data>
   <data name="Error.Validation.OccurredAt" xml:space="preserve"><value>Enter a valid occurred time for this workflow.</value></data>
+  <data name="Error.Validation.LocalTime" xml:space="preserve"><value>Enter a valid local time; this time does not exist because of the daylight-saving change.</value></data>
   <data name="Error.Validation.Comment" xml:space="preserve"><value>The comment is too long or invalid.</value></data>
   <data name="Error.Validation.OriginalPayment" xml:space="preserve"><value>The original payment is required.</value></data>
   <data name="Error.Validation.ReplacementMembership" xml:space="preserve"><value>Choose a valid replacement membership or leave it empty.</value></data>

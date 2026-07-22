@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.SharedKernel;
 using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
@@ -48,7 +49,7 @@ public sealed class NegativeClientsModel(
             return;
         }
 
-        AsOfDate ??= DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        AsOfDate ??= BusinessTimeZone.GetBusinessDate(timeProvider.GetUtcNow());
         Offset ??= 0;
         Result = await listNegativeClients.ExecuteAsync(
             new ListNegativeClientsQuery(

@@ -166,7 +166,7 @@ public sealed class InactiveClientsReportSmokeTests : IClassFixture<ReceptionApp
                 "separate operational status");
             await ExpectVisibleAsync(
                 featuredRow.GetByText(
-                    $"{scenario.FeaturedLastVisitAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
+                    BodyLife.Crm.SharedKernel.BusinessTimeZone.ConvertInstantToLocal(scenario.FeaturedLastVisitAt).ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture)),
                     new() { Exact = true }),
                 viewportName,
                 "last active Visit timestamp");

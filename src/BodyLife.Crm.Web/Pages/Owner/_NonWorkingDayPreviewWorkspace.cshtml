@@ -419,10 +419,8 @@
         return date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    private static string FormatTimestamp(DateTimeOffset timestamp)
-    {
-        return $"{timestamp.UtcDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture)} UTC";
-    }
+    private static string FormatTimestamp(DateTimeOffset timestamp) =>
+        BodyLife.Crm.Web.Localization.ReceptionDisplayFormatter.DateTime(timestamp);
 
     private static string ShortReference(Guid id)
     {

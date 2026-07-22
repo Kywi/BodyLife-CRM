@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.SharedKernel;
 using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
@@ -56,7 +57,7 @@ public sealed class EndingSoonModel(
             return;
         }
 
-        AsOfDate ??= DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        AsOfDate ??= BusinessTimeZone.GetBusinessDate(timeProvider.GetUtcNow());
         DaysThreshold ??= GetEndingSoonMembershipStateRowsQuery.DefaultDaysThreshold;
         Offset ??= 0;
         Result = await listEndingSoonMemberships.ExecuteAsync(

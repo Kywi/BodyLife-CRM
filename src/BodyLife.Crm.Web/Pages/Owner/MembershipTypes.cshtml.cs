@@ -433,10 +433,8 @@ public sealed class MembershipTypesModel(
         return $"{price.Amount.ToString("0.00", CultureInfo.CurrentCulture)} {price.Currency}";
     }
 
-    public static string FormatTimestamp(DateTimeOffset timestamp)
-    {
-        return $"{timestamp.UtcDateTime.ToString("g", CultureInfo.CurrentCulture)} UTC";
-    }
+    public static string FormatTimestamp(DateTimeOffset timestamp) =>
+        BodyLife.Crm.Web.Localization.ReceptionDisplayFormatter.DateTime(timestamp);
 
     public static string? FormatPriceInput(decimal? amount)
     {

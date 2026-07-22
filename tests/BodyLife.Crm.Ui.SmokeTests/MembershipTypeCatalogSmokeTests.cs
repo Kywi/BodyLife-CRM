@@ -100,11 +100,12 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
                 "inactive visit limit");
             Assert.Contains("1200.00 UAH", await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
             Assert.Contains("Retained for catalog history.", await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
-            var inactiveTimestamp = new DateTime(2026, 7, 5, 11, 0, 0, DateTimeKind.Utc)
+            var inactiveTimestamp = BodyLife.Crm.SharedKernel.BusinessTimeZone.ConvertInstantToLocal(
+                    new DateTimeOffset(2026, 7, 5, 11, 0, 0, TimeSpan.Zero))
                 .ToString(
                     "g",
                     System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture));
-            Assert.Contains($"{inactiveTimestamp} UTC", await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
+            Assert.Contains(inactiveTimestamp, await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
 
             Assert.Equal(4, await page.Locator("main form").CountAsync());
             await ExpectVisibleAsync(

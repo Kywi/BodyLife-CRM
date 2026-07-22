@@ -130,9 +130,14 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
             var idempotencyKey = await form.Locator(
                 "input[name='form.IdempotencyKey']").InputValueAsync();
             Assert.False(string.IsNullOrWhiteSpace(idempotencyKey));
-            Assert.False(string.IsNullOrWhiteSpace(await panel.GetByLabel(
-                "Event time (UTC)",
-                new() { Exact = true }).InputValueAsync()));
+            var eventTime = panel.GetByLabel("Event time", new() { Exact = true });
+            var defaultOccurredAtLocal = await eventTime.InputValueAsync();
+            Assert.True(DateTime.TryParseExact(
+                defaultOccurredAtLocal,
+                "yyyy-MM-ddTHH:mm",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out var parsedDefaultOccurredAtLocal));
 
             await panel.GetByLabel("Amount (UAH)", new() { Exact = true }).FillAsync("0");
             await SubmitHtmxAddPaymentAsync(page, bypassValidation: true);
@@ -156,8 +161,25 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
             Assert.Equal(0L, await _app.CountCreatePaymentAuditEntriesAsync(clientId));
             Assert.Equal(0L, await _app.CountCreatePaymentIdempotencyKeysAsync(clientId));
 
+            await panel.GetByLabel("Amount (UAH)", new() { Exact = true }).FillAsync("1");
+            await eventTime.FillAsync("2026-03-29T03:30");
+            await SubmitHtmxAddPaymentAsync(page);
+
+            panel = profile.Locator("#add-payment-action-panel");
+            await ExpectVisibleAsync(
+                panel.GetByText(
+                    "Enter a valid local time; this time does not exist because of the daylight-saving change.",
+                    new() { Exact = true }),
+                viewportName,
+                "Payment daylight-saving gap validation");
+            Assert.Equal(0L, await _app.CountActivePaymentsAsync(clientId));
+            Assert.Equal(0L, await _app.CountCreatePaymentAuditEntriesAsync(clientId));
+            Assert.Equal(0L, await _app.CountCreatePaymentIdempotencyKeysAsync(clientId));
+
             await panel.GetByLabel("Amount (UAH)", new() { Exact = true })
                 .FillAsync(amount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            await panel.GetByLabel("Event time", new() { Exact = true })
+                .FillAsync(defaultOccurredAtLocal);
             var comment = $"{viewportName} reception cash payment.";
             await panel.GetByLabel("Comment (optional)", new() { Exact = true })
                 .FillAsync(comment);
@@ -218,6 +240,15 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
             Assert.Equal(membershipId, payment.MembershipId);
             Assert.Equal(comment, payment.Comment);
             Assert.Equal("active", payment.Status);
+            Assert.Equal(
+                BodyLife.Crm.SharedKernel.BusinessTimeZone.ConvertLocalToUtc(
+                    DateTime.SpecifyKind(parsedDefaultOccurredAtLocal, DateTimeKind.Unspecified)),
+                payment.OccurredAt);
+            var renderedTimestamp = await paymentRow.Locator(".recent-payment-meta").InnerTextAsync();
+            Assert.DoesNotContain("UTC", renderedTimestamp, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("Kyiv", renderedTimestamp, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("EET", renderedTimestamp, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotMatch("[+-]\\d{2}:?\\d{2}", renderedTimestamp);
 
             if (membershipId is { } unchangedMembershipId)
             {

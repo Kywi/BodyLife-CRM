@@ -8,9 +8,9 @@ public static class ReceptionDisplayFormatter
 {
     public static string Date(DateOnly value) => value.ToString("d", CultureInfo.CurrentCulture);
     public static string DateTime(DateTimeOffset value) =>
-        string.Format(CultureInfo.CurrentCulture, "{0:g} UTC", value.UtcDateTime);
+        BusinessTimeZone.ConvertInstantToLocal(value).ToString("g", CultureInfo.CurrentCulture);
     public static string Time(DateTimeOffset value) =>
-        string.Format(CultureInfo.CurrentCulture, "{0:t} UTC", value.UtcDateTime);
+        BusinessTimeZone.ConvertInstantToLocal(value).ToString("t", CultureInfo.CurrentCulture);
     public static string Money(Money value) => string.Format(CultureInfo.CurrentCulture, "{0:N2} {1}", value.Amount, value.Currency);
     public static string Number(decimal value) => value.ToString("0.##", CultureInfo.CurrentCulture);
 }
