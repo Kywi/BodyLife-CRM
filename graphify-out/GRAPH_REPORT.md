@@ -1,241 +1,241 @@
 # Graph Report - .  (2026-07-22)
 
 ## Corpus Check
-- 235 files · ~604,217 words
+- 188 files · ~619,041 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 10651 nodes · 24866 edges · 778 communities (430 shown, 348 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 78 edges (avg confidence: 0.66)
+- 11629 nodes · 26316 edges · 903 communities (492 shown, 411 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 101 edges (avg confidence: 0.71)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Body Life Crm Modules Memberships|Body Life Crm Modules Memberships]]
-- [[_COMMUNITY_htmx 2 0 10 min|htmx 2 0 10 min]]
-- [[_COMMUNITY_Index Model|Index Model]]
+- [[_COMMUNITY_Memberships Components|Memberships Components]]
+- [[_COMMUNITY_Audit Entry Explanation|Audit Entry Explanation]]
+- [[_COMMUNITY_Shared Kernel|Shared Kernel]]
+- [[_COMMUNITY_HTMX Library|HTMX Library]]
+- [[_COMMUNITY_Nonworking Days|Nonworking Days]]
 - [[_COMMUNITY_Reception App Fixture|Reception App Fixture]]
-- [[_COMMUNITY_Body Life Crm Modules Non|Body Life Crm Modules Non]]
-- [[_COMMUNITY_Postgre Sql Smoke Database|Postgre Sql Smoke Database]]
-- [[_COMMUNITY_Postgre Sql Cancel Freeze Command|Postgre Sql Cancel Freeze Command]]
-- [[_COMMUNITY_Body Life Crm Infrastructure Tests|Body Life Crm Infrastructure Tests]]
-- [[_COMMUNITY_Postgre Sql Get Client Profile|Postgre Sql Get Client Profile]]
-- [[_COMMUNITY_Body Life Crm Application Commands|Body Life Crm Application Commands]]
-- [[_COMMUNITY_Body Life Auth Technical Logger|Body Life Auth Technical Logger]]
-- [[_COMMUNITY_Postgre Sql Get Daily Payment|Postgre Sql Get Daily Payment]]
-- [[_COMMUNITY_Body Life Crm Modules Payments|Body Life Crm Modules Payments]]
-- [[_COMMUNITY_Non Working Day Audit Explanation|Non Working Day Audit Explanation]]
-- [[_COMMUNITY_Body Life Crm Application Commands|Body Life Crm Application Commands]]
-- [[_COMMUNITY_Body Life Crm Modules Reports|Body Life Crm Modules Reports]]
-- [[_COMMUNITY_Body Life Crm Shared Kernel|Body Life Crm Shared Kernel]]
-- [[_COMMUNITY_Postgre Sql Visits Storage Tests|Postgre Sql Visits Storage Tests]]
-- [[_COMMUNITY_Postgre Sql Correct Non Working|Postgre Sql Correct Non Working]]
-- [[_COMMUNITY_Body Life Crm Modules Clients|Body Life Crm Modules Clients]]
-- [[_COMMUNITY_Postgre Sql Non Working Day|Postgre Sql Non Working Day]]
-- [[_COMMUNITY_Postgre Sql Issue Membership Command|Postgre Sql Issue Membership Command]]
-- [[_COMMUNITY_Postgre Sql Add Non Working|Postgre Sql Add Non Working]]
-- [[_COMMUNITY_Client Audit Explanation Factory|Client Audit Explanation Factory]]
-- [[_COMMUNITY_Postgre Sql Add Freeze Command|Postgre Sql Add Freeze Command]]
-- [[_COMMUNITY_Postgre Sql Get Mark Visit|Postgre Sql Get Mark Visit]]
-- [[_COMMUNITY_Postgre Sql Client Duplicate Candidate|Postgre Sql Client Duplicate Candidate]]
-- [[_COMMUNITY_Postgre Sql Get Client Membership|Postgre Sql Get Client Membership]]
-- [[_COMMUNITY_Postgre Sql Mark Visit Command|Postgre Sql Mark Visit Command]]
-- [[_COMMUNITY_Postgre Sql Get Audit Timeline|Postgre Sql Get Audit Timeline]]
-- [[_COMMUNITY_Correct Non Working Day Preparation|Correct Non Working Day Preparation]]
-- [[_COMMUNITY_Reception Dashboard Smoke Tests|Reception Dashboard Smoke Tests]]
-- [[_COMMUNITY_Audit Entry Explanation View Model|Audit Entry Explanation View Model]]
-- [[_COMMUNITY_Postgre Sql Create Payment Command|Postgre Sql Create Payment Command]]
-- [[_COMMUNITY_Visit Command Support|Visit Command Support]]
-- [[_COMMUNITY_Freeze Command Support|Freeze Command Support]]
-- [[_COMMUNITY_Body Life Crm Infrastructure csproj|Body Life Crm Infrastructure csproj]]
-- [[_COMMUNITY_Postgre Sql Create Membership Opening|Postgre Sql Create Membership Opening]]
-- [[_COMMUNITY_Gym System Interview|Gym System Interview]]
-- [[_COMMUNITY_Non Working Day Command Support|Non Working Day Command Support]]
-- [[_COMMUNITY_Audit Entry Explanation View Model|Audit Entry Explanation View Model]]
-- [[_COMMUNITY_Client History Row View Model|Client History Row View Model]]
-- [[_COMMUNITY_Membership Calculated State|Membership Calculated State]]
-- [[_COMMUNITY_Request Correlation Middleware|Request Correlation Middleware]]
-- [[_COMMUNITY_Rebuildable Membership Derived State|Rebuildable Membership Derived State]]
-- [[_COMMUNITY_Get Client Audit Entries Result|Get Client Audit Entries Result]]
-- [[_COMMUNITY_Command Envelope|Command Envelope]]
-- [[_COMMUNITY_Entry Components|Entry Components]]
-- [[_COMMUNITY_Payment Command Support|Payment Command Support]]
-- [[_COMMUNITY_Postgre Sql Create Membership Type|Postgre Sql Create Membership Type]]
-- [[_COMMUNITY_Postgre Sql Correct Non Working|Postgre Sql Correct Non Working]]
-- [[_COMMUNITY_Body Life Crm Modules|Body Life Crm Modules]]
-- [[_COMMUNITY_Command Result|Command Result]]
-- [[_COMMUNITY_Membership Command Support|Membership Command Support]]
-- [[_COMMUNITY_Non Working Day Preview Input|Non Working Day Preview Input]]
-- [[_COMMUNITY_Non Working Day Preview Smoke|Non Working Day Preview Smoke]]
-- [[_COMMUNITY_Postgre Sql Non Working Days|Postgre Sql Non Working Days]]
-- [[_COMMUNITY_Postgre Sql Get Client Payment|Postgre Sql Get Client Payment]]
-- [[_COMMUNITY_Postgre Sql Generate Daily Report|Postgre Sql Generate Daily Report]]
-- [[_COMMUNITY_Client Audit Entry|Client Audit Entry]]
-- [[_COMMUNITY_Audit Timeline Smoke Tests|Audit Timeline Smoke Tests]]
-- [[_COMMUNITY_Postgre Sql Preview Issue Membership|Postgre Sql Preview Issue Membership]]
-- [[_COMMUNITY_Postgre Sql Create Client Command|Postgre Sql Create Client Command]]
-- [[_COMMUNITY_Body Life Crm Infrastructure Persistence|Body Life Crm Infrastructure Persistence]]
-- [[_COMMUNITY_Postgre Sql Freezes Storage Tests|Postgre Sql Freezes Storage Tests]]
-- [[_COMMUNITY_Postgre Sql Correct Payment Command|Postgre Sql Correct Payment Command]]
-- [[_COMMUNITY_Postgre Sql Payments Storage Tests|Postgre Sql Payments Storage Tests]]
-- [[_COMMUNITY_Non Working Day Correction Workspace|Non Working Day Correction Workspace]]
-- [[_COMMUNITY_Account Kind|Account Kind]]
-- [[_COMMUNITY_Actor Role|Actor Role]]
-- [[_COMMUNITY_Postgre Sql Get Membership State|Postgre Sql Get Membership State]]
-- [[_COMMUNITY_Mark Visit Smoke Tests|Mark Visit Smoke Tests]]
-- [[_COMMUNITY_Body Life Codex Orchestrator Skill|Body Life Codex Orchestrator Skill]]
-- [[_COMMUNITY_Get Client History Query Handler|Get Client History Query Handler]]
-- [[_COMMUNITY_Postgre Sql Membership Opening States|Postgre Sql Membership Opening States]]
-- [[_COMMUNITY_Time Provider|Time Provider]]
-- [[_COMMUNITY_Postgre Sql Membership Adjustments Storage|Postgre Sql Membership Adjustments Storage]]
-- [[_COMMUNITY_Get Client Non Working Day|Get Client Non Working Day]]
-- [[_COMMUNITY_Get Client Freeze History Source|Get Client Freeze History Source]]
-- [[_COMMUNITY_Postgre Sql Test Database|Postgre Sql Test Database]]
-- [[_COMMUNITY_Postgre Sql Staff Account Audit|Postgre Sql Staff Account Audit]]
-- [[_COMMUNITY_Membership Visit Freeze Source|Membership Visit Freeze Source]]
-- [[_COMMUNITY_Non Working Day Correction Source|Non Working Day Correction Source]]
+- [[_COMMUNITY_Smoke Database|Smoke Database]]
+- [[_COMMUNITY_Application Commands|Application Commands]]
+- [[_COMMUNITY_Infrastructure Persistence|Infrastructure Persistence]]
+- [[_COMMUNITY_Nonworking Day Module|Nonworking Day Module]]
+- [[_COMMUNITY_Client Search|Client Search]]
+- [[_COMMUNITY_Visits Storage|Visits Storage]]
+- [[_COMMUNITY_Nonworking Day Audit|Nonworking Day Audit]]
+- [[_COMMUNITY_Application Modules|Application Modules]]
+- [[_COMMUNITY_Auth Technical Logging|Auth Technical Logging]]
+- [[_COMMUNITY_Client Search|Client Search]]
+- [[_COMMUNITY_Client History Rows|Client History Rows]]
+- [[_COMMUNITY_Membership Cache Rebuild|Membership Cache Rebuild]]
+- [[_COMMUNITY_Correct Nonworking Day|Correct Nonworking Day]]
+- [[_COMMUNITY_Cancel Freeze|Cancel Freeze]]
+- [[_COMMUNITY_Client Profile Query|Client Profile Query]]
+- [[_COMMUNITY_Client Commands|Client Commands]]
+- [[_COMMUNITY_Client History Query|Client History Query]]
+- [[_COMMUNITY_Issue Membership|Issue Membership]]
+- [[_COMMUNITY_Nonworking Day Scope|Nonworking Day Scope]]
+- [[_COMMUNITY_Client History Rows|Client History Rows]]
+- [[_COMMUNITY_Client Audit Explanations|Client Audit Explanations]]
+- [[_COMMUNITY_Correct Payment|Correct Payment]]
 - [[_COMMUNITY_Membership Issue Preview|Membership Issue Preview]]
-- [[_COMMUNITY_Postgre Sql Membership Extension Days|Postgre Sql Membership Extension Days]]
-- [[_COMMUNITY_Get Client Membership History Source|Get Client Membership History Source]]
-- [[_COMMUNITY_Correct Payment Command Support|Correct Payment Command Support]]
-- [[_COMMUNITY_Membership Types Model|Membership Types Model]]
-- [[_COMMUNITY_Non Working Days Model|Non Working Days Model]]
-- [[_COMMUNITY_Postgre Sql Assign Or Change|Postgre Sql Assign Or Change]]
-- [[_COMMUNITY_Get Client Visit History Source|Get Client Visit History Source]]
-- [[_COMMUNITY_Create Freeze Addition|Create Freeze Addition]]
-- [[_COMMUNITY_Postgre Sql Deactivate Membership Type|Postgre Sql Deactivate Membership Type]]
-- [[_COMMUNITY_Postgre Sql Edit Membership Type|Postgre Sql Edit Membership Type]]
-- [[_COMMUNITY_Membership Dependency Inspector|Membership Dependency Inspector]]
-- [[_COMMUNITY_Client Membership State Timeline Item|Client Membership State Timeline Item]]
-- [[_COMMUNITY_3 Pros cons risks|3 Pros cons risks]]
-- [[_COMMUNITY_Postgre Sql List Ending Soon|Postgre Sql List Ending Soon]]
-- [[_COMMUNITY_Body Life Auth Technical Logger|Body Life Auth Technical Logger]]
-- [[_COMMUNITY_Postgre Sql List Negative Clients|Postgre Sql List Negative Clients]]
-- [[_COMMUNITY_Correct Non Working Day Preparation|Correct Non Working Day Preparation]]
-- [[_COMMUNITY_Staff Account Lifecycle Result|Staff Account Lifecycle Result]]
-- [[_COMMUNITY_Postgre Sql Membership Extension Day|Postgre Sql Membership Extension Day]]
-- [[_COMMUNITY_Postgre Sql Staff Credentials Tests|Postgre Sql Staff Credentials Tests]]
-- [[_COMMUNITY_Postgre Sql Update Client Command|Postgre Sql Update Client Command]]
-- [[_COMMUNITY_Issue Membership Smoke Tests|Issue Membership Smoke Tests]]
-- [[_COMMUNITY_Postgre Sql Non Working Day|Postgre Sql Non Working Day]]
-- [[_COMMUNITY_Body Life Db Context|Body Life Db Context]]
-- [[_COMMUNITY_Postgre Sql Non Working Day|Postgre Sql Non Working Day]]
-- [[_COMMUNITY_Postgre Sql List Inactive Clients|Postgre Sql List Inactive Clients]]
-- [[_COMMUNITY_Postgre Sql Get Client Non|Postgre Sql Get Client Non]]
-- [[_COMMUNITY_Business Audit Matrix Tests|Business Audit Matrix Tests]]
-- [[_COMMUNITY_Issue Membership Command Support|Issue Membership Command Support]]
-- [[_COMMUNITY_Client Non Working Day History|Client Non Working Day History]]
-- [[_COMMUNITY_Cancel Freeze Smoke Tests|Cancel Freeze Smoke Tests]]
-- [[_COMMUNITY_Reception App Fixture|Reception App Fixture]]
-- [[_COMMUNITY_Postgre Sql Get Client Freeze|Postgre Sql Get Client Freeze]]
-- [[_COMMUNITY_Postgre Sql Issued Memberships Storage|Postgre Sql Issued Memberships Storage]]
-- [[_COMMUNITY_Membership Visit Eligibility|Membership Visit Eligibility]]
-- [[_COMMUNITY_Timeline Model|Timeline Model]]
-- [[_COMMUNITY_Postgre Sql Smoke Database|Postgre Sql Smoke Database]]
-- [[_COMMUNITY_Postgre Sql Get Daily Visit|Postgre Sql Get Daily Visit]]
-- [[_COMMUNITY_Postgre Sql Membership State Persistence|Postgre Sql Membership State Persistence]]
-- [[_COMMUNITY_Postgre Sql Membership State Cache|Postgre Sql Membership State Cache]]
-- [[_COMMUNITY_Membership Extension Calculation|Membership Extension Calculation]]
-- [[_COMMUNITY_Membership Non Working Day Impact|Membership Non Working Day Impact]]
-- [[_COMMUNITY_Execute Async|Execute Async]]
-- [[_COMMUNITY_Add Freeze Smoke Tests|Add Freeze Smoke Tests]]
-- [[_COMMUNITY_Correct Payment Smoke Tests|Correct Payment Smoke Tests]]
-- [[_COMMUNITY_Audit Timeline Entry|Audit Timeline Entry]]
-- [[_COMMUNITY_Postgre Sql Get Client Visit|Postgre Sql Get Client Visit]]
-- [[_COMMUNITY_Postgre Sql Get Client Membership|Postgre Sql Get Client Membership]]
-- [[_COMMUNITY_Postgre Sql List Low Remaining|Postgre Sql List Low Remaining]]
-- [[_COMMUNITY_Freeze Cancellation Source|Freeze Cancellation Source]]
-- [[_COMMUNITY_List Ending Soon Memberships Result|List Ending Soon Memberships Result]]
-- [[_COMMUNITY_Postgre Sql Get Client Visit|Postgre Sql Get Client Visit]]
-- [[_COMMUNITY_Visit Query Support|Visit Query Support]]
-- [[_COMMUNITY_What You Must Do When|What You Must Do When]]
-- [[_COMMUNITY_Membership Visit Source Fact|Membership Visit Source Fact]]
-- [[_COMMUNITY_Correct Non Working Day Command|Correct Non Working Day Command]]
-- [[_COMMUNITY_Postgre Sql Clients Search Storage|Postgre Sql Clients Search Storage]]
-- [[_COMMUNITY_Postgre Sql Staff Account Lifecycle|Postgre Sql Staff Account Lifecycle]]
-- [[_COMMUNITY_Non Working Day Correction Token|Non Working Day Correction Token]]
-- [[_COMMUNITY_Mark Visit Command Contracts Tests|Mark Visit Command Contracts Tests]]
-- [[_COMMUNITY_Add Payment Smoke Tests|Add Payment Smoke Tests]]
-- [[_COMMUNITY_Body Life CRM UI design|Body Life CRM UI design]]
-- [[_COMMUNITY_Membership Freeze Eligibility Preparation Result|Membership Freeze Eligibility Preparation Result]]
-- [[_COMMUNITY_IVisit Day Reconciliation Status Provider|IVisit Day Reconciliation Status Provider]]
-- [[_COMMUNITY_Client History Source Row|Client History Source Row]]
-- [[_COMMUNITY_Non Working Day History Period|Non Working Day History Period]]
-- [[_COMMUNITY_Non Working Day Preview Token|Non Working Day Preview Token]]
-- [[_COMMUNITY_Client Membership States Query Contracts|Client Membership States Query Contracts]]
-- [[_COMMUNITY_Issue Membership Command Contracts Tests|Issue Membership Command Contracts Tests]]
-- [[_COMMUNITY_Membership Issue Preview Contracts Tests|Membership Issue Preview Contracts Tests]]
-- [[_COMMUNITY_Client History Smoke Tests|Client History Smoke Tests]]
-- [[_COMMUNITY_Correction Record Navigation Smoke Tests|Correction Record Navigation Smoke Tests]]
-- [[_COMMUNITY_Get Non Working Day Correction|Get Non Working Day Correction]]
-- [[_COMMUNITY_Issue Membership Command Handler|Issue Membership Command Handler]]
-- [[_COMMUNITY_Assign Or Change Card Command|Assign Or Change Card Command]]
-- [[_COMMUNITY_Non Working Day Correction Confirmation|Non Working Day Correction Confirmation]]
-- [[_COMMUNITY_List Inactive Clients Result|List Inactive Clients Result]]
-- [[_COMMUNITY_Set Staff Credentials Async|Set Staff Credentials Async]]
-- [[_COMMUNITY_Visit Cancellation Source|Visit Cancellation Source]]
-- [[_COMMUNITY_Client Profile|Client Profile]]
-- [[_COMMUNITY_Daily Report Smoke Tests|Daily Report Smoke Tests]]
+- [[_COMMUNITY_Opening State Creation|Opening State Creation]]
+- [[_COMMUNITY_Payment Correction|Payment Correction]]
+- [[_COMMUNITY_Add Freeze|Add Freeze]]
+- [[_COMMUNITY_Client Membership States|Client Membership States]]
+- [[_COMMUNITY_Membership Extension Explanations|Membership Extension Explanations]]
+- [[_COMMUNITY_Create Payment|Create Payment]]
+- [[_COMMUNITY_Audit Explanations|Audit Explanations]]
+- [[_COMMUNITY_Membership Type Commands|Membership Type Commands]]
+- [[_COMMUNITY_Create Client|Create Client]]
+- [[_COMMUNITY_Inactive Clients|Inactive Clients]]
+- [[_COMMUNITY_Nonworking Day Commands|Nonworking Day Commands]]
+- [[_COMMUNITY_Mark Visit|Mark Visit]]
+- [[_COMMUNITY_Auth Technical Logging|Auth Technical Logging]]
+- [[_COMMUNITY_Project Infrastructure|Project Infrastructure]]
+- [[_COMMUNITY_Daily Payment Query|Daily Payment Query]]
+- [[_COMMUNITY_Audit Timeline|Audit Timeline]]
+- [[_COMMUNITY_Client Payment Rows|Client Payment Rows]]
+- [[_COMMUNITY_Freeze Persistence|Freeze Persistence]]
+- [[_COMMUNITY_Correlation Middleware|Correlation Middleware]]
+- [[_COMMUNITY_Payment Commands|Payment Commands]]
+- [[_COMMUNITY_Calculated Membership State|Calculated Membership State]]
+- [[_COMMUNITY_Daily Visit Query|Daily Visit Query]]
+- [[_COMMUNITY_Index Page|Index Page]]
+- [[_COMMUNITY_Visit Commands|Visit Commands]]
+- [[_COMMUNITY_Audit Presentation|Audit Presentation]]
+- [[_COMMUNITY_Add Nonworking Day|Add Nonworking Day]]
+- [[_COMMUNITY_Nonworking Day Preview|Nonworking Day Preview]]
+- [[_COMMUNITY_Daily Report Generation|Daily Report Generation]]
+- [[_COMMUNITY_Mark Visit Options|Mark Visit Options]]
+- [[_COMMUNITY_Membership Commands|Membership Commands]]
+- [[_COMMUNITY_Nonworking Day Preview|Nonworking Day Preview]]
+- [[_COMMUNITY_Module Registration|Module Registration]]
+- [[_COMMUNITY_Client Freeze History|Client Freeze History]]
+- [[_COMMUNITY_Create Membership Type|Create Membership Type]]
+- [[_COMMUNITY_Nonworking Day Storage|Nonworking Day Storage]]
+- [[_COMMUNITY_Client Nonworking History|Client Nonworking History]]
+- [[_COMMUNITY_Database Context|Database Context]]
+- [[_COMMUNITY_Payment Storage|Payment Storage]]
+- [[_COMMUNITY_Reception Dashboard|Reception Dashboard]]
+- [[_COMMUNITY_Correct Nonworking Day|Correct Nonworking Day]]
+- [[_COMMUNITY_Membership Type Catalog|Membership Type Catalog]]
+- [[_COMMUNITY_Account Roles|Account Roles]]
+- [[_COMMUNITY_Visit Cancellation|Visit Cancellation]]
+- [[_COMMUNITY_Membership State Query|Membership State Query]]
+- [[_COMMUNITY_Mark Visit UI|Mark Visit UI]]
+- [[_COMMUNITY_Freeze Storage|Freeze Storage]]
+- [[_COMMUNITY_Audit Entry Explanations|Audit Entry Explanations]]
+- [[_COMMUNITY_Opening State Storage|Opening State Storage]]
+- [[_COMMUNITY_Reception Test Fixture|Reception Test Fixture]]
+- [[_COMMUNITY_Membership Adjustments|Membership Adjustments]]
+- [[_COMMUNITY_Membership History Query|Membership History Query]]
+- [[_COMMUNITY_Staff Account Audit|Staff Account Audit]]
+- [[_COMMUNITY_State Persistence Coordinator|State Persistence Coordinator]]
+- [[_COMMUNITY_Update Client|Update Client]]
+- [[_COMMUNITY_Actor Context|Actor Context]]
+- [[_COMMUNITY_Extension Day Storage|Extension Day Storage]]
+- [[_COMMUNITY_Smoke Database Helpers|Smoke Database Helpers]]
 - [[_COMMUNITY_Payment Query Support|Payment Query Support]]
-- [[_COMMUNITY_Get Client Payment History Source|Get Client Payment History Source]]
-- [[_COMMUNITY_ADR Components|ADR Components]]
-- [[_COMMUNITY_Hmac Non Working Day Token|Hmac Non Working Day Token]]
-- [[_COMMUNITY_Membership Type Record|Membership Type Record]]
-- [[_COMMUNITY_Page Model|Page Model]]
-- [[_COMMUNITY_Postgre Sql Get Client Payment|Postgre Sql Get Client Payment]]
-- [[_COMMUNITY_Client Audit Entity Filter|Client Audit Entity Filter]]
-- [[_COMMUNITY_Postgre Sql Search Clients Query|Postgre Sql Search Clients Query]]
-- [[_COMMUNITY_Membership Type Editing Smoke Tests|Membership Type Editing Smoke Tests]]
-- [[_COMMUNITY_ADR backlog Body Life CRM|ADR backlog Body Life CRM]]
-- [[_COMMUNITY_Postgre Sql Get Client Membership|Postgre Sql Get Client Membership]]
-- [[_COMMUNITY_IBody Life Query|IBody Life Query]]
-- [[_COMMUNITY_Query Permission Set|Query Permission Set]]
+- [[_COMMUNITY_Client Audit Entries|Client Audit Entries]]
+- [[_COMMUNITY_Membership Type Module|Membership Type Module]]
+- [[_COMMUNITY_Visit History Query|Visit History Query]]
+- [[_COMMUNITY_Card Assignment|Card Assignment]]
+- [[_COMMUNITY_Membership Issue Support|Membership Issue Support]]
+- [[_COMMUNITY_Membership Nonworking Policy|Membership Nonworking Policy]]
+- [[_COMMUNITY_Deactivate Membership Type|Deactivate Membership Type]]
+- [[_COMMUNITY_Edit Membership Type|Edit Membership Type]]
+- [[_COMMUNITY_Staff Audit Explanations|Staff Audit Explanations]]
+- [[_COMMUNITY_Membership Dependency Inspector|Membership Dependency Inspector]]
+- [[_COMMUNITY_Membership State Timeline|Membership State Timeline]]
+- [[_COMMUNITY_Business Time Localization|Business Time Localization]]
+- [[_COMMUNITY_Technology Stack Decision|Technology Stack Decision]]
+- [[_COMMUNITY_Ending Soon Memberships|Ending Soon Memberships]]
+- [[_COMMUNITY_Negative Clients|Negative Clients]]
+- [[_COMMUNITY_Visit Freeze Source|Visit Freeze Source]]
+- [[_COMMUNITY_Nonworking Day Correction|Nonworking Day Correction]]
+- [[_COMMUNITY_Time Provider|Time Provider]]
+- [[_COMMUNITY_Staff Credentials|Staff Credentials]]
+- [[_COMMUNITY_Cancel Freeze UI|Cancel Freeze UI]]
+- [[_COMMUNITY_Issue Membership UI|Issue Membership UI]]
+- [[_COMMUNITY_Localization Smoke Tests|Localization Smoke Tests]]
+- [[_COMMUNITY_Nonworking Day Recalculation|Nonworking Day Recalculation]]
+- [[_COMMUNITY_Search Page Helpers|Search Page Helpers]]
+- [[_COMMUNITY_Correction Workspace Tests|Correction Workspace Tests]]
+- [[_COMMUNITY_Nonworking Extension Sources|Nonworking Extension Sources]]
+- [[_COMMUNITY_Membership Impact Preparation|Membership Impact Preparation]]
+- [[_COMMUNITY_Add Freeze UI|Add Freeze UI]]
+- [[_COMMUNITY_Localization Contracts|Localization Contracts]]
+- [[_COMMUNITY_Issued Membership Storage|Issued Membership Storage]]
+- [[_COMMUNITY_Visit Eligibility|Visit Eligibility]]
+- [[_COMMUNITY_Client Nonworking History|Client Nonworking History]]
+- [[_COMMUNITY_Membership Report States|Membership Report States]]
+- [[_COMMUNITY_Correction Confirmation Tokens|Correction Confirmation Tokens]]
+- [[_COMMUNITY_Owner Credential Bootstrap|Owner Credential Bootstrap]]
+- [[_COMMUNITY_Correct Payment UI|Correct Payment UI]]
+- [[_COMMUNITY_Client Payment History|Client Payment History]]
+- [[_COMMUNITY_Staff Accounts UI|Staff Accounts UI]]
+- [[_COMMUNITY_Staff Account Lifecycle|Staff Account Lifecycle]]
+- [[_COMMUNITY_Freeze Cancellation Source|Freeze Cancellation Source]]
+- [[_COMMUNITY_Nonworking Correction Source|Nonworking Correction Source]]
+- [[_COMMUNITY_Ending Soon Query|Ending Soon Query]]
+- [[_COMMUNITY_Staff Lifecycle Service|Staff Lifecycle Service]]
+- [[_COMMUNITY_Client Visit History Tests|Client Visit History Tests]]
+- [[_COMMUNITY_Client Freeze History Query|Client Freeze History Query]]
+- [[_COMMUNITY_Visit Query Support|Visit Query Support]]
+- [[_COMMUNITY_Graphify Instructions|Graphify Instructions]]
+- [[_COMMUNITY_Operations Readiness|Operations Readiness]]
+- [[_COMMUNITY_Client Nonworking History|Client Nonworking History]]
+- [[_COMMUNITY_Nonworking Correction Commands|Nonworking Correction Commands]]
+- [[_COMMUNITY_Freeze History Contracts|Freeze History Contracts]]
+- [[_COMMUNITY_Membership Cache Storage|Membership Cache Storage]]
+- [[_COMMUNITY_Correction Token Service|Correction Token Service]]
+- [[_COMMUNITY_Mark Visit Contracts|Mark Visit Contracts]]
+- [[_COMMUNITY_Add Payment UI|Add Payment UI]]
+- [[_COMMUNITY_Cancel Visit|Cancel Visit]]
+- [[_COMMUNITY_Client Audit Query|Client Audit Query]]
+- [[_COMMUNITY_Audit Query Contracts|Audit Query Contracts]]
+- [[_COMMUNITY_UI Design Foundation|UI Design Foundation]]
+- [[_COMMUNITY_Membership History Tests|Membership History Tests]]
+- [[_COMMUNITY_Membership Cache Rebuilder|Membership Cache Rebuilder]]
+- [[_COMMUNITY_Low Remaining Memberships|Low Remaining Memberships]]
+- [[_COMMUNITY_Mark Visit Forms|Mark Visit Forms]]
+- [[_COMMUNITY_Freeze Form Input|Freeze Form Input]]
+- [[_COMMUNITY_Extension Day Writer|Extension Day Writer]]
+- [[_COMMUNITY_Preview Token Service|Preview Token Service]]
+- [[_COMMUNITY_Client Membership Contracts|Client Membership Contracts]]
+- [[_COMMUNITY_Issue Membership Contracts|Issue Membership Contracts]]
+- [[_COMMUNITY_Issue Preview Contracts|Issue Preview Contracts]]
+- [[_COMMUNITY_Client History UI|Client History UI]]
+- [[_COMMUNITY_Correction Navigation|Correction Navigation]]
+- [[_COMMUNITY_Command Contracts|Command Contracts]]
+- [[_COMMUNITY_Audit Timeline Query|Audit Timeline Query]]
+- [[_COMMUNITY_Cancel Freeze Command|Cancel Freeze Command]]
+- [[_COMMUNITY_Issued Membership Domain|Issued Membership Domain]]
+- [[_COMMUNITY_Mark Visit Command|Mark Visit Command]]
+- [[_COMMUNITY_Freeze Command Support|Freeze Command Support]]
+- [[_COMMUNITY_Staff Credential Service|Staff Credential Service]]
+- [[_COMMUNITY_Nonworking Day History|Nonworking Day History]]
+- [[_COMMUNITY_Payment History Query|Payment History Query]]
+- [[_COMMUNITY_Visit Rows Query|Visit Rows Query]]
+- [[_COMMUNITY_Implementation Roadmap|Implementation Roadmap]]
+- [[_COMMUNITY_Issue Membership Handler|Issue Membership Handler]]
+- [[_COMMUNITY_Issue Membership Form|Issue Membership Form]]
+- [[_COMMUNITY_Client Audit Filters|Client Audit Filters]]
+- [[_COMMUNITY_Client Search Storage|Client Search Storage]]
+- [[_COMMUNITY_Search Clients Query|Search Clients Query]]
+- [[_COMMUNITY_Daily Report UI|Daily Report UI]]
+- [[_COMMUNITY_Membership Type Editing UI|Membership Type Editing UI]]
+- [[_COMMUNITY_Audit Timeline Query|Audit Timeline Query]]
+- [[_COMMUNITY_Payment Correction Form|Payment Correction Form]]
+- [[_COMMUNITY_ADR Backlog|ADR Backlog]]
+- [[_COMMUNITY_Permission Queries|Permission Queries]]
+- [[_COMMUNITY_Membership Extension Sources|Membership Extension Sources]]
 - [[_COMMUNITY_Membership State Read Model|Membership State Read Model]]
-- [[_COMMUNITY_Cancel Visit Command Handler|Cancel Visit Command Handler]]
-- [[_COMMUNITY_Mark Visit Command Handler|Mark Visit Command Handler]]
-- [[_COMMUNITY_Generate Daily Report Contracts Tests|Generate Daily Report Contracts Tests]]
-- [[_COMMUNITY_Cancel Visit Command Contracts Tests|Cancel Visit Command Contracts Tests]]
-- [[_COMMUNITY_Membership Type Deactivation Smoke Tests|Membership Type Deactivation Smoke Tests]]
+- [[_COMMUNITY_Nonworking Day Tokens|Nonworking Day Tokens]]
+- [[_COMMUNITY_Membership Visit Facts|Membership Visit Facts]]
+- [[_COMMUNITY_Nonworking Correction Contracts|Nonworking Correction Contracts]]
+- [[_COMMUNITY_Reports Presentation|Reports Presentation]]
+- [[_COMMUNITY_Correction Preparation Policy|Correction Preparation Policy]]
+- [[_COMMUNITY_Daily Report Contracts|Daily Report Contracts]]
+- [[_COMMUNITY_Inactive Client Contracts|Inactive Client Contracts]]
+- [[_COMMUNITY_Cancel Visit Contracts|Cancel Visit Contracts]]
+- [[_COMMUNITY_Membership Type Deactivation UI|Membership Type Deactivation UI]]
+- [[_COMMUNITY_Accepted ADR Package|Accepted ADR Package]]
 - [[_COMMUNITY_Write Lease|Write Lease]]
-- [[_COMMUNITY_Body Life Authorization Extensions|Body Life Authorization Extensions]]
-- [[_COMMUNITY_Body Life Authorization Policy Tests|Body Life Authorization Policy Tests]]
-- [[_COMMUNITY_IBody Life Query Handler|IBody Life Query Handler]]
-- [[_COMMUNITY_IClass Fixture|IClass Fixture]]
-- [[_COMMUNITY_Cancel Freeze Command Handler|Cancel Freeze Command Handler]]
-- [[_COMMUNITY_Membership Extension Source Range|Membership Extension Source Range]]
-- [[_COMMUNITY_Get Client Membership Extension Explanations|Get Client Membership Extension Explanations]]
-- [[_COMMUNITY_Correct Non Working Day Source|Correct Non Working Day Source]]
-- [[_COMMUNITY_Daily Report Snapshot|Daily Report Snapshot]]
-- [[_COMMUNITY_Seed Issued Membership Async|Seed Issued Membership Async]]
-- [[_COMMUNITY_Membership Non Working Day Application|Membership Non Working Day Application]]
-- [[_COMMUNITY_Membership Opening State Tests|Membership Opening State Tests]]
-- [[_COMMUNITY_Membership State Query Contracts Tests|Membership State Query Contracts Tests]]
-- [[_COMMUNITY_List Inactive Clients Contracts Tests|List Inactive Clients Contracts Tests]]
-- [[_COMMUNITY_IBody Life Command Handler|IBody Life Command Handler]]
-- [[_COMMUNITY_Membership State Cache Rebuilder|Membership State Cache Rebuilder]]
-- [[_COMMUNITY_Client Payment History Source Row|Client Payment History Source Row]]
-- [[_COMMUNITY_Get Daily Visit Source Rows|Get Daily Visit Source Rows]]
-- [[_COMMUNITY_Membership Freeze Eligibility Policy Tests|Membership Freeze Eligibility Policy Tests]]
-- [[_COMMUNITY_Ending Soon Report Smoke Tests|Ending Soon Report Smoke Tests]]
-- [[_COMMUNITY_Inactive Clients Report Smoke Tests|Inactive Clients Report Smoke Tests]]
-- [[_COMMUNITY_Low Remaining Report Smoke Tests|Low Remaining Report Smoke Tests]]
-- [[_COMMUNITY_Membership Type Catalog Smoke Tests|Membership Type Catalog Smoke Tests]]
-- [[_COMMUNITY_Membership Type Creation Smoke Tests|Membership Type Creation Smoke Tests]]
-- [[_COMMUNITY_Negative Clients Report Smoke Tests|Negative Clients Report Smoke Tests]]
-- [[_COMMUNITY_Body Life Crm Infrastructure Persistence|Body Life Crm Infrastructure Persistence]]
-- [[_COMMUNITY_Body Life CRM|Body Life CRM]]
-- [[_COMMUNITY_IEntity Type Configuration|IEntity Type Configuration]]
-- [[_COMMUNITY_Membership Adjustment Calculation Tests|Membership Adjustment Calculation Tests]]
-- [[_COMMUNITY_Non Working Day Impact Membership|Non Working Day Impact Membership]]
-- [[_COMMUNITY_Execute Async|Execute Async]]
-- [[_COMMUNITY_Execute Async|Execute Async]]
-- [[_COMMUNITY_Get Client Visit Rows Result|Get Client Visit Rows Result]]
-- [[_COMMUNITY_Correct Payment Command Contracts Tests|Correct Payment Command Contracts Tests]]
-- [[_COMMUNITY_Non Working Day Preview Workspace|Non Working Day Preview Workspace]]
-- [[_COMMUNITY_Postgre Sql Membership Types Storage|Postgre Sql Membership Types Storage]]
-- [[_COMMUNITY_Membership State Extension Calculation Tests|Membership State Extension Calculation Tests]]
-- [[_COMMUNITY_Issue Reason Correction Preview Async|Issue Reason Correction Preview Async]]
-- [[_COMMUNITY_Create Rebuilder|Create Rebuilder]]
-- [[_COMMUNITY_Get Client Membership Report States|Get Client Membership Report States]]
+- [[_COMMUNITY_Authorization Extensions|Authorization Extensions]]
+- [[_COMMUNITY_Authorization Policies|Authorization Policies]]
+- [[_COMMUNITY_Membership Catalog Tests|Membership Catalog Tests]]
+- [[_COMMUNITY_Client Form Input|Client Form Input]]
+- [[_COMMUNITY_Low Remaining Query|Low Remaining Query]]
+- [[_COMMUNITY_Payment Reconciliation Status|Payment Reconciliation Status]]
+- [[_COMMUNITY_Visit Reconciliation Status|Visit Reconciliation Status]]
+- [[_COMMUNITY_Opening State Rules|Opening State Rules]]
+- [[_COMMUNITY_Membership State Contracts|Membership State Contracts]]
+- [[_COMMUNITY_Ending Soon Report|Ending Soon Report]]
+- [[_COMMUNITY_Audit Timeline UI|Audit Timeline UI]]
+- [[_COMMUNITY_UI Smoke Tests|UI Smoke Tests]]
+- [[_COMMUNITY_Page Models|Page Models]]
+- [[_COMMUNITY_Gym System Requirements|Gym System Requirements]]
+- [[_COMMUNITY_Active Nonworking Days|Active Nonworking Days]]
+- [[_COMMUNITY_Search Clients Query|Search Clients Query]]
+- [[_COMMUNITY_Extension Calculation|Extension Calculation]]
+- [[_COMMUNITY_Eligibility Preparation|Eligibility Preparation]]
+- [[_COMMUNITY_Nonworking Replacement Impact|Nonworking Replacement Impact]]
+- [[_COMMUNITY_Audit Snapshot Explanations|Audit Snapshot Explanations]]
+- [[_COMMUNITY_Freeze Eligibility Policy|Freeze Eligibility Policy]]
+- [[_COMMUNITY_Inactive Clients Report|Inactive Clients Report]]
+- [[_COMMUNITY_Low Remaining Report|Low Remaining Report]]
+- [[_COMMUNITY_Negative Clients Report|Negative Clients Report]]
+- [[_COMMUNITY_Staff Account Management|Staff Account Management]]
+- [[_COMMUNITY_Database Migrations|Database Migrations]]
+- [[_COMMUNITY_Architecture Research|Architecture Research]]
+- [[_COMMUNITY_Nonworking Day Impact Preview|Nonworking Day Impact Preview]]
+- [[_COMMUNITY_Ending Soon State Query|Ending Soon State Query]]
+- [[_COMMUNITY_Negative Membership Query|Negative Membership Query]]
+- [[_COMMUNITY_Membership Type Storage|Membership Type Storage]]
+- [[_COMMUNITY_Extension Calculation Tests|Extension Calculation Tests]]
+- [[_COMMUNITY_Membership Type Creation|Membership Type Creation]]
 - [[_COMMUNITY_Get Low Remaining Membership State|Get Low Remaining Membership State]]
 - [[_COMMUNITY_Get Negative Membership State Rows|Get Negative Membership State Rows]]
 - [[_COMMUNITY_Membership Non Working Day Replacement|Membership Non Working Day Replacement]]
@@ -267,8 +267,8 @@
 - [[_COMMUNITY_List Low Remaining Memberships Contracts|List Low Remaining Memberships Contracts]]
 - [[_COMMUNITY_Preview Correct Non Working Day|Preview Correct Non Working Day]]
 - [[_COMMUNITY_5 Components|5 Components]]
-- [[_COMMUNITY_Login and session tracking|Login and session tracking]]
-- [[_COMMUNITY_IBody Life Command Handler|IBody Life Command Handler]]
+- [[_COMMUNITY_Login And Session Tracking|Login And Session Tracking]]
+- [[_COMMUNITY_I Body Life Command Handler|I Body Life Command Handler]]
 - [[_COMMUNITY_Membership Non Working Day Extension|Membership Non Working Day Extension]]
 - [[_COMMUNITY_Command Error Code|Command Error Code]]
 - [[_COMMUNITY_Add Freeze Command Handler|Add Freeze Command Handler]]
@@ -280,7 +280,7 @@
 - [[_COMMUNITY_Membership Visit Eligibility Policy Tests|Membership Visit Eligibility Policy Tests]]
 - [[_COMMUNITY_List Ending Soon Memberships Contracts|List Ending Soon Memberships Contracts]]
 - [[_COMMUNITY_Add Freeze Form View Model|Add Freeze Form View Model]]
-- [[_COMMUNITY_Community 270|Community 270]]
+- [[_COMMUNITY_Non Working Day Extension Source|Non Working Day Extension Source]]
 - [[_COMMUNITY_Issue Membership Form View Model|Issue Membership Form View Model]]
 - [[_COMMUNITY_Membership Type Facts|Membership Type Facts]]
 - [[_COMMUNITY_Staff Accounts Model|Staff Accounts Model]]
@@ -290,7 +290,7 @@
 - [[_COMMUNITY_Payment Context|Payment Context]]
 - [[_COMMUNITY_Create Payment Command Handler|Create Payment Command Handler]]
 - [[_COMMUNITY_Membership Type Contracts Tests|Membership Type Contracts Tests]]
-- [[_COMMUNITY_IBody Life Command|IBody Life Command]]
+- [[_COMMUNITY_I Body Life Command|I Body Life Command]]
 - [[_COMMUNITY_Business Audit Query Support|Business Audit Query Support]]
 - [[_COMMUNITY_Create Preview|Create Preview]]
 - [[_COMMUNITY_Stage Components|Stage Components]]
@@ -304,7 +304,7 @@
 - [[_COMMUNITY_Membership Issue Summary|Membership Issue Summary]]
 - [[_COMMUNITY_7 Components|7 Components]]
 - [[_COMMUNITY_8 Components|8 Components]]
-- [[_COMMUNITY_IAsync Lifetime|IAsync Lifetime]]
+- [[_COMMUNITY_I Async Lifetime|I Async Lifetime]]
 - [[_COMMUNITY_Client Query Support|Client Query Support]]
 - [[_COMMUNITY_Membership State Persistence Result|Membership State Persistence Result]]
 - [[_COMMUNITY_Read Async|Read Async]]
@@ -313,11 +313,11 @@
 - [[_COMMUNITY_Get Client Payment Rows Result|Get Client Payment Rows Result]]
 - [[_COMMUNITY_Client History Model|Client History Model]]
 - [[_COMMUNITY_Body Life Crm Web|Body Life Crm Web]]
-- [[_COMMUNITY_site Components|site Components]]
+- [[_COMMUNITY_Site Components|Site Components]]
 - [[_COMMUNITY_Create Item|Create Item]]
 - [[_COMMUNITY_Membership Calculated State Stored Cache|Membership Calculated State Stored Cache]]
 - [[_COMMUNITY_Non Working Day Correction Confirmation|Non Working Day Correction Confirmation]]
-- [[_COMMUNITY_quality gate job|quality gate job]]
+- [[_COMMUNITY_Quality Gate Job|Quality Gate Job]]
 - [[_COMMUNITY_Body Life Logical Commits|Body Life Logical Commits]]
 - [[_COMMUNITY_14 Components|14 Components]]
 - [[_COMMUNITY_5 Components|5 Components]]
@@ -344,10 +344,10 @@
 - [[_COMMUNITY_Mutable Time Provider|Mutable Time Provider]]
 - [[_COMMUNITY_Membership Combined Source Calculation Tests|Membership Combined Source Calculation Tests]]
 - [[_COMMUNITY_Get Client History Contracts Tests|Get Client History Contracts Tests]]
-- [[_COMMUNITY_graphify reference extra exports and|graphify reference extra exports and]]
+- [[_COMMUNITY_Graphify Reference Extra Exports And|Graphify Reference Extra Exports And]]
 - [[_COMMUNITY_Business Audit Matrix Tests|Business Audit Matrix Tests]]
-- [[_COMMUNITY_Milestone 3 acceptance review|Milestone 3 acceptance review]]
-- [[_COMMUNITY_Milestone 4 acceptance review|Milestone 4 acceptance review]]
+- [[_COMMUNITY_Milestone 3 Acceptance Review|Milestone 3 Acceptance Review]]
+- [[_COMMUNITY_Milestone 4 Acceptance Review|Milestone 4 Acceptance Review]]
 - [[_COMMUNITY_Load Display Names Async|Load Display Names Async]]
 - [[_COMMUNITY_Freeze Record|Freeze Record]]
 - [[_COMMUNITY_Non Working Day Preview Token|Non Working Day Preview Token]]
@@ -364,21 +364,21 @@
 - [[_COMMUNITY_Query Permission Result Tests|Query Permission Result Tests]]
 - [[_COMMUNITY_Membership Initial State Tests|Membership Initial State Tests]]
 - [[_COMMUNITY_Create Marked Visit|Create Marked Visit]]
-- [[_COMMUNITY_ADR 001 Product shape and|ADR 001 Product shape and]]
-- [[_COMMUNITY_ADR 002 Application architecture and|ADR 002 Application architecture and]]
-- [[_COMMUNITY_ADR 003 UI rendering and|ADR 003 UI rendering and]]
-- [[_COMMUNITY_ADR 004 Module boundaries and|ADR 004 Module boundaries and]]
-- [[_COMMUNITY_ADR 005 Membership invariants and|ADR 005 Membership invariants and]]
-- [[_COMMUNITY_ADR 006 Business audit corrections|ADR 006 Business audit corrections]]
-- [[_COMMUNITY_ADR 007 Reporting model and|ADR 007 Reporting model and]]
-- [[_COMMUNITY_ADR 008 Search identity card|ADR 008 Search identity card]]
-- [[_COMMUNITY_ADR 009 Backup restore and|ADR 009 Backup restore and]]
-- [[_COMMUNITY_ADR 010 Migration manual backfill|ADR 010 Migration manual backfill]]
-- [[_COMMUNITY_ADR 011 Membership type lifecycle|ADR 011 Membership type lifecycle]]
-- [[_COMMUNITY_ADR 012 Permissions matrix session|ADR 012 Permissions matrix session]]
-- [[_COMMUNITY_ADR 013 Future client self|ADR 013 Future client self]]
-- [[_COMMUNITY_Client search normalization contract|Client search normalization contract]]
-- [[_COMMUNITY_Milestone 2 acceptance review|Milestone 2 acceptance review]]
+- [[_COMMUNITY_ADR 001 Product Shape And|ADR 001 Product Shape And]]
+- [[_COMMUNITY_ADR 002 Application Architecture And|ADR 002 Application Architecture And]]
+- [[_COMMUNITY_ADR 003 UI Rendering And|ADR 003 UI Rendering And]]
+- [[_COMMUNITY_ADR 004 Module Boundaries And|ADR 004 Module Boundaries And]]
+- [[_COMMUNITY_ADR 005 Membership Invariants And|ADR 005 Membership Invariants And]]
+- [[_COMMUNITY_ADR 006 Business Audit Corrections|ADR 006 Business Audit Corrections]]
+- [[_COMMUNITY_ADR 007 Reporting Model And|ADR 007 Reporting Model And]]
+- [[_COMMUNITY_ADR 008 Search Identity Card|ADR 008 Search Identity Card]]
+- [[_COMMUNITY_ADR 009 Backup Restore And|ADR 009 Backup Restore And]]
+- [[_COMMUNITY_ADR 010 Migration Manual Backfill|ADR 010 Migration Manual Backfill]]
+- [[_COMMUNITY_ADR 011 Membership Type Lifecycle|ADR 011 Membership Type Lifecycle]]
+- [[_COMMUNITY_ADR 012 Permissions Matrix Session|ADR 012 Permissions Matrix Session]]
+- [[_COMMUNITY_ADR 013 Future Client Self|ADR 013 Future Client Self]]
+- [[_COMMUNITY_Client Search Normalization Contract|Client Search Normalization Contract]]
+- [[_COMMUNITY_Milestone 2 Acceptance Review|Milestone 2 Acceptance Review]]
 - [[_COMMUNITY_Business Audit Event Matrix|Business Audit Event Matrix]]
 - [[_COMMUNITY_Health Check Response Writer|Health Check Response Writer]]
 - [[_COMMUNITY_Invoke Async|Invoke Async]]
@@ -397,8 +397,8 @@
 - [[_COMMUNITY_Body Life Membership Rules|Body Life Membership Rules]]
 - [[_COMMUNITY_Body Life Postgre SQL Data|Body Life Postgre SQL Data]]
 - [[_COMMUNITY_Body Life Quality Gates|Body Life Quality Gates]]
-- [[_COMMUNITY_Body Life Reception UI htmx|Body Life Reception UI htmx]]
-- [[_COMMUNITY_Body Life Reports and Audit|Body Life Reports and Audit]]
+- [[_COMMUNITY_Body Life Reception UI Htmx|Body Life Reception UI Htmx]]
+- [[_COMMUNITY_Body Life Reports And Audit|Body Life Reports And Audit]]
 - [[_COMMUNITY_Data Architecture Checklist|Data Architecture Checklist]]
 - [[_COMMUNITY_Check Health Async|Check Health Async]]
 - [[_COMMUNITY_Duplicate Warning Acknowledgement Record|Duplicate Warning Acknowledgement Record]]
@@ -412,15 +412,16 @@
 - [[_COMMUNITY_Stack Selection Matrix|Stack Selection Matrix]]
 - [[_COMMUNITY_Choose Technology Stack|Choose Technology Stack]]
 - [[_COMMUNITY_Interaction Decision Checklist|Interaction Decision Checklist]]
-- [[_COMMUNITY_graphify reference query path explain|graphify reference query path explain]]
+- [[_COMMUNITY_Graphify Reference Query Path Explain|Graphify Reference Query Path Explain]]
 - [[_COMMUNITY_Architecture Research Protocol|Architecture Research Protocol]]
 - [[_COMMUNITY_Research Architecture Options|Research Architecture Options]]
 - [[_COMMUNITY_Date Range Tests|Date Range Tests]]
 - [[_COMMUNITY_12 Components|12 Components]]
-- [[_COMMUNITY_Milestone 1 acceptance review|Milestone 1 acceptance review]]
+- [[_COMMUNITY_Milestone 1 Acceptance Review|Milestone 1 Acceptance Review]]
 - [[_COMMUNITY_Active Non Working Day For|Active Non Working Day For]]
 - [[_COMMUNITY_Derive Components|Derive Components]]
 - [[_COMMUNITY_Ending Soon Membership Row|Ending Soon Membership Row]]
+- [[_COMMUNITY_Membership Opening State Creation Summary|Membership Opening State Creation Summary]]
 - [[_COMMUNITY_Source Map|Source Map]]
 - [[_COMMUNITY_Source Map|Source Map]]
 - [[_COMMUNITY_Source Map|Source Map]]
@@ -428,13 +429,13 @@
 - [[_COMMUNITY_Design Observability Operations|Design Observability Operations]]
 - [[_COMMUNITY_Design System Interactions|Design System Interactions]]
 - [[_COMMUNITY_Body Life Db Context Options|Body Life Db Context Options]]
-- [[_COMMUNITY_Postgre SQL in Docker|Postgre SQL in Docker]]
+- [[_COMMUNITY_Postgre SQL In Docker|Postgre SQL In Docker]]
 - [[_COMMUNITY_Owner Restore Check|Owner Restore Check]]
-- [[_COMMUNITY_Owner bootstrap procedure|Owner bootstrap procedure]]
+- [[_COMMUNITY_Owner Bootstrap Procedure|Owner Bootstrap Procedure]]
 - [[_COMMUNITY_Q ADR 005|Q ADR 005]]
-- [[_COMMUNITY_Q accepted ADR package|Q accepted ADR package]]
-- [[_COMMUNITY_Q post ADR docs implementation|Q post ADR docs implementation]]
-- [[_COMMUNITY_dev postgres sh|dev postgres sh]]
+- [[_COMMUNITY_Q Accepted ADR Package|Q Accepted ADR Package]]
+- [[_COMMUNITY_Q Post ADR Docs Implementation|Q Post ADR Docs Implementation]]
+- [[_COMMUNITY_Dev Postgres Sh|Dev Postgres Sh]]
 - [[_COMMUNITY_Add Command Idempotency Keys|Add Command Idempotency Keys]]
 - [[_COMMUNITY_Add Users Roles Accounts Sessions|Add Users Roles Accounts Sessions]]
 - [[_COMMUNITY_Add Account Credentials|Add Account Credentials]]
@@ -459,10 +460,10 @@
 - [[_COMMUNITY_Body Life Authorization Policies|Body Life Authorization Policies]]
 - [[_COMMUNITY_Initial Baseline Migration Applies To|Initial Baseline Migration Applies To]]
 - [[_COMMUNITY_Create Async|Create Async]]
-- [[_COMMUNITY_graphify reference add a URL|graphify reference add a URL]]
-- [[_COMMUNITY_graphify reference commit hook and|graphify reference commit hook and]]
-- [[_COMMUNITY_graphify reference incremental update and|graphify reference incremental update and]]
-- [[_COMMUNITY_7 shortlist|7 shortlist]]
+- [[_COMMUNITY_Graphify Reference Add A URL|Graphify Reference Add A URL]]
+- [[_COMMUNITY_Graphify Reference Commit Hook And|Graphify Reference Commit Hook And]]
+- [[_COMMUNITY_Graphify Reference Incremental Update And|Graphify Reference Incremental Update And]]
+- [[_COMMUNITY_7 Shortlist|7 Shortlist]]
 - [[_COMMUNITY_4 Components|4 Components]]
 - [[_COMMUNITY_Stub Visit Source Handler|Stub Visit Source Handler]]
 - [[_COMMUNITY_20260708140900 Initial Baseline Designer|20260708140900 Initial Baseline Designer]]
@@ -485,11 +486,11 @@
 - [[_COMMUNITY_20260720110933 Add Business Audit Client|20260720110933 Add Business Audit Client]]
 - [[_COMMUNITY_20260720173659 Add Business Audit Recorded|20260720173659 Add Business Audit Recorded]]
 - [[_COMMUNITY_Money Components|Money Components]]
-- [[_COMMUNITY_Command and Audit Contract|Command and Audit Contract]]
-- [[_COMMUNITY_graphify reference Git Hub clone|graphify reference Git Hub clone]]
-- [[_COMMUNITY_graphify reference transcribe video and|graphify reference transcribe video and]]
+- [[_COMMUNITY_Command And Audit Contract|Command And Audit Contract]]
+- [[_COMMUNITY_Graphify Reference Git Hub Clone|Graphify Reference Git Hub Clone]]
+- [[_COMMUNITY_Graphify Reference Transcribe Video And|Graphify Reference Transcribe Video And]]
 - [[_COMMUNITY_Assembly Reference|Assembly Reference]]
-- [[_COMMUNITY_validate sh|validate sh]]
+- [[_COMMUNITY_Validate Sh|Validate Sh]]
 - [[_COMMUNITY_Membership Audit Actions|Membership Audit Actions]]
 - [[_COMMUNITY_Membership Action Keys|Membership Action Keys]]
 - [[_COMMUNITY_Membership Visit Eligibility Error Codes|Membership Visit Eligibility Error Codes]]
@@ -500,13 +501,13 @@
 - [[_COMMUNITY_Fixed Time Provider|Fixed Time Provider]]
 - [[_COMMUNITY_Fixed Time Provider|Fixed Time Provider]]
 - [[_COMMUNITY_Mutable Time Provider|Mutable Time Provider]]
-- [[_COMMUNITY_Escalation to Sol|Escalation to Sol]]
+- [[_COMMUNITY_Escalation To Sol|Escalation To Sol]]
 - [[_COMMUNITY_Technology Stack Interface|Technology Stack Interface]]
 - [[_COMMUNITY_Data Architecture Interface|Data Architecture Interface]]
 - [[_COMMUNITY_Observability Operations Interface|Observability Operations Interface]]
 - [[_COMMUNITY_System Interactions Interface|System Interactions Interface]]
 - [[_COMMUNITY_Architecture Research Interface|Architecture Research Interface]]
-- [[_COMMUNITY_Accepted Architecture Source of Truth|Accepted Architecture Source of Truth]]
+- [[_COMMUNITY_Accepted Architecture Source Of Truth|Accepted Architecture Source Of Truth]]
 - [[_COMMUNITY_Logical Commit Workflow|Logical Commit Workflow]]
 - [[_COMMUNITY_Body Life Crm Web Pages|Body Life Crm Web Pages]]
 - [[_COMMUNITY_Body Life Crm Web Pages|Body Life Crm Web Pages]]
@@ -523,22 +524,22 @@
 - [[_COMMUNITY_Body Life Crm Web Pages|Body Life Crm Web Pages]]
 - [[_COMMUNITY_Body Life Crm Web Pages|Body Life Crm Web Pages]]
 - [[_COMMUNITY_Body Life Crm Web Pages|Body Life Crm Web Pages]]
-- [[_COMMUNITY_extraction spec|extraction spec]]
+- [[_COMMUNITY_Extraction Spec|Extraction Spec]]
 - [[_COMMUNITY_Body Life CRM Docker Compose|Body Life CRM Docker Compose]]
 - [[_COMMUNITY_Visit During Freeze Block|Visit During Freeze Block]]
 - [[_COMMUNITY_Implementation Validation Quality Gates|Implementation Validation Quality Gates]]
 - [[_COMMUNITY_Error Model|Error Model]]
-- [[_COMMUNITY_IBody Life Request Context Resolver|IBody Life Request Context Resolver]]
-- [[_COMMUNITY_apply migrations sh|apply migrations sh]]
-- [[_COMMUNITY_bootstrap owner sh|bootstrap owner sh]]
-- [[_COMMUNITY_generate migration sql sh|generate migration sql sh]]
+- [[_COMMUNITY_I Body Life Request Context|I Body Life Request Context]]
+- [[_COMMUNITY_Apply Migrations Sh|Apply Migrations Sh]]
+- [[_COMMUNITY_Bootstrap Owner Sh|Bootstrap Owner Sh]]
+- [[_COMMUNITY_Generate Migration Sql Sh|Generate Migration Sql Sh]]
 - [[_COMMUNITY_Cancel Freeze Form|Cancel Freeze Form]]
 - [[_COMMUNITY_Card Assignment Form|Card Assignment Form]]
 - [[_COMMUNITY_Create Client Form|Create Client Form]]
 - [[_COMMUNITY_Mark Visit Form|Mark Visit Form]]
 - [[_COMMUNITY_Reception Workspace|Reception Workspace]]
 - [[_COMMUNITY_Update Client Form|Update Client Form]]
-- [[_COMMUNITY_htmx License Document|htmx License Document]]
+- [[_COMMUNITY_Htmx License Document|Htmx License Document]]
 - [[_COMMUNITY_Persistence Registration Resolves Correct Payment|Persistence Registration Resolves Correct Payment]]
 - [[_COMMUNITY_Fixed Time Provider|Fixed Time Provider]]
 - [[_COMMUNITY_Persistence Registration Resolves Payment History|Persistence Registration Resolves Payment History]]
@@ -629,7 +630,7 @@
 - [[_COMMUNITY_Milestone 1 Foundation|Milestone 1 Foundation]]
 - [[_COMMUNITY_State Changing Command Contract|State Changing Command Contract]]
 - [[_COMMUNITY_Body Life Commit Scopes|Body Life Commit Scopes]]
-- [[_COMMUNITY_bodylife quality gates Reference|bodylife quality gates Reference]]
+- [[_COMMUNITY_Bodylife Quality Gates Reference|Bodylife Quality Gates Reference]]
 - [[_COMMUNITY_Conventional Commit Format|Conventional Commit Format]]
 - [[_COMMUNITY_Graphify Artifact Isolation|Graphify Artifact Isolation]]
 - [[_COMMUNITY_Intentional Staging|Intentional Staging]]
@@ -643,36 +644,36 @@
 - [[_COMMUNITY_Worktree Inspection|Worktree Inspection]]
 - [[_COMMUNITY_Memberships Formula Ownership|Memberships Formula Ownership]]
 - [[_COMMUNITY_Rebuildable Membership State|Rebuildable Membership State]]
-- [[_COMMUNITY_Backup Restore and Fallback|Backup Restore and Fallback]]
+- [[_COMMUNITY_Backup Restore And Fallback|Backup Restore And Fallback]]
 - [[_COMMUNITY_Postgre SQL Source Facts Constraints|Postgre SQL Source Facts Constraints]]
 - [[_COMMUNITY_Risk Boundary Tests|Risk Boundary Tests]]
-- [[_COMMUNITY_Reception Dashboard htmx|Reception Dashboard htmx]]
+- [[_COMMUNITY_Reception Dashboard Htmx|Reception Dashboard Htmx]]
 - [[_COMMUNITY_Openai Components|Openai Components]]
 - [[_COMMUNITY_Reports Audit Consistency|Reports Audit Consistency]]
 - [[_COMMUNITY_Command Envelope|Command Envelope]]
 - [[_COMMUNITY_Db Command|Db Command]]
 - [[_COMMUNITY_Db Type|Db Type]]
-- [[_COMMUNITY_Internal Hosted Web App for|Internal Hosted Web App for]]
+- [[_COMMUNITY_Internal Hosted Web App For|Internal Hosted Web App For]]
 - [[_COMMUNITY_Modular Monolith|Modular Monolith]]
 - [[_COMMUNITY_Hybrid Server Rendered UI|Hybrid Server Rendered UI]]
-- [[_COMMUNITY_Membership Rule Ownership by Business|Membership Rule Ownership by Business]]
+- [[_COMMUNITY_Membership Rule Ownership By Business|Membership Rule Ownership By Business]]
 - [[_COMMUNITY_Hybrid Membership Model|Hybrid Membership Model]]
 - [[_COMMUNITY_Append Only Business Audit Separate|Append Only Business Audit Separate]]
-- [[_COMMUNITY_Reports Query Layer over Canonical|Reports Query Layer over Canonical]]
+- [[_COMMUNITY_Reports Query Layer Over Canonical|Reports Query Layer Over Canonical]]
 - [[_COMMUNITY_Clients Search Identity Ownership|Clients Search Identity Ownership]]
-- [[_COMMUNITY_Provider Managed Backups with Restore|Provider Managed Backups with Restore]]
-- [[_COMMUNITY_Manual Backfill and Paper Fallback|Manual Backfill and Paper Fallback]]
-- [[_COMMUNITY_Editable Membership Type Catalog with|Editable Membership Type Catalog with]]
-- [[_COMMUNITY_Owner Named Admin and Shared|Owner Named Admin and Shared]]
+- [[_COMMUNITY_Provider Managed Backups With Restore|Provider Managed Backups With Restore]]
+- [[_COMMUNITY_Manual Backfill And Paper Fallback|Manual Backfill And Paper Fallback]]
+- [[_COMMUNITY_Editable Membership Type Catalog With|Editable Membership Type Catalog With]]
+- [[_COMMUNITY_Owner Named Admin And Shared|Owner Named Admin And Shared]]
 - [[_COMMUNITY_Client Self Service Guardrail|Client Self Service Guardrail]]
-- [[_COMMUNITY_ADR Backlog for Body Life|ADR Backlog for Body Life]]
+- [[_COMMUNITY_ADR Backlog For Body Life|ADR Backlog For Body Life]]
 - [[_COMMUNITY_Blocking Decisions Before Implementation|Blocking Decisions Before Implementation]]
 - [[_COMMUNITY_Deferred Decisions|Deferred Decisions]]
 - [[_COMMUNITY_Vertical Slice Prototype|Vertical Slice Prototype]]
 - [[_COMMUNITY_ADR Candidates|ADR Candidates]]
 - [[_COMMUNITY_Application Logs|Application Logs]]
 - [[_COMMUNITY_Backdated Entries|Backdated Entries]]
-- [[_COMMUNITY_Backup and Restore|Backup and Restore]]
+- [[_COMMUNITY_Backup And Restore|Backup And Restore]]
 - [[_COMMUNITY_Body Life CRM V1|Body Life CRM V1]]
 - [[_COMMUNITY_Client Self Service Boundary|Client Self Service Boundary]]
 - [[_COMMUNITY_Close Negative Balance Use Case|Close Negative Balance Use Case]]
@@ -681,16 +682,16 @@
 - [[_COMMUNITY_Martin Fowler Architecture Sources|Martin Fowler Architecture Sources]]
 - [[_COMMUNITY_Inclusive End Date|Inclusive End Date]]
 - [[_COMMUNITY_Local Body Life Source Documents|Local Body Life Source Documents]]
-- [[_COMMUNITY_MDN SPA and Progressive Web|MDN SPA and Progressive Web]]
+- [[_COMMUNITY_MDN SPA And Progressive Web|MDN SPA And Progressive Web]]
 - [[_COMMUNITY_Membership Domain Model|Membership Domain Model]]
 - [[_COMMUNITY_Membership Type Lifecycle|Membership Type Lifecycle]]
 - [[_COMMUNITY_Negative Visits|Negative Visits]]
-- [[_COMMUNITY_OWASP and NIST Logging Audit|OWASP and NIST Logging Audit]]
+- [[_COMMUNITY_OWASP And NIST Logging Audit|OWASP And NIST Logging Audit]]
 - [[_COMMUNITY_Permissions Matrix|Permissions Matrix]]
 - [[_COMMUNITY_Search Use Case|Search Use Case]]
 - [[_COMMUNITY_Client Search Normalizer|Client Search Normalizer]]
 - [[_COMMUNITY_Deterministic Normalized Client Identity Values|Deterministic Normalized Client Identity Values]]
-- [[_COMMUNITY_Preserve Raw Identity for Display|Preserve Raw Identity for Display]]
+- [[_COMMUNITY_Preserve Raw Identity For Display|Preserve Raw Identity For Display]]
 - [[_COMMUNITY_Acceptance Criteria|Acceptance Criteria]]
 - [[_COMMUNITY_Active Membership Rule|Active Membership Rule]]
 - [[_COMMUNITY_Administrator Role|Administrator Role]]
@@ -713,21 +714,21 @@
 - [[_COMMUNITY_Reception Home Screen|Reception Home Screen]]
 - [[_COMMUNITY_Reports Components|Reports Components]]
 - [[_COMMUNITY_Non Working Day Preview Signing|Non Working Day Preview Signing]]
-- [[_COMMUNITY_Canonical Reread after Mutation|Canonical Reread after Mutation]]
-- [[_COMMUNITY_Login Logout and Session Validation|Login Logout and Session Validation]]
+- [[_COMMUNITY_Canonical Reread After Mutation|Canonical Reread After Mutation]]
+- [[_COMMUNITY_Login Logout And Session Validation|Login Logout And Session Validation]]
 - [[_COMMUNITY_No Default Credentials|No Default Credentials]]
-- [[_COMMUNITY_Request Context and Command Envelope|Request Context and Command Envelope]]
+- [[_COMMUNITY_Request Context And Command Envelope|Request Context And Command Envelope]]
 - [[_COMMUNITY_Staff Account Management|Staff Account Management]]
 - [[_COMMUNITY_Milestone 2 Handoff Decision|Milestone 2 Handoff Decision]]
 - [[_COMMUNITY_Accountable Access Foundation|Accountable Access Foundation]]
 - [[_COMMUNITY_Active Session Expiry Coverage|Active Session Expiry Coverage]]
 - [[_COMMUNITY_Future Command Obligations|Future Command Obligations]]
 - [[_COMMUNITY_Milestone 2 Acceptance Decision|Milestone 2 Acceptance Decision]]
-- [[_COMMUNITY_Not a Production Readiness Claim|Not a Production Readiness Claim]]
-- [[_COMMUNITY_Milestone 2 Source of Truth|Milestone 2 Source of Truth]]
+- [[_COMMUNITY_Not A Production Readiness Claim|Not A Production Readiness Claim]]
+- [[_COMMUNITY_Milestone 2 Source Of Truth|Milestone 2 Source Of Truth]]
 - [[_COMMUNITY_Milestone 3 Acceptance Decision|Milestone 3 Acceptance Decision]]
 - [[_COMMUNITY_Clients Search Foundation|Clients Search Foundation]]
-- [[_COMMUNITY_Clients Search Commands Audit and|Clients Search Commands Audit and]]
+- [[_COMMUNITY_Clients Search Commands Audit And|Clients Search Commands Audit And]]
 - [[_COMMUNITY_Milestone 3 Validation Baseline|Milestone 3 Validation Baseline]]
 - [[_COMMUNITY_Milestone 4 Acceptance Decision|Milestone 4 Acceptance Decision]]
 - [[_COMMUNITY_Membership Types Catalog Slice|Membership Types Catalog Slice]]
@@ -735,41 +736,44 @@
 - [[_COMMUNITY_Milestone 4 Validation Baseline|Milestone 4 Validation Baseline]]
 - [[_COMMUNITY_Phase 8 Vertical Slice Plan|Phase 8 Vertical Slice Plan]]
 - [[_COMMUNITY_Core Components|Core Components]]
-- [[_COMMUNITY_htmx Interaction Pattern|htmx Interaction Pattern]]
+- [[_COMMUNITY_Htmx Interaction Pattern|Htmx Interaction Pattern]]
 - [[_COMMUNITY_Product Posture|Product Posture]]
 - [[_COMMUNITY_Get Client Payment Rows Query|Get Client Payment Rows Query]]
 - [[_COMMUNITY_Get Client Profile Query|Get Client Profile Query]]
-- [[_COMMUNITY_graphify out memory query 20260706|graphify out memory query 20260706]]
-- [[_COMMUNITY_Query What to Accept in|Query What to Accept in]]
+- [[_COMMUNITY_Graphify Out Memory Query 20260706|Graphify Out Memory Query 20260706]]
+- [[_COMMUNITY_Query What To Accept In|Query What To Accept In]]
 - [[_COMMUNITY_Hybrid Membership Model Recommendation|Hybrid Membership Model Recommendation]]
-- [[_COMMUNITY_graphify out memory query 20260707|graphify out memory query 20260707]]
+- [[_COMMUNITY_Graphify Out Memory Query 20260707|Graphify Out Memory Query 20260707]]
 - [[_COMMUNITY_Query Form Accepted ADR Package|Query Form Accepted ADR Package]]
 - [[_COMMUNITY_Accepted ADR Package Creation Outcome|Accepted ADR Package Creation Outcome]]
 - [[_COMMUNITY_Hash Set|Hash Set]]
-- [[_COMMUNITY_IRead Only Dictionary|IRead Only Dictionary]]
-- [[_COMMUNITY_IService Collection|IService Collection]]
+- [[_COMMUNITY_I Read Only Dictionary|I Read Only Dictionary]]
+- [[_COMMUNITY_I Service Collection|I Service Collection]]
 - [[_COMMUNITY_Membership Components|Membership Components]]
 - [[_COMMUNITY_Npgsql Command|Npgsql Command]]
 - [[_COMMUNITY_Entity Type Builder|Entity Type Builder]]
 - [[_COMMUNITY_Query Permission Set|Query Permission Set]]
-- [[_COMMUNITY_IConfiguration Components|IConfiguration Components]]
+- [[_COMMUNITY_I Configuration Components|I Configuration Components]]
 - [[_COMMUNITY_Http Context|Http Context]]
+- [[_COMMUNITY_Access Denied|Access Denied]]
 - [[_COMMUNITY_Add Payment Form View Model|Add Payment Form View Model]]
 - [[_COMMUNITY_Cancel Visit Form View Model|Cancel Visit Form View Model]]
 - [[_COMMUNITY_Card Assignment Form View Model|Card Assignment Form View Model]]
 - [[_COMMUNITY_Client Search Mode|Client Search Mode]]
 - [[_COMMUNITY_Command Error|Command Error]]
 - [[_COMMUNITY_Correct Payment Form View Model|Correct Payment Form View Model]]
-- [[_COMMUNITY_IAction Result|IAction Result]]
+- [[_COMMUNITY_I Action Result|I Action Result]]
 - [[_COMMUNITY_Issue Membership Form View Model|Issue Membership Form View Model]]
 - [[_COMMUNITY_Mark Visit Form View Model|Mark Visit Form View Model]]
 - [[_COMMUNITY_Update Client Form View Model|Update Client Form View Model]]
+- [[_COMMUNITY_Layout Components|Layout Components]]
+- [[_COMMUNITY_View Start|View Start]]
 - [[_COMMUNITY_Freeze Fixture|Freeze Fixture]]
 - [[_COMMUNITY_Add Non Working Day Command|Add Non Working Day Command]]
 - [[_COMMUNITY_Add Non Working Day Command|Add Non Working Day Command]]
 - [[_COMMUNITY_Application Row|Application Row]]
 - [[_COMMUNITY_Hmac Non Working Day Preview|Hmac Non Working Day Preview]]
-- [[_COMMUNITY_INon Working Day Preview Token|INon Working Day Preview Token]]
+- [[_COMMUNITY_I Non Working Day Preview|I Non Working Day Preview]]
 - [[_COMMUNITY_Membership State Cache Rebuilder|Membership State Cache Rebuilder]]
 - [[_COMMUNITY_Non Working Day Fixture|Non Working Day Fixture]]
 - [[_COMMUNITY_Period Row|Period Row]]
@@ -784,40 +788,172 @@
 - [[_COMMUNITY_Value Task|Value Task]]
 - [[_COMMUNITY_Type Components|Type Components]]
 - [[_COMMUNITY_Visit Kind|Visit Kind]]
+- [[_COMMUNITY_Reception Home Screen|Reception Home Screen]]
+- [[_COMMUNITY_Reports Components|Reports Components]]
+- [[_COMMUNITY_Atomic Source Recalculation Audit Commit|Atomic Source Recalculation Audit Commit]]
+- [[_COMMUNITY_Non Working Day Preview Signing|Non Working Day Preview Signing]]
+- [[_COMMUNITY_Canonical Reread After Mutation|Canonical Reread After Mutation]]
+- [[_COMMUNITY_Login Logout And Session Validation|Login Logout And Session Validation]]
+- [[_COMMUNITY_No Default Credentials|No Default Credentials]]
+- [[_COMMUNITY_Request Context And Command Envelope|Request Context And Command Envelope]]
+- [[_COMMUNITY_Staff Account Management|Staff Account Management]]
+- [[_COMMUNITY_Milestone 2 Handoff Decision|Milestone 2 Handoff Decision]]
+- [[_COMMUNITY_Accountable Access Foundation|Accountable Access Foundation]]
+- [[_COMMUNITY_Active Session Expiry Coverage|Active Session Expiry Coverage]]
+- [[_COMMUNITY_Future Command Obligations|Future Command Obligations]]
+- [[_COMMUNITY_Milestone 2 Acceptance Decision|Milestone 2 Acceptance Decision]]
+- [[_COMMUNITY_Not A Production Readiness Claim|Not A Production Readiness Claim]]
+- [[_COMMUNITY_Milestone 2 Source Of Truth|Milestone 2 Source Of Truth]]
+- [[_COMMUNITY_Milestone 3 Acceptance Decision|Milestone 3 Acceptance Decision]]
+- [[_COMMUNITY_Clients Search Foundation|Clients Search Foundation]]
+- [[_COMMUNITY_Clients Search Commands Audit And|Clients Search Commands Audit And]]
+- [[_COMMUNITY_Milestone 3 Validation Baseline|Milestone 3 Validation Baseline]]
+- [[_COMMUNITY_Milestone 4 Acceptance Decision|Milestone 4 Acceptance Decision]]
+- [[_COMMUNITY_Membership Types Catalog Slice|Membership Types Catalog Slice]]
+- [[_COMMUNITY_Milestone 5 Immutable Snapshot Handoff|Milestone 5 Immutable Snapshot Handoff]]
+- [[_COMMUNITY_Milestone 4 Validation Baseline|Milestone 4 Validation Baseline]]
+- [[_COMMUNITY_Phase 8 Vertical Slice Plan|Phase 8 Vertical Slice Plan]]
+- [[_COMMUNITY_Core Components|Core Components]]
+- [[_COMMUNITY_Htmx Interaction Pattern|Htmx Interaction Pattern]]
+- [[_COMMUNITY_Product Posture|Product Posture]]
+- [[_COMMUNITY_Freeze Fixture|Freeze Fixture]]
+- [[_COMMUNITY_Graphify Out Memory Query 20260706|Graphify Out Memory Query 20260706]]
+- [[_COMMUNITY_Query What To Accept In|Query What To Accept In]]
+- [[_COMMUNITY_Hybrid Membership Model Recommendation|Hybrid Membership Model Recommendation]]
+- [[_COMMUNITY_Graphify Out Memory Query 20260707|Graphify Out Memory Query 20260707]]
+- [[_COMMUNITY_Query Form Accepted ADR Package|Query Form Accepted ADR Package]]
+- [[_COMMUNITY_Accepted ADR Package Creation Outcome|Accepted ADR Package Creation Outcome]]
+- [[_COMMUNITY_I Action Result|I Action Result]]
+- [[_COMMUNITY_I Read Only Dictionary|I Read Only Dictionary]]
+- [[_COMMUNITY_I Service Collection|I Service Collection]]
+- [[_COMMUNITY_Issue Membership Command|Issue Membership Command]]
+- [[_COMMUNITY_Issue Membership Command Handler|Issue Membership Command Handler]]
+- [[_COMMUNITY_Issue Membership Form Input|Issue Membership Form Input]]
+- [[_COMMUNITY_Issue Membership Form View Model|Issue Membership Form View Model]]
+- [[_COMMUNITY_Mark Visit Command|Mark Visit Command]]
+- [[_COMMUNITY_Mark Visit Command Handler|Mark Visit Command Handler]]
+- [[_COMMUNITY_Mark Visit Form View Model|Mark Visit Form View Model]]
+- [[_COMMUNITY_Membership Issue Payment|Membership Issue Payment]]
+- [[_COMMUNITY_Membership Negative Handling Decision|Membership Negative Handling Decision]]
+- [[_COMMUNITY_Membership State Cache Rebuilder|Membership State Cache Rebuilder]]
+- [[_COMMUNITY_Membership Type Catalog Values|Membership Type Catalog Values]]
+- [[_COMMUNITY_Membership Type Record|Membership Type Record]]
+- [[_COMMUNITY_Membership Visit Acknowledgement|Membership Visit Acknowledgement]]
+- [[_COMMUNITY_Object Components|Object Components]]
+- [[_COMMUNITY_Period Row|Period Row]]
+- [[_COMMUNITY_Query Permission Set|Query Permission Set]]
+- [[_COMMUNITY_Reception Search Context|Reception Search Context]]
+- [[_COMMUNITY_Reception Workspace View Model|Reception Workspace View Model]]
+- [[_COMMUNITY_Seeded Membership|Seeded Membership]]
+- [[_COMMUNITY_Entity Type Builder|Entity Type Builder]]
+- [[_COMMUNITY_Get Client Membership Extension Explanations|Get Client Membership Extension Explanations]]
+- [[_COMMUNITY_I Read Only Collection|I Read Only Collection]]
+- [[_COMMUNITY_Date Only|Date Only]]
+- [[_COMMUNITY_Date Time Offset|Date Time Offset]]
+- [[_COMMUNITY_Db Command|Db Command]]
+- [[_COMMUNITY_Db Type|Db Type]]
+- [[_COMMUNITY_I Read Only Set|I Read Only Set]]
+- [[_COMMUNITY_Membership State Cache Record|Membership State Cache Record]]
+- [[_COMMUNITY_Canonical Payment Source Row|Canonical Payment Source Row]]
+- [[_COMMUNITY_Date Only|Date Only]]
+- [[_COMMUNITY_Date Time Offset|Date Time Offset]]
+- [[_COMMUNITY_Canonical Visit Source Row|Canonical Visit Source Row]]
+- [[_COMMUNITY_I Configuration|I Configuration]]
+- [[_COMMUNITY_Http Context|Http Context]]
+- [[_COMMUNITY_Hash Set|Hash Set]]
+- [[_COMMUNITY_Client Payment Row Status|Client Payment Row Status]]
+- [[_COMMUNITY_Client Visit Row Status|Client Visit Row Status]]
+- [[_COMMUNITY_Date Only|Date Only]]
+- [[_COMMUNITY_Date Range|Date Range]]
+- [[_COMMUNITY_Freeze Cancellation Source Status|Freeze Cancellation Source Status]]
+- [[_COMMUNITY_I Read Only List|I Read Only List]]
+- [[_COMMUNITY_Issued Membership Lifecycle Status|Issued Membership Lifecycle Status]]
+- [[_COMMUNITY_Money Components|Money Components]]
+- [[_COMMUNITY_Non Working Day Correction Mode|Non Working Day Correction Mode]]
+- [[_COMMUNITY_Non Working Day Correction Source|Non Working Day Correction Source]]
+- [[_COMMUNITY_Payment Context|Payment Context]]
+- [[_COMMUNITY_Visit Kind|Visit Kind]]
+- [[_COMMUNITY_Account Kind|Account Kind]]
+- [[_COMMUNITY_Actor Role|Actor Role]]
+- [[_COMMUNITY_Entry Origin|Entry Origin]]
+- [[_COMMUNITY_Json Serializer Options|Json Serializer Options]]
+- [[_COMMUNITY_Preview Correct Non Working Day|Preview Correct Non Working Day]]
+- [[_COMMUNITY_Preview Correct Non Working Day|Preview Correct Non Working Day]]
+- [[_COMMUNITY_Add Payment Form View Model|Add Payment Form View Model]]
+- [[_COMMUNITY_Cancel Visit Form View Model|Cancel Visit Form View Model]]
+- [[_COMMUNITY_Card Assignment Form View Model|Card Assignment Form View Model]]
+- [[_COMMUNITY_Correct Payment Form View Model|Correct Payment Form View Model]]
+- [[_COMMUNITY_Issue Membership Form View Model|Issue Membership Form View Model]]
+- [[_COMMUNITY_Mark Visit Form View Model|Mark Visit Form View Model]]
+- [[_COMMUNITY_Update Client Form View Model|Update Client Form View Model]]
+- [[_COMMUNITY_State Row|State Row]]
+- [[_COMMUNITY_Add Freeze Command Handler|Add Freeze Command Handler]]
+- [[_COMMUNITY_Add Non Working Day Command|Add Non Working Day Command]]
+- [[_COMMUNITY_Hmac Non Working Day Preview|Hmac Non Working Day Preview]]
+- [[_COMMUNITY_I Non Working Day Preview|I Non Working Day Preview]]
+- [[_COMMUNITY_Membership State Cache Rebuilder|Membership State Cache Rebuilder]]
+- [[_COMMUNITY_Non Working Day Fixture|Non Working Day Fixture]]
+- [[_COMMUNITY_Correct Non Working Day Command|Correct Non Working Day Command]]
+- [[_COMMUNITY_Hmac Non Working Day Correction|Hmac Non Working Day Correction]]
+- [[_COMMUNITY_I Non Working Day Correction|I Non Working Day Correction]]
+- [[_COMMUNITY_Membership Components|Membership Components]]
+- [[_COMMUNITY_Client Row|Client Row]]
+- [[_COMMUNITY_Membership Fixture|Membership Fixture]]
+- [[_COMMUNITY_Membership Type Row|Membership Type Row]]
+- [[_COMMUNITY_Payment Fixture|Payment Fixture]]
+- [[_COMMUNITY_Daily Cash Snapshot|Daily Cash Snapshot]]
+- [[_COMMUNITY_Npgsql Command|Npgsql Command]]
+- [[_COMMUNITY_Npgsql Db Type|Npgsql Db Type]]
+- [[_COMMUNITY_Add Freeze Command Handler|Add Freeze Command Handler]]
+- [[_COMMUNITY_Persisted Membership State|Persisted Membership State]]
+- [[_COMMUNITY_Postgres Exception|Postgres Exception]]
+- [[_COMMUNITY_Npgsql Connection|Npgsql Connection]]
+- [[_COMMUNITY_Value Task|Value Task]]
+- [[_COMMUNITY_Type Components|Type Components]]
+- [[_COMMUNITY_Update Client Form View Model|Update Client Form View Model]]
+- [[_COMMUNITY_Visit Kind|Visit Kind]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `BodyLife.Crm.Modules.Memberships` - 249 edges
-2. `BodyLife.Crm.SharedKernel` - 227 edges
-3. `ReceptionAppFixture` - 142 edges
-4. `PostgreSqlSmokeDatabase` - 113 edges
-5. `BodyLife.Crm.Application.Commands` - 111 edges
-6. `AuditEntryExplanationViewModelTests` - 105 edges
-7. `BodyLife.Crm.Infrastructure.Persistence.Memberships` - 96 edges
-8. `BodyLife.Crm.Modules.NonWorkingDays` - 91 edges
-9. `AuditEntryExplanationViewModel` - 87 edges
-10. `PostgreSqlTestDatabase` - 81 edges
+1. `BodyLife.Crm.Modules.Memberships` - 214 edges
+2. `ReceptionAppFixture` - 143 edges
+3. `BodyLife.Crm.SharedKernel` - 123 edges
+4. `AuditEntryExplanationViewModelTests` - 122 edges
+5. `PostgreSqlSmokeDatabase` - 113 edges
+6. `BodyLife.Crm.Application.Commands` - 108 edges
+7. `BodyLife.Crm.Infrastructure.Persistence.Memberships` - 101 edges
+8. `BodyLife.Crm.Modules.NonWorkingDays` - 93 edges
+9. `PostgreSqlTestDatabase` - 81 edges
+10. `AuditEntryExplanationPresenter` - 78 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Codex Write-Lease Protocol` --semantically_similar_to--> `Single-Writer Lease`  [INFERRED] [semantically similar]
   docs/codex-orchestration.md → .codex/skills/bodylife-codex-orchestrator/SKILL.md
 - `Codex Model Routing` --semantically_similar_to--> `Model-Tier Role Routing`  [INFERRED] [semantically similar]
   docs/codex-orchestration.md → .codex/skills/bodylife-codex-orchestrator/SKILL.md
-- `Architecture Research Options HTML Preview` --semantically_similar_to--> `Architecture Research Options Markdown Brief`  [INFERRED] [semantically similar]
-  docs/architecture-research-options.html → docs/architecture-research-options.md
-- `Client Card Membership Visit Payment Chain` --semantically_similar_to--> `First Version Operational Chain`  [INFERRED] [semantically similar]
-  docs/initial-context.txt → docs/first-version-requirements.md
-- `MembershipAdjustmentCalculationTests` --references--> `MembershipAdjustmentSourceFact`  [EXTRACTED]
-  tests/BodyLife.Crm.Tests/Modules/Memberships/MembershipAdjustmentCalculationTests.cs → src/BodyLife.Crm/Modules/Memberships/MembershipAdjustmentSourceFact.cs
+- `NonWorkingDay` --semantically_similar_to--> `Non-Working Day Or Period`  [INFERRED] [semantically similar]
+  docs/domain-model.md → docs/first-version-requirements.md
+- `PostgreSQL Data Access Source Map` --references--> `Canonical Source Facts`  [EXTRACTED]
+  .codex/skills/bodylife-postgres-data-access/references/source-map.md → docs/data-architecture.md
+- `Reception UI Source Map` --references--> `Reception Dashboard Workflow`  [EXTRACTED]
+  .codex/skills/bodylife-reception-ui-htmx/references/source-map.md → docs/ui-workflows.md
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
+- **Accepted ADR Package Governance and Sequencing** — docs_adr_readme_accepted_adr_package, docs_adr_readme_accepted_decision_change_governance, docs_adr_readme_recommended_implementation_order, docs_adr_017_business_time_zone_and_ui_localization_adr_017_business_time_zone_and_ui_localization [EXTRACTED 1.00]
+- **UTC Instants with Kyiv Business-Time Semantics** — docs_adr_017_business_time_zone_and_ui_localization_canonical_utc_instants, docs_adr_017_business_time_zone_and_ui_localization_fixed_europe_kyiv_business_calendar, docs_adr_017_business_time_zone_and_ui_localization_shared_business_time_contract, docs_adr_017_business_time_zone_and_ui_localization_culture_aware_localized_ui, docs_adr_017_business_time_zone_and_ui_localization_deterministic_dst_wall_time_policy, docs_adr_017_business_time_zone_and_ui_localization_half_open_business_day_utc_range, docs_adr_017_business_time_zone_and_ui_localization_membership_state_cache_version_7, docs_architecture_baseline_kyiv_business_time_boundary, docs_data_architecture_utc_storage_kyiv_query_boundary, docs_data_architecture_cache_version_7_release_gate [INFERRED 0.95]
+- **Canonical Transactional Truth, Derived State, Reports, and Audit** — docs_architecture_baseline_command_canonical_reread, docs_architecture_baseline_module_rule_ownership, docs_data_architecture_canonical_source_facts, docs_data_architecture_rebuildable_membership_state, docs_data_architecture_report_drill_down_consistency, docs_data_architecture_append_only_business_audit, docs_data_architecture_membership_state_cache [INFERRED 0.95]
+- **Membership State Fact Flow** — docs_domain_model_issued_membership, docs_domain_model_visit, docs_domain_model_freeze, docs_domain_model_non_working_day, docs_domain_model_membership_state_cache_version_7 [EXTRACTED 1.00]
+- **Audit and Diagnostics Correlation** — docs_domain_model_audit, docs_operations_design_business_audit, docs_operations_design_technical_logs, docs_operations_design_request_correlation [EXTRACTED 1.00]
+- **Production Recovery Chain** — docs_operations_design_provider_managed_backup, docs_operations_design_restore_rehearsal, docs_operations_design_owner_restore_check, docs_operations_design_paper_fallback, docs_operations_design_outage_reconciliation [EXTRACTED 1.00]
+- **BodyLife CRM v1 Milestone Sequence** — docs_implementation_progress_milestone_1_foundation, docs_implementation_progress_milestone_2_users_roles, docs_implementation_progress_milestone_3_clients_search, docs_implementation_progress_milestone_4_membershiptypes, docs_implementation_progress_milestone_5_memberships, docs_implementation_progress_milestone_6_visits, docs_implementation_progress_milestone_7_payments, docs_implementation_progress_milestone_8_extensions, docs_implementation_progress_milestone_9_reports, docs_implementation_progress_milestone_10_completion [INFERRED 0.95]
+- **Atomic Command State and Audit Flow** — docs_interaction_contracts_common_command_contract, docs_interaction_contracts_atomic_source_recalculation_audit_commit, docs_interaction_contracts_issuemembership, docs_interaction_contracts_markvisit, docs_interaction_contracts_correctpayment, docs_interaction_contracts_addfreeze, docs_interaction_contracts_addnonworkingday [EXTRACTED 1.00]
+- **Kyiv Business-Time Delivery** — docs_implementation_progress_kyiv_business_time_hardening, docs_implementation_progress_businesstimezone_contract, docs_implementation_progress_canonical_command_time_normalization, docs_implementation_progress_membershipstatecachebulkrebuilder, docs_interaction_contracts_kyiv_business_time_semantics, docs_interaction_contracts_generatedailyreport [INFERRED 0.95]
+- **Localized UI Zones** — docs_ui_localization_inventory_shared_authentication_localization, docs_ui_localization_inventory_reception_dashboard_localization, docs_ui_localization_inventory_client_search_localization, docs_ui_localization_inventory_client_profile_localization, docs_ui_localization_inventory_client_mutation_localization, docs_ui_localization_inventory_issue_membership_localization, docs_ui_localization_inventory_visit_localization, docs_ui_localization_inventory_payment_localization, docs_ui_localization_inventory_freeze_localization, docs_ui_localization_inventory_membership_types_localization, docs_ui_localization_inventory_staff_accounts_localization, docs_ui_localization_inventory_non_working_days_localization, docs_ui_localization_inventory_reports_localization, docs_ui_localization_inventory_audit_timeline_localization, docs_ui_localization_inventory_client_history_localization [EXTRACTED 1.00]
+- **Idempotent Mutation Workflows** — docs_ui_workflows_mark_visit_workflow, docs_ui_workflows_issue_membership_workflow, docs_ui_workflows_add_payment_workflow, docs_ui_workflows_add_cancel_freeze_workflow, docs_ui_workflows_correction_workflows [EXTRACTED 1.00]
+- **Kyiv Time-Sensitive Workflows** — docs_ui_workflows_mark_visit_workflow, docs_ui_workflows_add_payment_workflow, docs_ui_workflows_daily_report_workflow, docs_ui_workflows_correction_workflows [EXTRACTED 1.00]
 - **Single-Writer Codex Orchestration** — _codex_skills_bodylife_codex_orchestrator_skill_single_writer_lease, docs_codex_orchestration_write_lease_protocol, agents_logical_commit_workflow [EXTRACTED 1.00]
-- **Milestone 10 Audit Acceptance System** — docs_audit_foundation_inventory_executable_command_matrix, docs_implementation_progress_readable_audit_action_registry, docs_audit_foundation_inventory_milestone_10_acceptance, docs_implementation_progress_full_validation_evidence [EXTRACTED 1.00]
-- **Operational Recovery Cycle** — docs_operations_design_provider_managed_backup, docs_operations_design_restore_rehearsal, docs_operations_design_owner_restore_check, docs_operations_design_paper_fallback, docs_operations_design_outage_reconciliation [EXTRACTED 1.00]
-- **Atomic Command, State, and Audit Flow** — docs_interaction_contracts_common_command_contract, docs_data_architecture_canonical_source_facts, docs_data_architecture_rebuildable_membership_state, docs_data_architecture_append_only_business_audit [EXTRACTED 1.00]
-- **Membership Extension Policy** — docs_adr_015_freeze_range_eligibility_policy_freeze_range_eligibility, docs_adr_016_non_working_day_application_scope_full_period_contribution, docs_domain_model_extension_date_union, docs_data_architecture_rebuildable_membership_state [EXTRACTED 1.00]
 - **Reception Vertical Slice Flow** — docs_ui_workflows_reception_dashboard_workflow, docs_ui_workflows_client_profile_workflow, docs_ui_workflows_mark_visit_workflow, docs_vertical_slice_plan_profile_report_audit_consistency [EXTRACTED 1.00]
 - **MembershipType Catalog to Immutable Issued Snapshot Boundary** — docs_data_architecture_membership_type_catalog, docs_data_architecture_immutable_issue_time_snapshot, docs_milestone_4_acceptance_review_membership_types_catalog_slice, docs_milestone_4_acceptance_review_milestone_5_snapshot_handoff [EXTRACTED 1.00]
 - **Client Identity Normalization and Duplicate Matching Flow** — docs_client_search_normalization_clientsearchnormalizer, docs_client_search_normalization_normalized_identity_values, docs_client_search_normalization_duplicate_candidate_matching [EXTRACTED 1.00]
@@ -844,1731 +980,1999 @@
 - **Milestone 1 Foundation Evidence** — docs_implementation_roadmap_milestone_1_project_scaffold_and_infrastructure, docs_implementation_progress_milestone_1_completed_foundation, docs_milestone_1_acceptance_review_completed_foundation, docs_local_development_postgresql_in_docker, docker_compose_postgres_service [INFERRED 0.85]
 - **Reception-first UI Contract** — agents_ui_rules, docs_ui_design_foundation_product_posture, docs_ui_workflows_reception_dashboard_workflow, docs_vertical_slice_plan_slice_goal [INFERRED 0.95]
 
-## Communities (778 total, 348 thin omitted)
+## Communities (903 total, 411 thin omitted)
 
-### Community 0 - "Body Life Crm Modules Memberships"
+### Community 0 - "Memberships Components"
+Cohesion: 0.02
+Nodes (71): BodyLife.Crm.Modules.Memberships, BodyLife.Crm.Infrastructure.Persistence.Memberships, BodyLife.Crm.Tests.Modules.Reports, BodyLife.Crm.Tests.Modules.Memberships, BodyLife.Crm.Infrastructure.Persistence.Reports, BodyLife.Crm.Modules.Reports, FreezeExplanationRow, NonWorkingExplanationRow (+63 more)
+
+### Community 1 - "Audit Entry Explanation"
+Cohesion: 0.06
+Nodes (22): CardAssignmentAuditFixture, ClientIdentityAuditFixture, FreezeAdditionAuditFixture, FreezeCancellationAuditFixture, MembershipTypeAuditFixture, NonWorkingDayAdditionAuditFixture, NonWorkingDayAuditFixture, NonWorkingDayBeforeApplicationAuditFixture (+14 more)
+
+### Community 2 - "Shared Kernel"
 Cohesion: 0.03
-Nodes (39): BodyLife.Crm.Modules.MembershipTypes, BodyLife.Crm.SharedKernel, BodyLife.Crm.Modules.Memberships, BodyLife.Crm.Infrastructure.Persistence.Memberships, BodyLife.Crm.Tests.Modules.Reports, BodyLife.Crm.Tests.Modules.Memberships, FreezeExplanationRow, NonWorkingExplanationRow (+31 more)
+Nodes (64): BodyLife.Crm.Modules.Audit, BodyLife.Crm.Modules.Freezes, BodyLife.Crm.Modules.Memberships, BodyLife.Crm.Modules.NonWorkingDays, BodyLife.Crm.Modules.Reports, BodyLife.Crm.Modules.Visits, BodyLife.Crm.Web.Operations, BodyLife.Crm.Web.Pages.Reception (+56 more)
 
-### Community 1 - "htmx 2 0 10 min"
+### Community 3 - "HTMX Library"
 Cohesion: 0.08
 Nodes (104): $(), a(), Ae(), an(), at(), B(), Be(), bn() (+96 more)
 
-### Community 2 - "Index Model"
-Cohesion: 0.10
-Nodes (35): AddFreezeFormInput, AddFreezeFormViewModel, AddPaymentFormInput, AddPaymentFormViewModel, CancelFreezeFormInput, CancelFreezeFormViewModel, CancelVisitFormInput, CardAssignmentFormInput (+27 more)
+### Community 4 - "Nonworking Days"
+Cohesion: 0.06
+Nodes (44): GetNonWorkingDayCorrectionOutcomeResult, NonWorkingDayCorrectionSource, PreviewCorrectNonWorkingDayQuery, PreviewCorrectNonWorkingDayResult, NonWorkingDayCorrectionConfirmationFormInput, NonWorkingDayCorrectionPreviewFormError, NonWorkingDayCorrectionPreviewFormInput, NonWorkingDayCorrectionWorkspaceViewModel (+36 more)
 
-### Community 3 - "Reception App Fixture"
+### Community 5 - "Reception App Fixture"
 Cohesion: 0.07
-Nodes (12): ConcurrentQueue, Process, NonWorkingDayAddSmokeScenario, NonWorkingDayCorrectionMutationSmokeScenario, ReceptionAppFixture, DateOnly, DateRange, DateTime (+4 more)
+Nodes (14): ConcurrentQueue, Process, NonWorkingDayCorrectionMutationSmokeSnapshot, NonWorkingDayAddSmokeScenario, NonWorkingDayCorrectionMutationSmokeScenario, ReceptionAppFixture, DateOnly, DateRange (+6 more)
 
-### Community 4 - "Body Life Crm Modules Non"
-Cohesion: 0.03
-Nodes (38): BodyLife.Crm.Modules.Memberships, BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays, BodyLife.Crm.Modules.NonWorkingDays, BodyLife.Crm.Infrastructure, BodyLife.Crm.Infrastructure.Tests.Security, BodyLife.Crm.Tests.Modules.NonWorkingDays, CorrectionAuditAfterSummary, NonWorkingDayAuditActions (+30 more)
-
-### Community 5 - "Postgre Sql Smoke Database"
+### Community 6 - "Smoke Database"
 Cohesion: 0.07
 Nodes (13): ActiveSessionActor, AuditSeed, NpgsqlConnection, NpgsqlTransaction, PostgreSqlSmokeDatabase, BodyLifeDbContext, DateOnly, DateTime (+5 more)
 
-### Community 6 - "Postgre Sql Cancel Freeze Command"
-Cohesion: 0.07
-Nodes (46): FreezeCancellationRow, OpenFreezeDayReconciliationStatusProvider, CancellationToken, DateOnly, Task, MembershipStateRecalculator, CancellationToken, Exception (+38 more)
-
-### Community 7 - "Body Life Crm Infrastructure Tests"
-Cohesion: 0.04
-Nodes (46): BodyLife.Crm.Infrastructure.Tests.PostgreSql, BodyLife.Crm.Infrastructure.Persistence.UsersRoles, BodyLife.Crm.Infrastructure.Persistence, BodyLife.Crm.Infrastructure.Persistence.Idempotency, BodyLife.Crm.Infrastructure.Persistence.Audit, BodyLife.Crm.Infrastructure.Persistence.ClientsSearch, FactAttribute, BusinessAuditEntryRecord (+38 more)
-
-### Community 8 - "Postgre Sql Get Client Profile"
-Cohesion: 0.08
-Nodes (45): GetClientMembershipExtensionExplanationsQuery, GetClientMembershipStatesQuery, GetClientVisitRowsQuery, QueryPermissionSet, GetClientProfileQueryHandler, CancellationToken, GetClientMembershipExtensionExplanationsResult, GetClientMembershipStatesResult (+37 more)
-
-### Community 9 - "Body Life Crm Application Commands"
-Cohesion: 0.04
-Nodes (41): BodyLife.Crm.Application.Commands, BodyLife.Crm.Modules.Freezes, BodyLife.Crm.Web.Pages.Audit, BodyLife.Crm.Tests.Modules.Audit, BodyLife.Crm.Tests.Modules.Freezes, BodyLife.Crm.Web.Tests.Pages.Audit, BodyLife.Crm.Modules.Audit, AffectedClientReference (+33 more)
-
-### Community 10 - "Body Life Auth Technical Logger"
-Cohesion: 0.05
-Nodes (35): ActorLogContext, AuthorizationMiddlewareResultHandler, AuthorizationPolicy, CookieAuthenticationEvents, CookieValidatePrincipalContext, IAuthorizationMiddlewareResultHandler, PolicyAuthorizationResult, RequestDelegate (+27 more)
-
-### Community 11 - "Postgre Sql Get Daily Payment"
-Cohesion: 0.06
-Nodes (40): DailyPaymentSourceFixture, Money, object, DailyPaymentSourceRecord, GetDailyPaymentSourceRowsQueryHandler, CancellationToken, CanonicalPaymentSourceRow, Task (+32 more)
-
-### Community 12 - "Body Life Crm Modules Payments"
+### Community 7 - "Application Commands"
 Cohesion: 0.03
-Nodes (39): BodyLife.Crm.Tests.Modules.Payments, BodyLife.Crm.Modules.Payments, BodyLife.Crm.Infrastructure.Persistence.Payments, PaymentAuditSummary, CanonicalPaymentHistorySource, PaymentStorageRow, PaymentAuditActions, string (+31 more)
+Nodes (37): BodyLife.Crm.Modules.Visits, BodyLife.Crm.Tests.Modules.Visits, BodyLife.Crm.Infrastructure.Persistence.Visits, BodyLife.Crm.Application.Commands, CommandStatus, IBodyLifeCommand, CanonicalVisitHistorySource, ConsumptionStorageRow (+29 more)
 
-### Community 13 - "Non Working Day Audit Explanation"
-Cohesion: 0.07
-Nodes (44): AdditionPreviewDto, ApplicationScopeSnapshot, BeforeApplicationDto, CancellationDto, CancellationSnapshot, NonWorkingDaySummary, PeriodRangeValues, PeriodReasonValues (+36 more)
+### Community 8 - "Infrastructure Persistence"
+Cohesion: 0.03
+Nodes (48): BodyLife.Crm.Infrastructure.Tests.PostgreSql, BodyLife.Crm.Infrastructure.Persistence.UsersRoles, BodyLife.Crm.Infrastructure.Persistence, BodyLife.Crm.Infrastructure.Persistence.Audit, DbContextOptionsBuilder, FactAttribute, BusinessAuditEntryRecord, DateTimeOffset (+40 more)
 
-### Community 14 - "Body Life Crm Application Commands"
+### Community 9 - "Nonworking Day Module"
+Cohesion: 0.03
+Nodes (45): BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays, BodyLife.Crm.Modules.NonWorkingDays, BodyLife.Crm.Infrastructure, BodyLife.Crm.Infrastructure.Tests.Security, BodyLife.Crm.Tests.Modules.NonWorkingDays, ApplicationStorageRow, CanonicalApplicationProjection, CanonicalPeriodHistorySource (+37 more)
+
+### Community 10 - "Client Search"
+Cohesion: 0.03
+Nodes (46): BodyLife.Crm.Modules.Clients.Search, BodyLife.Crm.Modules.Payments, BodyLife.Crm.Web.Pages.Reception, BodyLife.Crm.Infrastructure.Persistence.ClientsSearch, BodyLife.Crm.Infrastructure.Persistence.Payments, IConfiguration, AuditTimelineStorageRow, NormalizedAuditTimelineQuery (+38 more)
+
+### Community 11 - "Visits Storage"
+Cohesion: 0.09
+Nodes (32): PersistedCancellation, PersistedCancellationAudit, PersistedConsumption, PersistedMembershipStateCache, PersistedVisit, FailOnSecondMembershipRecalculation, FixedTimeProvider, PostgreSqlVisitsStorageTests (+24 more)
+
+### Community 12 - "Nonworking Day Audit"
+Cohesion: 0.06
+Nodes (47): AdditionPreviewDto, ApplicationScopeSnapshot, BeforeApplicationDto, CancellationDto, CancellationSnapshot, NonWorkingDaySummary, PeriodRangeValues, PeriodReasonValues (+39 more)
+
+### Community 13 - "Application Modules"
 Cohesion: 0.04
-Nodes (31): BodyLife.Crm.Modules.Visits, BodyLife.Crm.Tests.Modules.Visits, BodyLife.Crm.Infrastructure.Persistence.Visits, BodyLife.Crm.Application.Commands, CommandStatus, MembershipStateAuditSummary, CanonicalVisitHistorySource, ConsumptionStorageRow (+23 more)
+Nodes (27): BodyLife.Crm.Application.Commands, BodyLife.Crm.Modules.Freezes, BodyLife.Crm.Tests.Modules.Audit, BodyLife.Crm.Tests.Modules.Payments, BodyLife.Crm.Tests.Modules.Freezes, BodyLife.Crm.Modules.Payments, BodyLife.Crm.Modules.Audit, Money (+19 more)
 
-### Community 15 - "Body Life Crm Modules Reports"
-Cohesion: 0.04
-Nodes (27): BodyLife.Crm.Web.Pages, BodyLife.Crm.Web.Tests.Operations, BodyLife.Crm.Web.Pages.Reports, BodyLife.Crm.Web.Operations, BodyLife.Crm.Infrastructure.Persistence.Reports, BodyLife.Crm.Modules.Reports, IConfiguration, ClientHistorySourceGroup (+19 more)
+### Community 14 - "Auth Technical Logging"
+Cohesion: 0.05
+Nodes (34): ActorLogContext, AuthorizationMiddlewareResultHandler, AuthorizationPolicy, CookieAuthenticationEvents, CookieValidatePrincipalContext, IAuthorizationMiddlewareResultHandler, PolicyAuthorizationResult, RequestDelegate (+26 more)
 
-### Community 16 - "Body Life Crm Shared Kernel"
-Cohesion: 0.04
-Nodes (30): BodyLife.Crm.Infrastructure.Persistence.MembershipTypes, BodyLife.Crm.Application.Queries, BodyLife.Crm.Web.Pages.Owner, BodyLife.Crm.Modules.MembershipTypes, BodyLife.Crm.Tests.Modules.MembershipTypes, BodyLife.Crm.Tests.Application, BodyLife.Crm.SharedKernel, QueryPermissionDeniedReasonCodes (+22 more)
+### Community 15 - "Client Search"
+Cohesion: 0.03
+Nodes (33): BodyLife.Crm.Application.Queries, BodyLife.Crm.Web.Pages.Owner, BodyLife.Crm.Modules.MembershipTypes, BodyLife.Crm.Modules.Clients.Search, BodyLife.Crm.Tests.Modules.Clients.Search, BodyLife.Crm.Tests.Modules.MembershipTypes, QueryPermissionDeniedReasonCodes, string (+25 more)
 
-### Community 17 - "Postgre Sql Visits Storage Tests"
-Cohesion: 0.12
-Nodes (22): PersistedCancellation, PersistedCancellationAudit, PersistedConsumption, PersistedMembershipStateCache, PersistedVisit, PostgreSqlVisitsStorageTests, StaticVisitDayReconciliationStatusProvider, ActorContext (+14 more)
+### Community 16 - "Client History Rows"
+Cohesion: 0.08
+Nodes (40): ClientHistoryPage, ClientVisitConsumptionStatus, ClientVisitRowStatus, FreezeCancellationHistorySource, GetClientHistoryResult, IssuedMembershipHistorySource, IssuedMembershipLifecycleStatus, MarkedVisitHistorySource (+32 more)
 
-### Community 18 - "Postgre Sql Correct Non Working"
+### Community 17 - "Membership Cache Rebuild"
+Cohesion: 0.14
+Nodes (16): IMembershipVisitFreezeSourceProvider, MembershipVisitFreezeSource, PersistedMembershipState, PostgreSqlMembershipStateCacheRebuildTests, StaticMembershipVisitFreezeSourceProvider, BodyLifeDbContext, CancellationToken, DateOnly (+8 more)
+
+### Community 18 - "Correct Nonworking Day"
 Cohesion: 0.10
-Nodes (34): CancellationRow, CorrectionFixture, FailAfterCanonicalWriteRecalculator, FixedTimeProvider, MutableTimeProvider, PostgreSqlCorrectNonWorkingDayCommandTests, ApplicationRow, AuditRow (+26 more)
+Nodes (35): CancellationRow, CorrectionFixture, CorrectNonWorkingDayCommandHandler, HmacNonWorkingDayCorrectionTokenService, INonWorkingDayCorrectionTokenService, MembershipComponents, NonWorkingDayCanonicalCorrection, FailAfterCanonicalWriteRecalculator (+27 more)
 
-### Community 19 - "Body Life Crm Modules Clients"
-Cohesion: 0.04
-Nodes (34): BodyLife.Crm.Modules.Clients.Search, BodyLife.Crm.Web.Pages.Reception, BodyLife.Crm.Modules.Clients.Search, BodyLife.Crm.Tests.Modules.Clients.Search, NormalizedSearchCriteria, ClientDuplicateWarningType, ClientMembershipSummaryStatusCodes, string (+26 more)
+### Community 19 - "Cancel Freeze"
+Cohesion: 0.10
+Nodes (32): FreezeCancellationRow, FreezeDayReconciliationStatus, IFreezeDayReconciliationStatusProvider, FailOnSecondMembershipStateRecalculator, FixedTimeProvider, PostgreSqlCancelFreezeCommandTests, StubFreezeDayReconciliationStatusProvider, AccountKind (+24 more)
 
-### Community 20 - "Postgre Sql Non Working Day"
+### Community 20 - "Client Profile Query"
+Cohesion: 0.10
+Nodes (35): GetClientMembershipExtensionExplanationsQuery, GetClientMembershipStatesQuery, GetClientVisitRowsQuery, GetClientVisitRowsQueryHandler, CancellationToken, GetClientVisitRowsResult, Task, GetClientPaymentRowsQuery (+27 more)
+
+### Community 21 - "Client Commands"
+Cohesion: 0.06
+Nodes (38): ClientDuplicateCandidate, ClientDuplicateWarningType, ClientCommandSupport, NormalizedClientAcknowledgement, NormalizedClientCommandEnvelope, NormalizedClientIdentity, AccountKind, ActorContext (+30 more)
+
+### Community 22 - "Client History Query"
+Cohesion: 0.06
+Nodes (29): ClientHistorySourceGroup, IDictionary, GetClientHistoryQueryHandler, AuditEntryId, CancellationToken, Func, Guid, IEnumerable (+21 more)
+
+### Community 23 - "Issue Membership"
+Cohesion: 0.15
+Nodes (24): ExistingMembershipFixture, IssuedMembershipRow, IssueFixture, PostgreSqlIssueMembershipCommandTests, AccountKind, ActorContext, ActorRole, AuditRow (+16 more)
+
+### Community 24 - "Nonworking Day Scope"
 Cohesion: 0.08
 Nodes (31): DatabaseSnapshot, IMembershipNonWorkingDayImpactPreparer, MembershipNonWorkingDayAffectedScopePreparer, MembershipNonWorkingDayReplacementImpactPreparer, PostgresException, ScopeFixture, PostgreSqlBusinessAuditAppendOnlyTests, Guid (+23 more)
 
-### Community 21 - "Postgre Sql Issue Membership Command"
-Cohesion: 0.14
-Nodes (25): ExistingMembershipFixture, IssuedMembershipRow, IssueFixture, IssueMembershipCommand, IssueMembershipCommandHandler, MembershipIssuePayment, MembershipNegativeHandlingDecision, PostgreSqlIssueMembershipCommandTests (+17 more)
+### Community 25 - "Client History Rows"
+Cohesion: 0.10
+Nodes (26): AccountId, ClientAuditEntry, ClientFreezeHistorySourceRow, ClientHistorySourceKind, ClientMembershipHistorySourceRow, ClientNonWorkingDayHistorySourceRow, ClientPaymentHistorySourceRow, ClientVisitHistorySourceRow (+18 more)
 
-### Community 22 - "Postgre Sql Add Non Working"
+### Community 26 - "Client Audit Explanations"
+Cohesion: 0.07
+Nodes (33): CardAssignmentSnapshot, CardReferencesSnapshot, ClientCreationSnapshot, ClientIdentityDto, ClientIdentitySnapshot, CreatedClientDto, DuplicateWarningAcknowledgementDto, DuplicateWarningAcknowledgementSnapshot (+25 more)
+
+### Community 27 - "Correct Payment"
+Cohesion: 0.09
+Nodes (31): CorrectPaymentFixture, PaymentCancellationRow, PaymentCorrectionRow, FixedTimeProvider, PostgreSqlCorrectPaymentCommandTests, StubPaymentDayReconciliationStatusProvider, AccountKind, ActorContext (+23 more)
+
+### Community 28 - "Membership Issue Preview"
+Cohesion: 0.10
+Nodes (22): CacheFingerprint, IssuedMembershipFixture, PreviewFixture, PreviewIssueMembershipQueryHandler, CancellationToken, Task, PreviewIssueMembershipQuery, PreviewIssueMembershipResult (+14 more)
+
+### Community 29 - "Opening State Creation"
 Cohesion: 0.11
-Nodes (32): AddNonWorkingDayCommand, AddNonWorkingDayCommandHandler, ApplicationRow, HmacNonWorkingDayPreviewTokenService, INonWorkingDayPreviewTokenService, MembershipStateCacheRebuilder, NonWorkingDayFixture, NonWorkingDayImpactPreview (+24 more)
+Nodes (30): MembershipFixture, MembershipIssueTerms, OpeningStateRow, CreateMembershipOpeningStateCommandHandler, BodyLifeDbContext, CancellationToken, CommandResult, CreateMembershipOpeningStateCommand (+22 more)
 
-### Community 23 - "Client Audit Explanation Factory"
+### Community 30 - "Payment Correction"
 Cohesion: 0.07
-Nodes (32): CardAssignmentSnapshot, CardReferencesSnapshot, ClientCreationSnapshot, ClientIdentityDto, ClientIdentitySnapshot, CreatedClientDto, DuplicateWarningAcknowledgementDto, DuplicateWarningAcknowledgementSnapshot (+24 more)
+Nodes (33): PaymentAuditSummary, PaymentReplacement, CorrectPaymentCommandHandler, CancellationToken, CommandIdempotencyRecord, CommandResult, CorrectPaymentCommand, DateTimeOffset (+25 more)
 
-### Community 24 - "Postgre Sql Add Freeze Command"
-Cohesion: 0.12
-Nodes (28): FreezeFixture, FreezeRow, FailingMembershipStateRecalculator, PostgreSqlAddFreezeCommandTests, AccountKind, ActorContext, AddFreezeCommand, AddFreezeCommandHandler (+20 more)
+### Community 31 - "Add Freeze"
+Cohesion: 0.13
+Nodes (27): FreezeRow, FailingMembershipStateRecalculator, PostgreSqlAddFreezeCommandTests, AccountKind, ActorContext, AddFreezeCommand, AuditRow, BodyLifeDbContext (+19 more)
 
-### Community 25 - "Postgre Sql Get Mark Visit"
-Cohesion: 0.07
-Nodes (28): MarkVisitOptionsFixture, GetMarkVisitOptionsQueryHandler, CancellationToken, Task, GetMarkVisitOptionsQuery, GetMarkVisitOptionsResult, GetMarkVisitOptionsStatus, MarkVisitMembershipOption (+20 more)
-
-### Community 26 - "Postgre Sql Client Duplicate Candidate"
-Cohesion: 0.06
-Nodes (30): NormalizedSearchCriteria, IBodyLifeQuery, IBodyLifeQueryHandler, CancellationToken, Task, FindClientDuplicateCandidatesQueryHandler, CancellationToken, IReadOnlyList (+22 more)
-
-### Community 27 - "Postgre Sql Get Client Membership"
+### Community 32 - "Client Membership States"
 Cohesion: 0.10
 Nodes (22): ClientCatalogFixture, GetClientMembershipStatesQueryHandler, CancellationToken, Task, GetClientMembershipStatesQuery, GetClientMembershipStatesResult, GetClientMembershipStatesStatus, FixedTimeProvider (+14 more)
 
-### Community 28 - "Postgre Sql Mark Visit Command"
-Cohesion: 0.14
-Nodes (23): ConsumptionRow, MarkVisitCommand, MarkVisitCommandHandler, MarkVisitFixture, MembershipVisitAcknowledgement, PostgreSqlMarkVisitCommandTests, AddFreezeCommand, AddFreezeCommandHandler (+15 more)
+### Community 33 - "Membership Extension Explanations"
+Cohesion: 0.06
+Nodes (25): FreezeSource, GetClientMembershipExtensionExplanationsQueryHandler, CancellationToken, Task, ClientMembershipExtensionExplanations, Guid, IReadOnlyList, GetClientMembershipExtensionExplanationsQuery (+17 more)
 
-### Community 29 - "Postgre Sql Get Audit Timeline"
+### Community 34 - "Create Payment"
+Cohesion: 0.13
+Nodes (25): CreatePaymentCommandHandler, PaymentAttributionRow, PaymentFixture, FixedTimeProvider, PostgreSqlCreatePaymentCommandTests, AccountKind, ActorContext, AuditRow (+17 more)
+
+### Community 35 - "Audit Explanations"
+Cohesion: 0.15
+Nodes (15): CreatedPaymentSnapshot, FreezeMembershipStateSnapshot, MembershipIssueExistingNegativeStateSnapshot, MembershipIssueInitialStateSnapshot, MembershipIssuePaymentSnapshot, MembershipIssueSnapshot, MembershipOpeningStateCreationSnapshot, AuditEntryExplanationPresenter (+7 more)
+
+### Community 36 - "Membership Type Commands"
 Cohesion: 0.08
-Nodes (25): Action, AuditTimelineFixture, AuditTimelineStorageRow, NormalizedAuditTimelineQuery, GetAuditTimelineQueryHandler, CancellationToken, Task, GetAuditTimelineQuery (+17 more)
+Nodes (28): MembershipTypeCommandSupport, NormalizedMembershipTypeCommandEnvelope, NormalizedMembershipTypeCreate, NormalizedMembershipTypeDeactivation, NormalizedMembershipTypeEdit, AccountKind, ActorContext, ActorRole (+20 more)
 
-### Community 30 - "Correct Non Working Day Preparation"
-Cohesion: 0.09
-Nodes (22): CorrectNonWorkingDayCommand, EntityId, string, CorrectNonWorkingDayPreparationPolicy, CommandEnvelope, DateRange, int, CorrectNonWorkingDayPreparationResult (+14 more)
+### Community 37 - "Create Client"
+Cohesion: 0.12
+Nodes (25): ClientRow, CreateClientCommandHandler, CancellationToken, CommandResult, CreateClientCommand, PostgresException, string, Task (+17 more)
 
-### Community 31 - "Reception Dashboard Smoke Tests"
-Cohesion: 0.13
-Nodes (20): ActiveStateDto, ActiveStateSnapshot, CreatedAccountDto, CreatedAccountSnapshot, CredentialStateDto, CredentialStateSnapshot, DisplayNameDto, AddFreezeFormViewModel (+12 more)
-
-### Community 32 - "Audit Entry Explanation View Model"
-Cohesion: 0.14
-Nodes (15): CreatedPaymentSnapshot, FreezeMembershipStateSnapshot, MembershipIssueExistingNegativeStateSnapshot, MembershipIssueInitialStateSnapshot, MembershipIssuePaymentSnapshot, MembershipIssueSnapshot, MembershipOpeningStateCreationSnapshot, AuditEntryExplanationViewModel (+7 more)
-
-### Community 33 - "Postgre Sql Create Payment Command"
-Cohesion: 0.13
-Nodes (25): CreatePaymentCommand, CreatePaymentCommandHandler, PaymentAttributionRow, PaymentFixture, FixedTimeProvider, PostgreSqlCreatePaymentCommandTests, AccountKind, ActorContext (+17 more)
-
-### Community 34 - "Visit Command Support"
-Cohesion: 0.09
-Nodes (23): NormalizedCancelVisit, NormalizedMarkVisit, VisitCommandSupport, AccountKind, ActorContext, ActorRole, AuditEntryId, BodyLifeDbContext (+15 more)
-
-### Community 35 - "Freeze Command Support"
+### Community 38 - "Inactive Clients"
 Cohesion: 0.10
-Nodes (22): FreezeCommandSupport, NormalizedAddFreeze, NormalizedCancelFreeze, AccountKind, ActorContext, ActorRole, AuditEntryId, BodyLifeDbContext (+14 more)
+Nodes (26): GetClientMembershipReportStatesResult, InactiveFixture, ListInactiveClientsStatus, NpgsqlCommand, NpgsqlDbType, SeededClient, ListInactiveClientsQueryHandler, CancellationToken (+18 more)
 
-### Community 36 - "Body Life Crm Infrastructure csproj"
+### Community 39 - "Nonworking Day Commands"
+Cohesion: 0.08
+Nodes (24): NonWorkingDayCommandSupport, NormalizedAddNonWorkingDay, AccountKind, ActorContext, ActorRole, AddNonWorkingDayCommand, AuditEntryId, BodyLifeDbContext (+16 more)
+
+### Community 40 - "Mark Visit"
+Cohesion: 0.17
+Nodes (17): ConsumptionRow, PostgreSqlMarkVisitCommandTests, AuditRow, BodyLifeDbContext, CacheRow, CommandErrorCode, DateOnly, EntryOrigin (+9 more)
+
+### Community 41 - "Auth Technical Logging"
+Cohesion: 0.07
+Nodes (24): EventId, ILogger, IServiceProvider, LogEntry, LogLevel, MembershipStateCacheBulkRebuilder, CancellationToken, Task (+16 more)
+
+### Community 42 - "Project Infrastructure"
 Cohesion: 0.05
 Nodes (37): Microsoft.AspNetCore.Mvc.Testing (10.0.9), Microsoft.Extensions.Configuration.Abstractions (10.0.9), Microsoft.Extensions.DependencyInjection.Abstractions (10.0.9), Microsoft.Playwright (1.61.0), Npgsql.EntityFrameworkCore.PostgreSQL (10.0.2), Microsoft.NET.Sdk.Web, net10.0, Microsoft.NET.Sdk (+29 more)
 
-### Community 37 - "Postgre Sql Create Membership Opening"
-Cohesion: 0.16
-Nodes (21): CreateMembershipOpeningStateCommand, CreateMembershipOpeningStateCommandHandler, MembershipFixture, OpeningStateRow, FixedTimeProvider, PostgreSqlCreateMembershipOpeningStateCommandTests, AccountKind, ActorContext (+13 more)
+### Community 43 - "Daily Payment Query"
+Cohesion: 0.14
+Nodes (21): ClientPaymentCorrection, DailyCashSnapshot, DailyPaymentSourceFixture, DailyPaymentSourceSnapshot, GetDailyPaymentSourceRowsStatus, FixedTimeProvider, PostgreSqlGetDailyPaymentSourceRowsQueryTests, RecordingPaymentDayStatusProvider (+13 more)
 
-### Community 38 - "Gym System Interview"
+### Community 44 - "Audit Timeline"
+Cohesion: 0.25
+Nodes (13): AuditTimelineSmokeTests, CultureInfo, DateOnly, DateTimeOffset, Fact, Guid, IBrowser, ILocator (+5 more)
+
+### Community 45 - "Client Payment Rows"
+Cohesion: 0.11
+Nodes (25): ClientPaymentRowsFixture, ClientPaymentRowsPage, GetClientPaymentRowsQuery, GetClientPaymentRowsStatus, GetClientPaymentRowsQueryHandler, CancellationToken, GetClientPaymentRowsResult, Task (+17 more)
+
+### Community 46 - "Freeze Persistence"
 Cohesion: 0.05
-Nodes (46): First Version Exclusions, First Version Proposal, First Version Scope, Fixed Price 400 USD, Gym Membership Accounting System, Non-Working Days Business Logic, Payment After Completion, Reception Workflow (+38 more)
+Nodes (30): BodyLife.Crm.Infrastructure.Persistence.Freezes, EventRequirements, RequiredPayloadFields, FreezeAuditActions, string, OpenFreezeDayReconciliationStatusProvider, CancellationToken, DateOnly (+22 more)
 
-### Community 39 - "Non Working Day Command Support"
+### Community 47 - "Correlation Middleware"
+Cohesion: 0.08
+Nodes (20): EntryOrigin, RequestCorrelationId, BodyLifeRequestContext, BodyLifeRequestContextResolver, IBodyLifeRequestContextResolver, DateTimeOffset, HttpContext, RequestCorrelationMiddleware (+12 more)
+
+### Community 48 - "Payment Commands"
 Cohesion: 0.09
-Nodes (22): NonWorkingDayCommandSupport, NormalizedAddNonWorkingDay, AccountKind, ActorContext, ActorRole, AuditEntryId, BodyLifeDbContext, CancellationToken (+14 more)
+Nodes (24): NormalizedCreatePayment, PaymentCommandSupport, AccountKind, ActorContext, ActorRole, AuditEntryId, BodyLifeDbContext, CancellationToken (+16 more)
 
-### Community 40 - "Audit Entry Explanation View Model"
-Cohesion: 0.09
-Nodes (9): CardAssignmentAuditFixture, ClientIdentityAuditFixture, FreezeCancellationAuditFixture, MembershipTypeAuditFixture, PaymentAuditFixture, AuditEntryExplanationViewModelTests, DateTimeOffset, IEnumerable (+1 more)
-
-### Community 41 - "Client History Row View Model"
-Cohesion: 0.12
-Nodes (17): FreezeCancellationHistorySource, FreezeHistorySource, IssuedMembershipHistorySource, PaymentCancellationHistorySource, PaymentCorrectionHistorySource, VisitCancellationHistorySource, ClientHistoryChangeViewModel, ClientHistoryFactViewModel (+9 more)
-
-### Community 42 - "Membership Calculated State"
+### Community 49 - "Calculated Membership State"
 Cohesion: 0.12
 Nodes (19): MembershipAdjustmentSourceFact, DateOnly, Guid, int, MembershipCalculatedState, DateOnly, DateTimeOffset, Guid (+11 more)
 
-### Community 43 - "Request Correlation Middleware"
-Cohesion: 0.08
-Nodes (19): RequestCorrelationId, BodyLifeRequestContext, BodyLifeRequestContextResolver, IBodyLifeRequestContextResolver, DateTimeOffset, HttpContext, RequestCorrelationMiddleware, HttpContext (+11 more)
+### Community 50 - "Daily Visit Query"
+Cohesion: 0.13
+Nodes (20): DailyVisitSourceFixture, DailyVisitSourceSnapshot, GetDailyVisitSourceRowsStatus, FixedTimeProvider, PostgreSqlGetDailyVisitSourceRowsQueryTests, RecordingVisitDayStatusProvider, BodyLifeDbContext, CancellationToken (+12 more)
 
-### Community 44 - "Rebuildable Membership Derived State"
-Cohesion: 0.06
-Nodes (43): Command Workflow Source Map, Membership Rules Source Map, PostgreSQL Data Access Source Map, Quality Gates Source Map, Reception UI Source Map, Deterministic Visit Ordering, Explicit Membership Selection, Freeze Range Eligibility (+35 more)
+### Community 51 - "Index Page"
+Cohesion: 0.18
+Nodes (9): MarkVisitFormInput, IndexModel, CancellationToken, ClientSearchMode, CommandError, DateTimeOffset, int, IReadOnlyList (+1 more)
 
-### Community 45 - "Get Client Audit Entries Result"
+### Community 52 - "Visit Commands"
 Cohesion: 0.09
-Nodes (20): ClientAuditFixture, ClientAuditStorageRow, NormalizedClientAuditQuery, GetClientAuditEntriesQueryHandler, CancellationToken, Task, GetClientAuditEntriesQuery, int (+12 more)
+Nodes (22): NormalizedCancelVisit, NormalizedMarkVisit, VisitCommandSupport, AccountKind, ActorRole, AuditEntryId, CancelVisitCommand, CommandEnvelope (+14 more)
 
-### Community 46 - "Command Envelope"
-Cohesion: 0.10
-Nodes (19): CommandEnvelope, ClientCommandSupport, NormalizedClientAcknowledgement, NormalizedClientCommandEnvelope, NormalizedClientIdentity, BodyLifeDbContext, CancellationToken, DateTimeOffset (+11 more)
-
-### Community 47 - "Entry Components"
-Cohesion: 0.10
-Nodes (5): FreezeAdditionAuditFixture, NonWorkingDayAdditionAuditFixture, NonWorkingDayAuditFixture, EntryOrigin, Fact
-
-### Community 48 - "Payment Command Support"
-Cohesion: 0.10
-Nodes (21): NormalizedCreatePayment, PaymentCommandSupport, AccountKind, ActorContext, ActorRole, AuditEntryId, BodyLifeDbContext, CancellationToken (+13 more)
-
-### Community 49 - "Postgre Sql Create Membership Type"
-Cohesion: 0.16
-Nodes (19): CreateMembershipTypeCommand, CreateMembershipTypeCommandHandler, MembershipTypeRow, FixedTimeProvider, PostgreSqlCreateMembershipTypeCommandTests, AccountKind, ActorContext, ActorRole (+11 more)
-
-### Community 50 - "Postgre Sql Correct Non Working"
-Cohesion: 0.16
-Nodes (14): CorrectionWriteCounts, SourceFixture, INonWorkingDayCorrectionTokenService, FixedTimeProvider, PostgreSqlCorrectNonWorkingDaySourcePreparerTests, ActorContext, BodyLifeDbContext, DateRange (+6 more)
-
-### Community 51 - "Body Life Crm Modules"
-Cohesion: 0.05
-Nodes (27): BodyLife.Crm.Modules.Users.Roles, BodyLife.Crm.Modules, BodyLife.Crm.Tests.Modules, AuditModule, string, ClientsSearchModule, string, FreezesModule (+19 more)
-
-### Community 52 - "Command Result"
-Cohesion: 0.10
-Nodes (15): CommandResult, IReadOnlyList, EntryOrigin, MembershipTypeCommandSupport, NormalizedMembershipTypeCommandEnvelope, NormalizedMembershipTypeCreate, NormalizedMembershipTypeDeactivation, NormalizedMembershipTypeEdit (+7 more)
-
-### Community 53 - "Membership Command Support"
-Cohesion: 0.10
-Nodes (22): MembershipCommandSupport, NormalizedMembershipCommandEnvelope, NormalizedMembershipOpeningStateCreate, AccountKind, ActorContext, ActorRole, AuditEntryId, BodyLifeDbContext (+14 more)
-
-### Community 54 - "Non Working Day Preview Input"
+### Community 53 - "Audit Presentation"
 Cohesion: 0.08
-Nodes (23): HmacNonWorkingDayPreviewTokenService, DateOnly, Guid, string, MembershipNonWorkingDayAffectedScope, MembershipNonWorkingDayAffectedScopeItem, DateRange, Guid (+15 more)
+Nodes (10): GetAuditTimelineStatus, GetClientHistoryStatus, AuditPresentation, AccountKind, ActorRole, AuditTimelineEntityType, ClientHistoryEntityFilter, DateOnly (+2 more)
 
-### Community 55 - "Non Working Day Preview Smoke"
+### Community 54 - "Add Nonworking Day"
+Cohesion: 0.18
+Nodes (17): HmacNonWorkingDayPreviewTokenService, NonWorkingDayFixture, NonWorkingDayImpactPreview, PostgreSqlAddNonWorkingDayCommandTests, ActorContext, AddNonWorkingDayCommand, ApplicationRow, CommandErrorCode (+9 more)
+
+### Community 55 - "Nonworking Day Preview"
 Cohesion: 0.18
 Nodes (14): NonWorkingDayPreviewSmokeTests, DateOnly, DateRange, Fact, Guid, IBrowser, IBrowserContext, ILocator (+6 more)
 
-### Community 56 - "Postgre Sql Non Working Days"
+### Community 56 - "Daily Report Generation"
+Cohesion: 0.09
+Nodes (25): DailyReportFixture, GetDailyPaymentSourceRowsQuery, IVisitDayReconciliationStatusProvider, GenerateDailyReportStatus, FixedTimeProvider, PostgreSqlGenerateDailyReportQueryTests, RecordingPaymentDayStatusProvider, RecordingVisitDayStatusProvider (+17 more)
+
+### Community 57 - "Mark Visit Options"
+Cohesion: 0.11
+Nodes (22): GetMarkVisitOptionsQuery, GetMarkVisitOptionsStatus, MarkVisitMembershipOption, MarkVisitOptions, MarkVisitOptionsFixture, GetMarkVisitOptionsQueryHandler, CancellationToken, GetClientMembershipStatesResult (+14 more)
+
+### Community 58 - "Membership Commands"
+Cohesion: 0.09
+Nodes (23): MembershipCommandSupport, NormalizedMembershipOpeningStateCreate, AccountKind, ActorContext, ActorRole, AuditEntryId, BodyLifeDbContext, CancellationToken (+15 more)
+
+### Community 59 - "Nonworking Day Preview"
+Cohesion: 0.08
+Nodes (23): HmacNonWorkingDayPreviewTokenService, DateOnly, Guid, string, MembershipNonWorkingDayAffectedScope, MembershipNonWorkingDayAffectedScopeItem, DateRange, Guid (+15 more)
+
+### Community 60 - "Module Registration"
+Cohesion: 0.05
+Nodes (27): BodyLife.Crm.Modules.Users.Roles, BodyLife.Crm.Modules, BodyLife.Crm.Tests.Modules, AuditModule, string, ClientsSearchModule, string, FreezesModule (+19 more)
+
+### Community 61 - "Client Freeze History"
+Cohesion: 0.12
+Nodes (19): FreezeHistoryFixture, FreezeHistorySourceIds, GetClientFreezeHistorySourceRowsStatus, FixedTimeProvider, PostgreSqlGetClientFreezeHistorySourceRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Fact (+11 more)
+
+### Community 62 - "Create Membership Type"
+Cohesion: 0.17
+Nodes (18): MembershipTypeRow, FixedTimeProvider, PostgreSqlCreateMembershipTypeCommandTests, AccountKind, ActorContext, ActorRole, AuditRow, BodyLifeDbContext (+10 more)
+
+### Community 63 - "Nonworking Day Storage"
 Cohesion: 0.14
 Nodes (18): ApplicationSnapshot, ApplicationSnapshot, FixedTimeProvider, NonWorkingDayFixture, PostgreSqlNonWorkingDaysStorageTests, BodyLifeDbContext, DateOnly, DateTimeOffset (+10 more)
 
-### Community 57 - "Postgre Sql Get Client Payment"
-Cohesion: 0.14
-Nodes (20): ClientPaymentRowsFixture, ClientPaymentRowsPage, GetClientPaymentRowsStatus, FixedTimeProvider, PostgreSqlGetClientPaymentRowsQueryTests, RecordingPaymentDayStatusProvider, BodyLifeDbContext, CancellationToken (+12 more)
+### Community 64 - "Client Nonworking History"
+Cohesion: 0.09
+Nodes (21): ApplicationStorageRow, CanonicalPeriodHistorySource, HistoryAuditLink, NonWorkingPeriodCancellationRecord, NonWorkingPeriodRecord, AddedAuditRelatedEntities, CorrectionAuditRelatedEntities, GetClientNonWorkingDayHistorySourceRowsQueryHandler (+13 more)
 
-### Community 58 - "Postgre Sql Generate Daily Report"
-Cohesion: 0.10
-Nodes (24): DailyReportFixture, GetDailyPaymentSourceRowsQuery, IVisitDayReconciliationStatusProvider, FixedTimeProvider, PostgreSqlGenerateDailyReportQueryTests, RecordingPaymentDayStatusProvider, RecordingVisitDayStatusProvider, StubPaymentSourceHandler (+16 more)
+### Community 65 - "Database Context"
+Cohesion: 0.11
+Nodes (16): ClientsFixture, DbContext, IAsyncDisposable, IDesignTimeDbContextFactory, BodyLifeDbContext, ModelBuilder, BodyLifeDbContextFactory, PostgreSqlDuplicateWarningAcknowledgementStorageTests (+8 more)
 
-### Community 59 - "Client Audit Entry"
+### Community 66 - "Payment Storage"
 Cohesion: 0.13
-Nodes (18): ClientAuditEntry, GetClientFreezeHistorySourceRowsQuery, int, GetClientNonWorkingDayHistorySourceRowsQuery, int, GetClientVisitHistorySourceRowsQuery, int, StubQueryHandler (+10 more)
+Nodes (19): PaymentCorrectionSnapshot, PaymentSnapshot, DailyCashSnapshot, FixedTimeProvider, PaymentCorrectionSnapshot, PaymentFixture, PaymentSnapshot, PostgreSqlPaymentsStorageTests (+11 more)
 
-### Community 60 - "Audit Timeline Smoke Tests"
-Cohesion: 0.31
-Nodes (10): AuditTimelineSmokeTests, Fact, Guid, IBrowser, ILocator, InlineData, IPage, IPlaywright (+2 more)
+### Community 67 - "Reception Dashboard"
+Cohesion: 0.22
+Nodes (10): ReceptionDashboardSmokeTests, Fact, IBrowser, ILocator, InlineData, IPage, IPlaywright, IResponse (+2 more)
 
-### Community 61 - "Postgre Sql Preview Issue Membership"
-Cohesion: 0.20
-Nodes (14): CacheFingerprint, IssuedMembershipFixture, PreviewFixture, PostgreSqlPreviewIssueMembershipQueryTests, AccountKind, ActorContext, ActorRole, BodyLifeDbContext (+6 more)
+### Community 68 - "Correct Nonworking Day"
+Cohesion: 0.17
+Nodes (13): CorrectionWriteCounts, SourceFixture, FixedTimeProvider, PostgreSqlCorrectNonWorkingDaySourcePreparerTests, ActorContext, BodyLifeDbContext, DateRange, DateTimeOffset (+5 more)
 
-### Community 62 - "Postgre Sql Create Client Command"
-Cohesion: 0.18
-Nodes (17): ClientDuplicateWarningAcknowledgement, ClientRow, CreateClientCommand, CreateClientCommandHandler, PostgreSqlCreateClientCommandTests, AccountKind, ActorContext, ActorRole (+9 more)
+### Community 69 - "Membership Type Catalog"
+Cohesion: 0.13
+Nodes (20): CreateMembershipTypeFormInput, CreateMembershipTypeFormViewModel, DeactivateFormRenderState, DeactivateMembershipTypeFormInput, DeactivateMembershipTypeFormViewModel, EditFormRenderState, EditMembershipTypeFormInput, EditMembershipTypeFormViewModel (+12 more)
 
-### Community 63 - "Body Life Crm Infrastructure Persistence"
-Cohesion: 0.05
-Nodes (26): BodyLife.Crm.Infrastructure.Persistence.Freezes, FreezeAuditActions, string, AuditRow, ExtensionRow, FreezeFixture, FreezeRow, IdempotencyRow (+18 more)
-
-### Community 64 - "Postgre Sql Freezes Storage Tests"
+### Community 70 - "Account Roles"
 Cohesion: 0.15
-Nodes (17): FreezeCancellationSnapshot, FixedTimeProvider, PostgreSqlFreezesStorageTests, BodyLifeDbContext, DateOnly, DateTimeOffset, FreezeFixture, Func (+9 more)
+Nodes (12): GetMembershipTypesForIssueQueryHandler, CancellationToken, Task, GetMembershipTypesForIssueQuery, GetMembershipTypesForIssueResult, AccountId, AccountKind, PostgreSqlGetMembershipTypesForIssueQueryTests (+4 more)
 
-### Community 65 - "Postgre Sql Correct Payment Command"
-Cohesion: 0.18
-Nodes (14): PaymentCancellationRow, PaymentCorrectionRow, PostgreSqlCorrectPaymentCommandTests, AccountKind, AuditRow, BodyLifeDbContext, CommandResult, DateTimeOffset (+6 more)
+### Community 71 - "Visit Cancellation"
+Cohesion: 0.08
+Nodes (22): CancelVisitSourcePreparationResult, Guid, CancelVisitSourcePreparationStatus, CancelVisitSourcePreparer, BodyLifeDbContext, CancellationToken, EntryOrigin, Guid (+14 more)
 
-### Community 66 - "Postgre Sql Payments Storage Tests"
-Cohesion: 0.14
-Nodes (18): PaymentCorrectionSnapshot, DailyCashSnapshot, FixedTimeProvider, PaymentCorrectionSnapshot, PaymentFixture, PaymentSnapshot, PostgreSqlPaymentsStorageTests, BodyLifeDbContext (+10 more)
-
-### Community 67 - "Non Working Day Correction Workspace"
-Cohesion: 0.14
-Nodes (14): NonWorkingDayCorrectionSource, GetActiveNonWorkingDaysForCorrectionResult, GetActiveNonWorkingDaysForCorrectionStatus, NonWorkingDayCorrectionPreviewFormError, NonWorkingDayCorrectionPreviewFormInput, NonWorkingDayCorrectionWorkspaceViewModel, CommandError, DateOnly (+6 more)
-
-### Community 68 - "Account Kind"
-Cohesion: 0.10
-Nodes (15): MembershipTypeQuerySupport, BodyLifeDbContext, CancellationToken, DateTimeOffset, string, Task, AccountSessionValidationService, CancellationToken (+7 more)
-
-### Community 69 - "Actor Role"
-Cohesion: 0.16
-Nodes (12): GetMembershipTypesForIssueQueryHandler, CancellationToken, Task, GetMembershipTypesForIssueQuery, GetMembershipTypesForIssueResult, AccountId, ActorRole, PostgreSqlGetMembershipTypesForIssueQueryTests (+4 more)
-
-### Community 70 - "Postgre Sql Get Membership State"
+### Community 72 - "Membership State Query"
 Cohesion: 0.17
 Nodes (15): FixedTimeProvider, PostgreSqlGetMembershipStateQueryTests, AccountKind, ActorContext, ActorRole, BodyLifeDbContext, CacheMetadata, DateOnly (+7 more)
 
-### Community 71 - "Mark Visit Smoke Tests"
+### Community 73 - "Mark Visit UI"
 Cohesion: 0.20
 Nodes (13): MarkVisitSmokeTests, Fact, Guid, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+5 more)
 
-### Community 72 - "Body Life Codex Orchestrator Skill"
-Cohesion: 0.07
-Nodes (36): BodyLife Codex Orchestrator Interface, BodyLife Codex Orchestrator Skill, Model-Tier Role Routing, Root Sol Ownership, Single-Writer Lease, BodyLife CRM Agent Instructions, PostgreSQL Append-Only Audit Hardening, Audit Schema Mapping (+28 more)
+### Community 74 - "Freeze Storage"
+Cohesion: 0.16
+Nodes (16): FreezeCancellationSnapshot, PostgreSqlFreezesStorageTests, BodyLifeDbContext, DateOnly, DateTimeOffset, FreezeFixture, Func, Guid (+8 more)
 
-### Community 73 - "Get Client History Query Handler"
-Cohesion: 0.10
-Nodes (16): ClientHistorySourceGroup, IDictionary, GetClientHistoryQueryHandler, AuditEntryId, CancellationToken, Func, Guid, IEnumerable (+8 more)
+### Community 75 - "Audit Entry Explanations"
+Cohesion: 0.18
+Nodes (4): FreezeSnapshot, AuditEntryExplanationViewModel, AuditTimelineEntry, EntryOrigin
 
-### Community 74 - "Postgre Sql Membership Opening States"
+### Community 76 - "Opening State Storage"
 Cohesion: 0.15
 Nodes (14): OpeningStateFixture, PersistedOpeningState, FixedTimeProvider, OpeningStateFixture, PersistedOpeningState, PostgreSqlMembershipOpeningStatesStorageTests, BodyLifeDbContext, DateOnly (+6 more)
 
-### Community 75 - "Time Provider"
+### Community 77 - "Reception Test Fixture"
 Cohesion: 0.06
-Nodes (19): FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, DateTimeOffset, FixedTimeProvider, FixedTimeProvider (+11 more)
+Nodes (22): AuditExplanationSmokeScenario, AuditTimelineSmokeScenario, ClientCardAuditExplanationSmokeScenario, ClientCreationAuditExplanationSmokeScenario, ClientHistorySmokeScenario, EndingSoonReportSmokeScenario, FreezeAdditionAuditExplanationSmokeScenario, FreezeCancellationAuditExplanationSmokeScenario (+14 more)
 
-### Community 76 - "Postgre Sql Membership Adjustments Storage"
+### Community 78 - "Membership Adjustments"
 Cohesion: 0.15
 Nodes (15): AdjustmentFixture, PersistedAdjustment, AdjustmentFixture, FixedTimeProvider, PersistedAdjustment, PostgreSqlMembershipAdjustmentsStorageTests, BodyLifeDbContext, DateOnly (+7 more)
 
-### Community 77 - "Get Client Non Working Day"
-Cohesion: 0.10
-Nodes (18): ApplicationStorageRow, CanonicalPeriodHistorySource, HistoryAuditLink, NonWorkingPeriodCancellationRecord, NonWorkingPeriodRecord, AddedAuditRelatedEntities, CorrectionAuditRelatedEntities, GetClientNonWorkingDayHistorySourceRowsQueryHandler (+10 more)
-
-### Community 78 - "Get Client Freeze History Source"
+### Community 79 - "Membership History Query"
 Cohesion: 0.09
-Nodes (17): CanonicalFreezeHistorySource, FreezeCancellationRecord, FreezeStorageRow, GetClientFreezeHistorySourceRowsQueryHandler, CancellationToken, EntryOrigin, FreezeCancellationSourceStatus, string (+9 more)
+Nodes (18): IssuedMembershipRecord, OpeningStateStorageRow, GetClientMembershipHistorySourceRowsQueryHandler, CancellationToken, EntryOrigin, string, Task, ClientMembershipHistorySourceRow (+10 more)
 
-### Community 79 - "Postgre Sql Test Database"
-Cohesion: 0.16
-Nodes (13): IAsyncDisposable, PostgreSqlMembershipStateCacheStorageTests, DateOnly, DateTimeOffset, Func, Guid, PersistedMembershipState, PostgreSqlFact (+5 more)
-
-### Community 80 - "Postgre Sql Staff Account Audit"
+### Community 80 - "Staff Account Audit"
 Cohesion: 0.14
 Nodes (16): PasswordHashingService, StaffAccountLifecycleService, StaffCredentialsService, FixedTimeProvider, PostgreSqlStaffAccountAuditTests, AccountKind, ActorRole, AuditEntryId (+8 more)
 
-### Community 81 - "Membership Visit Freeze Source"
-Cohesion: 0.08
-Nodes (27): MembershipVisitFreezeSourceReader, CancellationToken, DateOnly, Guid, IEnumerable, IReadOnlyList, Task, MembershipVisitEligibilityPreparer (+19 more)
+### Community 81 - "State Persistence Coordinator"
+Cohesion: 0.17
+Nodes (16): PersistedCache, PersistedExtensionRow, FixedTimeProvider, MutableTimeProvider, PostgreSqlMembershipStatePersistenceCoordinatorTests, BodyLifeDbContext, DateOnly, DateTimeOffset (+8 more)
 
-### Community 82 - "Non Working Day Correction Source"
+### Community 82 - "Update Client"
+Cohesion: 0.20
+Nodes (11): CommandErrorCode, ClientDuplicateWarningAcknowledgement, PostgreSqlUpdateClientCommandTests, AuditRow, CardRow, ClientRow, DateTimeOffset, Guid (+3 more)
+
+### Community 83 - "Actor Context"
 Cohesion: 0.10
-Nodes (17): CorrectNonWorkingDayCommandHandler, CancellationToken, CommandIdempotencyRecord, CommandResult, string, Task, CorrectNonWorkingDaySourcePreparationResult, Guid (+9 more)
+Nodes (15): MembershipTypeQuerySupport, BodyLifeDbContext, CancellationToken, DateTimeOffset, string, Task, AccountSessionValidationService, CancellationToken (+7 more)
 
-### Community 83 - "Membership Issue Preview"
-Cohesion: 0.07
-Nodes (25): MembershipIssueNegativeContext, DateOnly, MembershipIssuePreparation, DateOnly, Guid, IReadOnlyList, IssuedMembershipSnapshot, MembershipIssuePreparationPolicy (+17 more)
-
-### Community 84 - "Postgre Sql Membership Extension Days"
+### Community 84 - "Extension Day Storage"
 Cohesion: 0.17
 Nodes (13): FixedTimeProvider, PersistedExtensionDay, PostgreSqlMembershipExtensionDaysStorageTests, BodyLifeDbContext, DateOnly, DateTimeOffset, Func, Guid (+5 more)
 
-### Community 85 - "Get Client Membership History Source"
+### Community 85 - "Smoke Database Helpers"
+Cohesion: 0.06
+Nodes (23): ActiveSessionActor, AuditCardAssignmentSummarySeed, AuditCorrelationSmokeSnapshot, AuditFreezeMembershipStateSummarySeed, AuditFreezeSourceSummarySeed, AuditMembershipTypeSummarySeed, AuditMoneySummarySeed, AuditNonWorkingDayBeforeApplicationSummarySeed (+15 more)
+
+### Community 86 - "Payment Query Support"
 Cohesion: 0.09
-Nodes (17): IssuedMembershipRecord, OpeningStateStorageRow, GetClientMembershipHistorySourceRowsQueryHandler, CancellationToken, EntryOrigin, string, Task, ClientMembershipHistorySourceRow (+9 more)
+Nodes (19): CanonicalPaymentCancellationSourceRow, CanonicalPaymentCorrectionSourceRow, CanonicalPaymentProjection, PaymentQuerySupport, ActorContext, BodyLifeDbContext, CancellationToken, CanonicalPaymentSourceRow (+11 more)
 
-### Community 86 - "Correct Payment Command Support"
-Cohesion: 0.12
-Nodes (16): CorrectPaymentCommandSupport, NormalizedCorrectPayment, NormalizedPaymentReplacement, AccountKind, ActorRole, AuditEntryId, CommandEnvelope, CommandIdempotencyRecord (+8 more)
-
-### Community 87 - "Membership Types Model"
+### Community 87 - "Client Audit Entries"
 Cohesion: 0.16
-Nodes (14): DeactivateFormRenderState, EditFormRenderState, CommandError, CreateMembershipTypeFormInput, CreateMembershipTypeFormViewModel, IReadOnlyList, MembershipTypesModel, CancellationToken (+6 more)
+Nodes (14): ClientAuditEntry, GetClientPaymentHistorySourceRowsQuery, int, StubQueryHandler, GetClientHistoryQueryHandlerTests, ActorContext, AuditEntryId, CancellationToken (+6 more)
 
-### Community 88 - "Non Working Days Model"
-Cohesion: 0.20
-Nodes (12): NonWorkingDayCorrectionConfirmationFormInput, NonWorkingDaysModel, CancellationToken, CommandError, CommandResult, DateOnly, Guid, IActionResult (+4 more)
+### Community 88 - "Membership Type Module"
+Cohesion: 0.07
+Nodes (18): BodyLife.Crm.Modules.MembershipTypes, BodyLife.Crm.Infrastructure.Persistence.MembershipTypes, BodyLife.Crm.Infrastructure.Tests.Architecture, MembershipTypePriceSnapshot, MembershipTypePriceSnapshot, MembershipTypeAuditActions, string, BodyLife.Crm.Web.Localization (+10 more)
 
-### Community 89 - "Postgre Sql Assign Or Change"
+### Community 89 - "Visit History Query"
+Cohesion: 0.10
+Nodes (18): CanonicalVisitHistorySource, ConsumptionStorageRow, GetClientVisitHistorySourceRowsQueryHandler, CancellationToken, string, Task, ClientVisitHistorySourceRow, ClientVisitHistorySourceRowsPage (+10 more)
+
+### Community 90 - "Card Assignment"
 Cohesion: 0.29
 Nodes (9): PostgreSqlAssignOrChangeCardCommandTests, AuditRow, CardRow, DateTimeOffset, Guid, NpgsqlConnection, NpgsqlTransaction, PostgreSqlFact (+1 more)
 
-### Community 90 - "Get Client Visit History Source"
-Cohesion: 0.10
-Nodes (16): CanonicalVisitHistorySource, ConsumptionStorageRow, GetClientVisitHistorySourceRowsQueryHandler, CancellationToken, string, Task, ClientVisitHistorySourceRow, ClientVisitHistorySourceRowsPage (+8 more)
+### Community 91 - "Membership Issue Support"
+Cohesion: 0.12
+Nodes (18): IssueMembershipCommandSupport, NormalizedMembershipIssue, AccountKind, ActorRole, AuditEntryId, CommandEnvelope, CommandErrorCode, CommandIdempotencyRecord (+10 more)
 
-### Community 91 - "Create Freeze Addition"
-Cohesion: 0.13
-Nodes (6): FreezeSnapshot, MembershipStateSnapshot, PaymentSnapshot, EntryOrigin, ICollection, VisitMarkedMembershipStateSnapshot
+### Community 92 - "Membership Nonworking Policy"
+Cohesion: 0.14
+Nodes (14): MembershipNonWorkingDayApplication, DateRange, Guid, MembershipNonWorkingDayApplicationPolicy, DateRange, Guid, MembershipNonWorkingDayApplicationStatus, MembershipNonWorkingDayApplicationPolicyTests (+6 more)
 
-### Community 92 - "Postgre Sql Deactivate Membership Type"
+### Community 93 - "Deactivate Membership Type"
 Cohesion: 0.26
 Nodes (9): PostgreSqlDeactivateMembershipTypeCommandTests, AuditRow, DateTimeOffset, Guid, IdempotencyRow, JsonElement, MembershipTypeRow, PostgreSqlFact (+1 more)
 
-### Community 93 - "Postgre Sql Edit Membership Type"
+### Community 94 - "Edit Membership Type"
 Cohesion: 0.26
 Nodes (9): PostgreSqlEditMembershipTypeCommandTests, AuditRow, DateTimeOffset, Guid, IdempotencyRow, JsonElement, MembershipTypeRow, PostgreSqlFact (+1 more)
 
-### Community 94 - "Membership Dependency Inspector"
+### Community 95 - "Staff Audit Explanations"
+Cohesion: 0.20
+Nodes (10): ActiveStateSnapshot, CreatedAccountSnapshot, CredentialStateSnapshot, AuditEntryExplanationFactViewModel, StaffAccountAuditExplanationFactory, AuditTimelineEntry, Guid, IReadOnlyList (+2 more)
+
+### Community 96 - "Membership Dependency Inspector"
 Cohesion: 0.15
 Nodes (16): Assembly, BinaryReader, BindingFlags, ISet, MethodBase, OperandType, MembershipDependencyInspector, MembershipFormulaOwnershipTests (+8 more)
 
-### Community 95 - "Client Membership State Timeline Item"
+### Community 97 - "Membership State Timeline"
 Cohesion: 0.09
 Nodes (19): ClientProfileMembershipArea, ClientMembershipSummary, ClientProfileMembershipProjection, IEnumerable, IReadOnlyList, ActiveMembershipCandidateSelection, IReadOnlyList, ActiveMembershipCandidateStatus (+11 more)
 
-### Community 96 - "3 Pros cons risks"
+### Community 98 - "Business Time Localization"
+Cohesion: 0.09
+Nodes (30): Bilingual UI Hardening, Bilingual Validation Evidence, BodyLife CRM Implementation Progress, Business-Time Validation Evidence, BusinessTimeZone Contract, Deterministic DST Input Policy, Kyiv Business-Day UTC Ranges, Kyiv Business-Time Hardening (+22 more)
+
+### Community 99 - "Technology Stack Decision"
 Cohesion: 0.07
 Nodes (29): 1. Decision drivers, 2. Options matrix, 3. Pros/cons/risks, 4. Recommended stack or shortlist, 5. What would change the decision, 6. Migration/backup implications, 7. Implementation starter plan, ADR drivers (+21 more)
 
-### Community 97 - "Postgre Sql List Ending Soon"
+### Community 100 - "Ending Soon Memberships"
 Cohesion: 0.16
 Nodes (14): EndingSoonFixture, FixedTimeProvider, PostgreSqlListEndingSoonMembershipsQueryTests, BodyLifeDbContext, CancellationToken, DateOnly, DateTimeOffset, Fact (+6 more)
 
-### Community 98 - "Body Life Auth Technical Logger"
-Cohesion: 0.11
-Nodes (16): EventId, IDisposable, ILogger, LogEntry, LogLevel, BodyLifeAuthTechnicalLoggerTests, CapturingLogger, LogEntry (+8 more)
-
-### Community 99 - "Postgre Sql List Negative Clients"
+### Community 101 - "Negative Clients"
 Cohesion: 0.16
 Nodes (14): NegativeClientsFixture, PostgreSqlListNegativeClientsQueryTests, BodyLifeDbContext, CancellationToken, DateOnly, Fact, Guid, IServiceCollection (+6 more)
 
-### Community 100 - "Correct Non Working Day Preparation"
+### Community 102 - "Visit Freeze Source"
+Cohesion: 0.09
+Nodes (22): MembershipVisitFreezeSourceReader, CancellationToken, DateOnly, Guid, IEnumerable, IReadOnlyList, Task, IMembershipVisitFreezeSourceProvider (+14 more)
+
+### Community 103 - "Nonworking Day Correction"
 Cohesion: 0.11
-Nodes (16): CorrectNonWorkingDayCommandRevalidationPreparer, CancellationToken, DateRange, Task, CorrectNonWorkingDayCommandRevalidationResult, CommandError, IReadOnlyList, CorrectNonWorkingDaySourcePreparationStatus (+8 more)
+Nodes (18): CorrectNonWorkingDayCommandRevalidationPreparer, CancellationToken, DateRange, Task, CorrectNonWorkingDayCommandRevalidationResult, CommandError, IReadOnlyList, CorrectNonWorkingDayPreparation (+10 more)
 
-### Community 101 - "Staff Account Lifecycle Result"
-Cohesion: 0.18
-Nodes (8): StaffAccountLifecycleResult, StaffAccountLifecycleService, CancellationToken, Guid, int, string, Task, AuditEntryId
+### Community 104 - "Time Provider"
+Cohesion: 0.07
+Nodes (16): FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, DateTimeOffset, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider, FixedTimeProvider (+8 more)
 
-### Community 102 - "Postgre Sql Membership Extension Day"
-Cohesion: 0.19
-Nodes (13): MutableTimeProvider, PostgreSqlMembershipExtensionDayWriterTests, BodyLifeDbContext, DateOnly, DateTimeOffset, Fact, Guid, IReadOnlyList (+5 more)
-
-### Community 103 - "Postgre Sql Staff Credentials Tests"
+### Community 105 - "Staff Credentials"
 Cohesion: 0.23
 Nodes (9): MutableTimeProvider, PostgreSqlStaffCredentialsTests, DateTime, DateTimeOffset, Guid, PostgreSqlFact, Task, TimeProvider (+1 more)
 
-### Community 104 - "Postgre Sql Update Client Command"
-Cohesion: 0.26
-Nodes (9): PostgreSqlUpdateClientCommandTests, AuditRow, CardRow, ClientRow, DateTimeOffset, Guid, IReadOnlyList, PostgreSqlFact (+1 more)
-
-### Community 105 - "Issue Membership Smoke Tests"
-Cohesion: 0.19
-Nodes (12): IssueMembershipSmokeTests, DateOnly, Guid, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+4 more)
-
-### Community 106 - "Postgre Sql Non Working Day"
-Cohesion: 0.15
-Nodes (16): AuditRecalculationSummary, MassFixture, MassMutationSummary, NonWorkingDayPreviewTokenOptions, PostgreSqlNonWorkingDayMassRecalculationTests, AddNonWorkingDayCommand, CorrectNonWorkingDayCommand, DateRange (+8 more)
-
-### Community 107 - "Body Life Db Context"
-Cohesion: 0.16
-Nodes (11): ClientsFixture, DbContext, IDesignTimeDbContextFactory, BodyLifeDbContext, ModelBuilder, BodyLifeDbContextFactory, PostgreSqlDuplicateWarningAcknowledgementStorageTests, DateTimeOffset (+3 more)
-
-### Community 108 - "Postgre Sql Non Working Day"
-Cohesion: 0.16
-Nodes (16): ExtensionRowSnapshot, StateCacheSnapshot, FixedTimeProvider, PostgreSqlNonWorkingDayExtensionSourceTests, BodyLifeDbContext, DateOnly, DateRange, DateTimeOffset (+8 more)
-
-### Community 109 - "Postgre Sql List Inactive Clients"
-Cohesion: 0.20
-Nodes (13): InactiveFixture, SeededClient, PostgreSqlListInactiveClientsQueryTests, BodyLifeDbContext, DateOnly, Guid, IServiceCollection, NpgsqlCommand (+5 more)
-
-### Community 110 - "Postgre Sql Get Client Non"
-Cohesion: 0.19
-Nodes (13): NonWorkingDayHistoryFixture, NonWorkingDayHistorySourceIds, GetClientNonWorkingDayHistorySourceRowsStatus, FixedTimeProvider, PostgreSqlGetClientNonWorkingDayHistorySourceRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Fact (+5 more)
-
-### Community 111 - "Business Audit Matrix Tests"
-Cohesion: 0.13
-Nodes (14): BusinessAuditAppender, AccountKind, ActorRole, AuditEntryId, CommandEnvelope, DateTimeOffset, EntryOrigin, Guid (+6 more)
-
-### Community 112 - "Issue Membership Command Support"
-Cohesion: 0.14
-Nodes (15): IssueMembershipCommandSupport, NormalizedMembershipIssue, NormalizedMembershipIssueEnvelope, AccountKind, ActorRole, AuditEntryId, CommandEnvelope, CommandIdempotencyRecord (+7 more)
-
-### Community 113 - "Client Non Working Day History"
-Cohesion: 0.15
-Nodes (16): ClientNonWorkingDayHistorySourceRow, ClientNonWorkingDayHistorySourceRowsPage, DateTimeOffset, Guid, IEnumerable, IReadOnlyList, GetClientNonWorkingDayHistorySourceRowsContractsTests, AccountId (+8 more)
-
-### Community 114 - "Cancel Freeze Smoke Tests"
+### Community 106 - "Cancel Freeze UI"
 Cohesion: 0.16
 Nodes (13): CancelFreezeSmokeTests, DateOnly, Guid, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+5 more)
 
-### Community 115 - "Reception App Fixture"
-Cohesion: 0.08
-Nodes (20): AuditExplanationSmokeScenario, AuditTimelineSmokeScenario, ClientCardAuditExplanationSmokeScenario, ClientCreationAuditExplanationSmokeScenario, ClientHistorySmokeScenario, EndingSoonReportSmokeScenario, FreezeAdditionAuditExplanationSmokeScenario, FreezeCancellationAuditExplanationSmokeScenario (+12 more)
+### Community 107 - "Issue Membership UI"
+Cohesion: 0.19
+Nodes (12): IssueMembershipSmokeTests, DateOnly, Guid, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+4 more)
 
-### Community 116 - "Postgre Sql Get Client Freeze"
+### Community 108 - "Localization Smoke Tests"
 Cohesion: 0.21
-Nodes (12): FreezeHistoryFixture, FreezeHistorySourceIds, FixedTimeProvider, PostgreSqlGetClientFreezeHistorySourceRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Fact, Guid (+4 more)
+Nodes (11): LocalizationSmokeTests, Fact, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright (+3 more)
 
-### Community 117 - "Postgre Sql Issued Memberships Storage"
+### Community 109 - "Nonworking Day Recalculation"
+Cohesion: 0.15
+Nodes (16): AuditRecalculationSummary, MassFixture, MassMutationSummary, NonWorkingDayPreviewTokenOptions, PostgreSqlNonWorkingDayMassRecalculationTests, AddNonWorkingDayCommand, CorrectNonWorkingDayCommand, DateRange (+8 more)
+
+### Community 110 - "Search Page Helpers"
+Cohesion: 0.33
+Nodes (6): CardAssignmentFormInput, CreateClientFormInput, AuditEntryId, CommandResult, IActionResult, UpdateClientFormInput
+
+### Community 111 - "Correction Workspace Tests"
+Cohesion: 0.07
+Nodes (19): BodyLife.Crm.Web.Tests.Pages.Owner, IDisposable, CultureScope, CultureInfo, CultureScope, CultureInfo, CultureScope, CultureInfo (+11 more)
+
+### Community 112 - "Nonworking Extension Sources"
+Cohesion: 0.16
+Nodes (16): ExtensionRowSnapshot, StateCacheSnapshot, FixedTimeProvider, PostgreSqlNonWorkingDayExtensionSourceTests, BodyLifeDbContext, DateOnly, DateRange, DateTimeOffset (+8 more)
+
+### Community 113 - "Membership Impact Preparation"
+Cohesion: 0.12
+Nodes (19): MembershipNonWorkingDayAffectedScopePreparer, CancellationToken, DateRange, Guid, IReadOnlySet, Task, IMembershipNonWorkingDayAffectedScopePreparer, CancellationToken (+11 more)
+
+### Community 114 - "Add Freeze UI"
+Cohesion: 0.17
+Nodes (11): AddFreezeSmokeTests, DateOnly, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright (+3 more)
+
+### Community 115 - "Localization Contracts"
+Cohesion: 0.14
+Nodes (10): DefaultHttpContext, IStringLocalizerFactory, Regex, LocalizationContractsTests, Fact, InlineData, IReadOnlyDictionary, IStringLocalizer (+2 more)
+
+### Community 116 - "Issued Membership Storage"
 Cohesion: 0.24
 Nodes (9): PersistedIssuedMembership, FixedTimeProvider, PostgreSqlIssuedMembershipsStorageTests, DateOnly, DateTimeOffset, Func, Guid, PostgreSqlFact (+1 more)
 
-### Community 118 - "Membership Visit Eligibility"
+### Community 117 - "Visit Eligibility"
 Cohesion: 0.13
 Nodes (16): MembershipVisitAcknowledgement, MembershipVisitEligibility, Guid, IReadOnlyList, MembershipVisitEligibilityPolicy, DateOnly, Guid, IEnumerable (+8 more)
 
-### Community 119 - "Timeline Model"
+### Community 118 - "Client Nonworking History"
+Cohesion: 0.15
+Nodes (16): ClientNonWorkingDayHistorySourceRow, ClientNonWorkingDayHistorySourceRowsPage, DateTimeOffset, Guid, IEnumerable, IReadOnlyList, GetClientNonWorkingDayHistorySourceRowsContractsTests, AccountId (+8 more)
+
+### Community 119 - "Membership Report States"
 Cohesion: 0.10
-Nodes (14): AuditTimelineActionOption, AuditTimelineEntityOption, TimelineModel, AccountKind, ActorRole, CancellationToken, DateOnly, DateTimeOffset (+6 more)
+Nodes (14): GetClientMembershipReportStatesQueryHandler, CancellationToken, Guid, Task, ClientMembershipReportState, ClientMembershipStatesReadModel, Guid, ClientMembershipReportStates (+6 more)
 
-### Community 120 - "Postgre Sql Smoke Database"
-Cohesion: 0.07
-Nodes (24): ActiveSessionActor, AuditCardAssignmentSummarySeed, AuditCorrelationSmokeSnapshot, AuditFreezeMembershipStateSummarySeed, AuditFreezeSourceSummarySeed, AuditMembershipTypeSummarySeed, AuditMoneySummarySeed, AuditNonWorkingDayBeforeApplicationSummarySeed (+16 more)
+### Community 120 - "Correction Confirmation Tokens"
+Cohesion: 0.14
+Nodes (13): HmacNonWorkingDayCorrectionTokenService, DateOnly, Guid, MembershipNonWorkingDayAffectedScope, string, INonWorkingDayCorrectionTokenService, NonWorkingDayCorrectionConfirmation, DateTimeOffset (+5 more)
 
-### Community 121 - "Postgre Sql Get Daily Visit"
-Cohesion: 0.27
-Nodes (9): DailyVisitSourceFixture, PostgreSqlGetDailyVisitSourceRowsQueryTests, BodyLifeDbContext, DateOnly, DateTimeOffset, Guid, PostgreSqlFact, PostgreSqlTestDatabase (+1 more)
-
-### Community 122 - "Postgre Sql Membership State Persistence"
-Cohesion: 0.26
-Nodes (11): PersistedCache, PersistedExtensionRow, PostgreSqlMembershipStatePersistenceCoordinatorTests, BodyLifeDbContext, DateOnly, Fact, Guid, IReadOnlyList (+3 more)
-
-### Community 123 - "Postgre Sql Membership State Cache"
-Cohesion: 0.25
-Nodes (6): SeededMembership, PostgreSqlMembershipStateCacheRebuildTests, DateTimeOffset, Guid, PostgresException, Task
-
-### Community 124 - "Membership Extension Calculation"
-Cohesion: 0.10
-Nodes (19): MembershipExtensionDayWriter, BodyLifeDbContext, CancellationToken, DateTimeOffset, Guid, Task, MembershipExtensionDayWriteResult, DateTimeOffset (+11 more)
-
-### Community 125 - "Membership Non Working Day Impact"
-Cohesion: 0.13
-Nodes (19): MembershipNonWorkingDayAffectedScopePreparer, CancellationToken, DateRange, Guid, IReadOnlySet, Task, IMembershipNonWorkingDayAffectedScopePreparer, CancellationToken (+11 more)
-
-### Community 126 - "Execute Async"
+### Community 121 - "Owner Credential Bootstrap"
 Cohesion: 0.09
 Nodes (16): NormalizedLogin, OwnerCredentialsBootstrapper, CancellationToken, int, NormalizedLogin, string, Task, OwnerCredentialsBootstrapResult (+8 more)
 
-### Community 127 - "Add Freeze Smoke Tests"
-Cohesion: 0.18
-Nodes (11): AddFreezeSmokeTests, DateOnly, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright (+3 more)
-
-### Community 128 - "Correct Payment Smoke Tests"
+### Community 122 - "Correct Payment UI"
 Cohesion: 0.19
 Nodes (11): CorrectPaymentSmokeTests, Guid, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright (+3 more)
 
-### Community 129 - "Audit Timeline Entry"
+### Community 123 - "Client Payment History"
+Cohesion: 0.20
+Nodes (12): PaymentHistoryFixture, PaymentHistorySourceIds, FixedTimeProvider, PostgreSqlGetClientPaymentHistorySourceRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Fact, Guid (+4 more)
+
+### Community 124 - "Staff Accounts UI"
+Cohesion: 0.16
+Nodes (14): RedirectToPageResult, StaffAccountsModel, AccountKind, AuditEntryId, CancellationToken, Guid, IActionResult, IReadOnlyList (+6 more)
+
+### Community 125 - "Staff Account Lifecycle"
 Cohesion: 0.22
-Nodes (10): ActiveStateSnapshot, CreatedAccountSnapshot, CredentialStateSnapshot, AuditTimelineEntry, AuditEntryExplanationFactViewModel, StaffAccountAuditExplanationFactory, Guid, IReadOnlyList (+2 more)
+Nodes (8): CommandEnvelope, FixedTimeProvider, PostgreSqlStaffAccountLifecycleTests, DateTimeOffset, Guid, PostgreSqlFact, Task, TimeProvider
 
-### Community 130 - "Postgre Sql Get Client Visit"
-Cohesion: 0.24
-Nodes (10): ClientVisitRowsFixture, FixedTimeProvider, PostgreSqlGetClientVisitRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Guid, IServiceCollection, PostgreSqlFact (+2 more)
-
-### Community 131 - "Postgre Sql Get Client Membership"
-Cohesion: 0.17
-Nodes (13): HistoryFixture, HistorySourceIds, GetClientMembershipHistorySourceRowsStatus, FixedTimeProvider, PostgreSqlGetClientMembershipHistorySourceRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Fact (+5 more)
-
-### Community 132 - "Postgre Sql List Low Remaining"
-Cohesion: 0.21
-Nodes (11): LowRemainingFixture, PostgreSqlListLowRemainingMembershipsQueryTests, BodyLifeDbContext, CancellationToken, DateOnly, Fact, Guid, PostgreSqlFact (+3 more)
-
-### Community 133 - "Freeze Cancellation Source"
+### Community 126 - "Freeze Cancellation Source"
 Cohesion: 0.11
 Nodes (15): CancelFreezeSourcePreparationResult, Guid, CancelFreezeSourcePreparationStatus, CancelFreezeSourcePreparer, BodyLifeDbContext, CancellationToken, EntryOrigin, Guid (+7 more)
 
-### Community 134 - "List Ending Soon Memberships Result"
-Cohesion: 0.11
-Nodes (14): ListEndingSoonMembershipsQueryHandler, CancellationToken, Task, EndingSoonMembershipsPage, DateOnly, IReadOnlyList, ListEndingSoonMembershipsQuery, ListEndingSoonMembershipsResult (+6 more)
+### Community 127 - "Nonworking Correction Source"
+Cohesion: 0.12
+Nodes (12): CorrectNonWorkingDaySourcePreparationResult, Guid, CorrectNonWorkingDaySourcePreparationStatus, NonWorkingDayCorrectionConfirmationMaterialFactory, NonWorkingDayCorrectionMode, NonWorkingDayCorrectionPolicy, NonWorkingDayCorrectionScopeBehavior, NonWorkingDayCorrectionSource (+4 more)
 
-### Community 135 - "Postgre Sql Get Client Visit"
+### Community 128 - "Ending Soon Query"
+Cohesion: 0.11
+Nodes (15): ListEndingSoonMembershipsQueryHandler, CancellationToken, Task, EndingSoonMembershipRow, DateOnly, Guid, IReadOnlyList, MembershipStateReadModel (+7 more)
+
+### Community 129 - "Staff Lifecycle Service"
+Cohesion: 0.22
+Nodes (7): StaffAccountLifecycleResult, StaffAccountLifecycleService, CancellationToken, Guid, int, string, Task
+
+### Community 130 - "Client Visit History Tests"
 Cohesion: 0.20
 Nodes (12): FixedTimeProvider, PostgreSqlGetClientVisitHistorySourceRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Fact, Guid, JsonSerializerOptions, PostgreSqlFact (+4 more)
 
-### Community 136 - "Visit Query Support"
+### Community 131 - "Client Freeze History Query"
+Cohesion: 0.13
+Nodes (12): CanonicalFreezeHistorySource, FreezeCancellationRecord, FreezeStorageRow, GetClientFreezeHistorySourceRowsQueryHandler, CancellationToken, EntryOrigin, FreezeCancellationSourceStatus, string (+4 more)
+
+### Community 132 - "Visit Query Support"
 Cohesion: 0.11
 Nodes (15): CanonicalVisitCancellationSourceRow, CanonicalVisitConsumptionSourceRow, CanonicalVisitProjection, VisitQuerySupport, ActorContext, BodyLifeDbContext, CancellationToken, CanonicalVisitSourceRow (+7 more)
 
-### Community 137 - "What You Must Do When"
+### Community 133 - "Graphify Instructions"
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
-### Community 138 - "Membership Visit Source Fact"
+### Community 134 - "Operations Readiness"
 Cohesion: 0.11
-Nodes (17): MembershipVisitSourceMapper, MembershipVisitSourceRow, Guid, IEnumerable, MembershipFreezeEligibility, DateRange, Guid, MembershipFreezeEligibilityPolicy (+9 more)
+Nodes (25): Backdated Entries, Controlled Membership Adjustments, Membership Opening State, Membership State Cache Version 7, Source Facts and Rebuildable State, User/Actor, BodyLife CRM Operations Design, Business Audit (+17 more)
 
-### Community 139 - "Correct Non Working Day Command"
+### Community 135 - "Client Nonworking History"
+Cohesion: 0.24
+Nodes (11): NonWorkingDayHistoryFixture, NonWorkingDayHistorySourceIds, PostgreSqlGetClientNonWorkingDayHistorySourceRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Fact, Guid, JsonSerializerOptions (+3 more)
+
+### Community 136 - "Nonworking Correction Commands"
 Cohesion: 0.13
 Nodes (14): CorrectNonWorkingDayCommandSupport, AccountKind, ActorRole, AuditEntryId, BodyLifeDbContext, CancellationToken, CommandIdempotencyRecord, CommandResult (+6 more)
 
-### Community 140 - "Postgre Sql Clients Search Storage"
+### Community 137 - "Freeze History Contracts"
+Cohesion: 0.14
+Nodes (14): ClientFreezeHistorySourceRow, ClientFreezeHistorySourceRowsPage, DateTimeOffset, Guid, IEnumerable, IReadOnlyList, FreezeHistorySource, GetClientFreezeHistorySourceRowsContractsTests (+6 more)
+
+### Community 138 - "Membership Cache Storage"
 Cohesion: 0.24
-Nodes (8): FixedTimeProvider, PostgreSqlClientsSearchStorageTests, DateTimeOffset, Guid, NpgsqlConnection, NpgsqlTransaction, PostgreSqlFact, Task
+Nodes (8): PostgreSqlMembershipStateCacheStorageTests, DateOnly, DateTimeOffset, Func, Guid, PersistedMembershipState, PostgreSqlFact, Task
 
-### Community 141 - "Postgre Sql Staff Account Lifecycle"
-Cohesion: 0.22
-Nodes (7): FixedTimeProvider, PostgreSqlStaffAccountLifecycleTests, DateTimeOffset, Guid, PostgreSqlFact, Task, TimeProvider
-
-### Community 142 - "Non Working Day Correction Token"
+### Community 139 - "Correction Token Service"
 Cohesion: 0.20
 Nodes (8): MutableTimeProvider, NonWorkingDayCorrectionTokenServiceTests, DateRange, DateTimeOffset, Fact, Guid, IConfiguration, TimeProvider
 
-### Community 143 - "Mark Visit Command Contracts Tests"
+### Community 140 - "Mark Visit Contracts"
 Cohesion: 0.15
 Nodes (10): MarkVisitCommandContractsTests, CommandEnvelope, DateOnly, DateTimeOffset, EntryOrigin, Fact, Guid, InlineData (+2 more)
 
-### Community 144 - "Add Payment Smoke Tests"
+### Community 141 - "Add Payment UI"
 Cohesion: 0.20
 Nodes (10): AddPaymentSmokeTests, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright, IResponse (+2 more)
 
-### Community 145 - "Body Life CRM UI design"
+### Community 142 - "Cancel Visit"
+Cohesion: 0.16
+Nodes (15): CancelVisitSourcePreparationResult, CancelVisitCommandHandler, ActorContext, CancellationToken, CancelVisitCommand, CommandIdempotencyRecord, CommandResult, DateOnly (+7 more)
+
+### Community 143 - "Client Audit Query"
+Cohesion: 0.19
+Nodes (11): ClientAuditFixture, FixedTimeProvider, PostgreSqlGetClientAuditEntriesQueryTests, BodyLifeDbContext, DateTimeOffset, Fact, Guid, JsonSerializerOptions (+3 more)
+
+### Community 144 - "Audit Query Contracts"
+Cohesion: 0.12
+Nodes (12): ClientAuditStorageRow, IBodyLifeQuery, NormalizedClientAuditQuery, GetClientAuditEntriesQueryHandler, CancellationToken, Task, GetClientAuditEntriesQuery, int (+4 more)
+
+### Community 145 - "UI Design Foundation"
 Cohesion: 0.08
 Nodes (23): 10. Empty, error and stale states, 11. First screens to implement as visual exemplars, 12. Implementation notes, 13. Acceptance checklist, 1. Product posture, 2. Source hierarchy, 3. Information hierarchy, 4. Layout model (+15 more)
 
-### Community 146 - "Membership Freeze Eligibility Preparation Result"
-Cohesion: 0.12
-Nodes (14): MembershipFreezeEligibilityPreparationResult, Guid, MembershipFreezeEligibilityPreparationStatus, MembershipStateCacheRebuildResult, DateTimeOffset, Guid, MembershipStateCacheRebuildStatus, MembershipVisitEligibilityPreparationResult (+6 more)
+### Community 146 - "Membership History Tests"
+Cohesion: 0.19
+Nodes (12): HistoryFixture, HistorySourceIds, FixedTimeProvider, PostgreSqlGetClientMembershipHistorySourceRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Fact, Guid (+4 more)
 
-### Community 147 - "IVisit Day Reconciliation Status Provider"
+### Community 147 - "Membership Cache Rebuilder"
+Cohesion: 0.16
+Nodes (17): IReadOnlySet, MembershipAdjustmentRecord, MembershipAdjustmentSourceFact, MembershipCanonicalStateCalculation, MembershipStateCacheRebuildResult, MembershipStateCacheRecord, MembershipStateCacheRebuilder, BodyLifeDbContext (+9 more)
+
+### Community 148 - "Low Remaining Memberships"
+Cohesion: 0.22
+Nodes (10): LowRemainingFixture, PostgreSqlListLowRemainingMembershipsQueryTests, BodyLifeDbContext, DateOnly, Fact, Guid, PostgreSqlFact, PostgreSqlTestDatabase (+2 more)
+
+### Community 149 - "Mark Visit Forms"
+Cohesion: 0.11
+Nodes (12): GetMarkVisitOptionsQuery, GetMarkVisitOptionsResult, GetMarkVisitOptionsStatus, MarkVisitOptions, MarkVisitFormInput, MarkVisitFormViewModel, ClientSearchMode, CommandError (+4 more)
+
+### Community 150 - "Freeze Form Input"
 Cohesion: 0.10
-Nodes (17): OpenVisitDayReconciliationStatusProvider, CancellationToken, DateOnly, Task, IVisitDayReconciliationStatusProvider, CancellationToken, DateOnly, Task (+9 more)
+Nodes (20): AddFreezeFormInput, AddFreezeFormViewModel, ClientMembershipSummary, ClientProfile, ClientSearchMode, CommandError, DateOnly, Guid (+12 more)
 
-### Community 148 - "Client History Source Row"
-Cohesion: 0.13
-Nodes (13): ClientFreezeHistorySourceKind, ClientMembershipHistorySourceKind, ClientNonWorkingDayHistorySourceKind, ClientPaymentHistorySourceKind, ClientHistoryEntityFilter, ClientHistoryPage, DateTimeOffset, EntryOrigin (+5 more)
+### Community 151 - "Extension Day Writer"
+Cohesion: 0.27
+Nodes (10): PostgreSqlMembershipExtensionDayWriterTests, BodyLifeDbContext, DateOnly, DateTimeOffset, Guid, IReadOnlyList, PersistedExtensionDay, PostgreSqlFact (+2 more)
 
-### Community 149 - "Non Working Day History Period"
-Cohesion: 0.09
-Nodes (19): NonWorkingDayCancellationHistorySource, NonWorkingDayCorrectionHistorySource, AccountId, DateTimeOffset, EntryOrigin, Guid, IReadOnlyList, NonWorkingDayCorrectionMode (+11 more)
-
-### Community 150 - "Non Working Day Preview Token"
+### Community 152 - "Preview Token Service"
 Cohesion: 0.20
 Nodes (7): MutableTimeProvider, NonWorkingDayPreviewTokenServiceTests, DateRange, DateTimeOffset, Fact, IConfiguration, TimeProvider
 
-### Community 151 - "Client Membership States Query Contracts"
+### Community 153 - "Client Membership Contracts"
 Cohesion: 0.18
 Nodes (8): ClientMembershipStatesQueryContractsTests, ActorContext, DateOnly, DateTimeOffset, Fact, Guid, InlineData, Theory
 
-### Community 152 - "Issue Membership Command Contracts Tests"
+### Community 154 - "Issue Membership Contracts"
 Cohesion: 0.16
 Nodes (10): IssueMembershipCommandContractsTests, CommandEnvelope, DateOnly, DateTimeOffset, EntryOrigin, Fact, Guid, InlineData (+2 more)
 
-### Community 153 - "Membership Issue Preview Contracts Tests"
+### Community 155 - "Issue Preview Contracts"
 Cohesion: 0.16
 Nodes (9): MembershipIssuePreviewContractsTests, ActorContext, DateOnly, DateTimeOffset, Fact, Guid, InlineData, MembershipTypeCatalogItem (+1 more)
 
-### Community 154 - "Client History Smoke Tests"
+### Community 156 - "Client History UI"
 Cohesion: 0.23
 Nodes (10): ClientHistorySmokeTests, Fact, Guid, IBrowser, ILocator, InlineData, IPage, IPlaywright (+2 more)
 
-### Community 155 - "Correction Record Navigation Smoke Tests"
+### Community 157 - "Correction Navigation"
 Cohesion: 0.25
 Nodes (9): CorrectionRecordNavigationSmokeTests, Guid, IBrowser, ILocator, InlineData, IPage, IPlaywright, Task (+1 more)
 
-### Community 156 - "Get Non Working Day Correction"
+### Community 158 - "Command Contracts"
 Cohesion: 0.12
-Nodes (14): BusinessAuditEntryRecord, CorrectionAuditAfterSummary, CorrectionAuditRelatedEntities, CorrectionAuditRelatedEntities, GetNonWorkingDayCorrectionOutcomeQueryHandler, CancellationToken, EntryOrigin, Guid (+6 more)
+Nodes (23): Command Workflow Source Map, Server Command and Canonical Reread, Extension Day Union, Immutable NonWorkingDay Scope, NonWorkingDay, Canonical Command Time Normalization, Append-Only Correction History, BodyLife CRM Interaction Contracts (+15 more)
 
-### Community 157 - "Issue Membership Command Handler"
+### Community 159 - "Audit Timeline Query"
+Cohesion: 0.24
+Nodes (10): Action, AuditTimelineFixture, PostgreSqlGetAuditTimelineQueryTests, BodyLifeDbContext, Guid, JsonSerializerOptions, NpgsqlCommand, PostgreSqlFact (+2 more)
+
+### Community 160 - "Cancel Freeze Command"
 Cohesion: 0.17
-Nodes (15): ExistingNegativeStateLoadResult, MembershipTypeRecord, ExistingNegativeStateLoadResult, IssueMembershipCommandHandler, CancellationToken, ClientRecord, CommandResult, Guid (+7 more)
+Nodes (14): CancelFreezeSourcePreparationResult, FreezeCancellationSource, CancelFreezeCommandHandler, ActorContext, CancelFreezeCommand, CancellationToken, CommandIdempotencyRecord, CommandResult (+6 more)
 
-### Community 158 - "Assign Or Change Card Command"
-Cohesion: 0.13
-Nodes (14): IBodyLifeCommand, AssignOrChangeCardCommandHandler, CardAssignmentSnapshot, CancellationToken, Guid, PostgresException, string, Task (+6 more)
-
-### Community 159 - "Non Working Day Correction Confirmation"
-Cohesion: 0.17
-Nodes (12): HmacNonWorkingDayCorrectionTokenService, DateOnly, Guid, MembershipNonWorkingDayAffectedScope, string, NonWorkingDayCorrectionConfirmation, DateTimeOffset, int (+4 more)
-
-### Community 160 - "List Inactive Clients Result"
+### Community 161 - "Issued Membership Domain"
 Cohesion: 0.15
-Nodes (10): ListInactiveClientsQueryHandler, CancellationToken, DateOnly, DateTimeOffset, IEnumerable, Task, ListInactiveClientsQuery, int (+2 more)
+Nodes (23): Audit, BodyLife CRM Domain Model, Card Number, Client, Correction and Cancellation, Europe/Kyiv Business Calendar, Explicit Visit Allocation, First Negative Visit (+15 more)
 
-### Community 161 - "Set Staff Credentials Async"
+### Community 162 - "Mark Visit Command"
+Cohesion: 0.17
+Nodes (15): MarkVisitPreparation, MembershipVisitEligibility, MarkVisitCommandHandler, CancellationToken, ClientRecord, CommandIdempotencyRecord, CommandResult, DateOnly (+7 more)
+
+### Community 163 - "Freeze Command Support"
+Cohesion: 0.17
+Nodes (11): FreezeCommandSupport, AddFreezeCommand, CancelFreezeCommand, CommandEnvelope, CommandErrorCode, CommandResult, Exception, int (+3 more)
+
+### Community 164 - "Staff Credential Service"
 Cohesion: 0.17
 Nodes (10): StaffCredentialsResult, StaffCredentialsService, StaffCredentialsStatus, CancellationToken, DbUpdateException, Guid, int, NormalizedLogin (+2 more)
 
-### Community 162 - "Visit Cancellation Source"
-Cohesion: 0.13
-Nodes (13): CancelVisitSourcePreparationResult, Guid, CancelVisitSourcePreparationStatus, CancelVisitPreparation, CommandEnvelope, EntityId, Guid, CancelVisitPreparationPolicy (+5 more)
+### Community 165 - "Nonworking Day History"
+Cohesion: 0.09
+Nodes (18): NonWorkingDayCancellationHistorySource, NonWorkingDayCorrectionHistorySource, AccountId, DateTimeOffset, EntryOrigin, Guid, IReadOnlyList, NonWorkingDayCorrectionMode (+10 more)
 
-### Community 163 - "Client Profile"
-Cohesion: 0.19
-Nodes (13): ClientProfile, ClientPaymentRow, CardAssignmentFormViewModel, IReadOnlyList, CorrectPaymentFormInput, CorrectPaymentFormViewModel, ClientSearchMode, CommandError (+5 more)
-
-### Community 164 - "Daily Report Smoke Tests"
-Cohesion: 0.21
-Nodes (10): DailyReportSmokeTests, Fact, Guid, IBrowser, ILocator, InlineData, IPage, IPlaywright (+2 more)
-
-### Community 165 - "Payment Query Support"
+### Community 166 - "Payment History Query"
 Cohesion: 0.16
-Nodes (11): CanonicalPaymentCancellationSourceRow, CanonicalPaymentCorrectionSourceRow, CanonicalPaymentProjection, PaymentQuerySupport, CanonicalPaymentSourceRow, EntryOrigin, IReadOnlyList, string (+3 more)
+Nodes (12): CanonicalPaymentHistorySource, PaymentCancellationRecord, PaymentCorrectionRecord, PaymentStorageRow, GetClientPaymentHistorySourceRowsQueryHandler, CancellationToken, Guid, IReadOnlyCollection (+4 more)
 
-### Community 166 - "Get Client Payment History Source"
-Cohesion: 0.16
-Nodes (13): CanonicalPaymentHistorySource, PaymentCancellationRecord, PaymentCorrectionRecord, PaymentStorageRow, GetClientPaymentHistorySourceRowsQueryHandler, CancellationToken, Guid, IReadOnlyCollection (+5 more)
+### Community 167 - "Visit Rows Query"
+Cohesion: 0.32
+Nodes (8): ClientVisitRowsFixture, PostgreSqlGetClientVisitRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Guid, PostgreSqlFact, PostgreSqlTestDatabase, Task
 
-### Community 167 - "ADR Components"
+### Community 168 - "Implementation Roadmap"
 Cohesion: 0.23
 Nodes (21): Done criteria, Prompt, Recommended slice, Загальний порядок, Контрольний checklist перед стартом коду, Має містити, Мета, Найближчий наступний prompt (+13 more)
 
-### Community 168 - "Hmac Non Working Day Token"
-Cohesion: 0.15
-Nodes (14): JsonSerializerOptions, HmacNonWorkingDayTokenCodec, HmacNonWorkingDayTokenIssue, HmacNonWorkingDayTokenValidation, HmacNonWorkingDayTokenValidationStatus, TokenPayload, byte, DateTimeOffset (+6 more)
+### Community 169 - "Issue Membership Handler"
+Cohesion: 0.18
+Nodes (14): ExistingNegativeStateLoadResult, MembershipIssueNegativeContext, ExistingNegativeStateLoadResult, IssueMembershipCommandHandler, CancellationToken, ClientRecord, CommandResult, Guid (+6 more)
 
-### Community 169 - "Membership Type Record"
-Cohesion: 0.12
-Nodes (14): MembershipTypeLifecycleSnapshot, DeactivateMembershipTypeCommandHandler, MembershipTypeLifecycleSnapshot, CancellationToken, DateTimeOffset, Guid, string, Task (+6 more)
+### Community 170 - "Issue Membership Form"
+Cohesion: 0.13
+Nodes (15): GetMembershipTypesForIssueResult, MembershipIssuePreview, PreviewIssueMembershipResult, IssueMembershipFormInput, IssueMembershipFormViewModel, ClientSearchMode, CommandError, DateOnly (+7 more)
 
-### Community 170 - "Page Model"
-Cohesion: 0.10
-Nodes (16): PageModel, ErrorModel, LoginModel, CancellationToken, IActionResult, Task, LogoutModel, CancellationToken (+8 more)
-
-### Community 171 - "Postgre Sql Get Client Payment"
-Cohesion: 0.27
-Nodes (10): PaymentHistoryFixture, PaymentHistorySourceIds, PostgreSqlGetClientPaymentHistorySourceRowsQueryTests, BodyLifeDbContext, DateTimeOffset, Guid, JsonSerializerOptions, PostgreSqlFact (+2 more)
-
-### Community 172 - "Client Audit Entity Filter"
+### Community 171 - "Client Audit Filters"
 Cohesion: 0.12
 Nodes (12): ClientAuditEntityTypes, string, ClientAuditEntityFilter, ClientAuditEntriesPage, DateTimeOffset, Guid, IEnumerable, IReadOnlyList (+4 more)
 
-### Community 173 - "Postgre Sql Search Clients Query"
+### Community 172 - "Client Search Storage"
+Cohesion: 0.30
+Nodes (6): PostgreSqlClientsSearchStorageTests, Guid, NpgsqlConnection, NpgsqlTransaction, PostgreSqlFact, Task
+
+### Community 173 - "Search Clients Query"
 Cohesion: 0.35
 Nodes (5): PostgreSqlSearchClientsQueryTests, DateTimeOffset, Guid, PostgreSqlFact, Task
 
-### Community 174 - "Membership Type Editing Smoke Tests"
+### Community 174 - "Daily Report UI"
+Cohesion: 0.22
+Nodes (10): DailyReportSmokeTests, Fact, Guid, IBrowser, ILocator, InlineData, IPage, IPlaywright (+2 more)
+
+### Community 175 - "Membership Type Editing UI"
 Cohesion: 0.22
 Nodes (10): MembershipTypeEditingSmokeTests, Guid, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright (+2 more)
 
-### Community 175 - "ADR backlog Body Life CRM"
+### Community 176 - "Audit Timeline Query"
+Cohesion: 0.15
+Nodes (9): AuditTimelineStorageRow, NormalizedAuditTimelineQuery, GetAuditTimelineQueryHandler, CancellationToken, Task, GetAuditTimelineQuery, int, GetAuditTimelineResult (+1 more)
+
+### Community 177 - "Payment Correction Form"
+Cohesion: 0.21
+Nodes (14): ClientPaymentRow, CorrectPaymentFormInput, CorrectPaymentFormViewModel, ClientProfile, ClientSearchMode, CommandError, DateTime, Guid (+6 more)
+
+### Community 178 - "ADR Backlog"
 Cohesion: 0.10
 Nodes (20): ADR-001. Product Shape І Операційна Модель V1, ADR-002. Application Architecture І Межі Застосунку, ADR-003. UI Rendering And Interaction Model, ADR-004. Module Boundaries І Ownership Бізнес-Правил, ADR-005. Membership Invariants І Правила Перерахунку, ADR-006. Business Audit, Corrections І Technical Logs, ADR-007. Reporting Model І Consistency Rules, ADR-008. Search Identity, Card Rules І Duplicate Warnings (+12 more)
 
-### Community 176 - "Postgre Sql Get Client Membership"
-Cohesion: 0.20
-Nodes (11): FreezeSource, FixedTimeProvider, PostgreSqlGetClientMembershipExtensionExplanationsQueryTests, BodyLifeDbContext, DateRange, DateTimeOffset, ExtensionFixture, Fact (+3 more)
-
-### Community 177 - "IBody Life Query"
-Cohesion: 0.13
-Nodes (12): IBodyLifeQuery, GetActiveNonWorkingDaysForCorrectionQueryHandler, CancellationToken, Task, GetNonWorkingDayQueryHandler, CancellationToken, Task, GetActiveNonWorkingDaysForCorrectionQuery (+4 more)
-
-### Community 178 - "Query Permission Set"
+### Community 179 - "Permission Queries"
 Cohesion: 0.15
 Nodes (10): QueryPermissionResult, QueryPermissionSet, IReadOnlyDictionary, IReadOnlyList, IQueryPermissionResolver, QueryPermissionRequest, QueryPermissionResolver, CancellationToken (+2 more)
 
-### Community 179 - "Membership State Read Model"
+### Community 180 - "Membership Extension Sources"
+Cohesion: 0.10
+Nodes (15): MembershipFreezeExtensionSourceReader, CancellationToken, Guid, IReadOnlyList, Task, IMembershipExtensionSourceProvider, CancellationToken, Guid (+7 more)
+
+### Community 181 - "Membership State Read Model"
 Cohesion: 0.10
 Nodes (14): MembershipVisitEligibilityEvaluator, DateOnly, IReadOnlyList, QueryPermissionSet, IMembershipVisitEligibilityEvaluator, DateOnly, IReadOnlyList, IssuedMembershipLifecycleStatus (+6 more)
 
-### Community 180 - "Cancel Visit Command Handler"
-Cohesion: 0.19
-Nodes (12): CancelVisitCommandHandler, ActorContext, CancellationToken, CommandIdempotencyRecord, CommandResult, DateOnly, Guid, MembershipStateAuditSummary (+4 more)
+### Community 182 - "Nonworking Day Tokens"
+Cohesion: 0.16
+Nodes (13): HmacNonWorkingDayTokenCodec, HmacNonWorkingDayTokenIssue, HmacNonWorkingDayTokenValidation, HmacNonWorkingDayTokenValidationStatus, TokenPayload, byte, DateTimeOffset, Func (+5 more)
 
-### Community 181 - "Mark Visit Command Handler"
-Cohesion: 0.20
-Nodes (13): MarkVisitCommandHandler, CancellationToken, ClientRecord, CommandIdempotencyRecord, CommandResult, DateOnly, Guid, MembershipStateAuditSummary (+5 more)
+### Community 183 - "Membership Visit Facts"
+Cohesion: 0.14
+Nodes (13): MembershipFreezeEligibility, DateRange, Guid, MembershipFreezeEligibilityPolicy, DateRange, Guid, IEnumerable, MembershipFreezeEligibilityStatus (+5 more)
 
-### Community 182 - "Generate Daily Report Contracts Tests"
+### Community 184 - "Nonworking Correction Contracts"
+Cohesion: 0.16
+Nodes (11): NonWorkingDayCorrectionApplicationSource, DateRange, DateTimeOffset, Guid, NonWorkingDayCorrectionSourceStatus, CorrectNonWorkingDaySourceContractsTests, DateRange, DateTimeOffset (+3 more)
+
+### Community 185 - "Reports Presentation"
+Cohesion: 0.12
+Nodes (12): Reports, ReportsPresentation, DateOnly, DateTimeOffset, IStringLocalizer, Money, ReportsPresentationTests, InlineData (+4 more)
+
+### Community 186 - "Correction Preparation Policy"
+Cohesion: 0.28
+Nodes (5): CorrectNonWorkingDayPreparationPolicyTests, CommandEnvelope, DateOnly, Fact, Guid
+
+### Community 187 - "Daily Report Contracts"
 Cohesion: 0.16
 Nodes (11): GenerateDailyReportContractsTests, ActorContext, ClientPaymentCorrection, ClientPaymentRowStatus, ClientVisitRowStatus, DailyPaymentSourceRow, DailyVisitSourceRow, DateOnly (+3 more)
 
-### Community 183 - "Cancel Visit Command Contracts Tests"
+### Community 188 - "Inactive Client Contracts"
+Cohesion: 0.23
+Nodes (9): ListInactiveClientsContractsTests, ActorContext, ClientMembershipStatesReadModel, DateOnly, Fact, Guid, InactiveClientSourceRow, IReadOnlyList (+1 more)
+
+### Community 189 - "Cancel Visit Contracts"
 Cohesion: 0.26
 Nodes (8): CancelVisitCommandContractsTests, CommandEnvelope, DateTimeOffset, EntryOrigin, Fact, Guid, InlineData, Theory
 
-### Community 184 - "Membership Type Deactivation Smoke Tests"
+### Community 190 - "Membership Type Deactivation UI"
 Cohesion: 0.22
 Nodes (10): MembershipTypeDeactivationSmokeTests, Guid, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright (+2 more)
 
-### Community 185 - "Write Lease"
+### Community 191 - "Accepted ADR Package"
+Cohesion: 0.11
+Nodes (20): PostgreSQL Data Access Source Map, Quality Gates Source Map, Reception UI Source Map, Explicit Membership Selection, Freeze Range Eligibility, Membership-First Locking, Immutable Confirmed Application Scope, Non-Working Day Eligibility Snapshot (+12 more)
+
+### Community 192 - "Write Lease"
 Cohesion: 0.26
 Nodes (9): ArgumentParser, build_parser(), find_repo_root(), LeaseError, main(), validate_token(), WriteLease, Path (+1 more)
 
-### Community 186 - "Body Life Authorization Extensions"
+### Community 193 - "Authorization Extensions"
 Cohesion: 0.16
 Nodes (13): AuthorizationHandler, AuthorizationHandlerContext, AuthorizationPolicyBuilder, IAuthorizationRequirement, BodyLifeAuthorizationClaims, BodyLifeAuthorizationExtensions, BodyLifeCorrectionAuthorizationContext, BodyLifeCorrectionAuthorizationHandler (+5 more)
 
-### Community 187 - "Body Life Authorization Policy Tests"
+### Community 194 - "Authorization Policies"
 Cohesion: 0.28
 Nodes (8): AuthorizationResult, BodyLifeAuthorizationPolicyTests, ClaimsPrincipal, Fact, InlineData, ServiceProvider, Task, Theory
 
-### Community 188 - "IBody Life Query Handler"
-Cohesion: 0.16
-Nodes (11): IBodyLifeQueryHandler, GetEndingSoonMembershipStateRowsQueryHandler, CancellationToken, Task, GetEndingSoonMembershipStateRowsQuery, int, GetEndingSoonMembershipStateRowsResult, GetEndingSoonMembershipStateRowsStatus (+3 more)
-
-### Community 189 - "IClass Fixture"
+### Community 195 - "Membership Catalog Tests"
 Cohesion: 0.18
-Nodes (11): IClassFixture, StaffAccountManagementSmokeTests, Fact, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+3 more)
+Nodes (11): IClassFixture, MembershipTypeCatalogSmokeTests, Fact, IBrowser, IBrowserContext, ILocator, InlineData, IPage (+3 more)
 
-### Community 190 - "Cancel Freeze Command Handler"
-Cohesion: 0.21
-Nodes (11): CancelFreezeCommandHandler, ActorContext, CancellationToken, CommandIdempotencyRecord, CommandResult, DateOnly, Guid, string (+3 more)
-
-### Community 191 - "Membership Extension Source Range"
-Cohesion: 0.11
-Nodes (15): MembershipFreezeExtensionSourceReader, CancellationToken, Guid, IReadOnlyList, Task, IMembershipExtensionSourceProvider, CancellationToken, Guid (+7 more)
-
-### Community 192 - "Get Client Membership Extension Explanations"
-Cohesion: 0.17
-Nodes (7): GetClientMembershipExtensionExplanationsQueryHandler, CancellationToken, Task, GetClientMembershipExtensionExplanationsQuery, GetClientMembershipExtensionExplanationsResult, GetClientMembershipExtensionExplanationsStatus, MembershipExtensionSourceStatus
-
-### Community 193 - "Correct Non Working Day Source"
-Cohesion: 0.17
-Nodes (11): NonWorkingDayCorrectionApplicationSource, DateRange, DateTimeOffset, Guid, NonWorkingDayCorrectionSourceStatus, CorrectNonWorkingDaySourceContractsTests, DateRange, DateTimeOffset (+3 more)
-
-### Community 194 - "Daily Report Snapshot"
+### Community 196 - "Client Form Input"
 Cohesion: 0.12
-Nodes (15): DailyReportDayStatus, DailyReportSnapshot, DailyPaymentSourceRow, DailyPaymentSourceSnapshot, DailyVisitSourceRow, DailyVisitSourceSnapshot, DateOnly, IReadOnlyList (+7 more)
+Nodes (15): ClientDuplicateWarningType, ClientOperationalStatus, ClientSearchMode, CardAssignmentFormInput, Guid, CreateClientDuplicateAcknowledgementInput, CreateClientFormInput, Guid (+7 more)
 
-### Community 195 - "Seed Issued Membership Async"
-Cohesion: 0.27
-Nodes (3): BodyLifeDbContext, PostgreSqlFact, PostgreSqlTestDatabase
+### Community 197 - "Low Remaining Query"
+Cohesion: 0.17
+Nodes (9): GetLowRemainingMembershipStateRowsQueryHandler, CancellationToken, Task, GetLowRemainingMembershipStateRowsQuery, int, GetLowRemainingMembershipStateRowsResult, GetLowRemainingMembershipStateRowsStatus, StubSourceHandler (+1 more)
 
-### Community 196 - "Membership Non Working Day Application"
-Cohesion: 0.27
-Nodes (7): MembershipNonWorkingDayApplicationPolicyTests, DateOnly, DateRange, Fact, Guid, InlineData, Theory
+### Community 198 - "Payment Reconciliation Status"
+Cohesion: 0.12
+Nodes (14): OpenPaymentDayReconciliationStatusProvider, CancellationToken, DateOnly, Task, IPaymentDayReconciliationStatusProvider, CancellationToken, DateOnly, Task (+6 more)
 
-### Community 197 - "Membership Opening State Tests"
+### Community 199 - "Visit Reconciliation Status"
+Cohesion: 0.12
+Nodes (14): OpenVisitDayReconciliationStatusProvider, CancellationToken, DateOnly, Task, IVisitDayReconciliationStatusProvider, CancellationToken, DateOnly, Task (+6 more)
+
+### Community 200 - "Opening State Rules"
 Cohesion: 0.21
 Nodes (5): MembershipOpeningStateTests, DateOnly, Fact, InlineData, Theory
 
-### Community 198 - "Membership State Query Contracts Tests"
+### Community 201 - "Membership State Contracts"
 Cohesion: 0.21
 Nodes (6): MembershipStateQueryContractsTests, ActorContext, DateOnly, Fact, Guid, IEnumerable
 
-### Community 199 - "List Inactive Clients Contracts Tests"
-Cohesion: 0.25
-Nodes (8): ListInactiveClientsContractsTests, ActorContext, ClientMembershipStatesReadModel, DateOnly, Fact, Guid, IReadOnlyList, MembershipStateReadModel
-
-### Community 200 - "IBody Life Command Handler"
-Cohesion: 0.12
-Nodes (14): IBodyLifeCommandHandler, CancellationToken, Task, CreateClientCommandHandler, CancellationToken, PostgresException, string, Task (+6 more)
-
-### Community 201 - "Membership State Cache Rebuilder"
+### Community 202 - "Ending Soon Report"
 Cohesion: 0.22
-Nodes (13): MembershipCanonicalStateCalculation, MembershipStateCacheRebuilder, BodyLifeDbContext, CancellationToken, DateTimeOffset, Guid, int, IReadOnlyList (+5 more)
+Nodes (9): EndingSoonReportSmokeTests, Fact, IBrowser, ILocator, InlineData, IPage, IPlaywright, Task (+1 more)
 
-### Community 202 - "Client Payment History Source Row"
-Cohesion: 0.20
-Nodes (9): ClientPaymentHistorySourceRow, PaymentHistorySource, GetClientPaymentHistorySourceRowsContractsTests, ActorContext, ClientPaymentRowStatus, DateTimeOffset, EntryOrigin, Fact (+1 more)
+### Community 203 - "Audit Timeline UI"
+Cohesion: 0.15
+Nodes (13): AuditTimelinePage, GetAuditTimelineResult, AuditTimelineActionOption, AuditTimelineEntityOption, TimelineModel, AuditTimelineEntityType, CancellationToken, DateOnly (+5 more)
 
-### Community 203 - "Get Daily Visit Source Rows"
+### Community 205 - "Page Models"
+Cohesion: 0.11
+Nodes (14): DailyReportSnapshot, GenerateDailyReportResult, PageModel, ErrorModel, LogoutModel, CancellationToken, IActionResult, Task (+6 more)
+
+### Community 206 - "Gym System Requirements"
+Cohesion: 0.11
+Nodes (19): Daily Report, Freeze, Inactive Clients Report, Manual Accounting Replacement, Negative Start Date Rule, MembershipType, Card Iterations With Numbers And Barcodes, Cash Daily Summary (+11 more)
+
+### Community 207 - "Active Nonworking Days"
 Cohesion: 0.14
-Nodes (9): DailyVisitSourceRecord, GetDailyVisitSourceRowsQueryHandler, CancellationToken, CanonicalVisitSourceRow, Task, DailyVisitSourceSnapshot, GetDailyVisitSourceRowsQuery, GetDailyVisitSourceRowsResult (+1 more)
+Nodes (11): IEnumerable, GetActiveNonWorkingDaysForCorrectionQueryHandler, CancellationToken, Task, GetActiveNonWorkingDaysForCorrectionQuery, ActiveNonWorkingDayForCorrection, GetActiveNonWorkingDaysForCorrectionResult, DateRange (+3 more)
 
-### Community 204 - "Membership Freeze Eligibility Policy Tests"
+### Community 208 - "Search Clients Query"
+Cohesion: 0.16
+Nodes (10): NormalizedSearchCriteria, IBodyLifeQuery, SearchClientsQueryHandler, CancellationToken, int, Task, ClientSearchMatchType, SearchClientsQuery (+2 more)
+
+### Community 209 - "Extension Calculation"
+Cohesion: 0.15
+Nodes (12): MembershipExtensionDayWriter, BodyLifeDbContext, CancellationToken, DateTimeOffset, Guid, Task, MembershipExtensionDayWriteResult, DateTimeOffset (+4 more)
+
+### Community 210 - "Eligibility Preparation"
+Cohesion: 0.16
+Nodes (10): MembershipFreezeEligibilityPreparationResult, Guid, MembershipFreezeEligibilityPreparationStatus, MembershipStateCacheRebuildResult, DateTimeOffset, Guid, MembershipStateCacheRebuildStatus, MembershipVisitEligibilityPreparationResult (+2 more)
+
+### Community 211 - "Nonworking Replacement Impact"
+Cohesion: 0.11
+Nodes (14): MembershipNonWorkingDayReplacementImpactPreparer, CancellationToken, DateRange, Guid, Task, IMembershipNonWorkingDayReplacementImpactPreparer, CancellationToken, DateRange (+6 more)
+
+### Community 212 - "Audit Snapshot Explanations"
+Cohesion: 0.11
+Nodes (17): CreatedPaymentSnapshot, FreezeMembershipStateSnapshot, FreezeSnapshot, MembershipIssueExistingNegativeStateSnapshot, MembershipIssueInitialStateSnapshot, MembershipIssuePaymentSnapshot, MembershipIssueSnapshot, MembershipIssueTermsSnapshot (+9 more)
+
+### Community 213 - "Freeze Eligibility Policy"
 Cohesion: 0.29
 Nodes (7): MembershipFreezeEligibilityPolicyTests, DateOnly, DateRange, Fact, Guid, InlineData, Theory
 
-### Community 205 - "Ending Soon Report Smoke Tests"
-Cohesion: 0.24
-Nodes (9): EndingSoonReportSmokeTests, Fact, IBrowser, ILocator, InlineData, IPage, IPlaywright, Task (+1 more)
-
-### Community 206 - "Inactive Clients Report Smoke Tests"
+### Community 214 - "Inactive Clients Report"
 Cohesion: 0.24
 Nodes (9): InactiveClientsReportSmokeTests, Fact, IBrowser, ILocator, InlineData, IPage, IPlaywright, Task (+1 more)
 
-### Community 207 - "Low Remaining Report Smoke Tests"
+### Community 215 - "Low Remaining Report"
 Cohesion: 0.24
 Nodes (9): LowRemainingReportSmokeTests, Fact, IBrowser, ILocator, InlineData, IPage, IPlaywright, Task (+1 more)
 
-### Community 208 - "Membership Type Catalog Smoke Tests"
-Cohesion: 0.19
-Nodes (10): MembershipTypeCatalogSmokeTests, Fact, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright (+2 more)
-
-### Community 209 - "Membership Type Creation Smoke Tests"
-Cohesion: 0.20
-Nodes (9): MembershipTypeCreationSmokeTests, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright, Task (+1 more)
-
-### Community 210 - "Negative Clients Report Smoke Tests"
+### Community 216 - "Negative Clients Report"
 Cohesion: 0.24
 Nodes (9): NegativeClientsReportSmokeTests, Fact, IBrowser, ILocator, InlineData, IPage, IPlaywright, Task (+1 more)
 
-### Community 211 - "Body Life Crm Infrastructure Persistence"
+### Community 217 - "Staff Account Management"
+Cohesion: 0.19
+Nodes (10): StaffAccountManagementSmokeTests, Fact, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright (+2 more)
+
+### Community 218 - "Database Migrations"
 Cohesion: 0.11
 Nodes (10): BodyLife.Crm.Infrastructure.Persistence.Migrations, ModelSnapshot, AddUsersRolesAccountsSessions, ModelBuilder, AddClientsSearchStorage, ModelBuilder, AddMembershipExtensionDays, ModelBuilder (+2 more)
 
-### Community 212 - "Body Life CRM"
+### Community 219 - "Architecture Research"
 Cohesion: 0.11
 Nodes (16): 10. ADR-кандидати, 11. Джерела, 1. Контекст і драйвери, 2. Уточнення після відповідей, 3. Наявні класи рішень, 4. Порівняння архітектурних підходів, 6. Ключові архітектурні теми, 8. Що точно не варто робити у v1 (+8 more)
 
-### Community 213 - "IEntity Type Configuration"
-Cohesion: 0.13
-Nodes (12): EntityTypeBuilder, IEntityTypeConfiguration, BusinessAuditEntryRecordConfiguration, BusinessAuditEntryRecord, FreezeCancellationRecord, DateTimeOffset, Guid, FreezeCancellationRecordConfiguration (+4 more)
-
-### Community 214 - "Membership Adjustment Calculation Tests"
-Cohesion: 0.23
-Nodes (7): MemberData, MembershipAdjustmentSourceStatus, MembershipAdjustmentCalculationTests, Fact, Guid, Theory, TheoryData
-
-### Community 215 - "Non Working Day Impact Membership"
+### Community 220 - "Nonworking Day Impact Preview"
 Cohesion: 0.16
 Nodes (14): MembershipNonWorkingDayImpactItem, NonWorkingDayImpactPreviewMapper, Guid, IReadOnlyDictionary, IReadOnlyList, MembershipNonWorkingDayImpactPreparation, NonWorkingDayImpactMembershipPreview, NonWorkingDayImpactOverlapWarning (+6 more)
 
-### Community 216 - "Execute Async"
-Cohesion: 0.14
-Nodes (12): ClientRecord, DateTimeOffset, Guid, ClientRecordConfiguration, EntityTypeBuilder, ClientIdentitySnapshot, UpdateClientCommandHandler, CancellationToken (+4 more)
+### Community 221 - "Ending Soon State Query"
+Cohesion: 0.18
+Nodes (8): GetEndingSoonMembershipStateRowsQueryHandler, CancellationToken, Task, GetEndingSoonMembershipStateRowsQuery, int, GetEndingSoonMembershipStateRowsResult, GetEndingSoonMembershipStateRowsStatus, StubSourceHandler
 
-### Community 217 - "Execute Async"
-Cohesion: 0.16
-Nodes (10): EditMembershipTypeCommandHandler, MembershipTypeCatalogSnapshot, CancellationToken, DateTimeOffset, Guid, string, Task, EditMembershipTypeCommand (+2 more)
+### Community 222 - "Negative Membership Query"
+Cohesion: 0.18
+Nodes (8): GetNegativeMembershipStateRowsQueryHandler, CancellationToken, Task, GetNegativeMembershipStateRowsQuery, int, GetNegativeMembershipStateRowsResult, GetNegativeMembershipStateRowsStatus, StubSourceHandler
 
-### Community 218 - "Get Client Visit Rows Result"
-Cohesion: 0.16
-Nodes (8): GetClientVisitRowsQueryHandler, CancellationToken, Task, ClientVisitRowsPage, GetClientVisitRowsQuery, int, GetClientVisitRowsResult, GetClientVisitRowsStatus
-
-### Community 219 - "Correct Payment Command Contracts Tests"
-Cohesion: 0.17
-Nodes (10): PaymentCorrectionMode, PaymentReplacement, CorrectPaymentCommandContractsTests, StubDayReconciliationStatusProvider, ActorContext, CancellationToken, DateOnly, Fact (+2 more)
-
-### Community 220 - "Non Working Day Preview Workspace"
-Cohesion: 0.25
-Nodes (9): NonWorkingDayConfirmationFormInput, NonWorkingDayPreviewFormError, NonWorkingDayPreviewFormInput, NonWorkingDayPreviewWorkspaceViewModel, CommandError, DateOnly, int, IReadOnlyList (+1 more)
-
-### Community 221 - "Postgre Sql Membership Types Storage"
+### Community 223 - "Membership Type Storage"
 Cohesion: 0.29
 Nodes (6): PostgreSqlMembershipTypesStorageTests, DateTimeOffset, Func, Guid, PostgreSqlFact, Task
 
-### Community 222 - "Membership State Extension Calculation Tests"
+### Community 224 - "Extension Calculation Tests"
 Cohesion: 0.30
 Nodes (5): MembershipStateExtensionCalculationTests, DateOnly, DateTimeOffset, Fact, Guid
 
-### Community 223 - "Issue Reason Correction Preview Async"
+### Community 225 - "Membership Type Creation"
+Cohesion: 0.22
+Nodes (9): MembershipTypeCreationSmokeTests, IBrowser, IBrowserContext, ILocator, InlineData, IPage, IPlaywright, Task (+1 more)
+
+### Community 226 - "Get Low Remaining Membership State"
+Cohesion: 0.14
+Nodes (17): Membership Rules Source Map, Modular Monolith, Membership Rule Ownership by Business Modules, Old and New Scope Recalculation, Modular Monolith, Business Module Rule Ownership, Production Restore Readiness, Append-Only Business Audit (+9 more)
+
+### Community 227 - "Get Negative Membership State Rows"
+Cohesion: 0.21
+Nodes (11): AssignOrChangeCardCommand, ClientCardAssignmentRecord, AssignOrChangeCardCommandHandler, CardAssignmentSnapshot, CancellationToken, ClientRecord, CommandResult, Guid (+3 more)
+
+### Community 228 - "Membership Non Working Day Replacement"
+Cohesion: 0.14
+Nodes (13): BusinessAuditEntryRecord, CorrectionAuditAfterSummary, CorrectionAuditRelatedEntities, JsonSerializerOptions, CorrectionAuditRelatedEntities, GetNonWorkingDayCorrectionOutcomeQueryHandler, CancellationToken, EntryOrigin (+5 more)
+
+### Community 229 - "Preview Issue Membership Result"
+Cohesion: 0.17
+Nodes (17): Hybrid Server-Rendered UI, Hybrid Membership Model, Append-Only Business Audit Separate from Technical Logs, Reports Query Layer over Canonical Records, Provider-Managed Backups with Restore Check, Manual Backfill and Paper Fallback Entries, Owner, Named Admin, and Shared Reception/Admin Accounts, ADR-017: Business Time Zone and UI Localization (+9 more)
+
+### Community 230 - "Non Working Period Record"
+Cohesion: 0.25
+Nodes (6): MemberData, MembershipAdjustmentSourceStatus, MembershipAdjustmentCalculationTests, Fact, Guid, Theory
+
+### Community 231 - "Payment Record"
 Cohesion: 0.21
 Nodes (11): MembershipNonWorkingDayExtensionSourceReader, ActorContext, AddNonWorkingDayCommandHandler, BodyLifeDbContext, CorrectNonWorkingDayCommandHandler, Func, INonWorkingDayCorrectionTokenService, INonWorkingDayPreviewTokenService (+3 more)
 
-### Community 225 - "Get Client Membership Report States"
-Cohesion: 0.19
-Nodes (8): GetClientMembershipReportStatesQueryHandler, CancellationToken, Guid, Task, GetClientMembershipReportStatesQuery, int, GetClientMembershipReportStatesResult, GetClientMembershipReportStatesStatus
-
-### Community 226 - "Get Low Remaining Membership State"
-Cohesion: 0.20
-Nodes (8): GetLowRemainingMembershipStateRowsQueryHandler, CancellationToken, Task, GetLowRemainingMembershipStateRowsQuery, int, GetLowRemainingMembershipStateRowsResult, GetLowRemainingMembershipStateRowsStatus, StubSourceHandler
-
-### Community 227 - "Get Negative Membership State Rows"
-Cohesion: 0.20
-Nodes (8): GetNegativeMembershipStateRowsQueryHandler, CancellationToken, Task, GetNegativeMembershipStateRowsQuery, int, GetNegativeMembershipStateRowsResult, GetNegativeMembershipStateRowsStatus, StubSourceHandler
-
-### Community 228 - "Membership Non Working Day Replacement"
-Cohesion: 0.12
-Nodes (14): MembershipNonWorkingDayReplacementImpactPreparer, CancellationToken, DateRange, Guid, Task, IMembershipNonWorkingDayReplacementImpactPreparer, CancellationToken, DateRange (+6 more)
-
-### Community 229 - "Preview Issue Membership Result"
-Cohesion: 0.18
-Nodes (6): PreviewIssueMembershipQueryHandler, CancellationToken, Task, PreviewIssueMembershipQuery, PreviewIssueMembershipResult, PreviewIssueMembershipStatus
-
-### Community 230 - "Non Working Period Record"
-Cohesion: 0.13
-Nodes (11): NonWorkingPeriodCancellationRecord, DateTimeOffset, Guid, NonWorkingPeriodCancellationRecordConfiguration, EntityTypeBuilder, NonWorkingPeriodRecord, DateOnly, DateTimeOffset (+3 more)
-
-### Community 231 - "Payment Record"
-Cohesion: 0.13
-Nodes (12): PaymentCancellationRecord, DateTimeOffset, Guid, PaymentCancellationRecordConfiguration, EntityTypeBuilder, PaymentRecord, ClientRecord, DateTimeOffset (+4 more)
-
 ### Community 232 - "Generate Daily Report Result"
-Cohesion: 0.19
-Nodes (8): GenerateDailyReportQueryHandler, CancellationToken, GetDailyPaymentSourceRowsResult, GetDailyVisitSourceRowsResult, Task, GenerateDailyReportQuery, GenerateDailyReportResult, GenerateDailyReportStatus
+Cohesion: 0.18
+Nodes (9): CommandError, ClientProfile, CardAssignmentFormViewModel, IReadOnlyList, CreateClientFormViewModel, IReadOnlyList, ReceptionSearchContext, UpdateClientFormViewModel (+1 more)
 
 ### Community 233 - "Execute Async"
-Cohesion: 0.16
-Nodes (9): OwnerBootstrapResult, Guid, OwnerBootstrapCommand, CancellationToken, IConfiguration, ILogger, IServiceProvider, string (+1 more)
+Cohesion: 0.17
+Nodes (7): GetMembershipStateQueryHandler, MembershipStateStorageRow, CancellationToken, Task, GetMembershipStateQuery, GetMembershipStateResult, GetMembershipStateStatus
 
 ### Community 234 - "Membership Type Catalog Item"
 Cohesion: 0.13
-Nodes (12): IReadOnlyList, MembershipTypeCatalogItem, DeactivateMembershipTypeFormInput, DeactivateMembershipTypeFormViewModel, DateTimeOffset, Guid, IReadOnlyList, EditMembershipTypeFormInput (+4 more)
+Nodes (11): NonWorkingPeriodCancellationRecord, DateTimeOffset, Guid, NonWorkingPeriodCancellationRecordConfiguration, EntityTypeBuilder, NonWorkingPeriodRecord, DateOnly, DateTimeOffset (+3 more)
 
 ### Community 235 - "Low Remaining Membership Row"
-Cohesion: 0.12
-Nodes (15): LowRemainingMembershipRow, DateOnly, DateTimeOffset, Guid, IReadOnlyList, MembershipStateReadModel, MembershipWarning, LowRemainingMembershipsPage (+7 more)
+Cohesion: 0.13
+Nodes (12): PaymentCancellationRecord, DateTimeOffset, Guid, PaymentCancellationRecordConfiguration, EntityTypeBuilder, PaymentRecord, ClientRecord, DateTimeOffset (+4 more)
 
 ### Community 236 - "Negative Client Row"
-Cohesion: 0.12
-Nodes (15): NegativeClientRow, DateOnly, DateTimeOffset, Guid, IReadOnlyList, MembershipStateReadModel, MembershipWarning, NegativeClientsPage (+7 more)
+Cohesion: 0.16
+Nodes (9): OwnerBootstrapResult, Guid, OwnerBootstrapCommand, CancellationToken, IConfiguration, ILogger, IServiceProvider, string (+1 more)
 
 ### Community 237 - "From Result"
-Cohesion: 0.12
-Nodes (13): DateTimeOffset, ReceptionSearchContext, AddPaymentFormViewModel, CancelVisitFormViewModel, CardAssignmentFormViewModel, CorrectPaymentFormViewModel, GetClientProfileResult, IReadOnlyList (+5 more)
+Cohesion: 0.13
+Nodes (12): MembershipIssuePreview, DateOnly, Guid, IReadOnlyList, IssuedMembershipSnapshot, MembershipIssuePreviewPolicy, DateOnly, Guid (+4 more)
 
 ### Community 238 - "Postgre Sql Users Roles Storage"
-Cohesion: 0.35
-Nodes (5): PostgreSqlUsersRolesStorageTests, DateTimeOffset, Guid, PostgreSqlFact, Task
+Cohesion: 0.13
+Nodes (12): IReadOnlyList, MembershipTypeCatalogItem, DeactivateMembershipTypeFormInput, DeactivateMembershipTypeFormViewModel, DateTimeOffset, Guid, IReadOnlyList, EditMembershipTypeFormInput (+4 more)
 
 ### Community 239 - "Membership Extension Calculator Tests"
 Cohesion: 0.23
-Nodes (6): MembershipExtensionCalculatorTests, DateOnly, Fact, Guid, InlineData, Theory
+Nodes (8): PaymentHistorySource, GetClientPaymentHistorySourceRowsContractsTests, ActorContext, ClientPaymentRowStatus, DateTimeOffset, EntryOrigin, Fact, Guid
 
 ### Community 240 - "List Negative Clients Contracts Tests"
+Cohesion: 0.12
+Nodes (13): InactiveClientsPage, DateOnly, IEnumerable, InactiveClientSourceRow, IReadOnlyList, ListInactiveClientsQuery, InactiveClientsModel, CancellationToken (+5 more)
+
+### Community 241 - "Body Life Crm Ui Smoke"
+Cohesion: 0.26
+Nodes (7): BusinessTimeZone, UtcInstantRange, DateOnly, DateTime, DateTimeOffset, string, TimeZoneInfo
+
+### Community 242 - "Cancel Freeze Form View Model"
+Cohesion: 0.30
+Nodes (6): FixedTimeProvider, PostgreSqlClientDuplicateCandidateQueryTests, DateTimeOffset, Guid, PostgreSqlFact, Task
+
+### Community 243 - "Visit Marked After"
+Cohesion: 0.35
+Nodes (5): PostgreSqlUsersRolesStorageTests, DateTimeOffset, Guid, PostgreSqlFact, Task
+
+### Community 244 - "Correct Payment Command Handler"
+Cohesion: 0.23
+Nodes (6): MembershipExtensionCalculatorTests, DateOnly, Fact, Guid, InlineData, Theory
+
+### Community 245 - "Command Idempotency Record"
 Cohesion: 0.23
 Nodes (8): ListNegativeClientsContractsTests, ActorContext, DateOnly, DateTimeOffset, Fact, Guid, IReadOnlyList, MembershipStateReadModel
 
-### Community 242 - "Cancel Freeze Form View Model"
-Cohesion: 0.28
-Nodes (9): MembershipExtensionExplanation, CancelFreezeFormInput, CancelFreezeFormViewModel, ClientMembershipSummary, ClientSearchMode, CommandError, Guid, int (+1 more)
-
-### Community 243 - "Visit Marked After"
-Cohesion: 0.18
-Nodes (4): NonWorkingDayBeforeApplicationAuditFixture, DateOnly, Guid, IReadOnlyList
-
-### Community 244 - "Correct Payment Command Handler"
-Cohesion: 0.28
-Nodes (9): PaymentAuditSummary, CorrectPaymentCommandHandler, CancellationToken, CommandIdempotencyRecord, CommandResult, DateTimeOffset, Guid, string (+1 more)
-
-### Community 245 - "Command Idempotency Record"
-Cohesion: 0.16
-Nodes (10): CommandIdempotencyRecord, DateTimeOffset, Guid, CommandIdempotencyRecordConfiguration, EntityTypeBuilder, BodyLifeDbContext, CancellationToken, DateTimeOffset (+2 more)
-
 ### Community 246 - "Membership Extension Day Record"
+Cohesion: 0.23
+Nodes (10): GetClientMembershipExtensionExplanationsResult, GetClientProfileQuery, GetClientProfileQueryHandler, CancellationToken, GetClientMembershipStatesResult, GetClientPaymentRowsResult, GetClientProfileResult, GetClientVisitRowsResult (+2 more)
+
+### Community 247 - "Load Visit Sources Async"
+Cohesion: 0.13
+Nodes (15): InactiveClientMembershipSummary, InactiveClientLastVisit, DateOnly, DateTimeOffset, Guid, VisitKind, InactiveClientRow, ClientMembershipStatesReadModel (+7 more)
+
+### Community 248 - "List Low Remaining Memberships Result"
+Cohesion: 0.28
+Nodes (10): MembershipExtensionExplanation, CancelFreezeFormInput, CancelFreezeFormViewModel, ClientMembershipSummary, ClientSearchMode, CommandError, Guid, int (+2 more)
+
+### Community 249 - "List Negative Clients Result"
+Cohesion: 0.23
+Nodes (8): NormalizedAddFreeze, NormalizedCancelFreeze, AccountKind, ActorRole, AuditEntryId, CommandIdempotencyRecord, EntryOrigin, Guid
+
+### Community 250 - "Account Record"
 Cohesion: 0.13
 Nodes (12): MembershipExtensionDayRecord, DateOnly, DateTimeOffset, Guid, IssuedMembershipRecord, MembershipExtensionDayRecordConfiguration, EntityTypeBuilder, MembershipStateReadModelFactory (+4 more)
 
-### Community 247 - "Load Visit Sources Async"
+### Community 251 - "Visit Consumption Record"
 Cohesion: 0.18
-Nodes (12): MembershipFreezeEligibilityPreparer, BodyLifeDbContext, CancellationToken, DateOnly, DateRange, DateTimeOffset, DbCommand, DbType (+4 more)
+Nodes (11): EditMembershipTypeCommandHandler, MembershipTypeCatalogSnapshot, CancellationToken, CommandResult, DateTimeOffset, EditMembershipTypeCommand, Guid, MembershipTypeCatalogValues (+3 more)
 
-### Community 248 - "List Low Remaining Memberships Result"
+### Community 252 - "Inactive Client Source Row"
+Cohesion: 0.16
+Nodes (10): MembershipIssuePaymentWriter, CommandEnvelope, DateTimeOffset, Guid, IMembershipIssuePaymentWriter, MembershipIssuePaymentWriteResult, CommandEnvelope, DateTimeOffset (+2 more)
+
+### Community 253 - "Audit Entry Explanation View Model"
+Cohesion: 0.21
+Nodes (7): GenerateDailyReportQueryHandler, CancellationToken, GetDailyPaymentSourceRowsResult, GetDailyVisitSourceRowsResult, Task, GenerateDailyReportQuery, GenerateDailyReportResult
+
+### Community 254 - "List Low Remaining Memberships Contracts"
 Cohesion: 0.20
 Nodes (6): ListLowRemainingMembershipsQueryHandler, CancellationToken, Task, ListLowRemainingMembershipsQuery, ListLowRemainingMembershipsResult, ListLowRemainingMembershipsStatus
 
-### Community 249 - "List Negative Clients Result"
+### Community 255 - "Preview Correct Non Working Day"
 Cohesion: 0.20
 Nodes (6): ListNegativeClientsQueryHandler, CancellationToken, Task, ListNegativeClientsQuery, ListNegativeClientsResult, ListNegativeClientsStatus
 
-### Community 250 - "Account Record"
+### Community 256 - "5 Components"
 Cohesion: 0.14
-Nodes (10): AccountCredentialRecord, DateTimeOffset, Guid, AccountCredentialRecordConfiguration, EntityTypeBuilder, AccountRecord, DateTimeOffset, Guid (+2 more)
+Nodes (10): AccountRecord, DateTimeOffset, Guid, AccountRecordConfiguration, EntityTypeBuilder, SessionRecord, DateTimeOffset, Guid (+2 more)
 
-### Community 251 - "Visit Consumption Record"
+### Community 257 - "Login And Session Tracking"
 Cohesion: 0.14
-Nodes (12): VisitConsumptionRecord, DateTimeOffset, Guid, IssuedMembershipRecord, VisitConsumptionRecordConfiguration, EntityTypeBuilder, VisitRecord, ClientRecord (+4 more)
+Nodes (11): VisitCancellationRecord, DateTimeOffset, Guid, VisitCancellationRecordConfiguration, EntityTypeBuilder, VisitRecord, ClientRecord, DateTimeOffset (+3 more)
 
-### Community 252 - "Inactive Client Source Row"
-Cohesion: 0.12
-Nodes (13): InactiveClientLastVisit, DateOnly, DateTimeOffset, Guid, VisitKind, InactiveClientSourceRow, ClientMembershipStatesReadModel, ClientOperationalStatus (+5 more)
-
-### Community 253 - "Audit Entry Explanation View Model"
-Cohesion: 0.12
-Nodes (15): CreatedPaymentSnapshot, FreezeMembershipStateSnapshot, FreezeSnapshot, MembershipIssueExistingNegativeStateSnapshot, MembershipIssueInitialStateSnapshot, MembershipIssuePaymentSnapshot, MembershipIssueSnapshot, MembershipIssueTermsSnapshot (+7 more)
-
-### Community 254 - "List Low Remaining Memberships Contracts"
+### Community 258 - "I Body Life Command Handler"
 Cohesion: 0.25
 Nodes (7): ListLowRemainingMembershipsContractsTests, ActorContext, DateOnly, DateTimeOffset, Fact, IReadOnlyList, MembershipStateReadModel
 
-### Community 255 - "Preview Correct Non Working Day"
+### Community 259 - "Membership Non Working Day Extension"
+Cohesion: 0.31
+Nodes (6): BusinessAuditAppender, BusinessAuditMatrixTests, BodyLifeDbContext, CommandEnvelope, DateTimeOffset, Fact
+
+### Community 260 - "Command Error Code"
+Cohesion: 0.18
+Nodes (12): CanonicalVisitSourceRow, GetDailyVisitSourceRowsQuery, IBodyLifeQueryHandler, DailyVisitSourceRecord, GetDailyVisitSourceRowsQueryHandler, CancellationToken, GetDailyVisitSourceRowsResult, Task (+4 more)
+
+### Community 261 - "Add Freeze Command Handler"
+Cohesion: 0.27
+Nodes (9): ClientVisitRow, CancelVisitFormInput, CancelVisitFormViewModel, ClientSearchMode, CommandError, Guid, int, IReadOnlyList (+1 more)
+
+### Community 262 - "Inactive Client Membership Summary"
+Cohesion: 0.41
+Nodes (6): CorrectNonWorkingDayPreparationResult, CorrectNonWorkingDayPreparationPolicy, CommandEnvelope, CorrectNonWorkingDayCommand, DateRange, int
+
+### Community 263 - "Cancel Visit Form View Model"
 Cohesion: 0.35
 Nodes (8): CorrectNonWorkingDaySourcePreparationStatus, PreviewCorrectNonWorkingDayQueryHandler, CancellationToken, DateRange, NonWorkingDayPreviewInput, PreviewCorrectNonWorkingDayQuery, PreviewCorrectNonWorkingDayResult, Task
 
-### Community 256 - "5 Components"
+### Community 264 - "Client Search Normalizer Tests"
+Cohesion: 0.19
+Nodes (12): DbCommand, DbType, MembershipFreezeEligibilityPreparationResult, MembershipFreezeEligibilityPreparer, BodyLifeDbContext, CancellationToken, DateRange, Guid (+4 more)
+
+### Community 265 - "Get Client Freeze History Source"
 Cohesion: 0.13
 Nodes (15): 5. Критика підходів, Business Audit History, Event-driven, Event sourcing, Feature/module-based, Architecture Research Options HTML Preview, Hybrid Server-Rendered UI, Layered architecture (+7 more)
 
-### Community 257 - "Login and session tracking"
+### Community 266 - "Membership Visit Calculation Tests"
 Cohesion: 0.13
 Nodes (14): Account management business audit, Auth and Permission Technical Logs, Boundaries, Current session indicator, Database-backed session validation, Login and session tracking, Login/logout, Owner credentials (+6 more)
 
-### Community 258 - "IBody Life Command Handler"
-Cohesion: 0.19
-Nodes (12): IBodyLifeCommandHandler, CreateMembershipOpeningStateCommandHandler, BodyLifeDbContext, CancellationToken, CommandResult, Guid, IssuedMembershipRecord, string (+4 more)
+### Community 267 - "Membership Visit Eligibility Policy Tests"
+Cohesion: 0.22
+Nodes (15): Add and Cancel Freeze Workflow, Add Payment Workflow, AddFreeze, Busy State and Duplicate-Submit Protection, CancelFreeze, Canonical Server Reread After Mutation, CreatePayment, GetMembershipTypesForIssue (+7 more)
 
-### Community 259 - "Membership Non Working Day Extension"
+### Community 268 - "List Ending Soon Memberships Contracts"
+Cohesion: 0.13
+Nodes (15): IBodyLifeCommand, AddFreezeCommand, EntityId, string, CancelFreezeCommand, string, CreateMembershipOpeningStateCommand, EntityId (+7 more)
+
+### Community 269 - "Add Freeze Form View Model"
+Cohesion: 0.19
+Nodes (11): MembershipTypeLifecycleSnapshot, DeactivateMembershipTypeCommandHandler, MembershipTypeLifecycleSnapshot, CancellationToken, CommandResult, DateTimeOffset, DeactivateMembershipTypeCommand, Guid (+3 more)
+
+### Community 270 - "Non Working Day Extension Source"
 Cohesion: 0.23
 Nodes (9): NonWorkingDayExtensionSourceRow, MembershipNonWorkingDayExtensionSourceReader, CancellationToken, DbCommand, DbType, Guid, IReadOnlyList, string (+1 more)
 
-### Community 260 - "Command Error Code"
-Cohesion: 0.15
-Nodes (7): CommandErrorCode, AddNonWorkingDayCommandContractsTests, CommandEnvelope, DateRange, Fact, InlineData, Theory
+### Community 271 - "Issue Membership Form View Model"
+Cohesion: 0.17
+Nodes (11): IBodyLifeQueryHandler, CancellationToken, Task, FindClientDuplicateCandidatesQueryHandler, CancellationToken, IReadOnlyList, string, Task (+3 more)
 
-### Community 261 - "Add Freeze Command Handler"
+### Community 272 - "Membership Type Facts"
+Cohesion: 0.18
+Nodes (9): BusinessAuditAppender, AccountKind, ActorRole, AuditEntryId, CommandEnvelope, DateTimeOffset, EntryOrigin, Guid (+1 more)
+
+### Community 273 - "Staff Accounts Model"
 Cohesion: 0.22
-Nodes (10): AddFreezeCommandHandler, CancellationToken, CommandIdempotencyRecord, CommandResult, DateOnly, string, Task, AddFreezeCommand (+2 more)
+Nodes (10): AddFreezeCommandHandler, AddFreezeCommand, CancellationToken, CommandIdempotencyRecord, CommandResult, DateOnly, GetMembershipStateResult, MembershipStateReadModel (+2 more)
 
-### Community 262 - "Inactive Client Membership Summary"
-Cohesion: 0.14
-Nodes (13): InactiveClientMembershipSummary, DateOnly, Guid, IReadOnlyList, IssuedMembershipLifecycleStatus, MembershipStateReadModel, MembershipWarning, InactiveClientMembershipSummaryKind (+5 more)
+### Community 274 - "Audit Timeline Page"
+Cohesion: 0.15
+Nodes (10): MembershipStateRecalculator, CancellationToken, Exception, Guid, Task, IMembershipStateRecalculator, CancellationToken, Guid (+2 more)
 
-### Community 263 - "Cancel Visit Form View Model"
-Cohesion: 0.28
-Nodes (8): ClientVisitRow, CancelVisitFormInput, CancelVisitFormViewModel, ClientSearchMode, CommandError, Guid, int, IReadOnlyList
+### Community 275 - "Get Membership State Result"
+Cohesion: 0.20
+Nodes (6): GetNonWorkingDayQueryHandler, CancellationToken, Task, GetNonWorkingDayQuery, GetNonWorkingDayResult, GetNonWorkingDayStatus
 
-### Community 264 - "Client Search Normalizer Tests"
+### Community 276 - "Membership State Cache Record"
+Cohesion: 0.16
+Nodes (11): DailyReportDayStatus, DailyReportSnapshot, DailyPaymentSourceRow, DailyPaymentSourceSnapshot, DailyVisitSourceRow, DailyVisitSourceSnapshot, DateOnly, IReadOnlyList (+3 more)
+
+### Community 277 - "Payment Context"
+Cohesion: 0.17
+Nodes (5): ClientVisitRowsPage, GetClientVisitRowsQuery, int, GetClientVisitRowsResult, GetClientVisitRowsStatus
+
+### Community 278 - "Create Payment Command Handler"
+Cohesion: 0.16
+Nodes (13): AddPaymentFormInput, AddPaymentFormViewModel, ClientProfile, ClientSearchMode, CommandError, DateTime, DateTimeOffset, Guid (+5 more)
+
+### Community 279 - "Membership Type Contracts Tests"
 Cohesion: 0.27
 Nodes (4): ClientSearchNormalizerTests, Fact, InlineData, Theory
 
-### Community 265 - "Get Client Freeze History Source"
-Cohesion: 0.28
-Nodes (7): GetClientFreezeHistorySourceRowsContractsTests, ActorContext, DateTimeOffset, EntryOrigin, Fact, Guid, string
-
-### Community 266 - "Membership Visit Calculation Tests"
+### Community 280 - "I Body Life Command"
 Cohesion: 0.43
 Nodes (4): MembershipVisitCalculationTests, DateTimeOffset, Fact, Guid
 
-### Community 267 - "Membership Visit Eligibility Policy Tests"
+### Community 281 - "Business Audit Query Support"
 Cohesion: 0.35
 Nodes (5): MembershipVisitEligibilityPolicyTests, Fact, Guid, InlineData, Theory
 
-### Community 268 - "List Ending Soon Memberships Contracts"
+### Community 282 - "Create Preview"
 Cohesion: 0.28
 Nodes (6): ListEndingSoonMembershipsContractsTests, ActorContext, DateOnly, Fact, IReadOnlyList, MembershipStateReadModel
 
-### Community 269 - "Add Freeze Form View Model"
-Cohesion: 0.21
-Nodes (10): ClientProfile, AddFreezeFormInput, AddFreezeFormViewModel, ClientMembershipSummary, ClientSearchMode, CommandError, DateOnly, Guid (+2 more)
-
-### Community 270 - "Community 270"
+### Community 283 - "Stage Components"
 Cohesion: 0.14
 Nodes (14): 10. Правила пошуку, 11. Разові і пробні відвідування, 13. Повідомлення і попередження всередині системи, 15. Критерії готовності першої версії, 16. Що потрібно уточнити перед або під час реалізації, 17. Погоджена логіка після останнього уточнення, 18. Підсумок, 1. Призначення документа (+6 more)
 
-### Community 271 - "Issue Membership Form View Model"
-Cohesion: 0.20
-Nodes (11): GetMembershipTypesForIssueResult, IssueMembershipFormInput, IssueMembershipFormViewModel, ClientSearchMode, CommandError, DateOnly, Guid, int (+3 more)
+### Community 284 - "Prepare Async"
+Cohesion: 0.19
+Nodes (14): Card Number, First Version Operational Chain, Payment, Administrator Role, Card Number Identifier, Cash-Only Payments, Client, Membership (+6 more)
 
-### Community 272 - "Membership Type Facts"
-Cohesion: 0.21
-Nodes (5): MembershipTypeCatalogSnapshot, MembershipTypeCatalogValues, MembershipTypeCatalogSnapshot, Func, IReadOnlyList
+### Community 285 - "Postgre Sql Account Login Tests"
+Cohesion: 0.14
+Nodes (14): Audit Timeline Localization, Client History Localization, Client Mutation and Card Localization, Client Profile and Warning Localization, Client Search Localization, Freeze Workflow Localization, Issue Membership Localization, Membership Types Localization (+6 more)
 
-### Community 273 - "Staff Accounts Model"
-Cohesion: 0.33
-Nodes (7): RedirectToPageResult, StaffAccountsModel, CancellationToken, Guid, IActionResult, IReadOnlyList, Task
+### Community 286 - "Membership Issue Terms Tests"
+Cohesion: 0.16
+Nodes (9): EntityTypeBuilder, IEntityTypeConfiguration, BusinessAuditEntryRecordConfiguration, BusinessAuditEntryRecord, FreezeCancellationRecord, DateTimeOffset, Guid, FreezeCancellationRecordConfiguration (+1 more)
 
-### Community 274 - "Audit Timeline Page"
+### Community 287 - "Membership Opening State Command Contracts"
 Cohesion: 0.22
 Nodes (8): AuditTimelineEntityTypes, AuditTimelineEntityType, AuditTimelinePage, DateTimeOffset, Guid, IEnumerable, IReadOnlyCollection, IReadOnlyList
 
-### Community 275 - "Get Membership State Result"
-Cohesion: 0.22
-Nodes (6): GetMembershipStateQueryHandler, CancellationToken, Task, GetMembershipStateQuery, GetMembershipStateResult, GetMembershipStateStatus
-
-### Community 276 - "Membership State Cache Record"
+### Community 288 - "Membership Warning Rules Tests"
 Cohesion: 0.15
 Nodes (10): IssuedMembershipRecord, DateOnly, DateTimeOffset, Guid, MembershipStateCacheRecord, DateOnly, DateTimeOffset, Guid (+2 more)
 
-### Community 277 - "Payment Context"
-Cohesion: 0.18
-Nodes (10): PaymentContext, AddPaymentFormInput, AddPaymentFormViewModel, ClientSearchMode, CommandError, DateTime, Guid, int (+2 more)
+### Community 289 - "Get Client Visit History Source"
+Cohesion: 0.25
+Nodes (9): CorrectNonWorkingDayCommandHandler, CancellationToken, CommandIdempotencyRecord, CommandResult, string, Task, CorrectNonWorkingDayCommand, EntityId (+1 more)
 
-### Community 278 - "Create Payment Command Handler"
+### Community 290 - "Query Permission Resolver Tests"
 Cohesion: 0.25
 Nodes (10): CreatePaymentCommandHandler, CancellationToken, CommandIdempotencyRecord, CommandResult, Guid, string, Task, CreatePaymentCommand (+2 more)
 
-### Community 279 - "Membership Type Contracts Tests"
+### Community 291 - "Membership Issue Summary"
+Cohesion: 0.15
+Nodes (11): MembershipIssueNegativeContext, DateOnly, MembershipIssuePreparation, DateOnly, Guid, IReadOnlyList, IssuedMembershipSnapshot, MembershipIssuePreparationPolicy (+3 more)
+
+### Community 292 - "7 Components"
+Cohesion: 0.22
+Nodes (3): PreviewCorrectNonWorkingDayQuery, PreviewCorrectNonWorkingDayResult, PreviewCorrectNonWorkingDayStatus
+
+### Community 293 - "8 Components"
+Cohesion: 0.21
+Nodes (7): CorrectPaymentCommand, string, PaymentCorrectionMode, PaymentReplacement, CorrectPaymentCommandContractsTests, ActorContext, Fact
+
+### Community 294 - "I Async Lifetime"
+Cohesion: 0.38
+Nodes (3): Shared, WebPluralizer, IStringLocalizer
+
+### Community 295 - "Client Query Support"
+Cohesion: 0.26
+Nodes (6): MembershipWarningRulesTests, DateOnly, Fact, Guid, InlineData, Theory
+
+### Community 296 - "Membership State Persistence Result"
 Cohesion: 0.30
 Nodes (3): MembershipTypeContractsTests, DateTimeOffset, Fact
 
-### Community 280 - "IBody Life Command"
-Cohesion: 0.27
-Nodes (9): IBodyLifeCommand, AddNonWorkingDayCommandHandler, CancellationToken, CommandIdempotencyRecord, CommandResult, string, Task, AddNonWorkingDayCommand (+1 more)
+### Community 297 - "Read Async"
+Cohesion: 0.23
+Nodes (7): CorrectNonWorkingDayCommandContractsTests, CommandEnvelope, DateOnly, Fact, Guid, InlineData, Theory
 
-### Community 281 - "Business Audit Query Support"
+### Community 298 - "Non Working Day Canonical Period"
+Cohesion: 0.26
+Nodes (4): BusinessTimeZoneTests, Fact, InlineData, Theory
+
+### Community 299 - "Preview Correct Non Working Day"
+Cohesion: 0.18
+Nodes (13): Automated Localization Checks, Bilingual Tablet and Phone Visual Evidence, Culture-Aware Human Formatting, Culture Provider and Safe Fallback Order, Domain and Persistence Stability During Localization, Intentional Non-Localized Values, Antiforgery-Protected Language Selector, Web UI Localization Contract (+5 more)
+
+### Community 300 - "Get Client Payment Rows Result"
+Cohesion: 0.17
+Nodes (13): Invariant Machine Values, ADR-003 UI Rendering and Interaction Model, ADR-017 Kyiv Civil-Time Semantics, BodyLife CRM UI Workflows, Hybrid Server-Rendered Interaction Model, Interaction Contracts, Kyiv Local-Time UI Semantics, Tablet-First and Phone-Friendly Design (+5 more)
+
+### Community 301 - "Client History Model"
 Cohesion: 0.15
 Nodes (9): IQueryable, BusinessAuditQuerySupport, AccountKind, ActorRole, BusinessAuditEntryRecord, EntryOrigin, Guid, JsonSerializerOptions (+1 more)
 
-### Community 282 - "Create Preview"
+### Community 302 - "Body Life Crm Web"
 Cohesion: 0.24
 Nodes (10): PreviewNonWorkingDayImpactQueryHandler, CancellationToken, Guid, IReadOnlyDictionary, MembershipNonWorkingDayImpactPreparation, NonWorkingDayPreviewConfirmation, NonWorkingDayPreviewInput, PreviewNonWorkingDayImpactQuery (+2 more)
 
-### Community 283 - "Stage Components"
-Cohesion: 0.19
-Nodes (10): MembershipIssuePaymentWriter, CommandEnvelope, DateTimeOffset, Guid, IMembershipIssuePaymentWriter, MembershipIssuePaymentWriteResult, CommandEnvelope, DateTimeOffset (+2 more)
-
-### Community 284 - "Prepare Async"
+### Community 303 - "Site Components"
 Cohesion: 0.21
-Nodes (7): CancelVisitSourcePreparer, BodyLifeDbContext, CancellationToken, EntryOrigin, Guid, Task, VisitCancellationSourceStatus
+Nodes (4): ListInactiveClientsQuery, int, ListInactiveClientsResult, ListInactiveClientsStatus
 
-### Community 285 - "Postgre Sql Account Login Tests"
+### Community 304 - "Create Item"
 Cohesion: 0.37
 Nodes (5): FixedTimeProvider, PostgreSqlAccountLoginTests, DateTimeOffset, PostgreSqlFact, Task
 
-### Community 286 - "Membership Issue Terms Tests"
-Cohesion: 0.29
-Nodes (4): MembershipIssueTermsTests, DateTimeOffset, Fact, MembershipTypeCatalogItem
-
-### Community 287 - "Membership Opening State Command Contracts"
-Cohesion: 0.29
-Nodes (6): MembershipOpeningStateCommandContractsTests, CommandEnvelope, DateOnly, DateTimeOffset, Fact, Guid
-
-### Community 288 - "Membership Warning Rules Tests"
-Cohesion: 0.29
-Nodes (6): MembershipWarningRulesTests, DateOnly, Fact, Guid, InlineData, Theory
-
-### Community 289 - "Get Client Visit History Source"
-Cohesion: 0.28
-Nodes (6): GetClientVisitHistorySourceRowsContractsTests, ActorContext, DateTimeOffset, EntryOrigin, Fact, Guid
-
-### Community 290 - "Query Permission Resolver Tests"
-Cohesion: 0.32
-Nodes (7): QueryPermissionResolverTests, ClaimsPrincipal, Fact, InlineData, ServiceProvider, Task, Theory
-
-### Community 292 - "7 Components"
-Cohesion: 0.17
-Nodes (12): 7.10. Денний звіт, 7.11. Попередження про завершення абонемента, 7.1. Основна формула дати завершення абонемента, 7.2. Формула залишку занять, 7.3. Мінусові заняття, 7.4. Дата старту нового абонемента при мінусових заняттях, 7.5. Активність абонемента, 7.6. Заморозка (+4 more)
-
-### Community 293 - "8 Components"
-Cohesion: 0.17
-Nodes (12): 8.10. Клієнти, які давно не ходили, 8.11. Налаштування типів абонементів, 8.1. Вхід у систему, 8.2. Головний екран рецепції, 8.3. Профіль клієнта, 8.4. Екран видачі абонемента, 8.5. Екран візитів, 8.6. Екран оплат (+4 more)
-
-### Community 294 - "IAsync Lifetime"
-Cohesion: 0.23
-Nodes (7): IAsyncLifetime, TechnicalLogCorrelationSmokeTests, Fact, IBrowser, IPage, IPlaywright, Task
-
-### Community 295 - "Client Query Support"
-Cohesion: 0.17
-Nodes (8): ClientQuerySupport, BodyLifeDbContext, CancellationToken, DateTimeOffset, IReadOnlyList, string, Task, ClientWarning
-
-### Community 296 - "Membership State Persistence Result"
-Cohesion: 0.21
-Nodes (8): MembershipStatePersistenceCoordinator, CancellationToken, Guid, Task, MembershipStatePersistenceResult, DateTimeOffset, Guid, MembershipStatePersistenceStatus
-
-### Community 297 - "Read Async"
-Cohesion: 0.23
-Nodes (7): NonWorkingDayCanonicalPeriodReader, NonWorkingDayCanonicalPeriodReadResult, BodyLifeDbContext, CancellationToken, Guid, NonWorkingDayCorrectionSourceStatus, Task
-
-### Community 298 - "Non Working Day Canonical Period"
-Cohesion: 0.27
-Nodes (8): NonWorkingDayCanonicalApplication, NonWorkingDayCanonicalPeriod, DateOnly, DateRange, DateTimeOffset, Guid, IReadOnlyList, NonWorkingDayCorrectionSourceStatus
-
-### Community 300 - "Get Client Payment Rows Result"
-Cohesion: 0.23
-Nodes (3): ClientPaymentRowsPage, GetClientPaymentRowsResult, GetClientPaymentRowsStatus
-
-### Community 301 - "Client History Model"
-Cohesion: 0.24
-Nodes (9): ClientHistoryEntityOption, ClientHistoryModel, CancellationToken, DateOnly, DateTimeOffset, Guid, int, IReadOnlyList (+1 more)
-
-### Community 302 - "Body Life Crm Web"
-Cohesion: 0.17
-Nodes (11): applicationUrl, commandName, dotnetRunMessages, environmentVariables, launchBrowser, ASPNETCORE_ENVIRONMENT, BODYLIFE_CONNECTION_STRING, ConnectionStrings__BodyLife (+3 more)
-
-### Community 303 - "site Components"
-Cohesion: 0.24
-Nodes (10): syncCardIntentForm(), syncCardIntentForms(), syncCorrectPaymentForm(), syncCorrectPaymentForms(), syncIssueMembershipForm(), syncIssueMembershipForms(), syncMarkVisitForm(), syncMarkVisitForms() (+2 more)
-
-### Community 304 - "Create Item"
-Cohesion: 0.35
-Nodes (5): ClientProfileMembershipProjectionTests, DateOnly, DateTimeOffset, Fact, Guid
-
 ### Community 305 - "Membership Calculated State Stored Cache"
-Cohesion: 0.26
+Cohesion: 0.23
 Nodes (6): MembershipCalculatedStateStoredCacheTests, DateOnly, Fact, Guid, InlineData, Theory
 
 ### Community 306 - "Non Working Day Correction Confirmation"
-Cohesion: 0.32
-Nodes (6): NonWorkingDayCorrectionConfirmationMaterialTests, DateRange, DateTimeOffset, Fact, Guid, IEnumerable
+Cohesion: 0.29
+Nodes (4): MembershipIssueTermsTests, DateTimeOffset, Fact, MembershipTypeCatalogItem
 
-### Community 307 - "quality gate job"
-Cohesion: 0.22
-Nodes (11): actions/checkout@v7, actions/setup-dotnet@v5, BodyLife CRM CI, BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING, .NET 10 SDK, main branch, PostgreSQL 17 service, quality gate job (+3 more)
+### Community 307 - "Quality Gate Job"
+Cohesion: 0.29
+Nodes (6): MembershipOpeningStateCommandContractsTests, CommandEnvelope, DateOnly, DateTimeOffset, Fact, Guid
 
 ### Community 308 - "Body Life Logical Commits"
-Cohesion: 0.18
-Nodes (10): BodyLife Logical Commits Interface, Default Prompt, Split Tested Work Into Clear Commits, BodyLife Logical Commits, Commit Message Format, Examples, Logical Commit Splitting, Overview (+2 more)
+Cohesion: 0.28
+Nodes (6): GetClientVisitHistorySourceRowsContractsTests, ActorContext, DateTimeOffset, EntryOrigin, Fact, Guid
 
 ### Community 309 - "14 Components"
-Cohesion: 0.18
-Nodes (11): 14.10. Перетин заморозки і неробочих днів, 14.1. Клієнт без картки, 14.2. Дублікати клієнтів, 14.3. Дублікати номерів карток, 14.4. Візит без активного абонемента, 14.5. Абонемент закінчився по даті, але заняття залишились, 14.6. Абонемент активний по даті, але заняття закінчились, 14.7. Скасування візиту, який створив мінус (+3 more)
+Cohesion: 0.32
+Nodes (7): QueryPermissionResolverTests, ClaimsPrincipal, Fact, InlineData, ServiceProvider, Task, Theory
 
 ### Community 310 - "5 Components"
 Cohesion: 0.18
-Nodes (11): 5.10. Клієнти, які давно не ходили, 5.1. Клієнт прийшов у зал з карткою, 5.2. Клієнт прийшов без картки, 5.3. Новий клієнт, 5.4. Видача абонемента, 5.5. Відмітка візиту, 5.6. Скасування помилкового візиту, 5.7. Оплата (+3 more)
+Nodes (8): BodyLifeRequestContext, IBodyLifeRequestContextResolver, Microsoft.Extensions.Localization.IStringLocalizer<Shared>, Shared, StubRequestContextResolver, CommandEnvelope, DateTimeOffset, EntryOrigin
 
 ### Community 311 - "Migration Components"
-Cohesion: 0.22
-Nodes (5): Migration, InitialBaseline, MigrationBuilder, AddMembershipOpeningStates, MigrationBuilder
+Cohesion: 0.21
+Nodes (12): First Version Exclusions, First Version Proposal, First Version Scope, Fixed Price 400 USD, Gym Membership Accounting System, Non-Working Days Business Logic, Payment After Completion, Reception Workflow (+4 more)
 
 ### Community 312 - "Membership Adjustment Record"
-Cohesion: 0.20
-Nodes (7): MembershipAdjustmentRecord, DateOnly, DateTimeOffset, Guid, IssuedMembershipRecord, MembershipAdjustmentRecordConfiguration, EntityTypeBuilder
+Cohesion: 0.17
+Nodes (12): 7.10. Денний звіт, 7.11. Попередження про завершення абонемента, 7.1. Основна формула дати завершення абонемента, 7.2. Формула залишку занять, 7.3. Мінусові заняття, 7.4. Дата старту нового абонемента при мінусових заняттях, 7.5. Активність абонемента, 7.6. Заморозка (+4 more)
 
 ### Community 313 - "Membership Query Support"
+Cohesion: 0.17
+Nodes (12): 8.10. Клієнти, які давно не ходили, 8.11. Налаштування типів абонементів, 8.1. Вхід у систему, 8.2. Головний екран рецепції, 8.3. Профіль клієнта, 8.4. Екран видачі абонемента, 8.5. Екран візитів, 8.6. Екран оплат (+4 more)
+
+### Community 314 - "Get Client Profile Result"
+Cohesion: 0.23
+Nodes (7): IAsyncLifetime, TechnicalLogCorrelationSmokeTests, Fact, IBrowser, IPage, IPlaywright, Task
+
+### Community 315 - "Non Working Day Canonical Correction"
+Cohesion: 0.20
+Nodes (6): MembershipStateSnapshot, MembershipTypeCatalogSnapshot, Func, ICollection, IReadOnlyList, VisitMarkedMembershipStateSnapshot
+
+### Community 316 - "Guid Components"
+Cohesion: 0.18
+Nodes (6): CommandResult, IReadOnlyList, IBodyLifeCommandHandler, CancellationToken, Task, EntityId
+
+### Community 317 - "Get Audit Timeline Contracts Tests"
+Cohesion: 0.17
+Nodes (8): ClientQuerySupport, BodyLifeDbContext, CancellationToken, DateTimeOffset, IReadOnlyList, string, Task, ClientWarning
+
+### Community 318 - "Get Client Membership History Source"
+Cohesion: 0.21
+Nodes (8): MembershipStatePersistenceCoordinator, CancellationToken, Guid, Task, MembershipStatePersistenceResult, DateTimeOffset, Guid, MembershipStatePersistenceStatus
+
+### Community 319 - "Membership Type Catalog Rules Tests"
+Cohesion: 0.30
+Nodes (8): AddNonWorkingDayCommandHandler, CancellationToken, CommandIdempotencyRecord, CommandResult, string, Task, AddNonWorkingDayCommand, string
+
+### Community 320 - "Initialize Async"
+Cohesion: 0.23
+Nodes (7): NonWorkingDayCanonicalPeriodReader, NonWorkingDayCanonicalPeriodReadResult, BodyLifeDbContext, CancellationToken, Guid, NonWorkingDayCorrectionSourceStatus, Task
+
+### Community 321 - "View Imports"
+Cohesion: 0.27
+Nodes (6): AuditTimelineEntry, GetAuditTimelineContractsTests, ActorContext, DateTimeOffset, Fact, Guid
+
+### Community 322 - "Create Cancel Command"
+Cohesion: 0.24
+Nodes (7): NonWorkingDayCanonicalCancellation, NonWorkingDayCanonicalCorrection, DateTimeOffset, EntryOrigin, Guid, IReadOnlyList, NonWorkingDayCorrectionMode
+
+### Community 323 - "6 Components"
+Cohesion: 0.23
+Nodes (3): ClientPaymentRowsPage, GetClientPaymentRowsResult, GetClientPaymentRowsStatus
+
+### Community 324 - "Membership Opening State Record"
+Cohesion: 0.17
+Nodes (11): applicationUrl, commandName, dotnetRunMessages, environmentVariables, launchBrowser, ASPNETCORE_ENVIRONMENT, BODYLIFE_CONNECTION_STRING, ConnectionStrings__BodyLife (+3 more)
+
+### Community 325 - "Prepare Async"
+Cohesion: 0.24
+Nodes (10): syncCardIntentForm(), syncCardIntentForms(), syncCorrectPaymentForm(), syncCorrectPaymentForms(), syncIssueMembershipForm(), syncIssueMembershipForms(), syncMarkVisitForm(), syncMarkVisitForms() (+2 more)
+
+### Community 326 - "Build Correction Permissions"
+Cohesion: 0.35
+Nodes (5): ClientProfileMembershipProjectionTests, DateOnly, DateTimeOffset, Fact, Guid
+
+### Community 327 - "Client Search Normalizer"
+Cohesion: 0.32
+Nodes (6): NonWorkingDayCorrectionConfirmationMaterialTests, DateRange, DateTimeOffset, Fact, Guid, IEnumerable
+
+### Community 328 - "Membership Extension Explanation"
+Cohesion: 0.22
+Nodes (11): BodyLife Codex Orchestrator Interface, BodyLife Codex Orchestrator Skill, Model-Tier Role Routing, Root Sol Ownership, Single-Writer Lease, BodyLife CRM Agent Instructions, BodyLife CRM Codex Orchestration, Luna Compatibility Fallback (+3 more)
+
+### Community 329 - "Evaluate Components"
+Cohesion: 0.22
+Nodes (11): actions/checkout@v7, actions/setup-dotnet@v5, BodyLife CRM CI, BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING, .NET 10 SDK, main branch, PostgreSQL 17 service, quality gate job (+3 more)
+
+### Community 330 - "Insert Command Idempotency Record Async"
+Cohesion: 0.18
+Nodes (10): BodyLife Logical Commits Interface, Default Prompt, Split Tested Work Into Clear Commits, BodyLife Logical Commits, Commit Message Format, Examples, Logical Commit Splitting, Overview (+2 more)
+
+### Community 331 - "Mutable Time Provider"
+Cohesion: 0.18
+Nodes (11): 14.10. Перетин заморозки і неробочих днів, 14.1. Клієнт без картки, 14.2. Дублікати клієнтів, 14.3. Дублікати номерів карток, 14.4. Візит без активного абонемента, 14.5. Абонемент закінчився по даті, але заняття залишились, 14.6. Абонемент активний по даті, але заняття закінчились, 14.7. Скасування візиту, який створив мінус (+3 more)
+
+### Community 332 - "Membership Combined Source Calculation Tests"
+Cohesion: 0.18
+Nodes (11): 5.10. Клієнти, які давно не ходили, 5.1. Клієнт прийшов у зал з карткою, 5.2. Клієнт прийшов без картки, 5.3. Новий клієнт, 5.4. Видача абонемента, 5.5. Відмітка візиту, 5.6. Скасування помилкового візиту, 5.7. Оплата (+3 more)
+
+### Community 333 - "Get Client History Contracts Tests"
+Cohesion: 0.22
+Nodes (5): Migration, AddClientsSearchStorage, MigrationBuilder, AddMembershipOpeningStates, MigrationBuilder
+
+### Community 334 - "Graphify Reference Extra Exports And"
+Cohesion: 0.27
+Nodes (6): ActorContext, BodyLifeDbContext, CancellationToken, DateTimeOffset, IDbContextTransaction, Task
+
+### Community 335 - "Business Audit Matrix Tests"
 Cohesion: 0.22
 Nodes (8): MembershipQuerySupport, ActorContext, BodyLifeDbContext, CancellationToken, DateTimeOffset, QueryPermissionSet, string, Task
 
-### Community 315 - "Non Working Day Canonical Correction"
-Cohesion: 0.25
-Nodes (7): NonWorkingDayCanonicalCancellation, NonWorkingDayCanonicalCorrection, DateTimeOffset, EntryOrigin, Guid, IReadOnlyList, NonWorkingDayCorrectionMode
-
-### Community 316 - "Guid Components"
-Cohesion: 0.22
-Nodes (7): CancelAfterCanonicalWriteRecalculator, CancellationToken, CommandResult, Guid, IMembershipStateRecalculator, IReadOnlyList, MembershipStateRecalculationResult
-
-### Community 317 - "Get Audit Timeline Contracts Tests"
-Cohesion: 0.31
-Nodes (5): GetAuditTimelineContractsTests, ActorContext, DateTimeOffset, Fact, Guid
-
-### Community 318 - "Get Client Membership History Source"
+### Community 336 - "Milestone 3 Acceptance Review"
 Cohesion: 0.27
-Nodes (5): GetClientMembershipHistorySourceRowsContractsTests, ActorContext, DateTimeOffset, Fact, Guid
+Nodes (6): ActorContext, BodyLifeDbContext, CancellationToken, DateTimeOffset, IDbContextTransaction, Task
 
-### Community 319 - "Membership Type Catalog Rules Tests"
+### Community 337 - "Milestone 4 Acceptance Review"
 Cohesion: 0.31
-Nodes (4): MembershipTypeCatalogRulesTests, Fact, InlineData, Theory
-
-### Community 321 - "View Imports"
-Cohesion: 0.20
-Nodes (8): BodyLife.Crm.Modules.Audit, BodyLife.Crm.Modules.Freezes, BodyLife.Crm.Modules.NonWorkingDays, BodyLife.Crm.Modules.Payments, BodyLife.Crm.Modules.Reports, BodyLife.Crm.Modules.Visits, BodyLife.Crm.Web.Operations, BodyLife.Crm.Web.Pages.Reception
-
-### Community 322 - "Create Cancel Command"
-Cohesion: 0.31
-Nodes (7): CorrectPaymentFixture, CorrectPaymentCommand, string, ActorContext, CommandEnvelope, EntryOrigin, Guid
-
-### Community 323 - "6 Components"
-Cohesion: 0.20
-Nodes (10): 6.1. Клієнт, 6.2. Номер картки, 6.3. Тип абонемента, 6.4. Абонемент клієнта, 6.5. Візит, 6.6. Оплата, 6.7. Заморозка, 6.8. Неробочий день або період (+2 more)
-
-### Community 324 - "Membership Opening State Record"
-Cohesion: 0.22
-Nodes (7): MembershipOpeningStateRecord, DateOnly, DateTimeOffset, Guid, IssuedMembershipRecord, MembershipOpeningStateRecordConfiguration, EntityTypeBuilder
-
-### Community 325 - "Prepare Async"
-Cohesion: 0.36
-Nodes (6): CorrectNonWorkingDaySourcePreparer, CancellationToken, Guid, IReadOnlyList, IssuedMembershipRecord, Task
-
-### Community 326 - "Build Correction Permissions"
-Cohesion: 0.20
-Nodes (7): ActorContext, BodyLifeDbContext, CancellationToken, DateTimeOffset, QueryPermissionSet, Task, ClientPaymentRowStatus
-
-### Community 328 - "Membership Extension Explanation"
-Cohesion: 0.20
-Nodes (7): ClientMembershipExtensionExplanations, Guid, IReadOnlyList, MembershipExtensionExplanation, DateRange, Guid, MembershipExtensionSourceKind
-
-### Community 329 - "Evaluate Components"
-Cohesion: 0.31
-Nodes (7): MembershipNonWorkingDayApplication, DateRange, Guid, MembershipNonWorkingDayApplicationPolicy, DateRange, Guid, MembershipNonWorkingDayApplicationStatus
-
-### Community 330 - "Insert Command Idempotency Record Async"
-Cohesion: 0.36
-Nodes (5): PostgreSqlCommandIdempotencyStorageTests, DateTimeOffset, Guid, PostgreSqlFact, Task
-
-### Community 331 - "Mutable Time Provider"
-Cohesion: 0.27
-Nodes (6): MutableTimeProvider, PostgreSqlStaffAccountQueryTests, DateTimeOffset, PostgreSqlFact, Task, TimeSpan
-
-### Community 332 - "Membership Combined Source Calculation Tests"
-Cohesion: 0.49
-Nodes (4): MembershipCombinedSourceCalculationTests, DateTimeOffset, Fact, Guid
-
-### Community 333 - "Get Client History Contracts Tests"
-Cohesion: 0.29
-Nodes (5): GetClientHistoryContractsTests, ActorContext, DateTimeOffset, Fact, Guid
-
-### Community 334 - "graphify reference extra exports and"
-Cohesion: 0.22
-Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
-
-### Community 335 - "Business Audit Matrix Tests"
-Cohesion: 0.25
-Nodes (6): BodyLife.Crm.Infrastructure.Tests.Architecture, BusinessAuditMatrixTestCase, BusinessAuditMatrixTestCases, Type, OutsideMembershipsFormulaFixture, DateOnly
-
-### Community 336 - "Milestone 3 acceptance review"
-Cohesion: 0.22
-Nodes (8): Acceptance criteria, Completed foundation, Decision, Milestone 3 acceptance review, Scope and risk check, Test coverage review, Transition to Milestone 4, Validation baseline after Step 43
-
-### Community 337 - "Milestone 4 acceptance review"
-Cohesion: 0.22
-Nodes (8): Acceptance criteria, Completed foundation, Decision, Milestone 4 acceptance review, Scope and risk check, Test coverage review, Transition to Milestone 5, Validation baseline after Step 54
+Nodes (8): NonWorkingDayCanonicalApplication, NonWorkingDayCanonicalPeriod, DateOnly, DateRange, DateTimeOffset, Guid, IReadOnlyList, NonWorkingDayCorrectionSourceStatus
 
 ### Community 338 - "Load Display Names Async"
-Cohesion: 0.22
-Nodes (8): IReadOnlyCollection, NonWorkingDayClientProjection, BodyLifeDbContext, CancellationToken, Guid, IReadOnlyDictionary, MembershipNonWorkingDayImpactPreparation, Task
+Cohesion: 0.18
+Nodes (10): LowRemainingMembershipRow, DateOnly, DateTimeOffset, Guid, IReadOnlyList, MembershipStateReadModel, MembershipWarning, LowRemainingMembershipsPage (+2 more)
 
 ### Community 339 - "Freeze Record"
-Cohesion: 0.25
-Nodes (7): FreezeRecord, DateOnly, DateTimeOffset, Guid, IssuedMembershipRecord, FreezeRecordConfiguration, EntityTypeBuilder
+Cohesion: 0.18
+Nodes (10): NegativeClientRow, DateOnly, DateTimeOffset, Guid, IReadOnlyList, MembershipStateReadModel, MembershipWarning, NegativeClientsPage (+2 more)
 
 ### Community 340 - "Non Working Day Preview Token"
 Cohesion: 0.22
-Nodes (6): NonWorkingDayPreviewTokenOptions, byte, IConfiguration, int, string, TimeSpan
+Nodes (6): BodyLife.Crm.Web.Localization, ClientProfileViewModel, DateOnly, GetClientProfileResult, Guid, ReceptionSearchContext
 
 ### Community 341 - "Non Working Period Application Record"
+Cohesion: 0.22
+Nodes (7): CancelAfterCanonicalWriteRecalculator, CancellationToken, CommandResult, Guid, IMembershipStateRecalculator, IReadOnlyList, MembershipStateRecalculationResult
+
+### Community 342 - "Bootstrap Owner Async"
+Cohesion: 0.27
+Nodes (5): GetClientMembershipHistorySourceRowsContractsTests, ActorContext, DateTimeOffset, Fact, Guid
+
+### Community 343 - "List Staff Accounts Async"
+Cohesion: 0.42
+Nodes (4): MembershipCombinedSourceCalculationTests, DateTimeOffset, Fact, Guid
+
+### Community 344 - "Client Membership Report States"
+Cohesion: 0.31
+Nodes (4): MembershipTypeCatalogRulesTests, Fact, InlineData, Theory
+
+### Community 345 - "Ending Soon Membership State Rows"
+Cohesion: 0.53
+Nodes (4): AuditDateRangePageModelTests, InlineData, Task, Theory
+
+### Community 346 - "Low Remaining Membership State Rows"
+Cohesion: 0.27
+Nodes (7): AddNonWorkingDayCommandHandler, INonWorkingDayPreviewTokenService, MutableTimeProvider, BodyLifeDbContext, DateTimeOffset, Func, TimeProvider
+
+### Community 347 - "Negative Membership State Rows Page"
+Cohesion: 0.20
+Nodes (10): 6.1. Клієнт, 6.2. Номер картки, 6.3. Тип абонемента, 6.4. Абонемент клієнта, 6.5. Візит, 6.6. Оплата, 6.7. Заморозка, 6.8. Неробочий день або період (+2 more)
+
+### Community 348 - "Membership Extension Day"
+Cohesion: 0.22
+Nodes (7): IModelBinder, IModelBinderProvider, LocalizedDecimalModelBinder, LocalizedDecimalModelBinderProvider, ModelBinderProviderContext, ModelBindingContext, Task
+
+### Community 349 - "Preview Non Working Day Impact"
+Cohesion: 0.22
+Nodes (7): MembershipAdjustmentRecord, DateOnly, DateTimeOffset, Guid, IssuedMembershipRecord, MembershipAdjustmentRecordConfiguration, EntityTypeBuilder
+
+### Community 350 - "Get Client Payment History Source"
+Cohesion: 0.22
+Nodes (7): MembershipOpeningStateRecord, DateOnly, DateTimeOffset, Guid, IssuedMembershipRecord, MembershipOpeningStateRecordConfiguration, EntityTypeBuilder
+
+### Community 351 - "Query Permission Result Tests"
+Cohesion: 0.36
+Nodes (6): CorrectNonWorkingDaySourcePreparer, CancellationToken, Guid, IReadOnlyList, IssuedMembershipRecord, Task
+
+### Community 354 - "ADR 001 Product Shape And"
+Cohesion: 0.24
+Nodes (5): MembershipExtensionCalculator, IEnumerable, MembershipExtensionDay, DateOnly, Guid
+
+### Community 355 - "ADR 002 Application Architecture And"
+Cohesion: 0.20
+Nodes (6): MembershipWarning, MembershipWarningRules, DateOnly, int, IReadOnlyList, MembershipWarningSeverity
+
+### Community 356 - "ADR 003 UI Rendering And"
+Cohesion: 0.27
+Nodes (3): PreviewNonWorkingDayImpactQuery, PreviewNonWorkingDayImpactResult, PreviewNonWorkingDayImpactStatus
+
+### Community 357 - "ADR 004 Module Boundaries And"
+Cohesion: 0.36
+Nodes (5): PostgreSqlCommandIdempotencyStorageTests, DateTimeOffset, Guid, PostgreSqlFact, Task
+
+### Community 358 - "ADR 005 Membership Invariants And"
+Cohesion: 0.24
+Nodes (6): AddNonWorkingDayCommandContractsTests, CommandEnvelope, DateRange, Fact, InlineData, Theory
+
+### Community 359 - "ADR 006 Business Audit Corrections"
+Cohesion: 0.29
+Nodes (5): GetClientHistoryContractsTests, ActorContext, DateTimeOffset, Fact, Guid
+
+### Community 360 - "ADR 007 Reporting Model And"
+Cohesion: 0.36
+Nodes (6): LocalizedDecimalModelBinderTests, InlineData, ModelBindingContext, Task, Theory, Type
+
+### Community 361 - "ADR 008 Search Identity Card"
+Cohesion: 0.22
+Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
+
+### Community 362 - "ADR 009 Backup Restore And"
+Cohesion: 0.28
+Nodes (6): BodyLife.Crm.Infrastructure.Persistence.Idempotency, CommandIdempotencyRecord, DateTimeOffset, Guid, CommandIdempotencyRecordConfiguration, EntityTypeBuilder
+
+### Community 363 - "ADR 010 Migration Manual Backfill"
+Cohesion: 0.22
+Nodes (8): Acceptance criteria, Completed foundation, Decision, Milestone 3 acceptance review, Scope and risk check, Test coverage review, Transition to Milestone 4, Validation baseline after Step 43
+
+### Community 364 - "ADR 011 Membership Type Lifecycle"
+Cohesion: 0.22
+Nodes (8): Acceptance criteria, Completed foundation, Decision, Milestone 4 acceptance review, Scope and risk check, Test coverage review, Transition to Milestone 5, Validation baseline after Step 54
+
+### Community 365 - "ADR 012 Permissions Matrix Session"
+Cohesion: 0.28
+Nodes (9): Non-Working Days Localization, Reports Localization, ADR-016 Non-Working Day Scope, Client History and Business Audit, Correction Workflows, Daily Report Workflow, GenerateDailyReport, Owner and Admin Workflow Differences (+1 more)
+
+### Community 366 - "ADR 013 Future Client Self"
+Cohesion: 0.42
+Nodes (9): Client Profile Workflow, Client Search Workflow, Exact Card Match Workflow, Multiple Search Results Workflow, Reception Dashboard Workflow, SearchClients, Reception Workbench Direction, Compact Reception Operational Shell (+1 more)
+
+### Community 367 - "Client Search Normalization Contract"
+Cohesion: 0.22
+Nodes (8): IReadOnlyCollection, NonWorkingDayClientProjection, BodyLifeDbContext, CancellationToken, Guid, IReadOnlyDictionary, MembershipNonWorkingDayImpactPreparation, Task
+
+### Community 368 - "Milestone 2 Acceptance Review"
+Cohesion: 0.22
+Nodes (8): MembershipVisitEligibilityPreparationResult, MembershipVisitEligibilityPreparer, BodyLifeDbContext, CancellationToken, DateTimeOffset, Guid, IMembershipVisitFreezeSourceProvider, Task
+
+### Community 369 - "Business Audit Event Matrix"
+Cohesion: 0.25
+Nodes (7): FreezeRecord, DateOnly, DateTimeOffset, Guid, IssuedMembershipRecord, FreezeRecordConfiguration, EntityTypeBuilder
+
+### Community 370 - "Health Check Response Writer"
+Cohesion: 0.22
+Nodes (6): NonWorkingDayPreviewTokenOptions, byte, IConfiguration, int, string, TimeSpan
+
+### Community 371 - "Invoke Async"
 Cohesion: 0.25
 Nodes (7): NonWorkingPeriodApplicationRecord, DateOnly, DateTimeOffset, Guid, IssuedMembershipRecord, NonWorkingPeriodApplicationRecordConfiguration, EntityTypeBuilder
 
-### Community 342 - "Bootstrap Owner Async"
+### Community 372 - "Payment Correction Record"
 Cohesion: 0.33
 Nodes (5): OwnerBootstrapper, CancellationToken, DbUpdateException, string, Task
 
-### Community 343 - "List Staff Accounts Async"
+### Community 373 - "Password Hashing Service"
 Cohesion: 0.28
 Nodes (6): StaffAccountQueryService, StaffAccountSummary, CancellationToken, IReadOnlyList, string, Task
 
-### Community 344 - "Client Membership Report States"
-Cohesion: 0.22
-Nodes (6): ClientMembershipReportState, ClientMembershipStatesReadModel, Guid, ClientMembershipReportStates, DateOnly, IReadOnlyList
-
-### Community 345 - "Ending Soon Membership State Rows"
+### Community 374 - "Session Record"
 Cohesion: 0.22
 Nodes (6): EndingSoonMembershipStateRowsPage, DateOnly, IReadOnlyList, EndingSoonMembershipStateSourceRow, IssuedMembershipLifecycleStatus, MembershipStateReadModel
 
-### Community 346 - "Low Remaining Membership State Rows"
+### Community 375 - "Visit Cancellation Record"
 Cohesion: 0.22
 Nodes (6): LowRemainingMembershipStateRowsPage, DateOnly, IReadOnlyList, LowRemainingMembershipStateSourceRow, IssuedMembershipLifecycleStatus, MembershipStateReadModel
 
-### Community 347 - "Negative Membership State Rows Page"
+### Community 376 - "Client Payment History Source Rows"
 Cohesion: 0.22
 Nodes (6): NegativeMembershipStateRowsPage, DateOnly, IReadOnlyList, NegativeMembershipStateSourceRow, IssuedMembershipLifecycleStatus, MembershipStateReadModel
 
-### Community 348 - "Membership Extension Day"
-Cohesion: 0.28
-Nodes (5): MembershipExtensionCalculator, IEnumerable, MembershipExtensionDay, DateOnly, Guid
-
-### Community 349 - "Preview Non Working Day Impact"
+### Community 377 - "Create Factory"
 Cohesion: 0.31
-Nodes (3): PreviewNonWorkingDayImpactQuery, PreviewNonWorkingDayImpactResult, PreviewNonWorkingDayImpactStatus
+Nodes (7): MembershipNonWorkingDayImpactEstimate, MembershipNonWorkingDayImpactEstimator, MembershipNonWorkingDayOverlapWarning, DateOnly, DateRange, Guid, IReadOnlyList
 
-### Community 351 - "Query Permission Result Tests"
+### Community 379 - "Mutable Time Provider"
+Cohesion: 0.33
+Nodes (5): Reception, ReceptionCommandErrorLocalizerTests, InlineData, IStringLocalizer, Theory
+
+### Community 380 - "Membership Non Working Day Impact"
+Cohesion: 0.25
+Nodes (4): ReceptionDisplayFormatter, DateOnly, DateTimeOffset, Money
+
+### Community 381 - "Membership Non Working Day Replacement"
 Cohesion: 0.31
 Nodes (4): QueryPermissionResultTests, Fact, InlineData, Theory
 
-### Community 352 - "Membership Initial State Tests"
+### Community 382 - "Observability Operations Checklist"
 Cohesion: 0.42
 Nodes (3): MembershipInitialStateTests, DateTimeOffset, Fact
 
-### Community 353 - "Create Marked Visit"
-Cohesion: 0.25
-Nodes (4): ClientVisitConsumptionStatus, MarkedVisitHistorySource, ClientVisitRowStatus, VisitKind
-
-### Community 354 - "ADR 001 Product shape and"
-Cohesion: 0.25
-Nodes (7): ADR-001: Product shape and operating model v1, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 355 - "ADR 002 Application architecture and"
-Cohesion: 0.25
-Nodes (7): ADR-002: Application architecture and application boundary, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 356 - "ADR 003 UI rendering and"
-Cohesion: 0.25
-Nodes (7): ADR-003: UI rendering and interaction model, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 357 - "ADR 004 Module boundaries and"
-Cohesion: 0.25
-Nodes (7): ADR-004: Module boundaries and business rule ownership, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 358 - "ADR 005 Membership invariants and"
-Cohesion: 0.25
-Nodes (7): ADR-005: Membership invariants and recalculation rules, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 359 - "ADR 006 Business audit corrections"
-Cohesion: 0.25
-Nodes (7): ADR-006: Business audit, corrections and technical logs, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 360 - "ADR 007 Reporting model and"
-Cohesion: 0.25
-Nodes (7): ADR-007: Reporting model and consistency rules, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 361 - "ADR 008 Search identity card"
-Cohesion: 0.25
-Nodes (7): ADR-008: Search identity, card rules and duplicate warnings, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 362 - "ADR 009 Backup restore and"
-Cohesion: 0.25
-Nodes (7): ADR-009: Backup, restore and operational recovery, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 363 - "ADR 010 Migration manual backfill"
-Cohesion: 0.25
-Nodes (7): ADR-010: Migration, manual backfill and paper fallback entries, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 364 - "ADR 011 Membership type lifecycle"
-Cohesion: 0.25
-Nodes (7): ADR-011: Membership type lifecycle, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 365 - "ADR 012 Permissions matrix session"
-Cohesion: 0.25
-Nodes (7): ADR-012: Permissions matrix, session accountability and correction boundaries, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 366 - "ADR 013 Future client self"
-Cohesion: 0.25
-Nodes (7): ADR-013: Future client self-service boundary, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
-
-### Community 367 - "Client search normalization contract"
-Cohesion: 0.25
-Nodes (7): Boundary, Card number, Client search normalization contract, Duplicate candidate matching, Name, Persistence handoff, Phone
-
-### Community 368 - "Milestone 2 acceptance review"
-Cohesion: 0.25
-Nodes (7): Acceptance criteria, Completed foundation, Decision, Milestone 2 acceptance review, Test coverage review, Transition to Milestone 3, Validation baseline after Step 27
-
-### Community 369 - "Business Audit Event Matrix"
-Cohesion: 0.50
-Nodes (4): EventRequirements, RequiredPayloadFields, BusinessAuditEventMatrix, IReadOnlyDictionary
-
-### Community 370 - "Health Check Response Writer"
-Cohesion: 0.25
-Nodes (6): HealthReport, HealthCheckEntryResponse, HealthCheckResponse, HealthCheckResponseWriter, HttpContext, Task
-
-### Community 371 - "Invoke Async"
-Cohesion: 0.39
-Nodes (3): HttpContext, RequestOutcomeLoggingMiddleware, Task
-
-### Community 372 - "Payment Correction Record"
-Cohesion: 0.29
-Nodes (5): PaymentCorrectionRecord, DateTimeOffset, Guid, PaymentCorrectionRecordConfiguration, EntityTypeBuilder
-
-### Community 373 - "Password Hashing Service"
-Cohesion: 0.32
-Nodes (3): PasswordHashingService, int, string
-
-### Community 374 - "Session Record"
-Cohesion: 0.29
-Nodes (5): SessionRecord, DateTimeOffset, Guid, SessionRecordConfiguration, EntityTypeBuilder
-
-### Community 375 - "Visit Cancellation Record"
-Cohesion: 0.29
-Nodes (5): VisitCancellationRecord, DateTimeOffset, Guid, VisitCancellationRecordConfiguration, EntityTypeBuilder
-
-### Community 376 - "Client Payment History Source Rows"
-Cohesion: 0.32
-Nodes (5): ClientPaymentHistorySourceRowsPage, DateTimeOffset, Guid, IEnumerable, IReadOnlyList
-
-### Community 377 - "Create Factory"
-Cohesion: 0.39
-Nodes (5): Program, PostgreSqlReadyHealthCheckTests, PostgreSqlFact, Task, WebApplicationFactory
-
-### Community 378 - "Postgre Sql Business Audit Matrix"
-Cohesion: 0.39
-Nodes (5): PostgreSqlBusinessAuditMatrixTests, CommandEnvelope, DateTimeOffset, PostgreSqlFact, Task
-
-### Community 379 - "Mutable Time Provider"
-Cohesion: 0.29
-Nodes (5): FixedTimeProvider, MutableTimeProvider, DateTimeOffset, TimeProvider, TimeSpan
-
-### Community 380 - "Membership Non Working Day Impact"
-Cohesion: 0.43
+### Community 383 - "Body Life Command Workflows"
+Cohesion: 0.36
 Nodes (4): MembershipNonWorkingDayImpactEstimatorTests, DateOnly, DateRange, Fact
 
-### Community 381 - "Membership Non Working Day Replacement"
-Cohesion: 0.39
-Nodes (4): MembershipNonWorkingDayReplacementImpactPreparationTests, DateRange, Fact, Guid
-
-### Community 382 - "Observability Operations Checklist"
-Cohesion: 0.29
-Nodes (6): Observability Operations Checklist, Backup And Restore, Business Audit History, Metrics, Output Template, Technical Logs
-
-### Community 383 - "Body Life Command Workflows"
-Cohesion: 0.29
-Nodes (6): BodyLife Command Workflows, Command Shape, Error Taxonomy, Guardrails, Implementation Workflow, Start Here
-
 ### Community 384 - "Body Life Membership Rules"
-Cohesion: 0.29
-Nodes (6): BodyLife Membership Rules, Guardrails, Implementation Workflow, Recalculation Rules, Required Model, Start Here
+Cohesion: 0.33
+Nodes (4): MembershipNonWorkingDayReplacementImpactPreparationTests, DateRange, Fact, Guid
 
 ### Community 385 - "Body Life Postgre SQL Data"
 Cohesion: 0.29
-Nodes (6): BodyLife PostgreSQL Data Access, Guardrails, Persistence Principles, Required PostgreSQL Features, Start Here, Testing Rules
+Nodes (6): CanonicalPaymentSourceRow, DailyPaymentSourceRecord, GetDailyPaymentSourceRowsQueryHandler, CancellationToken, GetDailyPaymentSourceRowsResult, Task
 
 ### Community 386 - "Body Life Quality Gates"
+Cohesion: 0.25
+Nodes (7): ADR-001: Product shape and operating model v1, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 387 - "Body Life Reception UI Htmx"
+Cohesion: 0.25
+Nodes (7): ADR-002: Application architecture and application boundary, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 388 - "Body Life Reports And Audit"
+Cohesion: 0.25
+Nodes (7): ADR-003: UI rendering and interaction model, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 389 - "Data Architecture Checklist"
+Cohesion: 0.25
+Nodes (7): ADR-004: Module boundaries and business rule ownership, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 390 - "Check Health Async"
+Cohesion: 0.25
+Nodes (7): ADR-005: Membership invariants and recalculation rules, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 391 - "Duplicate Warning Acknowledgement Record"
+Cohesion: 0.25
+Nodes (7): ADR-006: Business audit, corrections and technical logs, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 392 - "Is Owner Authorized Async"
+Cohesion: 0.25
+Nodes (7): ADR-007: Reporting model and consistency rules, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 393 - "Get Application Ids For Period"
+Cohesion: 0.25
+Nodes (7): ADR-008: Search identity, card rules and duplicate warnings, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 394 - "Create Opening State"
+Cohesion: 0.25
+Nodes (7): ADR-009: Backup, restore and operational recovery, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 395 - "Count Owner Accounts Async"
+Cohesion: 0.25
+Nodes (7): ADR-010: Migration, manual backfill and paper fallback entries, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 396 - "Membership Date Rules Tests"
+Cohesion: 0.25
+Nodes (7): ADR-011: Membership type lifecycle, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 397 - "Body Life ASP NET Foundation"
+Cohesion: 0.25
+Nodes (7): ADR-012: Permissions matrix, session accountability and correction boundaries, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 398 - "Body Life Production Readiness"
+Cohesion: 0.25
+Nodes (7): ADR-013: Future client self-service boundary, Варіанти, Контекст, Наслідки, Рішення, Статус, Що це означає для реалізації
+
+### Community 399 - "Stack Selection Matrix"
+Cohesion: 0.25
+Nodes (7): Boundary, Card number, Client search normalization contract, Duplicate candidate matching, Name, Persistence handoff, Phone
+
+### Community 400 - "Choose Technology Stack"
+Cohesion: 0.25
+Nodes (7): Acceptance criteria, Completed foundation, Decision, Milestone 2 acceptance review, Test coverage review, Transition to Milestone 3, Validation baseline after Step 27
+
+### Community 401 - "Interaction Decision Checklist"
+Cohesion: 0.25
+Nodes (7): EndingSoonMembershipsPage, ListEndingSoonMembershipsResult, EndingSoonModel, CancellationToken, DateOnly, int, Task
+
+### Community 402 - "Graphify Reference Query Path Explain"
+Cohesion: 0.50
+Nodes (4): EventRequirements, RequiredPayloadFields, BusinessAuditEventMatrix, IReadOnlyDictionary
+
+### Community 403 - "Architecture Research Protocol"
+Cohesion: 0.25
+Nodes (6): HealthReport, HealthCheckEntryResponse, HealthCheckResponse, HealthCheckResponseWriter, HttpContext, Task
+
+### Community 404 - "Research Architecture Options"
+Cohesion: 0.39
+Nodes (3): HttpContext, RequestOutcomeLoggingMiddleware, Task
+
+### Community 405 - "Date Range Tests"
+Cohesion: 0.29
+Nodes (7): IBodyLifeCommandHandler, CreateMembershipTypeCommandHandler, CancellationToken, CommandResult, CreateMembershipTypeCommand, string, Task
+
+### Community 406 - "12 Components"
+Cohesion: 0.25
+Nodes (7): ListLowRemainingMembershipsResult, LowRemainingMembershipsPage, LowRemainingModel, CancellationToken, DateOnly, int, Task
+
+### Community 407 - "Milestone 1 Acceptance Review"
+Cohesion: 0.25
+Nodes (7): ListNegativeClientsResult, NegativeClientsPage, NegativeClientsModel, CancellationToken, DateOnly, int, Task
+
+### Community 408 - "Active Non Working Day For"
+Cohesion: 0.25
+Nodes (4): PaymentMethod, InvalidOperationException, PaymentContext, VisitKind
+
+### Community 409 - "Derive Components"
+Cohesion: 0.29
+Nodes (5): MembershipTypeRecord, DateTimeOffset, Guid, MembershipTypeRecordConfiguration, EntityTypeBuilder
+
+### Community 410 - "Ending Soon Membership Row"
+Cohesion: 0.25
+Nodes (6): NonWorkingDayQuerySupport, ActorContext, BodyLifeDbContext, CancellationToken, DateTimeOffset, Task
+
+### Community 411 - "Membership Opening State Creation Summary"
+Cohesion: 0.29
+Nodes (5): PaymentCorrectionRecord, DateTimeOffset, Guid, PaymentCorrectionRecordConfiguration, EntityTypeBuilder
+
+### Community 412 - "Source Map"
+Cohesion: 0.29
+Nodes (5): AccountCredentialRecord, DateTimeOffset, Guid, AccountCredentialRecordConfiguration, EntityTypeBuilder
+
+### Community 413 - "Source Map"
+Cohesion: 0.32
+Nodes (3): PasswordHashingService, int, string
+
+### Community 414 - "Source Map"
+Cohesion: 0.29
+Nodes (6): VisitConsumptionRecord, DateTimeOffset, Guid, IssuedMembershipRecord, VisitConsumptionRecordConfiguration, EntityTypeBuilder
+
+### Community 416 - "Design Observability Operations"
+Cohesion: 0.32
+Nodes (5): ClientPaymentHistorySourceRowsPage, DateTimeOffset, Guid, IEnumerable, IReadOnlyList
+
+### Community 417 - "Design System Interactions"
+Cohesion: 0.25
+Nodes (7): ActiveStateDto, ActiveStateSnapshot, CreatedAccountDto, CreatedAccountSnapshot, CredentialStateDto, CredentialStateSnapshot, DisplayNameDto
+
+### Community 418 - "Body Life Db Context Options"
+Cohesion: 0.39
+Nodes (5): Program, PostgreSqlReadyHealthCheckTests, PostgreSqlFact, Task, WebApplicationFactory
+
+### Community 419 - "Postgre SQL In Docker"
+Cohesion: 0.25
+Nodes (6): FailAfterCanonicalWriteRecalculator, AuditRow, CancellationToken, Guid, IMembershipStateRecalculator, MembershipStateRecalculationResult
+
+### Community 420 - "Owner Restore Check"
+Cohesion: 0.39
+Nodes (5): PostgreSqlBusinessAuditMatrixTests, CommandEnvelope, DateTimeOffset, PostgreSqlFact, Task
+
+### Community 421 - "Owner Bootstrap Procedure"
+Cohesion: 0.29
+Nodes (6): Observability Operations Checklist, Backup And Restore, Business Audit History, Metrics, Output Template, Technical Logs
+
+### Community 422 - "Q ADR 005"
+Cohesion: 0.33
+Nodes (6): BindingInfo, IModelMetadataProvider, ModelBinderProviderContext, ModelMetadata, TestModelBinderProviderContext, IModelBinder
+
+### Community 423 - "Q Accepted ADR Package"
+Cohesion: 0.29
+Nodes (6): BodyLife Command Workflows, Command Shape, Error Taxonomy, Guardrails, Implementation Workflow, Start Here
+
+### Community 424 - "Q Post ADR Docs Implementation"
+Cohesion: 0.29
+Nodes (6): BodyLife Membership Rules, Guardrails, Implementation Workflow, Recalculation Rules, Required Model, Start Here
+
+### Community 425 - "Dev Postgres Sh"
+Cohesion: 0.29
+Nodes (6): BodyLife PostgreSQL Data Access, Guardrails, Persistence Principles, Required PostgreSQL Features, Start Here, Testing Rules
+
+### Community 426 - "Add Command Idempotency Keys"
 Cohesion: 0.29
 Nodes (6): BodyLife Quality Gates, Gate Types, Guardrails, Milestone Rule, Minimum Regression Shape, Start Here
 
-### Community 387 - "Body Life Reception UI htmx"
+### Community 427 - "Add Users Roles Accounts Sessions"
 Cohesion: 0.29
 Nodes (6): BodyLife Reception UI htmx, Guardrails, Interaction Checks, Required Workflows, Start Here, UI Principles
 
-### Community 388 - "Body Life Reports and Audit"
+### Community 428 - "Add Account Credentials"
 Cohesion: 0.29
 Nodes (6): Audit Rules, BodyLife Reports and Audit History, Guardrails, Implementation Workflow, Reports Rules, Start Here
 
-### Community 389 - "Data Architecture Checklist"
+### Community 429 - "Add Business Audit Entries"
 Cohesion: 0.29
 Nodes (6): Data Architecture Checklist, Domain Entities To Check, Invariants, Output Template, Scenario Validation, Storage Decisions
 
-### Community 390 - "Check Health Async"
+### Community 430 - "Add Session Expiry"
+Cohesion: 0.33
+Nodes (3): BodyLife.Crm.Tests.SharedKernel, DateRangeTests, Fact
+
+### Community 431 - "Add Clients Search Storage"
+Cohesion: 0.33
+Nodes (3): BodyLife.Crm.Tests.Application, CommandResultTests, Fact
+
+### Community 432 - "Add Duplicate Warning Acknowledgements"
+Cohesion: 0.33
+Nodes (7): PostgreSQL Append-Only Audit Hardening, Audit Schema Mapping, BusinessAuditAppender, Business Audit Foundation Inventory, Client-History Audit Lookup, Executable Business Audit Command Matrix, Milestone 10 Audit Acceptance Closure
+
+### Community 433 - "Add Membership Types Catalog"
+Cohesion: 0.33
+Nodes (7): Stable-Code Error Localization, Active Membership Panel Workflow, ADR-014 Visit Membership Selection and Acknowledgement, Canonical Report Read Model, GetClientProfile, GetMembershipState, Warning Handling Workflow
+
+### Community 434 - "Add Issued Memberships"
 Cohesion: 0.29
 Nodes (6): HealthCheckContext, HealthCheckResult, IHealthCheck, PostgreSqlHealthCheck, CancellationToken, Task
 
-### Community 391 - "Duplicate Warning Acknowledgement Record"
+### Community 435 - "Add Membership State Cache"
+Cohesion: 0.33
+Nodes (5): ClientCardAssignmentRecord, DateTimeOffset, Guid, ClientCardAssignmentRecordConfiguration, EntityTypeBuilder
+
+### Community 436 - "Add Membership Extension Days"
+Cohesion: 0.33
+Nodes (5): ClientRecord, DateTimeOffset, Guid, ClientRecordConfiguration, EntityTypeBuilder
+
+### Community 437 - "Add Membership Adjustments"
 Cohesion: 0.33
 Nodes (5): DuplicateWarningAcknowledgementRecord, DateTimeOffset, Guid, DuplicateWarningAcknowledgementRecordConfiguration, EntityTypeBuilder
 
-### Community 392 - "Is Owner Authorized Async"
-Cohesion: 0.29
-Nodes (6): NonWorkingDayQuerySupport, ActorContext, BodyLifeDbContext, CancellationToken, DateTimeOffset, Task
+### Community 438 - "Add Visits Source Facts"
+Cohesion: 0.33
+Nodes (5): MembershipVisitSourceMapper, MembershipVisitSourceRow, Guid, IEnumerable, MembershipVisitSourceFact
 
-### Community 393 - "Get Application Ids For Period"
+### Community 439 - "Add Freeze Source Facts"
 Cohesion: 0.29
 Nodes (5): IMembershipNonWorkingDayApplicationSourceProvider, CancellationToken, Guid, IReadOnlyList, Task
 
-### Community 394 - "Create Opening State"
-Cohesion: 0.38
-Nodes (3): MembershipOpeningStateHistorySource, DateOnly, DateOnly
+### Community 440 - "Add Daily Visit Source Index"
+Cohesion: 0.33
+Nodes (5): ReceptionCommandErrorLocalizer, CommandError, CommandErrorCode, IStringLocalizer, Reception
 
-### Community 395 - "Count Owner Accounts Async"
+### Community 441 - "Add Payment Source Facts"
+Cohesion: 0.29
+Nodes (6): BodyLife.Crm.Web.Localization, Microsoft.Extensions.Localization.IStringLocalizer<Reception>, Microsoft.Extensions.Localization.IStringLocalizer<Shared>, Reception, ReceptionWorkspaceViewModel, Shared
+
+### Community 442 - "Add Non Working Day Source"
 Cohesion: 0.67
 Nodes (3): PostgreSqlOwnerBootstrapperTests, PostgreSqlFact, Task
 
-### Community 396 - "Membership Date Rules Tests"
+### Community 443 - "Harden Business Audit Append Only"
 Cohesion: 0.38
 Nodes (4): MembershipDateRulesTests, Fact, InlineData, Theory
 
-### Community 397 - "Body Life ASP NET Foundation"
+### Community 444 - "Add Business Audit Client Lookup"
+Cohesion: 0.29
+Nodes (5): NonWorkingDayCorrectionWorkspaceViewModelTests, CommandErrorCode, Fact, InlineData, Theory
+
+### Community 445 - "Add Business Audit Recorded Timeline"
+Cohesion: 0.33
+Nodes (5): BodyLife.Crm.Web.Pages.Reports.EndingSoonModel, BodyLife.Crm.Web.Localization, IStringLocalizer<BodyLife.Crm.Web.Localization.Reports>, IStringLocalizer<BodyLife.Crm.Web.Localization.Shared>, Microsoft.Extensions.Localization
+
+### Community 446 - "Membership Date Rules"
+Cohesion: 0.33
+Nodes (5): BodyLife.Crm.Web.Pages.Reports.InactiveClientsModel, BodyLife.Crm.Web.Localization, IStringLocalizer<BodyLife.Crm.Web.Localization.Reports>, IStringLocalizer<BodyLife.Crm.Web.Localization.Shared>, Microsoft.Extensions.Localization
+
+### Community 447 - "Body Life Authorization Policies"
+Cohesion: 0.33
+Nodes (5): BodyLife.Crm.Web.Pages.Reports.LowRemainingModel, BodyLife.Crm.Web.Localization, IStringLocalizer<BodyLife.Crm.Web.Localization.Reports>, IStringLocalizer<BodyLife.Crm.Web.Localization.Shared>, Microsoft.Extensions.Localization
+
+### Community 448 - "Initial Baseline Migration Applies To"
+Cohesion: 0.33
+Nodes (5): BodyLife.Crm.Web.Pages.Reports.NegativeClientsModel, BodyLife.Crm.Web.Localization, IStringLocalizer<BodyLife.Crm.Web.Localization.Reports>, IStringLocalizer<BodyLife.Crm.Web.Localization.Shared>, Microsoft.Extensions.Localization
+
+### Community 449 - "Create Async"
 Cohesion: 0.33
 Nodes (5): Acceptance Checks, BodyLife ASP.NET Foundation, Foundation Workflow, Guardrails, Start Here
 
-### Community 398 - "Body Life Production Readiness"
+### Community 450 - "Graphify Reference Add A URL"
 Cohesion: 0.33
 Nodes (5): BodyLife Production Readiness, Guardrails, Implementation Workflow, Operational Requirements, Start Here
 
-### Community 399 - "Stack Selection Matrix"
+### Community 451 - "Graphify Reference Commit Hook And"
 Cohesion: 0.33
 Nodes (5): Criteria, Decision Record, Output Matrix, Required Inputs, Stack Selection Matrix
 
-### Community 400 - "Choose Technology Stack"
+### Community 452 - "Graphify Reference Incremental Update And"
 Cohesion: 0.33
 Nodes (5): Choose Technology Stack, Compare These Areas, Guardrails, Overview, Workflow
 
-### Community 401 - "Interaction Decision Checklist"
+### Community 453 - "7 Shortlist"
 Cohesion: 0.33
 Nodes (5): Boundary Questions, Flows To Model, Interaction Decision Checklist, Output Template, Patterns To Compare
 
-### Community 402 - "graphify reference query path explain"
+### Community 454 - "4 Components"
 Cohesion: 0.33
 Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
 
-### Community 403 - "Architecture Research Protocol"
+### Community 455 - "Stub Visit Source Handler"
 Cohesion: 0.33
 Nodes (5): Architecture Research Protocol, Decision Areas, Evidence Order, Output Template, Questions To Answer
 
-### Community 404 - "Research Architecture Options"
+### Community 456 - "20260708140900 Initial Baseline Designer"
 Cohesion: 0.33
 Nodes (5): BodyLife Anchors, Guardrails, Overview, Research Architecture Options, Workflow
 
-### Community 405 - "Date Range Tests"
-Cohesion: 0.40
-Nodes (3): BodyLife.Crm.Tests.SharedKernel, DateRangeTests, Fact
-
-### Community 406 - "12 Components"
+### Community 457 - "20260709113419 Add Command Idempotency Keys"
 Cohesion: 0.33
 Nodes (6): 12.1. Денний звіт, 12.2. Абонементи, які скоро закінчуються, 12.3. Абонементи з малим залишком занять, 12.4. Мінусові клієнти, 12.5. Клієнти, які давно не ходили, 12. Звіти першої версії
 
-### Community 407 - "Milestone 1 acceptance review"
+### Community 458 - "20260709143654 Add Account Credentials Designer"
 Cohesion: 0.33
 Nodes (5): Acceptance criteria check, Completed foundation, Decision, Milestone 1 acceptance review, Remaining roadmap handoff items
 
-### Community 408 - "Active Non Working Day For"
-Cohesion: 0.33
-Nodes (5): IEnumerable, ActiveNonWorkingDayForCorrection, DateRange, DateTimeOffset, Guid
+### Community 459 - "20260709204232 Add Business Audit Entries"
+Cohesion: 0.40
+Nodes (4): LoginModel, CancellationToken, IActionResult, Task
 
-### Community 409 - "Derive Components"
+### Community 461 - "20260710113814 Add Duplicate Warning Acknowledgements"
 Cohesion: 0.33
-Nodes (4): MembershipWarningRules, DateOnly, int, IReadOnlyList
+Nodes (5): AuditRow, CacheRow, IdempotencyRow, MembershipFixture, OpeningStateRow
 
-### Community 410 - "Ending Soon Membership Row"
-Cohesion: 0.33
-Nodes (6): EndingSoonMembershipRow, DateOnly, Guid, IReadOnlyList, MembershipStateReadModel, MembershipWarning
+### Community 462 - "20260712192355 Add Membership Types Catalog"
+Cohesion: 0.47
+Nodes (3): AccountKind, ActorContext, ActorRole
 
-### Community 412 - "Source Map"
+### Community 463 - "20260713091512 Add Issued Memberships Designer"
+Cohesion: 0.40
+Nodes (4): ActionContext, IUrlHelper, IUrlHelperFactory, TestUrlHelperFactory
+
+### Community 464 - "20260713100046 Add Membership State Cache"
+Cohesion: 0.40
+Nodes (4): BodyLife.Crm.Web.Pages.Reception.IndexModel, BodyLife.Crm.Web.Localization, Microsoft.Extensions.Localization.IStringLocalizer<Reception>, Reception
+
+### Community 465 - "20260713111435 Add Membership Opening States"
+Cohesion: 0.40
+Nodes (4): BodyLife.Crm.Web.Pages.Reports.DailyModel, BodyLife.Crm.Web.Localization, IStringLocalizer<BodyLife.Crm.Web.Localization.Reports>, Microsoft.Extensions.Localization
+
+### Community 466 - "20260713194005 Add Membership Adjustments Designer"
 Cohesion: 0.40
 Nodes (4): ADRs, Primary docs, Source Map, Supporting docs
 
-### Community 413 - "Source Map"
+### Community 467 - "20260714140347 Add Visits Source Facts"
 Cohesion: 0.40
 Nodes (4): ADRs, Primary docs, Source Map, Supporting docs
 
-### Community 414 - "Source Map"
+### Community 468 - "20260714174210 Add Freeze Source Facts"
 Cohesion: 0.40
 Nodes (4): ADRs, Primary docs, Source Map, Supporting docs
 
-### Community 415 - "Design Data Architecture"
+### Community 469 - "20260715211212 Add Daily Visit Source"
 Cohesion: 0.40
 Nodes (4): Design Data Architecture, Guardrails, Overview, Workflow
 
-### Community 416 - "Design Observability Operations"
+### Community 470 - "20260715213519 Add Payment Source Facts"
 Cohesion: 0.40
 Nodes (4): Design Observability Operations, Guardrails, Overview, Workflow
 
-### Community 417 - "Design System Interactions"
+### Community 471 - "20260717072704 Add Non Working Day"
 Cohesion: 0.40
 Nodes (4): Design System Interactions, Guardrails, Overview, Workflow
 
-### Community 418 - "Body Life Db Context Options"
-Cohesion: 0.40
-Nodes (3): DbContextOptionsBuilder, BodyLifeDbContextOptions, string
-
-### Community 419 - "Postgre SQL in Docker"
+### Community 472 - "20260720100603 Harden Business Audit Append"
 Cohesion: 0.40
 Nodes (5): Database Readiness Health Check, Disposable PostgreSQL Test Databases, Forward-Only EF Core Migrations, Local Development, PostgreSQL in Docker
 
-### Community 420 - "Owner Restore Check"
-Cohesion: 0.40
-Nodes (5): Synchronous NonWorkingDay Recalculation, Owner Restore Check, Operations Production Readiness, Provider-Managed Backup Strategy, Restore Rehearsal
-
-### Community 421 - "Owner bootstrap procedure"
+### Community 473 - "20260720110933 Add Business Audit Client"
 Cohesion: 0.40
 Nodes (4): Local command, Owner bootstrap procedure, Safety rules, What this step does not do
 
-### Community 422 - "Q ADR 005"
+### Community 474 - "20260720173659 Add Business Audit Recorded"
 Cohesion: 0.40
 Nodes (4): Answer, Outcome, Q: Що прийняти в ADR-005?, Source Nodes
 
-### Community 423 - "Q accepted ADR package"
+### Community 475 - "Money Components"
 Cohesion: 0.40
 Nodes (4): Answer, Outcome, Q: Сформувати accepted ADR package, Source Nodes
 
-### Community 424 - "Q post ADR docs implementation"
+### Community 476 - "Command And Audit Contract"
 Cohesion: 0.40
 Nodes (4): Answer, Outcome, Q: На основі всіх post-ADR документів сформуй docs/implementation-roadmap.md, Source Nodes
 
-### Community 425 - "dev postgres sh"
+### Community 477 - "Graphify Reference Git Hub Clone"
+Cohesion: 0.50
+Nodes (5): Client Profile Workflow, Compact Operational Shell, Explain Reception Dashboard Workflow Result, Reception Dashboard Workflow, Reception Vertical Slice
+
+### Community 478 - "Graphify Reference Transcribe Video And"
+Cohesion: 0.40
+Nodes (3): MarkVisitFixture, AddFreezeCommand, CommandResult
+
+### Community 479 - "Assembly Reference"
 Cohesion: 0.80
 Nodes (4): compose(), dev-postgres.sh script, usage(), wait_for_postgres()
 
-### Community 447 - "Body Life Authorization Policies"
+### Community 500 - "Body Life Crm Web Pages"
+Cohesion: 0.40
+Nodes (3): ClientSearchResult, Guid, IReadOnlyList
+
+### Community 502 - "Body Life Crm Web Pages"
+Cohesion: 0.40
+Nodes (3): WebCultures, CultureInfo, string
+
+### Community 503 - "Body Life Crm Web Pages"
 Cohesion: 0.60
 Nodes (4): BodyLifeAccountTypes, BodyLifeAuthorizationPolicies, BodyLifeRoles, string
 
-### Community 448 - "Initial Baseline Migration Applies To"
+### Community 504 - "Body Life Crm Web Pages"
 Cohesion: 0.40
-Nodes (3): PostgreSqlMigrationTests, PostgreSqlFact, Task
+Nodes (4): BodyLife.Crm.Web.Localization, Microsoft.Extensions.Localization.IStringLocalizer<Shared>, Shared, System.Globalization
 
-### Community 450 - "graphify reference add a URL"
+### Community 506 - "Body Life Crm Web Pages"
+Cohesion: 0.60
+Nodes (3): ReceptionDisplayFormatterTests, InlineData, Theory
+
+### Community 507 - "Body Life Crm Web Pages"
+Cohesion: 0.50
+Nodes (3): BodyLife.Crm.Web.Pages.Owner.NonWorkingDayPreviewWorkspaceViewModel, Microsoft.Extensions.Localization.IStringLocalizer<BodyLife.Crm.Web.Localization.Owner>, Microsoft.Extensions.Localization.IStringLocalizer<BodyLife.Crm.Web.Localization.Shared>
+
+### Community 508 - "Body Life Crm Web Pages"
 Cohesion: 0.50
 Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
 
-### Community 451 - "graphify reference commit hook and"
+### Community 509 - "Body Life Crm Web Pages"
 Cohesion: 0.50
 Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
 
-### Community 452 - "graphify reference incremental update and"
+### Community 510 - "Body Life Crm Web Pages"
 Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
-### Community 453 - "7 shortlist"
+### Community 511 - "Body Life Crm Web Pages"
 Cohesion: 0.50
 Nodes (4): 1. Modular monolith + feature modules + hybrid server-rendered UI, 2. Simple layered monolith + server-rendered UI, 3. SPA + API + modular backend, 7. Реалістичний shortlist
 
-### Community 454 - "4 Components"
+### Community 512 - "Body Life Crm Web Pages"
 Cohesion: 0.50
 Nodes (4): 4.1. Власник, 4.2. Адміністратор, 4.3. Тренер, 4. Користувачі системи
 
-### Community 455 - "Stub Visit Source Handler"
-Cohesion: 0.83
-Nodes (3): GetDailyVisitSourceRowsQuery, StubVisitSourceHandler, GetDailyVisitSourceRowsResult
+### Community 513 - "Body Life Crm Web Pages"
+Cohesion: 0.67
+Nodes (3): IssuedMembershipRecordConfiguration, EntityTypeBuilder, IssuedMembershipRecord
 
-### Community 476 - "Command and Audit Contract"
+### Community 535 - "Persistence Registration Resolves Daily Visit"
+Cohesion: 0.50
+Nodes (3): AddFreezeFormViewModel, BodyLife.Crm.Web.Localization, System.Globalization
+
+### Community 536 - "Persistence Registration Exposes Scoped Membership"
+Cohesion: 0.50
+Nodes (3): AddPaymentFormViewModel, BodyLife.Crm.Web.Localization, System.Globalization
+
+### Community 537 - "Assert Scoped Registration"
+Cohesion: 0.50
+Nodes (3): BodyLife.Crm.Web.Localization, CorrectPaymentFormViewModel, System.Globalization
+
+### Community 539 - "Persistence Registration Exposes Scoped Issue"
+Cohesion: 0.50
+Nodes (3): CapturingQueryHandler, CancellationToken, List
+
+### Community 540 - "Stack Criteria"
 Cohesion: 0.67
 Nodes (3): Command and Audit Contract, Memberships Formula Ownership, Modular Monolith Guardrail
 
+## Ambiguous Edges - Review These
+- `Payment` → `One-Off Negative Closure`  [AMBIGUOUS]
+  docs/domain-model.md · relation: conceptually_related_to
+- `Signed Remaining Visits` → `One-Off Negative Closure`  [AMBIGUOUS]
+  docs/domain-model.md · relation: conceptually_related_to
+- `GenerateDailyReport` → `CloseDailyReconciliation Candidate`  [AMBIGUOUS]
+  docs/interaction-contracts.md · relation: conceptually_related_to
+
 ## Knowledge Gaps
-- **1036 isolated node(s):** `apply-migrations.sh script`, `bootstrap-owner.sh script`, `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)` (+1031 more)
+- **1146 isolated node(s):** `apply-migrations.sh script`, `bootstrap-owner.sh script`, `generate-migration-sql.sh script`, `net10.0`, `Microsoft.EntityFrameworkCore.Design (10.0.4)` (+1141 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **348 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **411 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BodyLife.Crm.SharedKernel` connect `Body Life Crm Modules Memberships` to `View Imports`, `Body Life Crm Modules Non`, `Body Life Crm Infrastructure Tests`, `Body Life Crm Application Commands`, `Non Working Day Canonical Period`, `Body Life Crm Modules Payments`, `Body Life Crm Application Commands`, `Body Life Crm Modules Reports`, `Business Audit Matrix Tests`, `Body Life Crm Modules Clients`, `Reception App Fixture`, `Non Working Day Preview Input`, `Non Working Day Impact Membership`, `Postgre Sql Smoke Database`, `Membership Non Working Day Impact`, `Body Life Crm Infrastructure Persistence`?**
-  _High betweenness centrality (0.258) - this node is a cross-community bridge._
-- **Why does `BodyLife.Crm.Modules.Memberships` connect `Body Life Crm Modules Memberships` to `Postgre Sql Get Client Membership`, `Body Life Crm Modules Non`, `Postgre Sql Cancel Freeze Command`, `Body Life Crm Infrastructure Tests`, `Body Life Crm Application Commands`, `Membership Visit Source Fact`, `Get Application Ids For Period`, `Body Life Crm Modules Payments`, `Body Life Crm Application Commands`, `Body Life Crm Modules Reports`, `Body Life Crm Shared Kernel`, `Body Life Crm Modules Clients`, `Client History Source Row`, `Get Membership State Result`, `Derive Components`, `Postgre Sql Get Client Membership`, `Membership Calculated State`, `Membership State Read Model`, `Body Life Crm Modules`, `Non Working Day Preview Input`, `IBody Life Query Handler`, `Membership Date Rules`, `Body Life Crm Infrastructure Persistence`, `Get Client Membership Extension Explanations`, `Membership Extension Source Range`, `Membership Extension Explanation`, `Evaluate Components`, `Business Audit Matrix Tests`, `Membership Visit Freeze Source`, `Membership Issue Preview`, `Get Client Membership History Source`, `Membership Adjustment Calculation Tests`, `Client Membership Report States`, `Ending Soon Membership State Rows`, `Low Remaining Membership State Rows`, `Negative Membership State Rows Page`, `Membership Extension Day`, `Client Membership State Timeline Item`, `Get Client Membership Report States`, `Get Low Remaining Membership State`, `Get Negative Membership State Rows`, `Membership Action Keys`, `Membership Visit Eligibility Error Codes`, `Membership Warning Codes`, `Preview Issue Membership Result`, `Membership Visit Eligibility`, `Postgre Sql Smoke Database`, `Membership Extension Calculation`, `Membership Non Working Day Impact`?**
-  _High betweenness centrality (0.108) - this node is a cross-community bridge._
-- **Why does `BodyLife.Crm.Infrastructure.Tests.PostgreSql` connect `Body Life Crm Infrastructure Tests` to `Body Life Crm Modules Memberships`, `Initial Baseline Migration Applies To`, `Postgre Sql Payments Storage Tests`, `Body Life Crm Modules Non`, `Body Life Crm Application Commands`, `Insert Command Idempotency Record Async`, `Postgre Sql Membership Opening States`, `Body Life Crm Modules Payments`, `Postgre Sql Membership Adjustments Storage`, `Body Life Crm Application Commands`, `Body Life Crm Modules Reports`, `Body Life Crm Shared Kernel`, `Postgre Sql Non Working Day`, `Postgre Sql Membership Extension Days`, `Postgre Sql Non Working Days`, `Postgre Sql Membership Types Storage`, `Body Life Crm Infrastructure Persistence`?**
-  _High betweenness centrality (0.098) - this node is a cross-community bridge._
+- **What is the exact relationship between `Payment` and `One-Off Negative Closure`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **What is the exact relationship between `Signed Remaining Visits` and `One-Off Negative Closure`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **What is the exact relationship between `GenerateDailyReport` and `CloseDailyReconciliation Candidate`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **Why does `BodyLife.Crm.SharedKernel` connect `Shared Kernel` to `Memberships Components`, `Application Commands`, `Infrastructure Persistence`, `Nonworking Day Module`, `Client Search`, `Client Search`, `Fixed Time Provider`, `Assert Scoped Registration`, `Freeze Persistence`, `Correlation Middleware`, `Add Clients Search Storage`, `Add Session Expiry`, `Add Visits Source Facts`, `Guid Components`, `Authorization Extensions`, `Account Roles`, `UI Smoke Tests`, `20260710113814 Add Duplicate Warning Acknowledgements`, `Reception Test Fixture`, `Actor Context`, `Smoke Database Helpers`, `Membership Type Module`, `Body Life Crm Ui Smoke`, `Add Freeze UI`, `Password Hashing Service`?**
+  _High betweenness centrality (0.200) - this node is a cross-community bridge._
+- **Why does `BodyLife.Crm.Application.Commands` connect `Application Modules` to `Memberships Components`, `Shared Kernel`, `Create Cancel Command`, `Nonworking Days`, `Application Commands`, `Infrastructure Persistence`, `Nonworking Day Module`, `Client Search`, `20260710113814 Add Duplicate Warning Acknowledgements`, `Freeze Persistence`, `Client Search`, `Reception Test Fixture`, `Correction Workspace Tests`, `Audit Snapshot Explanations`, `Membership Type Module`?**
+  _High betweenness centrality (0.154) - this node is a cross-community bridge._
+- **Why does `BodyLife.Crm.Modules.Memberships` connect `Memberships Components` to `Body Life Membership Rules`, `Application Commands`, `Infrastructure Persistence`, `Nonworking Day Module`, `Client Search`, `Application Modules`, `Client Search`, `Audit Timeline Page`, `Client History Query`, `Membership Issue Preview`, `Client Membership States`, `Membership Extension Explanations`, `Membership Issue Summary`, `Client Query Support`, `Freeze Persistence`, `Calculated Membership State`, `Membership Calculated State Stored Cache`, `Membership Extension Sources`, `Membership State Read Model`, `Add Freeze Source Facts`, `Membership Visit Facts`, `Nonworking Day Preview`, `Module Registration`, `Low Remaining Query`, `Membership History Query`, `Extension Calculation`, `Nonworking Replacement Impact`, `List Staff Accounts Async`, `Membership Type Module`, `Membership Nonworking Policy`, `Ending Soon State Query`, `Negative Membership Query`, `Visit Cancellation Record`, `Membership State Timeline`, `ADR 001 Product Shape And`, `ADR 002 Application Architecture And`, `Client Payment History Source Rows`, `Visit Freeze Source`, `Non Working Period Record`, `Execute Async`, `From Result`, `Membership Impact Preparation`, `Body Life Crm Web Pages`, `Session Record`, `Membership Report States`, `Visit Eligibility`, `Create Factory`, `Body Life Command Workflows`?**
+  _High betweenness centrality (0.140) - this node is a cross-community bridge._
 - **What connects `apply-migrations.sh script`, `bootstrap-owner.sh script`, `generate-migration-sql.sh script` to the rest of the system?**
-  _1094 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Body Life Crm Modules Memberships` be split into smaller, more focused modules?**
-  _Cohesion score 0.02856857456797523 - nodes in this community are weakly interconnected._
-- **Should `htmx 2 0 10 min` be split into smaller, more focused modules?**
-  _Cohesion score 0.07912087912087912 - nodes in this community are weakly interconnected._
-- **Should `Index Model` be split into smaller, more focused modules?**
-  _Cohesion score 0.1003960396039604 - nodes in this community are weakly interconnected._
+  _1216 weakly-connected nodes found - possible documentation gaps or missing edges._
