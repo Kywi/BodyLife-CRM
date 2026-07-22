@@ -9,6 +9,107 @@ internal static class NonWorkingDayAuditExplanationFactory
     private static readonly JsonSerializerOptions AuditJsonOptions =
         new(JsonSerializerDefaults.Web);
 
+    internal static AuditEntryExplanationViewModel CreateAddition(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        var relatedDto = Deserialize<AdditionRelatedDto>(related);
+        var beforeDto = Deserialize<AdditionBeforeSummaryDto>(before);
+        var afterDto = Deserialize<AdditionAfterSummaryDto>(after);
+        var preview = beforeDto.Preview
+            ?? throw new JsonException("The non-working day preview summary is required.");
+        var period = afterDto.Period is null
+            ? throw new JsonException("The added non-working period is required.")
+            : ReadReplacementPeriod(afterDto.Period);
+        var applications = ReadReplacementApplications(afterDto.Applications);
+        var recalculation = ReadRecalculation(afterDto.Recalculation);
+        var relatedMembershipIds = ReadIdList(
+            relatedDto.AffectedMembershipIds,
+            "affectedMembershipIds",
+            requireDistinct: true);
+        var relatedClientIds = ReadIdList(
+            relatedDto.AffectedClientIds,
+            "affectedClientIds",
+            requireDistinct: false);
+        var scopeFingerprint = RequireText(
+            preview.ScopeFingerprint,
+            "scopeFingerprint");
+        var previewIssuedAt = RequireTimestamp(
+            preview.IssuedAt ?? default,
+            "issuedAt");
+        var previewExpiresAt = RequireTimestamp(
+            preview.ExpiresAt ?? default,
+            "expiresAt");
+        var applicationMembershipIds = applications
+            .Select(application => application.MembershipId)
+            .ToArray();
+        var applicationClientIds = applications
+            .Select(application => application.ClientId)
+            .ToArray();
+        var applicationMembershipSet = applicationMembershipIds.ToHashSet();
+
+        if (entry.EntityId == Guid.Empty
+            || period.PeriodId != entry.EntityId
+            || period.Status != "active"
+            || period.CreatedAt != entry.RecordedAt
+            || period.InclusiveDays != period.EndDate.DayNumber - period.StartDate.DayNumber + 1
+            || preview.AffectedCount < 0
+            || preview.AffectedCount != applications.Count
+            || afterDto.AffectedMembershipCount != applications.Count
+            || previewIssuedAt > entry.RecordedAt
+            || previewExpiresAt < entry.RecordedAt
+            || previewExpiresAt <= previewIssuedAt
+            || applications.Any(application =>
+                application.StartDate != period.StartDate
+                || application.EndDate != period.EndDate)
+            || !relatedMembershipIds.SequenceEqual(applicationMembershipIds)
+            || !relatedClientIds.SequenceEqual(applicationClientIds)
+            || recalculation.RequestedCount != applications.Count
+            || recalculation.SucceededCount != applications.Count
+            || !applicationMembershipSet.SetEquals(recalculation.MembershipIds))
+        {
+            throw new JsonException("Added non-working day scope is inconsistent.");
+        }
+
+        var applicationDetails = applications.Count == 0
+            ? "None"
+            : string.Join(
+                "; ",
+                applications.Select(application =>
+                    $"Membership {TimelineModel.ShortId(application.MembershipId)} / "
+                    + $"Client {TimelineModel.ShortId(application.ClientId)}: "
+                    + $"{application.StartDate:yyyy-MM-dd} to {application.EndDate:yyyy-MM-dd}"));
+        var previewScopeLabel = scopeFingerprint.Length <= 12
+            ? scopeFingerprint
+            : scopeFingerprint[..12];
+
+        return new AuditEntryExplanationViewModel(
+            "non-working-day-added",
+            "Non-working period and affected scope recorded",
+            "The Owner-confirmed application rows are an immutable transaction snapshot. Membership extension unions are recalculated by Memberships and are not recomputed by this audit explanation.",
+            "Confirmed preview",
+            "Recorded period",
+            [
+                Fact("Preview scope", previewScopeLabel),
+                Fact("Preview issued", TimelineModel.TimestampLabel(previewIssuedAt)),
+                Fact("Preview expires", TimelineModel.TimestampLabel(previewExpiresAt)),
+                Fact(
+                    "Affected memberships",
+                    preview.AffectedCount.ToString(CultureInfo.InvariantCulture)),
+            ],
+            [
+                Fact("Non-working period", TimelineModel.ShortId(period.PeriodId)),
+                .. PeriodFacts(period, applications.Count, "Active"),
+                Fact("Application details", applicationDetails),
+                Fact("Recalculated memberships", RecalculationLabel(recalculation)),
+                Fact("Recorded", TimelineModel.TimestampLabel(period.CreatedAt)),
+            ],
+            ChangedFields: "Non-working period, Confirmed affected scope",
+            IsAvailable: true);
+    }
+
     internal static AuditEntryExplanationViewModel CreateCorrection(
         AuditTimelineEntry entry,
         JsonElement before,
@@ -306,6 +407,24 @@ internal static class NonWorkingDayAuditExplanationFactory
             membershipIds.ToHashSet());
     }
 
+    private static IReadOnlyList<Guid> ReadIdList(
+        IReadOnlyList<Guid>? ids,
+        string propertyName,
+        bool requireDistinct)
+    {
+        ids = ids
+            ?? throw new JsonException(
+                $"Audit summary property '{propertyName}' is required.");
+        if (ids.Any(id => id == Guid.Empty)
+            || (requireDistinct && ids.Distinct().Count() != ids.Count))
+        {
+            throw new JsonException(
+                $"Audit summary property '{propertyName}' is inconsistent.");
+        }
+
+        return ids;
+    }
+
     private static IReadOnlyList<AuditEntryExplanationFactViewModel> PeriodFacts(
         SourcePeriodSnapshot period,
         int affectedCount,
@@ -464,6 +583,40 @@ internal static class NonWorkingDayAuditExplanationFactory
         int RequestedCount,
         int SucceededCount,
         IReadOnlySet<Guid> MembershipIds);
+
+    private sealed class AdditionRelatedDto
+    {
+        public required List<Guid>? AffectedMembershipIds { get; init; }
+
+        public required List<Guid>? AffectedClientIds { get; init; }
+    }
+
+    private sealed class AdditionBeforeSummaryDto
+    {
+        public required AdditionPreviewDto? Preview { get; init; }
+    }
+
+    private sealed class AdditionAfterSummaryDto
+    {
+        public required ReplacementPeriodDto? Period { get; init; }
+
+        public required int AffectedMembershipCount { get; init; }
+
+        public required List<ReplacementApplicationDto?>? Applications { get; init; }
+
+        public required RecalculationDto? Recalculation { get; init; }
+    }
+
+    private sealed class AdditionPreviewDto
+    {
+        public required string? ScopeFingerprint { get; init; }
+
+        public required DateTimeOffset? IssuedAt { get; init; }
+
+        public required DateTimeOffset? ExpiresAt { get; init; }
+
+        public required int AffectedCount { get; init; }
+    }
 
     private sealed class BeforeSummaryDto
     {

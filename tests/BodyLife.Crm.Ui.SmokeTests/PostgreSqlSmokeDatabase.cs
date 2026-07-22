@@ -965,6 +965,64 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             DeactivatedAt = membershipTypeDeactivatedAt,
         };
 
+        var nonWorkingDayAdditionAuditEntryId = Guid.NewGuid();
+        var addedNonWorkingPeriodId = Guid.NewGuid();
+        var addedNonWorkingPeriod = new DateRange(
+            new DateOnly(2026, 8, 24),
+            new DateOnly(2026, 8, 26));
+        var addedNonWorkingDayRecordedAt = recordedBase.AddHours(5).AddMinutes(30);
+        var addedNonWorkingDayPreviewIssuedAt =
+            addedNonWorkingDayRecordedAt.AddMinutes(-10);
+        var addedNonWorkingDayPreviewExpiresAt =
+            addedNonWorkingDayRecordedAt.AddMinutes(5);
+        const string addedNonWorkingDayScopeFingerprint =
+            "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+        Guid[] addedNonWorkingDayMembershipIds = [Guid.NewGuid(), Guid.NewGuid()];
+        Guid[] addedNonWorkingDayClientIds = [Guid.NewGuid(), Guid.NewGuid()];
+        var addedNonWorkingDayApplications = addedNonWorkingDayMembershipIds
+            .Zip(
+                addedNonWorkingDayClientIds,
+                (affectedMembershipId, affectedClientId) =>
+                    new AuditNonWorkingDayReplacementApplicationSummarySeed(
+                        Guid.NewGuid(),
+                        affectedMembershipId,
+                        affectedClientId,
+                        addedNonWorkingPeriod.StartDate,
+                        addedNonWorkingPeriod.EndDate))
+            .ToArray();
+        var addedNonWorkingDayPeriod =
+            new AuditNonWorkingDayReplacementPeriodSummarySeed(
+                addedNonWorkingPeriodId,
+                addedNonWorkingPeriod.StartDate,
+                addedNonWorkingPeriod.EndDate,
+                addedNonWorkingPeriod.InclusiveDays,
+                "maintenance",
+                "Ventilation service",
+                addedNonWorkingDayRecordedAt,
+                "active");
+        var addedNonWorkingDayBefore = new
+        {
+            Preview = new
+            {
+                ScopeFingerprint = addedNonWorkingDayScopeFingerprint,
+                IssuedAt = addedNonWorkingDayPreviewIssuedAt,
+                ExpiresAt = addedNonWorkingDayPreviewExpiresAt,
+                AffectedCount = addedNonWorkingDayApplications.Length,
+            },
+        };
+        var addedNonWorkingDayAfter = new
+        {
+            Period = addedNonWorkingDayPeriod,
+            AffectedMembershipCount = addedNonWorkingDayApplications.Length,
+            Applications = addedNonWorkingDayApplications,
+            Recalculation = new
+            {
+                RequestedCount = addedNonWorkingDayApplications.Length,
+                SucceededCount = addedNonWorkingDayApplications.Length,
+                MembershipIds = addedNonWorkingDayMembershipIds,
+            },
+        };
+
         var nonWorkingDayCorrectedAuditEntryId = Guid.NewGuid();
         var correctedOriginalPeriodId = Guid.NewGuid();
         var correctedReplacementPeriodId = Guid.NewGuid();
@@ -1756,6 +1814,29 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 deactivatedMembershipType,
                 ChangedAfterClose: false),
             new(
+                nonWorkingDayAdditionAuditEntryId,
+                "non_working_day.added",
+                "non_working_period",
+                addedNonWorkingPeriodId,
+                new
+                {
+                    AffectedMembershipIds = addedNonWorkingDayMembershipIds,
+                    AffectedClientIds = addedNonWorkingDayClientIds,
+                },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                addedNonWorkingDayRecordedAt.AddMinutes(-5),
+                addedNonWorkingDayRecordedAt,
+                "normal",
+                "Owner confirmed planned closure",
+                "Confirmed against the affected scope preview",
+                addedNonWorkingDayBefore,
+                addedNonWorkingDayAfter,
+                ChangedAfterClose: false),
+            new(
                 nonWorkingDayCorrectedAuditEntryId,
                 "non_working_day.corrected",
                 "non_working_period",
@@ -2174,6 +2255,20 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 canceledPaymentAmount,
                 BeforeVisitRemaining: -1,
                 AfterVisitRemaining: 0,
+                NonWorkingDayAddition:
+                    new NonWorkingDayAdditionAuditExplanationSmokeScenario(
+                        nonWorkingDayAdditionAuditEntryId,
+                        addedNonWorkingPeriodId,
+                        addedNonWorkingPeriod,
+                        addedNonWorkingDayPeriod.ReasonCode,
+                        addedNonWorkingDayPeriod.ReasonComment!,
+                        addedNonWorkingDayMembershipIds[0],
+                        addedNonWorkingDayClientIds[0],
+                        addedNonWorkingDayApplications.Length,
+                        addedNonWorkingDayScopeFingerprint[..12],
+                        addedNonWorkingDayPreviewIssuedAt,
+                        addedNonWorkingDayPreviewExpiresAt,
+                        addedNonWorkingDayRecordedAt),
                 NonWorkingDays: new NonWorkingDayAuditExplanationSmokeScenario(
                     nonWorkingDayCorrectedAuditEntryId,
                     correctedOriginalPeriodId,

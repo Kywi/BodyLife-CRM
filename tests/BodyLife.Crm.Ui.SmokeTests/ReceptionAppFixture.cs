@@ -2304,6 +2304,7 @@ public sealed record AuditExplanationSmokeScenario(
     decimal CanceledPaymentAmount,
     int BeforeVisitRemaining,
     int AfterVisitRemaining,
+    NonWorkingDayAdditionAuditExplanationSmokeScenario NonWorkingDayAddition,
     NonWorkingDayAuditExplanationSmokeScenario NonWorkingDays,
     FreezeCancellationAuditExplanationSmokeScenario FreezeCancellation,
     FreezeAdditionAuditExplanationSmokeScenario FreezeAddition,
@@ -2316,6 +2317,20 @@ public sealed record AuditExplanationSmokeScenario(
     MembershipTypeCreationAuditExplanationSmokeScenario MembershipTypeCreation,
     MembershipOpeningStateCreationAuditExplanationSmokeScenario
         MembershipOpeningStateCreation);
+
+public sealed record NonWorkingDayAdditionAuditExplanationSmokeScenario(
+    Guid AuditEntryId,
+    Guid PeriodId,
+    DateRange Range,
+    string ReasonCode,
+    string ReasonComment,
+    Guid FirstMembershipId,
+    Guid FirstClientId,
+    int AffectedCount,
+    string PreviewScopeLabel,
+    DateTimeOffset PreviewIssuedAt,
+    DateTimeOffset PreviewExpiresAt,
+    DateTimeOffset RecordedAt);
 
 public sealed record VisitMarkAuditExplanationSmokeScenario(
     Guid AuditEntryId,

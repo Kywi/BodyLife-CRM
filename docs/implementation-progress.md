@@ -11927,3 +11927,70 @@ Next recommended step:
 - Close the final important raw-only event, `non_working_day.added`. Explain
   the Owner-confirmed immutable affected scope and per-Membership application
   ranges without recalculating union days in the audit UI.
+
+## Step 185 - Added Non-Working Day audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Closed only the planned final important raw-only event,
+  `non_working_day.added`. Milestone 11 was not started.
+- Implemented the audit-matrix requirement for the proposed inclusive period,
+  Owner-confirmed affected Membership scope and resulting recalculation
+  outcome.
+- Preserved Memberships ownership of extension unions: the presenter validates
+  stored application ranges and recalculation completeness but does not derive
+  extension days.
+
+Completed:
+
+- Added a fail-closed `non_working_day.added` Timeline explanation that checks
+  the audit entity, active source period, inclusive day count, preview validity
+  window, exact ordered Membership/Client references, application ranges and
+  successful recalculation set.
+- Shows the confirmed preview fingerprint/window/count, recorded period and
+  reason, per-Membership application details, affected count, status and
+  recalculation result while leaving the raw envelope collapsed by default.
+- Added eight presenter cases covering a two-Membership scope, an empty scope,
+  relationship/count/range/recalculation/expiry inconsistencies and wrong
+  entity type.
+- Strengthened the real PostgreSQL AddNonWorkingDay workflow test to pin the
+  complete related, preview, period, application and recalculation audit
+  payload against canonical rows.
+- Added an isolated production-shaped Timeline seed plus Owner/tablet and
+  named-Admin/phone Playwright coverage for readable facts, collapsed raw
+  envelope, touch target and viewport fit.
+- Kept AddNonWorkingDay command behavior, preview confirmation, canonical
+  persistence, Membership recalculation, Razor markup, CSS, authorization, EF
+  model and migrations unchanged.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 115/115 and the
+  strengthened real
+  `SuccessfulCommandCommitsExactSnapshotStateAuditAndIdempotency` PostgreSQL
+  test passed 1/1.
+- Focused added-NonWorkingDay Playwright coverage passed 2/2 and the complete
+  `AuditTimelineSmokeTests` regression passed 36/36 with no skipped tests.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports with no overlap or horizontal overflow.
+- The repository-wide `./scripts/validate.sh` gate remains intentionally
+  deferred to the requested Milestone 10 acceptance review, which is the next
+  and final Milestone 10 step.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+
+Commit:
+
+- `feat(audit): explain added non-working days`.
+
+Next recommended step:
+
+- Conduct the Milestone 10 acceptance review: prove that all important audit
+  action types have readable explanations, run the complete validation and EF
+  model-drift gates, record the evidence, commit it and stop before Milestone
+  11.

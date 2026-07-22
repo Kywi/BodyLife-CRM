@@ -123,33 +123,104 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
         Assert.Equal("owner", audit.ActorRole);
         Assert.Equal(TestNow, audit.OccurredAt);
         Assert.Equal(TestNow, audit.RecordedAt);
+        Assert.Equal("normal", audit.EntryOrigin);
         Assert.Equal("Owner confirmed closure", audit.Reason);
         Assert.Equal("Schedule source", audit.Comment);
         Assert.Equal("correlation-non-working-success", audit.RequestCorrelationId);
         Assert.Equal("non-working-success", audit.IdempotencyKey);
+        using (var related = JsonDocument.Parse(audit.RelatedEntityRefsJson))
+        {
+            Assert.Equal(2, related.RootElement.EnumerateObject().Count());
+            Assert.Equal(
+                [FirstMembershipId, SecondMembershipId],
+                related.RootElement
+                    .GetProperty("affectedMembershipIds")
+                    .EnumerateArray()
+                    .Select(item => item.GetGuid()));
+            Assert.Equal(
+                applications.Select(application => application.ClientId),
+                related.RootElement
+                    .GetProperty("affectedClientIds")
+                    .EnumerateArray()
+                    .Select(item => item.GetGuid()));
+        }
+
         using (var before = JsonDocument.Parse(audit.BeforeSummaryJson))
         {
+            Assert.Single(before.RootElement.EnumerateObject());
             var previewSummary = before.RootElement.GetProperty("preview");
+            Assert.Equal(4, previewSummary.EnumerateObject().Count());
             Assert.Equal(2, previewSummary.GetProperty("affectedCount").GetInt32());
             Assert.Equal(
                 preview.Confirmation.ScopeFingerprint,
                 previewSummary.GetProperty("scopeFingerprint").GetString());
+            Assert.Equal(
+                preview.Confirmation.IssuedAt,
+                previewSummary.GetProperty("issuedAt").GetDateTimeOffset());
+            Assert.Equal(
+                preview.Confirmation.ExpiresAt,
+                previewSummary.GetProperty("expiresAt").GetDateTimeOffset());
         }
 
         using (var after = JsonDocument.Parse(audit.AfterSummaryJson))
         {
+            Assert.Equal(4, after.RootElement.EnumerateObject().Count());
             var periodSummary = after.RootElement.GetProperty("period");
+            Assert.Equal(8, periodSummary.EnumerateObject().Count());
             Assert.Equal(periodId, periodSummary.GetProperty("periodId").GetGuid());
+            Assert.Equal(
+                "2026-01-30",
+                periodSummary.GetProperty("startDate").GetString());
+            Assert.Equal(
+                "2026-02-02",
+                periodSummary.GetProperty("endDate").GetString());
             Assert.Equal(4, periodSummary.GetProperty("inclusiveDays").GetInt32());
             Assert.Equal(
                 "weather_closure",
                 periodSummary.GetProperty("reasonCode").GetString());
             Assert.Equal(
+                "Severe weather",
+                periodSummary.GetProperty("reasonComment").GetString());
+            Assert.Equal(
+                TestNow,
+                periodSummary.GetProperty("createdAt").GetDateTimeOffset());
+            Assert.Equal("active", periodSummary.GetProperty("status").GetString());
+            Assert.Equal(
                 2,
                 after.RootElement.GetProperty("affectedMembershipCount").GetInt32());
+            var applicationSummaries = after.RootElement
+                .GetProperty("applications")
+                .EnumerateArray()
+                .ToArray();
+            Assert.Equal(applications.Length, applicationSummaries.Length);
+            for (var index = 0; index < applications.Length; index++)
+            {
+                var expected = applications[index];
+                var actual = applicationSummaries[index];
+                Assert.Equal(5, actual.EnumerateObject().Count());
+                Assert.Equal(expected.Id, actual.GetProperty("applicationId").GetGuid());
+                Assert.Equal(
+                    expected.MembershipId,
+                    actual.GetProperty("membershipId").GetGuid());
+                Assert.Equal(expected.ClientId, actual.GetProperty("clientId").GetGuid());
+                Assert.Equal(
+                    "2026-01-30",
+                    actual.GetProperty("appliedStartDate").GetString());
+                Assert.Equal(
+                    "2026-02-02",
+                    actual.GetProperty("appliedEndDate").GetString());
+            }
+
             var recalculation = after.RootElement.GetProperty("recalculation");
+            Assert.Equal(3, recalculation.EnumerateObject().Count());
             Assert.Equal(2, recalculation.GetProperty("requestedCount").GetInt32());
             Assert.Equal(2, recalculation.GetProperty("succeededCount").GetInt32());
+            Assert.Equal(
+                [FirstMembershipId, SecondMembershipId],
+                recalculation
+                    .GetProperty("membershipIds")
+                    .EnumerateArray()
+                    .Select(item => item.GetGuid()));
         }
 
         var idempotency = await ReadIdempotencyAsync(
@@ -962,6 +1033,7 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
             select
                 id,
                 membership_id,
+                client_id,
                 applied_start_date,
                 applied_end_date,
                 previewed_at,
@@ -979,11 +1051,12 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
             rows.Add(new ApplicationRow(
                 reader.GetGuid(0),
                 reader.GetGuid(1),
-                reader.GetFieldValue<DateOnly>(2),
+                reader.GetGuid(2),
                 reader.GetFieldValue<DateOnly>(3),
-                reader.GetFieldValue<DateTimeOffset>(4),
+                reader.GetFieldValue<DateOnly>(4),
                 reader.GetFieldValue<DateTimeOffset>(5),
-                reader.GetString(6)));
+                reader.GetFieldValue<DateTimeOffset>(6),
+                reader.GetString(7)));
         }
 
         return rows.ToArray();
@@ -1076,10 +1149,12 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
                 actor_role,
                 occurred_at,
                 recorded_at,
+                entry_origin,
                 reason,
                 comment,
                 request_correlation_id,
                 idempotency_key,
+                related_entity_refs::text,
                 before_summary::text,
                 after_summary::text
             from bodylife.business_audit_entries
@@ -1096,12 +1171,14 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
             reader.GetString(4),
             reader.GetFieldValue<DateTimeOffset>(5),
             reader.GetFieldValue<DateTimeOffset>(6),
-            reader.IsDBNull(7) ? null : reader.GetString(7),
+            reader.GetString(7),
             reader.IsDBNull(8) ? null : reader.GetString(8),
-            reader.GetString(9),
-            reader.IsDBNull(10) ? null : reader.GetString(10),
-            reader.GetString(11),
-            reader.GetString(12));
+            reader.IsDBNull(9) ? null : reader.GetString(9),
+            reader.GetString(10),
+            reader.IsDBNull(11) ? null : reader.GetString(11),
+            reader.GetString(12),
+            reader.GetString(13),
+            reader.GetString(14));
     }
 
     private static async Task<IdempotencyRow> ReadIdempotencyAsync(
@@ -1215,6 +1292,7 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
     private sealed record ApplicationRow(
         Guid Id,
         Guid MembershipId,
+        Guid ClientId,
         DateOnly AppliedStartDate,
         DateOnly AppliedEndDate,
         DateTimeOffset PreviewedAt,
@@ -1246,10 +1324,12 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
         string ActorRole,
         DateTimeOffset OccurredAt,
         DateTimeOffset RecordedAt,
+        string EntryOrigin,
         string? Reason,
         string? Comment,
         string RequestCorrelationId,
         string? IdempotencyKey,
+        string RelatedEntityRefsJson,
         string BeforeSummaryJson,
         string AfterSummaryJson);
 

@@ -1460,6 +1460,164 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void NonWorkingDayAdditionShowsConfirmedScopePeriodAndApplications()
+    {
+        var fixture = NonWorkingDayAdditionAudit();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.added",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("non-working-day-added", explanation.Kind);
+        Assert.Equal("Confirmed preview", explanation.BeforeLabel);
+        Assert.Equal("Recorded period", explanation.AfterLabel);
+        Assert.Equal("scope-123456", FactValue(explanation.BeforeFacts, "Preview scope"));
+        Assert.Equal("2", FactValue(explanation.BeforeFacts, "Affected memberships"));
+        Assert.Equal(
+            "2026-01-30 to 2026-02-02",
+            FactValue(explanation.AfterFacts, "Period"));
+        Assert.Equal("4", FactValue(explanation.AfterFacts, "Inclusive days"));
+        Assert.Equal("Weather Closure", FactValue(explanation.AfterFacts, "Reason code"));
+        Assert.Equal("Snow closure", FactValue(explanation.AfterFacts, "Reason comment"));
+        Assert.Equal("2", FactValue(explanation.AfterFacts, "Affected memberships"));
+        Assert.Contains(
+            $"Membership {TimelineModel.ShortId(fixture.FirstMembershipId)}",
+            FactValue(explanation.AfterFacts, "Application details"),
+            StringComparison.Ordinal);
+        Assert.Equal(
+            "2 of 2",
+            FactValue(explanation.AfterFacts, "Recalculated memberships"));
+        Assert.Equal(
+            "Non-working period, Confirmed affected scope",
+            explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void NonWorkingDayAdditionSupportsAnEmptyConfirmedScope()
+    {
+        var fixture = NonWorkingDayAdditionAudit(affectedCount: 0);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.added",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("0", FactValue(explanation.BeforeFacts, "Affected memberships"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Application details"));
+        Assert.Equal(
+            "0 of 0",
+            FactValue(explanation.AfterFacts, "Recalculated memberships"));
+    }
+
+    [Fact]
+    public void NonWorkingDayAdditionWithMismatchedRelatedScopeFailsClosed()
+    {
+        var fixture = NonWorkingDayAdditionAudit(mismatchRelatedMembership: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.added",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void NonWorkingDayAdditionWithMismatchedPreviewCountFailsClosed()
+    {
+        var fixture = NonWorkingDayAdditionAudit(previewCountDelta: 1);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.added",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void NonWorkingDayAdditionWithPartialApplicationRangeFailsClosed()
+    {
+        var fixture = NonWorkingDayAdditionAudit(mismatchApplicationRange: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.added",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void NonWorkingDayAdditionWithIncompleteRecalculationFailsClosed()
+    {
+        var fixture = NonWorkingDayAdditionAudit(recalculationSucceededCountDelta: -1);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.added",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void NonWorkingDayAdditionConfirmedAfterPreviewExpiryFailsClosed()
+    {
+        var fixture = NonWorkingDayAdditionAudit(expiredPreview: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "non_working_day.added",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void NonWorkingDayRangeCorrectionShowsReplacementAndStoredAffectedCounts()
     {
         var fixture = NonWorkingDayAudit(replaceReason: false);
@@ -2658,6 +2816,7 @@ public sealed class AuditEntryExplanationViewModelTests
 
     [Theory]
     [InlineData("freeze.added", AuditTimelineEntityType.Payment)]
+    [InlineData("non_working_day.added", AuditTimelineEntityType.Payment)]
     [InlineData(
         "membership_opening_state.created",
         AuditTimelineEntityType.Membership)]
@@ -3181,6 +3340,86 @@ public sealed class AuditEntryExplanationViewModelTests
             canceledAfter);
     }
 
+    private static NonWorkingDayAdditionAuditFixture NonWorkingDayAdditionAudit(
+        int affectedCount = 2,
+        bool mismatchRelatedMembership = false,
+        int previewCountDelta = 0,
+        bool mismatchApplicationRange = false,
+        int recalculationSucceededCountDelta = 0,
+        bool expiredPreview = false)
+    {
+        var periodId = Guid.NewGuid();
+        var startDate = new DateOnly(2026, 1, 30);
+        var endDate = new DateOnly(2026, 2, 2);
+        var recordedAt = OriginalOccurredAt.AddMinutes(5);
+        var membershipIds = Enumerable.Range(0, affectedCount)
+            .Select(_ => Guid.NewGuid())
+            .ToArray();
+        var clientIds = Enumerable.Range(0, affectedCount)
+            .Select(_ => Guid.NewGuid())
+            .ToArray();
+        var applications = membershipIds
+            .Zip(
+                clientIds,
+                (membershipId, clientId) =>
+                    new NonWorkingDayReplacementApplicationAuditFixture(
+                        Guid.NewGuid(),
+                        membershipId,
+                        clientId,
+                        mismatchApplicationRange
+                            ? startDate.AddDays(1)
+                            : startDate,
+                        endDate))
+            .ToArray();
+        var relatedMembershipIds = membershipIds.ToArray();
+        if (mismatchRelatedMembership && relatedMembershipIds.Length > 0)
+        {
+            relatedMembershipIds[0] = Guid.NewGuid();
+        }
+
+        return new NonWorkingDayAdditionAuditFixture(
+            periodId,
+            membershipIds.FirstOrDefault(),
+            new
+            {
+                AffectedMembershipIds = relatedMembershipIds,
+                AffectedClientIds = clientIds,
+            },
+            new
+            {
+                Preview = new
+                {
+                    ScopeFingerprint = "scope-1234567890",
+                    IssuedAt = recordedAt.AddMinutes(-10),
+                    ExpiresAt = expiredPreview
+                        ? recordedAt.AddMinutes(-1)
+                        : recordedAt.AddMinutes(5),
+                    AffectedCount = affectedCount + previewCountDelta,
+                },
+            },
+            new
+            {
+                Period = new NonWorkingDayReplacementPeriodAuditFixture(
+                    periodId,
+                    startDate,
+                    endDate,
+                    InclusiveDays: 4,
+                    "weather_closure",
+                    "Snow closure",
+                    recordedAt,
+                    "active"),
+                AffectedMembershipCount = affectedCount,
+                Applications = applications,
+                Recalculation = new
+                {
+                    RequestedCount = affectedCount,
+                    SucceededCount =
+                        affectedCount + recalculationSucceededCountDelta,
+                    MembershipIds = membershipIds,
+                },
+            });
+    }
+
     private static FreezeCancellationAuditFixture FreezeCancellationAudit(
         bool membershipStateChanges,
         bool mismatchAfterMembership = false)
@@ -3397,6 +3636,13 @@ public sealed class AuditEntryExplanationViewModelTests
         object CanceledBefore,
         object CorrectedAfter,
         object CanceledAfter);
+
+    private sealed record NonWorkingDayAdditionAuditFixture(
+        Guid PeriodId,
+        Guid FirstMembershipId,
+        object Related,
+        object Before,
+        object After);
 
     private sealed record NonWorkingDaySourcePeriodAuditFixture(
         Guid PeriodId,

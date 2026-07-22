@@ -39,6 +39,7 @@ public sealed record AuditEntryExplanationViewModel(
             "staff_account.deactivated" => "staff-account-deactivated",
             "staff_credentials.configured" => "staff-credentials-configured",
             "staff_credentials.reset" => "staff-credentials-reset",
+            "non_working_day.added" => "non-working-day-added",
             "non_working_day.corrected" => "non-working-day-corrected",
             "non_working_day.canceled" => "non-working-day-canceled",
             "freeze.added" => "freeze-added",
@@ -151,6 +152,13 @@ public sealed record AuditEntryExplanationViewModel(
                 "membership_opening_state.created"
                     when entry.EntityType == AuditTimelineEntityType.MembershipOpeningState
                     => CreateMembershipOpeningState(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
+                "non_working_day.added"
+                    when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
+                    => NonWorkingDayAuditExplanationFactory.CreateAddition(
                         entry,
                         related.RootElement,
                         before.RootElement,

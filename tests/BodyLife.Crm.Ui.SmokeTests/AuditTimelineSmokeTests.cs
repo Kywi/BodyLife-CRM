@@ -36,6 +36,178 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
     [Theory]
     [InlineData("owner-tablet", 1024, 768, true)]
     [InlineData("admin-phone", 390, 844, false)]
+    public async Task AddedNonWorkingDayShowsConfirmedImmutableAffectedScope(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var addition = scenario.Explanations.NonWorkingDayAddition;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} added non-working day audit smoke");
+
+            var explanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "NonWorkingPeriod",
+                "non_working_day.added",
+                addition.AuditEntryId,
+                "non-working-day-added",
+                viewportName,
+                entityId: addition.PeriodId);
+            await ExpectVisibleAsync(
+                explanation.GetByRole(
+                    AriaRole.Heading,
+                    new()
+                    {
+                        Name = "Non-working period and affected scope recorded",
+                        Exact = true,
+                    }),
+                viewportName,
+                "Added non-working day explanation title");
+            Assert.Equal(
+                addition.PreviewScopeLabel,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Confirmed preview",
+                    "Preview scope"));
+            Assert.Equal(
+                $"{addition.PreviewIssuedAt:yyyy-MM-dd HH:mm:ss} UTC",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Confirmed preview",
+                    "Preview issued"));
+            Assert.Equal(
+                $"{addition.PreviewExpiresAt:yyyy-MM-dd HH:mm:ss} UTC",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Confirmed preview",
+                    "Preview expires"));
+            Assert.Equal(
+                addition.AffectedCount.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Confirmed preview",
+                    "Affected memberships"));
+            Assert.Equal(
+                addition.PeriodId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded period",
+                    "Non-working period"));
+            Assert.Equal(
+                $"{addition.Range.StartDate:yyyy-MM-dd} to {addition.Range.EndDate:yyyy-MM-dd}",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded period",
+                    "Period"));
+            Assert.Equal(
+                addition.Range.InclusiveDays.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded period",
+                    "Inclusive days"));
+            Assert.Equal(
+                "Maintenance",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded period",
+                    "Reason code"));
+            Assert.Equal(
+                addition.ReasonComment,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded period",
+                    "Reason comment"));
+            var applicationDetails = await ExplanationFactAsync(
+                explanation,
+                "Recorded period",
+                "Application details");
+            Assert.Contains(
+                $"Membership {addition.FirstMembershipId.ToString("N")[..8]} / "
+                    + $"Client {addition.FirstClientId.ToString("N")[..8]}: "
+                    + $"{addition.Range.StartDate:yyyy-MM-dd} to "
+                    + $"{addition.Range.EndDate:yyyy-MM-dd}",
+                applicationDetails,
+                StringComparison.Ordinal);
+            Assert.Equal(
+                $"{addition.AffectedCount} of {addition.AffectedCount}",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded period",
+                    "Recalculated memberships"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded period",
+                    "Status"));
+            Assert.Equal(
+                $"{addition.RecordedAt:yyyy-MM-dd HH:mm:ss} UTC",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded period",
+                    "Recorded"));
+            await ExpectVisibleAsync(
+                explanation.GetByText(
+                    "Non-working period, Confirmed affected scope",
+                    new() { Exact = true }),
+                viewportName,
+                "Added non-working day changed fields");
+
+            var row = explanation.Locator("xpath=ancestor::li");
+            var envelope = row.Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "Added non-working day audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "Added non-working day raw envelope");
+            var rawEnvelope = await envelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains("scopeFingerprint", rawEnvelope, StringComparison.Ordinal);
+            Assert.Contains("applications", rawEnvelope, StringComparison.Ordinal);
+            Assert.Contains("recalculation", rawEnvelope, StringComparison.Ordinal);
+            await AssertFitsViewportAsync(
+                page,
+                viewportName,
+                "Added non-working day explanation");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "non-working-day-addition-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
     public async Task CreatedClientShowsIdentityCardAndAcceptedDuplicateWarning(
         string viewportName,
         int width,
