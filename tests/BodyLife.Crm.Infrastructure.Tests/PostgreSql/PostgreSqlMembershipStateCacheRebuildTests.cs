@@ -69,6 +69,71 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
     }
 
     [PostgreSqlFact]
+    public async Task BulkRebuildRepairsAllCachesWithoutChangingSourceFactsOrAudit()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var stale = await SeedIssuedMembershipAsync(database, dbContext);
+        var negative = await SeedIssuedMembershipAsync(database, dbContext);
+        await InsertStateCacheAsync(
+            database.ConnectionString,
+            stale.MembershipId,
+            remainingVisits: 99,
+            recalculationVersion: MembershipStateCacheRebuilder.CurrentRecalculationVersion - 1);
+        await InsertMembershipVisitAsync(
+            database.ConnectionString,
+            negative,
+            new DateTimeOffset(2026, 7, 15, 20, 30, 0, TimeSpan.Zero),
+            TestNow.AddMinutes(1));
+        await InsertMembershipVisitAsync(
+            database.ConnectionString,
+            negative,
+            new DateTimeOffset(2026, 7, 15, 21, 30, 0, TimeSpan.Zero),
+            TestNow.AddMinutes(2));
+        await InsertMembershipVisitAsync(
+            database.ConnectionString,
+            negative,
+            new DateTimeOffset(2026, 7, 15, 22, 30, 0, TimeSpan.Zero),
+            TestNow.AddMinutes(3));
+        var sourceFactsBefore = await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.visits");
+        var auditBefore = await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.business_audit_entries");
+
+        var bulk = new MembershipStateCacheBulkRebuilder(
+            dbContext,
+            CreateRebuilder(dbContext));
+        var first = await bulk.RebuildAllAsync();
+
+        Assert.True(first.Succeeded);
+        Assert.Equal(2, first.Total);
+        Assert.Equal(1, first.Created);
+        Assert.Equal(1, first.Repaired);
+        Assert.Equal(0, first.Verified);
+        var staleState = await ReadStateCacheAsync(database.ConnectionString, stale.MembershipId);
+        AssertInitialState(staleState);
+        var negativeState = await ReadStateCacheAsync(database.ConnectionString, negative.MembershipId);
+        Assert.Equal(-1, negativeState.RemainingVisits);
+        Assert.Equal(new DateOnly(2026, 7, 16), negativeState.FirstNegativeVisitDate);
+        Assert.Equal(
+            MembershipStateCacheRebuilder.CurrentRecalculationVersion,
+            negativeState.RecalculationVersion);
+        Assert.Equal(sourceFactsBefore, await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.visits"));
+        Assert.Equal(auditBefore, await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.business_audit_entries"));
+
+        var second = await bulk.RebuildAllAsync();
+
+        Assert.True(second.Succeeded);
+        Assert.Equal(2, second.Total);
+        Assert.Equal(0, second.Created);
+        Assert.Equal(0, second.Repaired);
+        Assert.Equal(2, second.Verified);
+    }
+
+    [PostgreSqlFact]
     public async Task ActiveOpeningStateCreatesCacheFromDeclaredBaseline()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -1145,7 +1210,9 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
     {
         var bootstrap = await new OwnerBootstrapper(dbContext, new FixedTimeProvider(TestNow))
             .BootstrapOwnerAsync("BodyLife Owner");
-        Assert.Equal(OwnerBootstrapStatus.Created, bootstrap.Status);
+        Assert.True(
+            bootstrap.Status is OwnerBootstrapStatus.Created
+                or OwnerBootstrapStatus.AlreadyExists);
 
         var actorAccountId = bootstrap.AccountId!.Value;
         var clientId = Guid.NewGuid();

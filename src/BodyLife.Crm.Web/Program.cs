@@ -83,6 +83,16 @@ if (OwnerCredentialsCommand.IsRequested(args))
     return;
 }
 
+if (RebuildMembershipStateCachesCommand.IsRequested(args))
+{
+    Environment.ExitCode = await RebuildMembershipStateCachesCommand.ExecuteAsync(
+        app.Services,
+        app.Logger,
+        app.Lifetime.ApplicationStopping);
+
+    return;
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");

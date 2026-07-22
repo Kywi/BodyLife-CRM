@@ -291,6 +291,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MembershipExtensionDayWriter>();
         services.AddScoped<MembershipStatePersistenceCoordinator>();
         services.AddScoped<MembershipStateCacheRebuilder>();
+        services.AddScoped<MembershipStateCacheBulkRebuilder>();
         services.AddScoped<AccountLoginService>();
         services.AddScoped<AccountSessionValidationService>();
         services.AddScoped<OwnerCredentialsBootstrapper>();
