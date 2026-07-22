@@ -12330,3 +12330,56 @@ Stop point:
 
 - The full UI migration is implemented and UI-validated. Milestone 10 remains
   complete; begin Milestone 11 only under a separate explicit request.
+
+## Step 190 - Documented visual-fidelity correction plan
+
+Status: completed documentation correction only. Milestone 11 was not started.
+
+Plan alignment:
+
+- User rejected the claimed visual fidelity of the current UI. Step 189 remains
+  historical evidence of the functional migration and its validation; it is not
+  rewritten or reclassified as accepted visual-reference fidelity.
+- Current code remains a functionally validated light-theme baseline. The
+  approved external visual reference package, locked-manifest prerequisite and
+  structural migration plan are recorded in
+  `docs/ui-visual-fidelity-migration-plan.md` and
+  `docs/ui-visual-fidelity-coverage-matrix.md`.
+- The plan preserves accepted ADRs, Razor/htmx, commands, permissions, audit,
+  idempotency, antiforgery, canonical rereads and server-owned business
+  formulas. It requires reviewed read-only Reception Activity and Attention
+  summary query contracts before Wave 1; no static prototype data or
+  UI-computed warning counts are authorized.
+
+Completed:
+
+- Corrected UI foundation and migration-inventory wording so functional test
+  evidence is retained without claiming visual acceptance.
+- Defined reference locking, hash-drift hard stop, exact navigation mapping,
+  anchor approvals, per-route/per-partial coverage, deterministic capture
+  conditions, acceptance severity gates, waves, risks and rollback/stop
+  conditions.
+
+Validation:
+
+- Documentation-only checks passed: `git diff --check`; all referenced local
+  documents; all 12 external reference hashes; all 16 visual route entries
+  plus the non-visual SetLanguage transport; and all 14 workflow plus 5 shared
+  partial names.
+- Independent read-only visual, scope and acceptance audits informed the plan.
+  A separate risk review found seven planning gaps; after fixes for dashboard
+  data contracts, UTC/Kyiv boundaries, navigation, matrix granularity,
+  foundation authority, counts and severity gates, its re-review was clean.
+- The required semantic `graphify . --update` was attempted after the governing
+  documentation changes. It stopped because no extraction LLM API key is
+  configured and produced no tracked Graphify change, so no refreshed graph is
+  claimed.
+- No source code, tests, assets, ADRs or Graphify files were changed; builds
+  and test suites were intentionally not run.
+
+Stop point:
+
+- Visual-fidelity implementation is **not started**. No later wave may begin
+  until Phase 0 locks the approved package and the Wave 1 Activity/Attention
+  query contracts are specified in the governing workflow/interaction
+  documents.

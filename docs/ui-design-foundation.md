@@ -2,11 +2,24 @@
 
 Дата: 2026-07-09
 Оновлено: 2026-07-22
-Статус: implemented v1 visual baseline
+Статус: accepted visual target specified; visual-fidelity migration not started
 
 Цей документ задає мінімальну design-system основу для BodyLife CRM v1. Він доповнює `docs/ui-workflows.md`: workflows описують, які screen/state/actions потрібні, а цей документ описує, як сторінки мають виглядати, повторюватися і поводитися на tablet/phone без хаотичної імпровізації.
 
-Це не pixel-perfect mockup і не дозвіл робити декоративний redesign. Accepted ADR package у `docs/adr/` лишається вищим джерелом правди. Якщо цей документ конфліктує з ADR, перемагає ADR.
+Locked reference package задає binding composition і visual direction, але
+pixel-diff не замінює workflow, accessibility або explicit user approval.
+Accepted ADR package у `docs/adr/` лишається вищим джерелом правди. Якщо цей
+документ конфліктує з ADR, перемагає ADR.
+
+## Current functional baseline and accepted target
+
+Поточна реалізація має функціональну та behavioral validation, але user не
+прийняв її як visual-fidelity реалізацію. Вона не є візуальним authority.
+Затверджений зовнішній reference package, його locked repository copy і
+`docs/ui-visual-fidelity-migration-plan.md` визначають accepted target,
+структурну композицію, migration waves та explicit visual approval. До
+завершення цього плану не називати поточний shell, palette або responsive
+composition accepted visual baseline.
 
 ## 1. Product posture
 
@@ -27,48 +40,59 @@ BodyLife CRM має виглядати як спокійний внутрішн�
 
 UI implementation має читати документи в такому порядку:
 
-1. Accepted ADR package, especially ADR-003, ADR-008, ADR-012 and ADR-013.
-2. `docs/architecture-baseline.md` for implementation guardrails.
+1. Accepted ADR package, especially ADR-003, ADR-008, ADR-012, ADR-013 and
+   ADR-017, plus `docs/architecture-baseline.md` for guardrails.
+2. Domain/data/interaction contracts for behavior, ownership, commands,
+   queries, errors, authorization, time and canonical rereads.
 3. `docs/ui-workflows.md` for workflow behavior and required states.
-4. This document for visual, layout and component consistency.
-5. `docs/interaction-contracts.md` for command/query errors, rereads and authorization behavior.
+4. Locked approved visual reference package for composition and visual
+   direction.
+5. `docs/ui-visual-fidelity-migration-plan.md` and its coverage matrix for
+   ordering, exact scope and acceptance.
+6. This document for shared semantic/accessibility constraints.
 
 Якщо screen потребує нового product behavior, спочатку оновити workflow/contract docs. Якщо потрібна зміна accepted architecture direction, потрібен ADR update.
 
 ## 3. Information hierarchy
 
-Reception screens should prioritize information in this order:
-
-1. Search and selected client identity.
-2. Critical warnings that can change the meaning of the next action.
-3. Current membership state and visit/payment readiness.
-4. Primary quick actions allowed by server permissions.
-5. Recent history, daily report context and audit/history links.
-6. Secondary admin/settings actions.
+Reception Home follows the reference order: area/date and honest session
+context, `Activity now`, `Quick search` with direct `Create Client`, then
+`Today` metrics and attention warnings. Clients/Profile follows: selected
+identity, critical warnings, Membership state, allowed quick actions, Context
+and recent history. Secondary reports, audit and Owner tools remain reachable
+without crowding the primary four-item navigation.
 
 Critical warnings must not be visually weaker than ordinary metadata. A compact layout may shorten labels, but it must not hide negative, zero, expired, duplicate, stale, changed-after-close, backfill/fallback or permission warnings behind an extra tap.
 
 ## 4. Layout model
 
-Use a stable application shell:
+Use the stable reference shell:
 
-- Top bar: app name or current area, current account/session/device indicator, current business date when relevant, and owner/admin context when present.
-- Main reception area: search/result area plus selected client/profile area.
-- Secondary area: daily report link/summary, recent history, audit/history links and non-primary actions.
+- Compact rounded brand/navigation rail with the large transparent BodyLife
+  mark and Home/Clients/Report/History mapping from the migration plan.
+- Workspace context row with current area, Kyiv business date and honest
+  account/session/device information; do not add the current persistent utility
+  top bar back above the reference composition.
+- Reception Home: wide Activity card plus narrow Quick Search/Today rail.
+- Client/Profile: main identity/Membership/history column plus Quick
+  actions/Context rail.
+- Report/Audit/Owner pages retain the same shell and use local secondary
+  navigation for routes omitted from the compact primary rail.
 
 Tablet is the primary reception target:
 
-- Use a two-area layout when space allows: search/results on the left, selected client/profile on the right.
+- Use the reference two-area proportions when space allows; Home and Profile
+  have different content compositions but the same shell rhythm.
 - Keep the active client, warnings and primary actions in the first visible viewport.
 - Avoid wide empty marketing-like space; density should help repeated operational use.
 
 Phone layout must become one readable column:
 
-1. Search input and active search status.
-2. Selected client identity or compact result list.
-3. Critical warnings.
-4. Membership state.
-5. Primary quick actions.
+1. Compact brand/navigation and workspace/session context.
+2. Home Activity or selected client identity.
+3. Critical warnings and Membership state where a client is selected.
+4. Quick Search or permission-aware primary actions.
+5. Today summary or Context.
 6. Recent history and report/audit links.
 
 Desktop may add breathing room, but it must not introduce a different workflow model. Do not design desktop as the canonical layout if tablet and phone become weaker.
@@ -81,7 +105,8 @@ Use a neutral operational base with semantic color accents:
 - Surfaces: white or very light neutral.
 - Text: high-contrast dark neutral, muted neutral for secondary metadata.
 - Border/divider: visible but quiet neutral.
-- Focus/action: clear blue accent.
+- Primary CTA: near-black reference treatment for the one dominant action.
+- Navigation/selection/focus/info: clear blue accent.
 - Success/active: green.
 - Warning/ending/low/zero: amber.
 - Danger/expired/negative/destructive: red.
@@ -94,17 +119,22 @@ Status color is never the only signal. Pair color with icon/label/text such as `
 
 ## 6. Spacing, shape and typography
 
-Use a compact, predictable scale:
+Phase 0 extracts and locks the exact spacing, radius, typography and shell
+proportions from the approved HTML/PNG package. Until that token contract is
+approved, neither the current `site.css` values nor the old `8px or less`
+radius rule is a target. Implementation then uses the locked compact scale
+consistently rather than page-local guesses.
 
-- Base spacing: 4/8/12/16/24/32 px.
-- Cards and panels: border radius 8 px or less.
+Invariant constraints:
+
 - Touch targets: at least 44x44 px; primary form submits should feel comfortable on tablet.
 - Inputs and buttons: stable height so loading, validation and long labels do not shift layout.
 - Tables/lists: dense enough for scanning, with enough row height for touch.
 
 Typography:
 
-- Use system UI fonts unless a future design decision says otherwise.
+- Use the font stack recorded in the reference manifest with a local/system
+  fallback; do not add an external runtime font dependency.
 - Do not scale font sizes with viewport width.
 - Do not use negative letter spacing.
 - Use large type only for true page-level context, not inside compact cards/panels.
@@ -245,15 +275,20 @@ Empty states should be operational, not promotional:
 
 Errors render near the action that caused them. `stale_state` and `concurrency_conflict` states should ask for refresh and keep the previous canonical state visible until the reread succeeds.
 
-## 11. First screens to implement as visual exemplars
+## 11. Locked visual exemplars
 
-Before building broad UI, create and verify these three exemplars:
+Implement in stop/go order, never as one broad CSS pass:
 
-1. Reception dashboard: empty/search, exact card auto-open, multiple results and no-match states.
-2. Client profile shell: identity, membership panel placeholder/current state, warnings, quick actions and recent history.
-3. Risky action form: mark visit through zero/negative warning acknowledgement with busy/disabled submit and canonical profile reread.
+1. Reception Home desktop and phone.
+2. Client search/results desktop.
+3. Direct Create Client desktop.
+4. Client Profile desktop and phone.
+5. expanded Cancel Visit desktop and phone.
 
-These exemplars become the reference for later payment, freeze, correction, report and audit screens.
+The exact eight reference files, hashes, migration waves and user approval
+rules are in `docs/ui-visual-fidelity-migration-plan.md`. Owner, Reports,
+Audit/History and public pages inherit only after the related anchor is
+explicitly approved.
 
 ## 12. Implementation notes
 
@@ -264,10 +299,11 @@ These exemplars become the reference for later payment, freeze, correction, repo
 - Do not add UI formulas for membership state to templates, JavaScript, controllers or report views.
 - Do not hide server permission policy behind client-only disabled UI; every command still rechecks server-side.
 
-## 13. Implemented light brand baseline
+## 13. Historical functional light baseline — not the target
 
-Станом на 2026-07-22 спільний visual baseline реалізовано на всіх v1
-Razor-поверхнях.
+The following records what exists before the fidelity migration so it can be
+removed or retained deliberately. It is functionally validated but visually
+rejected; none of these shell/layout/token choices is canonical target input.
 
 - Authenticated shell використовує постійну груповану навігацію `Main` і
   Owner-only `Owner tools`, чесний account/session/device context та локальний
@@ -275,7 +311,7 @@ Razor-поверхнях.
   навігацією без втрати дій.
 - Public shell для Login, Logout, AccessDenied і Error використовує той самий
   логотип, мову, focus treatment і світлу палітру.
-- Canonical tokens у `site.css`: background `#f5f6f7`, surface `#ffffff`, text
+- Current tokens у `site.css`: background `#f5f6f7`, surface `#ffffff`, text
   `#17211c`, muted `#5f6b66`, line `#d9dee3`, primary `#0a74c9`, success
   `#277a46`, warning `#9a5b0a`, danger `#b42318`, restricted `#6941c6`.
   Кожен semantic color має світлий companion surface і текстовий/icon label.
@@ -298,7 +334,7 @@ Razor-поверхнях.
   врахувати ширину sidebar. Phone target `390x844` зберігає одну читабельну
   operational column.
 
-Повний route/partial/test inventory і acceptance evidence записані в
+Повний route/partial/test inventory і functional evidence записані в
 `docs/ui-style-migration-inventory.md`.
 
 ## 14. Acceptance checklist
@@ -312,4 +348,11 @@ Razor-поверхнях.
 - State-changing buttons show busy/disabled state and prevent duplicate submits.
 - Destructive/correction actions require confirmation plus reason/comment when contracts require it.
 - Owner/shared account/session context is visible and honest.
-- Playwright smoke checks cover tablet and phone viewport rendering for the exemplar screens.
+- Locked references, manifest hashes and deterministic capture metadata exist
+  in the repository before production UI writes.
+- Every route and partial row in the visual-fidelity matrix has evidence;
+  anchors and the final gallery have explicit user/product-owner approval.
+- WCAG AA contrast, visible keyboard focus, 44x44 targets and zero blocking
+  overflow pass on tablet and phone.
+- Green behavioral tests are required but cannot by themselves approve visual
+  fidelity.

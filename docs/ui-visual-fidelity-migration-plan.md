@@ -1,0 +1,207 @@
+# План міграції візуальної відповідності UI
+
+Дата: 2026-07-22
+Статус: **not started** — decision-complete план, а не підтвердження реалізації.
+
+## Рішення та межі
+
+Поточний UI є функціонально валідованим light-theme baseline, але **не є
+візуальним authority і не має прийнятої visual fidelity**. Відмінності від
+схваленого пакета суттєві: shell/sidebar/top bar, search-first композиція,
+малий logo lockup, квадратні/білі cards, домінування blue CTA, вертикальний
+profile та mobile information order. Отже це structural rebuild, а не
+token-only restyle або широкий CSS-only pass.
+
+Ієрархія джерел:
+
+1. Accepted ADRs, contracts і бізнес-workflows керують поведінкою.
+2. Затверджений reference package керує візуальною композицією.
+3. Цей план і `ui-visual-fidelity-coverage-matrix.md` керують міграційним
+   охопленням та прийманням.
+4. Поточний UI — лише функціональний baseline.
+
+Не змінювати Razor/htmx model, команди, permissions, audit, idempotency,
+canonical rereads, antiforgery або server ownership Membership/Reports
+формул. Не відкривати ADR, якщо новий read-only contract не конфліктує з
+accepted ADR; поточний план такого конфлікту не встановлює.
+
+## Phase 0 — reference lock (hard prerequisite)
+
+До production UI writes один writer копіює точні artifacts із зовнішнього
+пакета `/mnt/c/Users/genik.DESKTOP-C1V0MQJ/.codex/visualizations/2026/07/16/019f6c81-30dd-78c2-a4c7-9ca5921af44d/`
+у `tests/BodyLife.Crm.Ui.SmokeTests/VisualReferences/bodylife-light-v1/`.
+Repository package має містити PNG/HTML/logo, machine-readable manifest,
+README із browser/OS/font metadata, reference version, full-page capture
+procedure та затверджені правила masking. Будь-який hash drift — **hard
+stop**: не продовжувати wave, заново звірити постачання і отримати user
+approval.
+
+| Artifact | Dimensions | SHA-256 |
+| --- | --- | --- |
+| `branded-light-1-reception-home.png` | 1104x789 | `6beb8e1479c5bd471bf1458e87512f8d13fd800354c6dcb0870cec6b473e7792` |
+| `branded-light-2-client-search.png` | 1104x773 | `fead8b437663ec0df6f083d65066fa3c079fa8a54f039febba5966f854e9a8ac` |
+| `branded-light-3-client-profile.png` | 1104x1134 | `e8e6303f7cc16b753060a41da32ff71a2ff0cdc0f0d1f50adb30b1ac641cfbf6` |
+| `branded-light-4-create-client.png` | 1104x1011 | `bb1ceb7a927a0a090afc4704a46264b17943cf19b993d9d2f5ca9373fd88c127` |
+| `branded-light-5-cancel-visit.png` | 1104x861 | `2b7a6aad244dbea376dd1ea58359e366fbae7399cfddb8bced53e0a8efe491b6` |
+| `branded-mobile-home.png` | 480x2450 | `094f5e0ee585f31e3cb57d888501572a6a9fe6a50225e0657337b5c4fa5aed49` |
+| `branded-mobile-profile.png` | 480x2381 | `50c7c01abb46638d2292e18198f2486695bd7d9479fae78bc9b7649c3758ed27` |
+| `branded-mobile-cancel.png` | 480x1818 | `a650db723d64bce621e9d0b368ae315166ee50a60ac944c9a09d14b1a3e48bbd` |
+| `bodylife-light-reception-branded.html` | — | `57294858d431bdecc7189795776855f17f090093ec5ded00d3a1319bda3617ea` |
+| `bodylife-light-reception-branded-rendered.html` | — | `7f69b601f1865974e409cd06116804fa6509d81868a398becac79d21618d8c5a` |
+| `bodylife-logo-transparent.png` | 338x480 | `34bcb5bc8e64ee833249799167ba00a89ca9faea587c0cf61480ad78c5c53048` |
+| `bodylife-logo-transparent-master.png` | 1086x1448 | `96566435e379387affd3810709a48225673653cd2c26e374085254941702dc7d` |
+
+## Target composition and data decisions
+
+Reference composition is binding: compact rounded left nav with a large
+BodyLife brand and Home/Clients/Report/History; Reception has two columns
+(`Activity now`, `Quick search`/direct `Create Client`, `Today`); profile is
+main content plus `Quick actions`/`Context` rail; Create Client is a direct
+dedicated panel; Cancel Visit is an expanded danger/correction card. Phone
+reorders these into one operational column. Current account/session/device
+context remains truthful, but is integrated into this composition, never
+removed or represented as a named person for shared accounts.
+
+### Primary navigation mapping
+
+The compact four-item reference navigation does not remove any route:
+
+| Reference item | Destination and active state |
+| --- | --- |
+| Home | `/` opens the Reception dashboard. It is `aria-current="page"` only for the exact root path. |
+| Clients | `/Reception/Index` opens the client search/profile workspace. It is active for the explicit Reception page and its client/search htmx states. |
+| Report | `/Reports/Daily`; exact Daily is `page`, every other `/Reports/*` route marks this item as current `location` and remains reachable through report section navigation. |
+| History | `/Audit/Timeline`; Timeline is `page`, Client History marks the item as current `location`. Client History remains a contextual link from a selected client/activity row. |
+
+Owner-only Membership Types, Non-Working Days and Staff Accounts remain
+reachable through a clearly labelled Owner-only secondary tools control; they
+are not silently inserted into or removed by the four primary items. Language
+selection and `Завершити`/Logout remain visible in the navigation footer.
+Authorization and active-state rendering stay server-owned.
+
+### Binding light palette and shape
+
+- Use the reference's neutral light canvas and soft neutral cards, not a white
+  square-card utility page.
+- High-frequency primary CTA is near-black as in the reference. Blue remains
+  the navigation/selection/focus/info guide; it must not dominate every action.
+- Green means active/success, amber means ending/low/zero/attention, red-orange
+  means expired/negative/cancel/destructive, and restrained violet means
+  Owner/restricted context. Color always has an icon, label or explanatory
+  text.
+- Use the large transparent BodyLife logo lockup and compact rounded navigation
+  proportions from the references. Do not substitute the current tiny mark.
+- Phase 0 extracts exact background/surface/text/border/semantic colors,
+  typography, radii, spacing and shell proportions from the locked HTML/PNG
+  into the reference manifest and computed-style assertions. Current
+  `site.css` values are migration inputs, not target tokens.
+- Accessibility is a non-negotiable constraint on fidelity: 44x44 targets,
+  visible focus, keyboard order and contrast gates cannot be weakened to copy
+  a screenshot.
+
+| Prototype area | Canonical mapping / decision |
+| --- | --- |
+| Quick Search | Existing `SearchClients` query. |
+| Direct Create Client | Existing `CreateClient` command and permission. |
+| Profile | Existing `GetClientProfile`. |
+| Profile actions | Existing allowed-actions/read model and commands. |
+| Today metrics | Existing `GenerateDailyReport` supplies visits, payments and cash for an explicit Kyiv business date. Query failures render unavailable/error, never fake zero. |
+| Today attention | New Reports-owned `GetReceptionAttentionSummary`: Owner, named Admin and shared Reception/Admin; explicit `as_of` Kyiv date and ending-soon threshold; exact `ending_soon_membership_count` and distinct `negative_client_count` plus related report destinations. It reads Memberships public state using the same rules as the existing list reports, never counts rows in Razor, and returns typed `success`, `permission_denied`, `validation_failed`, `recalculation_failed` or `source_inconsistent`; failure is never displayed as zero. |
+| Activity now | New Reports-owned `GetReceptionActivity`: Owner, named Admin and shared Reception/Admin; explicit Kyiv `recorded_business_date`, `limit` 1–20 and opaque cursor. It includes successful client/card, membership issue, visit, payment and freeze reception actions with controlled event type, business-audit/source fact id, client id/display name, canonical UTC `occurred_at` and `recorded_at`, entry origin, correction/cancel state, current Memberships-provided compact status/warnings and actor-allowed related ids. Web alone converts instants to Kyiv and formats the active culture. Filter and order use `recorded_at` so today's backfill/paper-fallback action is visible, then stable audit/source id descending; the row still shows its different `occurred_at`. Typed failures match the attention query; pagination is stable; reads create no business audit. No static/fake template rows are allowed. |
+
+Phase 0 must add both new read contracts to `docs/interaction-contracts.md`
+and their empty/loading/failure/backfill/fallback/DST behavior to
+`docs/ui-workflows.md`. It must also pin ownership and tests before Wave 1
+implementation. The contracts compose canonical source facts and public
+Memberships/Reports state; they do not move formulas into Web or duplicate the
+five report definitions.
+
+## Contracts that styling must preserve
+
+Keep input names, routes, form methods, antiforgery, all `hx-*` attributes and
+`data-busy-*` selectors. Preserve `#reception-search`, `#client-search`,
+`#search-loading`, `#client-profile`, `#profile-loading` and every Cancel Visit
+selector. Styling may change only around these behavioral contracts; changing a
+contract needs an explicit code/test decision in its own scope.
+
+## Scope inventory
+
+Visual pages: Reception `/` and `/Reception/Index`; Owner
+`/Owner/MembershipTypes`, `/Owner/NonWorkingDays`, `/Owner/StaffAccounts`;
+Reports `/Reports/Daily`, `/Reports/EndingSoon`, `/Reports/LowRemaining`,
+`/Reports/NegativeClients`, `/Reports/InactiveClients`; Audit `/Audit/Timeline`,
+`/Audit/ClientHistory`; public `/Login`, `/Logout`, `/AccessDenied`, `/Error`.
+`/SetLanguage` is POST transport only, not a visual page. This is 15 visual
+page files and 16 visual route entries when `/` and `/Reception/Index` are
+independently verified.
+
+Workflow partial inventory (14): Reception (12) `_AddFreezeForm.cshtml`,
+`_AddPaymentForm.cshtml`, `_CancelFreezeForm.cshtml`, `_CancelVisitForm.cshtml`,
+`_CardAssignmentForm.cshtml`, `_ClientProfile.cshtml`, `_CorrectPaymentForm.cshtml`,
+`_CreateClientForm.cshtml`, `_IssueMembershipForm.cshtml`, `_MarkVisitForm.cshtml`,
+`_ReceptionWorkspace.cshtml`, `_UpdateClientForm.cshtml`; Owner (2)
+`_NonWorkingDayPreviewWorkspace.cshtml`, `_NonWorkingDayCorrectionWorkspace.cshtml`.
+Shared composition partials (5) are `_Layout.cshtml`, `_AppNavigation.cshtml`,
+`_CurrentSession.cshtml`, `_LanguageSelector.cshtml` and `_Icon.cshtml`. The
+complete presentation inventory is therefore 14 workflow partials plus 5
+shared composition partials (19), enumerated row-by-row in the coverage matrix.
+
+## Waves and executable gates
+
+Every wave is **not started → in progress → approved**. One writer only;
+independent read-only review follows each writer. Do not begin a broad CSS pass
+before the relevant anchor composition is approved.
+
+| Wave | Status | Work and likely files | Stop/go |
+| --- | --- | --- | --- |
+| 0 | not started | Lock the repository reference package and capture metadata; extract target tokens; update workflow/interaction docs with Activity and Attention contracts, navigation mapping, deterministic fixture and visual-test manifest. No production UI composition changes. | Hashes/capture environment match; contracts, typed failures and ownership are reviewed; otherwise hard stop. |
+| 1 | not started | Implement the two read queries, shared shell/navigation and Reception home anchor; likely Reports/Application/Infrastructure query files, `Pages/Shared/_Layout.cshtml`, `_AppNavigation.cshtml`, `_CurrentSession.cshtml`, `Pages/Reception/Index.cshtml`, `_ReceptionWorkspace.cshtml`, `site.css` and focused tests. | Query contract/PostgreSQL tests pass; side-by-side user visual approval of home desktop/mobile. Rejected anchor blocks Wave 2. |
+| 2 | not started | Search and direct-create anchors; likely `Index.cshtml`, `_ReceptionWorkspace.cshtml`, `_CreateClientForm.cshtml`, search/profile tests and CSS. | User approval of search/create desktop/mobile, contracts unchanged. |
+| 3 | not started | Profile, actions and Cancel Visit anchors; likely `_ClientProfile.cshtml`, action forms including `_CancelVisitForm.cshtml`, CSS and focused tests. | User approval of profile/cancel desktop/mobile; rejected anchor blocks later waves. |
+| 4 | not started | Owner surfaces and two NonWorkingDay workspaces. | Owner visual approval; exact confirmation/permission behavior preserved. |
+| 5 | not started | Reports, Audit, Client History and public/status pages. | User approval of representative desktop/phone routes and no loss of report/audit provenance. |
+| 6 | not started | Dead CSS cleanup and all-route acceptance; likely shared CSS, all visual pages/partials and UI tests only where decisions require. | Matrix complete, no P0/P1 visual/a11y issue, product-owner sign-off. |
+
+Each wave runs focused unit/Web/PostgreSQL/Playwright checks for its changed
+contracts and surfaces; Wave 6 also runs the complete repository validation
+gate. Risks/rollback: keep each approved wave independently reversible by
+logical commit; never mix structural composition with unrelated behavioral
+refactors. Stop immediately on reference-hash drift, rejected anchor, missing
+dashboard query contract, behavior/test regression, lost
+warning/action/context, overflow/focus failure, or an ADR conflict. Roll back
+the unapproved wave while retaining the last approved functional state.
+
+## Deterministic acceptance
+
+Use deterministic seed, fixed Kyiv business time, fixed culture/timezone,
+recorded browser/OS/fonts, and animations/caret disabled. Freeze stable fixture
+identifiers; when that is impossible, mask only volatile GUID/session/device
+suffixes and live timestamps while retaining their visible labels and layout.
+Mask hidden antiforgery/idempotency values in DOM snapshots. Name artifacts by
+reference version, route, state, role, culture and viewport.
+
+Acceptance combines structural DOM/computed-style assertions, semantic ordering,
+minimum 44x44 targets, visible keyboard focus and logical order, WCAG 2.2 AA
+contrast (`4.5:1` normal text, `3:1` large text and non-text UI/focus), and zero
+page-level horizontal overflow at target widths. Stable-region screenshot diff
+is diagnostic evidence, not the sole oracle; Phase 0 records its repeat-capture
+noise floor, masks and threshold, but a diff score can never approve a rejected
+composition. Compare full-page captures at reference-native widths and at
+tablet `1024x768`/phone `390x844`.
+
+Severity is fixed:
+
+- **P0**: broken/unauthorized workflow, wrong canonical state, missing or hidden
+  critical warning/action/correction, lost htmx/form contract, or overflow that
+  blocks a required action. Immediate stop; no approval.
+- **P1**: material shell/navigation/logo/composition/palette mismatch, missing
+  reference data block, unreadable semantic hierarchy, keyboard/focus failure
+  or AA contrast failure. Wave cannot pass.
+- **P2**: localized cosmetic divergence that does not change hierarchy,
+  meaning, reachability or accessibility. It must be recorded and may be
+  deferred only with explicit product-owner acceptance.
+
+Each anchor requires side-by-side user/product-owner approval. Full green behavioral
+tests are necessary but insufficient. Done means every matrix row is accounted
+for, no P0/P1 visual or accessibility issue remains, explicit product-owner
+sign-off is recorded, and canonical behavior is preserved.

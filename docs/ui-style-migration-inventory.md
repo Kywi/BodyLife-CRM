@@ -2,15 +2,19 @@
 
 Date: 2026-07-22
 
-Status: implemented and UI-validated
+Status: functional UI migration implemented and behaviorally validated; visual fidelity rejected/pending
 
 Architecture impact: none; post-Milestone 10 presentation hardening
 
 ## Scope
 
-The migration applies one light, branded, semantic visual system to every v1
-visual route while retaining ASP.NET Core Razor Pages/MVC, htmx islands,
-command/query boundaries and PostgreSQL-backed source truth.
+The recorded migration applied one light, branded, semantic visual system to
+every v1 visual route while retaining ASP.NET Core Razor Pages/MVC, htmx
+islands, command/query boundaries and PostgreSQL-backed source truth. It is
+functional evidence only: user rejected visual fidelity to the subsequently
+approved reference package. The current implementation is not an accepted
+visual authority; follow `docs/ui-visual-fidelity-migration-plan.md` and its
+coverage matrix for the structural rebuild and visual acceptance.
 
 | Area | Visual routes | Migrated surfaces |
 | --- | ---: | --- |
@@ -19,11 +23,11 @@ command/query boundaries and PostgreSQL-backed source truth.
 | Reports | 5 | Daily, Ending Soon, Low Remaining, Negative Clients, Inactive Clients |
 | Audit | 2 | Audit Timeline and Client History |
 | Public/status | 4 | Login, Logout, AccessDenied and Error |
-| Total | 15 page routes plus `/` alias | 16 rendered route states and all 17 workflow partials |
+| Total | 15 visual page files plus `/` alias | 16 visual route entries, 14 workflow partials and 5 shared composition partials |
 
 `SetLanguage` remains a POST transport endpoint and has no visual page.
 
-## Shared implementation
+## Current shared implementation (functional baseline only)
 
 - `_Layout.cshtml` selects an authenticated `app-frame` or branded public
   frame without weakening page authorization.
@@ -94,7 +98,7 @@ The migration retains:
 - Long names, IDs, audit payloads and report rows wrap without horizontal page
   scrolling.
 
-## Automated and visual evidence
+## Functional automated evidence (not visual-fidelity acceptance)
 
 - Release solution build: 0 warnings, 0 errors.
 - `dotnet format --verify-no-changes`: passed.
@@ -111,7 +115,7 @@ The migration retains:
 - A clean Release `./scripts/validate.sh` completed against PostgreSQL 16.14 in
   3m54.739s with all four suites green: 1,357/1,357 tests and no skips.
 
-## Review result
+## Functional review result (not visual-fidelity acceptance)
 
 Independent read-only reviews covered shared shell/navigation, Reception,
 Owner, Reports/Audit and the integrated diff. Findings for root-route active
@@ -119,5 +123,8 @@ navigation, 1024px breakpoints, direct-create collapse after canonical reread,
 language hover contrast and Reports section semantics were fixed and
 re-reviewed cleanly.
 
-Milestone 10 remains complete. This presentation migration does not start
-Milestone 11 or change an accepted ADR.
+The reviews and evidence above establish functional behavior, preserved
+contracts and baseline accessibility checks. They do not establish side-by-side
+approval, composition fidelity or acceptance against the approved external
+reference package. Milestone 10 remains complete. This correction does not
+start Milestone 11 or change an accepted ADR.
