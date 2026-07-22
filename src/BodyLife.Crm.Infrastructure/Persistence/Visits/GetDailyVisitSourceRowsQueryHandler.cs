@@ -2,6 +2,7 @@ using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Visits;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Visits;
@@ -32,7 +33,7 @@ public sealed class GetDailyVisitSourceRowsQueryHandler(
         if (query.BusinessDate == default || query.BusinessDate == DateOnly.MaxValue)
         {
             return GetDailyVisitSourceRowsResult.Invalid(
-                "Business date is outside the supported UTC report range.",
+                "Business date is outside the supported business date/report range.",
                 "businessDate");
         }
 
@@ -44,17 +45,13 @@ public sealed class GetDailyVisitSourceRowsQueryHandler(
             return GetDailyVisitSourceRowsResult.InconsistentSource();
         }
 
-        var dayStart = new DateTimeOffset(
-            query.BusinessDate.ToDateTime(
-                TimeOnly.MinValue,
-                DateTimeKind.Utc));
-        var nextDayStart = dayStart.AddDays(1);
+        var dayRange = BusinessTimeZone.GetUtcDayRange(query.BusinessDate);
         var sourceRows = await (
             from visit in dbContext.Set<VisitRecord>().AsNoTracking()
             join client in dbContext.Set<ClientRecord>().AsNoTracking()
                 on visit.ClientId equals client.Id
-            where visit.OccurredAt >= dayStart
-                && visit.OccurredAt < nextDayStart
+            where visit.OccurredAt >= dayRange.FromInclusive
+                && visit.OccurredAt < dayRange.ToExclusive
             orderby visit.OccurredAt descending,
                 visit.RecordedAt descending,
                 visit.Id descending

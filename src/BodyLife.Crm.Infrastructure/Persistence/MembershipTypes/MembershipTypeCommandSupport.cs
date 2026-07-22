@@ -498,12 +498,35 @@ internal static class MembershipTypeCommandSupport
                 "entryOrigin");
         }
 
+        DateTimeOffset? occurredAt = null;
+        if (envelope.OccurredAt is { } submittedOccurredAt)
+        {
+            if (!BusinessTimeZone.TryNormalizeUtcInstant(submittedOccurredAt, out var normalizedOccurredAt))
+            {
+                return ValidationError(
+                    "Occurred_at is outside the supported business-calendar range.",
+                    "occurredAt");
+            }
+
+            occurredAt = normalizedOccurredAt;
+        }
+
+        var canonicalEnvelope = new CommandEnvelope(
+            envelope.Actor with { DeviceLabel = deviceLabel },
+            new RequestCorrelationId(requestCorrelationId),
+            envelope.EntryOrigin,
+            occurredAt,
+            idempotencyKey,
+            reason,
+            comment);
+
         normalizedEnvelope = new NormalizedMembershipTypeCommandEnvelope(
             idempotencyKey,
             requestCorrelationId,
             deviceLabel,
             reason,
-            comment);
+            comment,
+            canonicalEnvelope);
         return null;
     }
 
@@ -568,4 +591,5 @@ internal sealed record NormalizedMembershipTypeCommandEnvelope(
     string RequestCorrelationId,
     string? DeviceLabel,
     string? Reason,
-    string? Comment);
+    string? Comment,
+    CommandEnvelope CanonicalEnvelope);

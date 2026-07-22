@@ -18,7 +18,7 @@ public sealed class InactiveClientRow
         DaysInactive = source.LastCountedVisit is null
             ? null
             : query.AsOfDate.DayNumber
-                - source.LastCountedVisit.OccurredDateUtc.DayNumber;
+                - source.LastCountedVisit.BusinessDate.DayNumber;
         HasAmbiguousCurrentMembership = source.MembershipStates
             .ActiveCandidateSelection.Status
             == ActiveMembershipCandidateStatus.Ambiguous;
@@ -37,7 +37,7 @@ public sealed class InactiveClientRow
 
     public InactiveClientLastVisit? LastCountedVisit { get; }
 
-    public DateOnly? LastCountedVisitDate => LastCountedVisit?.OccurredDateUtc;
+    public DateOnly? LastCountedVisitDate => LastCountedVisit?.BusinessDate;
 
     public int? DaysInactive { get; }
 

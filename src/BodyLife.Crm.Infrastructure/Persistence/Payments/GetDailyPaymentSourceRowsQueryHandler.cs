@@ -2,6 +2,7 @@ using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Payments;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Payments;
@@ -32,7 +33,7 @@ public sealed class GetDailyPaymentSourceRowsQueryHandler(
         if (query.BusinessDate == default || query.BusinessDate == DateOnly.MaxValue)
         {
             return GetDailyPaymentSourceRowsResult.Invalid(
-                "Business date is outside the supported UTC report range.",
+                "Business date is outside the supported business date/report range.",
                 "businessDate");
         }
 
@@ -44,11 +45,7 @@ public sealed class GetDailyPaymentSourceRowsQueryHandler(
             return GetDailyPaymentSourceRowsResult.InconsistentSource();
         }
 
-        var dayStart = new DateTimeOffset(
-            query.BusinessDate.ToDateTime(
-                TimeOnly.MinValue,
-                DateTimeKind.Utc));
-        var nextDayStart = dayStart.AddDays(1);
+        var dayRange = BusinessTimeZone.GetUtcDayRange(query.BusinessDate);
         var sourceRows = await (
             from payment in dbContext.Set<PaymentRecord>().AsNoTracking()
             join client in dbContext.Set<ClientRecord>().AsNoTracking()
@@ -57,8 +54,8 @@ public sealed class GetDailyPaymentSourceRowsQueryHandler(
                 on payment.MembershipId equals (Guid?)membership.Id
                 into memberships
             from membership in memberships.DefaultIfEmpty()
-            where payment.OccurredAt >= dayStart
-                && payment.OccurredAt < nextDayStart
+            where payment.OccurredAt >= dayRange.FromInclusive
+                && payment.OccurredAt < dayRange.ToExclusive
             orderby payment.OccurredAt descending,
                 payment.RecordedAt descending,
                 payment.Id descending

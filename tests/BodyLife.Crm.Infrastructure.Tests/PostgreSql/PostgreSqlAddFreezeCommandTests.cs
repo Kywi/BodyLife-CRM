@@ -394,6 +394,12 @@ public sealed class PostgreSqlAddFreezeCommandTests
         var missingOccurredAt = await handler.ExecuteAsync(
             valid with { Envelope = valid.Envelope with { OccurredAt = null } },
             CancellationToken.None);
+        var unsupportedOccurredAt = await handler.ExecuteAsync(
+            valid with { Envelope = valid.Envelope with { OccurredAt = DateTimeOffset.MaxValue } },
+            CancellationToken.None);
+        var unsupportedRange = await handler.ExecuteAsync(
+            valid with { Range = new DateRange(DateOnly.MaxValue, DateOnly.MaxValue) },
+            CancellationToken.None);
         var missingKey = await handler.ExecuteAsync(
             valid with { Envelope = valid.Envelope with { IdempotencyKey = "  " } },
             CancellationToken.None);
@@ -419,6 +425,8 @@ public sealed class PostgreSqlAddFreezeCommandTests
         AssertError(emptyMembership, CommandErrorCode.ValidationFailed, "membershipId");
         AssertError(missingRange, CommandErrorCode.ValidationFailed, "range");
         AssertError(missingOccurredAt, CommandErrorCode.ValidationFailed, "occurredAt");
+        AssertError(unsupportedOccurredAt, CommandErrorCode.ValidationFailed, "occurredAt");
+        AssertError(unsupportedRange, CommandErrorCode.ValidationFailed, "range");
         AssertError(missingKey, CommandErrorCode.ValidationFailed, "idempotencyKey");
         AssertError(missingReason, CommandErrorCode.ReasonRequired, "reason");
         AssertError(normalWithBatch, CommandErrorCode.ValidationFailed, "entryBatchId");

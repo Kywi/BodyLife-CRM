@@ -233,6 +233,16 @@ public sealed class PostgreSqlCreateMembershipTypeCommandTests
                     },
                 },
                 CancellationToken.None),
+            await handler.ExecuteAsync(
+                validCommand with
+                {
+                    Envelope = validCommand.Envelope with
+                    {
+                        IdempotencyKey = "unsupported-occurred-at",
+                        OccurredAt = new DateTimeOffset(9999, 12, 31, 12, 0, 0, TimeSpan.Zero),
+                    },
+                },
+                CancellationToken.None),
         };
 
         Assert.All(results, result => AssertError(result, CommandErrorCode.ValidationFailed));
@@ -242,6 +252,7 @@ public sealed class PostgreSqlCreateMembershipTypeCommandTests
         Assert.Equal("currency", Assert.Single(results[3].Errors).Field);
         Assert.Equal("idempotencyKey", Assert.Single(results[4].Errors).Field);
         Assert.Equal("entryOrigin", Assert.Single(results[5].Errors).Field);
+        Assert.Equal("occurredAt", Assert.Single(results[6].Errors).Field);
         Assert.Equal(0L, await CountRowsAsync(database, "membership_types"));
         Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));

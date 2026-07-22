@@ -657,11 +657,18 @@ internal static class VisitCommandSupport
                 "entryOrigin");
         }
 
+        if (!BusinessTimeZone.TryNormalizeUtcInstant(envelope.OccurredAt.Value, out var occurredAt))
+        {
+            return ValidationError(
+                "Occurred_at is outside the supported business-calendar range.",
+                "occurredAt");
+        }
+
         canonicalEnvelope = new CommandEnvelope(
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(requestCorrelationId),
             envelope.EntryOrigin,
-            envelope.OccurredAt.Value.ToUniversalTime(),
+            occurredAt,
             idempotencyKey,
             reason,
             comment);
@@ -739,11 +746,18 @@ internal static class VisitCommandSupport
                 "comment");
         }
 
+        if (!BusinessTimeZone.TryNormalizeUtcInstant(envelope.OccurredAt.Value, out var occurredAt))
+        {
+            return ValidationError(
+                "Occurred_at is outside the supported business-calendar range.",
+                "occurredAt");
+        }
+
         canonicalEnvelope = new CommandEnvelope(
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(requestCorrelationId),
             envelope.EntryOrigin,
-            envelope.OccurredAt.Value.ToUniversalTime(),
+            occurredAt,
             idempotencyKey,
             reason,
             comment);

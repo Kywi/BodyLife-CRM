@@ -4,6 +4,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Reports;
@@ -37,9 +38,9 @@ public sealed class ListInactiveClientsQueryHandler(
             return validationFailure;
         }
 
-        var asOfEnd = UtcStartOfDay(query.AsOfDate.AddDays(1));
-        var inactivityCutoffExclusive = UtcStartOfDay(
-            query.AsOfDate.AddDays(1 - query.ThresholdDays));
+        var asOfEnd = BusinessTimeZone.GetUtcDayRange(query.AsOfDate).ToExclusive;
+        var inactivityCutoffExclusive = BusinessTimeZone.GetUtcDayRange(
+            query.AsOfDate.AddDays(1 - query.ThresholdDays)).FromInclusive;
         var activeVisitsAsOf = dbContext.Set<VisitRecord>()
             .AsNoTracking()
             .Where(visit => visit.Status == VisitQuerySupport.ActiveStatus
@@ -185,7 +186,7 @@ public sealed class ListInactiveClientsQueryHandler(
             || query.AsOfDate == DateOnly.MaxValue)
         {
             return ListInactiveClientsResult.Invalid(
-                "As-of date is outside the supported UTC report range.",
+                "As-of date is outside the supported business date/report range.",
                 "asOfDate");
         }
 
@@ -262,12 +263,6 @@ public sealed class ListInactiveClientsQueryHandler(
         {
             return ListInactiveClientsResult.InconsistentSource();
         }
-    }
-
-    private static DateTimeOffset UtcStartOfDay(DateOnly date)
-    {
-        return new DateTimeOffset(
-            date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
     }
 
     private sealed record InactiveClientStorageRow(

@@ -71,7 +71,7 @@ public sealed class ListInactiveClientsContractsTests
             ClientOperationalStatus.Inactive,
             new InactiveClientLastVisit(
                 visitId,
-                new DateTimeOffset(2026, 7, 6, 23, 30, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 7, 6, 20, 30, 0, TimeSpan.Zero),
                 VisitKind.OneOff),
             states);
         var mutableRows = new List<InactiveClientSourceRow> { source };

@@ -39,9 +39,10 @@ public sealed class EditMembershipTypeCommandHandler(
         }
 
         var edit = normalizedEdit!;
+        var canonicalEnvelope = edit.Envelope.CanonicalEnvelope;
         var recordedAt = timeProvider.GetUtcNow();
         var fingerprint = MembershipTypeCommandSupport.CreateEditFingerprint(
-            command.Envelope,
+            canonicalEnvelope,
             edit);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted,
@@ -51,7 +52,7 @@ public sealed class EditMembershipTypeCommandHandler(
         {
             if (!await MembershipTypeCommandSupport.IsCanonicalOwnerAuthorizedAsync(
                     dbContext,
-                    command.Envelope.Actor,
+                    canonicalEnvelope.Actor,
                     recordedAt,
                     cancellationToken))
             {
@@ -82,7 +83,7 @@ public sealed class EditMembershipTypeCommandHandler(
             {
                 return MembershipTypeCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
-                    command.Envelope.Actor.AccountId.Value,
+                    canonicalEnvelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -113,7 +114,7 @@ public sealed class EditMembershipTypeCommandHandler(
             membershipType.UpdatedAt = NextUpdatedAt(membershipType.UpdatedAt, recordedAt);
 
             var auditEntryId = auditAppender.Append(
-                command.Envelope,
+                canonicalEnvelope,
                 MembershipTypeAuditActions.Edited,
                 MembershipTypeAuditActions.EntityType,
                 membershipType.Id,
@@ -124,7 +125,7 @@ public sealed class EditMembershipTypeCommandHandler(
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 MembershipTypeCommandSupport.CreateSucceededIdempotencyRecord(
                     CommandName,
-                    command.Envelope,
+                    canonicalEnvelope,
                     edit.Envelope,
                     recordedAt,
                     membershipType.Id,

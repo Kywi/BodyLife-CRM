@@ -84,7 +84,7 @@ public sealed class MembershipVisitEligibilityPreparer
                 membershipId);
         }
 
-        var visitDate = DateOnly.FromDateTime(occurredAt.DateTime);
+        var visitDate = BusinessTimeZone.GetBusinessDate(occurredAt);
         var freezeSources = await freezeSourceProvider.GetForVisitAsync(
             membershipId,
             visitDate,

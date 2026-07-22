@@ -827,7 +827,7 @@ public sealed class PostgreSqlVisitsStorageTests
         Assert.Equal(-1, cache.RemainingVisits);
         Assert.Equal(1, cache.NegativeBalance);
         Assert.Equal(secondVisitId, cache.FirstNegativeVisitId);
-        Assert.Equal(DateOnly.FromDateTime(secondVisitOccurredAt.DateTime), cache.FirstNegativeVisitDate);
+        Assert.Equal(BusinessTimeZone.GetBusinessDate(secondVisitOccurredAt), cache.FirstNegativeVisitDate);
         Assert.Equal(secondVisitOccurredAt, cache.LastCountedVisitAt);
     }
 

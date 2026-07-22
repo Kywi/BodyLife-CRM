@@ -406,11 +406,11 @@ public sealed class CorrectPaymentCommandHandler(
     {
         var businessDates = new HashSet<DateOnly>
         {
-            DateOnly.FromDateTime(originalOccurredAt.UtcDateTime),
+            BusinessTimeZone.GetBusinessDate(originalOccurredAt),
         };
         if (replacementOccurredAt is { } replacementTime)
         {
-            businessDates.Add(DateOnly.FromDateTime(replacementTime.UtcDateTime));
+            businessDates.Add(BusinessTimeZone.GetBusinessDate(replacementTime));
         }
 
         var changedAfterClose = false;

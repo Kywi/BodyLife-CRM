@@ -262,6 +262,12 @@ public sealed class PostgreSqlGetMarkVisitOptionsQueryTests
                 fixture.ClientId,
                 default),
             CancellationToken.None);
+        var extremeOccurredAt = await handler.ExecuteAsync(
+            new GetMarkVisitOptionsQuery(
+                fixture.Actor,
+                fixture.ClientId,
+                DateTimeOffset.MinValue.AddTicks(1)),
+            CancellationToken.None);
         var missing = await handler.ExecuteAsync(
             new GetMarkVisitOptionsQuery(fixture.Actor, Guid.NewGuid(), TestNow),
             CancellationToken.None);
@@ -285,6 +291,10 @@ public sealed class PostgreSqlGetMarkVisitOptionsQueryTests
             "clientId");
         AssertFailure(
             invalidOccurredAt,
+            GetMarkVisitOptionsStatus.ValidationFailed,
+            "occurredAt");
+        AssertFailure(
+            extremeOccurredAt,
             GetMarkVisitOptionsStatus.ValidationFailed,
             "occurredAt");
         AssertFailure(missing, GetMarkVisitOptionsStatus.NotFound, "clientId");

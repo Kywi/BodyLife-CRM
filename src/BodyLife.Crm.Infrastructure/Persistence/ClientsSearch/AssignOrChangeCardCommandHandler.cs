@@ -55,6 +55,7 @@ public sealed class AssignOrChangeCardCommandHandler(
         }
 
         var commandEnvelope = normalizedEnvelope!;
+        var canonicalEnvelope = commandEnvelope.CanonicalEnvelope;
         var cardValidation = ValidateAndNormalizeCardIntent(
             command.NewCardNumber,
             command.ClearCurrentCard,
@@ -67,9 +68,9 @@ public sealed class AssignOrChangeCardCommandHandler(
         }
 
         var recordedAt = timeProvider.GetUtcNow();
-        var occurredAt = command.Envelope.OccurredAt?.ToUniversalTime() ?? recordedAt;
+        var occurredAt = canonicalEnvelope.OccurredAt ?? recordedAt;
         var fingerprint = ClientCommandSupport.CreateAssignOrChangeCardFingerprint(
-            command.Envelope,
+            canonicalEnvelope,
             command.ClientId,
             command.ExpectedCurrentCardAssignmentId,
             newCardNumberNormalized,
@@ -82,7 +83,7 @@ public sealed class AssignOrChangeCardCommandHandler(
         {
             if (!await ClientCommandSupport.IsCanonicalActorAuthorizedAsync(
                     dbContext,
-                    command.Envelope.Actor,
+                    canonicalEnvelope.Actor,
                     recordedAt,
                     cancellationToken))
             {
@@ -101,7 +102,7 @@ public sealed class AssignOrChangeCardCommandHandler(
             {
                 return ClientCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
-                    command.Envelope.Actor.AccountId.Value,
+                    canonicalEnvelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -170,7 +171,7 @@ public sealed class AssignOrChangeCardCommandHandler(
             if (currentAssignment is not null)
             {
                 currentAssignment.EndedAt = occurredAt;
-                currentAssignment.EndedByAccountId = command.Envelope.Actor.AccountId.Value;
+                currentAssignment.EndedByAccountId = canonicalEnvelope.Actor.AccountId.Value;
                 currentAssignment.EndReason = endReason;
                 currentAssignment.IsCurrent = false;
 
@@ -187,7 +188,7 @@ public sealed class AssignOrChangeCardCommandHandler(
                     CardNumberRaw = newCardNumberRaw!,
                     CardNumberNormalized = newCardNumberNormalized,
                     AssignedAt = occurredAt,
-                    AssignedByAccountId = command.Envelope.Actor.AccountId.Value,
+                    AssignedByAccountId = canonicalEnvelope.Actor.AccountId.Value,
                     EndedAt = null,
                     EndedByAccountId = null,
                     EndReason = null,
@@ -207,7 +208,7 @@ public sealed class AssignOrChangeCardCommandHandler(
             };
             var after = CardAssignmentSnapshot.From(newAssignment);
             var auditEntryId = auditAppender.Append(
-                command.Envelope,
+                canonicalEnvelope,
                 actionType,
                 ClientAuditActions.EntityType,
                 client.Id,
@@ -223,7 +224,7 @@ public sealed class AssignOrChangeCardCommandHandler(
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 ClientCommandSupport.CreateSucceededIdempotencyRecord(
                     CommandName,
-                    command.Envelope,
+                    canonicalEnvelope,
                     commandEnvelope,
                     recordedAt,
                     client.Id,

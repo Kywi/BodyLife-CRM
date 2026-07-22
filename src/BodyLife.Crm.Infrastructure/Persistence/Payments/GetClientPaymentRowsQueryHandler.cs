@@ -2,6 +2,7 @@ using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Payments;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Payments;
@@ -217,7 +218,7 @@ public sealed class GetClientPaymentRowsQueryHandler(
             if (projection.Status == ClientPaymentRowStatus.Active
                 && projection.PaymentContext != PaymentContext.NegativeClosure)
             {
-                var businessDate = DateOnly.FromDateTime(source.OccurredAt.UtcDateTime);
+                var businessDate = BusinessTimeZone.GetBusinessDate(source.OccurredAt);
                 if (!dayStatuses.TryGetValue(businessDate, out var dayStatus))
                 {
                     dayStatus = await dayReconciliationStatusProvider.GetStatusAsync(

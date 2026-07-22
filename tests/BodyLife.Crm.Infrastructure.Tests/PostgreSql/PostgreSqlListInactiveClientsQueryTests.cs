@@ -230,6 +230,38 @@ public sealed class PostgreSqlListInactiveClientsQueryTests
     }
 
     [PostgreSqlFact]
+    public async Task KyivBusinessDateAtUtcMidnightBoundaryControlsInactivityCutoff()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var client = await InsertClientAsync(database, fixture, "Kyiv boundary");
+        var cutoffBusinessDate = AsOfDate.AddDays(1 - 14);
+        var occurredAt = new DateTimeOffset(2026, 7, 6, 22, 30, 0, TimeSpan.Zero);
+        await InsertVisitAsync(
+            database,
+            fixture,
+            client.ClientId,
+            cutoffBusinessDate,
+            visitKind: "one_off",
+            occurredAt: occurredAt);
+        dbContext.ChangeTracker.Clear();
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new ListInactiveClientsQuery(
+                fixture.Actor,
+                AsOfDate,
+                ThresholdDays: 14),
+            CancellationToken.None);
+
+        AssertSuccessful(result);
+        Assert.Empty(result.Page!.Items);
+        Assert.Equal(cutoffBusinessDate, BusinessTimeZone.GetBusinessDate(occurredAt));
+        Assert.NotEqual(cutoffBusinessDate, DateOnly.FromDateTime(occurredAt.UtcDateTime));
+    }
+
+    [PostgreSqlFact]
     public async Task NeverVisitedAndFutureOnlyClientsAreLabeledWithoutInventedDates()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -646,10 +678,11 @@ public sealed class PostgreSqlListInactiveClientsQueryTests
         Guid clientId,
         DateOnly occurredDate,
         string visitKind,
-        string status = "active")
+        string status = "active",
+        DateTimeOffset? occurredAt = null)
     {
         var visitId = Guid.NewGuid();
-        var occurredAt = new DateTimeOffset(
+        var resolvedOccurredAt = occurredAt ?? new DateTimeOffset(
             occurredDate.ToDateTime(new TimeOnly(12, 0), DateTimeKind.Utc));
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
@@ -705,8 +738,8 @@ public sealed class PostgreSqlListInactiveClientsQueryTests
             """;
         command.Parameters.AddWithValue("visit_id", visitId);
         command.Parameters.AddWithValue("client_id", clientId);
-        command.Parameters.AddWithValue("occurred_at", occurredAt);
-        command.Parameters.AddWithValue("recorded_at", occurredAt.AddMinutes(1));
+        command.Parameters.AddWithValue("occurred_at", resolvedOccurredAt);
+        command.Parameters.AddWithValue("recorded_at", resolvedOccurredAt.AddMinutes(1));
         command.Parameters.AddWithValue("account_id", fixture.AccountId);
         command.Parameters.AddWithValue("session_id", fixture.SessionId);
         command.Parameters.AddWithValue("visit_kind", visitKind);

@@ -66,9 +66,10 @@ public sealed class CreateClientCommandHandler(
         }
 
         var identity = normalizedIdentity!;
+        var canonicalEnvelope = identity.CanonicalEnvelope;
         var recordedAt = timeProvider.GetUtcNow();
         var fingerprint = ClientCommandSupport.CreateClientFingerprint(
-            command.Envelope,
+            canonicalEnvelope,
             identity,
             cardNumberNormalized);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
@@ -79,7 +80,7 @@ public sealed class CreateClientCommandHandler(
         {
             if (!await ClientCommandSupport.IsCanonicalActorAuthorizedAsync(
                     dbContext,
-                    command.Envelope.Actor,
+                    canonicalEnvelope.Actor,
                     recordedAt,
                     cancellationToken))
             {
@@ -98,7 +99,7 @@ public sealed class CreateClientCommandHandler(
             {
                 return ClientCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
-                    command.Envelope.Actor.AccountId.Value,
+                    canonicalEnvelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -146,7 +147,7 @@ public sealed class CreateClientCommandHandler(
                 Comment = identity.Comment,
                 OperationalStatus = identity.OperationalStatus,
                 CreatedAt = recordedAt,
-                CreatedByAccountId = command.Envelope.Actor.AccountId.Value,
+                CreatedByAccountId = canonicalEnvelope.Actor.AccountId.Value,
                 UpdatedAt = recordedAt,
             };
             dbContext.Set<ClientRecord>().Add(client);
@@ -159,8 +160,8 @@ public sealed class CreateClientCommandHandler(
                     ClientId = clientId,
                     CardNumberRaw = cardNumberRaw!,
                     CardNumberNormalized = cardNumberNormalized,
-                    AssignedAt = command.Envelope.OccurredAt ?? recordedAt,
-                    AssignedByAccountId = command.Envelope.Actor.AccountId.Value,
+                    AssignedAt = canonicalEnvelope.OccurredAt ?? recordedAt,
+                    AssignedByAccountId = canonicalEnvelope.Actor.AccountId.Value,
                     EndedAt = null,
                     EndedByAccountId = null,
                     EndReason = null,
@@ -179,7 +180,7 @@ public sealed class CreateClientCommandHandler(
                     ClientId = clientId,
                     WarningType = ClientCommandSupport.MapWarningType(acknowledgement.WarningType),
                     MatchedClientId = acknowledgement.MatchedClientId,
-                    AcknowledgedByAccountId = command.Envelope.Actor.AccountId.Value,
+                    AcknowledgedByAccountId = canonicalEnvelope.Actor.AccountId.Value,
                     AcknowledgedAt = recordedAt,
                     Reason = acknowledgement.Reason,
                 })
@@ -187,7 +188,7 @@ public sealed class CreateClientCommandHandler(
             dbContext.Set<DuplicateWarningAcknowledgementRecord>().AddRange(acknowledgementRecords);
 
             var auditEntryId = auditAppender.Append(
-                command.Envelope,
+                canonicalEnvelope,
                 ClientAuditActions.Created,
                 ClientAuditActions.EntityType,
                 clientId,
@@ -223,7 +224,7 @@ public sealed class CreateClientCommandHandler(
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 ClientCommandSupport.CreateSucceededIdempotencyRecord(
                     CommandName,
-                    command.Envelope,
+                    canonicalEnvelope,
                     identity,
                     recordedAt,
                     clientId,

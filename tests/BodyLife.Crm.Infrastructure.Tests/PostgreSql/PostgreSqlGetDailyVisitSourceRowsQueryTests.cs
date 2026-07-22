@@ -178,7 +178,7 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task QueryUsesHalfOpenUtcDateRangeAndDeterministicOrdering()
+    public async Task QueryUsesKyivBusinessDayHalfOpenRangeAndDeterministicOrdering()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -239,6 +239,50 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
         Assert.Equal(
             [BusinessDate, BusinessDate.AddDays(2)],
             dayProvider.RequestedDates);
+    }
+
+    [PostgreSqlFact]
+    public async Task QueryIncludesKyivBusinessDayAcrossUtcDateAndDstBoundary()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var businessDate = new DateOnly(2026, 3, 29);
+        var range = BusinessTimeZone.GetUtcDayRange(businessDate);
+        var firstId = await InsertVisitAsync(
+            database,
+            fixture,
+            fixture.ClientId,
+            "one_off",
+            range.FromInclusive,
+            TestNow);
+        var lastId = await InsertVisitAsync(
+            database,
+            fixture,
+            fixture.ClientId,
+            "one_off",
+            range.ToExclusive.AddTicks(-1),
+            TestNow);
+        await InsertVisitAsync(
+            database,
+            fixture,
+            fixture.ClientId,
+            "one_off",
+            range.ToExclusive,
+            TestNow);
+
+        var result = await CreateHandler(
+                dbContext,
+                new RecordingVisitDayStatusProvider(VisitDayReconciliationStatus.Open))
+            .ExecuteAsync(
+                new GetDailyVisitSourceRowsQuery(fixture.Actor, businessDate),
+                CancellationToken.None);
+
+        var snapshot = AssertSuccess(result, businessDate);
+        Assert.Equal(TimeSpan.FromHours(23), range.ToExclusive - range.FromInclusive);
+        Assert.NotEqual(businessDate, DateOnly.FromDateTime(range.FromInclusive.UtcDateTime));
+        Assert.Equal([lastId, firstId], snapshot.Rows.Select(row => row.Visit.VisitId));
     }
 
     [PostgreSqlFact]
@@ -423,8 +467,8 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
 
     private static DateTimeOffset AtBusinessTime(int hour)
     {
-        return new DateTimeOffset(
-            BusinessDate.ToDateTime(new TimeOnly(hour, 0), DateTimeKind.Utc));
+        return BusinessTimeZone.ConvertLocalToUtc(
+            BusinessDate.ToDateTime(new TimeOnly(hour, 0), DateTimeKind.Unspecified));
     }
 
     private static async Task<DailyVisitSourceFixture> SeedFixtureAsync(
@@ -769,8 +813,7 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
         PostgreSqlTestDatabase database,
         DateOnly businessDate)
     {
-        var dayStart = new DateTimeOffset(
-            businessDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        var dayRange = BusinessTimeZone.GetUtcDayRange(businessDate);
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
@@ -782,8 +825,8 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
               and occurred_at < @next_day_start
               and status = 'active'
             """;
-        command.Parameters.AddWithValue("day_start", dayStart);
-        command.Parameters.AddWithValue("next_day_start", dayStart.AddDays(1));
+        command.Parameters.AddWithValue("day_start", dayRange.FromInclusive);
+        command.Parameters.AddWithValue("next_day_start", dayRange.ToExclusive);
         return Convert.ToInt32(await command.ExecuteScalarAsync());
     }
 
@@ -791,8 +834,7 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
         PostgreSqlTestDatabase database,
         DateOnly businessDate)
     {
-        var dayStart = new DateTimeOffset(
-            businessDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        var dayRange = BusinessTimeZone.GetUtcDayRange(businessDate);
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
         await using (var settingsCommand = connection.CreateCommand())
@@ -814,8 +856,8 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
                      visit.recorded_at desc,
                      visit.id desc
             """;
-        command.Parameters.AddWithValue("day_start", dayStart);
-        command.Parameters.AddWithValue("next_day_start", dayStart.AddDays(1));
+        command.Parameters.AddWithValue("day_start", dayRange.FromInclusive);
+        command.Parameters.AddWithValue("next_day_start", dayRange.ToExclusive);
         var planLines = new List<string>();
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())

@@ -144,6 +144,13 @@ public static class CorrectNonWorkingDayPreparationPolicy
                 "occurredAt");
         }
 
+        if (!BusinessTimeZone.TryNormalizeUtcInstant(envelope.OccurredAt.Value, out var occurredAt))
+        {
+            return Invalid(
+                "Occurred_at is outside the supported business-calendar range.",
+                "occurredAt");
+        }
+
         var reason = NormalizeOptional(envelope.Reason);
         if (reason is null)
         {
@@ -180,7 +187,7 @@ public static class CorrectNonWorkingDayPreparationPolicy
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(requestCorrelationId),
             envelope.EntryOrigin,
-            envelope.OccurredAt.Value.ToUniversalTime(),
+            occurredAt,
             idempotencyKey,
             reason,
             comment);

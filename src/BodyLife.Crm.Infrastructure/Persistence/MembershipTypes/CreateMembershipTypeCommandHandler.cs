@@ -39,8 +39,9 @@ public sealed class CreateMembershipTypeCommandHandler(
         }
 
         var create = normalizedCreate!;
+        var canonicalEnvelope = create.Envelope.CanonicalEnvelope;
         var recordedAt = timeProvider.GetUtcNow();
-        var fingerprint = MembershipTypeCommandSupport.CreateFingerprint(command.Envelope, create);
+        var fingerprint = MembershipTypeCommandSupport.CreateFingerprint(canonicalEnvelope, create);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted,
             cancellationToken);
@@ -49,7 +50,7 @@ public sealed class CreateMembershipTypeCommandHandler(
         {
             if (!await MembershipTypeCommandSupport.IsCanonicalOwnerAuthorizedAsync(
                     dbContext,
-                    command.Envelope.Actor,
+                    canonicalEnvelope.Actor,
                     recordedAt,
                     cancellationToken))
             {
@@ -68,7 +69,7 @@ public sealed class CreateMembershipTypeCommandHandler(
             {
                 return MembershipTypeCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
-                    command.Envelope.Actor.AccountId.Value,
+                    canonicalEnvelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -91,7 +92,7 @@ public sealed class CreateMembershipTypeCommandHandler(
             dbContext.Set<MembershipTypeRecord>().Add(membershipType);
 
             var auditEntryId = auditAppender.Append(
-                command.Envelope,
+                canonicalEnvelope,
                 MembershipTypeAuditActions.Created,
                 MembershipTypeAuditActions.EntityType,
                 membershipTypeId,
@@ -116,7 +117,7 @@ public sealed class CreateMembershipTypeCommandHandler(
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 MembershipTypeCommandSupport.CreateSucceededIdempotencyRecord(
                     CommandName,
-                    command.Envelope,
+                    canonicalEnvelope,
                     create,
                     recordedAt,
                     membershipTypeId,

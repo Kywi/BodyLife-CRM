@@ -23,8 +23,7 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        if (command.Envelope?.Actor is null
-            || !MembershipCommandSupport.IsAllowedActorShape(command.Envelope.Actor))
+        if (command.Envelope?.Actor is null)
         {
             return MembershipCommandSupport.Error(
                 CommandErrorCode.PermissionDenied,
@@ -41,10 +40,15 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
         }
 
         var create = normalizedCreate!;
+        if (!MembershipCommandSupport.IsAllowedActorShape(create.Envelope.Actor))
+        {
+            return MembershipCommandSupport.Error(
+                CommandErrorCode.PermissionDenied,
+                "An active Owner or Admin session is required to create a membership opening state.");
+        }
+
         var recordedAt = timeProvider.GetUtcNow();
-        var fingerprint = MembershipCommandSupport.CreateOpeningStateFingerprint(
-            command.Envelope,
-            create);
+        var fingerprint = MembershipCommandSupport.CreateOpeningStateFingerprint(create);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted,
             cancellationToken);
@@ -53,7 +57,7 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
         {
             if (!await MembershipCommandSupport.IsCanonicalActorAuthorizedAsync(
                     dbContext,
-                    command.Envelope.Actor,
+                    create.Envelope.Actor,
                     recordedAt,
                     cancellationToken))
             {
@@ -65,14 +69,14 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
             var existingIdempotency = await MembershipCommandSupport.FindIdempotencyAsync(
                 dbContext,
                 CommandName,
-                create.Envelope.IdempotencyKey,
+                create.IdempotencyKey,
                 cancellationToken);
 
             if (existingIdempotency is not null)
             {
                 return MembershipCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
-                    command.Envelope.Actor.AccountId.Value,
+                    create.Envelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -92,14 +96,14 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
             existingIdempotency = await MembershipCommandSupport.FindIdempotencyAsync(
                 dbContext,
                 CommandName,
-                create.Envelope.IdempotencyKey,
+                create.IdempotencyKey,
                 cancellationToken);
 
             if (existingIdempotency is not null)
             {
                 return MembershipCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
-                    command.Envelope.Actor.AccountId.Value,
+                    create.Envelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -152,12 +156,12 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                 KnownEffectiveEndDate = create.Declaration.KnownEffectiveEndDate,
                 KnownExtensionDays = create.Declaration.KnownExtensionDays,
                 SourceReference = create.SourceReference,
-                Reason = create.Envelope.Reason,
+                Reason = create.Reason,
                 RecordedAt = recordedAt,
-                RecordedByAccountId = command.Envelope.Actor.AccountId.Value,
-                RecordedSessionId = command.Envelope.Actor.SessionId.Value,
+                RecordedByAccountId = create.Envelope.Actor.AccountId.Value,
+                RecordedSessionId = create.Envelope.Actor.SessionId.Value,
                 EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
-                    command.Envelope.EntryOrigin),
+                    create.Envelope.EntryOrigin),
                 EntryBatchId = create.EntryBatchId,
                 Status = "active",
             };
@@ -178,7 +182,7 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
 
             var recalculatedState = rebuildResult.State;
             var auditEntryId = auditAppender.Append(
-                command.Envelope,
+                create.Envelope,
                 MembershipAuditActions.OpeningStateCreated,
                 MembershipAuditActions.OpeningStateEntityType,
                 openingStateId,
@@ -214,7 +218,6 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 MembershipCommandSupport.CreateSucceededIdempotencyRecord(
                     CommandName,
-                    command.Envelope,
                     create,
                     recordedAt,
                     openingStateId,

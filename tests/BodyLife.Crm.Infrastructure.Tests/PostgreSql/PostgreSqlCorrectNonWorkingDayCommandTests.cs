@@ -472,6 +472,37 @@ public sealed class PostgreSqlCorrectNonWorkingDayCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task UnsupportedOccurredAtIsRejectedBeforeCorrectionWrites()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var clock = new MutableTimeProvider(TestNow);
+        var tokenService = CreateTokenService(clock);
+        var preview = await IssuePreviewAsync(
+            dbContext,
+            fixture,
+            NonWorkingDayCorrectionMode.Cancel,
+            tokenService,
+            clock);
+
+        var command = CreateCommand(fixture, preview, "unsupported-occurred-at");
+        var result = await CreateHandler(dbContext, tokenService, clock).ExecuteAsync(
+            command with
+            {
+                Envelope = command.Envelope with
+                {
+                    OccurredAt = new DateTimeOffset(9999, 12, 31, 12, 0, 0, TimeSpan.Zero),
+                },
+            },
+            CancellationToken.None);
+
+        AssertError(result, CommandErrorCode.ValidationFailed, "occurredAt");
+        await AssertOriginalSourceUnchangedAsync(database);
+    }
+
+    [PostgreSqlFact]
     public async Task RecalculationFailureRollsBackSourceAndDerivedState()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();

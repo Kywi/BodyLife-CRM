@@ -182,7 +182,8 @@ internal static class ClientCommandSupport
                 .ToArray(),
             commandEnvelope.IdempotencyKey,
             commandEnvelope.RequestCorrelationId,
-            commandEnvelope.DeviceLabel);
+            commandEnvelope.DeviceLabel,
+            commandEnvelope.CanonicalEnvelope);
         return null;
     }
 
@@ -256,12 +257,35 @@ internal static class ClientCommandSupport
                 "entryOrigin");
         }
 
+        DateTimeOffset? occurredAt = null;
+        if (envelope.OccurredAt is { } submittedOccurredAt)
+        {
+            if (!BusinessTimeZone.TryNormalizeUtcInstant(submittedOccurredAt, out var normalizedOccurredAt))
+            {
+                return ValidationError(
+                    "Occurred_at is outside the supported business-calendar range.",
+                    "occurredAt");
+            }
+
+            occurredAt = normalizedOccurredAt;
+        }
+
+        var canonicalEnvelope = new CommandEnvelope(
+            envelope.Actor with { DeviceLabel = deviceLabel },
+            new RequestCorrelationId(requestCorrelationId),
+            envelope.EntryOrigin,
+            occurredAt,
+            idempotencyKey,
+            envelopeReason,
+            envelopeComment);
+
         normalizedEnvelope = new NormalizedClientCommandEnvelope(
             idempotencyKey,
             requestCorrelationId,
             deviceLabel,
             envelopeReason,
-            envelopeComment);
+            envelopeComment,
+            canonicalEnvelope);
         return null;
     }
 
@@ -648,7 +672,8 @@ internal sealed record NormalizedClientIdentity(
     IReadOnlyList<NormalizedClientAcknowledgement> Acknowledgements,
     string IdempotencyKey,
     string RequestCorrelationId,
-    string? DeviceLabel);
+    string? DeviceLabel,
+    CommandEnvelope CanonicalEnvelope);
 
 internal sealed record NormalizedClientAcknowledgement(
     Guid MatchedClientId,
@@ -660,4 +685,5 @@ internal sealed record NormalizedClientCommandEnvelope(
     string RequestCorrelationId,
     string? DeviceLabel,
     string? Reason,
-    string? Comment);
+    string? Comment,
+    CommandEnvelope CanonicalEnvelope);

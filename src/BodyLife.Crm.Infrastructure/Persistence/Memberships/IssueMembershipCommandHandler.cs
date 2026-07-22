@@ -28,8 +28,7 @@ public sealed class IssueMembershipCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        if (command.Envelope?.Actor is null
-            || !MembershipCommandSupport.IsAllowedActorShape(command.Envelope.Actor))
+        if (command.Envelope?.Actor is null)
         {
             return IssueMembershipCommandSupport.Error(
                 CommandErrorCode.PermissionDenied,
@@ -45,10 +44,15 @@ public sealed class IssueMembershipCommandHandler(
         }
 
         var issue = normalizedIssue!;
+        if (!MembershipCommandSupport.IsAllowedActorShape(issue.Envelope.Actor))
+        {
+            return IssueMembershipCommandSupport.Error(
+                CommandErrorCode.PermissionDenied,
+                "An active Owner or Admin session is required to issue a membership.");
+        }
+
         var recordedAt = timeProvider.GetUtcNow();
-        var fingerprint = IssueMembershipCommandSupport.CreateFingerprint(
-            command.Envelope,
-            issue);
+        var fingerprint = IssueMembershipCommandSupport.CreateFingerprint(issue);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted,
             cancellationToken);
@@ -57,7 +61,7 @@ public sealed class IssueMembershipCommandHandler(
         {
             if (!await MembershipCommandSupport.IsCanonicalActorAuthorizedAsync(
                     dbContext,
-                    command.Envelope.Actor,
+                    issue.Envelope.Actor,
                     recordedAt,
                     cancellationToken))
             {
@@ -69,14 +73,14 @@ public sealed class IssueMembershipCommandHandler(
             var existingIdempotency = await MembershipCommandSupport.FindIdempotencyAsync(
                 dbContext,
                 CommandName,
-                issue.Envelope.IdempotencyKey,
+                issue.IdempotencyKey,
                 cancellationToken);
             if (existingIdempotency is not null)
             {
                 return IssueMembershipCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
                     issue,
-                    command.Envelope.Actor.AccountId.Value,
+                    issue.Envelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -92,14 +96,14 @@ public sealed class IssueMembershipCommandHandler(
             existingIdempotency = await MembershipCommandSupport.FindIdempotencyAsync(
                 dbContext,
                 CommandName,
-                issue.Envelope.IdempotencyKey,
+                issue.IdempotencyKey,
                 cancellationToken);
             if (existingIdempotency is not null)
             {
                 return IssueMembershipCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
                     issue,
-                    command.Envelope.Actor.AccountId.Value,
+                    issue.Envelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -218,10 +222,10 @@ public sealed class IssueMembershipCommandHandler(
                 StartDate = preparation.StartDate,
                 BaseEndDate = preparation.BaseEndDate,
                 IssuedAt = recordedAt,
-                IssuedByAccountId = command.Envelope.Actor.AccountId.Value,
+                IssuedByAccountId = issue.Envelope.Actor.AccountId.Value,
                 Status = MembershipQuerySupport.ActiveMembershipStatus,
                 EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
-                    command.Envelope.EntryOrigin),
+                    issue.Envelope.EntryOrigin),
                 EntryBatchId = null,
                 Comment = issue.Envelope.Comment,
             };
@@ -248,7 +252,7 @@ public sealed class IssueMembershipCommandHandler(
             if (issue.Payment is not null)
             {
                 paymentWrite = paymentWriter.Stage(
-                    command.Envelope,
+                    issue.Envelope,
                     issue.ClientId,
                     membershipId,
                     issue.Payment,
@@ -256,7 +260,7 @@ public sealed class IssueMembershipCommandHandler(
             }
 
             var auditEntryId = auditAppender.Append(
-                command.Envelope,
+                issue.Envelope,
                 MembershipAuditActions.Issued,
                 MembershipAuditActions.MembershipEntityType,
                 membershipId,
@@ -322,7 +326,6 @@ public sealed class IssueMembershipCommandHandler(
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 IssueMembershipCommandSupport.CreateSucceededIdempotencyRecord(
                     CommandName,
-                    command.Envelope,
                     issue,
                     recordedAt,
                     membershipId,

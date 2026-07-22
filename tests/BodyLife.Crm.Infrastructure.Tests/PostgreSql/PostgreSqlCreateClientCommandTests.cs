@@ -348,12 +348,24 @@ public sealed class PostgreSqlCreateClientCommandTests
                 },
             },
             CancellationToken.None);
+        var invalidOccurredAtResult = await handler.ExecuteAsync(
+            validCommand with
+            {
+                Envelope = validCommand.Envelope with
+                {
+                    IdempotencyKey = "unsupported-occurred-at",
+                    OccurredAt = new DateTimeOffset(9999, 12, 31, 12, 0, 0, TimeSpan.Zero),
+                },
+            },
+            CancellationToken.None);
 
         AssertError(missingKeyResult, CommandErrorCode.ValidationFailed);
         Assert.Equal("idempotencyKey", Assert.Single(missingKeyResult.Errors).Field);
         AssertError(invalidPhoneResult, CommandErrorCode.ValidationFailed);
         Assert.Equal("phone", Assert.Single(invalidPhoneResult.Errors).Field);
         AssertError(invalidBackfillResult, CommandErrorCode.ValidationFailed);
+        AssertError(invalidOccurredAtResult, CommandErrorCode.ValidationFailed);
+        Assert.Equal("occurredAt", Assert.Single(invalidOccurredAtResult.Errors).Field);
         Assert.Equal(0L, await CountRowsAsync(database, "clients"));
         Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));

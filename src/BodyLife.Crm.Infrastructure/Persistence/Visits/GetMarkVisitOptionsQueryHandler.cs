@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Visits;
+using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Visits;
 
@@ -33,7 +34,17 @@ public sealed class GetMarkVisitOptionsQueryHandler(
         }
 
         var occurredAt = query.OccurredAt.ToUniversalTime();
-        var visitDate = DateOnly.FromDateTime(occurredAt.DateTime);
+        DateOnly visitDate;
+        try
+        {
+            visitDate = BusinessTimeZone.GetBusinessDate(occurredAt);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return GetMarkVisitOptionsResult.Invalid(
+                "Occurred_at is outside the supported business-calendar range.",
+                "occurredAt");
+        }
         var membershipResult = await getClientMembershipStates.ExecuteAsync(
             new GetClientMembershipStatesQuery(
                 query.Actor,

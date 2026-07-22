@@ -280,7 +280,7 @@ public sealed class PostgreSqlCancelFreezeCommandTests
         Assert.All(
             dayStatus.RequestedDates,
             date => Assert.Equal(
-                DateOnly.FromDateTime(FreezeOccurredAt.UtcDateTime),
+                BusinessTimeZone.GetBusinessDate(FreezeOccurredAt),
                 date));
         var audit = await ReadAuditAsync(database, owner.AuditEntryId!.Value.Value);
         Assert.True(audit.ChangedAfterClose);

@@ -7,6 +7,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Visits;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Visits;
@@ -47,7 +48,7 @@ public sealed class MarkVisitCommandHandler(
 
         var visit = normalizedVisit!;
         var recordedAt = timeProvider.GetUtcNow();
-        var currentDate = DateOnly.FromDateTime(recordedAt.UtcDateTime);
+        var currentDate = BusinessTimeZone.GetBusinessDate(recordedAt);
         var fingerprint = VisitCommandSupport.CreateFingerprint(visit);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted,

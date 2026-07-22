@@ -27,6 +27,40 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         TimeSpan.Zero);
 
     [PostgreSqlFact]
+    public async Task QueryIncludesBothEndsOfTheKyivFallBackBusinessDay()
+    {
+        var fallBackDate = new DateOnly(2026, 10, 25);
+        var range = BusinessTimeZone.GetUtcDayRange(fallBackDate);
+        Assert.Equal(TimeSpan.FromHours(25), range.ToExclusive - range.FromInclusive);
+
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var firstPaymentId = await InsertPaymentAsync(
+            database, fixture, fixture.ClientId, null, 100m, "one_off",
+            range.FromInclusive, TestNow);
+        var lastPaymentId = await InsertPaymentAsync(
+            database, fixture, fixture.ClientId, null, 200m, "one_off",
+            range.ToExclusive.AddTicks(-1), TestNow);
+        await InsertPaymentAsync(
+            database, fixture, fixture.ClientId, null, 300m, "one_off",
+            range.ToExclusive, TestNow);
+
+        var result = await CreateHandler(
+            dbContext,
+            new RecordingPaymentDayStatusProvider(PaymentDayReconciliationStatus.Open))
+            .ExecuteAsync(
+                new GetDailyPaymentSourceRowsQuery(fixture.Actor, fallBackDate),
+                CancellationToken.None);
+
+        var snapshot = AssertSuccess(result, fallBackDate);
+        Assert.Equal(2, snapshot.ActivePaymentCount);
+        Assert.Equal(new Money(300m, "UAH"), snapshot.DailyCashSum);
+        Assert.Equal([lastPaymentId, firstPaymentId], snapshot.Rows.Select(row => row.Payment.PaymentId));
+    }
+
+    [PostgreSqlFact]
     public async Task QueryTotalsEqualActiveDrillDownAndRetainCorrectionAndCancellationRows()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -283,7 +317,7 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task QueryUsesHalfOpenUtcDateRangeAndDeterministicOrdering()
+    public async Task QueryUsesKyivBusinessDayHalfOpenRangeAndDeterministicOrdering()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -350,6 +384,55 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         Assert.Equal(
             [BusinessDate, BusinessDate.AddDays(2)],
             dayProvider.RequestedDates);
+    }
+
+    [PostgreSqlFact]
+    public async Task QueryIncludesKyivBusinessDayAcrossUtcDateAndExactBoundaries()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var range = BusinessTimeZone.GetUtcDayRange(BusinessDate);
+        var firstId = await InsertPaymentAsync(
+            database,
+            fixture,
+            fixture.ClientId,
+            membershipId: null,
+            100m,
+            "one_off",
+            range.FromInclusive,
+            TestNow);
+        var lastId = await InsertPaymentAsync(
+            database,
+            fixture,
+            fixture.ClientId,
+            membershipId: null,
+            200m,
+            "one_off",
+            range.ToExclusive.AddTicks(-1),
+            TestNow);
+        await InsertPaymentAsync(
+            database,
+            fixture,
+            fixture.ClientId,
+            membershipId: null,
+            300m,
+            "one_off",
+            range.ToExclusive,
+            TestNow);
+
+        var result = await CreateHandler(
+                dbContext,
+                new RecordingPaymentDayStatusProvider(PaymentDayReconciliationStatus.Open))
+            .ExecuteAsync(
+                new GetDailyPaymentSourceRowsQuery(fixture.Actor, BusinessDate),
+                CancellationToken.None);
+
+        var snapshot = AssertSuccess(result, BusinessDate);
+        Assert.NotEqual(BusinessDate, DateOnly.FromDateTime(range.FromInclusive.UtcDateTime));
+        Assert.Equal(new Money(300m, "UAH"), snapshot.DailyCashSum);
+        Assert.Equal([lastId, firstId], snapshot.Rows.Select(row => row.Payment.PaymentId));
     }
 
     [PostgreSqlFact]
@@ -585,8 +668,8 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
 
     private static DateTimeOffset AtBusinessTime(int hour)
     {
-        return new DateTimeOffset(
-            BusinessDate.ToDateTime(new TimeOnly(hour, 0), DateTimeKind.Utc));
+        return BusinessTimeZone.ConvertLocalToUtc(
+            BusinessDate.ToDateTime(new TimeOnly(hour, 0), DateTimeKind.Unspecified));
     }
 
     private static async Task<DailyPaymentSourceFixture> SeedFixtureAsync(
@@ -960,8 +1043,7 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         PostgreSqlTestDatabase database,
         DateOnly businessDate)
     {
-        var dayStart = new DateTimeOffset(
-            businessDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        var dayRange = BusinessTimeZone.GetUtcDayRange(businessDate);
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
@@ -974,8 +1056,8 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
               and status = 'active'
               and method = 'cash'
             """;
-        command.Parameters.AddWithValue("day_start", dayStart);
-        command.Parameters.AddWithValue("next_day_start", dayStart.AddDays(1));
+        command.Parameters.AddWithValue("day_start", dayRange.FromInclusive);
+        command.Parameters.AddWithValue("next_day_start", dayRange.ToExclusive);
         await using var reader = await command.ExecuteReaderAsync();
         Assert.True(await reader.ReadAsync());
         return new DailyCashSnapshot(reader.GetInt32(0), reader.GetDecimal(1));
@@ -985,8 +1067,7 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         PostgreSqlTestDatabase database,
         DateOnly businessDate)
     {
-        var dayStart = new DateTimeOffset(
-            businessDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        var dayRange = BusinessTimeZone.GetUtcDayRange(businessDate);
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
         await using (var settingsCommand = connection.CreateCommand())
@@ -1010,8 +1091,8 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
                      payment.recorded_at desc,
                      payment.id desc
             """;
-        command.Parameters.AddWithValue("day_start", dayStart);
-        command.Parameters.AddWithValue("next_day_start", dayStart.AddDays(1));
+        command.Parameters.AddWithValue("day_start", dayRange.FromInclusive);
+        command.Parameters.AddWithValue("next_day_start", dayRange.ToExclusive);
         var planLines = new List<string>();
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())

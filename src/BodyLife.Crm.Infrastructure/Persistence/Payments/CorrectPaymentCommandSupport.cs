@@ -427,11 +427,18 @@ internal static class CorrectPaymentCommandSupport
                 "replacement.comment");
         }
 
+        if (!BusinessTimeZone.TryNormalizeUtcInstant(replacement.OccurredAt, out var occurredAt))
+        {
+            return ValidationError(
+                "Replacement Payment occurred_at is outside the supported business-calendar range.",
+                "replacement.occurredAt");
+        }
+
         normalizedReplacement = new NormalizedPaymentReplacement(
             replacement.MembershipId,
             amount,
             replacement.PaymentContext,
-            replacement.OccurredAt.ToUniversalTime(),
+            occurredAt,
             comment);
         return null;
     }
@@ -507,11 +514,18 @@ internal static class CorrectPaymentCommandSupport
                 "comment");
         }
 
+        if (!BusinessTimeZone.TryNormalizeUtcInstant(envelope.OccurredAt.Value, out var occurredAt))
+        {
+            return ValidationError(
+                "Occurred_at is outside the supported business-calendar range.",
+                "occurredAt");
+        }
+
         canonicalEnvelope = new CommandEnvelope(
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(requestCorrelationId),
             envelope.EntryOrigin,
-            envelope.OccurredAt.Value.ToUniversalTime(),
+            occurredAt,
             idempotencyKey,
             reason,
             comment);

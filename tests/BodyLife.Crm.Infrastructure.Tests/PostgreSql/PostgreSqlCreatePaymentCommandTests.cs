@@ -363,6 +363,12 @@ public sealed class PostgreSqlCreatePaymentCommandTests
                 Envelope = valid.Envelope with { OccurredAt = null },
             },
             CancellationToken.None);
+        var unsupportedOccurredAt = await handler.ExecuteAsync(
+            valid with
+            {
+                Envelope = valid.Envelope with { OccurredAt = DateTimeOffset.MaxValue },
+            },
+            CancellationToken.None);
         var missingIdempotency = await handler.ExecuteAsync(
             valid with
             {
@@ -402,6 +408,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         AssertError(unknownContext, CommandErrorCode.ValidationFailed, "paymentContext");
         AssertError(negativeClosure, CommandErrorCode.ValidationFailed, "paymentContext");
         AssertError(missingOccurredAt, CommandErrorCode.ValidationFailed, "occurredAt");
+        AssertError(unsupportedOccurredAt, CommandErrorCode.ValidationFailed, "occurredAt");
         AssertError(
             missingIdempotency,
             CommandErrorCode.ValidationFailed,

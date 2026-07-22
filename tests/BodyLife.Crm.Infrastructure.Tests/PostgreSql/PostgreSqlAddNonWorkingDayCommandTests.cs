@@ -266,6 +266,16 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
         var malformedToken = await handler.ExecuteAsync(
             valid with { ConfirmationToken = "not-a-preview-token" },
             CancellationToken.None);
+        var invalidOccurredAt = await handler.ExecuteAsync(
+            valid with
+            {
+                Envelope = valid.Envelope with
+                {
+                    IdempotencyKey = "unsupported-occurred-at",
+                    OccurredAt = new DateTimeOffset(9999, 12, 31, 12, 0, 0, TimeSpan.Zero),
+                },
+            },
+            CancellationToken.None);
 
         await EndSessionAsync(database, fixture.Actor.SessionId.Value);
         var endedSession = await handler.ExecuteAsync(valid, CancellationToken.None);
@@ -273,6 +283,7 @@ public sealed class PostgreSqlAddNonWorkingDayCommandTests
         AssertError(adminShape, CommandErrorCode.PermissionDenied);
         AssertError(missingReason, CommandErrorCode.ValidationFailed, "reasonCode");
         AssertError(malformedToken, CommandErrorCode.ValidationFailed, "confirmationToken");
+        AssertError(invalidOccurredAt, CommandErrorCode.ValidationFailed, "occurredAt");
         AssertError(endedSession, CommandErrorCode.PermissionDenied);
         await AssertNoCommandMutationAsync(database);
     }

@@ -182,10 +182,10 @@ public sealed class MembershipFreezeEligibilityPreparer
         DateRange range,
         CancellationToken cancellationToken)
     {
-        var rangeStart = ToUtcStartOfDay(range.StartDate);
+        var rangeStart = BusinessTimeZone.GetUtcDayRange(range.StartDate).FromInclusive;
         var rangeEndExclusive = range.EndDate == DateOnly.MaxValue
             ? (DateTimeOffset?)null
-            : ToUtcStartOfDay(range.EndDate.AddDays(1));
+            : BusinessTimeZone.GetUtcDayRange(range.EndDate).ToExclusive;
         await using var command = dbContext.Database.GetDbConnection().CreateCommand();
         command.Transaction = transaction.GetDbTransaction();
         command.CommandText = rangeEndExclusive is null
@@ -223,12 +223,6 @@ public sealed class MembershipFreezeEligibilityPreparer
             .ToArray();
     }
 
-    private static DateTimeOffset ToUtcStartOfDay(DateOnly date)
-    {
-        return new DateTimeOffset(
-            date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified),
-            TimeSpan.Zero);
-    }
 
     private static void AddParameter(
         System.Data.Common.DbCommand command,

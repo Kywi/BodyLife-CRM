@@ -1,4 +1,5 @@
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 
@@ -59,7 +60,7 @@ internal static class MembershipVisitSourceMapper
         return new MembershipVisitSourceFact(
             membershipId,
             effectiveSource.VisitId,
-            DateOnly.FromDateTime(effectiveSource.OccurredAt.DateTime),
+            BusinessTimeZone.GetBusinessDate(effectiveSource.OccurredAt),
             effectiveSource.OccurredAt,
             effectiveSource.ConsumptionRecordedAt,
             status);

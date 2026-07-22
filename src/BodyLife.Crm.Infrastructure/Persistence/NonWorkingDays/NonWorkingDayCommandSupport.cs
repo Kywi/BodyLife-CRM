@@ -388,11 +388,24 @@ internal static class NonWorkingDayCommandSupport
                 "comment");
         }
 
+        DateTimeOffset? occurredAt = null;
+        if (envelope.OccurredAt is { } submittedOccurredAt)
+        {
+            if (!BusinessTimeZone.TryNormalizeUtcInstant(submittedOccurredAt, out var normalizedOccurredAt))
+            {
+                return ValidationError(
+                    "Occurred_at is outside the supported business-calendar range.",
+                    "occurredAt");
+            }
+
+            occurredAt = normalizedOccurredAt;
+        }
+
         canonicalEnvelope = new CommandEnvelope(
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(requestCorrelationId),
             envelope.EntryOrigin,
-            envelope.OccurredAt?.ToUniversalTime(),
+            occurredAt,
             idempotencyKey,
             reason,
             comment);

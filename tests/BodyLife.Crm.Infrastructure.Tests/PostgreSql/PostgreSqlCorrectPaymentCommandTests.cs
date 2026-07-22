@@ -79,8 +79,8 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             result.RelatedEntityIds);
         Assert.Equal(
             [
-                DateOnly.FromDateTime(OriginalOccurredAt.UtcDateTime),
-                DateOnly.FromDateTime(ReplacementOccurredAt.UtcDateTime),
+                BusinessTimeZone.GetBusinessDate(OriginalOccurredAt),
+                BusinessTimeZone.GetBusinessDate(ReplacementOccurredAt),
             ],
             dayStatusProvider.RequestedDates.Order().ToArray());
 
@@ -231,7 +231,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             database,
             AccountKind.NamedAdmin,
             "Named Admin");
-        var originalBusinessDate = DateOnly.FromDateTime(OriginalOccurredAt.UtcDateTime);
+        var originalBusinessDate = BusinessTimeZone.GetBusinessDate(OriginalOccurredAt);
         var dayStatusProvider = new StubPaymentDayReconciliationStatusProvider(
             new HashSet<DateOnly> { originalBusinessDate });
         var handler = CreateHandler(dbContext, dayStatusProvider);

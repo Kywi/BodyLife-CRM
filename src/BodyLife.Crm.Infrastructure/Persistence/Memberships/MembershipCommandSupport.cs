@@ -139,16 +139,15 @@ internal static class MembershipCommandSupport
     }
 
     internal static string CreateOpeningStateFingerprint(
-        CommandEnvelope envelope,
         NormalizedMembershipOpeningStateCreate create)
     {
         var payload = JsonSerializer.SerializeToUtf8Bytes(new
         {
-            ActorAccountId = envelope.Actor.AccountId.Value,
-            ActorRole = MapActorRole(envelope.Actor.Role),
-            ActorAccountKind = MapAccountKind(envelope.Actor.AccountKind),
-            ActorSessionId = envelope.Actor.SessionId.Value,
-            EntryOrigin = MapEntryOrigin(envelope.EntryOrigin),
+            ActorAccountId = create.Envelope.Actor.AccountId.Value,
+            ActorRole = MapActorRole(create.Envelope.Actor.Role),
+            ActorAccountKind = MapAccountKind(create.Envelope.Actor.AccountKind),
+            ActorSessionId = create.Envelope.Actor.SessionId.Value,
+            EntryOrigin = MapEntryOrigin(create.Envelope.EntryOrigin),
             create.Envelope.OccurredAt,
             EnvelopeReason = create.Envelope.Reason,
             EnvelopeComment = create.Envelope.Comment,
@@ -206,7 +205,6 @@ internal static class MembershipCommandSupport
 
     internal static CommandIdempotencyRecord CreateSucceededIdempotencyRecord(
         string commandName,
-        CommandEnvelope envelope,
         NormalizedMembershipOpeningStateCreate create,
         DateTimeOffset recordedAt,
         Guid openingStateId,
@@ -217,14 +215,14 @@ internal static class MembershipCommandSupport
         {
             Id = Guid.NewGuid(),
             CommandName = commandName,
-            IdempotencyKey = create.Envelope.IdempotencyKey,
-            RequestCorrelationId = create.Envelope.RequestCorrelationId,
-            AccountId = envelope.Actor.AccountId.Value,
-            ActorRole = MapActorRole(envelope.Actor.Role),
-            AccountKind = MapAccountKind(envelope.Actor.AccountKind),
-            SessionId = envelope.Actor.SessionId.Value,
-            DeviceLabel = create.Envelope.DeviceLabel,
-            EntryOrigin = MapEntryOrigin(envelope.EntryOrigin),
+            IdempotencyKey = create.Envelope.IdempotencyKey!,
+            RequestCorrelationId = create.Envelope.RequestCorrelationId.Value!,
+            AccountId = create.Envelope.Actor.AccountId.Value,
+            ActorRole = MapActorRole(create.Envelope.Actor.Role),
+            AccountKind = MapAccountKind(create.Envelope.Actor.AccountKind),
+            SessionId = create.Envelope.Actor.SessionId.Value,
+            DeviceLabel = create.Envelope.Actor.DeviceLabel,
+            EntryOrigin = MapEntryOrigin(create.Envelope.EntryOrigin),
             Status = SucceededIdempotencyStatus,
             CreatedAt = recordedAt,
             CompletedAt = recordedAt,
@@ -338,7 +336,7 @@ internal static class MembershipCommandSupport
 
     private static CommandResult? ValidateAndNormalizeEnvelope(
         CommandEnvelope envelope,
-        out NormalizedMembershipCommandEnvelope? normalizedEnvelope)
+        out CommandEnvelope? normalizedEnvelope)
     {
         normalizedEnvelope = null;
         var idempotencyKey = envelope.IdempotencyKey?.Trim();
@@ -403,11 +401,19 @@ internal static class MembershipCommandSupport
                 "envelope.comment");
         }
 
-        normalizedEnvelope = new NormalizedMembershipCommandEnvelope(
+        if (!BusinessTimeZone.TryNormalizeUtcInstant(envelope.OccurredAt.Value, out var occurredAt))
+        {
+            return ValidationError(
+                "Occurred_at is outside the supported business-calendar range.",
+                "occurredAt");
+        }
+
+        normalizedEnvelope = new CommandEnvelope(
+            envelope.Actor with { DeviceLabel = deviceLabel },
+            new RequestCorrelationId(requestCorrelationId),
+            envelope.EntryOrigin,
+            occurredAt,
             idempotencyKey,
-            requestCorrelationId,
-            deviceLabel,
-            envelope.OccurredAt.Value.ToUniversalTime(),
             reason,
             comment);
         return null;
@@ -446,12 +452,9 @@ internal sealed record NormalizedMembershipOpeningStateCreate(
     MembershipOpeningState Declaration,
     string SourceReference,
     Guid? EntryBatchId,
-    NormalizedMembershipCommandEnvelope Envelope);
+    CommandEnvelope Envelope)
+{
+    public string IdempotencyKey => Envelope.IdempotencyKey!;
 
-internal sealed record NormalizedMembershipCommandEnvelope(
-    string IdempotencyKey,
-    string RequestCorrelationId,
-    string? DeviceLabel,
-    DateTimeOffset OccurredAt,
-    string Reason,
-    string? Comment);
+    public string Reason => Envelope.Reason!;
+}

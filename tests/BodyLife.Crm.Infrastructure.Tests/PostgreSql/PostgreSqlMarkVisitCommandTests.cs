@@ -738,7 +738,7 @@ public sealed class PostgreSqlMarkVisitCommandTests
         MarkVisitFixture fixture,
         string idempotencyKey)
     {
-        var visitDate = DateOnly.FromDateTime(VisitOccurredAt.UtcDateTime);
+        var visitDate = BusinessTimeZone.GetBusinessDate(VisitOccurredAt);
         return new AddFreezeCommand(
             new CommandEnvelope(
                 fixture.Actor,
@@ -1041,7 +1041,7 @@ public sealed class PostgreSqlMarkVisitCommandTests
         command.Parameters.AddWithValue(
             "visit_date",
             NpgsqlDbType.Date,
-            DateOnly.FromDateTime(VisitOccurredAt.DateTime));
+            BusinessTimeZone.GetBusinessDate(VisitOccurredAt));
         command.Parameters.AddWithValue("recorded_at", TestNow.AddHours(-2));
         command.Parameters.AddWithValue("account_id", fixture.Actor.AccountId.Value);
         command.Parameters.AddWithValue("session_id", fixture.Actor.SessionId.Value);

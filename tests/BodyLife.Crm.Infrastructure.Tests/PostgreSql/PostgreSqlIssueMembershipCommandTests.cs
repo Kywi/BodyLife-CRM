@@ -266,6 +266,93 @@ public sealed class PostgreSqlIssueMembershipCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task NonUtcOccurredAtIsCanonicalAcrossIssuePaymentAuditAndIdempotency()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(
+            database,
+            ActorRole.Admin,
+            AccountKind.NamedAdmin,
+            deviceLabel: "  reception tablet  ");
+        var fixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
+        var submittedOccurredAt = new DateTimeOffset(2026, 7, 13, 17, 30, 0, TimeSpan.FromHours(3));
+        var expectedOccurredAt = submittedOccurredAt.ToUniversalTime();
+        var command = CreateCommand(
+            actor,
+            fixture,
+            "  issue-offset  ",
+            payment: CreateIssuePayment()) with
+        {
+            Envelope = new CommandEnvelope(
+                actor,
+                new RequestCorrelationId("  correlation-issue-offset  "),
+                EntryOrigin.Normal,
+                submittedOccurredAt,
+                "  issue-offset  ",
+                Reason: "  issued at offset  ",
+                Comment: "  Front desk issue  "),
+        };
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(command, CancellationToken.None);
+
+        AssertSuccessfulResult(result, fixture.ClientId);
+        var membershipId = result.PrimaryEntityId!.Value.Value;
+        var payment = await ReadPaymentForMembershipAsync(database, membershipId);
+        Assert.Equal(expectedOccurredAt, payment.OccurredAt);
+        Assert.Equal("Front desk issue", payment.Comment);
+
+        var membershipAudit = await ReadAuditAsync(database, result.AuditEntryId!.Value.Value);
+        Assert.Equal(expectedOccurredAt, membershipAudit.OccurredAt);
+        Assert.Equal("reception tablet", membershipAudit.DeviceLabel);
+        Assert.Equal("issue-offset", membershipAudit.IdempotencyKey);
+        Assert.Equal("correlation-issue-offset", membershipAudit.RequestCorrelationId);
+        Assert.Equal("issued at offset", membershipAudit.Reason);
+        using var membershipAfter = JsonDocument.Parse(membershipAudit.AfterSummary);
+        var paymentSummary = membershipAfter.RootElement.GetProperty("payment");
+        var paymentAudit = await ReadAuditAsync(
+            database,
+            paymentSummary.GetProperty("paymentAuditEntryId").GetGuid());
+        Assert.Equal(expectedOccurredAt, paymentAudit.OccurredAt);
+        Assert.Equal("reception tablet", paymentAudit.DeviceLabel);
+        Assert.Equal("issue-offset", paymentAudit.IdempotencyKey);
+        Assert.Equal("correlation-issue-offset", paymentAudit.RequestCorrelationId);
+
+        var idempotency = await ReadIdempotencyAsync(database, "IssueMembership", "issue-offset");
+        Assert.Equal(membershipId, idempotency.PrimaryEntityId);
+        Assert.Equal(1L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task UnsupportedNearBoundaryOccurredAtIsRejectedBeforeIssueMutation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        var fixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
+        var command = CreateCommand(
+            actor,
+            fixture,
+            "issue-near-boundary",
+            payment: CreateIssuePayment()) with
+        {
+            Envelope = CreateCommand(actor, fixture, "issue-near-boundary").Envelope with
+            {
+                OccurredAt = DateTimeOffset.MinValue,
+            },
+        };
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(command, CancellationToken.None);
+
+        AssertError(result, CommandErrorCode.ValidationFailed, "occurredAt");
+        await AssertNoIssueMutationAsync(database);
+    }
+
+    [PostgreSqlFact]
     public async Task OwnerAndSharedReceptionActorsCanIssueMemberships()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();

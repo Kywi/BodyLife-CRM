@@ -76,7 +76,7 @@ public sealed class InactiveClientsPage
             }
 
             var daysInactive = query.AsOfDate.DayNumber
-                - source.LastCountedVisit.OccurredDateUtc.DayNumber;
+                - source.LastCountedVisit.BusinessDate.DayNumber;
             if (daysInactive < query.ThresholdDays)
             {
                 return false;

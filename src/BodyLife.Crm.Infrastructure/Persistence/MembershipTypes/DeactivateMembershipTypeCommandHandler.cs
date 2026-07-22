@@ -39,9 +39,10 @@ public sealed class DeactivateMembershipTypeCommandHandler(
         }
 
         var deactivation = normalizedDeactivation!;
+        var canonicalEnvelope = deactivation.Envelope.CanonicalEnvelope;
         var recordedAt = timeProvider.GetUtcNow();
         var fingerprint = MembershipTypeCommandSupport.CreateDeactivateFingerprint(
-            command.Envelope,
+            canonicalEnvelope,
             deactivation);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted,
@@ -51,7 +52,7 @@ public sealed class DeactivateMembershipTypeCommandHandler(
         {
             if (!await MembershipTypeCommandSupport.IsCanonicalOwnerAuthorizedAsync(
                     dbContext,
-                    command.Envelope.Actor,
+                    canonicalEnvelope.Actor,
                     recordedAt,
                     cancellationToken))
             {
@@ -82,7 +83,7 @@ public sealed class DeactivateMembershipTypeCommandHandler(
             {
                 return MembershipTypeCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
-                    command.Envelope.Actor.AccountId.Value,
+                    canonicalEnvelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -109,7 +110,7 @@ public sealed class DeactivateMembershipTypeCommandHandler(
             membershipType.DeactivatedAt = lifecycleTimestamp;
 
             var auditEntryId = auditAppender.Append(
-                command.Envelope,
+                canonicalEnvelope,
                 MembershipTypeAuditActions.Deactivated,
                 MembershipTypeAuditActions.EntityType,
                 membershipType.Id,
@@ -120,7 +121,7 @@ public sealed class DeactivateMembershipTypeCommandHandler(
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 MembershipTypeCommandSupport.CreateSucceededIdempotencyRecord(
                     CommandName,
-                    command.Envelope,
+                    canonicalEnvelope,
                     deactivation.Envelope,
                     recordedAt,
                     membershipType.Id,

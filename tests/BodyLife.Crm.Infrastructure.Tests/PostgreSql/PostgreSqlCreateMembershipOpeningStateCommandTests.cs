@@ -178,6 +178,75 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task NonUtcOccurredAtIsCanonicalAcrossOpeningSourceAuditAndIdempotency()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(
+            database,
+            ActorRole.Admin,
+            AccountKind.NamedAdmin,
+            deviceLabel: "  reception tablet  ");
+        var membership = await SeedMembershipAsync(database, actor.AccountId.Value);
+        var submittedOccurredAt = new DateTimeOffset(2026, 7, 13, 10, 30, 0, TimeSpan.FromHours(3));
+        var expectedOccurredAt = submittedOccurredAt.ToUniversalTime();
+        var command = CreateCommand(actor, membership.MembershipId, "opening-offset") with
+        {
+            Envelope = new CommandEnvelope(
+                actor,
+                new RequestCorrelationId("  correlation-opening-offset  "),
+                EntryOrigin.ManualBackfill,
+                submittedOccurredAt,
+                "  opening-offset  ",
+                Reason: "  opening at offset  ",
+                Comment: "  Launch backfill  "),
+        };
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(command, CancellationToken.None);
+
+        AssertSuccessfulResult(result, membership.MembershipId);
+        var openingState = await ReadOpeningStateAsync(database, result.PrimaryEntityId!.Value.Value);
+        Assert.Equal("opening at offset", openingState.Reason);
+        Assert.Equal(actor.AccountId.Value, openingState.RecordedByAccountId);
+        Assert.Equal(actor.SessionId.Value, openingState.RecordedSessionId);
+        Assert.Equal("manual_backfill", openingState.EntryOrigin);
+        var audit = await ReadAuditAsync(database, result.AuditEntryId!.Value.Value);
+        Assert.Equal(expectedOccurredAt, audit.OccurredAt);
+        Assert.Equal("reception tablet", audit.DeviceLabel);
+        Assert.Equal("opening-offset", audit.IdempotencyKey);
+        Assert.Equal("correlation-opening-offset", audit.RequestCorrelationId);
+        Assert.Equal("opening at offset", audit.Reason);
+        Assert.Equal("Launch backfill", audit.Comment);
+        Assert.Equal(1L, await CountRowsAsync(database, "membership_opening_states"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task UnsupportedNearBoundaryOccurredAtIsRejectedBeforeOpeningMutation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        var membership = await SeedMembershipAsync(database, actor.AccountId.Value);
+        var command = CreateCommand(actor, membership.MembershipId, "opening-near-boundary") with
+        {
+            Envelope = CreateCommand(actor, membership.MembershipId, "opening-near-boundary").Envelope with
+            {
+                OccurredAt = DateTimeOffset.MinValue,
+            },
+        };
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(command, CancellationToken.None);
+
+        AssertError(result, CommandErrorCode.ValidationFailed);
+        Assert.Contains(result.Errors, error => error.Field == "occurredAt");
+        await AssertNoCommandMutationAsync(database);
+    }
+
+    [PostgreSqlFact]
     public async Task OwnerAndSharedReceptionActorsCanCreateOpeningStates()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();

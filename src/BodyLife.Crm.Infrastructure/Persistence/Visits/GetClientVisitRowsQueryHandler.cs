@@ -2,6 +2,7 @@ using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Visits;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Visits;
@@ -139,7 +140,7 @@ public sealed class GetClientVisitRowsQueryHandler(
             var allowedActions = QueryPermissionSet.Empty;
             if (projection.Status == ClientVisitRowStatus.Active)
             {
-                var businessDate = DateOnly.FromDateTime(source.OccurredAt.DateTime);
+                var businessDate = BusinessTimeZone.GetBusinessDate(source.OccurredAt);
                 if (!dayStatuses.TryGetValue(businessDate, out var dayStatus))
                 {
                     dayStatus = await dayReconciliationStatusProvider.GetStatusAsync(

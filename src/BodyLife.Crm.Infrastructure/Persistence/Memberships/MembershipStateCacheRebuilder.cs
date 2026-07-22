@@ -34,7 +34,7 @@ public sealed class MembershipStateCacheRebuilder
         this.extensionSourceProviders = providers;
     }
 
-    public const int CurrentRecalculationVersion = 6;
+    public const int CurrentRecalculationVersion = 7;
 
     public async Task<MembershipStateCacheRebuildResult> RebuildAsync(
         Guid membershipId,

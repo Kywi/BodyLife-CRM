@@ -47,7 +47,7 @@ public sealed class CancelFreezeCommandHandler(
 
         var cancellation = normalizedCancellation!;
         var recordedAt = timeProvider.GetUtcNow();
-        var currentDate = DateOnly.FromDateTime(recordedAt.UtcDateTime);
+        var currentDate = BusinessTimeZone.GetBusinessDate(recordedAt);
         var fingerprint = FreezeCommandSupport.CreateFingerprint(cancellation);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted,
@@ -104,7 +104,7 @@ public sealed class CancelFreezeCommandHandler(
             }
 
             var source = sourceResult.Source;
-            var businessDate = DateOnly.FromDateTime(source.OccurredAt.UtcDateTime);
+            var businessDate = BusinessTimeZone.GetBusinessDate(source.OccurredAt);
             var dayStatus = await dayReconciliationStatusProvider.GetStatusAsync(
                 businessDate,
                 cancellationToken);

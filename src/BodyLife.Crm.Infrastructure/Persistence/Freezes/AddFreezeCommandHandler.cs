@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Freezes;
@@ -46,7 +47,7 @@ public sealed class AddFreezeCommandHandler(
 
         var freeze = normalizedFreeze!;
         var recordedAt = timeProvider.GetUtcNow();
-        var currentDate = DateOnly.FromDateTime(recordedAt.UtcDateTime);
+        var currentDate = BusinessTimeZone.GetBusinessDate(recordedAt);
         var fingerprint = FreezeCommandSupport.CreateFingerprint(freeze);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted,

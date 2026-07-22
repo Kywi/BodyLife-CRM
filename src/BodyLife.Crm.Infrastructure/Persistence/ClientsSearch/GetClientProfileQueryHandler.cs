@@ -4,6 +4,7 @@ using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
+using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
@@ -117,7 +118,7 @@ public sealed class GetClientProfileQueryHandler(
         }
 
         var membershipAsOfDate = query.MembershipAsOfDate
-            ?? DateOnly.FromDateTime(requestTime.UtcDateTime);
+            ?? BusinessTimeZone.GetBusinessDate(requestTime);
         var membershipResult = await getClientMembershipStates.ExecuteAsync(
             new GetClientMembershipStatesQuery(
                 query.Actor,

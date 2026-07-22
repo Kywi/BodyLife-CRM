@@ -61,10 +61,11 @@ public sealed class UpdateClientCommandHandler(
         }
 
         var identity = normalizedIdentity!;
+        var canonicalEnvelope = identity.CanonicalEnvelope;
         var expectedUpdatedAt = command.ExpectedUpdatedAt.ToUniversalTime();
         var recordedAt = timeProvider.GetUtcNow();
         var fingerprint = ClientCommandSupport.CreateUpdateClientFingerprint(
-            command.Envelope,
+            canonicalEnvelope,
             identity,
             command.ClientId,
             expectedUpdatedAt);
@@ -76,7 +77,7 @@ public sealed class UpdateClientCommandHandler(
         {
             if (!await ClientCommandSupport.IsCanonicalActorAuthorizedAsync(
                     dbContext,
-                    command.Envelope.Actor,
+                    canonicalEnvelope.Actor,
                     recordedAt,
                     cancellationToken))
             {
@@ -95,7 +96,7 @@ public sealed class UpdateClientCommandHandler(
             {
                 return ClientCommandSupport.ReplayOrRejectDuplicate(
                     existingIdempotency,
-                    command.Envelope.Actor.AccountId.Value,
+                    canonicalEnvelope.Actor.AccountId.Value,
                     fingerprint);
             }
 
@@ -163,7 +164,7 @@ public sealed class UpdateClientCommandHandler(
                     ClientId = client.Id,
                     WarningType = ClientCommandSupport.MapWarningType(acknowledgement.WarningType),
                     MatchedClientId = acknowledgement.MatchedClientId,
-                    AcknowledgedByAccountId = command.Envelope.Actor.AccountId.Value,
+                    AcknowledgedByAccountId = canonicalEnvelope.Actor.AccountId.Value,
                     AcknowledgedAt = recordedAt,
                     Reason = acknowledgement.Reason,
                 })
@@ -171,7 +172,7 @@ public sealed class UpdateClientCommandHandler(
             dbContext.Set<DuplicateWarningAcknowledgementRecord>().AddRange(acknowledgementRecords);
 
             var auditEntryId = auditAppender.Append(
-                command.Envelope,
+                canonicalEnvelope,
                 ClientAuditActions.Updated,
                 ClientAuditActions.EntityType,
                 client.Id,
@@ -207,7 +208,7 @@ public sealed class UpdateClientCommandHandler(
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 ClientCommandSupport.CreateSucceededIdempotencyRecord(
                     CommandName,
-                    command.Envelope,
+                    canonicalEnvelope,
                     identity,
                     recordedAt,
                     client.Id,

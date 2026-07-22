@@ -1,4 +1,5 @@
 using BodyLife.Crm.Modules.Visits;
+using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Reports;
 
@@ -38,5 +39,5 @@ public sealed class InactiveClientLastVisit
 
     public VisitKind VisitKind { get; }
 
-    public DateOnly OccurredDateUtc => DateOnly.FromDateTime(OccurredAt.UtcDateTime);
+    public DateOnly BusinessDate => BusinessTimeZone.GetBusinessDate(OccurredAt);
 }

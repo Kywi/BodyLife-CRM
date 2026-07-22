@@ -88,7 +88,8 @@ internal static class FreezeCommandSupport
             return ValidationError("Membership id is required.", "membershipId");
         }
 
-        if (command.Range.StartDate == default || command.Range.EndDate == default)
+        if (!BusinessTimeZone.IsSupportedBusinessDate(command.Range.StartDate)
+            || !BusinessTimeZone.IsSupportedBusinessDate(command.Range.EndDate))
         {
             return ValidationError("Freeze range dates are required.", "range");
         }
@@ -593,11 +594,18 @@ internal static class FreezeCommandSupport
                 "comment");
         }
 
+        if (!BusinessTimeZone.TryNormalizeUtcInstant(envelope.OccurredAt.Value, out var occurredAt))
+        {
+            return ValidationError(
+                "Occurred_at is outside the supported business-calendar range.",
+                "occurredAt");
+        }
+
         canonicalEnvelope = new CommandEnvelope(
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(requestCorrelationId),
             envelope.EntryOrigin,
-            envelope.OccurredAt.Value.ToUniversalTime(),
+            occurredAt,
             idempotencyKey,
             reason,
             comment);
@@ -675,11 +683,18 @@ internal static class FreezeCommandSupport
                 "comment");
         }
 
+        if (!BusinessTimeZone.TryNormalizeUtcInstant(envelope.OccurredAt.Value, out var occurredAt))
+        {
+            return ValidationError(
+                "Occurred_at is outside the supported business-calendar range.",
+                "occurredAt");
+        }
+
         canonicalEnvelope = new CommandEnvelope(
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(requestCorrelationId),
             envelope.EntryOrigin,
-            envelope.OccurredAt.Value.ToUniversalTime(),
+            occurredAt,
             idempotencyKey,
             reason,
             comment);
