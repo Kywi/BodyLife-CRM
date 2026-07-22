@@ -41,6 +41,7 @@ public sealed record AuditEntryExplanationViewModel(
             "staff_credentials.reset" => "staff-credentials-reset",
             "non_working_day.corrected" => "non-working-day-corrected",
             "non_working_day.canceled" => "non-working-day-canceled",
+            "freeze.added" => "freeze-added",
             "freeze.canceled" => "freeze-canceled",
             "visit.marked" => "visit-marked",
             "visit.canceled" => "visit-canceled",
@@ -164,6 +165,12 @@ public sealed record AuditEntryExplanationViewModel(
                     when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
                     => NonWorkingDayAuditExplanationFactory.CreateCancellation(
                         entry,
+                        before.RootElement,
+                        after.RootElement),
+                "freeze.added" when entry.EntityType == AuditTimelineEntityType.Freeze
+                    => CreateFreezeAddition(
+                        entry,
+                        related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "freeze.canceled" when entry.EntityType == AuditTimelineEntityType.Freeze
@@ -674,6 +681,90 @@ public sealed record AuditEntryExplanationViewModel(
             ChangedFields: membershipStateChanged
                 ? "Freeze status, Membership extension state"
                 : "Freeze status",
+            IsAvailable: true);
+    }
+
+    private static AuditEntryExplanationViewModel CreateFreezeAddition(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        var relatedClientId = RequireGuid(related, "clientId");
+        var relatedMembershipId = RequireGuid(related, "membershipId");
+        var beforeMembership = ReadFreezeMembershipState(before);
+        var freezeElement = RequireObject(after, "freeze");
+        var freeze = ReadFreeze(freezeElement);
+        var afterMembership = ReadFreezeMembershipState(after);
+        var occurredAt = RequireTimestamp(freezeElement, "occurredAt");
+        var recordedAt = RequireTimestamp(freezeElement, "recordedAt");
+        var entryOrigin = RequireString(freezeElement, "entryOrigin");
+        var entryBatchId = RequireNullableGuid(freezeElement, "entryBatchId");
+        ValidateEntryBatch(entryOrigin, entryBatchId);
+
+        if (freeze.FreezeId != entry.EntityId
+            || freeze.ClientId != relatedClientId
+            || freeze.MembershipId != relatedMembershipId
+            || beforeMembership.MembershipId != freeze.MembershipId
+            || afterMembership.MembershipId != freeze.MembershipId
+            || beforeMembership.ClientId != freeze.ClientId
+            || afterMembership.ClientId != freeze.ClientId
+            || beforeMembership.RemainingVisits != afterMembership.RemainingVisits
+            || beforeMembership.NegativeBalance != afterMembership.NegativeBalance
+            || afterMembership.ExtensionDays < beforeMembership.ExtensionDays
+            || afterMembership.EffectiveEndDate < beforeMembership.EffectiveEndDate
+            || freeze.Reason != entry.Reason
+            || occurredAt != entry.OccurredAt
+            || recordedAt != entry.RecordedAt
+            || entryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || freeze.Status != "active")
+        {
+            throw new JsonException("Freeze addition summary is inconsistent.");
+        }
+
+        var membershipStateChanged =
+            beforeMembership.ExtensionDays != afterMembership.ExtensionDays
+            || beforeMembership.EffectiveEndDate != afterMembership.EffectiveEndDate;
+
+        return new AuditEntryExplanationViewModel(
+            "freeze-added",
+            "Freeze source recorded",
+            "The inclusive Freeze range is a canonical source fact. Stored Membership extension values come from canonical union recalculation, so overlap can leave the effective end unchanged.",
+            "Before Freeze",
+            "Recorded Freeze",
+            [
+                Fact("Freeze", "Not present"),
+                Fact("Membership", TimelineModel.ShortId(freeze.MembershipId)),
+                Fact(
+                    "Extension days",
+                    beforeMembership.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+                Fact("Effective end", DateLabel(beforeMembership.EffectiveEndDate)),
+            ],
+            [
+                Fact("Freeze", TimelineModel.ShortId(freeze.FreezeId)),
+                Fact("Client", TimelineModel.ShortId(freeze.ClientId)),
+                Fact("Membership", TimelineModel.ShortId(freeze.MembershipId)),
+                Fact("Period", FreezeRangeLabel(freeze)),
+                Fact(
+                    "Inclusive days",
+                    freeze.InclusiveDays.ToString(CultureInfo.InvariantCulture)),
+                Fact("Freeze reason", freeze.Reason),
+                Fact("Occurred", TimelineModel.TimestampLabel(occurredAt)),
+                Fact("Entry origin", StoredEntryOriginLabel(entryOrigin)),
+                Fact(
+                    "Entry batch",
+                    entryBatchId is { } batchId
+                        ? TimelineModel.ShortId(batchId)
+                        : "None"),
+                Fact("Source status", StatusLabel(freeze.Status)),
+                Fact(
+                    "Extension days",
+                    afterMembership.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+                Fact("Effective end", DateLabel(afterMembership.EffectiveEndDate)),
+            ],
+            ChangedFields: membershipStateChanged
+                ? "Freeze source, Membership extension state"
+                : "Freeze source",
             IsAvailable: true);
     }
 

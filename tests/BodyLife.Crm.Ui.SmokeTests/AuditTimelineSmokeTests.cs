@@ -1724,6 +1724,159 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
     [Theory]
     [InlineData("owner-tablet", 1024, 768, true)]
     [InlineData("admin-phone", 390, 844, false)]
+    public async Task AddedFreezeShowsInclusiveSourceAndStoredMembershipState(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var freeze = scenario.Explanations.FreezeAddition;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} added Freeze audit smoke");
+
+            var explanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "Freeze",
+                "freeze.added",
+                freeze.AuditEntryId,
+                "freeze-added",
+                viewportName,
+                entityId: freeze.FreezeId);
+            await ExpectVisibleAsync(
+                explanation.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Freeze source recorded", Exact = true }),
+                viewportName,
+                "added Freeze explanation title");
+            Assert.Equal(
+                "Not present",
+                await ExplanationFactAsync(explanation, "Before Freeze", "Freeze"));
+            Assert.Equal(
+                freeze.MembershipId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before Freeze",
+                    "Membership"));
+            Assert.Equal(
+                freeze.BeforeExtensionDays.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before Freeze",
+                    "Extension days"));
+            Assert.Equal(
+                freeze.BeforeEffectiveEndDate.ToString(
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before Freeze",
+                    "Effective end"));
+            Assert.Equal(
+                freeze.FreezeId.ToString("N")[..8],
+                await ExplanationFactAsync(explanation, "Recorded Freeze", "Freeze"));
+            Assert.Equal(
+                freeze.ClientId.ToString("N")[..8],
+                await ExplanationFactAsync(explanation, "Recorded Freeze", "Client"));
+            Assert.Equal(
+                $"{freeze.Range.StartDate:yyyy-MM-dd} to {freeze.Range.EndDate:yyyy-MM-dd}",
+                await ExplanationFactAsync(explanation, "Recorded Freeze", "Period"));
+            Assert.Equal(
+                freeze.Range.InclusiveDays.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded Freeze",
+                    "Inclusive days"));
+            Assert.Equal(
+                freeze.Reason,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded Freeze",
+                    "Freeze reason"));
+            Assert.Equal(
+                $"{freeze.OccurredAt:yyyy-MM-dd HH:mm:ss} UTC",
+                await ExplanationFactAsync(explanation, "Recorded Freeze", "Occurred"));
+            Assert.Equal(
+                "Normal entry",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded Freeze",
+                    "Entry origin"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded Freeze",
+                    "Source status"));
+            Assert.Equal(
+                freeze.AfterExtensionDays.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded Freeze",
+                    "Extension days"));
+            Assert.Equal(
+                freeze.AfterEffectiveEndDate.ToString(
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded Freeze",
+                    "Effective end"));
+            await ExpectVisibleAsync(
+                explanation.GetByText(
+                    "Freeze source, Membership extension state",
+                    new() { Exact = true }),
+                viewportName,
+                "added Freeze changed fields");
+
+            var envelope = explanation
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "added Freeze audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "added Freeze raw envelope");
+            var envelopeText = await envelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains("inclusiveDays", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("membershipState", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("entryOrigin", envelopeText, StringComparison.Ordinal);
+            await AssertFitsViewportAsync(page, viewportName, "added Freeze explanation");
+            await CaptureVisualAsync(page, viewportName, "freeze-added-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
     public async Task FreezeCancellationLeadsWithPreservedRangeAndStoredMembershipState(
         string viewportName,
         int width,

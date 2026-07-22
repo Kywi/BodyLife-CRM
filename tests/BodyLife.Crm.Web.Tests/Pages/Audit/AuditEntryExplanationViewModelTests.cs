@@ -1603,6 +1603,162 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void FreezeAdditionShowsInclusiveSourceAndStoredMembershipState()
+    {
+        var fixture = FreezeAdditionAudit(membershipStateChanges: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "freeze.added",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("freeze-added", explanation.Kind);
+        Assert.Equal("Freeze source recorded", explanation.Title);
+        Assert.Equal("Not present", FactValue(explanation.BeforeFacts, "Freeze"));
+        Assert.Equal("5", FactValue(explanation.BeforeFacts, "Extension days"));
+        Assert.Equal("2026-03-05", FactValue(explanation.BeforeFacts, "Effective end"));
+        Assert.Equal(
+            fixture.FreezeId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Freeze"));
+        Assert.Equal(
+            fixture.ClientId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Client"));
+        Assert.Equal(
+            fixture.MembershipId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Membership"));
+        Assert.Equal("2026-02-10 to 2026-02-12", FactValue(explanation.AfterFacts, "Period"));
+        Assert.Equal("3", FactValue(explanation.AfterFacts, "Inclusive days"));
+        Assert.Equal("Correction reason", FactValue(explanation.AfterFacts, "Freeze reason"));
+        Assert.Equal("Normal entry", FactValue(explanation.AfterFacts, "Entry origin"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Entry batch"));
+        Assert.Equal("Active", FactValue(explanation.AfterFacts, "Source status"));
+        Assert.Equal("8", FactValue(explanation.AfterFacts, "Extension days"));
+        Assert.Equal("2026-03-08", FactValue(explanation.AfterFacts, "Effective end"));
+        Assert.Equal(
+            "Freeze source, Membership extension state",
+            explanation.ChangedFields);
+        Assert.Contains("canonical union recalculation", explanation.Narrative);
+    }
+
+    [Fact]
+    public void FreezeAdditionAllowsUnchangedStateWhenRangeOverlapsExistingExtensions()
+    {
+        var fixture = FreezeAdditionAudit(membershipStateChanges: false);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "freeze.added",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            FactValue(explanation.BeforeFacts, "Extension days"),
+            FactValue(explanation.AfterFacts, "Extension days"));
+        Assert.Equal(
+            FactValue(explanation.BeforeFacts, "Effective end"),
+            FactValue(explanation.AfterFacts, "Effective end"));
+        Assert.Equal("Freeze source", explanation.ChangedFields);
+        Assert.Contains("overlap", explanation.Narrative);
+    }
+
+    [Fact]
+    public void FreezeAdditionWithMismatchedRelationshipFailsClosed()
+    {
+        var fixture = FreezeAdditionAudit(membershipStateChanges: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "freeze.added",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: new
+                    {
+                        ClientId = fixture.ClientId,
+                        MembershipId = Guid.NewGuid(),
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void FreezeAdditionWithDecreasedMembershipStateFailsClosed()
+    {
+        var fixture = FreezeAdditionAudit(
+            membershipStateChanges: true,
+            decreaseAfterMembership: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "freeze.added",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void FreezeAdditionWithIncorrectInclusiveDayCountFailsClosed()
+    {
+        var fixture = FreezeAdditionAudit(
+            membershipStateChanges: true,
+            inclusiveDays: 2);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "freeze.added",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void FreezeAdditionWithMismatchedReasonFailsClosed()
+    {
+        var fixture = FreezeAdditionAudit(
+            membershipStateChanges: true,
+            sourceReason: "Different source reason");
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "freeze.added",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void FreezeCancellationAllowsUnchangedStateWhenOverlapRemains()
     {
         var fixture = FreezeCancellationAudit(membershipStateChanges: false);
@@ -2501,6 +2657,7 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Theory]
+    [InlineData("freeze.added", AuditTimelineEntityType.Payment)]
     [InlineData(
         "membership_opening_state.created",
         AuditTimelineEntityType.Membership)]
@@ -3097,6 +3254,70 @@ public sealed class AuditEntryExplanationViewModelTests
         return new FreezeCancellationAuditFixture(freezeId, before, after);
     }
 
+    private static FreezeAdditionAuditFixture FreezeAdditionAudit(
+        bool membershipStateChanges,
+        bool decreaseAfterMembership = false,
+        int inclusiveDays = 3,
+        string sourceReason = "Correction reason")
+    {
+        var freezeId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var startDate = new DateOnly(2026, 2, 10);
+        var endDate = new DateOnly(2026, 2, 12);
+        var beforeMembership = new FreezeMembershipStateAuditFixture(
+            membershipId,
+            clientId,
+            RemainingVisits: 7,
+            NegativeBalance: 0,
+            ExtensionDays: 5,
+            new DateOnly(2026, 3, 5),
+            ["ending_soon"]);
+        var afterMembership = beforeMembership with
+        {
+            ExtensionDays = decreaseAfterMembership
+                ? 4
+                : membershipStateChanges
+                    ? 8
+                    : beforeMembership.ExtensionDays,
+            EffectiveEndDate = decreaseAfterMembership
+                ? new DateOnly(2026, 3, 4)
+                : membershipStateChanges
+                    ? new DateOnly(2026, 3, 8)
+                    : beforeMembership.EffectiveEndDate,
+        };
+        var before = new { MembershipState = beforeMembership };
+        var after = new
+        {
+            Freeze = new FreezeSourceAuditFixture(
+                freezeId,
+                clientId,
+                membershipId,
+                startDate,
+                endDate,
+                inclusiveDays,
+                sourceReason,
+                OriginalOccurredAt,
+                OriginalOccurredAt.AddMinutes(5),
+                "normal",
+                EntryBatchId: null,
+                "active"),
+            MembershipState = afterMembership,
+        };
+        var related = new
+        {
+            ClientId = clientId,
+            MembershipId = membershipId,
+        };
+        return new FreezeAdditionAuditFixture(
+            freezeId,
+            clientId,
+            membershipId,
+            related,
+            before,
+            after);
+    }
+
     private static NonWorkingDayBeforeApplicationAuditFixture BeforeApplication(
         Guid membershipId,
         Guid clientId,
@@ -3218,6 +3439,14 @@ public sealed class AuditEntryExplanationViewModelTests
 
     private sealed record FreezeCancellationAuditFixture(
         Guid FreezeId,
+        object Before,
+        object After);
+
+    private sealed record FreezeAdditionAuditFixture(
+        Guid FreezeId,
+        Guid ClientId,
+        Guid MembershipId,
+        object Related,
         object Before,
         object After);
 

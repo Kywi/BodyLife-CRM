@@ -11860,3 +11860,70 @@ Next recommended step:
 - Continue the audit-noise review with `freeze.added`. Explain the immutable
   inclusive Freeze source range and resulting Membership state without
   duplicating extension-day formulas outside Memberships.
+
+## Step 184 - Added Freeze audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Closed only the planned `freeze.added` audit-noise gap. The final raw-only
+  creation event and the Milestone 10 acceptance review remain in scope;
+  Milestone 11 was not started.
+- Implemented the audit-matrix requirement for Membership, inclusive Freeze
+  range/day count/reason and stored before/after effective-end state.
+- Preserved Memberships ownership of extension unions: the presenter does not
+  derive extension deltas from inclusive Freeze days and accepts unchanged
+  derived state when an added range overlaps existing extensions.
+
+Completed:
+
+- Added a fail-closed `freeze.added` Timeline explanation that validates exact
+  Freeze/Client/Membership identities, inclusive source range, source
+  timestamps/origin/batch/reason/status and stable non-extension Membership
+  state across recalculation.
+- Shows the immutable Freeze source, occurred time, entry origin/batch and the
+  stored before/after extension days and effective end date.
+- Added seven presenter cases covering changed and overlap-unchanged state,
+  relationship mismatch, invalid state decrease, incorrect inclusive day
+  count, mismatched reason and wrong entity type.
+- Strengthened the real PostgreSQL `AddFreeze` workflow test to pin the
+  complete two-reference, seven-field before-state, twelve-field Freeze and
+  seven-field after-state audit payload.
+- Added an isolated production-shaped Timeline seed plus Owner/tablet and
+  named-Admin/phone Playwright coverage for source/state facts, collapsed raw
+  envelope, touch target and viewport fit.
+- Kept AddFreeze command behavior, canonical Freeze persistence, union
+  recalculation, Razor markup, CSS, authorization, EF model and migrations
+  unchanged.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 107/107 and the
+  strengthened real `SuccessfulFreezeCommitsUnionStateAuditAndIdempotency`
+  PostgreSQL test passed 1/1.
+- Focused added-Freeze Playwright coverage passed 2/2 and the complete
+  `AuditTimelineSmokeTests` regression passed 34/34 with no skipped tests.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports with no overlap or horizontal overflow.
+- The repository-wide `./scripts/validate.sh` gate is intentionally deferred to
+  the requested final Milestone 10 acceptance review after the final raw-only
+  event is closed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this Step 184 progress update but
+  stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain added freezes`.
+
+Next recommended step:
+
+- Close the final important raw-only event, `non_working_day.added`. Explain
+  the Owner-confirmed immutable affected scope and per-Membership application
+  ranges without recalculating union days in the audit UI.

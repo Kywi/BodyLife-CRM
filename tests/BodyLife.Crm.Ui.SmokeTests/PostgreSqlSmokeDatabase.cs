@@ -1138,6 +1138,42 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             },
         };
 
+        var freezeAdditionAuditEntryId = Guid.NewGuid();
+        var addedFreezeId = Guid.NewGuid();
+        var addedFreezeClientId = Guid.NewGuid();
+        var addedFreezeMembershipId = Guid.NewGuid();
+        var addedFreezeRange = new DateRange(
+            new DateOnly(2026, 8, 10),
+            new DateOnly(2026, 8, 12));
+        var addedFreezeOccurredAt = recordedBase.AddHours(7).AddMinutes(30);
+        var addedFreezeRecordedAt = addedFreezeOccurredAt.AddMinutes(5);
+        var addedFreezeSource = new AuditFreezeSourceSummarySeed(
+            addedFreezeId,
+            addedFreezeClientId,
+            addedFreezeMembershipId,
+            addedFreezeRange.StartDate,
+            addedFreezeRange.EndDate,
+            addedFreezeRange.InclusiveDays,
+            "Medical recovery",
+            addedFreezeOccurredAt,
+            addedFreezeRecordedAt,
+            "normal",
+            EntryBatchId: null,
+            "active");
+        var addedFreezeBeforeMembership = new AuditFreezeMembershipStateSummarySeed(
+            addedFreezeMembershipId,
+            addedFreezeClientId,
+            RemainingVisits: 6,
+            NegativeBalance: 0,
+            ExtensionDays: 1,
+            new DateOnly(2026, 9, 1),
+            ["ending_soon"]);
+        var addedFreezeAfterMembership = addedFreezeBeforeMembership with
+        {
+            ExtensionDays = 4,
+            EffectiveEndDate = new DateOnly(2026, 9, 4),
+        };
+
         var freezeCancellationAuditEntryId = Guid.NewGuid();
         var canceledFreezeId = Guid.NewGuid();
         var freezeCancellationId = Guid.NewGuid();
@@ -1776,6 +1812,33 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 canceledAfter,
                 ChangedAfterClose: false),
             new(
+                freezeAdditionAuditEntryId,
+                "freeze.added",
+                "freeze",
+                addedFreezeId,
+                new
+                {
+                    ClientId = addedFreezeClientId,
+                    MembershipId = addedFreezeMembershipId,
+                },
+                sharedAdminAccountId,
+                "shared_reception_admin",
+                "admin",
+                sharedSessionId,
+                sharedDeviceLabel,
+                addedFreezeOccurredAt,
+                addedFreezeRecordedAt,
+                "normal",
+                addedFreezeSource.Reason,
+                "Reception recorded medical Freeze",
+                new { MembershipState = addedFreezeBeforeMembership },
+                new
+                {
+                    Freeze = addedFreezeSource,
+                    MembershipState = addedFreezeAfterMembership,
+                },
+                ChangedAfterClose: false),
+            new(
                 freezeCancellationAuditEntryId,
                 "freeze.canceled",
                 "freeze",
@@ -2132,6 +2195,18 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     freezeAfterMembership.ExtensionDays,
                     freezeBeforeMembership.EffectiveEndDate,
                     freezeAfterMembership.EffectiveEndDate),
+                FreezeAddition: new FreezeAdditionAuditExplanationSmokeScenario(
+                    freezeAdditionAuditEntryId,
+                    addedFreezeId,
+                    addedFreezeClientId,
+                    addedFreezeMembershipId,
+                    addedFreezeRange,
+                    addedFreezeSource.Reason,
+                    addedFreezeOccurredAt,
+                    addedFreezeBeforeMembership.ExtensionDays,
+                    addedFreezeAfterMembership.ExtensionDays,
+                    addedFreezeBeforeMembership.EffectiveEndDate,
+                    addedFreezeAfterMembership.EffectiveEndDate),
                 ClientCreation: new ClientCreationAuditExplanationSmokeScenario(
                     clientCreationAuditEntryId,
                     createdClientId,

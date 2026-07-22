@@ -120,26 +120,77 @@ public sealed class PostgreSqlAddFreezeCommandTests
         Assert.Equal("correlation-freeze-success", audit.RequestCorrelationId);
         Assert.Equal("normal", audit.EntryOrigin);
         Assert.Equal("freeze-success", audit.IdempotencyKey);
+        using (var related = JsonDocument.Parse(audit.RelatedEntityRefs))
+        {
+            Assert.Equal(2, related.RootElement.EnumerateObject().Count());
+            Assert.Equal(
+                fixture.ClientId,
+                related.RootElement.GetProperty("clientId").GetGuid());
+            Assert.Equal(
+                fixture.MembershipId,
+                related.RootElement.GetProperty("membershipId").GetGuid());
+        }
+
         using (var before = JsonDocument.Parse(audit.BeforeSummary))
         {
+            Assert.Single(before.RootElement.EnumerateObject());
             var membershipState = before.RootElement.GetProperty("membershipState");
+            Assert.Equal(7, membershipState.EnumerateObject().Count());
+            Assert.Equal(
+                fixture.MembershipId,
+                membershipState.GetProperty("membershipId").GetGuid());
+            Assert.Equal(
+                fixture.ClientId,
+                membershipState.GetProperty("clientId").GetGuid());
+            Assert.Equal(8, membershipState.GetProperty("remainingVisits").GetInt32());
+            Assert.Equal(0, membershipState.GetProperty("negativeBalance").GetInt32());
             Assert.Equal(0, membershipState.GetProperty("extensionDays").GetInt32());
             Assert.Equal(
                 "2026-07-30",
                 membershipState.GetProperty("effectiveEndDate").GetString());
+            Assert.Equal(JsonValueKind.Array, membershipState.GetProperty("warnings").ValueKind);
         }
 
         using (var after = JsonDocument.Parse(audit.AfterSummary))
         {
+            Assert.Equal(2, after.RootElement.EnumerateObject().Count());
             var freezeSummary = after.RootElement.GetProperty("freeze");
+            Assert.Equal(12, freezeSummary.EnumerateObject().Count());
             Assert.Equal(freezeId, freezeSummary.GetProperty("freezeId").GetGuid());
+            Assert.Equal(
+                fixture.ClientId,
+                freezeSummary.GetProperty("clientId").GetGuid());
+            Assert.Equal(
+                fixture.MembershipId,
+                freezeSummary.GetProperty("membershipId").GetGuid());
+            Assert.Equal("2026-07-10", freezeSummary.GetProperty("startDate").GetString());
+            Assert.Equal("2026-07-12", freezeSummary.GetProperty("endDate").GetString());
             Assert.Equal(3, freezeSummary.GetProperty("inclusiveDays").GetInt32());
             Assert.Equal("Medical pause", freezeSummary.GetProperty("reason").GetString());
+            Assert.Equal(
+                FreezeOccurredAt,
+                freezeSummary.GetProperty("occurredAt").GetDateTimeOffset());
+            Assert.Equal(
+                TestNow,
+                freezeSummary.GetProperty("recordedAt").GetDateTimeOffset());
+            Assert.Equal("normal", freezeSummary.GetProperty("entryOrigin").GetString());
+            Assert.Equal(JsonValueKind.Null, freezeSummary.GetProperty("entryBatchId").ValueKind);
+            Assert.Equal("active", freezeSummary.GetProperty("status").GetString());
             var membershipState = after.RootElement.GetProperty("membershipState");
+            Assert.Equal(7, membershipState.EnumerateObject().Count());
+            Assert.Equal(
+                fixture.MembershipId,
+                membershipState.GetProperty("membershipId").GetGuid());
+            Assert.Equal(
+                fixture.ClientId,
+                membershipState.GetProperty("clientId").GetGuid());
+            Assert.Equal(8, membershipState.GetProperty("remainingVisits").GetInt32());
+            Assert.Equal(0, membershipState.GetProperty("negativeBalance").GetInt32());
             Assert.Equal(3, membershipState.GetProperty("extensionDays").GetInt32());
             Assert.Equal(
                 "2026-08-02",
                 membershipState.GetProperty("effectiveEndDate").GetString());
+            Assert.Equal(JsonValueKind.Array, membershipState.GetProperty("warnings").ValueKind);
         }
 
         var idempotency = await ReadIdempotencyAsync(database, "freeze-success");
@@ -1091,6 +1142,7 @@ public sealed class PostgreSqlAddFreezeCommandTests
                    recorded_at,
                    reason,
                    comment,
+                   related_entity_refs::text,
                    before_summary::text,
                    after_summary::text,
                    request_correlation_id,
@@ -1119,7 +1171,8 @@ public sealed class PostgreSqlAddFreezeCommandTests
             reader.GetString(13),
             reader.GetString(14),
             reader.GetString(15),
-            reader.IsDBNull(16) ? null : reader.GetString(16));
+            reader.GetString(16),
+            reader.IsDBNull(17) ? null : reader.GetString(17));
     }
 
     private static async Task<IdempotencyRow> ReadIdempotencyAsync(
@@ -1303,6 +1356,7 @@ public sealed class PostgreSqlAddFreezeCommandTests
         DateTimeOffset RecordedAt,
         string? Reason,
         string? Comment,
+        string RelatedEntityRefs,
         string BeforeSummary,
         string AfterSummary,
         string RequestCorrelationId,
