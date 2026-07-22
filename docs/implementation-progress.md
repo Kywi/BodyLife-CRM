@@ -12254,3 +12254,79 @@ Stop point:
   and validated. Deployment must run the documented cache rebuild successfully
   before traffic. Milestone 10 remains complete; begin Milestone 11 only under a
   separate explicit request.
+
+## Step 189 - Migrated every visual route to the BodyLife light interface
+
+Status: completed. This is a post-Milestone 10 UI/UX hardening step. Milestone
+11 was not started.
+
+Plan alignment:
+
+- Kept ASP.NET Core Razor Pages/MVC and the existing htmx islands; no frontend
+  framework, public API, schema, business-rule or hosting decision changed.
+- Preserved server authorization, commands, audit, idempotency, transaction
+  boundaries and canonical rereads. Membership and report formulas remain in
+  their owning modules.
+- Applied one shared light, branded and semantic visual system to Reception,
+  Owner, Reports, Audit/History and public/status pages.
+
+Completed:
+
+- Added the authenticated grouped sidebar and top account/session context plus
+  a matching public shell. Owner navigation remains visible only for the
+  canonical Owner actor. Reception is active on both `/` and its page route;
+  Reports distinguishes exact-page and section-location state.
+- Added the approved transparent BodyLife logo and a local MIT-attributed SVG
+  icon sprite. No external runtime assets were introduced.
+- Implemented the neutral light base with blue primary, green success, amber
+  warning, red danger and violet Owner/audit semantics. Status text and icons
+  accompany color; focus and 44px touch behavior remain explicit.
+- Made Create Client directly available without a prerequisite search. The
+  permission-gated panel is collapsed initially, opens after zero results or a
+  failed submit, prefills only Card mode, preserves duplicate review and
+  collapses after the successful canonical profile reread.
+- Preserved and visually emphasized Cancel Visit plus all visit/payment/freeze,
+  MembershipType and NonWorkingDay correction/cancellation workflows.
+- Migrated all five reports, Audit Timeline and Client History without changing
+  source rows, totals, correction provenance, origin labels, pagination or
+  drill-down contracts.
+- Recorded exact route, partial, asset, responsive and automation coverage in
+  `docs/ui-style-migration-inventory.md` and refreshed
+  `docs/ui-design-foundation.md` to the implemented baseline.
+
+Validation:
+
+- Release solution build completed with 0 warnings and 0 errors;
+  `dotnet format --verify-no-changes` and `git diff --check` passed.
+- Domain tests passed 401/401 and Web tests passed 292/292.
+- Focused direct-create, Cancel Visit, shared shell, report and Client History
+  Playwright checks passed 16/16. The full UI suite passed 128/128 with no
+  skips, including `1024x768` tablet and `390x844` phone overflow/touch checks.
+- 143 full-page UI captures were produced and representative Reception, Owner,
+  Reports, Audit and History states were visually inspected.
+- A clean Release `./scripts/validate.sh` completed against PostgreSQL 16.14 in
+  3m54.739s. All suites passed with no failures or skips:
+  `BodyLife.Crm.Tests` 401/401, `BodyLife.Crm.Web.Tests` 292/292,
+  `BodyLife.Crm.Infrastructure.Tests` 536/536 and
+  `BodyLife.Crm.Ui.SmokeTests` 128/128 (1,357 total).
+- The migration gate listed the complete chain through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`; this step has no
+  persistence or migration changes.
+- `graphify update .` was attempted after the code changes, but its filesystem
+  watcher could not rebuild (`Errno 95: Operation not supported`). The required
+  semantic `graphify . --update` was also attempted after documentation changes
+  and stopped because no extraction LLM API key is configured. Neither attempt
+  produced a tracked Graphify update, so no refreshed graph is claimed.
+- Independent read-only reviews of every implementation wave and the integrated
+  diff are clean after fixes for the root active link, direct-create post-reread
+  collapse, tablet breakpoints, language hover contrast and Reports semantics.
+
+Commit:
+
+- `feat(ui): migrate all CRM routes to the BodyLife light interface`.
+- `docs(ui): record the complete light interface migration`.
+
+Stop point:
+
+- The full UI migration is implemented and UI-validated. Milestone 10 remains
+  complete; begin Milestone 11 only under a separate explicit request.

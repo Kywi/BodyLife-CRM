@@ -1,7 +1,8 @@
 # BodyLife CRM UI design foundation
 
 Дата: 2026-07-09
-Статус: design foundation for v1 implementation
+Оновлено: 2026-07-22
+Статус: implemented v1 visual baseline
 
 Цей документ задає мінімальну design-system основу для BodyLife CRM v1. Він доповнює `docs/ui-workflows.md`: workflows описують, які screen/state/actions потрібні, а цей документ описує, як сторінки мають виглядати, повторюватися і поводитися на tablet/phone без хаотичної імпровізації.
 
@@ -263,7 +264,44 @@ These exemplars become the reference for later payment, freeze, correction, repo
 - Do not add UI formulas for membership state to templates, JavaScript, controllers or report views.
 - Do not hide server permission policy behind client-only disabled UI; every command still rechecks server-side.
 
-## 13. Acceptance checklist
+## 13. Implemented light brand baseline
+
+Станом на 2026-07-22 спільний visual baseline реалізовано на всіх v1
+Razor-поверхнях.
+
+- Authenticated shell використовує постійну груповану навігацію `Main` і
+  Owner-only `Owner tools`, чесний account/session/device context та локальний
+  прозорий BodyLife logo. На phone sidebar стає двоколонковою верхньою
+  навігацією без втрати дій.
+- Public shell для Login, Logout, AccessDenied і Error використовує той самий
+  логотип, мову, focus treatment і світлу палітру.
+- Canonical tokens у `site.css`: background `#f5f6f7`, surface `#ffffff`, text
+  `#17211c`, muted `#5f6b66`, line `#d9dee3`, primary `#0a74c9`, success
+  `#277a46`, warning `#9a5b0a`, danger `#b42318`, restricted `#6941c6`.
+  Кожен semantic color має світлий companion surface і текстовий/icon label.
+- Іконки постачаються локальним SVG sprite з MIT attribution; жодної CDN або
+  runtime-залежності від зовнішнього icon provider немає.
+- Reception direct create доступний незалежно від пошуку для дозволених
+  Admin/Owner actors. Панель початково згорнута, вручну відкривається,
+  автоматично відкривається після успішного zero-result search, зберігає
+  submitted validation/duplicate-review state і згортається після canonical
+  successful reread. Лише Card search prefill-ить card field.
+- Cancel Visit, payment/freeze corrections, MembershipType deactivation і
+  NonWorkingDay cancellation використовують danger treatment; preview,
+  acknowledgement і confirmed outcomes залишаються окремими станами.
+- Reports і Audit не змінюють source truth: semantic rails доповнюють, але не
+  замінюють correction/cancellation, origin, changed-after-close і canonical
+  row labels. Sidebar `Reports` позначає exact Daily route як current page, а
+  інші report routes як current location/section.
+- Reception workspace і Client History fixed filter grid переходять до
+  компактнішого layout на `1100px`, щоб у primary `1024x768` tablet viewport
+  врахувати ширину sidebar. Phone target `390x844` зберігає одну читабельну
+  operational column.
+
+Повний route/partial/test inventory і acceptance evidence записані в
+`docs/ui-style-migration-inventory.md`.
+
+## 14. Acceptance checklist
 
 - Reception dashboard is the first real screen, not a landing page and not generic CRUD.
 - Tablet layout keeps selected client, warnings, membership state and quick actions visible.
