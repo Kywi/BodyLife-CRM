@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?><root>
+<data name="Daily.Title" xml:space="preserve"><value>Daily report</value></data>
+  <data name="Ending.Title" xml:space="preserve"><value>Memberships ending soon</value></data>
+  <data name="Low.Title" xml:space="preserve"><value>Memberships low on visits</value></data>
+  <data name="Negative.Title" xml:space="preserve"><value>Clients with negative visits</value></data>
+  <data name="Inactive.Title" xml:space="preserve"><value>Inactive clients</value></data>
+<data name="Navigation.Reports" xml:space="preserve"><value>Reports</value></data>
+  <data name="Navigation.Reception" xml:space="preserve"><value>Reception</value></data>
+  <data name="Navigation" xml:space="preserve"><value>Report navigation</value></data>
+  <data name="Load" xml:space="preserve"><value>Load report</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="Unavailable" xml:space="preserve"><value>Report unavailable</value></data>
+  <data name="Error.Unavailable" xml:space="preserve"><value>The report is unavailable. Please try again.</value></data>
+  <data name="Error.InvalidInput" xml:space="preserve"><value>Enter valid report filters.</value></data>
+  <data name="Error.PermissionDenied" xml:space="preserve"><value>You do not have permission to view this report.</value></data>
+<data name="Daily" xml:space="preserve"><value>Daily report</value></data>
+  <data name="Ending" xml:space="preserve"><value>Ending soon</value></data>
+  <data name="Low" xml:space="preserve"><value>Low remaining</value></data>
+  <data name="Negative" xml:space="preserve"><value>Negative clients</value></data>
+  <data name="Inactive" xml:space="preserve"><value>Inactive clients</value></data>
+  <data name="AsOf" xml:space="preserve"><value>As-of date</value></data>
+  <data name="BusinessDate" xml:space="preserve"><value>Business date</value></data>
+  <data name="DaysAhead" xml:space="preserve"><value>Days ahead</value></data>
+  <data name="RemainingAtMost" xml:space="preserve"><value>Remaining visits at most</value></data>
+  <data name="InactiveAtLeast" xml:space="preserve"><value>Inactive for at least</value></data>
+  <data name="SelectDays" xml:space="preserve"><value>Select days</value></data>
+  <data name="IncludeNeverVisited" xml:space="preserve"><value>Include never visited</value></data>
+<data name="OpenClient" xml:space="preserve"><value>Open client</value></data>
+  <data name="ViewVisits" xml:space="preserve"><value>View visits</value></data>
+  <data name="ExtensionDetails" xml:space="preserve"><value>Extension details</value></data>
+  <data name="ClientHistory" xml:space="preserve"><value>Client history</value></data>
+  <data name="AuditTimeline" xml:space="preserve"><value>Audit timeline</value></data>
+  <data name="CorrectPayment" xml:space="preserve"><value>Correct payment</value></data>
+  <data name="Pagination.Previous" xml:space="preserve"><value>Previous</value></data>
+  <data name="Pagination.Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Page" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="Warnings" xml:space="preserve"><value>Membership warnings</value></data>
+<data name="Client.Phone" xml:space="preserve"><value>Phone</value></data>
+  <data name="NoPhone" xml:space="preserve"><value>No phone</value></data>
+  <data name="NoCard" xml:space="preserve"><value>No card</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>Not available</value></data>
+  <data name="NotRecorded" xml:space="preserve"><value>Not recorded</value></data>
+  <data name="NeverVisited" xml:space="preserve"><value>Never visited</value></data>
+  <data name="NoCountedVisits" xml:space="preserve"><value>No counted visits</value></data>
+  <data name="NoMembership" xml:space="preserve"><value>No membership</value></data>
+<data name="EffectiveEnd" xml:space="preserve"><value>Effective end</value></data>
+  <data name="RemainingVisits" xml:space="preserve"><value>Remaining visits</value></data>
+  <data name="ExtensionDays" xml:space="preserve"><value>Extension days</value></data>
+  <data name="VisitLimit" xml:space="preserve"><value>Visit limit</value></data>
+  <data name="CountedVisits" xml:space="preserve"><value>Counted visits</value></data>
+  <data name="LastCountedVisit" xml:space="preserve"><value>Last counted visit</value></data>
+  <data name="DaysLeft" xml:space="preserve"><value>Days left</value></data>
+  <data name="DaysInactive" xml:space="preserve"><value>Days inactive</value></data>
+  <data name="CurrentCard" xml:space="preserve"><value>Current card</value></data>
+  <data name="MembershipSummary" xml:space="preserve"><value>Membership summary</value></data>
+  <data name="MembershipRecord" xml:space="preserve"><value>Membership record</value></data>
+  <data name="FirstNegativeVisit" xml:space="preserve"><value>First negative visit</value></data>
+  <data name="NegativeBalance" xml:space="preserve"><value>Negative balance</value></data>
+<data name="Status.EndingSoon" xml:space="preserve"><value>Ending soon</value></data>
+  <data name="Status.Negative" xml:space="preserve"><value>Negative</value></data>
+  <data name="Status.NoVisits" xml:space="preserve"><value>No visits</value></data>
+  <data name="Status.Low" xml:space="preserve"><value>Low remaining</value></data>
+  <data name="Status.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Status.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Status.Canceled" xml:space="preserve"><value>Canceled</value></data>
+  <data name="Status.Corrected" xml:space="preserve"><value>Corrected</value></data>
+  <data name="Status.Replaced" xml:space="preserve"><value>Replaced</value></data>
+<data name="Ambiguous.Body"><value>Multiple current membership candidates exist; the last membership summary is shown.</value></data>
+  <data name="Ambiguous.Title"><value>Membership selection requires review</value></data>
+  <data name="CanonicalMemberships"><value>Canonical Memberships state</value></data>
+  <data name="CanonicalState"><value>Canonical Visits and Memberships state</value></data>
+  <data name="Payment.Cash"><value>Cash</value></data>
+  <data name="State.Current"><value>Current</value></data>
+  <data name="Daily.EmptyVisits"><value>No visits recorded for this business date.</value></data>
+  <data name="Daily.Note"><value>Canceled source rows remain visible below and are excluded from totals.</value></data>
+  <data name="DayStatus"><value>Day status</value></data>
+  <data name="Ending.Empty"><value>No active memberships end within this threshold.</value></data>
+  <data name="Ending.Pages"><value>Ending-soon result pages</value></data>
+  <data name="EndsToday"><value>Ends today</value></data>
+  <data name="Inclusion.Excluded"><value>Excluded</value></data>
+  <data name="Inactive.Empty"><value>No clients match this inactivity threshold.</value></data>
+  <data name="Inactive.Pages"><value>Inactive-client result pages</value></data>
+  <data name="InactiveList"><value>Inactive client list</value></data>
+  <data name="Inclusion.Included"><value>Included</value></data>
+  <data name="Range.Last"><value>Last</value></data>
+  <data name="Low.Empty"><value>No active memberships are at or below this threshold.</value></data>
+  <data name="Low.Pages"><value>Low-remaining result pages</value></data>
+  <data name="Negative.Empty"><value>No active memberships have a negative visit balance.</value></data>
+  <data name="Negative.Pages"><value>Negative-client result pages</value></data>
+  <data name="NegativeBalances"><value>Negative balances</value></data>
+  <data name="NoVisitHistory"><value>No visit history</value></data>
+  <data name="Payment"><value>Payments</value></data>
+  <data name="ReportPage"><value>report page</value></data>
+  <data name="VisitFacts"><value>Visit source facts</value></data>
+  <data name="VisitKind.Membership"><value>Membership visit</value></data>
+  <data name="VisitKind.OneOff"><value>One-off visit</value></data>
+  <data name="VisitKind.Trial"><value>Trial visit</value></data>
+  <data name="Visit.Label"><value>Visits</value></data>
+<data name="Status.Cancellation"><value>Cancellation</value></data>
+  <data name="Status.Changed"><value>Changed</value></data>
+  <data name="Context.NegativeClosure"><value>Negative closure</value></data>
+  <data name="Context.OneOff"><value>One-off payment</value></data>
+  <data name="Context.Other"><value>Other payment</value></data>
+  <data name="Context.Sale"><value>Membership sale</value></data>
+  <data name="Context.Trial"><value>Trial payment</value></data>
+  <data name="CorrectedReplacement"><value>Corrected replacement</value></data>
+  <data name="Daily.EmptyPayments"><value>No payments recorded for this business date.</value></data>
+  <data name="Daily.Totals"><value>Daily totals</value></data>
+  <data name="Ending.Selection"><value>Ending-soon report selection</value></data>
+  <data name="Field.Amount"><value>Amount</value></data>
+  <data name="Field.Comment"><value>Comment</value></data>
+  <data name="Field.Context"><value>Payment context</value></data>
+  <data name="Field.Membership"><value>Membership</value></data>
+  <data name="Field.Occurred"><value>Occurred time</value></data>
+  <data name="Field.Other"><value>Other field</value></data>
+  <data name="Inactive.Selection"><value>Inactive-clients report selection</value></data>
+  <data name="Low.Selection"><value>Low-remaining report selection</value></data>
+  <data name="Entity.Membership"><value>Membership</value></data>
+  <data name="Payment.Method"><value>Method</value></data>
+  <data name="Negative.Selection"><value>Negative-clients report selection</value></data>
+  <data name="Meta.Occurred"><value>Occurred</value></data>
+  <data name="Origin.Backfill"><value>Manual backfill</value></data>
+  <data name="Origin.Import"><value>Future import</value></data>
+  <data name="Origin.Normal"><value>Normal entry</value></data>
+  <data name="Origin.Paper"><value>Paper fallback</value></data>
+  <data name="Origin.Unknown"><value>Entry origin</value></data>
+  <data name="PaymentFacts"><value>Payment source facts</value></data>
+  <data name="Meta.Recorded"><value>Recorded</value></data>
+  <data name="ReplacedPayment"><value>Replaced payment</value></data>
+  <data name="Meta.Source"><value>Source</value></data>
+  <data name="Status.Open"><value>Open</value></data>
+  <data name="Status.Reconciled"><value>Reconciled</value></data>
+  <data name="Value.Unknown"><value>Unknown</value></data>
+  <data name="UnknownMethod"><value>Unknown method</value></data>
+  <data name="Warning.NegativeBalance"><value>This membership has a negative visit balance.</value></data>
+  <data name="Warning.ExpiredByDate"><value>This membership has expired by date.</value></data>
+  <data name="Warning.ZeroRemaining"><value>This membership has no remaining visits.</value></data>
+  <data name="Warning.EndingSoon"><value>This membership ends within seven days.</value></data>
+  <data name="Warning.LowRemaining"><value>This membership has only one or two visits remaining.</value></data>
+  <data name="Warning.Generic"><value>Review this membership's current state.</value></data>
+</root>

@@ -1,4 +1,6 @@
 @using System.Globalization
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
 @model CorrectPaymentFormViewModel
 @{
     var input = Model.Input;
@@ -18,15 +20,15 @@
          class="payment-correction-panel"
          data-correct-payment-panel
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>Correct or cancel</summary>
+    <summary>@L["Payment.CorrectOrCancel"]</summary>
     <div class="payment-correction-content">
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>Payment correction not applied</strong>
+                <strong>@L["Payment.CorrectionNotApplied"]</strong>
                 <ul>
                     @foreach (var message in Model.Errors
-                        .Select(CorrectPaymentFormViewModel.DisplayError)
+                        .Select(error => ReceptionCommandErrorLocalizer.Display(L, error))
                         .Distinct(StringComparer.Ordinal))
                     {
                         <li>@message</li>
@@ -37,25 +39,25 @@
 
         <dl class="payment-correction-context">
             <div>
-                <dt>Original amount</dt>
-                <dd>@payment.Amount.Amount.ToString("0.##", CultureInfo.InvariantCulture) @payment.Amount.Currency</dd>
+                <dt>@L["Payment.OriginalAmount"]</dt>
+                <dd>@ReceptionDisplayFormatter.Money(payment.Amount)</dd>
             </div>
             <div>
-                <dt>Original context</dt>
+                <dt>@L["Payment.OriginalContext"]</dt>
                 <dd>@PaymentContextLabel(payment.PaymentContext)</dd>
             </div>
             <div>
-                <dt>Original date</dt>
-                <dd>@payment.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                <dt>@L["Payment.OriginalDate"]</dt>
+                <dd>@ReceptionDisplayFormatter.DateTime(payment.OccurredAt)</dd>
             </div>
             <div>
-                <dt>Method</dt>
-                <dd>Cash</dd>
+                <dt>@L["Payment.Method"]</dt>
+                <dd>@L["Payment.Cash"]</dd>
             </div>
         </dl>
 
         <nav class="correction-record-links"
-             aria-label="Payment correction records"
+             aria-label="@L["Payment.CorrectionRecords"]"
              data-correction-record-links>
             <a class="secondary-link"
                asp-page="/Audit/ClientHistory"
@@ -64,7 +66,7 @@
                asp-route-from="@occurredDate"
                asp-route-to="@occurredDate"
                data-correction-history-link>
-                Client history
+                @L["Visit.ClientHistory"]
             </a>
             <a class="secondary-link"
                asp-page="/Audit/Timeline"
@@ -72,13 +74,13 @@
                asp-route-entity="@AuditTimelineEntityType.Payment"
                asp-route-entityId="@auditEntityId"
                data-correction-audit-link>
-                Audit timeline
+                @L["Visit.AuditTimeline"]
             </a>
         </nav>
 
         <div class="warning-block warning-danger">
-            <strong>Correction keeps history</strong>
-            <span>The original Payment remains visible. Canonical cash totals use its cancellation or replacement record.</span>
+            <strong>@L["Correction.KeepsHistory"]</strong>
+            <span>@L["Payment.CorrectionHint"]</span>
         </div>
 
         <form id="correct-payment-form-@paymentKey"
@@ -103,7 +105,7 @@
             <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
 
             <fieldset class="payment-correction-mode">
-                <legend>Correction mode</legend>
+                <legend>@L["Payment.CorrectionMode"]</legend>
                 <div class="payment-correction-segments">
                     <label>
                         <input type="radio"
@@ -111,7 +113,7 @@
                                value="@PaymentCorrectionMode.Replace"
                                data-payment-correction-mode="replace"
                                checked="@(replaceMode ? "checked" : null)" />
-                        <span>Replace payment</span>
+                        <span>@L["Payment.Replace"]</span>
                     </label>
                     <label>
                         <input type="radio"
@@ -119,7 +121,7 @@
                                value="@PaymentCorrectionMode.Cancel"
                                data-payment-correction-mode="cancel"
                                checked="@(!replaceMode ? "checked" : null)" />
-                        <span>Cancel payment</span>
+                        <span>@L["Payment.Cancel"]</span>
                     </label>
                 </div>
             </fieldset>
@@ -127,10 +129,10 @@
             <fieldset class="payment-replacement-fields"
                       data-payment-replacement-fields
                       data-active="@(replaceMode ? "true" : "false")">
-                <legend>Replacement Payment</legend>
+                <legend>@L["Payment.Replacement"]</legend>
                 <div class="action-form-grid">
                     <div class="form-field">
-                        <label for="replacement-amount-@paymentKey">Replacement amount (UAH)</label>
+                        <label for="replacement-amount-@paymentKey">@L["Payment.ReplacementAmountUah"]</label>
                         <input id="replacement-amount-@paymentKey"
                                type="number"
                                name="form.ReplacementAmount"
@@ -145,14 +147,14 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="replacement-context-@paymentKey">Replacement context</label>
+                        <label for="replacement-context-@paymentKey">@L["Payment.ReplacementContext"]</label>
                         <select id="replacement-context-@paymentKey"
                                 name="form.ReplacementPaymentContext"
                                 data-payment-replacement-input
                                 data-payment-replacement-required
                                 disabled="@(!replaceMode ? "disabled" : null)"
                                 required="@(replaceMode ? "required" : null)">
-                            <option value="" selected="@(input.ReplacementPaymentContext is null ? "selected" : null)">Choose context</option>
+                            <option value="" selected="@(input.ReplacementPaymentContext is null ? "selected" : null)">@L["Payment.ChooseContext"]</option>
                             @foreach (var paymentContext in CorrectPaymentFormViewModel.SupportedContexts)
                             {
                                 <option value="@paymentContext"
@@ -164,24 +166,24 @@
                     </div>
 
                     <div class="form-field form-field-wide">
-                        <label for="replacement-membership-@paymentKey">Replacement membership (optional)</label>
+                        <label for="replacement-membership-@paymentKey">@L["Payment.ReplacementMembershipOptional"]</label>
                         <select id="replacement-membership-@paymentKey"
                                 name="form.ReplacementMembershipId"
                                 data-payment-replacement-input
                                 disabled="@(!replaceMode ? "disabled" : null)">
-                            <option value="" selected="@(input.ReplacementMembershipId is null ? "selected" : null)">No membership</option>
+                            <option value="" selected="@(input.ReplacementMembershipId is null ? "selected" : null)">@L["Payment.NoMembership"]</option>
                             @foreach (var membership in Model.MembershipOptions)
                             {
                                 <option value="@membership.MembershipId"
                                         selected="@(input.ReplacementMembershipId == membership.MembershipId ? "selected" : null)">
-                                    @membership.TypeNameSnapshot | @MembershipStatusLabel(membership.Status) | ends @membership.EffectiveEndDate.ToString("yyyy-MM-dd")
+                                    @membership.TypeNameSnapshot | @MembershipStatusLabel(membership.Status) | @L["Payment.Ends"] @ReceptionDisplayFormatter.Date(membership.EffectiveEndDate)
                                 </option>
                             }
                         </select>
                     </div>
 
                     <div class="form-field form-field-wide">
-                        <label for="replacement-occurred-at-@paymentKey">Replacement occurred (UTC)</label>
+                        <label for="replacement-occurred-at-@paymentKey">@L["Payment.ReplacementOccurredUtc"]</label>
                         <input id="replacement-occurred-at-@paymentKey"
                                type="datetime-local"
                                name="form.ReplacementOccurredAtUtc"
@@ -194,7 +196,7 @@
                     </div>
 
                     <div class="form-field form-field-wide">
-                        <label for="replacement-comment-@paymentKey">Replacement comment (optional)</label>
+                        <label for="replacement-comment-@paymentKey">@L["Payment.ReplacementCommentOptional"]</label>
                         <textarea id="replacement-comment-@paymentKey"
                                   name="form.ReplacementComment"
                                   maxlength="@CorrectPaymentFormViewModel.CommentMaxLength"
@@ -205,7 +207,7 @@
             </fieldset>
 
             <div class="form-field">
-                <label for="correct-payment-reason-@paymentKey">Reason</label>
+                <label for="correct-payment-reason-@paymentKey">@L["Field.Reason"]</label>
                 <textarea id="correct-payment-reason-@paymentKey"
                           name="form.Reason"
                           maxlength="@CorrectPaymentFormViewModel.ReasonMaxLength"
@@ -213,7 +215,7 @@
             </div>
 
             <div class="form-field">
-                <label for="correct-payment-comment-@paymentKey">Correction comment (optional)</label>
+                <label for="correct-payment-comment-@paymentKey">@L["Payment.CorrectionCommentOptional"]</label>
                 <textarea id="correct-payment-comment-@paymentKey"
                           name="form.Comment"
                           maxlength="@CorrectPaymentFormViewModel.CommentMaxLength">@input.Comment</textarea>
@@ -227,45 +229,45 @@
                        value="true"
                        checked="@(input.Confirmed ? "checked" : null)"
                        required />
-                <span>I confirm this Payment should be corrected and its original history preserved.</span>
+                <span>@L["Payment.CorrectionConfirm"]</span>
             </label>
 
             <div class="action-form-footer">
                 <span id="correct-payment-loading-@paymentKey"
                       class="request-indicator htmx-indicator"
                       role="status"
-                      aria-live="polite">Applying correction...</span>
+                      aria-live="polite">@L["Payment.ApplyingCorrection"]</span>
                 <button class="danger-button"
                         type="submit"
                         data-correct-payment-submit
-                        data-busy-text="Applying...">Apply correction</button>
+                        data-busy-text="@L["Action.Applying"]">@L["Payment.ApplyCorrection"]</button>
             </div>
         </form>
     </div>
 </details>
 
 @functions {
-    private static string PaymentContextLabel(PaymentContext paymentContext)
+    private string PaymentContextLabel(PaymentContext paymentContext)
     {
         return paymentContext switch
         {
-            PaymentContext.MembershipSale => "Membership sale",
-            PaymentContext.OneOff => "One-off payment",
-            PaymentContext.Trial => "Trial payment",
-            PaymentContext.Other => "Other",
-            _ => "Unsupported",
+            PaymentContext.MembershipSale => L["Payment.Context.MembershipSale"],
+            PaymentContext.OneOff => L["Payment.Context.OneOff"],
+            PaymentContext.Trial => L["Payment.Context.Trial"],
+            PaymentContext.Other => L["Payment.Context.Other"],
+            _ => L["Error.Generic"],
         };
     }
 
-    private static string MembershipStatusLabel(string status)
+    private string MembershipStatusLabel(string status)
     {
         return status switch
         {
-            ClientMembershipSummaryStatusCodes.Active => "active",
-            ClientMembershipSummaryStatusCodes.Expired => "expired",
-            ClientMembershipSummaryStatusCodes.Canceled => "canceled",
-            ClientMembershipSummaryStatusCodes.Corrected => "corrected",
-            _ => status,
+            ClientMembershipSummaryStatusCodes.Active => L["Status.Active"],
+            ClientMembershipSummaryStatusCodes.Expired => L["Status.Expired"],
+            ClientMembershipSummaryStatusCodes.Canceled => L["Status.Canceled"],
+            ClientMembershipSummaryStatusCodes.Corrected => L["Status.Corrected"],
+            _ => L["Error.Generic"],
         };
     }
 }

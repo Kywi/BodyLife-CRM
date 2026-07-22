@@ -7,7 +7,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
     private const string ZeroAcknowledgement =
         "I acknowledge that this visit will move the membership below zero.";
     private const string CancellationConfirmation =
-        "I confirm this Visit was recorded by mistake and should be canceled.";
+        "I confirm this visit was recorded by mistake and should be canceled.";
     private readonly ReceptionAppFixture _app;
     private IPlaywright? _playwright;
     private IBrowser? _browser;
@@ -237,7 +237,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             cancelPanel = profile.Locator($"#cancel-visit-panel-{visitId:N}");
             await ExpectVisibleAsync(
                 cancelPanel.GetByText(
-                    "Confirm that this Visit should be canceled.",
+                    "Confirm this action before continuing.",
                     new() { Exact = true }),
                 "tablet",
                 "server confirmation error");
@@ -308,7 +308,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             var panel = profile.Locator("#mark-visit-action-panel");
             await OpenMarkVisitPanelAsync(panel, "tablet");
             await ExpectVisibleAsync(
-                panel.GetByText("Membership has no remaining visits.", new() { Exact = true }),
+                panel.GetByText("This membership has no remaining visits.", new() { Exact = true }),
                 "tablet",
                 "zero remaining warning");
             await panel.GetByRole(
@@ -325,7 +325,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             Assert.Equal("-1", await ReadRemainingVisitsAsync(profile));
             await ExpectVisibleAsync(
                 profile.Locator(".membership-panel").GetByText(
-                    "Membership has a negative visit balance.",
+                    "This membership has a negative visit balance.",
                     new() { Exact = true }),
                 "tablet",
                 "negative balance warning");
@@ -365,7 +365,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             await OpenMarkVisitPanelAsync(panel, "phone");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "No lifecycle-active memberships. Choose one-off or trial deliberately.",
+                    "No lifecycle-active memberships. Deliberately choose one-off or trial.",
                     new() { Exact = true }),
                 "phone",
                 "explicit non-membership context");
@@ -457,7 +457,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 "changed-warning command error");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "Membership warnings changed or were not acknowledged exactly. Review the current requirements below.",
+                    "Acknowledge the current membership warning before continuing.",
                     new() { Exact = true }),
                 "tablet",
                 "current acknowledgement instruction");
@@ -518,7 +518,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             panel = profile.Locator("#mark-visit-action-panel");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "Membership visit is blocked by an active freeze on this date. Choose one-off/trial or correct the freeze.",
+                    "This visit date falls within an active freeze.",
                     new() { Exact = true }),
                 "tablet",
                 "Freeze command error");
@@ -572,6 +572,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
 
         return await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

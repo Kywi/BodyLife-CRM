@@ -119,7 +119,7 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 "Freeze validation error");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "Freeze end date must be on or after the start date.",
+                    "The end date must not be before the start date.",
                     new() { Exact = true }),
                 viewportName,
                 "inclusive range validation");
@@ -166,7 +166,7 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 viewportName,
                 "canonical inclusive Freeze range");
             Assert.Equal(
-                $"{FormatDate(startDate)} to {FormatDate(endDate)}",
+                $"{DisplayDate(startDate)} to {DisplayDate(endDate)}",
                 (await freezeRow
                     .Locator("[data-extension-inclusive-range]")
                     .InnerTextAsync())
@@ -188,7 +188,7 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 membershipStateAfter.EffectiveEndDate);
             await ExpectVisibleAsync(
                 profile.Locator(".membership-summary-grid").GetByText(
-                    FormatDate(membershipStateAfter.EffectiveEndDate),
+                    DisplayDate(membershipStateAfter.EffectiveEndDate),
                     new() { Exact = true }),
                 viewportName,
                 "canonical effective end date");
@@ -207,6 +207,7 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
 
         return await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -370,5 +371,12 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
     private static string FormatDate(DateOnly date)
     {
         return date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string DisplayDate(DateOnly date)
+    {
+        return date.ToString(
+            "d",
+            System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture));
     }
 }

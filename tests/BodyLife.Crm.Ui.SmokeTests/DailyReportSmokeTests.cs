@@ -43,6 +43,7 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -164,7 +165,7 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
                 "original correction direction");
             await ExpectVisibleAsync(
                 paymentRows.GetByText(
-                    "Changed: amount, occurred time",
+                    "Changed: Amount, Occurred time",
                     new() { Exact = true }).First,
                 viewportName,
                 "Payment correction fields");
@@ -349,7 +350,7 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
                 viewportName,
                 "opened report Payment correction form");
             await ExpectVisibleAsync(
-                correctionPanel.GetByText("900 UAH", new() { Exact = true }),
+                correctionPanel.GetByText("900.00 UAH", new() { Exact = true }),
                 viewportName,
                 "report Payment correction amount");
             await AssertFitsViewportAsync(page, viewportName, "report Client profile");
@@ -366,6 +367,7 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -392,7 +394,7 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
             var error = page.GetByRole(AriaRole.Alert);
             await ExpectVisibleAsync(error, "tablet", "invalid date error");
             await ExpectVisibleAsync(
-                error.GetByText("Enter a valid business date.", new() { Exact = true }),
+                error.GetByText("Enter valid report filters.", new() { Exact = true }),
                 "tablet",
                 "invalid date message");
             Assert.Equal(0, await page.Locator(".report-summary").CountAsync());

@@ -47,6 +47,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var addition = scenario.Explanations.NonWorkingDayAddition;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -89,13 +90,13 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Confirmed preview",
                     "Preview scope"));
             Assert.Equal(
-                $"{addition.PreviewIssuedAt:yyyy-MM-dd HH:mm:ss} UTC",
+                TimestampLabel(addition.PreviewIssuedAt),
                 await ExplanationFactAsync(
                     explanation,
                     "Confirmed preview",
                     "Preview issued"));
             Assert.Equal(
-                $"{addition.PreviewExpiresAt:yyyy-MM-dd HH:mm:ss} UTC",
+                TimestampLabel(addition.PreviewExpiresAt),
                 await ExplanationFactAsync(
                     explanation,
                     "Confirmed preview",
@@ -113,19 +114,19 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded period",
                     "Non-working period"));
             Assert.Equal(
-                $"{addition.Range.StartDate:yyyy-MM-dd} to {addition.Range.EndDate:yyyy-MM-dd}",
+                DateRangeLabel(addition.Range.StartDate, addition.Range.EndDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded period",
                     "Period"));
             Assert.Equal(
-                addition.Range.InclusiveDays.ToString(CultureInfo.InvariantCulture),
+                DaysLabel(addition.Range.InclusiveDays),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded period",
                     "Inclusive days"));
             Assert.Equal(
-                "Maintenance",
+                addition.ReasonCode,
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded period",
@@ -143,8 +144,9 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
             Assert.Contains(
                 $"Membership {addition.FirstMembershipId.ToString("N")[..8]} / "
                     + $"Client {addition.FirstClientId.ToString("N")[..8]}: "
-                    + $"{addition.Range.StartDate:yyyy-MM-dd} to "
-                    + $"{addition.Range.EndDate:yyyy-MM-dd}",
+                    + DateRangeLabel(
+                        addition.Range.StartDate,
+                        addition.Range.EndDate),
                 applicationDetails,
                 StringComparison.Ordinal);
             Assert.Equal(
@@ -160,7 +162,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded period",
                     "Status"));
             Assert.Equal(
-                $"{addition.RecordedAt:yyyy-MM-dd HH:mm:ss} UTC",
+                TimestampLabel(addition.RecordedAt),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded period",
@@ -219,6 +221,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var client = scenario.Explanations.ClientCreation;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -374,6 +377,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var payment = scenario.Explanations.PaymentCreation;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -424,8 +428,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded payment",
                     "Client"));
             Assert.Equal(
-                $"{payment.Amount.ToString("0.##", CultureInfo.InvariantCulture)} " +
-                payment.Currency,
+                MoneyLabel(payment.Amount, payment.Currency),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded payment",
@@ -449,7 +452,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded payment",
                     "Membership"));
             Assert.Equal(
-                $"{payment.OccurredAt:yyyy-MM-dd HH:mm:ss} UTC",
+                TimestampLabel(payment.OccurredAt),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded payment",
@@ -507,6 +510,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var visit = scenario.Explanations.VisitMark;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -621,9 +625,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded visit",
                     "Negative balance"));
             Assert.Equal(
-                visit.FirstNegativeVisitDate.ToString(
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture),
+                DateLabel(visit.FirstNegativeVisitDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded visit",
@@ -688,6 +690,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var issue = scenario.Explanations.MembershipIssue;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -754,7 +757,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Issued Membership",
                     "Type snapshot"));
             Assert.Equal(
-                $"{issue.DurationDays} days",
+                DaysLabel(issue.DurationDays),
                 await ExplanationFactAsync(
                     explanation,
                     "Issued Membership",
@@ -766,20 +769,19 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Issued Membership",
                     "Visit limit"));
             Assert.Equal(
-                $"{issue.PriceAmount.ToString("0.##", CultureInfo.InvariantCulture)} " +
-                issue.PriceCurrency,
+                MoneyLabel(issue.PriceAmount, issue.PriceCurrency),
                 await ExplanationFactAsync(
                     explanation,
                     "Issued Membership",
                     "Snapshot price"));
             Assert.Equal(
-                issue.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                DateLabel(issue.StartDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Issued Membership",
                     "Start date"));
             Assert.Equal(
-                issue.BaseEndDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                DateLabel(issue.BaseEndDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Issued Membership",
@@ -791,9 +793,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Issued Membership",
                     "Initial remaining visits"));
             Assert.Equal(
-                issue.InitialEffectiveEndDate.ToString(
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture),
+                DateLabel(issue.InitialEffectiveEndDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Issued Membership",
@@ -861,6 +861,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var opening = scenario.Explanations.MembershipOpeningStateCreation;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -917,7 +918,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded opening state",
                     "Client"));
             Assert.Equal(
-                opening.OpeningAsOfDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                DateLabel(opening.OpeningAsOfDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded opening state",
@@ -935,15 +936,13 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded opening state",
                     "Declared negative balance"));
             Assert.Equal(
-                opening.KnownEffectiveEndDate.ToString(
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture),
+                DateLabel(opening.KnownEffectiveEndDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded opening state",
                     "Known effective end"));
             Assert.Equal(
-                $"{opening.KnownExtensionDays.ToString(CultureInfo.InvariantCulture)} days",
+                DaysLabel(opening.KnownExtensionDays),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded opening state",
@@ -967,7 +966,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded opening state",
                     "Entry origin"));
             Assert.Equal(
-                $"{opening.OccurredAt:yyyy-MM-dd HH:mm:ss} UTC",
+                TimestampLabel(opening.OccurredAt),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded opening state",
@@ -1039,6 +1038,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         Assert.Equal(scenario.PageSize + 2, scenario.TotalEntries);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -1168,13 +1168,13 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 "shared session label");
             await ExpectVisibleAsync(
                 featured.GetByText(
-                    $"{scenario.FeaturedOccurredAt:yyyy-MM-dd HH:mm:ss} UTC",
+                    TimestampLabel(scenario.FeaturedOccurredAt),
                     new() { Exact = true }),
                 viewportName,
                 "fallback occurred time");
             await ExpectVisibleAsync(
                 featured.GetByText(
-                    $"{scenario.FeaturedRecordedAt:yyyy-MM-dd HH:mm:ss} UTC",
+                    TimestampLabel(scenario.FeaturedRecordedAt),
                     new() { Exact = true }),
                 viewportName,
                 "fallback recorded time");
@@ -1241,6 +1241,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var scenario = await _app.EnsureAuditTimelineScenarioAsync();
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -1419,6 +1420,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var membershipType = scenario.Explanations.MembershipTypeCreation;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -1466,14 +1468,15 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 membershipType.Name,
                 await ExplanationFactAsync(explanation, "Created catalog", "Name"));
             Assert.Equal(
-                $"{membershipType.DurationDays.ToString(CultureInfo.InvariantCulture)} days",
+                DaysLabel(membershipType.DurationDays),
                 await ExplanationFactAsync(explanation, "Created catalog", "Duration"));
             Assert.Equal(
                 membershipType.VisitsLimit.ToString(CultureInfo.InvariantCulture),
                 await ExplanationFactAsync(explanation, "Created catalog", "Visit limit"));
             Assert.Equal(
-                $"{membershipType.PriceAmount.ToString("0.##", CultureInfo.InvariantCulture)} " +
-                membershipType.PriceCurrency,
+                MoneyLabel(
+                    membershipType.PriceAmount,
+                    membershipType.PriceCurrency),
                 await ExplanationFactAsync(explanation, "Created catalog", "Price"));
             Assert.Equal(
                 "Active",
@@ -1485,7 +1488,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Created catalog",
                     "Catalog comment"));
             Assert.Equal(
-                $"{membershipType.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC",
+                TimestampLabel(membershipType.CreatedAt),
                 await ExplanationFactAsync(explanation, "Created catalog", "Created"));
             await ExpectVisibleAsync(
                 explanation.GetByText(
@@ -1541,6 +1544,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var scenario = await _app.EnsureAuditTimelineScenarioAsync();
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -1698,6 +1702,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var nonWorkingDays = scenario.Explanations.NonWorkingDays;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -1734,7 +1739,9 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 viewportName,
                 "Non-working day correction explanation title");
             Assert.Equal(
-                $"{nonWorkingDays.CorrectedOriginalPeriod.StartDate:yyyy-MM-dd} to {nonWorkingDays.CorrectedOriginalPeriod.EndDate:yyyy-MM-dd}",
+                DateRangeLabel(
+                    nonWorkingDays.CorrectedOriginalPeriod.StartDate,
+                    nonWorkingDays.CorrectedOriginalPeriod.EndDate),
                 await ExplanationFactAsync(
                     correctionExplanation,
                     "Original period",
@@ -1747,7 +1754,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Original period",
                     "Affected memberships"));
             Assert.Equal(
-                "Weather Closure",
+                "weather_closure",
                 await ExplanationFactAsync(
                     correctionExplanation,
                     "Original period",
@@ -1759,7 +1766,9 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Replacement period",
                     "Correction type"));
             Assert.Equal(
-                $"{nonWorkingDays.CorrectedReplacementPeriod.StartDate:yyyy-MM-dd} to {nonWorkingDays.CorrectedReplacementPeriod.EndDate:yyyy-MM-dd}",
+                DateRangeLabel(
+                    nonWorkingDays.CorrectedReplacementPeriod.StartDate,
+                    nonWorkingDays.CorrectedReplacementPeriod.EndDate),
                 await ExplanationFactAsync(
                     correctionExplanation,
                     "Replacement period",
@@ -1772,7 +1781,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Replacement period",
                     "Affected memberships"));
             Assert.Equal(
-                "Maintenance",
+                "maintenance",
                 await ExplanationFactAsync(
                     correctionExplanation,
                     "Replacement period",
@@ -1837,7 +1846,9 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 viewportName,
                 "Non-working day cancellation explanation title");
             Assert.Equal(
-                $"{nonWorkingDays.CanceledPeriod.StartDate:yyyy-MM-dd} to {nonWorkingDays.CanceledPeriod.EndDate:yyyy-MM-dd}",
+                DateRangeLabel(
+                    nonWorkingDays.CanceledPeriod.StartDate,
+                    nonWorkingDays.CanceledPeriod.EndDate),
                 await ExplanationFactAsync(
                     cancellationExplanation,
                     "Original period",
@@ -1907,6 +1918,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var freeze = scenario.Explanations.FreezeAddition;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -1948,15 +1960,13 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Before Freeze",
                     "Membership"));
             Assert.Equal(
-                freeze.BeforeExtensionDays.ToString(CultureInfo.InvariantCulture),
+                DaysLabel(freeze.BeforeExtensionDays),
                 await ExplanationFactAsync(
                     explanation,
                     "Before Freeze",
                     "Extension days"));
             Assert.Equal(
-                freeze.BeforeEffectiveEndDate.ToString(
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture),
+                DateLabel(freeze.BeforeEffectiveEndDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Before Freeze",
@@ -1968,10 +1978,10 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 freeze.ClientId.ToString("N")[..8],
                 await ExplanationFactAsync(explanation, "Recorded Freeze", "Client"));
             Assert.Equal(
-                $"{freeze.Range.StartDate:yyyy-MM-dd} to {freeze.Range.EndDate:yyyy-MM-dd}",
+                DateRangeLabel(freeze.Range.StartDate, freeze.Range.EndDate),
                 await ExplanationFactAsync(explanation, "Recorded Freeze", "Period"));
             Assert.Equal(
-                freeze.Range.InclusiveDays.ToString(CultureInfo.InvariantCulture),
+                DaysLabel(freeze.Range.InclusiveDays),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded Freeze",
@@ -1983,7 +1993,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded Freeze",
                     "Freeze reason"));
             Assert.Equal(
-                $"{freeze.OccurredAt:yyyy-MM-dd HH:mm:ss} UTC",
+                TimestampLabel(freeze.OccurredAt),
                 await ExplanationFactAsync(explanation, "Recorded Freeze", "Occurred"));
             Assert.Equal(
                 "Normal entry",
@@ -1998,15 +2008,13 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded Freeze",
                     "Source status"));
             Assert.Equal(
-                freeze.AfterExtensionDays.ToString(CultureInfo.InvariantCulture),
+                DaysLabel(freeze.AfterExtensionDays),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded Freeze",
                     "Extension days"));
             Assert.Equal(
-                freeze.AfterEffectiveEndDate.ToString(
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture),
+                DateLabel(freeze.AfterEffectiveEndDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded Freeze",
@@ -2060,6 +2068,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var freeze = scenario.Explanations.FreezeCancellation;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -2096,13 +2105,13 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 viewportName,
                 "Freeze cancellation explanation title");
             Assert.Equal(
-                $"{freeze.Range.StartDate:yyyy-MM-dd} to {freeze.Range.EndDate:yyyy-MM-dd}",
+                DateRangeLabel(freeze.Range.StartDate, freeze.Range.EndDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Original freeze",
                     "Period"));
             Assert.Equal(
-                freeze.Range.InclusiveDays.ToString(CultureInfo.InvariantCulture),
+                DaysLabel(freeze.Range.InclusiveDays),
                 await ExplanationFactAsync(
                     explanation,
                     "Original freeze",
@@ -2114,15 +2123,13 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Original freeze",
                     "Freeze reason"));
             Assert.Equal(
-                freeze.BeforeExtensionDays.ToString(CultureInfo.InvariantCulture),
+                DaysLabel(freeze.BeforeExtensionDays),
                 await ExplanationFactAsync(
                     explanation,
                     "Original freeze",
                     "Extension days"));
             Assert.Equal(
-                freeze.BeforeEffectiveEndDate.ToString(
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture),
+                DateLabel(freeze.BeforeEffectiveEndDate),
                 await ExplanationFactAsync(
                     explanation,
                     "Original freeze",
@@ -2140,15 +2147,13 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "After cancellation",
                     "Status"));
             Assert.Equal(
-                freeze.AfterExtensionDays.ToString(CultureInfo.InvariantCulture),
+                DaysLabel(freeze.AfterExtensionDays),
                 await ExplanationFactAsync(
                     explanation,
                     "After cancellation",
                     "Extension days"));
             Assert.Equal(
-                freeze.AfterEffectiveEndDate.ToString(
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture),
+                DateLabel(freeze.AfterEffectiveEndDate),
                 await ExplanationFactAsync(
                     explanation,
                     "After cancellation",
@@ -2207,6 +2212,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var clientAndCards = scenario.Explanations.ClientAndCards;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -2397,6 +2403,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var staff = scenario.Explanations.StaffAccounts;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -2514,6 +2521,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var staff = scenario.Explanations.StaffAccounts;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -2685,6 +2693,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var staff = scenario.Explanations.StaffAccounts;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -2824,6 +2833,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         var scenario = await _app.EnsureAuditTimelineScenarioAsync();
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -2850,7 +2860,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
             var error = page.GetByRole(AriaRole.Alert);
             await ExpectVisibleAsync(error, "tablet", "invalid audit offset error");
             Assert.Contains(
-                "Offset must be between 0 and 10000.",
+                "Enter valid client, entity, date, and page filters.",
                 await error.InnerTextAsync(),
                 StringComparison.Ordinal);
             Assert.Equal(
@@ -2963,10 +2973,33 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
         return await term.Locator("xpath=following-sibling::dd").InnerTextAsync();
     }
 
-    private static string MoneyLabel(decimal amount)
+    private static string MoneyLabel(decimal amount, string currency = "UAH")
     {
-        return $"{amount.ToString("0.##", CultureInfo.InvariantCulture)} UAH";
+        return $"{amount.ToString("N2", WorkflowCulture)} {currency}";
     }
+
+    private static string DateLabel(DateOnly date)
+    {
+        return date.ToString("d", WorkflowCulture);
+    }
+
+    private static string DateRangeLabel(DateOnly startDate, DateOnly endDate)
+    {
+        return $"{DateLabel(startDate)} to {DateLabel(endDate)}";
+    }
+
+    private static string TimestampLabel(DateTimeOffset timestamp)
+    {
+        return $"{timestamp.UtcDateTime.ToString("g", WorkflowCulture)} UTC";
+    }
+
+    private static string DaysLabel(int days)
+    {
+        return days == 1 ? "1 day" : $"{days.ToString(WorkflowCulture)} days";
+    }
+
+    private static CultureInfo WorkflowCulture { get; } =
+        CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture);
 
     private static async Task ExpectVisibleAsync(
         ILocator locator,

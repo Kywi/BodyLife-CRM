@@ -1,16 +1,19 @@
 using System.Security.Claims;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages;
 
 public sealed class LoginModel(
     AccountLoginService loginService,
-    IBodyLifeAuthTechnicalLogger authTechnicalLogger) : PageModel
+    IBodyLifeAuthTechnicalLogger authTechnicalLogger,
+    IStringLocalizer<Authentication> authenticationLocalizer) : PageModel
 {
     [BindProperty]
     public string? LoginName { get; set; }
@@ -31,7 +34,7 @@ public sealed class LoginModel(
         if (loginResult is not { Status: AccountLoginStatus.Success, Session: not null })
         {
             authTechnicalLogger.LoginFailed(HttpContext, LoginName, loginResult.Status);
-            ModelState.AddModelError(string.Empty, "Login failed.");
+            ModelState.AddModelError(string.Empty, authenticationLocalizer["Login.Failed"]);
             return Page();
         }
 

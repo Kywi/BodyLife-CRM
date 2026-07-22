@@ -1,8 +1,10 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages.Reports;
 
@@ -10,7 +12,8 @@ public sealed class NegativeClientsModel(
     IBodyLifeRequestContextResolver requestContextResolver,
     IBodyLifeQueryHandler<ListNegativeClientsQuery, ListNegativeClientsResult>
         listNegativeClients,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IStringLocalizer<BodyLife.Crm.Web.Localization.Reports> localizer)
     : PageModel
 {
     private const int PageSize = 10;
@@ -41,7 +44,7 @@ public sealed class NegativeClientsModel(
     {
         if (!ModelState.IsValid)
         {
-            LoadError = "Enter a valid as-of date and page offset.";
+            LoadError = localizer["Error.InvalidInput"];
             return;
         }
 
@@ -54,10 +57,12 @@ public sealed class NegativeClientsModel(
                 Limit: PageSize,
                 Offset: Offset.Value),
             cancellationToken);
+        if (Result is { Status: not ListNegativeClientsStatus.Success })
+            LoadError = ReportsPresentation.Error(localizer, Result.Status);
 
         if (Result is { Status: ListNegativeClientsStatus.Success, Page: null })
         {
-            LoadError = "Negative-clients report returned no canonical Memberships page.";
+            LoadError = localizer["Error.Unavailable"];
         }
     }
 }

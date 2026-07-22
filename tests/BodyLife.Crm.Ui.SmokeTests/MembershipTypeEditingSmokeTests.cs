@@ -89,7 +89,7 @@ public sealed class MembershipTypeEditingSmokeTests : IClassFixture<ReceptionApp
 
             await ExpectVisibleAsync(
                 page.GetByText(
-                    "At least one membership type catalog field must change.",
+                    "Review the highlighted values.",
                     new() { Exact = true }),
                 viewportName,
                 "no-op validation error");
@@ -113,7 +113,7 @@ public sealed class MembershipTypeEditingSmokeTests : IClassFixture<ReceptionApp
 
             await ExpectVisibleAsync(
                 page.GetByText(
-                    "This membership type changed after the form was opened. Canonical values were reloaded; review them before saving again.",
+                    "This membership type changed. Review the refreshed values.",
                     new() { Exact = true }),
                 viewportName,
                 "stale-state guidance");
@@ -251,6 +251,7 @@ public sealed class MembershipTypeEditingSmokeTests : IClassFixture<ReceptionApp
     {
         return await _browser!.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

@@ -56,7 +56,10 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                 viewportName,
                 "Payment correction client profile");
             var sourceRow = profile.Locator(".recent-payment-row").Filter(
-                new LocatorFilterOptions { HasText = $"{originalAmount} UAH" });
+                new LocatorFilterOptions
+                {
+                    HasText = $"{originalAmount.ToString("N2", CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UAH",
+                });
             Assert.Equal(1, await sourceRow.CountAsync());
             var sourcePaymentIdValue = await sourceRow.GetAttributeAsync("data-payment-id");
             Assert.True(Guid.TryParse(sourcePaymentIdValue, out var sourcePaymentId));
@@ -71,12 +74,14 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
             Assert.NotNull(await form.GetAttributeAsync("data-busy-form"));
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "The original Payment remains visible. Canonical cash totals use its cancellation or replacement record.",
+                    "The original payment remains visible and the correction is recorded as a separate source fact.",
                     new() { Exact = true }),
                 viewportName,
                 "correction history warning");
             await ExpectVisibleAsync(
-                panel.GetByText($"{originalAmount} UAH", new() { Exact = true }),
+                panel.GetByText(
+                    $"{originalAmount.ToString("N2", CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UAH",
+                    new() { Exact = true }),
                 viewportName,
                 "original Payment amount context");
 
@@ -123,7 +128,7 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                 "Payment correction validation error");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "Enter why this Payment should be corrected or canceled.",
+                    "Enter a reason for this correction.",
                     new() { Exact = true }),
                 viewportName,
                 "Payment correction reason requirement");
@@ -148,7 +153,7 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                 AriaRole.Checkbox,
                 new()
                 {
-                    Name = "I confirm this Payment should be corrected and its original history preserved.",
+                    Name = "I confirm this payment should be corrected and its original history preserved.",
                 })
                 .CheckAsync();
 
@@ -206,7 +211,10 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                     viewportName,
                     "original replacement direction");
                 var replacementRow = profile.Locator("[data-payment-status='active']").Filter(
-                    new LocatorFilterOptions { HasText = $"{replacementAmount} UAH" });
+                    new LocatorFilterOptions
+                    {
+                        HasText = $"{replacementAmount.ToString("N2", CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UAH",
+                    });
                 await ExpectVisibleAsync(
                     replacementRow,
                     viewportName,
@@ -270,6 +278,7 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
 
         return await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

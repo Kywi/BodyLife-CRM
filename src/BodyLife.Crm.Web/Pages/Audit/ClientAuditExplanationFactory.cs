@@ -3,12 +3,12 @@ using BodyLife.Crm.Modules.Audit;
 
 namespace BodyLife.Crm.Web.Pages.Audit;
 
-internal static class ClientAuditExplanationFactory
+public sealed class ClientAuditExplanationFactory(AuditPresentation presentation)
 {
     private static readonly JsonSerializerOptions AuditJsonOptions =
         new(JsonSerializerDefaults.Web);
 
-    internal static AuditEntryExplanationViewModel CreateClientCreation(
+    internal AuditEntryExplanationViewModel CreateClientCreation(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -52,21 +52,20 @@ internal static class ClientAuditExplanationFactory
 
         List<AuditEntryExplanationFactViewModel> afterFacts =
         [
-            Fact("Client", TimelineModel.ShortId(entry.EntityId)),
+            Fact("Client", presentation.ShortId(entry.EntityId)),
             Fact("Name", FullName(created)),
-            Fact("Phone", created.Phone ?? "None"),
+            Fact("Phone", created.Phone ?? presentation.Value("None")),
             Fact("Operational status", StatusLabel(created.OperationalStatus)),
-            Fact("Comment", created.Comment ?? "None"),
-            Fact("Current card", created.CardNumber ?? "None"),
+            Fact("Comment", created.Comment ?? presentation.Value("None")),
+            Fact("Current card", created.CardNumber ?? presentation.Value("None")),
             Fact(
                 "Card assignment",
                 cardAssignmentId is { } assignmentId
-                    ? TimelineModel.ShortId(assignmentId)
-                    : "None"),
+                    ? presentation.ShortId(assignmentId)
+                    : presentation.Value("None")),
             Fact(
                 "Warnings acknowledged",
-                acknowledgements.Count.ToString(
-                    System.Globalization.CultureInfo.InvariantCulture)),
+                presentation.Number(acknowledgements.Count)),
         ];
         if (acknowledgements.Count > 0)
         {
@@ -77,21 +76,21 @@ internal static class ClientAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "client-created",
-            "Client profile created",
-            "The stored reception-facing identity, optional current-card assignment and accepted duplicate warnings are shown. Search-normalization fields are intentionally omitted.",
-            "Before creation",
-            "Created profile",
+            presentation.Explanation("ClientCreated.Title"),
+            presentation.Explanation("ClientCreated.Narrative"),
+            presentation.Explanation("ClientCreated.Before"),
+            presentation.Explanation("ClientCreated.After"),
             [
-                Fact("Client", "Not present"),
-                Fact("Current card", "None"),
-                Fact("Warnings acknowledged", "0"),
+                Fact("Client", presentation.Value("NotPresent")),
+                Fact("Current card", presentation.Value("None")),
+                Fact("Warnings acknowledged", presentation.Number(0)),
             ],
             afterFacts,
-            ChangedFields: "Client profile",
+            ChangedFields: presentation.Changed("ClientProfile"),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateClientUpdate(
+    internal AuditEntryExplanationViewModel CreateClientUpdate(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -123,7 +122,7 @@ internal static class ClientAuditExplanationFactory
         var changedFields = ClientChangedFields(original, updated);
         if (acknowledgements.Count > 0)
         {
-            changedFields.Add("Duplicate warnings acknowledged");
+            changedFields.Add("DuplicateWarningsAcknowledged");
         }
 
         if (changedFields.Count == 0)
@@ -136,7 +135,7 @@ internal static class ClientAuditExplanationFactory
         {
             afterFacts.Add(Fact(
                 "Warnings acknowledged",
-                acknowledgements.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                presentation.Number(acknowledgements.Count)));
             afterFacts.Add(Fact(
                 "Acknowledgement details",
                 string.Join("; ", acknowledgements.Select(AcknowledgementLabel))));
@@ -144,17 +143,17 @@ internal static class ClientAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "client-updated",
-            "Client profile updated",
-            "The stored profile snapshots show the Owner-visible identity change. Card assignment is tracked separately in its own audit entry.",
-            "Original profile",
-            "Updated profile",
+            presentation.Explanation("ClientUpdated.Title"),
+            presentation.Explanation("ClientUpdated.Narrative"),
+            presentation.Explanation("ClientUpdated.Before"),
+            presentation.Explanation("ClientUpdated.After"),
             ClientFacts(original),
             afterFacts,
-            string.Join(", ", changedFields),
+            string.Join(", ", changedFields.Select(presentation.Changed)),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateCardAssignment(
+    internal AuditEntryExplanationViewModel CreateCardAssignment(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -175,17 +174,17 @@ internal static class ClientAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "card-assigned",
-            "Card assigned to Client",
-            "A current card was assigned to this Client. The raw card value shown here is the stored reception-facing value.",
-            "Before assignment",
-            "Current card",
-            [Fact("Current card", "None")],
+            presentation.Explanation("CardAssigned.Title"),
+            presentation.Explanation("CardAssigned.Narrative"),
+            presentation.Explanation("CardAssigned.Before"),
+            presentation.Explanation("CardAssigned.After"),
+            [Fact("Current card", presentation.Value("None"))],
             CardFacts(current),
-            ChangedFields: "Current card",
+            ChangedFields: presentation.Changed("CurrentCard"),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateCardChange(
+    internal AuditEntryExplanationViewModel CreateCardChange(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -209,19 +208,19 @@ internal static class ClientAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "card-changed",
-            "Current card replaced",
-            "The previous assignment remains in history, and a new current assignment was recorded. Reissuing the same card number is still a new assignment.",
-            "Previous card",
-            "Current card",
+            presentation.Explanation("CardChanged.Title"),
+            presentation.Explanation("CardChanged.Narrative"),
+            presentation.Explanation("CardChanged.Before"),
+            presentation.Explanation("CardChanged.After"),
             CardFacts(original),
             CardFacts(current),
             ChangedFields: original.CardNumberNormalized == current.CardNumberNormalized
-                ? "Card assignment"
-                : "Card number, Card assignment",
+                ? presentation.Changed("CardAssignment")
+                : string.Join(", ", [presentation.Changed("CardNumber"), presentation.Changed("CardAssignment")]),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateCardClear(
+    internal AuditEntryExplanationViewModel CreateCardClear(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -243,16 +242,16 @@ internal static class ClientAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "card-cleared",
-            "Current card cleared",
-            "The previous assignment remains in history, while the Client now has no current card.",
-            "Previous card",
-            "After clearing",
+            presentation.Explanation("CardCleared.Title"),
+            presentation.Explanation("CardCleared.Narrative"),
+            presentation.Explanation("CardCleared.Before"),
+            presentation.Explanation("CardCleared.After"),
             CardFacts(original),
             [
-                Fact("Previous assignment", "Preserved in history"),
-                Fact("Current card", "None"),
+                Fact("Previous assignment", presentation.Value("PreservedInHistory")),
+                Fact("Current card", presentation.Value("None")),
             ],
-            ChangedFields: "Current card",
+            ChangedFields: presentation.Changed("CurrentCard"),
             IsAvailable: true);
     }
 
@@ -360,21 +359,21 @@ internal static class ClientAuditExplanationFactory
         AddChangedField(
             fields,
             original.OperationalStatus != updated.OperationalStatus,
-            "Operational status");
+            "OperationalStatus");
         AddChangedField(fields, original.Comment != updated.Comment, "Comment");
         return fields;
     }
 
-    private static IReadOnlyList<AuditEntryExplanationFactViewModel> ClientFacts(
+    private IReadOnlyList<AuditEntryExplanationFactViewModel> ClientFacts(
         ClientIdentitySnapshot client)
     {
         return
         [
             Fact("Name", FullName(client)),
-            Fact("Phone", client.Phone ?? "None"),
+            Fact("Phone", client.Phone ?? presentation.Value("None")),
             Fact("Operational status", StatusLabel(client.OperationalStatus)),
-            Fact("Comment", client.Comment ?? "None"),
-            Fact("Updated", TimelineModel.TimestampLabel(client.UpdatedAt)),
+            Fact("Comment", client.Comment ?? presentation.Value("None")),
+            Fact("Updated", presentation.Timestamp(client.UpdatedAt)),
         ];
     }
 
@@ -411,27 +410,31 @@ internal static class ClientAuditExplanationFactory
             RequireTimestamp(assignment.AssignedAt, "assignedAt"));
     }
 
-    private static IReadOnlyList<AuditEntryExplanationFactViewModel> CardFacts(
+    private IReadOnlyList<AuditEntryExplanationFactViewModel> CardFacts(
         CardAssignmentSnapshot assignment)
     {
         return
         [
             Fact("Card number", assignment.CardNumber),
-            Fact("Assigned", TimelineModel.TimestampLabel(assignment.AssignedAt)),
-            Fact("Assignment", TimelineModel.ShortId(assignment.Id)),
+            Fact("Assigned", presentation.Timestamp(assignment.AssignedAt)),
+            Fact("Assignment", presentation.ShortId(assignment.Id)),
         ];
     }
 
-    private static string AcknowledgementLabel(
+    private string AcknowledgementLabel(
         DuplicateWarningAcknowledgementSnapshot acknowledgement)
     {
         var warning = acknowledgement.WarningType switch
         {
-            "duplicate_phone" => "Duplicate phone",
-            "similar_name" => "Similar name",
+            "duplicate_phone" => presentation.Text("Warning.DuplicatePhone"),
+            "similar_name" => presentation.Text("Warning.SimilarName"),
             _ => throw new JsonException("Duplicate warning type is invalid."),
         };
-        return $"{warning} for Client {TimelineModel.ShortId(acknowledgement.MatchedClientId)}: {acknowledgement.Reason}";
+        return presentation.Text(
+            "Template.WarningAcknowledgement",
+            warning,
+            presentation.ShortId(acknowledgement.MatchedClientId),
+            acknowledgement.Reason);
     }
 
     private static string FullName(ClientIdentitySnapshot client)
@@ -450,12 +453,12 @@ internal static class ClientAuditExplanationFactory
                 .Where(part => part is not null));
     }
 
-    private static string StatusLabel(string status)
+    private string StatusLabel(string status)
     {
         return status switch
         {
-            "active" => "Active",
-            "inactive" => "Inactive",
+            "active" => presentation.Status("Active"),
+            "inactive" => presentation.Status("Inactive"),
             _ => throw new JsonException("Client operational status is invalid."),
         };
     }
@@ -541,9 +544,27 @@ internal static class ClientAuditExplanationFactory
         }
     }
 
-    private static AuditEntryExplanationFactViewModel Fact(string label, string value)
+    private AuditEntryExplanationFactViewModel Fact(string label, string value)
     {
-        return new AuditEntryExplanationFactViewModel(label, value);
+        var semanticKey = label switch
+        {
+            "Client" => "Client",
+            "Name" => "ClientName",
+            "Phone" => "Phone",
+            "Operational status" => "OperationalStatus",
+            "Comment" => "Comment",
+            "Current card" => "CurrentCard",
+            "Card assignment" => "CardAssignment",
+            "Warnings acknowledged" => "WarningsAcknowledged",
+            "Acknowledgement details" => "AcknowledgementDetails",
+            "Updated" => "Updated",
+            "Card number" => "CardNumber",
+            "Assigned" => "Assigned",
+            "Assignment" => "Assignment",
+            "Previous assignment" => "PreviousAssignment",
+            _ => throw new InvalidOperationException($"Unsupported Client audit explanation fact label '{label}'."),
+        };
+        return new AuditEntryExplanationFactViewModel(presentation.Fact(semanticKey), value);
     }
 
     private sealed class ClientUpdateRelatedDto

@@ -1,17 +1,17 @@
 @page
 @model BodyLife.Crm.Web.Pages.Owner.StaffAccountsModel
 @{
-    ViewData["Title"] = "Staff accounts";
+    ViewData["Title"] = Model.T("StaffAccounts.Title");
 }
 
 <main class="page-shell">
     <section class="owner-management" aria-labelledby="staff-accounts-title">
         <header class="management-header">
             <div>
-                <p class="eyebrow">Owner settings</p>
-                <h1 id="staff-accounts-title">Staff accounts</h1>
+                <p class="eyebrow">@Model.T("StaffAccounts.OwnerSettings")</p>
+                <h1 id="staff-accounts-title">@Model.T("StaffAccounts.Title")</h1>
             </div>
-            <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+            <a class="secondary-link" asp-page="/Reception/Index">@Model.T("StaffAccounts.Reception")</a>
         </header>
 
         @if (!string.IsNullOrWhiteSpace(Model.OperationMessage))
@@ -23,34 +23,34 @@
         }
 
         <section class="create-account-section" aria-labelledby="create-account-title">
-            <h2 id="create-account-title">Add staff account</h2>
+            <h2 id="create-account-title">@Model.T("StaffAccounts.Add")</h2>
             <form id="create-account-form" method="post" asp-page-handler="Create" class="management-form" data-busy-form>
                 <div class="form-grid form-grid-create">
                     <div class="form-field">
-                        <label for="create-account-kind">Account type</label>
+                        <label for="create-account-kind">@Model.T("StaffAccounts.AccountType")</label>
                         <select id="create-account-kind" name="accountKind" required>
-                            <option value="NamedAdmin">Named Admin</option>
-                            <option value="SharedReceptionAdmin">Shared Reception/Admin</option>
+                            <option value="NamedAdmin">@Model.T("StaffAccounts.AccountKind.NamedAdmin")</option>
+                            <option value="SharedReceptionAdmin">@Model.T("StaffAccounts.AccountKind.SharedReceptionAdmin")</option>
                         </select>
                     </div>
                     <div class="form-field">
-                        <label for="create-display-name">Display name</label>
+                        <label for="create-display-name">@Model.T("StaffAccounts.DisplayName")</label>
                         <input id="create-display-name" name="displayName" type="text" maxlength="160" required autocomplete="off" />
                     </div>
-                    <button type="submit" data-busy-text="Creating...">Add account</button>
+                    <button type="submit" data-busy-text="@Model.T("StaffAccounts.Creating")">@Model.T("StaffAccounts.AddAccount")</button>
                 </div>
             </form>
         </section>
 
         <section class="staff-account-list" aria-labelledby="staff-account-list-title">
             <header class="list-header">
-                <h2 id="staff-account-list-title">Current staff</h2>
-                <span class="list-count">@Model.StaffAccounts.Count accounts</span>
+                <h2 id="staff-account-list-title">@Model.T("StaffAccounts.CurrentStaff")</h2>
+                <span class="list-count">@Model.T("StaffAccounts.AccountCount", Model.StaffAccounts.Count)</span>
             </header>
 
             @if (Model.StaffAccounts.Count == 0)
             {
-                <p class="empty-state">No staff accounts yet.</p>
+                <p class="empty-state">@Model.T("StaffAccounts.Empty")</p>
             }
             else
             {
@@ -67,47 +67,47 @@
                         <header class="staff-account-header">
                             <div>
                                 <h3>@account.DisplayName</h3>
-                                <p>@StaffAccountsModel.AccountKindLabel(account.AccountKind)</p>
+                                <p>@Model.AccountKindLabel(account.AccountKind)</p>
                             </div>
                             <span class="status-chip @(account.IsActive ? "status-active" : "status-inactive")">
-                                @(account.IsActive ? "Active" : "Inactive")
+                                @(account.IsActive ? Model.T("StaffAccounts.Active") : Model.T("StaffAccounts.Inactive"))
                             </span>
                         </header>
 
                         <dl class="account-meta">
                             <div>
-                                <dt>Login</dt>
-                                <dd>@(account.HasCredentials ? account.LoginName : "Not configured")</dd>
+                                <dt>@Model.T("StaffAccounts.Login")</dt>
+                                <dd>@(account.HasCredentials ? account.LoginName : Model.T("StaffAccounts.NotConfigured"))</dd>
                             </div>
                             <div>
-                                <dt>Active sessions</dt>
-                                <dd>@account.ActiveSessionCount</dd>
+                                <dt>@Model.T("StaffAccounts.ActiveSessions")</dt>
+                                <dd>@Model.T("StaffAccounts.SessionCount", account.ActiveSessionCount)</dd>
                             </div>
                         </dl>
 
                         <div class="staff-account-actions">
                             <form method="post" asp-page-handler="UpdateDisplayName" class="staff-action-form" data-busy-form>
                                 <input type="hidden" name="accountId" value="@account.AccountId" />
-                                <h4>Display name</h4>
-                                <label for="@displayNameId">Display name</label>
+                                <h4>@Model.T("StaffAccounts.DisplayName")</h4>
+                                <label for="@displayNameId">@Model.T("StaffAccounts.DisplayName")</label>
                                 <input id="@displayNameId" name="displayName" type="text" value="@account.DisplayName" maxlength="160" required autocomplete="off" />
-                                <button class="secondary-button" type="submit" data-busy-text="Saving...">Save name</button>
+                                <button class="secondary-button" type="submit" data-busy-text="@Model.T("StaffAccounts.Saving")">@Model.T("StaffAccounts.SaveName")</button>
                             </form>
 
                             <form method="post" asp-page-handler="SetCredentials" class="staff-action-form" data-busy-form>
                                 <input type="hidden" name="accountId" value="@account.AccountId" />
-                                <h4>@(account.HasCredentials ? "Reset credentials" : "Set credentials")</h4>
-                                <label for="@loginNameId">Login</label>
+                                <h4>@(account.HasCredentials ? Model.T("StaffAccounts.ResetCredentials") : Model.T("StaffAccounts.SetCredentials"))</h4>
+                                <label for="@loginNameId">@Model.T("StaffAccounts.Login")</label>
                                 <input id="@loginNameId" name="loginName" type="text" value="@account.LoginName" maxlength="120" required autocomplete="username" />
-                                <label for="@passwordId">New password</label>
+                                <label for="@passwordId">@Model.T("StaffAccounts.NewPassword")</label>
                                 <input id="@passwordId" name="password" type="password" minlength="12" required autocomplete="new-password" />
                                 @if (account.HasCredentials)
                                 {
-                                    <label for="@resetReasonId">Reason for reset</label>
+                                    <label for="@resetReasonId">@Model.T("StaffAccounts.ResetReason")</label>
                                     <input id="@resetReasonId" name="reason" type="text" maxlength="1000" required autocomplete="off" />
                                 }
-                                <button type="submit" data-busy-text="Saving...">
-                                    @(account.HasCredentials ? "Reset credentials" : "Set credentials")
+                                <button type="submit" data-busy-text="@Model.T("StaffAccounts.Saving")">
+                                    @(account.HasCredentials ? Model.T("StaffAccounts.ResetCredentials") : Model.T("StaffAccounts.SetCredentials"))
                                 </button>
                             </form>
 
@@ -117,13 +117,13 @@
                                       asp-page-handler="SetActiveState"
                                       class="staff-action-form"
                                       data-busy-form
-                                      data-confirm="Deactivate this account and end its active sessions?">
+                                      data-confirm="@Model.T("StaffAccounts.DeactivateConfirm")">
                                     <input type="hidden" name="accountId" value="@account.AccountId" />
                                     <input type="hidden" name="isActive" value="false" />
-                                    <h4>Access</h4>
-                                    <label for="@deactivateReasonId">Reason for deactivation</label>
+                                    <h4>@Model.T("StaffAccounts.Access")</h4>
+                                    <label for="@deactivateReasonId">@Model.T("StaffAccounts.DeactivateReason")</label>
                                     <input id="@deactivateReasonId" name="reason" type="text" maxlength="1000" required autocomplete="off" />
-                                    <button class="danger-button" type="submit" data-busy-text="Deactivating...">Deactivate</button>
+                                    <button class="danger-button" type="submit" data-busy-text="@Model.T("StaffAccounts.Deactivating")">@Model.T("StaffAccounts.Deactivate")</button>
                                 </form>
                             }
                             else
@@ -131,9 +131,9 @@
                                 <form method="post" asp-page-handler="SetActiveState" class="staff-action-form" data-busy-form>
                                     <input type="hidden" name="accountId" value="@account.AccountId" />
                                     <input type="hidden" name="isActive" value="true" />
-                                    <h4>Access</h4>
-                                    <p class="form-note">Login remains blocked until this account is active.</p>
-                                    <button class="secondary-button" type="submit" data-busy-text="Activating...">Activate</button>
+                                    <h4>@Model.T("StaffAccounts.Access")</h4>
+                                    <p class="form-note">@Model.T("StaffAccounts.ActivationNote")</p>
+                                    <button class="secondary-button" type="submit" data-busy-text="@Model.T("StaffAccounts.Activating")">@Model.T("StaffAccounts.Activate")</button>
                                 </form>
                             }
                         </div>

@@ -1,8 +1,10 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages.Reports;
 
@@ -10,7 +12,8 @@ public sealed class InactiveClientsModel(
     IBodyLifeRequestContextResolver requestContextResolver,
     IBodyLifeQueryHandler<ListInactiveClientsQuery, ListInactiveClientsResult>
         listInactiveClients,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IStringLocalizer<BodyLife.Crm.Web.Localization.Reports> localizer)
     : PageModel
 {
     private const int PageSize = 10;
@@ -49,7 +52,7 @@ public sealed class InactiveClientsModel(
     {
         if (!ModelState.IsValid)
         {
-            LoadError = "Enter a valid as-of date, inactivity threshold and page offset.";
+            LoadError = localizer["Error.InvalidInput"];
             return;
         }
 
@@ -70,10 +73,12 @@ public sealed class InactiveClientsModel(
                 Limit: PageSize,
                 Offset: Offset.Value),
             cancellationToken);
+        if (Result is { Status: not ListInactiveClientsStatus.Success })
+            LoadError = ReportsPresentation.Error(localizer, Result.Status);
 
         if (Result is { Status: ListInactiveClientsStatus.Success, Page: null })
         {
-            LoadError = "Inactive-clients report returned no canonical report page.";
+            LoadError = localizer["Error.Unavailable"];
         }
     }
 }

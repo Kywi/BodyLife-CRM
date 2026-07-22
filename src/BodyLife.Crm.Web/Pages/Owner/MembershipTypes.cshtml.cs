@@ -6,6 +6,7 @@ using BodyLife.Crm.SharedKernel;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages.Owner;
 
@@ -16,7 +17,8 @@ public sealed class MembershipTypesModel(
         GetMembershipTypesForIssueResult> getMembershipTypes,
     IBodyLifeCommandHandler<CreateMembershipTypeCommand> createMembershipType,
     IBodyLifeCommandHandler<EditMembershipTypeCommand> editMembershipType,
-    IBodyLifeCommandHandler<DeactivateMembershipTypeCommand> deactivateMembershipType)
+    IBodyLifeCommandHandler<DeactivateMembershipTypeCommand> deactivateMembershipType,
+    IStringLocalizer<BodyLife.Crm.Web.Localization.Owner> localizer)
     : PageModel
 {
     [TempData]
@@ -54,6 +56,8 @@ public sealed class MembershipTypesModel(
         CanCreateCatalog
         && CanEditCatalog
         && CanDeactivateCatalog;
+
+    public string T(string key, params object[] arguments) => localizer[key, arguments];
 
     public async Task<IActionResult> OnGetAsync(CancellationToken cancellationToken)
     {
@@ -98,8 +102,8 @@ public sealed class MembershipTypesModel(
             }
 
             OperationMessage = result.AuditEntryId is { } auditEntryId
-                ? $"Membership type created. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-                : "Membership type created.";
+                ? T("MembershipTypes.Success.CreatedWithAudit", auditEntryId.Value.ToString("N")[..8])
+                : T("MembershipTypes.Success.Created");
 
             return RedirectToPage();
         }
@@ -158,8 +162,8 @@ public sealed class MembershipTypesModel(
             }
 
             OperationMessage = result.AuditEntryId is { } auditEntryId
-                ? $"Membership type updated. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-                : "Membership type updated.";
+                ? T("MembershipTypes.Success.UpdatedWithAudit", auditEntryId.Value.ToString("N")[..8])
+                : T("MembershipTypes.Success.Updated");
 
             return RedirectToPage();
         }
@@ -202,8 +206,8 @@ public sealed class MembershipTypesModel(
             }
 
             OperationMessage = result.AuditEntryId is { } auditEntryId
-                ? $"Membership type deactivated. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-                : "Membership type deactivated.";
+                ? T("MembershipTypes.Success.DeactivatedWithAudit", auditEntryId.Value.ToString("N")[..8])
+                : T("MembershipTypes.Success.Deactivated");
 
             return RedirectToPage();
         }
@@ -426,17 +430,43 @@ public sealed class MembershipTypesModel(
 
     public static string FormatPrice(Money price)
     {
-        return $"{price.Amount.ToString("0.00", CultureInfo.InvariantCulture)} {price.Currency}";
+        return $"{price.Amount.ToString("0.00", CultureInfo.CurrentCulture)} {price.Currency}";
     }
 
     public static string FormatTimestamp(DateTimeOffset timestamp)
     {
-        return $"{timestamp.ToUniversalTime():yyyy-MM-dd HH:mm} UTC";
+        return $"{timestamp.UtcDateTime.ToString("g", CultureInfo.CurrentCulture)} UTC";
     }
 
     public static string? FormatPriceInput(decimal? amount)
     {
         return amount?.ToString("0.##", CultureInfo.InvariantCulture);
+    }
+
+    public string DisplayError(CommandError error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        if (error.Code == CommandErrorCode.ValidationFailed)
+        {
+            return error.Field switch
+            {
+                "durationDays" => T("MembershipTypes.Error.Duration"),
+                "visitsLimit" => T("MembershipTypes.Error.VisitLimit"),
+                "price.amount" => T("MembershipTypes.Error.Price"),
+                "price.currency" => T("MembershipTypes.Error.Currency"),
+                _ => T("MembershipTypes.Error.Validation"),
+            };
+        }
+
+        return error.Code switch
+        {
+            CommandErrorCode.DuplicateSubmission => T("MembershipTypes.Error.DuplicateSubmission"),
+            CommandErrorCode.StaleState => T("MembershipTypes.Error.Stale"),
+            CommandErrorCode.ConcurrencyConflict => T("MembershipTypes.Error.Concurrency"),
+            CommandErrorCode.NotFound => T("MembershipTypes.Error.NotFound"),
+            CommandErrorCode.AlreadyInactive => T("MembershipTypes.Error.AlreadyInactive"),
+            _ => T("MembershipTypes.Error.Generic"),
+        };
     }
 
     private sealed record EditFormRenderState(

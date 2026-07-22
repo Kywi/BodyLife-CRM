@@ -1,24 +1,23 @@
 @page
 @model BodyLife.Crm.Web.Pages.Reports.EndingSoonModel
+@using BodyLife.Crm.Web.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<BodyLife.Crm.Web.Localization.Reports> L
+@inject IStringLocalizer<BodyLife.Crm.Web.Localization.Shared> S
 @{
-    ViewData["Title"] = "Memberships ending soon";
+    ViewData["Title"] = L["Ending.Title"];
     var reportPage = Model.ReportPage;
-    var errorMessage = Model.LoadError ?? Model.Result?.ErrorMessage;
+    var errorMessage = Model.LoadError;
 }
 
 <main class="page-shell report-page" data-ending-soon-report-page>
     <section class="report-layout" aria-labelledby="ending-soon-title">
         <header class="report-header">
             <div>
-                <p class="eyebrow">Reports</p>
-                <h1 id="ending-soon-title">Memberships ending soon</h1>
+                <p class="eyebrow">@L["Navigation.Reports"]</p><h1 id="ending-soon-title">@L["Ending.Title"]</h1>
             </div>
-            <nav class="report-header-actions" aria-label="Report navigation">
-                <a class="secondary-link" asp-page="/Reports/Daily">Daily report</a>
-                <a class="secondary-link" asp-page="/Reports/LowRemaining">Low remaining</a>
-                <a class="secondary-link" asp-page="/Reports/NegativeClients">Negative clients</a>
-                <a class="secondary-link" asp-page="/Reports/InactiveClients">Inactive clients</a>
-                <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+            <nav class="report-header-actions" aria-label="@L["Navigation"]">
+                <a class="secondary-link" asp-page="/Reports/Daily">@L["Daily"]</a><a class="secondary-link" asp-page="/Reports/LowRemaining">@L["Low"]</a><a class="secondary-link" asp-page="/Reports/NegativeClients">@L["Negative"]</a><a class="secondary-link" asp-page="/Reports/InactiveClients">@L["Inactive"]</a><a class="secondary-link" asp-page="/Reception/Index">@L["Navigation.Reception"]</a>
             </nav>
         </header>
 
@@ -27,7 +26,7 @@
               asp-page="/Reports/EndingSoon"
               data-busy-form>
             <div class="report-date-field">
-                <label for="ending-soon-as-of">As-of date</label>
+                <label for="ending-soon-as-of">@L["AsOf"]</label>
                 <input id="ending-soon-as-of"
                        name="asOf"
                        type="date"
@@ -35,7 +34,7 @@
                        required />
             </div>
             <div class="report-threshold-field">
-                <label for="ending-soon-days">Days ahead</label>
+                <label for="ending-soon-days">@L["DaysAhead"]</label>
                 <input id="ending-soon-days"
                        name="days"
                        type="number"
@@ -44,44 +43,39 @@
                        max="@Model.MaximumDaysThreshold"
                        required />
             </div>
-            <button type="submit" data-busy-text="Loading...">Load report</button>
+            <button type="submit" data-busy-text="@L["Loading"]">@L["Load"]</button>
         </form>
 
         @if (!string.IsNullOrWhiteSpace(errorMessage))
         {
             <div class="warning-block warning-danger report-error" role="alert">
-                <strong>Report unavailable</strong>
+                <strong>@L["Unavailable"]</strong>
                 <span>@errorMessage</span>
             </div>
         }
         else if (reportPage is not null)
         {
-            <div class="report-list-context" aria-label="Ending-soon report selection">
+            <div class="report-list-context" aria-label="@L["Ending.Selection"]">
                 <span>
-                    <strong>@reportPage.AsOfDate.ToString("yyyy-MM-dd")</strong>
-                    as-of date
+                    <strong>@ReportsPresentation.Date(reportPage.AsOfDate)</strong> @L["AsOf"]
                 </span>
                 <span>
                     <strong>@reportPage.DaysThreshold</strong>
-                    day threshold
+                    @L["DaysAhead"]
                 </span>
-                <span>
-                    <strong>@reportPage.Items.Count</strong>
-                    memberships shown
-                </span>
+                <span>@WebPluralizer.Memberships(S, reportPage.Items.Count)</span>
             </div>
 
             <section class="report-source-section" aria-labelledby="ending-soon-results-title">
                 <header class="report-section-header">
                     <div>
-                        <p class="eyebrow">Canonical Memberships state</p>
-                        <h2 id="ending-soon-results-title">Ending soon</h2>
+                        <p class="eyebrow">@L["CanonicalMemberships"]</p><h2 id="ending-soon-results-title">@L["Ending"]</h2>
                     </div>
                 </header>
 
                 @if (reportPage.Items.Count == 0)
                 {
-                    <p class="empty-state">No active memberships end within this threshold.</p>
+                    <p class="empty-state">@L["Ending.Empty"]</p>
                 }
                 else
                 {
@@ -101,31 +95,29 @@
                                     </div>
                                     <div class="report-membership-heading">
                                         <strong>@DaysLeftLabel(row.DaysLeft)</strong>
-                                        <span class="status-chip status-corrected">Ending soon</span>
+                                        <span class="status-chip status-corrected">@L["Status.EndingSoon"]</span>
                                     </div>
                                 </header>
 
                                 <dl class="report-row-meta report-membership-meta">
                                     <div>
-                                        <dt>Phone</dt>
-                                        <dd>@(row.ClientPhone ?? "No phone")</dd>
+                                        <dt>@L["Client.Phone"]</dt><dd>@(row.ClientPhone ?? L["NoPhone"])</dd>
                                     </div>
                                     <div>
-                                        <dt>Effective end</dt>
-                                        <dd>@row.EffectiveEndDate.ToString("yyyy-MM-dd")</dd>
+                                        <dt>@L["EffectiveEnd"]</dt><dd>@ReportsPresentation.Date(row.EffectiveEndDate)</dd>
                                     </div>
                                     <div>
-                                        <dt>Days left</dt>
+                                        <dt>@L["DaysLeft"]</dt>
                                         <dd>@row.DaysLeft</dd>
                                     </div>
                                     <div>
-                                        <dt>Remaining visits</dt>
+                                        <dt>@L["RemainingVisits"]</dt>
                                         <dd>@row.RemainingVisits</dd>
                                     </div>
                                     @if (row.MembershipState.ExtensionDays > 0)
                                     {
                                         <div>
-                                            <dt>Extension days</dt>
+                                            <dt>@L["ExtensionDays"]</dt>
                                             <dd>@row.MembershipState.ExtensionDays</dd>
                                         </div>
                                     }
@@ -134,12 +126,12 @@
                                 @if (row.Warnings.Count > 0)
                                 {
                                     <ul class="warning-chip-list report-warning-list"
-                                        aria-label="Membership warnings">
+                                        aria-label="@L["Warnings"]">
                                         @foreach (var warning in row.Warnings)
                                         {
                                             <li class="@WarningClass(warning.Severity)"
                                                 data-membership-warning="@warning.Code">
-                                                @warning.Message
+                                                @ReportsPresentation.WarningMessage(L, warning.Code)
                                             </li>
                                         }
                                     </ul>
@@ -150,7 +142,7 @@
                                        asp-page="/Reception/Index"
                                        asp-route-clientId="@row.ClientId"
                                        asp-fragment="membership-panel-title">
-                                        Open client
+                                        @L["OpenClient"]
                                     </a>
                                     @if (row.HasExtensionExplanation)
                                     {
@@ -158,7 +150,7 @@
                                            asp-page="/Reception/Index"
                                            asp-route-clientId="@row.ClientId"
                                            asp-fragment="membership-extension-history-title">
-                                            Extension details
+                                            @L["ExtensionDetails"]
                                         </a>
                                     }
                                 </footer>
@@ -169,7 +161,7 @@
 
                 @if (Model.PreviousOffset is not null || reportPage.NextOffset is not null)
                 {
-                    <nav class="report-pagination" aria-label="Ending-soon result pages">
+                    <nav class="report-pagination" aria-label="@L["Ending.Pages"]">
                         <span class="report-pagination-slot">
                             @if (Model.PreviousOffset is { } previousOffset)
                             {
@@ -178,11 +170,11 @@
                                    asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
                                    asp-route-days="@reportPage.DaysThreshold"
                                    asp-route-offset="@previousOffset">
-                                    Previous
+                                    @L["Pagination.Previous"]
                                 </a>
                             }
                         </span>
-                        <span class="result-count">Page @Model.CurrentPageNumber</span>
+                        <span class="result-count">@string.Format(L["Page"], Model.CurrentPageNumber)</span>
                         <span class="report-pagination-slot report-pagination-next">
                             @if (reportPage.NextOffset is { } nextOffset)
                             {
@@ -191,7 +183,7 @@
                                    asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
                                    asp-route-days="@reportPage.DaysThreshold"
                                    asp-route-offset="@nextOffset">
-                                    Next
+                                    @L["Pagination.Next"]
                                 </a>
                             }
                         </span>
@@ -203,13 +195,12 @@
 </main>
 
 @functions {
-    private static string DaysLeftLabel(int daysLeft)
+    private string DaysLeftLabel(int daysLeft)
     {
         return daysLeft switch
         {
-            0 => "Ends today",
-            1 => "1 day left",
-            _ => $"{daysLeft} days left",
+            0 => L["EndsToday"],
+            _ => WebPluralizer.Days(S, daysLeft),
         };
     }
 

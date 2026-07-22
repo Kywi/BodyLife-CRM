@@ -1,15 +1,14 @@
-using System.Globalization;
 using System.Text.Json;
 using BodyLife.Crm.Modules.Audit;
 
 namespace BodyLife.Crm.Web.Pages.Audit;
 
-internal static class StaffAccountAuditExplanationFactory
+public sealed class StaffAccountAuditExplanationFactory(AuditPresentation presentation)
 {
     private static readonly JsonSerializerOptions AuditJsonOptions =
         new(JsonSerializerDefaults.Web);
 
-    internal static AuditEntryExplanationViewModel CreateAccountCreation(
+    internal AuditEntryExplanationViewModel CreateAccountCreation(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -19,22 +18,22 @@ internal static class StaffAccountAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "staff-account-created",
-            "Staff account created",
-            "A new active staff account was created with the stored display name and account type. Sign-in credentials are configured separately and are not part of this business summary.",
-            "Before creation",
-            "Created staff account",
-            [Fact("Account state", "Not present")],
+            presentation.Explanation("StaffAccountCreated.Title"),
+            presentation.Explanation("StaffAccountCreated.Narrative"),
+            presentation.Explanation("StaffAccountCreated.Before"),
+            presentation.Explanation("StaffAccountCreated.After"),
+            [Fact("Account state", presentation.Value("NotPresent"))],
             [
-                Fact("Staff account", TimelineModel.ShortId(accountId)),
+                Fact("Staff account", presentation.ShortId(accountId)),
                 Fact("Display name", created.DisplayName),
-                Fact("Account type", created.AccountTypeLabel),
-                Fact("Status", created.IsActive ? "Active" : "Inactive"),
+                Fact("Account type", AccountTypeLabel(created.AccountType)),
+                Fact("Status", StatusLabel(created.IsActive)),
             ],
-            ChangedFields: "Staff account",
+            ChangedFields: presentation.Changed("StaffAccount"),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateDisplayNameUpdate(
+    internal AuditEntryExplanationViewModel CreateDisplayNameUpdate(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -46,19 +45,19 @@ internal static class StaffAccountAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "staff-account-display-name-updated",
-            "Staff display name updated",
+            presentation.Explanation("StaffDisplayNameUpdated.Title"),
             displayNameChanged
-                ? "The stored snapshots show the staff display-name change. Login and password data are outside this business summary."
-                : "The command recorded identical before/after display names. The unchanged stored value remains explicit for audit review, and login/password data are outside this summary.",
-            "Original staff profile",
-            "Updated staff profile",
+                ? presentation.Explanation("StaffDisplayNameUpdated.ChangedNarrative")
+                : presentation.Explanation("StaffDisplayNameUpdated.UnchangedNarrative"),
+            presentation.Explanation("StaffDisplayNameUpdated.Before"),
+            presentation.Explanation("StaffDisplayNameUpdated.After"),
             StaffProfileFacts(accountId, originalDisplayName),
             StaffProfileFacts(accountId, updatedDisplayName),
-            ChangedFields: displayNameChanged ? "Display name" : null,
+            ChangedFields: displayNameChanged ? presentation.Changed("DisplayName") : null,
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateActivation(
+    internal AuditEntryExplanationViewModel CreateActivation(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -76,17 +75,17 @@ internal static class StaffAccountAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "staff-account-activated",
-            "Staff account activated",
-            "The stored account state changed from Inactive to Active. Credential values are not part of this lifecycle summary.",
-            "Before activation",
-            "After activation",
+            presentation.Explanation("StaffAccountActivated.Title"),
+            presentation.Explanation("StaffAccountActivated.Narrative"),
+            presentation.Explanation("StaffAccountActivated.Before"),
+            presentation.Explanation("StaffAccountActivated.After"),
             StaffStateFacts(accountId, original.IsActive),
             StaffStateFacts(accountId, activated.IsActive),
-            ChangedFields: "Account status",
+            ChangedFields: presentation.Changed("AccountStatus"),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateDeactivation(
+    internal AuditEntryExplanationViewModel CreateDeactivation(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -104,24 +103,24 @@ internal static class StaffAccountAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "staff-account-deactivated",
-            "Staff account deactivated",
-            "The account is now Inactive. The stored ended-session count explains the immediate access impact without exposing credential material.",
-            "Before deactivation",
-            "After deactivation",
+            presentation.Explanation("StaffAccountDeactivated.Title"),
+            presentation.Explanation("StaffAccountDeactivated.Narrative"),
+            presentation.Explanation("StaffAccountDeactivated.Before"),
+            presentation.Explanation("StaffAccountDeactivated.After"),
             StaffStateFacts(accountId, original.IsActive),
             [
                 .. StaffStateFacts(accountId, deactivated.IsActive),
                 Fact(
                     "Active sessions ended",
-                    deactivated.EndedSessionCount.ToString(CultureInfo.InvariantCulture)),
+                    presentation.Number(deactivated.EndedSessionCount)),
             ],
             ChangedFields: deactivated.EndedSessionCount > 0
-                ? "Account status, Active sessions"
-                : "Account status",
+                ? JoinChanged("AccountStatus", "ActiveSessions")
+                : presentation.Changed("AccountStatus"),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateCredentialConfiguration(
+    internal AuditEntryExplanationViewModel CreateCredentialConfiguration(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -137,24 +136,24 @@ internal static class StaffAccountAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "staff-credentials-configured",
-            "Staff credentials configured",
-            "The staff account now has configured sign-in credentials. Audit stores only credential state and session impact; login names, passwords and hashes are not included.",
-            "Before configuration",
-            "After configuration",
+            presentation.Explanation("StaffCredentialsConfigured.Title"),
+            presentation.Explanation("StaffCredentialsConfigured.Narrative"),
+            presentation.Explanation("StaffCredentialsConfigured.Before"),
+            presentation.Explanation("StaffCredentialsConfigured.After"),
             CredentialFacts(accountId, original.CredentialsConfigured),
             [
                 .. CredentialFacts(accountId, configured.CredentialsConfigured),
                 Fact(
                     "Active sessions ended",
-                    configured.EndedSessionCount.ToString(CultureInfo.InvariantCulture)),
+                    presentation.Number(configured.EndedSessionCount)),
             ],
             ChangedFields: configured.EndedSessionCount > 0
-                ? "Credential state, Active sessions"
-                : "Credential state",
+                ? JoinChanged("CredentialState", "ActiveSessions")
+                : presentation.Changed("CredentialState"),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateCredentialReset(
+    internal AuditEntryExplanationViewModel CreateCredentialReset(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -172,25 +171,26 @@ internal static class StaffAccountAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "staff-credentials-reset",
-            "Staff credentials reset",
-            "The configured credentials were replaced and active sessions were ended as recorded. Login names, passwords and hashes are deliberately absent from business audit.",
-            "Before reset",
-            "After reset",
+            presentation.Explanation("StaffCredentialsReset.Title"),
+            presentation.Explanation("StaffCredentialsReset.Narrative"),
+            presentation.Explanation("StaffCredentialsReset.Before"),
+            presentation.Explanation("StaffCredentialsReset.After"),
             CredentialFacts(accountId, original.CredentialsConfigured),
             [
                 .. CredentialFacts(accountId, reset.CredentialsConfigured),
                 Fact(
                     "Active sessions ended",
-                    reset.EndedSessionCount.ToString(CultureInfo.InvariantCulture)),
+                    presentation.Number(reset.EndedSessionCount)),
             ],
             ChangedFields: reset.EndedSessionCount > 0
-                ? "Credentials, Active sessions"
-                : "Credentials",
+                ? JoinChanged("Credentials", "ActiveSessions")
+                : presentation.Changed("Credentials"),
             IsAvailable: true);
     }
 
     private static string ReadDisplayName(JsonElement summary)
     {
+        RequireExactProperties(summary, "displayName");
         var dto = Deserialize<DisplayNameDto>(summary);
         if (string.IsNullOrWhiteSpace(dto.DisplayName))
         {
@@ -205,32 +205,23 @@ internal static class StaffAccountAuditExplanationFactory
         JsonElement after)
     {
         if (before.ValueKind != JsonValueKind.Object
-            || before.EnumerateObject().Any()
-            || after.ValueKind != JsonValueKind.Object)
+            || before.EnumerateObject().Any())
         {
             throw new JsonException("Staff account creation summary is inconsistent.");
         }
 
-        var properties = after
-            .EnumerateObject()
-            .Select(property => property.Name)
-            .ToArray();
-        if (properties.Length != 4
-            || !properties.Contains("displayName", StringComparer.Ordinal)
-            || !properties.Contains("accountType", StringComparer.Ordinal)
-            || !properties.Contains("role", StringComparer.Ordinal)
-            || !properties.Contains("isActive", StringComparer.Ordinal))
-        {
-            throw new JsonException("Staff account creation fields are inconsistent.");
-        }
+        RequireExactProperties(
+            after,
+            "displayName",
+            "accountType",
+            "role",
+            "isActive");
 
         var dto = Deserialize<CreatedAccountDto>(after);
-        var accountTypeLabel = dto.AccountType switch
+        if (dto.AccountType is not ("named_admin" or "shared_reception_admin"))
         {
-            "named_admin" => "Named Admin",
-            "shared_reception_admin" => "Shared Reception/Admin",
-            _ => throw new JsonException("Staff account type is not manageable."),
-        };
+            throw new JsonException("Staff account type is not manageable.");
+        }
         if (string.IsNullOrWhiteSpace(dto.DisplayName)
             || dto.Role != "admin"
             || dto.IsActive != true)
@@ -240,7 +231,7 @@ internal static class StaffAccountAuditExplanationFactory
 
         return new CreatedAccountSnapshot(
             dto.DisplayName,
-            accountTypeLabel,
+            dto.AccountType,
             dto.IsActive.Value);
     }
 
@@ -248,6 +239,11 @@ internal static class StaffAccountAuditExplanationFactory
         JsonElement summary,
         bool requireEndedSessionCount)
     {
+        RequireExactProperties(
+            summary,
+            requireEndedSessionCount
+                ? ["isActive", "endedSessionCount"]
+                : ["isActive"]);
         var dto = Deserialize<ActiveStateDto>(summary);
         if (dto.IsActive is null
             || (requireEndedSessionCount && dto.EndedSessionCount is null)
@@ -266,6 +262,11 @@ internal static class StaffAccountAuditExplanationFactory
         JsonElement summary,
         bool requireEndedSessionCount)
     {
+        RequireExactProperties(
+            summary,
+            requireEndedSessionCount
+                ? ["credentialsConfigured", "endedSessionCount"]
+                : ["credentialsConfigured"]);
         var dto = Deserialize<CredentialStateDto>(summary);
         if (dto.CredentialsConfigured is null
             || (requireEndedSessionCount && dto.EndedSessionCount is null)
@@ -280,38 +281,40 @@ internal static class StaffAccountAuditExplanationFactory
             dto.EndedSessionCount ?? 0);
     }
 
-    private static IReadOnlyList<AuditEntryExplanationFactViewModel> StaffProfileFacts(
+    private IReadOnlyList<AuditEntryExplanationFactViewModel> StaffProfileFacts(
         Guid accountId,
         string displayName)
     {
         return
         [
-            Fact("Staff account", TimelineModel.ShortId(accountId)),
+            Fact("Staff account", presentation.ShortId(accountId)),
             Fact("Display name", displayName),
         ];
     }
 
-    private static IReadOnlyList<AuditEntryExplanationFactViewModel> StaffStateFacts(
+    private IReadOnlyList<AuditEntryExplanationFactViewModel> StaffStateFacts(
         Guid accountId,
         bool isActive)
     {
         return
         [
-            Fact("Staff account", TimelineModel.ShortId(accountId)),
-            Fact("Status", isActive ? "Active" : "Inactive"),
+            Fact("Staff account", presentation.ShortId(accountId)),
+            Fact("Status", StatusLabel(isActive)),
         ];
     }
 
-    private static IReadOnlyList<AuditEntryExplanationFactViewModel> CredentialFacts(
+    private IReadOnlyList<AuditEntryExplanationFactViewModel> CredentialFacts(
         Guid accountId,
         bool credentialsConfigured)
     {
         return
         [
-            Fact("Staff account", TimelineModel.ShortId(accountId)),
+            Fact("Staff account", presentation.ShortId(accountId)),
             Fact(
                 "Credential state",
-                credentialsConfigured ? "Configured" : "Not configured"),
+                credentialsConfigured
+                    ? presentation.Text("CredentialState.Configured")
+                    : presentation.Text("CredentialState.NotConfigured")),
         ];
     }
 
@@ -328,9 +331,57 @@ internal static class StaffAccountAuditExplanationFactory
             ?? throw new JsonException("The staff audit summary is required.");
     }
 
-    private static AuditEntryExplanationFactViewModel Fact(string label, string value)
+    private static void RequireExactProperties(
+        JsonElement summary,
+        params string[] expectedProperties)
     {
-        return new AuditEntryExplanationFactViewModel(label, value);
+        if (summary.ValueKind != JsonValueKind.Object)
+        {
+            throw new JsonException("Staff audit summary must be an object.");
+        }
+
+        var actualProperties = summary
+            .EnumerateObject()
+            .Select(property => property.Name)
+            .ToArray();
+        if (actualProperties.Length != expectedProperties.Length
+            || actualProperties.Distinct(StringComparer.Ordinal).Count()
+                != actualProperties.Length
+            || !expectedProperties.All(expected =>
+                actualProperties.Contains(expected, StringComparer.Ordinal)))
+        {
+            throw new JsonException(
+                "Staff audit summary fields are inconsistent.");
+        }
+    }
+
+    private string AccountTypeLabel(string accountType) => accountType switch
+    {
+        "named_admin" => presentation.Text("AccountType.NamedAdmin"),
+        "shared_reception_admin" => presentation.Text("AccountType.SharedReceptionAdmin"),
+        _ => throw new JsonException("Staff account type is not manageable."),
+    };
+
+    private string StatusLabel(bool isActive) =>
+        presentation.Status(isActive ? "Active" : "Inactive");
+
+    private string JoinChanged(params string[] keys) =>
+        string.Join(", ", keys.Select(presentation.Changed));
+
+    private AuditEntryExplanationFactViewModel Fact(string label, string value)
+    {
+        var semanticKey = label switch
+        {
+            "Account state" => "AccountState",
+            "Staff account" => "StaffAccount",
+            "Display name" => "DisplayName",
+            "Account type" => "AccountType",
+            "Status" => "Status",
+            "Active sessions ended" => "ActiveSessionsEnded",
+            "Credential state" => "CredentialState",
+            _ => throw new InvalidOperationException($"Unsupported staff audit explanation fact label '{label}'."),
+        };
+        return new AuditEntryExplanationFactViewModel(presentation.Fact(semanticKey), value);
     }
 
     private sealed class DisplayNameDto
@@ -369,7 +420,7 @@ internal static class StaffAccountAuditExplanationFactory
 
     private sealed record CreatedAccountSnapshot(
         string DisplayName,
-        string AccountTypeLabel,
+        string AccountType,
         bool IsActive);
 
     private sealed record CredentialStateSnapshot(

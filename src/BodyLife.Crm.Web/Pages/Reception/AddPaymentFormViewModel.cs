@@ -87,25 +87,6 @@ public sealed record AddPaymentFormViewModel(
             IsOpen: true);
     }
 
-    public static string DisplayError(CommandError error)
-    {
-        return error.Code switch
-        {
-            CommandErrorCode.DuplicateSubmission =>
-                "This payment form was already used with different data. Review and retry with the refreshed form.",
-            CommandErrorCode.PermissionDenied =>
-                "The current account or session is not allowed to add this payment.",
-            CommandErrorCode.NotFound when error.Field == "membershipId" =>
-                "The selected membership is no longer available for this client. Review the current choices.",
-            CommandErrorCode.NotFound =>
-                "The client is no longer available. Refresh the reception workspace.",
-            CommandErrorCode.ConcurrencyConflict or CommandErrorCode.StaleState =>
-                "Payment context changed while submitting. Canonical profile data was refreshed; review and try again.",
-            CommandErrorCode.MembershipNotEligible =>
-                "The selected membership cannot be linked to this payment.",
-            _ => error.Message,
-        };
-    }
 }
 
 public sealed class AddPaymentFormInput

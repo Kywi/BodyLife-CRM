@@ -1,4 +1,7 @@
 @model BodyLife.Crm.Web.Pages.Owner.NonWorkingDayCorrectionWorkspaceViewModel
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Owner> L
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Shared> S
 @{
     var input = Model.Input;
     var preview = Model.Preview;
@@ -23,16 +26,16 @@
              aria-labelledby="non-working-day-correction-title">
         <header class="catalog-create-header">
             <div>
-                <p class="eyebrow">Correction review</p>
-                <h2 id="non-working-day-correction-title">Correct an existing period</h2>
+                <p class="eyebrow">@L["NonWorkingDay.CorrectionReview"]</p>
+                <h2 id="non-working-day-correction-title">@L["NonWorkingDay.CorrectPeriod"]</h2>
             </div>
-            <span class="status-chip status-owner">Owner only</span>
+            <span class="status-chip status-owner">@L["NonWorkingDay.OwnerOnly"]</span>
         </header>
 
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>@(Model.ErrorHeading ?? "Correction preview not created")</strong>
+                <strong>@L["NonWorkingDay.CorrectionPreviewNotCreated"]</strong>
                 <ul>
                     @foreach (var message in Model.Errors
                         .Select(error => error.Message)
@@ -47,7 +50,7 @@
         @if (!Model.HasActivePeriods)
         {
             <p class="empty-state" data-no-active-non-working-periods>
-                There are no active non-working periods available for correction.
+                @L["NonWorkingDay.NoActivePeriods"]
             </p>
         }
         else
@@ -66,7 +69,7 @@
                   data-non-working-day-correction-form
                   data-busy-form>
                 <div class="form-field">
-                    <label for="non-working-day-correction-period">Active period</label>
+                    <label for="non-working-day-correction-period">@L["NonWorkingDay.ActivePeriod"]</label>
                     <select id="non-working-day-correction-period"
                             name="form.PeriodId"
                             required
@@ -79,14 +82,14 @@
                                     data-period-end="@FormatDate(period.Period.EndDate)"
                                     data-period-reason-code="@period.ReasonCode"
                                     data-period-reason-comment="@period.ReasonComment">
-                                @FormatRange(period.Period) | @period.ReasonCode | @period.AffectedCount Memberships
+                                @DisplayRange(period.Period) | @period.ReasonCode | @string.Format(System.Globalization.CultureInfo.CurrentCulture, L["NonWorkingDay.MembershipCount"], period.AffectedCount)
                             </option>
                         }
                     </select>
                 </div>
 
                 <fieldset class="non-working-day-correction-mode">
-                    <legend>Correction mode</legend>
+                    <legend>@L["NonWorkingDay.CorrectionMode"]</legend>
                     <div class="non-working-day-correction-segments">
                         <label>
                             <input type="radio"
@@ -94,7 +97,7 @@
                                    value="@NonWorkingDayCorrectionMode.ReplaceRange"
                                    data-non-working-day-correction-mode="replace-range"
                                    checked="@(replaceRange ? "checked" : null)" />
-                            <span>Replace range</span>
+                            <span>@L["NonWorkingDay.ReplaceRange"]</span>
                         </label>
                         <label>
                             <input type="radio"
@@ -102,7 +105,7 @@
                                    value="@NonWorkingDayCorrectionMode.ReplaceReason"
                                    data-non-working-day-correction-mode="replace-reason"
                                    checked="@(replaceReason ? "checked" : null)" />
-                            <span>Replace reason</span>
+                            <span>@L["NonWorkingDay.ReplaceReason"]</span>
                         </label>
                         <label>
                             <input type="radio"
@@ -110,7 +113,7 @@
                                    value="@NonWorkingDayCorrectionMode.Cancel"
                                    data-non-working-day-correction-mode="cancel"
                                    checked="@(input.Mode == NonWorkingDayCorrectionMode.Cancel ? "checked" : null)" />
-                            <span>Cancel period</span>
+                            <span>@L["NonWorkingDay.CancelPeriod"]</span>
                         </label>
                     </div>
                 </fieldset>
@@ -118,10 +121,10 @@
                 <fieldset class="non-working-day-replacement-range"
                           data-non-working-day-replacement-range
                           data-active="@replaceRange.ToString().ToLowerInvariant()">
-                    <legend>Replacement range</legend>
+                    <legend>@L["NonWorkingDay.ReplacementRange"]</legend>
                     <div class="non-working-day-preview-grid">
                         <div class="form-field">
-                            <label for="non-working-day-replacement-start">Start date</label>
+                            <label for="non-working-day-replacement-start">@L["NonWorkingDay.StartDate"]</label>
                             <input id="non-working-day-replacement-start"
                                    name="form.ReplacementStartDate"
                                    type="date"
@@ -132,7 +135,7 @@
                                    data-non-working-day-replacement-start />
                         </div>
                         <div class="form-field">
-                            <label for="non-working-day-replacement-end">End date</label>
+                            <label for="non-working-day-replacement-end">@L["NonWorkingDay.EndDate"]</label>
                             <input id="non-working-day-replacement-end"
                                    name="form.ReplacementEndDate"
                                    type="date"
@@ -148,10 +151,10 @@
                 <fieldset class="non-working-day-replacement-reason"
                           data-non-working-day-replacement-reason
                           data-active="@hasReplacementReason.ToString().ToLowerInvariant()">
-                    <legend>Replacement reason</legend>
+                    <legend>@L["NonWorkingDay.ReplacementReason"]</legend>
                     <div class="non-working-day-preview-grid">
                         <div class="form-field non-working-day-reason-code">
-                            <label for="non-working-day-replacement-reason-code">Reason code</label>
+                            <label for="non-working-day-replacement-reason-code">@L["NonWorkingDay.ReasonCode"]</label>
                             <input id="non-working-day-replacement-reason-code"
                                    name="form.ReplacementReasonCode"
                                    type="text"
@@ -165,7 +168,7 @@
                                    data-non-working-day-replacement-reason-code />
                         </div>
                         <div class="form-field non-working-day-reason-comment">
-                            <label for="non-working-day-replacement-reason-comment">Reason comment (optional)</label>
+                            <label for="non-working-day-replacement-reason-comment">@L["NonWorkingDay.ReasonCommentOptional"]</label>
                             <textarea id="non-working-day-replacement-reason-comment"
                                       name="form.ReplacementReasonComment"
                                       rows="3"
@@ -179,7 +182,7 @@
 
                 <div class="non-working-day-correction-reason-grid">
                     <div class="form-field">
-                        <label for="non-working-day-correction-reason">Correction reason</label>
+                        <label for="non-working-day-correction-reason">@L["NonWorkingDay.CorrectionReason"]</label>
                         <input id="non-working-day-correction-reason"
                                name="form.CorrectionReason"
                                type="text"
@@ -189,7 +192,7 @@
                                autocomplete="off" />
                     </div>
                     <div class="form-field">
-                        <label for="non-working-day-correction-comment">Correction comment</label>
+                        <label for="non-working-day-correction-comment">@L["NonWorkingDay.CorrectionComment"]</label>
                         <textarea id="non-working-day-correction-comment"
                                   name="form.CorrectionComment"
                                   rows="3"
@@ -201,11 +204,11 @@
                 <div class="non-working-day-preview-actions">
                     <button type="submit"
                             data-preview-non-working-day-correction-submit
-                            data-busy-text="Calculating...">Preview correction</button>
+                            data-busy-text="@L["NonWorkingDay.Calculating"]">@L["NonWorkingDay.PreviewCorrection"]</button>
                     <span id="non-working-day-correction-loading"
                           class="request-indicator htmx-indicator"
                           role="status"
-                          aria-live="polite">Calculating old and new canonical scope...</span>
+                          aria-live="polite">@L["NonWorkingDay.CalculatingScope"]</span>
                 </div>
             </form>
         }
@@ -230,35 +233,35 @@
                    value="@preview.Confirmation.ConfirmationFingerprint" />
 
             <div class="operation-message operation-info" role="status">
-                <strong>Correction preview created</strong>
-                <span>No source, application, audit or Membership state records were changed.</span>
+                <strong>@L["NonWorkingDay.Correction.PreviewCreated"]</strong>
+                <span>@L["NonWorkingDay.Correction.PreviewNoChanges"]</span>
             </div>
 
             <header class="non-working-day-impact-header">
                 <div>
-                    <p class="eyebrow">Owner review</p>
+                    <p class="eyebrow">@L["NonWorkingDay.Correction.OwnerReview"]</p>
                     <h2 id="non-working-day-correction-result-title">@ModeLabel(preview.Mode)</h2>
                 </div>
                 <span class="status-chip status-active">
-                    Valid until @FormatTimestamp(preview.Confirmation.ExpiresAt)
+                    @L["NonWorkingDay.Correction.ValidUntil", FormatTimestamp(preview.Confirmation.ExpiresAt)]
                 </span>
             </header>
 
             <dl class="non-working-day-impact-summary">
                 <div>
-                    <dt>Original memberships</dt>
+                    <dt>@L["NonWorkingDay.Correction.OriginalMemberships"]</dt>
                     <dd>@preview.OriginalAffectedCount</dd>
                 </div>
                 <div>
-                    <dt>Confirmed new scope</dt>
+                    <dt>@L["NonWorkingDay.Correction.ConfirmedScope"]</dt>
                     <dd>@preview.ConfirmedAffectedCount</dd>
                 </div>
                 <div>
-                    <dt>Scope behavior</dt>
+                    <dt>@L["NonWorkingDay.Correction.ScopeBehavior"]</dt>
                     <dd>@ScopeBehaviorLabel(preview.ScopeBehavior)</dd>
                 </div>
                 <div>
-                    <dt>Correction reason</dt>
+                    <dt>@L["NonWorkingDay.Correction.Reason"]</dt>
                     <dd>@input.CorrectionReason</dd>
                 </div>
             </dl>
@@ -267,27 +270,27 @@
                      aria-labelledby="non-working-day-original-source-title">
                 <header class="non-working-day-correction-scope-header">
                     <div>
-                        <p class="eyebrow">Original source</p>
+                        <p class="eyebrow">@L["NonWorkingDay.Correction.OriginalSource"]</p>
                         <h3 id="non-working-day-original-source-title">
-                            @FormatRange(canonicalSource.Period)
+                            @DisplayRange(canonicalSource.Period)
                         </h3>
                     </div>
-                    <span class="status-chip status-active">Active</span>
+                    <span class="status-chip status-active">@L["NonWorkingDay.Status.Active"]</span>
                 </header>
 
                 <dl class="non-working-day-confirmed-reason">
                     <div>
-                        <dt>Reason code</dt>
+                        <dt>@L["NonWorkingDay.ReasonCode"]</dt>
                         <dd>@canonicalSource.ReasonCode</dd>
                     </div>
                     <div>
-                        <dt>Reason comment</dt>
-                        <dd>@(canonicalSource.ReasonComment ?? "None")</dd>
+                        <dt>@L["NonWorkingDay.ReasonComment"]</dt>
+                        <dd>@(canonicalSource.ReasonComment ?? L["Common.None"])</dd>
                     </div>
                 </dl>
 
                 <ol class="non-working-day-impact-list"
-                    aria-label="Original affected Memberships">
+                    aria-label="@L["NonWorkingDay.Correction.OriginalAffectedMemberships"]">
                     @foreach (var application in canonicalSource.Applications)
                     {
                         <li class="non-working-day-impact-row"
@@ -302,26 +305,26 @@
                                            asp-route-clientId="@application.ClientId">@application.ClientDisplayName</a>
                                     </h3>
                                     <p class="non-working-day-impact-reference">
-                                        Membership @ShortReference(application.MembershipId)
+                                        @L["NonWorkingDay.MembershipReference", ShortReference(application.MembershipId)]
                                     </p>
                                 </div>
-                                <span class="status-chip status-active">Original scope</span>
+                                <span class="status-chip status-active">@L["NonWorkingDay.Correction.OriginalScope"]</span>
                             </header>
                             <dl class="non-working-day-impact-meta">
                                 <div>
-                                    <dt>Full applied range</dt>
-                                    <dd>@FormatRange(application.AppliedRange)</dd>
+                                    <dt>@L["NonWorkingDay.FullAppliedRange"]</dt>
+                                    <dd>@DisplayRange(application.AppliedRange)</dd>
                                 </div>
                                 <div>
-                                    <dt>Current effective end</dt>
-                                    <dd>@FormatDate(application.CurrentEffectiveEndDate)</dd>
+                                    <dt>@L["NonWorkingDay.CurrentEffectiveEnd"]</dt>
+                                    <dd>@DisplayDate(application.CurrentEffectiveEndDate)</dd>
                                 </div>
                                 <div>
-                                    <dt>Current extension days</dt>
+                                    <dt>@L["NonWorkingDay.CurrentExtensionDays"]</dt>
                                     <dd>@application.CurrentExtensionDays</dd>
                                 </div>
                                 <div>
-                                    <dt>Audit reference</dt>
+                                    <dt>@L["NonWorkingDay.AuditReference"]</dt>
                                     <dd>@ShortReference(canonicalSource.AuditEntryId)</dd>
                                 </div>
                             </dl>
@@ -337,31 +340,29 @@
                          aria-labelledby="non-working-day-replacement-scope-title">
                     <header class="non-working-day-correction-scope-header">
                         <div>
-                            <p class="eyebrow">Replacement source</p>
+                            <p class="eyebrow">@L["NonWorkingDay.Correction.ReplacementSource"]</p>
                             <h3 id="non-working-day-replacement-scope-title">
-                                @FormatRange(replacementInput.Period)
+                                @DisplayRange(replacementInput.Period)
                             </h3>
                         </div>
                         <span class="status-chip status-owner">
-                            @preview.ConfirmedAffectedCount Memberships
+                            @string.Format(System.Globalization.CultureInfo.CurrentCulture, L["NonWorkingDay.MembershipCount"], preview.ConfirmedAffectedCount)
                         </span>
                     </header>
 
                     <div class="non-working-day-full-period-notice" role="note">
-                        <strong>Full replacement period applies</strong>
-                        <p>
-                            Every new-scope Membership receives @FormatRange(replacementInput.Period), including endpoint-only overlaps. The original period is excluded before this impact is estimated.
-                        </p>
+                        <strong>@L["NonWorkingDay.Correction.FullReplacementApplies"]</strong>
+                        <p>@L["NonWorkingDay.Correction.FullReplacementHint", DisplayRange(replacementInput.Period)]</p>
                     </div>
 
                     @if (preview.ReplacementImpact.Count == 0)
                     {
-                        <p class="empty-state">The replacement period affects no Memberships.</p>
+                        <p class="empty-state">@L["NonWorkingDay.Correction.NoReplacementMemberships"]</p>
                     }
                     else
                     {
                         <ol class="non-working-day-impact-list"
-                            aria-label="Replacement affected Memberships">
+                            aria-label="@L["NonWorkingDay.Correction.ReplacementAffectedMemberships"]">
                             @foreach (var membership in preview.ReplacementImpact)
                             {
                                 <li class="non-working-day-impact-row"
@@ -376,50 +377,50 @@
                                                    asp-route-clientId="@membership.ClientId">@membership.ClientDisplayName</a>
                                             </h3>
                                             <p class="non-working-day-impact-reference">
-                                                Membership @ShortReference(membership.MembershipId)
+                                                @L["NonWorkingDay.MembershipReference", ShortReference(membership.MembershipId)]
                                             </p>
                                         </div>
                                         <span class="status-chip status-active">
-                                            +@membership.AddedUniqueExtensionDays unique days
+                                            +@WebPluralizer.Days(S, membership.AddedUniqueExtensionDays)
                                         </span>
                                     </header>
 
                                     <dl class="non-working-day-impact-meta">
                                         <div>
-                                            <dt>Full applied range</dt>
-                                            <dd>@FormatRange(membership.AppliedRange)</dd>
+                                            <dt>@L["NonWorkingDay.FullAppliedRange"]</dt>
+                                            <dd>@DisplayRange(membership.AppliedRange)</dd>
                                         </div>
                                         <div>
-                                            <dt>Effective end without original</dt>
+                                            <dt>@L["NonWorkingDay.Correction.EffectiveEndWithoutOriginal"]</dt>
                                             <dd>
-                                                @FormatDate(membership.BeforeEffectiveEndDate)
-                                                to @FormatDate(membership.EstimatedAfterEffectiveEndDate)
+                                                @DisplayDate(membership.BeforeEffectiveEndDate)
+                                                @L["Range.To"] @DisplayDate(membership.EstimatedAfterEffectiveEndDate)
                                             </dd>
                                         </div>
                                         <div>
-                                            <dt>Extension days without original</dt>
+                                            <dt>@L["NonWorkingDay.Correction.ExtensionWithoutOriginal"]</dt>
                                             <dd>
                                                 @membership.BeforeExtensionDays
-                                                to @membership.EstimatedAfterExtensionDays
+                                                @L["Range.To"] @membership.EstimatedAfterExtensionDays
                                             </dd>
                                         </div>
                                         <div>
-                                            <dt>Existing overlap</dt>
-                                            <dd>@membership.ExistingOverlapDays days</dd>
+                                            <dt>@L["NonWorkingDay.ExistingOverlap"]</dt>
+                                            <dd>@WebPluralizer.Days(S, membership.ExistingOverlapDays)</dd>
                                         </div>
                                     </dl>
 
                                     @if (membership.OverlapWarnings.Count > 0)
                                     {
                                         <div class="non-working-day-overlap-warning" role="note">
-                                            <strong>Existing replacement-range overlap</strong>
+                                            <strong>@L["NonWorkingDay.Correction.ReplacementOverlap"]</strong>
                                             <ul>
                                                 @foreach (var warning in membership.OverlapWarnings)
                                                 {
                                                     <li data-correction-overlap-source-type="@warning.SourceType"
                                                         data-correction-overlap-source-id="@warning.SourceId">
                                                         @SourceTypeLabel(warning.SourceType): @warning.SourceLabel,
-                                                        @FormatRange(warning.OverlapRange), @warning.OverlapDays days
+                                                        @DisplayRange(warning.OverlapRange), @WebPluralizer.Days(S, warning.OverlapDays)
                                                     </li>
                                                 }
                                             </ul>
@@ -435,20 +436,16 @@
             {
                 <div class="non-working-day-scope-confirmed" role="note"
                      data-correction-preserved-scope>
-                    <strong>Exact scope and range stay unchanged</strong>
-                    <p>
-                        @preview.ConfirmedAffectedCount applications retain @FormatRange(canonicalSource.Period). Only the reason source is replaced with @preview.ReplacementInput?.ReasonCode.
-                    </p>
+                    <strong>@L["NonWorkingDay.Correction.ScopeUnchanged"]</strong>
+                    <p>@L["NonWorkingDay.Correction.ScopeUnchangedHint", preview.ConfirmedAffectedCount, DisplayRange(canonicalSource.Period), preview.ReplacementInput?.ReasonCode ?? L["Common.None"].Value]</p>
                 </div>
             }
             else
             {
                 <div class="non-working-day-correction-cancel-notice" role="note"
                      data-correction-cancel-scope>
-                    <strong>@preview.OriginalAffectedCount applications stop contributing</strong>
-                    <p>
-                        The original period and application rows remain as canceled history. Memberships will be recalculated by the command confirmation workflow.
-                    </p>
+                    <strong>@L["NonWorkingDay.Correction.ApplicationsStop", preview.OriginalAffectedCount]</strong>
+                    <p>@L["NonWorkingDay.Correction.CancelHint"]</p>
                 </div>
             }
 
@@ -512,12 +509,10 @@
 
                 <div class="non-working-day-confirmation-review">
                     <div>
-                        <p class="eyebrow">Final confirmation</p>
+                        <p class="eyebrow">@L["NonWorkingDay.Correction.FinalConfirmation"]</p>
                         <h3>@ConfirmationTitle(preview.Mode)</h3>
                     </div>
-                    <p>
-                        The command will preserve the original source as history, commit the exact confirmed scope, recalculate @previewRecalculatedCount Memberships and append one Owner audit event atomically.
-                    </p>
+                    <p>@L["NonWorkingDay.Correction.FinalConfirmationHint", previewRecalculatedCount]</p>
                 </div>
 
                 <label class="acknowledgement-control non-working-day-confirmation-choice"
@@ -538,7 +533,7 @@
                     <button type="submit"
                             class="@(preview.Mode == NonWorkingDayCorrectionMode.Cancel ? "danger-button" : null)"
                             data-confirm-non-working-day-correction-submit
-                            data-busy-text="Applying correction...">@ConfirmationButtonLabel(preview.Mode)</button>
+                            data-busy-text="@L["NonWorkingDay.Correction.Applying"]">@ConfirmationButtonLabel(preview.Mode)</button>
                 </div>
             </form>
         </section>
@@ -558,12 +553,12 @@
                  data-confirmed-correction-union-count="@correction.AffectedUnionCount">
             <div class="operation-message operation-success" role="status">
                 <strong>@ConfirmedOutcomeTitle(correction.Mode)</strong>
-                <span>Source facts, exact application scope, Membership recalculation, idempotency and business audit committed together.</span>
+                <span>@L["NonWorkingDay.Correction.ResultCommitted"]</span>
             </div>
 
             <header class="non-working-day-impact-header">
                 <div>
-                    <p class="eyebrow">Canonical result</p>
+                    <p class="eyebrow">@L["NonWorkingDay.Correction.CanonicalResult"]</p>
                     <h2 id="non-working-day-correction-confirmed-title">@ModeLabel(correction.Mode)</h2>
                 </div>
                 <span class="status-chip @StatusClass(correction.OriginalPeriod.Status)">
@@ -573,38 +568,38 @@
 
             <dl class="non-working-day-impact-summary">
                 <div>
-                    <dt>Original memberships</dt>
+                    <dt>@L["NonWorkingDay.Correction.OriginalMemberships"]</dt>
                     <dd>@correction.OriginalAffectedCount</dd>
                 </div>
                 <div>
-                    <dt>Replacement memberships</dt>
+                    <dt>@L["NonWorkingDay.Correction.ReplacementMemberships"]</dt>
                     <dd>@correction.ReplacementAffectedCount</dd>
                 </div>
                 <div>
-                    <dt>Recalculated union</dt>
+                    <dt>@L["NonWorkingDay.Correction.RecalculatedUnion"]</dt>
                     <dd>@correction.AffectedUnionCount</dd>
                 </div>
                 <div>
-                    <dt>Audit reference</dt>
+                    <dt>@L["NonWorkingDay.AuditReference"]</dt>
                     <dd>@ShortReference(correction.AuditEntryId)</dd>
                 </div>
             </dl>
 
             <dl class="non-working-day-confirmed-reason">
                 <div>
-                    <dt>Correction reason</dt>
+                    <dt>@L["NonWorkingDay.CorrectionReason"]</dt>
                     <dd>@correction.CorrectionReason</dd>
                 </div>
                 <div>
-                    <dt>Correction comment</dt>
+                    <dt>@L["NonWorkingDay.CorrectionComment"]</dt>
                     <dd>@correction.CorrectionComment</dd>
                 </div>
                 <div>
-                    <dt>Occurred at</dt>
+                    <dt>@L["NonWorkingDay.Correction.OccurredAt"]</dt>
                     <dd>@FormatTimestamp(correction.OccurredAt)</dd>
                 </div>
                 <div>
-                    <dt>Recorded at</dt>
+                    <dt>@L["NonWorkingDay.Correction.RecordedAt"]</dt>
                     <dd>@FormatTimestamp(correction.RecordedAt)</dd>
                 </div>
             </dl>
@@ -613,9 +608,9 @@
                      aria-labelledby="non-working-day-confirmed-original-title">
                 <header class="non-working-day-correction-scope-header">
                     <div>
-                        <p class="eyebrow">Original source retained</p>
+                        <p class="eyebrow">@L["NonWorkingDay.Correction.OriginalSourceRetained"]</p>
                         <h3 id="non-working-day-confirmed-original-title">
-                            @FormatRange(correction.OriginalPeriod.Period)
+                            @DisplayRange(correction.OriginalPeriod.Period)
                         </h3>
                     </div>
                     <span class="status-chip @StatusClass(correction.OriginalPeriod.Status)">
@@ -623,7 +618,7 @@
                     </span>
                 </header>
                 <ol class="non-working-day-impact-list"
-                    aria-label="Committed original scope">
+                    aria-label="@L["NonWorkingDay.Correction.CommittedOriginalScope"]">
                     @foreach (var application in correction.OriginalPeriod.Applications)
                     {
                         <li class="non-working-day-impact-row"
@@ -638,7 +633,7 @@
                                            asp-route-clientId="@application.ClientId">@application.ClientDisplayName</a>
                                     </h3>
                                     <p class="non-working-day-impact-reference">
-                                        Membership @ShortReference(application.MembershipId)
+                                        @L["NonWorkingDay.MembershipReference", ShortReference(application.MembershipId)]
                                     </p>
                                 </div>
                                 <span class="status-chip @StatusClass(application.Status)">
@@ -647,19 +642,19 @@
                             </header>
                             <dl class="non-working-day-impact-meta">
                                 <div>
-                                    <dt>Full applied range</dt>
-                                    <dd>@FormatRange(application.AppliedRange)</dd>
+                                    <dt>@L["NonWorkingDay.FullAppliedRange"]</dt>
+                                    <dd>@DisplayRange(application.AppliedRange)</dd>
                                 </div>
                                 <div>
-                                    <dt>Current effective end</dt>
-                                    <dd>@FormatDate(application.CurrentEffectiveEndDate)</dd>
+                                    <dt>@L["NonWorkingDay.CurrentEffectiveEnd"]</dt>
+                                    <dd>@DisplayDate(application.CurrentEffectiveEndDate)</dd>
                                 </div>
                                 <div>
-                                    <dt>Current extension days</dt>
+                                    <dt>@L["NonWorkingDay.CurrentExtensionDays"]</dt>
                                     <dd>@application.CurrentExtensionDays</dd>
                                 </div>
                                 <div>
-                                    <dt>Recalculated at</dt>
+                                    <dt>@L["NonWorkingDay.Correction.RecalculatedAt"]</dt>
                                     <dd>@FormatTimestamp(application.RecalculatedAt)</dd>
                                 </div>
                             </dl>
@@ -674,25 +669,25 @@
                          aria-labelledby="non-working-day-confirmed-replacement-title">
                     <header class="non-working-day-correction-scope-header">
                         <div>
-                            <p class="eyebrow">Replacement source committed</p>
+                            <p class="eyebrow">@L["NonWorkingDay.Correction.ReplacementSourceCommitted"]</p>
                             <h3 id="non-working-day-confirmed-replacement-title">
-                                @FormatRange(replacement.Period)
+                                @DisplayRange(replacement.Period)
                             </h3>
                         </div>
-                        <span class="status-chip status-active">Active</span>
+                        <span class="status-chip status-active">@L["NonWorkingDay.Status.Active"]</span>
                     </header>
                     <dl class="non-working-day-confirmed-reason">
                         <div>
-                            <dt>Reason code</dt>
+                            <dt>@L["NonWorkingDay.ReasonCode"]</dt>
                             <dd>@replacement.ReasonCode</dd>
                         </div>
                         <div>
-                            <dt>Reason comment</dt>
-                            <dd>@(replacement.ReasonComment ?? "None")</dd>
+                            <dt>@L["NonWorkingDay.ReasonComment"]</dt>
+                            <dd>@(replacement.ReasonComment ?? L["Common.None"])</dd>
                         </div>
                     </dl>
                     <ol class="non-working-day-impact-list"
-                        aria-label="Committed replacement scope">
+                        aria-label="@L["NonWorkingDay.Correction.CommittedReplacementScope"]">
                         @foreach (var application in replacement.Applications)
                         {
                             <li class="non-working-day-impact-row"
@@ -707,26 +702,26 @@
                                                asp-route-clientId="@application.ClientId">@application.ClientDisplayName</a>
                                         </h3>
                                         <p class="non-working-day-impact-reference">
-                                            Membership @ShortReference(application.MembershipId)
+                                            @L["NonWorkingDay.MembershipReference", ShortReference(application.MembershipId)]
                                         </p>
                                     </div>
-                                    <span class="status-chip status-active">Active</span>
+                                    <span class="status-chip status-active">@L["NonWorkingDay.Status.Active"]</span>
                                 </header>
                                 <dl class="non-working-day-impact-meta">
                                     <div>
-                                        <dt>Full applied range</dt>
-                                        <dd>@FormatRange(application.AppliedRange)</dd>
+                                        <dt>@L["NonWorkingDay.FullAppliedRange"]</dt>
+                                        <dd>@DisplayRange(application.AppliedRange)</dd>
                                     </div>
                                     <div>
-                                        <dt>Current effective end</dt>
-                                        <dd>@FormatDate(application.CurrentEffectiveEndDate)</dd>
+                                        <dt>@L["NonWorkingDay.CurrentEffectiveEnd"]</dt>
+                                        <dd>@DisplayDate(application.CurrentEffectiveEndDate)</dd>
                                     </div>
                                     <div>
-                                        <dt>Current extension days</dt>
+                                        <dt>@L["NonWorkingDay.CurrentExtensionDays"]</dt>
                                         <dd>@application.CurrentExtensionDays</dd>
                                     </div>
                                     <div>
-                                        <dt>Recalculated at</dt>
+                                        <dt>@L["NonWorkingDay.Correction.RecalculatedAt"]</dt>
                                         <dd>@FormatTimestamp(application.RecalculatedAt)</dd>
                                     </div>
                                 </dl>
@@ -740,10 +735,8 @@
                 <div class="non-working-day-correction-cancel-notice"
                      role="note"
                      data-confirmed-correction-cancellation-id="@cancellation.CancellationId">
-                    <strong>@correction.OriginalAffectedCount applications no longer contribute</strong>
-                    <p>
-                        Cancellation @ShortReference(cancellation.CancellationId) retained the original period and applications as canceled history. Every affected Membership above shows canonical state after recalculation.
-                    </p>
+                    <strong>@L["NonWorkingDay.Correction.ApplicationsStop", correction.OriginalAffectedCount]</strong>
+                    <p>@L["NonWorkingDay.Correction.CancellationCommittedHint", ShortReference(cancellation.CancellationId)]</p>
                 </div>
             }
         </section>
@@ -762,16 +755,9 @@
         return date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    private static string FormatRange(DateRange range)
-    {
-        return $"{FormatDate(range.StartDate)} to {FormatDate(range.EndDate)}";
-    }
-
     private static string FormatTimestamp(DateTimeOffset timestamp)
     {
-        return timestamp.UtcDateTime.ToString(
-            "yyyy-MM-dd HH:mm 'UTC'",
-            System.Globalization.CultureInfo.InvariantCulture);
+        return $"{timestamp.UtcDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture)} UTC";
     }
 
     private static string ShortReference(Guid id)
@@ -790,82 +776,82 @@
         };
     }
 
-    private static string ModeLabel(NonWorkingDayCorrectionMode mode)
+    private string ModeLabel(NonWorkingDayCorrectionMode mode)
     {
         return mode switch
         {
-            NonWorkingDayCorrectionMode.ReplaceRange => "Range replacement preview",
-            NonWorkingDayCorrectionMode.ReplaceReason => "Reason replacement preview",
-            NonWorkingDayCorrectionMode.Cancel => "Cancellation preview",
-            _ => "Unsupported correction preview",
+            NonWorkingDayCorrectionMode.ReplaceRange => L["NonWorkingDay.Correction.Mode.ReplaceRange"],
+            NonWorkingDayCorrectionMode.ReplaceReason => L["NonWorkingDay.Correction.Mode.ReplaceReason"],
+            NonWorkingDayCorrectionMode.Cancel => L["NonWorkingDay.Correction.Mode.Cancel"],
+            _ => L["NonWorkingDay.Correction.Mode.Unsupported"],
         };
     }
 
-    private static string ConfirmationTitle(NonWorkingDayCorrectionMode mode)
+    private string ConfirmationTitle(NonWorkingDayCorrectionMode mode)
     {
         return mode switch
         {
             NonWorkingDayCorrectionMode.ReplaceRange =>
-                "Apply this exact replacement scope",
+                L["NonWorkingDay.Correction.ConfirmationTitle.ReplaceRange"],
             NonWorkingDayCorrectionMode.ReplaceReason =>
-                "Replace reason for this exact scope",
+                L["NonWorkingDay.Correction.ConfirmationTitle.ReplaceReason"],
             NonWorkingDayCorrectionMode.Cancel =>
-                "Cancel this exact original scope",
-            _ => "Unsupported correction",
+                L["NonWorkingDay.Correction.ConfirmationTitle.Cancel"],
+            _ => L["NonWorkingDay.Correction.ConfirmationTitle.Unsupported"],
         };
     }
 
-    private static string ConfirmationAcknowledgement(
+    private string ConfirmationAcknowledgement(
         NonWorkingDayCorrectionPreview preview)
     {
         return preview.Mode switch
         {
             NonWorkingDayCorrectionMode.ReplaceRange =>
-                $"I confirm {preview.OriginalAffectedCount} original applications stop contributing and the exact new set of {preview.ConfirmedAffectedCount} Memberships receives the full {FormatRange(preview.ReplacementInput!.Period)} period.",
+                L["NonWorkingDay.Correction.Acknowledgement.ReplaceRange", preview.OriginalAffectedCount, preview.ConfirmedAffectedCount, DisplayRange(preview.ReplacementInput!.Period)],
             NonWorkingDayCorrectionMode.ReplaceReason =>
-                $"I confirm the exact {preview.ConfirmedAffectedCount} applications and full applied ranges stay unchanged while the reason is replaced.",
+                L["NonWorkingDay.Correction.Acknowledgement.ReplaceReason", preview.ConfirmedAffectedCount],
             NonWorkingDayCorrectionMode.Cancel =>
-                $"I confirm all {preview.OriginalAffectedCount} original applications stop contributing and remain visible as canceled history.",
-            _ => "I confirm this correction.",
+                L["NonWorkingDay.Correction.Acknowledgement.Cancel", preview.OriginalAffectedCount],
+            _ => L["NonWorkingDay.Correction.Acknowledgement.Unsupported"],
         };
     }
 
-    private static string ConfirmationButtonLabel(
+    private string ConfirmationButtonLabel(
         NonWorkingDayCorrectionMode mode)
     {
         return mode switch
         {
-            NonWorkingDayCorrectionMode.ReplaceRange => "Apply range correction",
-            NonWorkingDayCorrectionMode.ReplaceReason => "Apply reason correction",
-            NonWorkingDayCorrectionMode.Cancel => "Cancel non-working period",
-            _ => "Apply correction",
+            NonWorkingDayCorrectionMode.ReplaceRange => L["NonWorkingDay.Correction.Button.ReplaceRange"],
+            NonWorkingDayCorrectionMode.ReplaceReason => L["NonWorkingDay.Correction.Button.ReplaceReason"],
+            NonWorkingDayCorrectionMode.Cancel => L["NonWorkingDay.Correction.Button.Cancel"],
+            _ => L["NonWorkingDay.Correction.Button.Unsupported"],
         };
     }
 
-    private static string ConfirmationBusyLabel(
+    private string ConfirmationBusyLabel(
         NonWorkingDayCorrectionMode mode)
     {
         return mode == NonWorkingDayCorrectionMode.Cancel
-            ? "Canceling period and recalculating Memberships..."
-            : "Replacing period and recalculating Memberships...";
+            ? L["NonWorkingDay.Correction.Busy.Cancel"]
+            : L["NonWorkingDay.Correction.Busy.Replace"];
     }
 
-    private static string ConfirmedOutcomeTitle(
+    private string ConfirmedOutcomeTitle(
         NonWorkingDayCorrectionMode mode)
     {
         return mode == NonWorkingDayCorrectionMode.Cancel
-            ? "Non-working period canceled"
-            : "Non-working period corrected";
+            ? L["NonWorkingDay.Correction.Outcome.Canceled"]
+            : L["NonWorkingDay.Correction.Outcome.Corrected"];
     }
 
-    private static string StatusLabel(NonWorkingDayCorrectionSourceStatus status)
+    private string StatusLabel(NonWorkingDayCorrectionSourceStatus status)
     {
         return status switch
         {
-            NonWorkingDayCorrectionSourceStatus.Active => "Active",
-            NonWorkingDayCorrectionSourceStatus.Corrected => "Corrected",
-            NonWorkingDayCorrectionSourceStatus.Canceled => "Canceled",
-            _ => "Unsupported",
+            NonWorkingDayCorrectionSourceStatus.Active => L["NonWorkingDay.Status.Active"],
+            NonWorkingDayCorrectionSourceStatus.Corrected => L["NonWorkingDay.Status.Corrected"],
+            NonWorkingDayCorrectionSourceStatus.Canceled => L["NonWorkingDay.Status.Canceled"],
+            _ => L["NonWorkingDay.Status.Unsupported"],
         };
     }
 
@@ -894,29 +880,35 @@
         };
     }
 
-    private static string ScopeBehaviorLabel(
+    private string ScopeBehaviorLabel(
         NonWorkingDayCorrectionScopeBehavior behavior)
     {
         return behavior switch
         {
             NonWorkingDayCorrectionScopeBehavior.RecomputeReplacement =>
-                "Recompute exact replacement scope",
+                L["NonWorkingDay.Correction.Scope.Recompute"],
             NonWorkingDayCorrectionScopeBehavior.PreserveConfirmedApplications =>
-                "Preserve exact applications",
+                L["NonWorkingDay.Correction.Scope.Preserve"],
             NonWorkingDayCorrectionScopeBehavior.NoReplacement =>
-                "Deactivate original scope",
-            _ => "Unsupported",
+                L["NonWorkingDay.Correction.Scope.Deactivate"],
+            _ => L["NonWorkingDay.Status.Unsupported"],
         };
     }
 
-    private static string SourceTypeLabel(string sourceType)
+    private string SourceTypeLabel(string sourceType)
     {
         return sourceType switch
         {
-            "freeze" => "Freeze",
-            "non_working_day" => "Non-working period",
-            "adjustment" => "Adjustment",
-            _ => "Extension source",
+            "freeze" => L["NonWorkingDay.Source.Freeze"],
+            "non_working_day" => L["NonWorkingDay.Source.NonWorkingDay"],
+            "adjustment" => L["NonWorkingDay.Source.Adjustment"],
+            _ => L["NonWorkingDay.Source.Extension"],
         };
     }
+
+    private static string DisplayDate(DateOnly date) =>
+        date.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
+
+    private static string DisplayRange(DateRange range) =>
+        $"{DisplayDate(range.StartDate)} – {DisplayDate(range.EndDate)}";
 }

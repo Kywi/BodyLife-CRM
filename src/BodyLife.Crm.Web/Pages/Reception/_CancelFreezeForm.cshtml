@@ -1,4 +1,6 @@
 @model CancelFreezeFormViewModel
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
 @{
     var input = Model.Input;
     var membership = Model.Membership;
@@ -10,15 +12,15 @@
          class="freeze-correction-panel"
          data-cancel-freeze-panel
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>Cancel freeze</summary>
+    <summary>@L["Freeze.Cancel"]</summary>
     <div class="freeze-correction-content">
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>Freeze not canceled</strong>
+                <strong>@L["Freeze.NotCanceled"]</strong>
                 <ul>
                     @foreach (var message in Model.Errors
-                        .Select(CancelFreezeFormViewModel.DisplayError)
+                        .Select(error => ReceptionCommandErrorLocalizer.Display(L, error))
                         .Distinct(StringComparer.Ordinal))
                     {
                         <li>@message</li>
@@ -29,22 +31,22 @@
 
         <dl class="freeze-correction-context">
             <div>
-                <dt>Membership</dt>
+                <dt>@L["Field.Membership"]</dt>
                 <dd>@membership.TypeNameSnapshot</dd>
             </div>
             <div>
-                <dt>Inclusive range</dt>
-                <dd>@freeze.Range.StartDate.ToString("yyyy-MM-dd") to @freeze.Range.EndDate.ToString("yyyy-MM-dd")</dd>
+                <dt>@L["Freeze.Range"]</dt>
+                <dd>@freeze.Range.StartDate.ToString("d") @L["Range.To"] @freeze.Range.EndDate.ToString("d")</dd>
             </div>
             <div>
-                <dt>Original reason</dt>
+                <dt>@L["Freeze.OriginalReason"]</dt>
                 <dd>@freeze.ReasonLabel</dd>
             </div>
         </dl>
 
         <div class="warning-block warning-danger">
-            <strong>Correction keeps history</strong>
-            <span>The Freeze remains visible as canceled and Membership extension state is recalculated.</span>
+            <strong>@L["Correction.KeepsHistory"]</strong>
+            <span>@L["Freeze.CancelHint"]</span>
         </div>
 
         <form id="cancel-freeze-form-@freezeKey"
@@ -69,7 +71,7 @@
             <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
 
             <div class="form-field">
-                <label for="cancel-freeze-reason-@freezeKey">Cancellation reason</label>
+                <label for="cancel-freeze-reason-@freezeKey">@L["Freeze.CancellationReason"]</label>
                 <textarea id="cancel-freeze-reason-@freezeKey"
                           name="form.Reason"
                           maxlength="@CancelFreezeFormViewModel.ReasonMaxLength"
@@ -77,7 +79,7 @@
             </div>
 
             <div class="form-field">
-                <label for="cancel-freeze-comment-@freezeKey">Cancellation comment (optional)</label>
+                <label for="cancel-freeze-comment-@freezeKey">@L["Freeze.CancellationComment"]</label>
                 <textarea id="cancel-freeze-comment-@freezeKey"
                           name="form.Comment"
                           maxlength="@CancelFreezeFormViewModel.CommentMaxLength">@input.Comment</textarea>
@@ -91,18 +93,18 @@
                        value="true"
                        checked="@(input.Confirmed ? "checked" : null)"
                        required />
-                <span>I confirm this Freeze was added by mistake and should be canceled.</span>
+                <span>@L["Freeze.CancelConfirm"]</span>
             </label>
 
             <div class="action-form-footer">
                 <span id="cancel-freeze-loading-@freezeKey"
                       class="request-indicator htmx-indicator"
                       role="status"
-                      aria-live="polite">Canceling freeze...</span>
+                      aria-live="polite">@L["Freeze.Canceling"]</span>
                 <button class="danger-button"
                         type="submit"
                         data-cancel-freeze-submit
-                        data-busy-text="Canceling...">Cancel freeze</button>
+                        data-busy-text="@L["Action.Canceling"]">@L["Freeze.Cancel"]</button>
             </div>
         </form>
     </div>

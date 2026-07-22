@@ -1,13 +1,14 @@
 @page
 @model ErrorModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<BodyLife.Crm.Web.Localization.Authentication> AuthenticationLocalizer
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = AuthenticationLocalizer["Error.Title"];
 }
 
 <main class="page-shell">
     <section class="status-panel">
         <p class="eyebrow">BodyLife CRM</p>
-        <h1>Something went wrong</h1>
-        <p>The request could not be completed.</p>
+        <h1>@AuthenticationLocalizer["Error.Heading"]</h1>
+        <p>@AuthenticationLocalizer["Error.Message"]</p>
     </section>
 </main>

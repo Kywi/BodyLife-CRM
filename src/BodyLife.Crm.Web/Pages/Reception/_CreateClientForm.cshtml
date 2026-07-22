@@ -1,4 +1,6 @@
 @model CreateClientFormViewModel
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
 @{
     var input = Model.Input;
 }
@@ -6,14 +8,14 @@
 <details id="create-client-action-panel"
          class="profile-action-panel search-create-panel"
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>Create client</summary>
+    <summary>@L["Client.Create"]</summary>
     <div class="profile-action-content">
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>Client not created</strong>
+                <strong>@L["Client.NotCreated"]</strong>
                 <ul>
-                    @foreach (var message in Model.Errors.Select(DisplayError).Distinct(StringComparer.Ordinal))
+                    @foreach (var message in Model.Errors.Select(error => ReceptionCommandErrorLocalizer.Display(L, error)).Distinct(StringComparer.Ordinal))
                     {
                         <li>@message</li>
                     }
@@ -41,7 +43,7 @@
 
             <div class="action-form-grid">
                 <div class="form-field">
-                    <label for="create-surname">Surname</label>
+                    <label for="create-surname">@L["Client.Surname"]</label>
                     <input id="create-surname"
                            name="form.Surname"
                            type="text"
@@ -50,7 +52,7 @@
                            autocomplete="off" />
                 </div>
                 <div class="form-field">
-                    <label for="create-name">Name</label>
+                    <label for="create-name">@L["Client.Name"]</label>
                     <input id="create-name"
                            name="form.Name"
                            type="text"
@@ -59,7 +61,7 @@
                            autocomplete="off" />
                 </div>
                 <div class="form-field">
-                    <label for="create-patronymic">Patronymic</label>
+                    <label for="create-patronymic">@L["Client.Patronymic"]</label>
                     <input id="create-patronymic"
                            name="form.Patronymic"
                            type="text"
@@ -67,7 +69,7 @@
                            autocomplete="off" />
                 </div>
                 <div class="form-field">
-                    <label for="create-phone">Phone</label>
+                    <label for="create-phone">@L["Field.Phone"]</label>
                     <input id="create-phone"
                            name="form.Phone"
                            type="text"
@@ -76,7 +78,7 @@
                            autocomplete="off" />
                 </div>
                 <div class="form-field">
-                    <label for="create-card-number">Card number</label>
+                    <label for="create-card-number">@L["Card.Number"]</label>
                     <input id="create-card-number"
                            name="form.CardNumber"
                            type="text"
@@ -84,14 +86,14 @@
                            autocomplete="off" />
                 </div>
                 <div class="form-field">
-                    <label for="create-status">Operational status</label>
+                    <label for="create-status">@L["Client.OperationalStatus"]</label>
                     <select id="create-status" name="form.OperationalStatus" required>
-                        <option value="Active" selected="@(input.OperationalStatus == ClientOperationalStatus.Active ? "selected" : null)">Active</option>
-                        <option value="Inactive" selected="@(input.OperationalStatus == ClientOperationalStatus.Inactive ? "selected" : null)">Inactive</option>
+                        <option value="Active" selected="@(input.OperationalStatus == ClientOperationalStatus.Active ? "selected" : null)">@L["Status.Active"]</option>
+                        <option value="Inactive" selected="@(input.OperationalStatus == ClientOperationalStatus.Inactive ? "selected" : null)">@L["Status.Inactive"]</option>
                     </select>
                 </div>
                 <div class="form-field form-field-wide">
-                    <label for="create-comment">Reception note</label>
+                    <label for="create-comment">@L["Profile.Note"]</label>
                     <textarea id="create-comment"
                               name="form.Comment"
                               rows="3">@input.Comment</textarea>
@@ -102,7 +104,7 @@
             {
                 <section class="duplicate-warning-section" aria-labelledby="create-duplicate-warning-title">
                     <header>
-                        <h3 id="create-duplicate-warning-title">Duplicate review</h3>
+                        <h3 id="create-duplicate-warning-title">@L["Duplicate.Review"]</h3>
                     </header>
 
                     @for (var index = 0; index < Model.DuplicateWarnings.Count; index++)
@@ -125,10 +127,10 @@
                                     <span>@CandidateDisplayName(candidate)</span>
                                 </div>
                                 <span class="status-chip @(candidate.IsActive ? "status-active" : "status-inactive")">
-                                    @(candidate.IsActive ? "Active" : "Inactive")
+                                    @(candidate.IsActive ? L["Status.Active"] : L["Status.Inactive"])
                                 </span>
                             </header>
-                            <p>@(candidate.Phone ?? "No phone")</p>
+                            <p>@(candidate.Phone ?? L["Value.NoPhone"])</p>
                             <label class="acknowledgement-control" for="@acknowledgementId">
                                 <input id="@acknowledgementId"
                                        name="form.DuplicateAcknowledgements[@index].Acknowledged"
@@ -136,9 +138,9 @@
                                        value="true"
                                        checked="@(warning.Acknowledged ? "checked" : null)"
                                        required />
-                                <span>I reviewed this match and confirmed a new client is required</span>
+                                <span>@L["Duplicate.ConfirmCreate"]</span>
                             </label>
-                            <label for="@reasonId">Acknowledgement reason</label>
+                            <label for="@reasonId">@L["Duplicate.AcknowledgementReason"]</label>
                             <input id="@reasonId"
                                    name="form.DuplicateAcknowledgements[@index].Reason"
                                    type="text"
@@ -155,8 +157,8 @@
                 <span id="create-client-loading"
                       class="request-indicator htmx-indicator"
                       role="status"
-                      aria-live="polite">Creating client...</span>
-                <button type="submit" data-busy-text="Creating...">Create client</button>
+                      aria-live="polite">@L["Client.Creating"]</span>
+                <button type="submit" data-busy-text="@L["Action.Creating"]">@L["Client.Create"]</button>
             </div>
         </form>
     </div>
@@ -170,29 +172,13 @@
             : $"{candidate.Surname} {candidate.Name} {candidate.Patronymic}";
     }
 
-    private static string DuplicateWarningLabel(ClientDuplicateWarningType warningType)
+    private string DuplicateWarningLabel(ClientDuplicateWarningType warningType)
     {
         return warningType switch
         {
-            ClientDuplicateWarningType.DuplicatePhone => "Duplicate phone",
-            ClientDuplicateWarningType.SimilarName => "Similar name",
-            _ => "Duplicate warning",
-        };
-    }
-
-    private static string DisplayError(CommandError error)
-    {
-        return error.Code switch
-        {
-            CommandErrorCode.DuplicateWarningNotAcknowledged =>
-                "Review and acknowledge every current duplicate warning.",
-            CommandErrorCode.CardNumberAlreadyCurrent =>
-                "That card is already assigned to a current client. Enter another card or leave it blank.",
-            CommandErrorCode.ConcurrencyConflict =>
-                "Client creation conflicted with another change. Review the form and try again.",
-            CommandErrorCode.DuplicateSubmission =>
-                "This submission key was already used for different client data. Run the search again before retrying.",
-            _ => error.Message,
+            ClientDuplicateWarningType.DuplicatePhone => L["Duplicate.Phone"],
+            ClientDuplicateWarningType.SimilarName => L["Duplicate.SimilarName"],
+            _ => L["Duplicate.Warning"],
         };
     }
 }

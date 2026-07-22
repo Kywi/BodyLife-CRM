@@ -44,6 +44,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -154,10 +155,10 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 await recentPayments.Locator("[data-payment-status='replaced']").CountAsync());
 
             var trialPayment = recentPayments.Locator(".recent-payment-row")
-                .Filter(new LocatorFilterOptions { HasText = "100 UAH" });
+                .Filter(new LocatorFilterOptions { HasText = "100.00 UAH" });
             await ExpectVisibleAsync(
                 trialPayment.Locator(".recent-payment-context").GetByText(
-                    "Trial payment",
+                    "Trial",
                     new() { Exact = true }),
                 viewportName,
                 "trial Payment context");
@@ -171,7 +172,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             var canceledPayment = recentPayments.Locator(
                 "[data-payment-status='canceled']");
             await ExpectVisibleAsync(
-                canceledPayment.GetByText("250 UAH", new() { Exact = true }),
+                canceledPayment.GetByText("250.00 UAH", new() { Exact = true }),
                 viewportName,
                 "canceled Payment amount");
             await ExpectVisibleAsync(
@@ -184,7 +185,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "Payment cancellation source");
 
             var replacementPayment = recentPayments.Locator(".recent-payment-row")
-                .Filter(new LocatorFilterOptions { HasText = "900 UAH" });
+                .Filter(new LocatorFilterOptions { HasText = "900.00 UAH" });
             await ExpectVisibleAsync(
                 replacementPayment.Locator(".recent-payment-meta").GetByText(
                     "Payment history snapshot",
@@ -213,7 +214,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             var originalPayment = recentPayments.Locator(
                 "[data-payment-status='replaced']");
             await ExpectVisibleAsync(
-                originalPayment.GetByText("1000 UAH", new() { Exact = true }),
+                originalPayment.GetByText("1,000.00 UAH", new() { Exact = true }),
                 viewportName,
                 "original Payment amount");
             await ExpectVisibleAsync(
@@ -291,6 +292,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -380,7 +382,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.All(
                 renderedRanges,
                 value => Assert.Matches(
-                    @"^\d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}$",
+                    @"^\d{1,2}/\d{1,2}/\d{4} to \d{1,2}/\d{1,2}/\d{4}$",
                     value.Trim()));
             await AssertFitsViewportAsync(page, viewportName, "Membership extension history");
             await CaptureVisualAsync(page, viewportName, "membership-extension-history");
@@ -397,6 +399,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -439,7 +442,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             await ExpectVisibleAsync(
                 createPanel.GetByText(
-                    "That card is already assigned to a current client. Enter another card or leave it blank.",
+                    "This card is already assigned to another current client.",
                     new() { Exact = true }),
                 "tablet",
                 "occupied create-card error");
@@ -467,7 +470,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             var acknowledgementControls = createPanel.GetByRole(
                 AriaRole.Checkbox,
-                new() { Name = "I reviewed this match and confirmed a new client is required" });
+                new() { Name = "I reviewed this match and confirm that a new client is required." });
             var reasonInputs = createPanel.GetByLabel(
                 "Acknowledgement reason",
                 new() { Exact = true });
@@ -523,6 +526,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         const string phone = "+380 67 900 90 95";
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 390,
@@ -614,6 +618,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             : "+380 67 777 88 92";
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -665,7 +670,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             var acknowledgementControls = actionPanel.GetByRole(
                 AriaRole.Checkbox,
-                new() { Name = "I verified this is the correct client update" });
+                new() { Name = "I verified that this is the correct client update." });
             var reasonInputs = actionPanel.GetByLabel("Acknowledgement reason", new() { Exact = true });
             Assert.Equal(2, await acknowledgementControls.CountAsync());
             Assert.Equal(2, await reasonInputs.CountAsync());
@@ -712,6 +717,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         var clientId = _app.CardChangeClientId;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -746,7 +752,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             await ExpectVisibleAsync(
                 cardPanel.GetByText(
-                    "Card number is already assigned to another current client.",
+                    "This card is already assigned to another current client.",
                     new() { Exact = true }),
                 "tablet",
                 "occupied-card error");
@@ -832,6 +838,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         var clientId = _app.CardAssignClientId;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 390,
@@ -913,6 +920,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         var clientId = _app.CardStaleClientId;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -944,7 +952,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             await ExpectVisibleAsync(
                 cardPanel.GetByText(
-                    "Current card assignment changed after the form was loaded. Refresh canonical state.",
+                    "Data changed while you were submitting. Canonical Reception data was refreshed; review and try again.",
                     new() { Exact = true }),
                 "tablet",
                 "stale-card error");
@@ -994,6 +1002,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         var clientId = _app.StaleEditableClientId;
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -1023,7 +1032,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             await ExpectVisibleAsync(
                 actionPanel.GetByText(
-                    "Client changed after the edit form was loaded. Refresh canonical state.",
+                    "Data changed while you were submitting. Canonical Reception data was refreshed; review and try again.",
                     new() { Exact = true }),
                 "tablet",
                 "stale-state error");
@@ -1058,6 +1067,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             JavaScriptEnabled = false,
             ViewportSize = new ViewportSize
             {
@@ -1098,6 +1108,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,

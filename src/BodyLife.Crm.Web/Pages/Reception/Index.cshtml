@@ -1,7 +1,9 @@
 @page
 @model BodyLife.Crm.Web.Pages.Reception.IndexModel
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Reception> L
 @{
-    ViewData["Title"] = "Reception";
+    ViewData["Title"] = L["Dashboard.Title"];
 }
 
 <main class="page-shell reception-page">
@@ -9,7 +11,7 @@
         <header class="reception-header">
             <div>
                 <p class="eyebrow">BodyLife CRM</p>
-                <h1 id="reception-title">Reception</h1>
+                <h1 id="reception-title">@L["Dashboard.Title"]</h1>
             </div>
         </header>
 
@@ -27,60 +29,60 @@
                   hx-disabled-elt="find button">
                 <div class="search-primary-row">
                     <div class="search-field">
-                        <label id="client-search-label" for="client-search">Client search</label>
+                        <label id="client-search-label" for="client-search">@L["Search.Label"]</label>
                         <input id="client-search"
                                name="q"
                                type="search"
                                value="@Model.Query"
                                autocomplete="off"
                                maxlength="200"
-                               placeholder="Card, name, phone or last 4"
+                               placeholder="@L["Search.Placeholder"]"
                                required />
                     </div>
                     <div class="search-command-group">
-                        <button type="submit">Search</button>
-                        <a class="secondary-link" asp-page="/Reception/Index">Clear</a>
+                        <button type="submit">@L["Action.Search"]</button>
+                        <a class="secondary-link" asp-page="/Reception/Index">@L["Action.Clear"]</a>
                     </div>
                 </div>
 
                 <div class="search-options">
                     <fieldset class="search-mode-control">
-                        <legend>Search mode</legend>
+                        <legend>@L["Search.Mode"]</legend>
                         <div class="search-mode-segments">
                             <label>
                                 <input type="radio"
                                        name="mode"
                                        value="Auto"
                                        checked="@(Model.Mode == ClientSearchMode.Auto ? "checked" : null)" />
-                                <span>Auto</span>
+                                <span>@L["Search.Mode.Auto"]</span>
                             </label>
                             <label>
                                 <input type="radio"
                                        name="mode"
                                        value="Card"
                                        checked="@(Model.Mode == ClientSearchMode.Card ? "checked" : null)" />
-                                <span>Card</span>
+                                <span>@L["Search.Mode.Card"]</span>
                             </label>
                             <label>
                                 <input type="radio"
                                        name="mode"
                                        value="Name"
                                        checked="@(Model.Mode == ClientSearchMode.Name ? "checked" : null)" />
-                                <span>Name</span>
+                                <span>@L["Search.Mode.Name"]</span>
                             </label>
                             <label>
                                 <input type="radio"
                                        name="mode"
                                        value="Phone"
                                        checked="@(Model.Mode == ClientSearchMode.Phone ? "checked" : null)" />
-                                <span>Phone</span>
+                                <span>@L["Search.Mode.Phone"]</span>
                             </label>
                             <label>
                                 <input type="radio"
                                        name="mode"
                                        value="LastFour"
                                        checked="@(Model.Mode == ClientSearchMode.LastFour ? "checked" : null)" />
-                                <span>Last 4</span>
+                                <span>@L["Search.Mode.LastFour"]</span>
                             </label>
                         </div>
                     </fieldset>
@@ -90,13 +92,13 @@
                                name="includeInactive"
                                value="true"
                                checked="@(Model.IncludeInactive ? "checked" : null)" />
-                        <span>Include inactive</span>
+                        <span>@L["Search.IncludeInactive"]</span>
                     </label>
 
                     <span id="search-loading"
                           class="request-indicator htmx-indicator"
                           role="status"
-                          aria-live="polite">Searching...</span>
+                          aria-live="polite">@L["Search.Loading"]</span>
                 </div>
             </form>
         </section>

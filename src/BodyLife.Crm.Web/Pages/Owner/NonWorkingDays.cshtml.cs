@@ -5,6 +5,7 @@ using BodyLife.Crm.SharedKernel;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages.Owner;
 
@@ -27,9 +28,11 @@ public sealed class NonWorkingDaysModel(
     IBodyLifeQueryHandler<
         GetNonWorkingDayCorrectionOutcomeQuery,
         GetNonWorkingDayCorrectionOutcomeResult> getCorrectionOutcome,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IStringLocalizer<BodyLife.Crm.Web.Localization.Owner> localizer)
     : PageModel
 {
+    public string T(string key, params object[] arguments) => localizer[key, arguments];
     public NonWorkingDayPreviewWorkspaceViewModel Workspace { get; private set; }
         = NonWorkingDayPreviewWorkspaceViewModel.Empty;
 
@@ -64,7 +67,7 @@ public sealed class NonWorkingDaysModel(
                         auditId),
                     cancellationToken)
                 : GetNonWorkingDayCorrectionOutcomeResult.Invalid(
-                    "Original non-working period id is required.",
+                    T("NonWorkingDays.Error.PeriodRequired"),
                     "periodId");
             if (correctionResult.Status
                 == GetNonWorkingDayCorrectionOutcomeStatus.PermissionDenied)
@@ -141,7 +144,8 @@ public sealed class NonWorkingDaysModel(
             return await RefreshPreviewAfterConfirmationErrorAsync(
                 form,
                 adapterErrors,
-                cancellationToken);
+                cancellationToken,
+                preserveLocalizedAdapterMessages: true);
         }
 
         var command = new AddNonWorkingDayCommand(
@@ -245,7 +249,8 @@ public sealed class NonWorkingDaysModel(
             return await RefreshCorrectionPreviewAfterConfirmationErrorAsync(
                 form,
                 adapterErrors,
-                cancellationToken);
+                cancellationToken,
+                preserveLocalizedAdapterMessages: true);
         }
 
         var hasReplacementRange = form.Mode
@@ -453,7 +458,8 @@ public sealed class NonWorkingDaysModel(
     private async Task<IActionResult> RefreshPreviewAfterConfirmationErrorAsync(
         NonWorkingDayConfirmationFormInput form,
         IReadOnlyList<CommandError> errors,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool preserveLocalizedAdapterMessages = false)
     {
         var refreshedPreview = await ExecutePreviewAsync(
             form.ProposedStartDate,
@@ -470,7 +476,8 @@ public sealed class NonWorkingDaysModel(
         Workspace = NonWorkingDayPreviewWorkspaceViewModel.FromConfirmationRefresh(
             form,
             refreshedPreview,
-            errors);
+            errors,
+            preserveLocalizedAdapterMessages);
         return await RenderWorkspaceAsync(cancellationToken);
     }
 
@@ -478,7 +485,8 @@ public sealed class NonWorkingDaysModel(
         RefreshCorrectionPreviewAfterConfirmationErrorAsync(
             NonWorkingDayCorrectionConfirmationFormInput form,
             IReadOnlyList<CommandError> errors,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool preserveLocalizedAdapterMessages = false)
     {
         var activePeriods = await GetActivePeriodsAsync(cancellationToken);
         if (activePeriods.Status
@@ -494,7 +502,11 @@ public sealed class NonWorkingDaysModel(
                 period.PeriodId == form.PeriodId.Value))
         {
             CorrectionWorkspace = NonWorkingDayCorrectionWorkspaceViewModel
-                .FromConfirmationFailure(activePeriods, form, errors);
+                .FromConfirmationFailure(
+                    activePeriods,
+                    form,
+                    errors,
+                    preserveLocalizedAdapterMessages);
             return RenderCorrectionWorkspace();
         }
 
@@ -528,7 +540,8 @@ public sealed class NonWorkingDaysModel(
                 form,
                 refreshedPreview,
                 canonicalResult,
-                errors);
+                errors,
+                preserveLocalizedAdapterMessages);
         return RenderCorrectionWorkspace();
     }
 
@@ -622,7 +635,7 @@ public sealed class NonWorkingDaysModel(
             StringComparison.OrdinalIgnoreCase);
     }
 
-    private static IReadOnlyList<CommandError> ValidateConfirmationForm(
+    private IReadOnlyList<CommandError> ValidateConfirmationForm(
         NonWorkingDayConfirmationFormInput form)
     {
         var errors = new List<CommandError>();
@@ -630,7 +643,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "Confirm the exact affected Membership set and full applied period.",
+                T("NonWorkingDays.Error.ConfirmImpact"),
                 "confirmed"));
         }
 
@@ -639,7 +652,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "Non-working period start date is required.",
+                T("NonWorkingDays.Error.StartRequired"),
                 "period.startDate"));
         }
 
@@ -647,7 +660,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "Non-working period end date is required.",
+                T("NonWorkingDays.Error.EndRequired"),
                 "period.endDate"));
         }
         else if (form.ProposedStartDate is { } startDate
@@ -655,7 +668,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "Non-working period end date must be on or after the start date.",
+                T("NonWorkingDays.Error.EndBeforeStart"),
                 "period"));
         }
 
@@ -666,7 +679,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "A canonical preview confirmation token is required.",
+                T("NonWorkingDays.Error.PreviewToken"),
                 "confirmationToken"));
         }
 
@@ -674,7 +687,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "A canonical affected-scope fingerprint is required.",
+                T("NonWorkingDays.Error.ScopeFingerprint"),
                 "scopeFingerprint"));
         }
 
@@ -682,14 +695,14 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "A duplicate-submit protection key is required.",
+                T("NonWorkingDays.Error.IdempotencyKey"),
                 "idempotencyKey"));
         }
 
         return errors.AsReadOnly();
     }
 
-    private static IReadOnlyList<NonWorkingDayCorrectionPreviewFormError>
+    private IReadOnlyList<NonWorkingDayCorrectionPreviewFormError>
         ValidateCorrectionPreviewForm(
             NonWorkingDayCorrectionPreviewFormInput form,
             IReadOnlyList<ActiveNonWorkingDayForCorrection> activePeriods)
@@ -699,20 +712,20 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new NonWorkingDayCorrectionPreviewFormError(
                 "periodId",
-                "Select an active non-working period."));
+                T("NonWorkingDays.Error.SelectActivePeriod")));
         }
         else if (!activePeriods.Any(period => period.PeriodId == form.PeriodId))
         {
             errors.Add(new NonWorkingDayCorrectionPreviewFormError(
                 "periodId",
-                "The selected period is no longer active. Refresh the list."));
+                T("NonWorkingDays.Error.PeriodNoLongerActive")));
         }
 
         if (!Enum.IsDefined(form.Mode))
         {
             errors.Add(new NonWorkingDayCorrectionPreviewFormError(
                 "mode",
-                "Select a supported correction mode."));
+                T("NonWorkingDays.Error.SelectCorrectionMode")));
         }
 
         var correctionReason = form.CorrectionReason?.Trim();
@@ -722,7 +735,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new NonWorkingDayCorrectionPreviewFormError(
                 "correctionReason",
-                $"Correction reason is required and must be {NonWorkingDayCorrectionWorkspaceViewModel.CorrectionReasonMaxLength} characters or fewer."));
+                T("NonWorkingDays.Error.CorrectionReason", NonWorkingDayCorrectionWorkspaceViewModel.CorrectionReasonMaxLength)));
         }
 
         var correctionComment = form.CorrectionComment?.Trim();
@@ -732,13 +745,13 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new NonWorkingDayCorrectionPreviewFormError(
                 "correctionComment",
-                $"Correction comment is required and must be {NonWorkingDayCorrectionWorkspaceViewModel.CorrectionCommentMaxLength} characters or fewer."));
+                T("NonWorkingDays.Error.CorrectionComment", NonWorkingDayCorrectionWorkspaceViewModel.CorrectionCommentMaxLength)));
         }
 
         return errors.AsReadOnly();
     }
 
-    private static IReadOnlyList<CommandError>
+    private IReadOnlyList<CommandError>
         ValidateCorrectionConfirmationForm(
             NonWorkingDayCorrectionConfirmationFormInput form)
     {
@@ -747,7 +760,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "Confirm the exact old and new affected Membership scopes before applying the correction.",
+                T("NonWorkingDays.Error.ConfirmCorrection"),
                 "confirmed"));
         }
 
@@ -755,7 +768,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "Original non-working period id is required.",
+                T("NonWorkingDays.Error.PeriodRequired"),
                 "periodId"));
         }
 
@@ -763,7 +776,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "Select a supported correction mode.",
+                T("NonWorkingDays.Error.SelectCorrectionMode"),
                 "mode"));
         }
 
@@ -774,7 +787,7 @@ public sealed class NonWorkingDaysModel(
             {
                 errors.Add(new CommandError(
                     CommandErrorCode.ValidationFailed,
-                    "Replacement start date is required.",
+                    T("NonWorkingDays.Error.ReplacementStartRequired"),
                     "replacementStartDate"));
             }
 
@@ -783,7 +796,7 @@ public sealed class NonWorkingDaysModel(
             {
                 errors.Add(new CommandError(
                     CommandErrorCode.ValidationFailed,
-                    "Replacement end date is required.",
+                    T("NonWorkingDays.Error.ReplacementEndRequired"),
                     "replacementEndDate"));
             }
             else if (form.ReplacementStartDate is { } startDate
@@ -791,7 +804,7 @@ public sealed class NonWorkingDaysModel(
             {
                 errors.Add(new CommandError(
                     CommandErrorCode.ValidationFailed,
-                    "Replacement end date must be on or after the start date.",
+                    T("NonWorkingDays.Error.ReplacementEndBeforeStart"),
                     "replacementEndDate"));
             }
         }
@@ -807,7 +820,7 @@ public sealed class NonWorkingDaysModel(
             {
                 errors.Add(new CommandError(
                     CommandErrorCode.ValidationFailed,
-                    $"Replacement reason code is required and must be {NonWorkingDayCorrectionWorkspaceViewModel.ReplacementReasonCodeMaxLength} characters or fewer.",
+                    T("NonWorkingDays.Error.ReplacementReasonCode", NonWorkingDayCorrectionWorkspaceViewModel.ReplacementReasonCodeMaxLength),
                     "replacementReasonCode"));
             }
 
@@ -817,7 +830,7 @@ public sealed class NonWorkingDaysModel(
             {
                 errors.Add(new CommandError(
                     CommandErrorCode.ValidationFailed,
-                    $"Replacement reason comment must be {NonWorkingDayCorrectionWorkspaceViewModel.ReplacementReasonCommentMaxLength} characters or fewer.",
+                    T("NonWorkingDays.Error.ReplacementReasonComment", NonWorkingDayCorrectionWorkspaceViewModel.ReplacementReasonCommentMaxLength),
                     "replacementReasonComment"));
             }
         }
@@ -829,7 +842,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ReasonRequired,
-                $"Correction reason is required and must be {NonWorkingDayCorrectionWorkspaceViewModel.CorrectionReasonMaxLength} characters or fewer.",
+                T("NonWorkingDays.Error.CorrectionReason", NonWorkingDayCorrectionWorkspaceViewModel.CorrectionReasonMaxLength),
                 "reason"));
         }
 
@@ -840,7 +853,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ReasonRequired,
-                $"Correction comment is required and must be {NonWorkingDayCorrectionWorkspaceViewModel.CorrectionCommentMaxLength} characters or fewer.",
+                T("NonWorkingDays.Error.CorrectionComment", NonWorkingDayCorrectionWorkspaceViewModel.CorrectionCommentMaxLength),
                 "comment"));
         }
 
@@ -851,7 +864,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "A canonical correction confirmation token is required.",
+                T("NonWorkingDays.Error.CorrectionToken"),
                 "confirmationToken"));
         }
 
@@ -859,7 +872,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "A canonical correction scope fingerprint is required.",
+                T("NonWorkingDays.Error.CorrectionFingerprint"),
                 "scopeFingerprint"));
         }
 
@@ -867,7 +880,7 @@ public sealed class NonWorkingDaysModel(
         {
             errors.Add(new CommandError(
                 CommandErrorCode.ValidationFailed,
-                "A duplicate-submit protection key is required.",
+                T("NonWorkingDays.Error.IdempotencyKey"),
                 "idempotencyKey"));
         }
 

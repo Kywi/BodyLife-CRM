@@ -1,8 +1,8 @@
-using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,58 +11,37 @@ namespace BodyLife.Crm.Web.Pages.Audit;
 
 public sealed class TimelineModel(
     IBodyLifeRequestContextResolver requestContextResolver,
-    IBodyLifeQueryHandler<GetAuditTimelineQuery, GetAuditTimelineResult>
-        getAuditTimeline)
+    IBodyLifeQueryHandler<GetAuditTimelineQuery, GetAuditTimelineResult> getAuditTimeline,
+    AuditPresentation presentation,
+    AuditEntryExplanationPresenter explanationPresenter)
     : PageModel
 {
     public const int PageSize = 10;
 
-    private static readonly JsonSerializerOptions PrettyJsonOptions = new()
-    {
-        WriteIndented = true,
-    };
+    public AuditPresentation Presentation { get; } = presentation;
+
+    public AuditEntryExplanationPresenter ExplanationPresenter { get; } = explanationPresenter;
 
     public static IReadOnlyList<AuditTimelineEntityOption> EntityOptions { get; } =
     [
-        new(AuditTimelineEntityType.Client, "Client"),
-        new(AuditTimelineEntityType.MembershipType, "Membership type"),
-        new(AuditTimelineEntityType.Membership, "Membership"),
-        new(AuditTimelineEntityType.MembershipOpeningState, "Opening state"),
-        new(AuditTimelineEntityType.Visit, "Visit"),
-        new(AuditTimelineEntityType.Payment, "Payment"),
-        new(AuditTimelineEntityType.Freeze, "Freeze"),
-        new(AuditTimelineEntityType.NonWorkingPeriod, "Non-working period"),
-        new(AuditTimelineEntityType.StaffAccount, "Staff account"),
+        new(AuditTimelineEntityType.Client, "Entity.Client"),
+        new(AuditTimelineEntityType.MembershipType, "Entity.MembershipType"),
+        new(AuditTimelineEntityType.Membership, "Entity.Membership"),
+        new(AuditTimelineEntityType.MembershipOpeningState, "Entity.MembershipOpeningState"),
+        new(AuditTimelineEntityType.Visit, "Entity.Visit"),
+        new(AuditTimelineEntityType.Payment, "Entity.Payment"),
+        new(AuditTimelineEntityType.Freeze, "Entity.Freeze"),
+        new(AuditTimelineEntityType.NonWorkingPeriod, "Entity.NonWorkingPeriod"),
+        new(AuditTimelineEntityType.StaffAccount, "Entity.StaffAccount"),
     ];
 
     public static IReadOnlyList<AuditTimelineActionOption> ActionOptions { get; } =
     [
-        new("client.created", "Client created"),
-        new("client.updated", "Client updated"),
-        new("card.assigned", "Card assigned"),
-        new("card.changed", "Card changed"),
-        new("card.cleared", "Card cleared"),
-        new("membership_type.created", "Membership type created"),
-        new("membership_type.edited", "Membership type edited"),
-        new("membership_type.deactivated", "Membership type deactivated"),
-        new("membership.issued", "Membership issued"),
-        new("membership_opening_state.created", "Opening state created"),
-        new("visit.marked", "Visit marked"),
-        new("visit.canceled", "Visit canceled"),
-        new("payment.created", "Payment created"),
-        new("payment.corrected", "Payment corrected"),
-        new("payment.canceled", "Payment canceled"),
-        new("freeze.added", "Freeze added"),
-        new("freeze.canceled", "Freeze canceled"),
-        new("non_working_day.added", "Non-working day added"),
-        new("non_working_day.corrected", "Non-working day corrected"),
-        new("non_working_day.canceled", "Non-working day canceled"),
-        new("staff_account.created", "Staff account created"),
-        new("staff_account.display_name_updated", "Staff name updated"),
-        new("staff_account.activated", "Staff account activated"),
-        new("staff_account.deactivated", "Staff account deactivated"),
-        new("staff_credentials.configured", "Staff credentials configured"),
-        new("staff_credentials.reset", "Staff credentials reset"),
+        new("client.created", "Action.client.created"), new("client.updated", "Action.client.updated"), new("card.assigned", "Action.card.assigned"), new("card.changed", "Action.card.changed"), new("card.cleared", "Action.card.cleared"),
+        new("membership_type.created", "Action.membership_type.created"), new("membership_type.edited", "Action.membership_type.edited"), new("membership_type.deactivated", "Action.membership_type.deactivated"), new("membership.issued", "Action.membership.issued"), new("membership_opening_state.created", "Action.membership_opening_state.created"),
+        new("visit.marked", "Action.visit.marked"), new("visit.canceled", "Action.visit.canceled"), new("payment.created", "Action.payment.created"), new("payment.corrected", "Action.payment.corrected"), new("payment.canceled", "Action.payment.canceled"), new("freeze.added", "Action.freeze.added"), new("freeze.canceled", "Action.freeze.canceled"),
+        new("non_working_day.added", "Action.non_working_day.added"), new("non_working_day.corrected", "Action.non_working_day.corrected"), new("non_working_day.canceled", "Action.non_working_day.canceled"),
+        new("staff_account.created", "Action.staff_account.created"), new("staff_account.display_name_updated", "Action.staff_account.display_name_updated"), new("staff_account.activated", "Action.staff_account.activated"), new("staff_account.deactivated", "Action.staff_account.deactivated"), new("staff_credentials.configured", "Action.staff_credentials.configured"), new("staff_credentials.reset", "Action.staff_credentials.reset"),
     ];
 
     [BindProperty(SupportsGet = true, Name = "clientId")]
@@ -106,7 +85,7 @@ public sealed class TimelineModel(
     {
         if (!ModelState.IsValid)
         {
-            LoadError = "Enter valid Client, entity, date and page filter values.";
+            LoadError = Presentation.Text("Error.InvalidFilter");
             return;
         }
 
@@ -115,7 +94,7 @@ public sealed class TimelineModel(
         if (ActionType is not null
             && !ActionOptions.Any(option => option.Value == ActionType))
         {
-            LoadError = "Select a supported business action.";
+            LoadError = Presentation.Text("Error.UnsupportedAction");
             return;
         }
 
@@ -125,7 +104,7 @@ public sealed class TimelineModel(
                 out var recordedFromInclusive,
                 out var recordedBeforeExclusive))
         {
-            LoadError = "Recorded-through date is outside the supported range.";
+            LoadError = Presentation.Text("Error.InvalidRange");
             return;
         }
 
@@ -144,101 +123,7 @@ public sealed class TimelineModel(
 
         if (Result is { Status: GetAuditTimelineStatus.Success, Page: null })
         {
-            LoadError = "Audit timeline returned no canonical page.";
-        }
-    }
-
-    public static string ActionLabel(string actionType)
-    {
-        return ActionOptions.FirstOrDefault(option => option.Value == actionType)?.Label
-            ?? actionType;
-    }
-
-    public static string EntityLabel(AuditTimelineEntityType entityType)
-    {
-        return EntityOptions.First(option => option.Value == entityType).Label;
-    }
-
-    public static string AccountKindLabel(AccountKind accountKind)
-    {
-        return accountKind switch
-        {
-            AccountKind.Owner => "Owner account",
-            AccountKind.NamedAdmin => "Named Admin",
-            AccountKind.SharedReceptionAdmin => "Shared Reception/Admin",
-            _ => "Account",
-        };
-    }
-
-    public static string RoleLabel(ActorRole role)
-    {
-        return role switch
-        {
-            ActorRole.Owner => "Owner",
-            ActorRole.Admin => "Admin",
-            _ => "Role",
-        };
-    }
-
-    public static string EntryOriginLabel(EntryOrigin entryOrigin)
-    {
-        return entryOrigin switch
-        {
-            EntryOrigin.Normal => "Normal entry",
-            EntryOrigin.ManualBackfill => "Manual backfill",
-            EntryOrigin.PaperFallback => "Paper fallback",
-            EntryOrigin.FutureImport => "Future import",
-            _ => "Entry origin",
-        };
-    }
-
-    public static string EntryOriginClass(EntryOrigin entryOrigin)
-    {
-        return entryOrigin switch
-        {
-            EntryOrigin.Normal => "audit-origin-normal",
-            EntryOrigin.ManualBackfill => "audit-origin-backfill",
-            EntryOrigin.PaperFallback => "audit-origin-fallback",
-            EntryOrigin.FutureImport => "audit-origin-import",
-            _ => "audit-origin-normal",
-        };
-    }
-
-    public static string EntryClass(AuditTimelineEntry entry)
-    {
-        if (entry.ChangedAfterClose)
-        {
-            return "audit-entry-changed-after-close";
-        }
-
-        return entry.EntryOrigin switch
-        {
-            EntryOrigin.PaperFallback or EntryOrigin.ManualBackfill
-                => "audit-entry-backdated",
-            _ => string.Empty,
-        };
-    }
-
-    public static string TimestampLabel(DateTimeOffset timestamp)
-    {
-        return $"{timestamp.ToUniversalTime():yyyy-MM-dd HH:mm:ss} UTC";
-    }
-
-    public static string ShortId(Guid value)
-    {
-        return value.ToString("N")[..8];
-    }
-
-    public static string FormatJson(string json)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(json);
-            return JsonSerializer.Serialize(document.RootElement, PrettyJsonOptions);
-        }
-        catch (JsonException)
-        {
-            return "Stored audit summary is unavailable.";
+            LoadError = Presentation.Text("Error.Unavailable");
         }
     }
 
@@ -278,6 +163,10 @@ public sealed class TimelineModel(
         var normalized = value?.Trim();
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
+
+    // Kept temporarily for out-of-stage explanation and history-row factories.
+    public static string TimestampLabel(DateTimeOffset timestamp) => ReceptionDisplayFormatter.DateTime(timestamp);
+    public static string ShortId(Guid value) => value.ToString("N")[..8];
 }
 
 public sealed record AuditTimelineEntityOption(

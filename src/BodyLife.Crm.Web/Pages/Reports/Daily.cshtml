@@ -1,24 +1,22 @@
 @page
 @model BodyLife.Crm.Web.Pages.Reports.DailyModel
+@using BodyLife.Crm.Web.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<BodyLife.Crm.Web.Localization.Reports> L
 @{
-    ViewData["Title"] = "Daily report";
+    ViewData["Title"] = L["Daily.Title"];
     var report = Model.Report;
-    var errorMessage = Model.LoadError ?? Model.Result?.ErrorMessage;
+    var errorMessage = Model.LoadError;
 }
 
 <main class="page-shell report-page" data-daily-report-page>
     <section class="report-layout" aria-labelledby="daily-report-title">
         <header class="report-header">
             <div>
-                <p class="eyebrow">Reports</p>
-                <h1 id="daily-report-title">Daily report</h1>
+                <p class="eyebrow">@L["Navigation.Reports"]</p><h1 id="daily-report-title">@L["Daily.Title"]</h1>
             </div>
-            <nav class="report-header-actions" aria-label="Report navigation">
-                <a class="secondary-link" asp-page="/Reports/EndingSoon">Ending soon</a>
-                <a class="secondary-link" asp-page="/Reports/LowRemaining">Low remaining</a>
-                <a class="secondary-link" asp-page="/Reports/NegativeClients">Negative clients</a>
-                <a class="secondary-link" asp-page="/Reports/InactiveClients">Inactive clients</a>
-                <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+            <nav class="report-header-actions" aria-label="@L["Navigation"]">
+                <a class="secondary-link" asp-page="/Reports/EndingSoon">@L["Ending"]</a><a class="secondary-link" asp-page="/Reports/LowRemaining">@L["Low"]</a><a class="secondary-link" asp-page="/Reports/NegativeClients">@L["Negative"]</a><a class="secondary-link" asp-page="/Reports/InactiveClients">@L["Inactive"]</a><a class="secondary-link" asp-page="/Reception/Index">@L["Navigation.Reception"]</a>
             </nav>
         </header>
 
@@ -27,40 +25,40 @@
               asp-page="/Reports/Daily"
               data-busy-form>
             <div class="report-date-field">
-                <label for="business-date">Business date</label>
+                <label for="business-date">@L["BusinessDate"]</label>
                 <input id="business-date"
                        name="date"
                        type="date"
                        value="@Model.BusinessDate?.ToString("yyyy-MM-dd")"
                        required />
             </div>
-            <button type="submit" data-busy-text="Loading...">Load report</button>
+            <button type="submit" data-busy-text="@L["Loading"]">@L["Load"]</button>
         </form>
 
         @if (!string.IsNullOrWhiteSpace(errorMessage))
         {
             <div class="warning-block warning-danger report-error" role="alert">
-                <strong>Report unavailable</strong>
+                <strong>@L["Unavailable"]</strong>
                 <span>@errorMessage</span>
             </div>
         }
         else if (report is not null)
         {
-            <section class="report-summary" aria-label="Daily totals">
+            <section class="report-summary" aria-label="@L["Daily.Totals"]">
                 <div>
-                    <span class="report-summary-label">Visits</span>
+                    <span class="report-summary-label">@L["CountedVisits"]</span>
                     <strong data-report-visit-count>@report.VisitCount</strong>
                 </div>
                 <div>
-                    <span class="report-summary-label">Payments</span>
+                    <span class="report-summary-label">@L["Payment"]</span>
                     <strong data-report-payment-count>@report.PaymentCount</strong>
                 </div>
                 <div>
-                    <span class="report-summary-label">Cash</span>
+                    <span class="report-summary-label">@L["Payment.Cash"]</span>
                     <strong data-report-cash-sum>@MoneyLabel(report.DailyCashSum)</strong>
                 </div>
                 <div>
-                    <span class="report-summary-label">Day status</span>
+                    <span class="report-summary-label">@L["DayStatus"]</span>
                     <strong>
                         <span class="status-chip @DayStatusClass(report.DayStatus)"
                               data-report-day-status="@report.DayStatus.ToString().ToLowerInvariant()">
@@ -71,21 +69,19 @@
             </section>
 
             <div class="report-source-note">
-                <strong>@report.BusinessDate.ToString("yyyy-MM-dd")</strong>
-                <span>Canceled source rows remain visible below and are excluded from totals.</span>
+                <strong>@ReportsPresentation.Date(report.BusinessDate)</strong><span>@L["Daily.Note"]</span>
             </div>
 
             <section class="report-source-section" aria-labelledby="daily-visits-title">
                 <header class="report-section-header">
                     <div>
-                        <p class="eyebrow">Visit source facts</p>
-                        <h2 id="daily-visits-title">Visits</h2>
+                        <p class="eyebrow">@L["VisitFacts"]</p><h2 id="daily-visits-title">@L["Visit.Label"]</h2>
                     </div>
                 </header>
 
                 @if (report.VisitRows.Count == 0)
                 {
-                    <p class="empty-state">No visits recorded for this business date.</p>
+                    <p class="empty-state">@L["Daily.EmptyVisits"]</p>
                 }
                 else
                 {
@@ -102,30 +98,32 @@
                                         <h3>@sourceRow.ClientDisplayName</h3>
                                     </div>
                                     <span class="status-chip @(visit.Status == ClientVisitRowStatus.Active ? "status-active" : "status-canceled")">
-                                        @(visit.Status == ClientVisitRowStatus.Active ? "Active" : "Canceled")
+                                        @(visit.Status == ClientVisitRowStatus.Active
+                                            ? L["Status.Active"]
+                                            : L["Status.Canceled"])
                                     </span>
                                 </header>
 
                                 <dl class="report-row-meta">
                                     <div>
-                                        <dt>Occurred</dt>
+                                        <dt>@L["Meta.Occurred"]</dt>
                                         <dd>@UtcTimestamp(visit.OccurredAt)</dd>
                                     </div>
                                     <div>
-                                        <dt>Recorded</dt>
+                                        <dt>@L["Meta.Recorded"]</dt>
                                         <dd>@UtcTimestamp(visit.RecordedAt)</dd>
                                     </div>
                                     @if (visit.Consumption is { } consumption)
                                     {
                                         <div>
-                                            <dt>Membership</dt>
+                                            <dt>@L["Entity.Membership"]</dt>
                                             <dd>@consumption.MembershipTypeNameSnapshot</dd>
                                         </div>
                                     }
                                     @if (visit.EntryOrigin != EntryOrigin.Normal)
                                     {
                                         <div>
-                                            <dt>Source</dt>
+                                            <dt>@L["Meta.Source"]</dt>
                                             <dd><span class="source-label">@EntryOriginLabel(visit.EntryOrigin)</span></dd>
                                         </div>
                                     }
@@ -139,7 +137,7 @@
                                 @if (visit.Cancellation is { } cancellation)
                                 {
                                     <div class="report-row-event report-row-cancellation" data-report-cancellation>
-                                        <strong>Cancellation</strong>
+                                        <strong>@L["Status.Cancellation"]</strong>
                                         <span>@cancellation.Reason</span>
                                         <span>@UtcTimestamp(cancellation.RecordedAt)</span>
                                         @if (cancellation.EntryOrigin != EntryOrigin.Normal)
@@ -184,14 +182,13 @@
             <section class="report-source-section" aria-labelledby="daily-payments-title">
                 <header class="report-section-header">
                     <div>
-                        <p class="eyebrow">Payment source facts</p>
-                        <h2 id="daily-payments-title">Payments</h2>
+                        <p class="eyebrow">@L["PaymentFacts"]</p><h2 id="daily-payments-title">@L["Payment"]</h2>
                     </div>
                 </header>
 
                 @if (report.PaymentRows.Count == 0)
                 {
-                    <p class="empty-state">No payments recorded for this business date.</p>
+                    <p class="empty-state">@L["Daily.EmptyPayments"]</p>
                 }
                 else
                 {
@@ -221,28 +218,28 @@
 
                                 <dl class="report-row-meta">
                                     <div>
-                                        <dt>Occurred</dt>
+                                        <dt>@L["Meta.Occurred"]</dt>
                                         <dd>@UtcTimestamp(payment.OccurredAt)</dd>
                                     </div>
                                     <div>
-                                        <dt>Recorded</dt>
+                                        <dt>@L["Meta.Recorded"]</dt>
                                         <dd>@UtcTimestamp(payment.RecordedAt)</dd>
                                     </div>
                                     <div>
-                                        <dt>Method</dt>
+                                        <dt>@L["Payment.Method"]</dt>
                                         <dd>@PaymentMethodLabel(payment.Method)</dd>
                                     </div>
                                     @if (!string.IsNullOrWhiteSpace(payment.MembershipTypeNameSnapshot))
                                     {
                                         <div>
-                                            <dt>Membership</dt>
+                                            <dt>@L["Entity.Membership"]</dt>
                                             <dd>@payment.MembershipTypeNameSnapshot</dd>
                                         </div>
                                     }
                                     @if (payment.EntryOrigin != EntryOrigin.Normal)
                                     {
                                         <div>
-                                            <dt>Source</dt>
+                                            <dt>@L["Meta.Source"]</dt>
                                             <dd><span class="source-label">@EntryOriginLabel(payment.EntryOrigin)</span></dd>
                                         </div>
                                     }
@@ -256,7 +253,7 @@
                                 @if (payment.Cancellation is { } cancellation)
                                 {
                                     <div class="report-row-event report-row-cancellation" data-report-cancellation>
-                                        <strong>Cancellation</strong>
+                                        <strong>@L["Status.Cancellation"]</strong>
                                         <span>@cancellation.Reason</span>
                                         <span>@UtcTimestamp(cancellation.RecordedAt)</span>
                                         @if (cancellation.EntryOrigin != EntryOrigin.Normal)
@@ -269,9 +266,9 @@
                                 @if (payment.CorrectionFromOriginal is { } correctionFromOriginal)
                                 {
                                     <div class="report-row-event report-row-correction" data-report-correction>
-                                        <strong>Corrected replacement</strong>
+                                        <strong>@L["CorrectedReplacement"]</strong>
                                         <span>@correctionFromOriginal.Reason</span>
-                                        <span>Changed: @ChangedFieldsLabel(correctionFromOriginal.ChangedFields)</span>
+                                        <span>@L["Status.Changed"]: @ChangedFieldsLabel(correctionFromOriginal.ChangedFields)</span>
                                         <span>@UtcTimestamp(correctionFromOriginal.RecordedAt)</span>
                                         @if (correctionFromOriginal.EntryOrigin != EntryOrigin.Normal)
                                         {
@@ -282,9 +279,9 @@
                                 else if (payment.CorrectionToReplacement is { } correctionToReplacement)
                                 {
                                     <div class="report-row-event report-row-correction" data-report-correction>
-                                        <strong>Replaced payment</strong>
+                                        <strong>@L["ReplacedPayment"]</strong>
                                         <span>@correctionToReplacement.Reason</span>
-                                        <span>Changed: @ChangedFieldsLabel(correctionToReplacement.ChangedFields)</span>
+                                        <span>@L["Status.Changed"]: @ChangedFieldsLabel(correctionToReplacement.ChangedFields)</span>
                                         <span>@UtcTimestamp(correctionToReplacement.RecordedAt)</span>
                                         @if (correctionToReplacement.EntryOrigin != EntryOrigin.Normal)
                                         {
@@ -303,7 +300,7 @@
                                            asp-route-correctPaymentId="@payment.PaymentId"
                                            asp-fragment="correct-payment-panel-@paymentKey"
                                            data-report-correct-payment>
-                                            Correct payment
+                                            @L["CorrectPayment"]
                                         </a>
                                     }
                                     <a class="secondary-link"
@@ -311,7 +308,7 @@
                                        asp-route-clientId="@payment.ClientId"
                                        asp-fragment="recent-payments-title"
                                        data-report-client-link>
-                                        Open client
+                                        @L["OpenClient"]
                                     </a>
                                     <a class="secondary-link"
                                        asp-page="/Audit/ClientHistory"
@@ -320,7 +317,7 @@
                                        asp-route-from="@report.BusinessDate.ToString("yyyy-MM-dd")"
                                        asp-route-to="@report.BusinessDate.ToString("yyyy-MM-dd")"
                                        data-report-history-link>
-                                        Client history
+                                        @L["ClientHistory"]
                                     </a>
                                     <a class="secondary-link"
                                        asp-page="/Audit/Timeline"
@@ -328,7 +325,7 @@
                                        asp-route-entity="@AuditTimelineEntityType.Payment"
                                        asp-route-entityId="@paymentAuditEntityId"
                                        data-report-audit-link>
-                                        Audit timeline
+                                        @L["AuditTimeline"]
                                     </a>
                                 </footer>
                             </li>
@@ -343,12 +340,12 @@
 @functions {
     private static string MoneyLabel(Money money)
     {
-        return FormattableString.Invariant($"{money.Amount:0.00} {money.Currency}");
+        return ReportsPresentation.Money(money);
     }
 
     private static string UtcTimestamp(DateTimeOffset timestamp)
     {
-        return $"{timestamp.UtcDateTime:yyyy-MM-dd HH:mm} UTC";
+        return ReportsPresentation.Timestamp(timestamp);
     }
 
     private static string DayStatusClass(DailyReportDayStatus status)
@@ -358,51 +355,38 @@
             : "status-corrected";
     }
 
-    private static string DayStatusLabel(DailyReportDayStatus status)
+    private string DayStatusLabel(DailyReportDayStatus status)
     {
         return status == DailyReportDayStatus.Open
-            ? "Open"
-            : "Reconciled";
+            ? L["Status.Open"] : L["Status.Reconciled"];
     }
 
-    private static string VisitKindLabel(VisitKind visitKind)
+    private string VisitKindLabel(VisitKind visitKind)
     {
         return visitKind switch
         {
-            VisitKind.Membership => "Membership visit",
-            VisitKind.OneOff => "One-off visit",
-            VisitKind.Trial => "Trial visit",
-            _ => "Visit",
+            VisitKind.Membership => L["VisitKind.Membership"], VisitKind.OneOff => L["VisitKind.OneOff"], VisitKind.Trial => L["VisitKind.Trial"], _ => L["Visit.Label"],
         };
     }
 
-    private static string EntryOriginLabel(EntryOrigin entryOrigin)
+    private string EntryOriginLabel(EntryOrigin entryOrigin)
     {
         return entryOrigin switch
         {
-            EntryOrigin.Normal => "Normal",
-            EntryOrigin.ManualBackfill => "Manual backfill",
-            EntryOrigin.PaperFallback => "Paper fallback",
-            EntryOrigin.FutureImport => "Future import",
-            _ => "Unknown source",
+            EntryOrigin.Normal => L["Origin.Normal"], EntryOrigin.ManualBackfill => L["Origin.Backfill"], EntryOrigin.PaperFallback => L["Origin.Paper"], EntryOrigin.FutureImport => L["Origin.Import"], _ => L["Origin.Unknown"],
         };
     }
 
-    private static string PaymentMethodLabel(PaymentMethod method)
+    private string PaymentMethodLabel(PaymentMethod method)
     {
-        return method == PaymentMethod.Cash ? "Cash" : "Unknown method";
+        return method == PaymentMethod.Cash ? L["Payment.Cash"] : L["UnknownMethod"];
     }
 
-    private static string PaymentContextLabel(PaymentContext paymentContext)
+    private string PaymentContextLabel(PaymentContext paymentContext)
     {
         return paymentContext switch
         {
-            PaymentContext.MembershipSale => "Membership sale",
-            PaymentContext.OneOff => "One-off payment",
-            PaymentContext.Trial => "Trial payment",
-            PaymentContext.NegativeClosure => "Negative closure",
-            PaymentContext.Other => "Other payment",
-            _ => "Payment",
+            PaymentContext.MembershipSale => L["Context.Sale"], PaymentContext.OneOff => L["Context.OneOff"], PaymentContext.Trial => L["Context.Trial"], PaymentContext.NegativeClosure => L["Context.NegativeClosure"], PaymentContext.Other => L["Context.Other"], _ => L["Payment"],
         };
     }
 
@@ -417,32 +401,24 @@
         };
     }
 
-    private static string PaymentStatusLabel(ClientPaymentRowStatus status)
+    private string PaymentStatusLabel(ClientPaymentRowStatus status)
     {
         return status switch
         {
-            ClientPaymentRowStatus.Active => "Active",
-            ClientPaymentRowStatus.Canceled => "Canceled",
-            ClientPaymentRowStatus.Replaced => "Replaced",
-            _ => "Unknown",
+            ClientPaymentRowStatus.Active => L["Status.Active"], ClientPaymentRowStatus.Canceled => L["Status.Canceled"], ClientPaymentRowStatus.Replaced => L["Status.Replaced"], _ => L["Value.Unknown"],
         };
     }
 
-    private static string ChangedFieldsLabel(IReadOnlyList<string> changedFields)
+    private string ChangedFieldsLabel(IReadOnlyList<string> changedFields)
     {
         return string.Join(", ", changedFields.Select(ChangedFieldLabel));
     }
 
-    private static string ChangedFieldLabel(string changedField)
+    private string ChangedFieldLabel(string changedField)
     {
         return changedField switch
         {
-            "amount" => "amount",
-            "occurred_at" => "occurred time",
-            "payment_context" => "context",
-            "membership_id" => "membership",
-            "comment" => "comment",
-            _ => changedField.Replace('_', ' '),
+            "amount" => L["Field.Amount"], "occurred_at" => L["Field.Occurred"], "payment_context" => L["Field.Context"], "membership_id" => L["Field.Membership"], "comment" => L["Field.Comment"], _ => L["Field.Other"],
         };
     }
 }

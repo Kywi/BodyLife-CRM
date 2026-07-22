@@ -100,7 +100,11 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
                 "inactive visit limit");
             Assert.Contains("1200.00 UAH", await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
             Assert.Contains("Retained for catalog history.", await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
-            Assert.Contains("2026-07-05 11:00 UTC", await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
+            var inactiveTimestamp = new DateTime(2026, 7, 5, 11, 0, 0, DateTimeKind.Utc)
+                .ToString(
+                    "g",
+                    System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture));
+            Assert.Contains($"{inactiveTimestamp} UTC", await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
 
             Assert.Equal(4, await page.Locator("main form").CountAsync());
             await ExpectVisibleAsync(
@@ -161,6 +165,7 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
     {
         return await _browser!.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

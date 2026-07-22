@@ -46,6 +46,7 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
         Assert.Equal(scenario.PageSize + 2, scenario.TotalEntries);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -173,25 +174,25 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
                 "shared session label");
             await ExpectVisibleAsync(
                 featured.GetByText(
-                    $"{scenario.FeaturedOccurredAt:yyyy-MM-dd HH:mm:ss} UTC",
+                    $"{scenario.FeaturedOccurredAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
                     new() { Exact = true }).First,
                 viewportName,
                 "fallback occurred time");
             await ExpectVisibleAsync(
                 featured.GetByText(
-                    $"{scenario.FeaturedRecordedAt:yyyy-MM-dd HH:mm:ss} UTC",
+                    $"{scenario.FeaturedRecordedAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
                     new() { Exact = true }),
                 viewportName,
                 "fallback recorded time");
             await ExpectVisibleAsync(
                 featured.GetByText(
-                    $"{scenario.OriginalPaymentAmount:0.00} UAH",
+                    $"{scenario.OriginalPaymentAmount.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UAH",
                     new() { Exact = true }),
                 viewportName,
                 "original payment amount");
             await ExpectVisibleAsync(
                 featured.GetByText(
-                    $"{scenario.ReplacementPaymentAmount:0.00} UAH",
+                    $"{scenario.ReplacementPaymentAmount.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UAH",
                     new() { Exact = true }),
                 viewportName,
                 "replacement payment amount");
@@ -203,7 +204,7 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
                 viewportName,
                 "payment correction reason");
             await ExpectVisibleAsync(
-                change.GetByText("amount, occurred_at", new() { Exact = true }),
+                change.GetByText("Amount, Occurred time", new() { Exact = true }),
                 viewportName,
                 "payment changed fields");
             await ExpectVisibleAsync(
@@ -303,6 +304,7 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
         var scenario = await _app.EnsureClientHistoryScenarioAsync();
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -410,6 +412,7 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
         var scenario = await _app.EnsureClientHistoryScenarioAsync();
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize { Width = 1024, Height = 768 },
         });
 
@@ -432,7 +435,7 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
             var error = page.GetByRole(AriaRole.Alert);
             await ExpectVisibleAsync(error, "tablet", "invalid history offset error");
             Assert.Contains(
-                "Offset must be between 0 and 10000.",
+                "Enter valid client, entity, date, and page filters.",
                 await error.InnerTextAsync(),
                 StringComparison.Ordinal);
             Assert.Equal(
@@ -456,7 +459,10 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
     public async Task UnknownClientReturnsCanonicalErrorWithoutPartialHistory()
     {
         Assert.NotNull(_browser);
-        var context = await _browser.NewContextAsync();
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            Locale = ReceptionAppFixture.WorkflowCulture,
+        });
 
         try
         {
@@ -476,7 +482,7 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
             var error = page.GetByRole(AriaRole.Alert);
             await ExpectVisibleAsync(error, "desktop", "missing Client history error");
             Assert.Contains(
-                "Client was not found.",
+                "The requested audit data was not found.",
                 await error.InnerTextAsync(),
                 StringComparison.Ordinal);
             Assert.Equal(0, await page.Locator("[data-client-history-list]").CountAsync());

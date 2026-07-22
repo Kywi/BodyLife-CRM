@@ -129,7 +129,7 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 await preview.GetAttributeAsync("data-preview-period-end"));
             await ExpectVisibleAsync(
                 preview.GetByText(
-                    "Every affected Membership receives 2040-02-01 to 2040-02-03, even when it overlaps only one endpoint. Existing extension sources remain union-counted.",
+                    $"Every affected Membership receives {DisplayRange(_app.NonWorkingDayPreviewStartDate, _app.NonWorkingDayPreviewEndDate)}, even when it overlaps only one endpoint. Existing extension sources remain union-counted.",
                     new() { Exact = true }),
                 viewportName,
                 "full-period endpoint disclosure");
@@ -174,7 +174,9 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 "2040-02-03",
                 await endBoundaryRow.GetAttributeAsync("data-impact-applied-end"));
             await ExpectVisibleAsync(
-                endBoundaryRow.GetByText("2040-02-02 to 2040-02-04", new() { Exact = true }),
+                endBoundaryRow.GetByText(
+                    $"{DisplayDate(new DateOnly(2040, 2, 2))} to {DisplayDate(new DateOnly(2040, 2, 4))}",
+                    new() { Exact = true }),
                 viewportName,
                 "end-boundary effective-end estimate");
             await ExpectVisibleAsync(
@@ -191,7 +193,10 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 "Freeze 2040-02-02..2040-02-02: Scheduled equipment pause",
                 await overlapWarning.InnerTextAsync(),
                 StringComparison.Ordinal);
-            Assert.Contains("2040-02-02 to 2040-02-02, 1 days", await overlapWarning.InnerTextAsync(), StringComparison.Ordinal);
+            Assert.Contains(
+                $"{DisplayRange(new DateOnly(2040, 2, 2), new DateOnly(2040, 2, 2))}, 1 day",
+                await overlapWarning.InnerTextAsync(),
+                StringComparison.Ordinal);
 
             var startBoundaryRow = preview.Locator(
                 $"[data-impact-membership-id='{_app.NonWorkingDayStartBoundaryMembershipId}']");
@@ -208,7 +213,9 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 "2040-02-03",
                 await startBoundaryRow.GetAttributeAsync("data-impact-applied-end"));
             await ExpectVisibleAsync(
-                startBoundaryRow.GetByText("2040-02-12 to 2040-02-15", new() { Exact = true }),
+                startBoundaryRow.GetByText(
+                    $"{DisplayDate(new DateOnly(2040, 2, 12))} to {DisplayDate(new DateOnly(2040, 2, 15))}",
+                    new() { Exact = true }),
                 viewportName,
                 "start-boundary effective-end estimate");
             await ExpectVisibleAsync(
@@ -334,8 +341,7 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 await _app.ReadNonWorkingDayMutationCountsAsync());
 
             await _app.MoveNonWorkingDayScenarioMembershipIntoScopeAsync(scenario);
-            await confirmationForm.GetByLabel(
-                    new Regex("I confirm this exact set"))
+            await confirmationForm.Locator("#non-working-day-confirmed")
                 .CheckAsync();
             await SubmitHtmxConfirmationAsync(
                 page,
@@ -362,7 +368,7 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 .InputValueAsync();
             Assert.NotEqual(refreshedFingerprint, changedScopeFingerprint);
             Assert.False(await confirmationForm
-                .GetByLabel(new Regex("I confirm this exact set"))
+                .Locator("#non-working-day-confirmed")
                 .IsCheckedAsync());
             Assert.Equal(
                 mutationCountsBefore,
@@ -376,8 +382,7 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 viewportName,
                 "non-working-day-confirmation-refreshed");
 
-            await confirmationForm.GetByLabel(
-                    new Regex("I confirm this exact set"))
+            await confirmationForm.Locator("#non-working-day-confirmed")
                 .CheckAsync();
             await DelayConfirmationRequestsAsync(page);
             await AssertMinimumTouchTargetAsync(
@@ -685,7 +690,7 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                     "data-correction-replacement-applied-end"));
             await ExpectVisibleAsync(
                 preview.GetByText(
-                    "2043-04-09 to 2043-04-12",
+                    $"{DisplayDate(new DateOnly(2043, 4, 9))} to {DisplayDate(new DateOnly(2043, 4, 12))}",
                     new() { Exact = true }),
                 viewportName,
                 "shared replacement effective-end estimate");
@@ -1267,6 +1272,7 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
         Assert.NotNull(_browser);
         return await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -1665,5 +1671,17 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
     private static string FormatDate(DateOnly date)
     {
         return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    private static string DisplayDate(DateOnly date)
+    {
+        return date.ToString(
+            "d",
+            CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture));
+    }
+
+    private static string DisplayRange(DateOnly startDate, DateOnly endDate)
+    {
+        return $"{DisplayDate(startDate)} – {DisplayDate(endDate)}";
     }
 }

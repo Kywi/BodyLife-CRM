@@ -67,7 +67,7 @@ public sealed class BusinessAuditMatrixTests
             .Select(option => option.Value)
             .Order(StringComparer.Ordinal)
             .ToArray();
-        var readableActions = AuditEntryExplanationViewModel.ReadableActionTypes
+        var readableActions = AuditEntryExplanationPresenter.ReadableActionTypes
             .Order(StringComparer.Ordinal)
             .ToArray();
 

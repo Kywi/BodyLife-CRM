@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Login.Title" xml:space="preserve"><value>Login</value></data>
+  <data name="Login.Failed" xml:space="preserve"><value>Sign-in failed.</value></data>
+  <data name="Login.NameLabel" xml:space="preserve"><value>Login</value></data>
+  <data name="Login.NamePlaceholder" xml:space="preserve"><value>Enter your login name</value></data>
+  <data name="Login.PasswordLabel" xml:space="preserve"><value>Password</value></data>
+  <data name="Login.PasswordPlaceholder" xml:space="preserve"><value>Enter your password</value></data>
+  <data name="Login.DeviceLabel" xml:space="preserve"><value>Device</value></data>
+  <data name="Login.DevicePlaceholder" xml:space="preserve"><value>Front desk tablet</value></data>
+  <data name="Login.Submit" xml:space="preserve"><value>Login</value></data>
+  <data name="Logout.Title" xml:space="preserve"><value>Log out</value></data>
+  <data name="Logout.Submit" xml:space="preserve"><value>Log out</value></data>
+  <data name="AccessDenied.Title" xml:space="preserve"><value>Access denied</value></data>
+  <data name="AccessDenied.Eyebrow" xml:space="preserve"><value>Restricted</value></data>
+  <data name="AccessDenied.Heading" xml:space="preserve"><value>Owner access required</value></data>
+  <data name="AccessDenied.Message" xml:space="preserve"><value>Your current account does not have permission for this action.</value></data>
+  <data name="AccessDenied.ReturnToReception" xml:space="preserve"><value>Return to reception</value></data>
+  <data name="Error.Title" xml:space="preserve"><value>Error</value></data>
+  <data name="Error.Heading" xml:space="preserve"><value>Something went wrong</value></data>
+  <data name="Error.Message" xml:space="preserve"><value>The request could not be completed.</value></data>
+</root>

@@ -21,6 +21,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public const string SmokePassword = "correct horse battery";
     public const string SmokeAdminLoginName = "named.admin";
     public const string SmokeAdminPassword = "smoke admin password";
+    public const string WorkflowCulture = "en-US";
 
     private readonly ConcurrentQueue<string> _output = new();
     private readonly object _endingSoonReportSeedLock = new();

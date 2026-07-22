@@ -73,7 +73,7 @@ public sealed class MembershipTypeCreationSmokeTests : IClassFixture<ReceptionAp
             await form.GetByRole(AriaRole.Button, new() { Name = "Add membership type" }).ClickAsync();
 
             await ExpectVisibleAsync(
-                page.GetByText("Membership type name is required.", new() { Exact = true }),
+                page.GetByText("Review the highlighted values.", new() { Exact = true }),
                 viewportName,
                 "server validation error");
             form = page.Locator("#create-membership-type-form");
@@ -145,6 +145,7 @@ public sealed class MembershipTypeCreationSmokeTests : IClassFixture<ReceptionAp
     {
         return await _browser!.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

@@ -1,17 +1,17 @@
 @page
 @model BodyLife.Crm.Web.Pages.Owner.NonWorkingDaysModel
 @{
-    ViewData["Title"] = "Non-working days";
+    ViewData["Title"] = Model.T("NonWorkingDays.Title");
 }
 
 <main class="page-shell">
     <section class="owner-management" aria-labelledby="non-working-days-title">
         <header class="management-header">
             <div>
-                <p class="eyebrow">Owner operations</p>
-                <h1 id="non-working-days-title">Non-working days</h1>
+                <p class="eyebrow">@Model.T("NonWorkingDays.OwnerOperations")</p>
+                <h1 id="non-working-days-title">@Model.T("NonWorkingDays.Title")</h1>
             </div>
-            <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+            <a class="secondary-link" asp-page="/Reception/Index">@Model.T("NonWorkingDays.Reception")</a>
         </header>
 
         <partial name="_NonWorkingDayPreviewWorkspace" model="Model.Workspace" />

@@ -1,9 +1,11 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages.Reports;
 
@@ -12,7 +14,8 @@ public sealed class LowRemainingModel(
     IBodyLifeQueryHandler<
         ListLowRemainingMembershipsQuery,
         ListLowRemainingMembershipsResult> listLowRemainingMemberships,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IStringLocalizer<BodyLife.Crm.Web.Localization.Reports> localizer)
     : PageModel
 {
     private const int PageSize = 10;
@@ -46,7 +49,7 @@ public sealed class LowRemainingModel(
     {
         if (!ModelState.IsValid)
         {
-            LoadError = "Enter a valid as-of date, threshold and page offset.";
+            LoadError = localizer["Error.InvalidInput"];
             return;
         }
 
@@ -62,10 +65,12 @@ public sealed class LowRemainingModel(
                 Limit: PageSize,
                 Offset: Offset.Value),
             cancellationToken);
+        if (Result is { Status: not ListLowRemainingMembershipsStatus.Success })
+            LoadError = ReportsPresentation.Error(localizer, Result.Status);
 
         if (Result is { Status: ListLowRemainingMembershipsStatus.Success, Page: null })
         {
-            LoadError = "Low-remaining report returned no canonical Memberships page.";
+            LoadError = localizer["Error.Unavailable"];
         }
     }
 }

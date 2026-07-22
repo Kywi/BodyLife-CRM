@@ -1,18 +1,19 @@
 @page
 @model BodyLife.Crm.Web.Pages.LogoutModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<BodyLife.Crm.Web.Localization.Authentication> AuthenticationLocalizer
 @{
-    ViewData["Title"] = "Logout";
+    ViewData["Title"] = AuthenticationLocalizer["Logout.Title"];
 }
 
 <main class="page-shell auth-shell">
     <section class="auth-panel" aria-labelledby="logout-title">
         <header class="reception-header">
             <p class="eyebrow">BodyLife CRM</p>
-            <h1 id="logout-title">Logout</h1>
+            <h1 id="logout-title">@AuthenticationLocalizer["Logout.Title"]</h1>
         </header>
 
         <form method="post" class="auth-form">
-            <button type="submit">Logout</button>
+            <button type="submit">@AuthenticationLocalizer["Logout.Submit"]</button>
         </form>
     </section>
 </main>

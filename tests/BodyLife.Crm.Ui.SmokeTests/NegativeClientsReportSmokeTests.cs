@@ -48,6 +48,7 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
             scenario.PageSize * 2);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -142,24 +143,26 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                 viewportName,
                 "negative Membership type snapshot");
             await ExpectVisibleAsync(
-                featuredRow.GetByText("3 visits owed", new() { Exact = true }),
+                featuredRow.GetByText("3 visits", new() { Exact = true }),
                 viewportName,
                 "canonical negative balance label");
             await ExpectVisibleAsync(
                 featuredRow.GetByText(
-                    scenario.FeaturedFirstNegativeVisitDate.ToString("yyyy-MM-dd"),
+                    scenario.FeaturedFirstNegativeVisitDate.ToString(
+                        "d",
+                        System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture)),
                     new() { Exact = true }),
                 viewportName,
                 "first-negative Visit date");
             await ExpectVisibleAsync(
                 featuredRow.GetByText(
-                    $"{scenario.FeaturedLastCountedVisitAt:yyyy-MM-dd HH:mm} UTC",
+                    $"{scenario.FeaturedLastCountedVisitAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
                     new() { Exact = true }),
                 viewportName,
                 "last counted Visit");
             await ExpectVisibleAsync(
                 featuredRow.GetByText(
-                    "Membership has a negative visit balance.",
+                    "This membership has a negative visit balance.",
                     new() { Exact = true }),
                 viewportName,
                 "negative-balance warning");
@@ -273,6 +276,7 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -301,7 +305,7 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
             var error = page.GetByRole(AriaRole.Alert);
             await ExpectVisibleAsync(error, "tablet", "negative-clients offset error");
             Assert.Contains(
-                "Offset must be between 0 and 10000.",
+                "Enter valid report filters.",
                 await error.InnerTextAsync(),
                 StringComparison.Ordinal);
             Assert.Equal(0, await page.Locator("[data-negative-client-rows]").CountAsync());

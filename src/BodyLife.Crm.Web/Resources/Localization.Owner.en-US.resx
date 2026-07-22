@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MembershipTypes.Title" xml:space="preserve"><value>Membership types</value></data>
+  <data name="MembershipTypes.OwnerSettings" xml:space="preserve"><value>Owner settings</value></data>
+  <data name="MembershipTypes.Reception" xml:space="preserve"><value>Reception</value></data>
+  <data name="MembershipTypes.Add" xml:space="preserve"><value>Add membership type</value></data>
+  <data name="MembershipTypes.OwnerOnly" xml:space="preserve"><value>Owner only</value></data>
+  <data name="MembershipTypes.CreateFailed" xml:space="preserve"><value>Membership type not created</value></data>
+  <data name="MembershipTypes.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="MembershipTypes.Duration" xml:space="preserve"><value>Duration (days)</value></data>
+  <data name="MembershipTypes.VisitLimit" xml:space="preserve"><value>Visit limit</value></data>
+  <data name="MembershipTypes.PriceAmount" xml:space="preserve"><value>Price amount</value></data>
+  <data name="MembershipTypes.Currency" xml:space="preserve"><value>Currency</value></data>
+  <data name="MembershipTypes.Comment" xml:space="preserve"><value>Comment</value></data>
+  <data name="MembershipTypes.Adding" xml:space="preserve"><value>Adding...</value></data>
+  <data name="MembershipTypes.Catalog" xml:space="preserve"><value>Future sales catalog</value></data>
+  <data name="MembershipTypes.ActiveCount" xml:space="preserve"><value>{0} active</value></data>
+  <data name="MembershipTypes.InactiveCount" xml:space="preserve"><value>{0} inactive</value></data>
+  <data name="MembershipTypes.OwnerManaged" xml:space="preserve"><value>Owner managed</value></data>
+  <data name="MembershipTypes.TypeCount" xml:space="preserve"><value>{0} types</value></data>
+  <data name="MembershipTypes.CatalogFailed" xml:space="preserve"><value>Catalog not updated</value></data>
+  <data name="MembershipTypes.Empty" xml:space="preserve"><value>No membership types yet.</value></data>
+  <data name="MembershipTypes.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="MembershipTypes.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="MembershipTypes.Price" xml:space="preserve"><value>Price</value></data>
+  <data name="MembershipTypes.Created" xml:space="preserve"><value>Created</value></data>
+  <data name="MembershipTypes.Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="MembershipTypes.Deactivated" xml:space="preserve"><value>Deactivated</value></data>
+  <data name="MembershipTypes.NotDeactivated" xml:space="preserve"><value>Not deactivated</value></data>
+  <data name="MembershipTypes.NoComment" xml:space="preserve"><value>No comment</value></data>
+  <data name="MembershipTypes.EditValues" xml:space="preserve"><value>Edit catalog values</value></data>
+  <data name="MembershipTypes.UpdateFailed" xml:space="preserve"><value>Membership type not updated</value></data>
+  <data name="MembershipTypes.CatalogComment" xml:space="preserve"><value>Catalog comment</value></data>
+  <data name="MembershipTypes.ChangeReason" xml:space="preserve"><value>Reason for change</value></data>
+  <data name="MembershipTypes.Saving" xml:space="preserve"><value>Saving...</value></data>
+  <data name="MembershipTypes.Save" xml:space="preserve"><value>Save changes</value></data>
+  <data name="MembershipTypes.Deactivate" xml:space="preserve"><value>Deactivate membership type</value></data>
+  <data name="MembershipTypes.DeactivateFailed" xml:space="preserve"><value>Membership type not deactivated</value></data>
+  <data name="MembershipTypes.DeactivateConfirm" xml:space="preserve"><value>Deactivate this membership type for future sales?</value></data>
+  <data name="MembershipTypes.DeactivateReason" xml:space="preserve"><value>Reason for deactivation</value></data>
+  <data name="MembershipTypes.Deactivating" xml:space="preserve"><value>Deactivating...</value></data>
+  <data name="MembershipTypes.Success.Created" xml:space="preserve"><value>Membership type created.</value></data>
+  <data name="MembershipTypes.Success.CreatedWithAudit" xml:space="preserve"><value>Membership type created. Audit reference {0}.</value></data>
+  <data name="MembershipTypes.Success.Updated" xml:space="preserve"><value>Membership type updated.</value></data>
+  <data name="MembershipTypes.Success.UpdatedWithAudit" xml:space="preserve"><value>Membership type updated. Audit reference {0}.</value></data>
+  <data name="MembershipTypes.Success.Deactivated" xml:space="preserve"><value>Membership type deactivated.</value></data>
+  <data name="MembershipTypes.Success.DeactivatedWithAudit" xml:space="preserve"><value>Membership type deactivated. Audit reference {0}.</value></data>
+  <data name="MembershipTypes.Error.Duration" xml:space="preserve"><value>Enter a whole-number duration.</value></data>
+  <data name="MembershipTypes.Error.VisitLimit" xml:space="preserve"><value>Enter a whole-number visit limit.</value></data>
+  <data name="MembershipTypes.Error.Price" xml:space="preserve"><value>Enter a valid non-negative price.</value></data>
+  <data name="MembershipTypes.Error.Currency" xml:space="preserve"><value>Enter the price currency.</value></data>
+  <data name="MembershipTypes.Error.Validation" xml:space="preserve"><value>Review the highlighted values.</value></data>
+  <data name="MembershipTypes.Error.DuplicateSubmission" xml:space="preserve"><value>This submission was already processed. Review the refreshed catalog.</value></data>
+  <data name="MembershipTypes.Error.Stale" xml:space="preserve"><value>This membership type changed. Review the refreshed values.</value></data>
+  <data name="MembershipTypes.Error.Concurrency" xml:space="preserve"><value>The catalog changed concurrently. Review the refreshed catalog.</value></data>
+  <data name="MembershipTypes.Error.NotFound" xml:space="preserve"><value>The membership type was not found. The catalog was refreshed.</value></data>
+  <data name="MembershipTypes.Error.AlreadyInactive" xml:space="preserve"><value>This membership type is already inactive. The catalog was refreshed.</value></data>
+  <data name="MembershipTypes.Error.Generic" xml:space="preserve"><value>The catalog could not be updated. Review the values and try again.</value></data>
+  <data name="StaffAccounts.Title" xml:space="preserve"><value>Staff accounts</value></data>
+  <data name="StaffAccounts.OwnerSettings" xml:space="preserve"><value>Owner settings</value></data>
+  <data name="StaffAccounts.Reception" xml:space="preserve"><value>Reception</value></data>
+  <data name="StaffAccounts.Add" xml:space="preserve"><value>Add staff account</value></data>
+  <data name="StaffAccounts.AccountType" xml:space="preserve"><value>Account type</value></data>
+  <data name="StaffAccounts.AccountKind.NamedAdmin" xml:space="preserve"><value>Named Admin</value></data>
+  <data name="StaffAccounts.AccountKind.SharedReceptionAdmin" xml:space="preserve"><value>Shared Reception/Admin</value></data>
+  <data name="StaffAccounts.AccountKind.Staff" xml:space="preserve"><value>Staff account</value></data>
+  <data name="StaffAccounts.DisplayName" xml:space="preserve"><value>Display name</value></data>
+  <data name="StaffAccounts.Creating" xml:space="preserve"><value>Creating…</value></data>
+  <data name="StaffAccounts.AddAccount" xml:space="preserve"><value>Add account</value></data>
+  <data name="StaffAccounts.CurrentStaff" xml:space="preserve"><value>Current staff</value></data>
+  <data name="StaffAccounts.AccountCount" xml:space="preserve"><value>{0} accounts</value></data>
+  <data name="StaffAccounts.Empty" xml:space="preserve"><value>No staff accounts yet.</value></data>
+  <data name="StaffAccounts.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="StaffAccounts.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="StaffAccounts.Login" xml:space="preserve"><value>Login</value></data>
+  <data name="StaffAccounts.NotConfigured" xml:space="preserve"><value>Not configured</value></data>
+  <data name="StaffAccounts.ActiveSessions" xml:space="preserve"><value>Active sessions</value></data>
+  <data name="StaffAccounts.SessionCount" xml:space="preserve"><value>{0}</value></data>
+  <data name="StaffAccounts.Saving" xml:space="preserve"><value>Saving…</value></data>
+  <data name="StaffAccounts.SaveName" xml:space="preserve"><value>Save name</value></data>
+  <data name="StaffAccounts.ResetCredentials" xml:space="preserve"><value>Reset credentials</value></data>
+  <data name="StaffAccounts.SetCredentials" xml:space="preserve"><value>Set credentials</value></data>
+  <data name="StaffAccounts.NewPassword" xml:space="preserve"><value>New password</value></data>
+  <data name="StaffAccounts.ResetReason" xml:space="preserve"><value>Reason for reset</value></data>
+  <data name="StaffAccounts.DeactivateConfirm" xml:space="preserve"><value>Deactivate this account and end its active sessions?</value></data>
+  <data name="StaffAccounts.Access" xml:space="preserve"><value>Access</value></data>
+  <data name="StaffAccounts.DeactivateReason" xml:space="preserve"><value>Reason for deactivation</value></data>
+  <data name="StaffAccounts.Deactivating" xml:space="preserve"><value>Deactivating…</value></data>
+  <data name="StaffAccounts.Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="StaffAccounts.ActivationNote" xml:space="preserve"><value>Login remains blocked until this account is active.</value></data>
+  <data name="StaffAccounts.Activating" xml:space="preserve"><value>Activating…</value></data>
+  <data name="StaffAccounts.Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="StaffAccounts.AuditReference" xml:space="preserve"><value>{0} Audit reference {1}.</value></data>
+  <data name="StaffAccounts.Result.Created" xml:space="preserve"><value>Staff account created.</value></data>
+  <data name="StaffAccounts.Result.DisplayNameUpdated" xml:space="preserve"><value>Staff account display name updated.</value></data>
+  <data name="StaffAccounts.Result.Activated" xml:space="preserve"><value>Staff account activated.</value></data>
+  <data name="StaffAccounts.Result.Deactivated" xml:space="preserve"><value>Staff account deactivated.</value></data>
+  <data name="StaffAccounts.Result.AlreadyActive" xml:space="preserve"><value>Staff account is already active.</value></data>
+  <data name="StaffAccounts.Result.AlreadyInactive" xml:space="preserve"><value>Staff account is already inactive.</value></data>
+  <data name="StaffAccounts.Result.CredentialsConfigured" xml:space="preserve"><value>Staff credentials configured.</value></data>
+  <data name="StaffAccounts.Result.CredentialsReset" xml:space="preserve"><value>Staff credentials reset.</value></data>
+  <data name="StaffAccounts.Error.PermissionDenied" xml:space="preserve"><value>Owner access is required.</value></data>
+  <data name="StaffAccounts.Error.Validation" xml:space="preserve"><value>Review the account values and try again.</value></data>
+  <data name="StaffAccounts.Error.NotFound" xml:space="preserve"><value>The account was not found.</value></data>
+  <data name="StaffAccounts.Error.OwnerProtected" xml:space="preserve"><value>The owner account is managed through the bootstrap workflow.</value></data>
+  <data name="StaffAccounts.Error.LoginInUse" xml:space="preserve"><value>This login is already in use.</value></data>
+  <data name="StaffAccounts.Error.Generic" xml:space="preserve"><value>The account could not be updated. Try again.</value></data>
+  <data name="NonWorkingDays.Title" xml:space="preserve"><value>Non-working days</value></data>
+  <data name="NonWorkingDays.OwnerOperations" xml:space="preserve"><value>Owner operations</value></data>
+  <data name="NonWorkingDays.Reception" xml:space="preserve"><value>Reception</value></data>
+  <data name="NonWorkingDays.Error.PeriodRequired" xml:space="preserve"><value>Original non-working period is required.</value></data>
+  <data name="NonWorkingDays.Error.ConfirmImpact" xml:space="preserve"><value>Confirm the exact affected Membership set and full applied period.</value></data>
+  <data name="NonWorkingDays.Error.StartRequired" xml:space="preserve"><value>Non-working period start date is required.</value></data>
+  <data name="NonWorkingDays.Error.EndRequired" xml:space="preserve"><value>Non-working period end date is required.</value></data>
+  <data name="NonWorkingDays.Error.EndBeforeStart" xml:space="preserve"><value>Proposed end date must be on or after the start date.</value></data>
+  <data name="NonWorkingDays.Error.ReasonCodeRequired" xml:space="preserve"><value>Reason code is required.</value></data>
+  <data name="NonWorkingDays.Error.ReasonCodeTooLong" xml:space="preserve"><value>Reason code must be {0} characters or fewer.</value></data>
+  <data name="NonWorkingDays.Error.ReasonCommentTooLong" xml:space="preserve"><value>Reason comment must be {0} characters or fewer.</value></data>
+  <data name="NonWorkingDays.Error.PreviewToken" xml:space="preserve"><value>A canonical preview confirmation token is required.</value></data>
+  <data name="NonWorkingDays.Error.ScopeFingerprint" xml:space="preserve"><value>A canonical affected-scope fingerprint is required.</value></data>
+  <data name="NonWorkingDays.Error.IdempotencyKey" xml:space="preserve"><value>A duplicate-submit protection key is required.</value></data>
+  <data name="NonWorkingDays.Error.SelectActivePeriod" xml:space="preserve"><value>Select an active non-working period.</value></data>
+  <data name="NonWorkingDays.Error.PeriodNoLongerActive" xml:space="preserve"><value>The selected period is no longer active. Refresh the list.</value></data>
+  <data name="NonWorkingDays.Error.SelectCorrectionMode" xml:space="preserve"><value>Select a supported correction mode.</value></data>
+  <data name="NonWorkingDays.Error.CorrectionReason" xml:space="preserve"><value>Correction reason is required and must be {0} characters or fewer.</value></data>
+  <data name="NonWorkingDays.Error.CorrectionComment" xml:space="preserve"><value>Correction comment is required and must be {0} characters or fewer.</value></data>
+  <data name="NonWorkingDays.Error.ConfirmCorrection" xml:space="preserve"><value>Confirm the exact old and new affected Membership scopes before applying the correction.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementStartRequired" xml:space="preserve"><value>Replacement start date is required.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementEndRequired" xml:space="preserve"><value>Replacement end date is required.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementEndBeforeStart" xml:space="preserve"><value>Replacement end date must be on or after the start date.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementReasonCode" xml:space="preserve"><value>Replacement reason code is required and must be {0} characters or fewer.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementReasonComment" xml:space="preserve"><value>Replacement reason comment must be {0} characters or fewer.</value></data>
+  <data name="NonWorkingDays.Error.CorrectionToken" xml:space="preserve"><value>A canonical correction confirmation token is required.</value></data>
+  <data name="NonWorkingDays.Error.CorrectionFingerprint" xml:space="preserve"><value>A canonical correction scope fingerprint is required.</value></data>
+  <data name="NonWorkingDays.PreviewTitle" xml:space="preserve"><value>Preview closure impact</value></data>
+  <data name="NonWorkingDays.OwnerOnly" xml:space="preserve"><value>Owner only</value></data>
+  <data name="NonWorkingDays.ReviewOperation" xml:space="preserve"><value>Review this operation</value></data>
+  <data name="NonWorkingDays.StartDate" xml:space="preserve"><value>Start date</value></data>
+  <data name="NonWorkingDays.EndDate" xml:space="preserve"><value>End date</value></data>
+  <data name="NonWorkingDays.ReasonCode" xml:space="preserve"><value>Reason code</value></data>
+  <data name="NonWorkingDays.ReasonComment" xml:space="preserve"><value>Reason comment (optional)</value></data>
+  <data name="NonWorkingDays.Calculating" xml:space="preserve"><value>Calculating…</value></data>
+  <data name="NonWorkingDays.PreviewImpact" xml:space="preserve"><value>Preview impact</value></data>
+  <data name="NonWorkingDays.CalculatingImpact" xml:space="preserve"><value>Calculating canonical impact…</value></data>
+  <data name="NonWorkingDays.OwnerReview" xml:space="preserve"><value>Owner review</value></data>
+  <data name="NonWorkingDays.ImpactPreview" xml:space="preserve"><value>Impact preview</value></data>
+  <data name="NonWorkingDays.ValidUntil" xml:space="preserve"><value>Valid until {0}</value></data>
+  <data name="NonWorkingDays.AffectedMemberships" xml:space="preserve"><value>Affected memberships</value></data>
+  <data name="NonWorkingDays.InclusivePeriod" xml:space="preserve"><value>Inclusive period</value></data>
+  <data name="NonWorkingDays.PeriodDays" xml:space="preserve"><value>Period days</value></data>
+  <data name="NonWorkingDays.OverlapWarnings" xml:space="preserve"><value>Overlap warnings</value></data>
+  <data name="NonWorkingDays.FullPeriodApplies" xml:space="preserve"><value>Full period applies</value></data>
+  <data name="NonWorkingDays.FullPeriodNotice" xml:space="preserve"><value>Every affected Membership receives {0}, even when it overlaps only one endpoint. Existing extension sources remain union-counted.</value></data>
+  <data name="NonWorkingDays.NoAffected" xml:space="preserve"><value>No memberships are affected by this period.</value></data>
+  <data name="NonWorkingDays.PreviewFailed" xml:space="preserve"><value>Impact preview not created</value></data>
+  <data name="NonWorkingDays.NotAdded" xml:space="preserve"><value>Non-working period not added</value></data>
+  <data name="NonWorkingDays.Error.Load" xml:space="preserve"><value>The confirmed non-working period could not be loaded.</value></data>
+  <data name="NonWorkingDays.ConfirmedUnavailable" xml:space="preserve"><value>Confirmed period unavailable</value></data>
+  <data name="NonWorkingDays.Error.Permission" xml:space="preserve"><value>An active owner session is required.</value></data>
+  <data name="NonWorkingDays.Error.Recalculation" xml:space="preserve"><value>Membership recalculation did not complete, so no data was committed.</value></data>
+  <data name="NonWorkingDays.Error.Validation" xml:space="preserve"><value>Review the proposed period and reason.</value></data>
+  <data name="NonWorkingDays.Error.PreviewExpired" xml:space="preserve"><value>The preview expired. Review the refreshed exact scope.</value></data>
+  <data name="NonWorkingDays.Error.ScopeChanged" xml:space="preserve"><value>The affected Membership scope changed. Review the refreshed exact scope before confirming again.</value></data>
+  <data name="NonWorkingDays.Error.StateChanged" xml:space="preserve"><value>Canonical membership state changed. Review the refreshed exact scope.</value></data>
+  <data name="NonWorkingDays.Error.Duplicate" xml:space="preserve"><value>This confirmation was not applied. Review the refreshed preview.</value></data>
+  <data name="NonWorkingDays.Error.Generic" xml:space="preserve"><value>The operation could not be completed. Review the data and try again.</value></data>
+  <data name="NonWorkingDays.MembershipReference" xml:space="preserve"><value>Membership {0}</value></data>
+  <data name="NonWorkingDays.FullAppliedRange" xml:space="preserve"><value>Full applied range</value></data>
+  <data name="NonWorkingDays.EffectiveEnd" xml:space="preserve"><value>Effective end</value></data>
+  <data name="NonWorkingDays.To" xml:space="preserve"><value>to</value></data>
+  <data name="NonWorkingDays.ExtensionDays" xml:space="preserve"><value>Extension days</value></data>
+  <data name="NonWorkingDays.ExistingOverlap" xml:space="preserve"><value>Existing overlap</value></data>
+  <data name="NonWorkingDays.ExistingOverlaps" xml:space="preserve"><value>{0} existing extension overlaps</value></data>
+  <data name="NonWorkingDays.FinalConfirmation" xml:space="preserve"><value>Final confirmation</value></data>
+  <data name="NonWorkingDays.ApplyExactScope" xml:space="preserve"><value>Apply this exact scope</value></data>
+  <data name="NonWorkingDays.ConfirmationNotice" xml:space="preserve"><value>The command will create immutable applications for the exact confirmed scope (membership count: {0}) and synchronously recalculate canonical state.</value></data>
+  <data name="NonWorkingDays.ConfirmScope" xml:space="preserve"><value>I confirm the exact scope (membership count: {0}) receives the full period {1}, inclusive of both dates.</value></data>
+  <data name="NonWorkingDays.AddingAndRecalculating" xml:space="preserve"><value>Adding period and recalculating memberships…</value></data>
+  <data name="NonWorkingDays.AddingPeriod" xml:space="preserve"><value>Adding period…</value></data>
+  <data name="NonWorkingDays.AddPeriod" xml:space="preserve"><value>Add non-working period</value></data>
+  <data name="NonWorkingDays.PeriodAdded" xml:space="preserve"><value>Non-working period added</value></data>
+  <data name="NonWorkingDays.PeriodAddedNotice" xml:space="preserve"><value>The exact affected scope was stored and every membership was recalculated before commit.</value></data>
+  <data name="NonWorkingDays.CanonicalResult" xml:space="preserve"><value>Canonical result</value></data>
+  <data name="NonWorkingDays.ConfirmedPeriod" xml:space="preserve"><value>Confirmed period</value></data>
+  <data name="NonWorkingDays.AuditReference" xml:space="preserve"><value>Audit reference</value></data>
+  <data name="NonWorkingDays.None" xml:space="preserve"><value>None</value></data>
+  <data name="NonWorkingDays.ExactScopeCaptured" xml:space="preserve"><value>Exact scope captured</value></data>
+  <data name="NonWorkingDays.ExactScopeNotice" xml:space="preserve"><value>Every row below is a committed application of the full period. Later membership changes do not silently alter this snapshot.</value></data>
+  <data name="NonWorkingDays.ConfirmedNoAffected" xml:space="preserve"><value>This confirmed period affected no memberships.</value></data>
+  <data name="NonWorkingDays.ConfirmedAffectedMemberships" xml:space="preserve"><value>Confirmed affected memberships</value></data>
+  <data name="NonWorkingDays.CurrentEffectiveEnd" xml:space="preserve"><value>Current effective end</value></data>
+  <data name="NonWorkingDays.CurrentExtensionDays" xml:space="preserve"><value>Current extension days</value></data>
+  <data name="NonWorkingDays.StateRecalculated" xml:space="preserve"><value>State recalculated</value></data>
+  <data name="NonWorkingDays.Correction.Error.AlreadyCanceled" xml:space="preserve"><value>The selected non-working period is already canceled.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Duplicate" xml:space="preserve"><value>This correction was not applied. Review the refreshed preview.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Generic" xml:space="preserve"><value>The correction could not be completed. Review the data and try again.</value></data>
+  <data name="NonWorkingDays.Correction.Error.LoadActive" xml:space="preserve"><value>Active non-working periods could not be loaded.</value></data>
+  <data name="NonWorkingDays.Correction.Error.NotFound" xml:space="preserve"><value>The selected non-working period no longer exists.</value></data>
+  <data name="NonWorkingDays.Correction.Error.OriginalChanged" xml:space="preserve"><value>The original non-working period changed. Refresh and preview the correction again.</value></data>
+  <data name="NonWorkingDays.Correction.Error.OutcomeLoad" xml:space="preserve"><value>The canonical non-working period correction could not be loaded.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Permission" xml:space="preserve"><value>An active owner session is required to preview a correction.</value></data>
+  <data name="NonWorkingDays.Correction.Error.PreviewExpired" xml:space="preserve"><value>The correction preview expired. Review the refreshed exact scope.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Recalculation" xml:space="preserve"><value>Membership recalculation did not complete, so no correction was committed.</value></data>
+  <data name="NonWorkingDays.Correction.Error.ScopeChanged" xml:space="preserve"><value>The correction scope changed. Review the refreshed exact old and new scope before confirming again.</value></data>
+  <data name="NonWorkingDays.Correction.Error.SourceInconsistent" xml:space="preserve"><value>Canonical source records are inconsistent, so correction impact cannot be shown.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Stale" xml:space="preserve"><value>The selected non-working period was already corrected. Refresh the active list.</value></data>
+  <data name="NonWorkingDays.Correction.Error.StateChanged" xml:space="preserve"><value>Canonical state changed. Review a fresh correction preview.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Validation" xml:space="preserve"><value>Review the correction preview input.</value></data>
+  <data name="NonWorkingDays.Correction.Heading.NotApplied" xml:space="preserve"><value>Correction not applied</value></data>
+  <data name="NonWorkingDays.Correction.Heading.OutcomeUnavailable" xml:space="preserve"><value>Correction result unavailable</value></data>
+  <data name="NonWorkingDays.Correction.Heading.PreviewFailed" xml:space="preserve"><value>Correction preview not created</value></data>
+  <data name="NonWorkingDays.Correction.Heading.Unavailable" xml:space="preserve"><value>Correction periods unavailable</value></data>
+<data name="NonWorkingDay.CorrectionReview" xml:space="preserve"><value>Correction review</value></data>
+  <data name="NonWorkingDay.CorrectPeriod" xml:space="preserve"><value>Correct an existing period</value></data>
+  <data name="NonWorkingDay.OwnerOnly" xml:space="preserve"><value>Owner only</value></data>
+  <data name="NonWorkingDay.CorrectionPreviewNotCreated" xml:space="preserve"><value>Correction preview not created</value></data>
+  <data name="NonWorkingDay.NoActivePeriods" xml:space="preserve"><value>There are no active non-working periods available for correction.</value></data>
+  <data name="NonWorkingDay.ActivePeriod" xml:space="preserve"><value>Active period</value></data>
+  <data name="NonWorkingDay.MembershipCount" xml:space="preserve"><value>{0} memberships</value></data>
+  <data name="NonWorkingDay.CorrectionMode" xml:space="preserve"><value>Correction mode</value></data>
+  <data name="NonWorkingDay.ReplaceRange" xml:space="preserve"><value>Replace range</value></data>
+  <data name="NonWorkingDay.ReplaceReason" xml:space="preserve"><value>Replace reason</value></data>
+  <data name="NonWorkingDay.CancelPeriod" xml:space="preserve"><value>Cancel period</value></data>
+<data name="NonWorkingDay.ReplacementRange" xml:space="preserve"><value>Replacement range</value></data>
+  <data name="NonWorkingDay.StartDate" xml:space="preserve"><value>Start date</value></data>
+  <data name="NonWorkingDay.EndDate" xml:space="preserve"><value>End date</value></data>
+  <data name="NonWorkingDay.ReplacementReason" xml:space="preserve"><value>Replacement reason</value></data>
+  <data name="NonWorkingDay.ReasonCode" xml:space="preserve"><value>Reason code</value></data>
+  <data name="NonWorkingDay.ReasonCommentOptional" xml:space="preserve"><value>Reason comment (optional)</value></data>
+  <data name="NonWorkingDay.CorrectionReason" xml:space="preserve"><value>Correction reason</value></data>
+  <data name="NonWorkingDay.CorrectionComment" xml:space="preserve"><value>Correction comment</value></data>
+  <data name="NonWorkingDay.Calculating" xml:space="preserve"><value>Calculating…</value></data>
+  <data name="NonWorkingDay.PreviewCorrection" xml:space="preserve"><value>Preview correction</value></data>
+  <data name="NonWorkingDay.CalculatingScope" xml:space="preserve"><value>Calculating old and new canonical scope…</value></data>
+  <data name="Common.None" xml:space="preserve"><value>None</value></data>
+  <data name="Error.Generic" xml:space="preserve"><value>The operation could not be completed. Review the data and try again.</value></data>
+  <data name="Range.To" xml:space="preserve"><value>to</value></data>
+  <data name="NonWorkingDay.AuditReference" xml:space="preserve"><value>Audit reference</value></data>
+  <data name="NonWorkingDay.CurrentEffectiveEnd" xml:space="preserve"><value>Current effective end</value></data>
+  <data name="NonWorkingDay.CurrentExtensionDays" xml:space="preserve"><value>Current extension days</value></data>
+  <data name="NonWorkingDay.ExistingOverlap" xml:space="preserve"><value>Existing overlap</value></data>
+  <data name="NonWorkingDay.FullAppliedRange" xml:space="preserve"><value>Full applied range</value></data>
+  <data name="NonWorkingDay.MembershipReference" xml:space="preserve"><value>Membership {0}</value></data>
+  <data name="NonWorkingDay.ReasonComment" xml:space="preserve"><value>Reason comment</value></data>
+  <data name="NonWorkingDay.Status.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="NonWorkingDay.Status.Canceled" xml:space="preserve"><value>Canceled</value></data>
+  <data name="NonWorkingDay.Status.Corrected" xml:space="preserve"><value>Corrected</value></data>
+  <data name="NonWorkingDay.Status.Unsupported" xml:space="preserve"><value>Unsupported</value></data>
+  <data name="NonWorkingDay.Source.Freeze" xml:space="preserve"><value>Freeze</value></data>
+  <data name="NonWorkingDay.Source.NonWorkingDay" xml:space="preserve"><value>Non-working period</value></data>
+  <data name="NonWorkingDay.Source.Adjustment" xml:space="preserve"><value>Adjustment</value></data>
+  <data name="NonWorkingDay.Source.Extension" xml:space="preserve"><value>Extension source</value></data>
+  <data name="NonWorkingDay.Correction.PreviewCreated" xml:space="preserve"><value>Correction preview created</value></data>
+  <data name="NonWorkingDay.Correction.PreviewNoChanges" xml:space="preserve"><value>No business data has changed yet.</value></data>
+  <data name="NonWorkingDay.Correction.OwnerReview" xml:space="preserve"><value>Owner review</value></data>
+  <data name="NonWorkingDay.Correction.ValidUntil" xml:space="preserve"><value>Valid until {0}</value></data>
+  <data name="NonWorkingDay.Correction.OriginalMemberships" xml:space="preserve"><value>Original memberships</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmedScope" xml:space="preserve"><value>Confirmed scope</value></data>
+  <data name="NonWorkingDay.Correction.ScopeBehavior" xml:space="preserve"><value>Scope behavior</value></data>
+  <data name="NonWorkingDay.Correction.Reason" xml:space="preserve"><value>Correction reason</value></data>
+  <data name="NonWorkingDay.Correction.OriginalSource" xml:space="preserve"><value>Original source</value></data>
+  <data name="NonWorkingDay.Correction.OriginalAffectedMemberships" xml:space="preserve"><value>Originally affected memberships</value></data>
+  <data name="NonWorkingDay.Correction.OriginalScope" xml:space="preserve"><value>Original scope</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementSource" xml:space="preserve"><value>Replacement source</value></data>
+  <data name="NonWorkingDay.Correction.FullReplacementApplies" xml:space="preserve"><value>Full replacement period applies</value></data>
+  <data name="NonWorkingDay.Correction.FullReplacementHint" xml:space="preserve"><value>The full period {0}, inclusive of both dates, applies to every membership in the new scope, including endpoint-only overlaps. The original period is excluded before this impact is estimated.</value></data>
+  <data name="NonWorkingDay.Correction.NoReplacementMemberships" xml:space="preserve"><value>The replacement period affects no memberships.</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementAffectedMemberships" xml:space="preserve"><value>Replacement affected memberships</value></data>
+  <data name="NonWorkingDay.Correction.EffectiveEndWithoutOriginal" xml:space="preserve"><value>Effective end without original</value></data>
+  <data name="NonWorkingDay.Correction.ExtensionWithoutOriginal" xml:space="preserve"><value>Extension days without original</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementOverlap" xml:space="preserve"><value>Existing replacement-range overlap</value></data>
+  <data name="NonWorkingDay.Correction.ScopeUnchanged" xml:space="preserve"><value>Exact scope and range stay unchanged</value></data>
+  <data name="NonWorkingDay.Correction.ScopeUnchangedHint" xml:space="preserve"><value>The exact application scope is unchanged (count: {0}) and retains {1}. Only the reason source is replaced with {2}.</value></data>
+  <data name="NonWorkingDay.Correction.ApplicationsStop" xml:space="preserve"><value>Application facts that stop contributing: {0}</value></data>
+  <data name="NonWorkingDay.Correction.CancelHint" xml:space="preserve"><value>The original period and application rows remain as canceled history. Memberships are recalculated by the confirmation command.</value></data>
+  <data name="NonWorkingDay.Correction.FinalConfirmation" xml:space="preserve"><value>Final confirmation</value></data>
+  <data name="NonWorkingDay.Correction.FinalConfirmationHint" xml:space="preserve"><value>The command preserves the original source as history, commits the exact confirmed scope, recalculates memberships (count: {0}) and appends one Owner audit event atomically.</value></data>
+  <data name="NonWorkingDay.Correction.Applying" xml:space="preserve"><value>Applying correction…</value></data>
+  <data name="NonWorkingDay.Correction.ResultCommitted" xml:space="preserve"><value>Source facts, exact application scope, membership recalculation, idempotency and business audit were committed together.</value></data>
+  <data name="NonWorkingDay.Correction.CanonicalResult" xml:space="preserve"><value>Canonical result</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementMemberships" xml:space="preserve"><value>Replacement memberships</value></data>
+  <data name="NonWorkingDay.Correction.RecalculatedUnion" xml:space="preserve"><value>Recalculated union</value></data>
+  <data name="NonWorkingDay.Correction.OccurredAt" xml:space="preserve"><value>Occurred at</value></data>
+  <data name="NonWorkingDay.Correction.RecordedAt" xml:space="preserve"><value>Recorded at</value></data>
+  <data name="NonWorkingDay.Correction.OriginalSourceRetained" xml:space="preserve"><value>Original source retained</value></data>
+  <data name="NonWorkingDay.Correction.CommittedOriginalScope" xml:space="preserve"><value>Committed original scope</value></data>
+  <data name="NonWorkingDay.Correction.RecalculatedAt" xml:space="preserve"><value>Recalculated at</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementSourceCommitted" xml:space="preserve"><value>Replacement source committed</value></data>
+  <data name="NonWorkingDay.Correction.CommittedReplacementScope" xml:space="preserve"><value>Committed replacement scope</value></data>
+  <data name="NonWorkingDay.Correction.CancellationCommittedHint" xml:space="preserve"><value>Cancellation {0} retained the original period and applications as canceled history. Every affected membership above shows canonical state after recalculation.</value></data>
+  <data name="NonWorkingDay.Correction.Mode.ReplaceRange" xml:space="preserve"><value>Range replacement preview</value></data>
+  <data name="NonWorkingDay.Correction.Mode.ReplaceReason" xml:space="preserve"><value>Reason replacement preview</value></data>
+  <data name="NonWorkingDay.Correction.Mode.Cancel" xml:space="preserve"><value>Cancellation preview</value></data>
+  <data name="NonWorkingDay.Correction.Mode.Unsupported" xml:space="preserve"><value>Unsupported correction preview</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmationTitle.ReplaceRange" xml:space="preserve"><value>Apply this exact replacement scope</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmationTitle.ReplaceReason" xml:space="preserve"><value>Replace reason for this exact scope</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmationTitle.Cancel" xml:space="preserve"><value>Cancel this exact original scope</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmationTitle.Unsupported" xml:space="preserve"><value>Unsupported correction</value></data>
+  <data name="NonWorkingDay.Correction.Acknowledgement.ReplaceRange" xml:space="preserve"><value>I confirm the original applications stop contributing (count: {0}) and the full period {2}, inclusive of both dates, applies to the exact new scope (membership count: {1}).</value></data>
+  <data name="NonWorkingDay.Correction.Acknowledgement.ReplaceReason" xml:space="preserve"><value>I confirm the exact application scope (count: {0}) and full applied ranges stay unchanged while the reason is replaced.</value></data>
+  <data name="NonWorkingDay.Correction.Acknowledgement.Cancel" xml:space="preserve"><value>I confirm the original applications stop contributing (count: {0}) and remain visible as canceled history.</value></data>
+  <data name="NonWorkingDay.Correction.Acknowledgement.Unsupported" xml:space="preserve"><value>I confirm this correction.</value></data>
+  <data name="NonWorkingDay.Correction.Button.ReplaceRange" xml:space="preserve"><value>Apply range correction</value></data>
+  <data name="NonWorkingDay.Correction.Button.ReplaceReason" xml:space="preserve"><value>Apply reason correction</value></data>
+  <data name="NonWorkingDay.Correction.Button.Cancel" xml:space="preserve"><value>Cancel non-working period</value></data>
+  <data name="NonWorkingDay.Correction.Button.Unsupported" xml:space="preserve"><value>Apply correction</value></data>
+  <data name="NonWorkingDay.Correction.Busy.Cancel" xml:space="preserve"><value>Canceling period and recalculating memberships…</value></data>
+  <data name="NonWorkingDay.Correction.Busy.Replace" xml:space="preserve"><value>Replacing period and recalculating memberships…</value></data>
+  <data name="NonWorkingDay.Correction.Outcome.Canceled" xml:space="preserve"><value>Non-working period canceled</value></data>
+  <data name="NonWorkingDay.Correction.Outcome.Corrected" xml:space="preserve"><value>Non-working period corrected</value></data>
+  <data name="NonWorkingDay.Correction.Scope.Recompute" xml:space="preserve"><value>Recompute exact replacement scope</value></data>
+  <data name="NonWorkingDay.Correction.Scope.Preserve" xml:space="preserve"><value>Preserve exact applications</value></data>
+  <data name="NonWorkingDay.Correction.Scope.Deactivate" xml:space="preserve"><value>Deactivate original scope</value></data>
+</root>

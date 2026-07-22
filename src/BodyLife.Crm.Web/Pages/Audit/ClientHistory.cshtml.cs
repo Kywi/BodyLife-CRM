@@ -12,19 +12,22 @@ public sealed class ClientHistoryModel(
     IBodyLifeQueryHandler<GetClientHistoryQuery, GetClientHistoryResult>
         getClientHistory,
     IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult>
-        getClientProfile)
+        getClientProfile,
+    AuditPresentation presentation,
+    ClientHistoryRowPresenter rowPresenter)
     : PageModel
 {
+    public AuditPresentation Presentation { get; } = presentation;
     public const int PageSize = 10;
 
     public static IReadOnlyList<ClientHistoryEntityOption> EntityOptions { get; } =
     [
-        new(ClientHistoryEntityFilter.Membership, "Memberships"),
-        new(ClientHistoryEntityFilter.MembershipOpeningState, "Opening states"),
-        new(ClientHistoryEntityFilter.Visit, "Visits"),
-        new(ClientHistoryEntityFilter.Payment, "Payments"),
-        new(ClientHistoryEntityFilter.Freeze, "Freezes"),
-        new(ClientHistoryEntityFilter.NonWorkingDay, "Non-working days"),
+        new(ClientHistoryEntityFilter.Membership, "HistoryEntity.Membership"),
+        new(ClientHistoryEntityFilter.MembershipOpeningState, "HistoryEntity.MembershipOpeningState"),
+        new(ClientHistoryEntityFilter.Visit, "HistoryEntity.Visit"),
+        new(ClientHistoryEntityFilter.Payment, "HistoryEntity.Payment"),
+        new(ClientHistoryEntityFilter.Freeze, "HistoryEntity.Freeze"),
+        new(ClientHistoryEntityFilter.NonWorkingDay, "HistoryEntity.NonWorkingDay"),
     ];
 
     [BindProperty(SupportsGet = true, Name = "clientId")]
@@ -65,7 +68,7 @@ public sealed class ClientHistoryModel(
     {
         if (!ModelState.IsValid)
         {
-            LoadError = "Enter valid Client, date, entity and page filter values.";
+            LoadError = Presentation.Text("Error.InvalidFilter");
             return;
         }
 
@@ -77,7 +80,7 @@ public sealed class ClientHistoryModel(
 
         if (ClientId == Guid.Empty)
         {
-            LoadError = "Enter a non-empty Client ID.";
+            LoadError = Presentation.Text("Error.InvalidClient");
             return;
         }
 
@@ -87,7 +90,7 @@ public sealed class ClientHistoryModel(
                 out var occurredFromInclusive,
                 out var occurredBeforeExclusive))
         {
-            LoadError = "Occurred-through date must be on or after occurred-from date.";
+            LoadError = Presentation.Text("Error.InvalidRange");
             return;
         }
 
@@ -112,13 +115,13 @@ public sealed class ClientHistoryModel(
         try
         {
             Rows = Array.AsReadOnly(historyPage.Items
-                .Select(ClientHistoryRowViewModel.Create)
+                .Select(rowPresenter.Present)
                 .ToArray());
         }
         catch (InvalidOperationException)
         {
             Rows = [];
-            LoadError = "Client history is unavailable because its source presentation is incomplete.";
+            LoadError = Presentation.Text("Error.Unavailable");
             return;
         }
 

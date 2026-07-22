@@ -49,7 +49,7 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
         "BL-PAYMENT-PHONE",
         "Payment Phone",
         "OneOff",
-        "One-off payment",
+        "One-off",
         125)]
     public async Task OwnerAddsOneCanonicalCashPaymentOnTargetViewport(
         string viewportName,
@@ -131,7 +131,7 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
                 "input[name='form.IdempotencyKey']").InputValueAsync();
             Assert.False(string.IsNullOrWhiteSpace(idempotencyKey));
             Assert.False(string.IsNullOrWhiteSpace(await panel.GetByLabel(
-                "Occurred (UTC)",
+                "Event time (UTC)",
                 new() { Exact = true }).InputValueAsync()));
 
             await panel.GetByLabel("Amount (UAH)", new() { Exact = true }).FillAsync("0");
@@ -144,7 +144,7 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
                 "Payment validation error");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "Payment amount must be greater than zero.",
+                    "Enter an amount greater than zero.",
                     new() { Exact = true }),
                 viewportName,
                 "positive amount requirement");
@@ -179,7 +179,7 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
             await ExpectVisibleAsync(paymentRow, viewportName, "canonical Payment row");
             await ExpectVisibleAsync(
                 paymentRow.Locator(".recent-payment-row-header h4").GetByText(
-                    $"{amount} UAH",
+                    $"{amount.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UAH",
                     new() { Exact = true }),
                 viewportName,
                 "canonical Payment amount");
@@ -241,6 +241,7 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
 
         return await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

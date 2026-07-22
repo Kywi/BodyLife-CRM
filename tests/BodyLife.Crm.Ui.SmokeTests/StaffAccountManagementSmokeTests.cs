@@ -171,6 +171,7 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
     {
         return await _browser!.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

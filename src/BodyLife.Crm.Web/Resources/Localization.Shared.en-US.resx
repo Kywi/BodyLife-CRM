@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="LanguageSelector.Label" xml:space="preserve"><value>Language</value></data>
+  <data name="LanguageSelector.Ukrainian" xml:space="preserve"><value>Українська</value></data>
+  <data name="LanguageSelector.English" xml:space="preserve"><value>English</value></data>
+  <data name="Session.Current" xml:space="preserve"><value>Current session</value></data>
+  <data name="Session.CurrentAccountAndDevice" xml:space="preserve"><value>Current account and device</value></data>
+  <data name="Session.Actions" xml:space="preserve"><value>Session actions</value></data>
+  <data name="Session.DeviceUnavailable" xml:space="preserve"><value>No device label</value></data>
+  <data name="Session.Identifier" xml:space="preserve"><value>Session {0}</value></data>
+  <data name="Navigation.DailyReport" xml:space="preserve"><value>Daily report</value></data>
+  <data name="Navigation.AuditTimeline" xml:space="preserve"><value>Audit timeline</value></data>
+  <data name="Navigation.MembershipTypes" xml:space="preserve"><value>Membership types</value></data>
+  <data name="Navigation.NonWorkingDays" xml:space="preserve"><value>Non-working days</value></data>
+  <data name="Navigation.StaffAccounts" xml:space="preserve"><value>Staff accounts</value></data>
+  <data name="Navigation.Logout" xml:space="preserve"><value>Log out</value></data>
+  <data name="AccountKind.Owner" xml:space="preserve"><value>Owner account</value></data>
+  <data name="AccountKind.NamedAdmin" xml:space="preserve"><value>Named Admin</value></data>
+  <data name="AccountKind.SharedReceptionAdmin" xml:space="preserve"><value>Shared Reception/Admin</value></data>
+  <data name="AccountKind.Unknown" xml:space="preserve"><value>Account</value></data>
+  <data name="Role.Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Role.Admin" xml:space="preserve"><value>Admin</value></data>
+  <data name="Role.Unknown" xml:space="preserve"><value>Role</value></data>
+  <data name="Visits.One" xml:space="preserve"><value>{0} visit</value></data>
+  <data name="Visits.Few" xml:space="preserve"><value>{0} visits</value></data>
+  <data name="Visits.Many" xml:space="preserve"><value>{0} visits</value></data>
+  <data name="Visits.Other" xml:space="preserve"><value>{0} visits</value></data>
+  <data name="Days.One" xml:space="preserve"><value>{0} day</value></data>
+  <data name="Days.Few" xml:space="preserve"><value>{0} days</value></data>
+  <data name="Days.Many" xml:space="preserve"><value>{0} days</value></data>
+  <data name="Days.Other" xml:space="preserve"><value>{0} days</value></data>
+  <data name="Clients.One" xml:space="preserve"><value>{0} client shown</value></data>
+  <data name="Clients.Few" xml:space="preserve"><value>{0} clients shown</value></data>
+  <data name="Clients.Many" xml:space="preserve"><value>{0} clients shown</value></data>
+  <data name="Clients.Other" xml:space="preserve"><value>{0} clients shown</value></data>
+  <data name="Memberships.One" xml:space="preserve"><value>{0} membership shown</value></data>
+  <data name="Memberships.Few" xml:space="preserve"><value>{0} memberships shown</value></data>
+  <data name="Memberships.Many" xml:space="preserve"><value>{0} memberships shown</value></data>
+  <data name="Memberships.Other" xml:space="preserve"><value>{0} memberships shown</value></data>
+  <data name="Entries.One" xml:space="preserve"><value>{0} entry shown</value></data>
+  <data name="Entries.Few" xml:space="preserve"><value>{0} entries shown</value></data>
+  <data name="Entries.Many" xml:space="preserve"><value>{0} entries shown</value></data>
+  <data name="Entries.Other" xml:space="preserve"><value>{0} entries shown</value></data>
+  <data name="Rows.One" xml:space="preserve"><value>{0} row</value></data>
+  <data name="Rows.Few" xml:space="preserve"><value>{0} rows</value></data>
+  <data name="Rows.Many" xml:space="preserve"><value>{0} rows</value></data>
+  <data name="Rows.Other" xml:space="preserve"><value>{0} rows</value></data>
+  <data name="UniqueDays.One" xml:space="preserve"><value>+{0} unique day</value></data>
+  <data name="UniqueDays.Few" xml:space="preserve"><value>+{0} unique days</value></data>
+  <data name="UniqueDays.Many" xml:space="preserve"><value>+{0} unique days</value></data>
+  <data name="UniqueDays.Other" xml:space="preserve"><value>+{0} unique days</value></data>
+</root>

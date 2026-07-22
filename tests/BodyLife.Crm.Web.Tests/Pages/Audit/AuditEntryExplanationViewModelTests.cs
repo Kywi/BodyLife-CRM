@@ -1,11 +1,16 @@
+using System.Globalization;
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Pages.Audit;
+using BodyLife.Crm.Web.Tests.Localization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BodyLife.Crm.Web.Tests.Pages.Audit;
 
+[Collection(nameof(LocalizationCollection))]
 public sealed class AuditEntryExplanationViewModelTests
 {
     private static readonly JsonSerializerOptions AuditJsonOptions =
@@ -19,6 +24,60 @@ public sealed class AuditEntryExplanationViewModelTests
         0,
         0,
         TimeSpan.Zero);
+
+    private AuditEntryExplanationViewModel? Explain(
+        AuditTimelineEntry entry,
+        string cultureName = WebCultures.English)
+    {
+        var explanation = ExplainInCulture(entry, cultureName);
+        if (cultureName == WebCultures.English && explanation is not null)
+        {
+            var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+                ExplainInCulture(entry, WebCultures.Ukrainian));
+            Assert.Equal(explanation.Kind, ukrainian.Kind);
+            Assert.Equal(explanation.IsAvailable, ukrainian.IsAvailable);
+            Assert.Equal(explanation.BeforeFacts.Count, ukrainian.BeforeFacts.Count);
+            Assert.Equal(explanation.AfterFacts.Count, ukrainian.AfterFacts.Count);
+            Assert.False(string.IsNullOrWhiteSpace(ukrainian.Title));
+            if (ukrainian.IsAvailable)
+            {
+                Assert.False(string.IsNullOrWhiteSpace(ukrainian.Narrative));
+                Assert.False(string.IsNullOrWhiteSpace(ukrainian.BeforeLabel));
+                Assert.False(string.IsNullOrWhiteSpace(ukrainian.AfterLabel));
+            }
+            Assert.NotEqual(explanation.Title, ukrainian.Title);
+        }
+
+        return explanation;
+    }
+
+    private static AuditEntryExplanationViewModel? ExplainInCulture(
+        AuditTimelineEntry entry,
+        string cultureName)
+    {
+        var previousCulture = CultureInfo.CurrentCulture;
+        var previousUiCulture = CultureInfo.CurrentUICulture;
+        try
+        {
+            var culture = CultureInfo.GetCultureInfo(cultureName);
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddBodyLifeLocalization();
+            using var provider = services.BuildServiceProvider();
+            using var scope = provider.CreateScope();
+            return scope.ServiceProvider
+                .GetRequiredService<AuditEntryExplanationPresenter>()
+                .Create(entry);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+            CultureInfo.CurrentUICulture = previousUiCulture;
+        }
+    }
 
     [Fact]
     public void MembershipVisitShowsConsumptionAcknowledgementAndStoredStateChange()
@@ -52,7 +111,7 @@ public sealed class AuditEntryExplanationViewModelTests
             membershipState: afterState);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "visit.marked",
                     AuditTimelineEntityType.Visit,
@@ -89,7 +148,7 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("-1", FactValue(explanation.AfterFacts, "Remaining visits"));
         Assert.Equal("1", FactValue(explanation.AfterFacts, "Negative balance"));
         Assert.Equal(
-            OriginalOccurredAt.ToString("yyyy-MM-dd"),
+            "7/18/2026",
             FactValue(explanation.AfterFacts, "First negative visit date"));
         Assert.Equal(
             "Negative balance",
@@ -111,7 +170,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var visitId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "visit.marked",
                     AuditTimelineEntityType.Visit,
@@ -151,7 +210,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var visitId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "visit.marked",
                     AuditTimelineEntityType.Visit,
@@ -186,7 +245,7 @@ public sealed class AuditEntryExplanationViewModelTests
             remainingVisits: 8,
             negativeBalance: 0);
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "visit.marked",
                     AuditTimelineEntityType.Visit,
@@ -216,7 +275,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var visitId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "visit.marked",
                     AuditTimelineEntityType.Visit,
@@ -257,7 +316,7 @@ public sealed class AuditEntryExplanationViewModelTests
             remainingVisits: 0,
             negativeBalance: 0);
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "visit.marked",
                     AuditTimelineEntityType.Visit,
@@ -317,7 +376,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "visit.canceled",
                     AuditTimelineEntityType.Visit,
@@ -370,7 +429,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "visit.canceled",
                     AuditTimelineEntityType.Visit,
@@ -400,7 +459,7 @@ public sealed class AuditEntryExplanationViewModelTests
             status: "active");
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "payment.created",
                     AuditTimelineEntityType.Payment,
@@ -419,7 +478,7 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("payment-created", explanation.Kind);
         Assert.Equal("Cash payment recorded", explanation.Title);
         Assert.Equal("Not present", FactValue(explanation.BeforeFacts, "Payment"));
-        Assert.Equal("1250 UAH", FactValue(explanation.AfterFacts, "Amount"));
+        Assert.Equal("1,250.00 UAH", FactValue(explanation.AfterFacts, "Amount"));
         Assert.Equal("Cash", FactValue(explanation.AfterFacts, "Method"));
         Assert.Equal("Membership sale", FactValue(explanation.AfterFacts, "Context"));
         Assert.Equal(
@@ -431,8 +490,8 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Theory]
-    [InlineData("one_off", "One-off")]
-    [InlineData("trial", "Trial")]
+    [InlineData("one_off", "One-off visit")]
+    [InlineData("trial", "Trial visit")]
     [InlineData("other", "Other")]
     public void StandalonePaymentCreationShowsContextWithoutInventingMembership(
         string paymentContext,
@@ -447,7 +506,7 @@ public sealed class AuditEntryExplanationViewModelTests
             paymentContext: paymentContext);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "payment.created",
                     AuditTimelineEntityType.Payment,
@@ -479,7 +538,7 @@ public sealed class AuditEntryExplanationViewModelTests
             paymentContext: "one_off");
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "payment.created",
                     AuditTimelineEntityType.Payment,
@@ -509,7 +568,7 @@ public sealed class AuditEntryExplanationViewModelTests
             paymentContext: "one_off");
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "payment.created",
                     AuditTimelineEntityType.Payment,
@@ -542,7 +601,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "payment.created",
                     AuditTimelineEntityType.Payment,
@@ -572,7 +631,7 @@ public sealed class AuditEntryExplanationViewModelTests
             paymentContext: "one_off");
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "payment.created",
                     AuditTimelineEntityType.Payment,
@@ -623,7 +682,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "payment.corrected",
                     AuditTimelineEntityType.Payment,
@@ -633,9 +692,9 @@ public sealed class AuditEntryExplanationViewModelTests
 
         Assert.True(explanation.IsAvailable);
         Assert.Equal("payment-corrected", explanation.Kind);
-        Assert.Equal("1200 UAH", FactValue(explanation.BeforeFacts, "Amount"));
+        Assert.Equal("1,200.00 UAH", FactValue(explanation.BeforeFacts, "Amount"));
         Assert.Equal("Active", FactValue(explanation.BeforeFacts, "Status"));
-        Assert.Equal("950 UAH", FactValue(explanation.AfterFacts, "Amount"));
+        Assert.Equal("950.00 UAH", FactValue(explanation.AfterFacts, "Amount"));
         Assert.Equal("Replaced", FactValue(explanation.AfterFacts, "Original status"));
         Assert.Equal("Amount, Occurred time, Comment", explanation.ChangedFields);
     }
@@ -662,7 +721,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "payment.canceled",
                     AuditTimelineEntityType.Payment,
@@ -671,9 +730,9 @@ public sealed class AuditEntryExplanationViewModelTests
                     after)));
 
         Assert.True(explanation.IsAvailable);
-        Assert.Equal("500 UAH", FactValue(explanation.BeforeFacts, "Amount"));
+        Assert.Equal("500.00 UAH", FactValue(explanation.BeforeFacts, "Amount"));
         Assert.Equal("Active", FactValue(explanation.BeforeFacts, "Status"));
-        Assert.Equal("500 UAH", FactValue(explanation.AfterFacts, "Amount"));
+        Assert.Equal("500.00 UAH", FactValue(explanation.AfterFacts, "Amount"));
         Assert.Equal("Canceled", FactValue(explanation.AfterFacts, "Status"));
         Assert.Equal("Payment status", explanation.ChangedFields);
     }
@@ -686,7 +745,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var membershipTypeId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership.issued",
                     AuditTimelineEntityType.Membership,
@@ -727,15 +786,15 @@ public sealed class AuditEntryExplanationViewModelTests
             FactValue(explanation.AfterFacts, "Type snapshot"));
         Assert.Equal("30 days", FactValue(explanation.AfterFacts, "Duration"));
         Assert.Equal("8", FactValue(explanation.AfterFacts, "Visit limit"));
-        Assert.Equal("1200 UAH", FactValue(explanation.AfterFacts, "Snapshot price"));
-        Assert.Equal("2026-08-01", FactValue(explanation.AfterFacts, "Start date"));
-        Assert.Equal("2026-08-30", FactValue(explanation.AfterFacts, "Base end date"));
+        Assert.Equal("1,200.00 UAH", FactValue(explanation.AfterFacts, "Snapshot price"));
+        Assert.Equal("8/1/2026", FactValue(explanation.AfterFacts, "Start date"));
+        Assert.Equal("8/30/2026", FactValue(explanation.AfterFacts, "Base end date"));
         Assert.Equal("Active", FactValue(explanation.AfterFacts, "Status"));
         Assert.Equal(
             "8",
             FactValue(explanation.AfterFacts, "Initial remaining visits"));
         Assert.Equal(
-            "2026-08-30",
+            "8/30/2026",
             FactValue(explanation.AfterFacts, "Initial effective end date"));
         Assert.Equal(
             "Not required",
@@ -754,7 +813,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var paymentId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership.issued",
                     AuditTimelineEntityType.Membership,
@@ -792,12 +851,12 @@ public sealed class AuditEntryExplanationViewModelTests
             "2",
             FactValue(explanation.BeforeFacts, "Existing negative balance"));
         Assert.Equal(
-            "2026-07-29",
+            "7/29/2026",
             FactValue(explanation.BeforeFacts, "First negative visit date"));
         Assert.Equal(
             "Existing negative balance left visible",
             FactValue(explanation.AfterFacts, "Negative handling"));
-        Assert.Equal("1200 UAH / Cash", FactValue(explanation.AfterFacts, "Payment"));
+        Assert.Equal("1,200.00 UAH / Cash", FactValue(explanation.AfterFacts, "Payment"));
         Assert.Equal(
             paymentId.ToString("N")[..8],
             FactValue(explanation.AfterFacts, "Payment record"));
@@ -810,7 +869,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var membershipTypeId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership.issued",
                     AuditTimelineEntityType.Membership,
@@ -839,7 +898,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var membershipTypeId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership.issued",
                     AuditTimelineEntityType.Membership,
@@ -871,7 +930,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var membershipTypeId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership.issued",
                     AuditTimelineEntityType.Membership,
@@ -911,7 +970,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var paymentId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership.issued",
                     AuditTimelineEntityType.Membership,
@@ -967,7 +1026,7 @@ public sealed class AuditEntryExplanationViewModelTests
             recalculatedExtensionDays: 4);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_opening_state.created",
                     AuditTimelineEntityType.MembershipOpeningState,
@@ -996,10 +1055,10 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal(
             clientId.ToString("N")[..8],
             FactValue(explanation.AfterFacts, "Client"));
-        Assert.Equal("2026-07-13", FactValue(explanation.AfterFacts, "Opening as of"));
+        Assert.Equal("7/13/2026", FactValue(explanation.AfterFacts, "Opening as of"));
         Assert.Equal("-2", FactValue(explanation.AfterFacts, "Declared remaining visits"));
         Assert.Equal("2", FactValue(explanation.AfterFacts, "Declared negative balance"));
-        Assert.Equal("2026-08-03", FactValue(explanation.AfterFacts, "Known effective end"));
+        Assert.Equal("8/3/2026", FactValue(explanation.AfterFacts, "Known effective end"));
         Assert.Equal("4 days", FactValue(explanation.AfterFacts, "Known extension"));
         Assert.Equal(
             entryBatchId.ToString("N")[..8],
@@ -1036,7 +1095,7 @@ public sealed class AuditEntryExplanationViewModelTests
             recalculatedExtensionDays: 0);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_opening_state.created",
                     AuditTimelineEntityType.MembershipOpeningState,
@@ -1083,7 +1142,7 @@ public sealed class AuditEntryExplanationViewModelTests
             recalculatedExtensionDays: 0);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_opening_state.created",
                     AuditTimelineEntityType.MembershipOpeningState,
@@ -1124,7 +1183,7 @@ public sealed class AuditEntryExplanationViewModelTests
             recalculatedExtensionDays: 0);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_opening_state.created",
                     AuditTimelineEntityType.MembershipOpeningState,
@@ -1165,7 +1224,7 @@ public sealed class AuditEntryExplanationViewModelTests
             recalculatedExtensionDays: 0);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_opening_state.created",
                     AuditTimelineEntityType.MembershipOpeningState,
@@ -1187,7 +1246,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void MembershipOpeningStateCreationWithPreExistingSummaryFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_opening_state.created",
                     AuditTimelineEntityType.MembershipOpeningState,
@@ -1223,7 +1282,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_type.edited",
                     AuditTimelineEntityType.MembershipType,
@@ -1237,10 +1296,10 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Updated catalog", explanation.AfterLabel);
         Assert.Equal("Eight visits", FactValue(explanation.BeforeFacts, "Name"));
         Assert.Equal("30 days", FactValue(explanation.BeforeFacts, "Duration"));
-        Assert.Equal("1200 UAH", FactValue(explanation.BeforeFacts, "Price"));
+        Assert.Equal("1,200.00 UAH", FactValue(explanation.BeforeFacts, "Price"));
         Assert.Equal("Evening Twelve", FactValue(explanation.AfterFacts, "Name"));
         Assert.Equal("45 days", FactValue(explanation.AfterFacts, "Duration"));
-        Assert.Equal("1600.5 UAH", FactValue(explanation.AfterFacts, "Price"));
+        Assert.Equal("1,600.50 UAH", FactValue(explanation.AfterFacts, "Price"));
         Assert.Equal("Active", FactValue(explanation.AfterFacts, "Status"));
         Assert.Equal(
             "Name, Duration, Visit limit, Price, Catalog comment",
@@ -1264,7 +1323,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_type.created",
                     AuditTimelineEntityType.MembershipType,
@@ -1283,13 +1342,13 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Morning Eight", FactValue(explanation.AfterFacts, "Name"));
         Assert.Equal("30 days", FactValue(explanation.AfterFacts, "Duration"));
         Assert.Equal("8", FactValue(explanation.AfterFacts, "Visit limit"));
-        Assert.Equal("1200.5 UAH", FactValue(explanation.AfterFacts, "Price"));
+        Assert.Equal("1,200.50 UAH", FactValue(explanation.AfterFacts, "Price"));
         Assert.Equal("Active", FactValue(explanation.AfterFacts, "Status"));
         Assert.Equal(
             "Before noon only",
             FactValue(explanation.AfterFacts, "Catalog comment"));
         Assert.Equal(
-            $"{createdAt:yyyy-MM-dd HH:mm:ss} UTC",
+            "7/18/2026 9:05\u202fAM UTC",
             FactValue(explanation.AfterFacts, "Created"));
         Assert.Equal("Membership type catalog", explanation.ChangedFields);
         Assert.Contains("already issued Membership snapshots", explanation.Narrative);
@@ -1313,7 +1372,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_type.created",
                     AuditTimelineEntityType.MembershipType,
@@ -1325,7 +1384,7 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.True(explanation.IsAvailable);
         Assert.Equal("Inactive", FactValue(explanation.AfterFacts, "Status"));
         Assert.Equal(
-            $"{createdAt:yyyy-MM-dd HH:mm:ss} UTC",
+            "7/18/2026 9:05\u202fAM UTC",
             FactValue(explanation.AfterFacts, "Deactivated"));
     }
 
@@ -1333,7 +1392,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void MembershipTypeCreationWithExistingBeforeStateFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_type.created",
                     AuditTimelineEntityType.MembershipType,
@@ -1350,7 +1409,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void MembershipTypeCreationWithRelatedRecordsFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_type.created",
                     AuditTimelineEntityType.MembershipType,
@@ -1378,7 +1437,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_type.created",
                     AuditTimelineEntityType.MembershipType,
@@ -1410,7 +1469,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_type.deactivated",
                     AuditTimelineEntityType.MembershipType,
@@ -1447,7 +1506,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "membership_type.edited",
                     AuditTimelineEntityType.MembershipType,
@@ -1465,7 +1524,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAdditionAudit();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.added",
                     AuditTimelineEntityType.NonWorkingPeriod,
@@ -1481,10 +1540,10 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("scope-123456", FactValue(explanation.BeforeFacts, "Preview scope"));
         Assert.Equal("2", FactValue(explanation.BeforeFacts, "Affected memberships"));
         Assert.Equal(
-            "2026-01-30 to 2026-02-02",
+            "1/30/2026 to 2/2/2026",
             FactValue(explanation.AfterFacts, "Period"));
-        Assert.Equal("4", FactValue(explanation.AfterFacts, "Inclusive days"));
-        Assert.Equal("Weather Closure", FactValue(explanation.AfterFacts, "Reason code"));
+        Assert.Equal("4 days", FactValue(explanation.AfterFacts, "Inclusive days"));
+        Assert.Equal("weather_closure", FactValue(explanation.AfterFacts, "Reason code"));
         Assert.Equal("Snow closure", FactValue(explanation.AfterFacts, "Reason comment"));
         Assert.Equal("2", FactValue(explanation.AfterFacts, "Affected memberships"));
         Assert.Contains(
@@ -1505,7 +1564,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAdditionAudit(affectedCount: 0);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.added",
                     AuditTimelineEntityType.NonWorkingPeriod,
@@ -1528,7 +1587,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAdditionAudit(mismatchRelatedMembership: true);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.added",
                     AuditTimelineEntityType.NonWorkingPeriod,
@@ -1547,7 +1606,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAdditionAudit(previewCountDelta: 1);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.added",
                     AuditTimelineEntityType.NonWorkingPeriod,
@@ -1566,7 +1625,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAdditionAudit(mismatchApplicationRange: true);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.added",
                     AuditTimelineEntityType.NonWorkingPeriod,
@@ -1585,7 +1644,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAdditionAudit(recalculationSucceededCountDelta: -1);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.added",
                     AuditTimelineEntityType.NonWorkingPeriod,
@@ -1604,7 +1663,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAdditionAudit(expiredPreview: true);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.added",
                     AuditTimelineEntityType.NonWorkingPeriod,
@@ -1623,32 +1682,35 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAudit(replaceReason: false);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.corrected",
                     AuditTimelineEntityType.NonWorkingPeriod,
                     fixture.PeriodId,
                     fixture.Before,
-                    fixture.CorrectedAfter)));
+                    fixture.CorrectedAfter,
+                    related: fixture.CorrectedRelated)));
 
         Assert.True(explanation.IsAvailable);
         Assert.Equal("non-working-day-corrected", explanation.Kind);
         Assert.Equal("Original period", explanation.BeforeLabel);
         Assert.Equal("Replacement period", explanation.AfterLabel);
         Assert.Equal(
-            "2026-01-30 to 2026-02-02",
+            "1/30/2026 to 2/2/2026",
             FactValue(explanation.BeforeFacts, "Period"));
-        Assert.Equal("Weather Closure", FactValue(explanation.BeforeFacts, "Reason code"));
+        Assert.Equal("weather_closure", FactValue(explanation.BeforeFacts, "Reason code"));
         Assert.Equal("2", FactValue(explanation.BeforeFacts, "Affected memberships"));
+        Assert.Equal(fixture.OldApplicationDetails, FactValue(explanation.BeforeFacts, "Application details"));
         Assert.Equal(
             "Date range replaced",
             FactValue(explanation.AfterFacts, "Correction type"));
         Assert.Equal("Corrected", FactValue(explanation.AfterFacts, "Original status"));
         Assert.Equal(
-            "2026-02-03 to 2026-02-04",
+            "2/3/2026 to 2/4/2026",
             FactValue(explanation.AfterFacts, "Period"));
-        Assert.Equal("Maintenance", FactValue(explanation.AfterFacts, "Reason code"));
+        Assert.Equal("maintenance", FactValue(explanation.AfterFacts, "Reason code"));
         Assert.Equal("3", FactValue(explanation.AfterFacts, "Affected memberships"));
+        Assert.Equal(fixture.NewApplicationDetails, FactValue(explanation.AfterFacts, "Application details"));
         Assert.Equal("3 of 3", FactValue(explanation.AfterFacts, "Recalculated memberships"));
         Assert.Equal("Date range, Reason, Affected scope", explanation.ChangedFields);
     }
@@ -1659,13 +1721,14 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAudit(replaceReason: true);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.corrected",
                     AuditTimelineEntityType.NonWorkingPeriod,
                     fixture.PeriodId,
                     fixture.Before,
-                    fixture.CorrectedAfter)));
+                    fixture.CorrectedAfter,
+                    related: fixture.CorrectedRelated)));
 
         Assert.True(explanation.IsAvailable);
         Assert.Equal(
@@ -1674,7 +1737,7 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal(
             FactValue(explanation.BeforeFacts, "Period"),
             FactValue(explanation.AfterFacts, "Period"));
-        Assert.Equal("Corrected Weather", FactValue(explanation.AfterFacts, "Reason code"));
+        Assert.Equal("corrected_weather", FactValue(explanation.AfterFacts, "Reason code"));
         Assert.Equal("2", FactValue(explanation.AfterFacts, "Affected memberships"));
         Assert.Equal("Reason", explanation.ChangedFields);
     }
@@ -1685,24 +1748,117 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = NonWorkingDayAudit(replaceReason: false);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.canceled",
                     AuditTimelineEntityType.NonWorkingPeriod,
                     fixture.PeriodId,
                     fixture.CanceledBefore,
-                    fixture.CanceledAfter)));
+                    fixture.CanceledAfter,
+                    related: fixture.CanceledRelated)));
 
         Assert.True(explanation.IsAvailable);
         Assert.Equal("non-working-day-canceled", explanation.Kind);
         Assert.Equal("Original period", explanation.BeforeLabel);
         Assert.Equal("After cancellation", explanation.AfterLabel);
         Assert.Equal("2", FactValue(explanation.BeforeFacts, "Affected memberships"));
+        Assert.Equal(fixture.OldApplicationDetails, FactValue(explanation.BeforeFacts, "Application details"));
         Assert.Equal("Preserved", FactValue(explanation.AfterFacts, "Original fact"));
         Assert.Equal("Canceled", FactValue(explanation.AfterFacts, "Status"));
         Assert.Equal("0", FactValue(explanation.AfterFacts, "Active applications"));
         Assert.Equal("2 of 2", FactValue(explanation.AfterFacts, "Recalculated memberships"));
         Assert.Equal("Period status, Active affected scope", explanation.ChangedFields);
+    }
+
+    [Theory]
+    [InlineData("non_working_day.added", "Неробочий період і зачеплений обсяг зафіксовано")]
+    [InlineData("non_working_day.corrected", "Початковий неробочий період збережено; заміну додано")]
+    [InlineData("non_working_day.canceled", "Початковий неробочий період збережено; скасування додано")]
+    public void NonWorkingDayAuditActionsUseTheActiveUkrainianCultureAtReadTime(
+        string actionType,
+        string expectedTitle)
+    {
+        var fixture = NonWorkingDayAudit(replaceReason: false);
+        var addition = NonWorkingDayAdditionAudit();
+        var entry = actionType switch
+        {
+            "non_working_day.added" => Entry(
+                actionType,
+                AuditTimelineEntityType.NonWorkingPeriod,
+                addition.PeriodId,
+                addition.Before,
+                addition.After,
+                related: addition.Related),
+            "non_working_day.corrected" => Entry(
+                actionType,
+                AuditTimelineEntityType.NonWorkingPeriod,
+                fixture.PeriodId,
+                fixture.Before,
+                fixture.CorrectedAfter,
+                related: fixture.CorrectedRelated),
+            "non_working_day.canceled" => Entry(
+                actionType,
+                AuditTimelineEntityType.NonWorkingPeriod,
+                fixture.PeriodId,
+                fixture.CanceledBefore,
+                fixture.CanceledAfter,
+                related: fixture.CanceledRelated),
+            _ => throw new InvalidOperationException(),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry, WebCultures.Ukrainian));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(expectedTitle, explanation.Title);
+        Assert.DoesNotContain(explanation.BeforeFacts.Concat(explanation.AfterFacts),
+            fact => fact.Label is "Period" or "Status" or "Reason code");
+    }
+
+    [Fact]
+    public void NonWorkingDayAuditPreservesRawReasonCodeThatMatchesAControlledEnglishWord()
+    {
+        var fixture = NonWorkingDayAdditionAudit();
+        var before = Serialize(fixture.Before).Replace("weather_closure", "Active", StringComparison.Ordinal);
+        var after = Serialize(fixture.After).Replace("weather_closure", "Active", StringComparison.Ordinal);
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "non_working_day.added",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    before,
+                    after,
+                    serialize: false,
+                    related: fixture.Related),
+                WebCultures.Ukrainian));
+
+        Assert.Equal("Active", FactValue(explanation.AfterFacts, "Код причини"));
+        Assert.Equal("Активний", FactValue(explanation.AfterFacts, "Статус"));
+    }
+
+    [Fact]
+    public void NonWorkingDayAuditUnknownCorrectionModeFailsClosed()
+    {
+        var fixture = NonWorkingDayAudit(replaceReason: false);
+        var after = Serialize(fixture.CorrectedAfter).Replace(
+            "replace_range",
+            "unknown_mode",
+            StringComparison.Ordinal);
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "non_working_day.corrected",
+                    AuditTimelineEntityType.NonWorkingPeriod,
+                    fixture.PeriodId,
+                    Serialize(fixture.Before),
+                    after,
+                    serialize: false,
+                    related: fixture.CorrectedRelated),
+                WebCultures.Ukrainian));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Читабельний підсумок зміни недоступний", explanation.Title);
     }
 
     [Fact]
@@ -1713,13 +1869,86 @@ public sealed class AuditEntryExplanationViewModelTests
             correctionSucceededCountDelta: -1);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "non_working_day.corrected",
                     AuditTimelineEntityType.NonWorkingPeriod,
                     fixture.PeriodId,
                     fixture.Before,
-                    fixture.CorrectedAfter)));
+                    fixture.CorrectedAfter,
+                    related: fixture.CorrectedRelated)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Theory]
+    [InlineData("non_working_day.corrected")]
+    [InlineData("non_working_day.canceled")]
+    public void NonWorkingDayCorrectionRelatedScopeMismatchFailsClosed(string actionType)
+    {
+        var fixture = NonWorkingDayAudit(replaceReason: false, mismatchRelatedScope: true);
+        var (before, after, related) = actionType == "non_working_day.corrected"
+            ? (fixture.Before, fixture.CorrectedAfter, fixture.CorrectedRelated)
+            : (fixture.CanceledBefore, fixture.CanceledAfter, fixture.CanceledRelated);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(Entry(
+                actionType,
+                AuditTimelineEntityType.NonWorkingPeriod,
+                fixture.PeriodId,
+                before,
+                after,
+                related: related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Theory]
+    [InlineData("non_working_day.corrected")]
+    [InlineData("non_working_day.canceled")]
+    public void NonWorkingDayCorrectionUnorderedRelatedScopeFailsClosed(
+        string actionType)
+    {
+        var fixture = NonWorkingDayAudit(
+            replaceReason: false,
+            reverseRelatedScope: true);
+        var (before, after, related) = actionType == "non_working_day.corrected"
+            ? (fixture.Before, fixture.CorrectedAfter, fixture.CorrectedRelated)
+            : (fixture.CanceledBefore, fixture.CanceledAfter, fixture.CanceledRelated);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(Entry(
+                actionType,
+                AuditTimelineEntityType.NonWorkingPeriod,
+                fixture.PeriodId,
+                before,
+                after,
+                related: related)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Theory]
+    [InlineData("non_working_day.corrected")]
+    [InlineData("non_working_day.canceled")]
+    public void NonWorkingDayCorrectionExpiredPreviewFailsClosed(string actionType)
+    {
+        var fixture = NonWorkingDayAudit(replaceReason: false, expiredPreview: true);
+        var (before, after, related) = actionType == "non_working_day.corrected"
+            ? (fixture.Before, fixture.CorrectedAfter, fixture.CorrectedRelated)
+            : (fixture.CanceledBefore, fixture.CanceledAfter, fixture.CanceledRelated);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(Entry(
+                actionType,
+                AuditTimelineEntityType.NonWorkingPeriod,
+                fixture.PeriodId,
+                before,
+                after,
+                related: related)));
 
         Assert.False(explanation.IsAvailable);
         Assert.Equal("Readable change summary unavailable", explanation.Title);
@@ -1731,7 +1960,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = FreezeCancellationAudit(membershipStateChanges: true);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "freeze.canceled",
                     AuditTimelineEntityType.Freeze,
@@ -1744,17 +1973,17 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Original freeze", explanation.BeforeLabel);
         Assert.Equal("After cancellation", explanation.AfterLabel);
         Assert.Equal(
-            "2026-02-10 to 2026-02-12",
+            "2/10/2026 to 2/12/2026",
             FactValue(explanation.BeforeFacts, "Period"));
-        Assert.Equal("3", FactValue(explanation.BeforeFacts, "Inclusive days"));
+        Assert.Equal("3 days", FactValue(explanation.BeforeFacts, "Inclusive days"));
         Assert.Equal("Medical recovery", FactValue(explanation.BeforeFacts, "Freeze reason"));
         Assert.Equal("Active", FactValue(explanation.BeforeFacts, "Status"));
-        Assert.Equal("5", FactValue(explanation.BeforeFacts, "Extension days"));
-        Assert.Equal("2026-03-05", FactValue(explanation.BeforeFacts, "Effective end"));
+        Assert.Equal("5 days", FactValue(explanation.BeforeFacts, "Extension days"));
+        Assert.Equal("3/5/2026", FactValue(explanation.BeforeFacts, "Effective end"));
         Assert.Equal("Preserved", FactValue(explanation.AfterFacts, "Original fact"));
         Assert.Equal("Canceled", FactValue(explanation.AfterFacts, "Status"));
-        Assert.Equal("2", FactValue(explanation.AfterFacts, "Extension days"));
-        Assert.Equal("2026-03-02", FactValue(explanation.AfterFacts, "Effective end"));
+        Assert.Equal("2 days", FactValue(explanation.AfterFacts, "Extension days"));
+        Assert.Equal("3/2/2026", FactValue(explanation.AfterFacts, "Effective end"));
         Assert.Equal(
             "Freeze status, Membership extension state",
             explanation.ChangedFields);
@@ -1766,7 +1995,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = FreezeAdditionAudit(membershipStateChanges: true);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "freeze.added",
                     AuditTimelineEntityType.Freeze,
@@ -1779,8 +2008,8 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("freeze-added", explanation.Kind);
         Assert.Equal("Freeze source recorded", explanation.Title);
         Assert.Equal("Not present", FactValue(explanation.BeforeFacts, "Freeze"));
-        Assert.Equal("5", FactValue(explanation.BeforeFacts, "Extension days"));
-        Assert.Equal("2026-03-05", FactValue(explanation.BeforeFacts, "Effective end"));
+        Assert.Equal("5 days", FactValue(explanation.BeforeFacts, "Extension days"));
+        Assert.Equal("3/5/2026", FactValue(explanation.BeforeFacts, "Effective end"));
         Assert.Equal(
             fixture.FreezeId.ToString("N")[..8],
             FactValue(explanation.AfterFacts, "Freeze"));
@@ -1790,14 +2019,14 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal(
             fixture.MembershipId.ToString("N")[..8],
             FactValue(explanation.AfterFacts, "Membership"));
-        Assert.Equal("2026-02-10 to 2026-02-12", FactValue(explanation.AfterFacts, "Period"));
-        Assert.Equal("3", FactValue(explanation.AfterFacts, "Inclusive days"));
+        Assert.Equal("2/10/2026 to 2/12/2026", FactValue(explanation.AfterFacts, "Period"));
+        Assert.Equal("3 days", FactValue(explanation.AfterFacts, "Inclusive days"));
         Assert.Equal("Correction reason", FactValue(explanation.AfterFacts, "Freeze reason"));
         Assert.Equal("Normal entry", FactValue(explanation.AfterFacts, "Entry origin"));
         Assert.Equal("None", FactValue(explanation.AfterFacts, "Entry batch"));
         Assert.Equal("Active", FactValue(explanation.AfterFacts, "Source status"));
-        Assert.Equal("8", FactValue(explanation.AfterFacts, "Extension days"));
-        Assert.Equal("2026-03-08", FactValue(explanation.AfterFacts, "Effective end"));
+        Assert.Equal("8 days", FactValue(explanation.AfterFacts, "Extension days"));
+        Assert.Equal("3/8/2026", FactValue(explanation.AfterFacts, "Effective end"));
         Assert.Equal(
             "Freeze source, Membership extension state",
             explanation.ChangedFields);
@@ -1810,7 +2039,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = FreezeAdditionAudit(membershipStateChanges: false);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "freeze.added",
                     AuditTimelineEntityType.Freeze,
@@ -1836,7 +2065,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = FreezeAdditionAudit(membershipStateChanges: true);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "freeze.added",
                     AuditTimelineEntityType.Freeze,
@@ -1861,7 +2090,7 @@ public sealed class AuditEntryExplanationViewModelTests
             decreaseAfterMembership: true);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "freeze.added",
                     AuditTimelineEntityType.Freeze,
@@ -1882,7 +2111,7 @@ public sealed class AuditEntryExplanationViewModelTests
             inclusiveDays: 2);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "freeze.added",
                     AuditTimelineEntityType.Freeze,
@@ -1903,7 +2132,7 @@ public sealed class AuditEntryExplanationViewModelTests
             sourceReason: "Different source reason");
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "freeze.added",
                     AuditTimelineEntityType.Freeze,
@@ -1922,7 +2151,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var fixture = FreezeCancellationAudit(membershipStateChanges: false);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "freeze.canceled",
                     AuditTimelineEntityType.Freeze,
@@ -1949,7 +2178,7 @@ public sealed class AuditEntryExplanationViewModelTests
             mismatchAfterMembership: true);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "freeze.canceled",
                     AuditTimelineEntityType.Freeze,
@@ -1995,7 +2224,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "client.created",
                     AuditTimelineEntityType.Client,
@@ -2037,7 +2266,7 @@ public sealed class AuditEntryExplanationViewModelTests
     {
         var clientId = Guid.NewGuid();
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "client.created",
                     AuditTimelineEntityType.Client,
@@ -2076,7 +2305,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void ClientCreationWithMismatchedCardReferenceFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "client.created",
                     AuditTimelineEntityType.Client,
@@ -2109,7 +2338,7 @@ public sealed class AuditEntryExplanationViewModelTests
     {
         var matchedClientId = Guid.NewGuid();
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "client.created",
                     AuditTimelineEntityType.Client,
@@ -2149,7 +2378,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void ClientCreationWithPreExistingSummaryFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "client.created",
                     AuditTimelineEntityType.Client,
@@ -2202,7 +2431,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "client.updated",
                     AuditTimelineEntityType.Client,
@@ -2265,7 +2494,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "client.updated",
                     AuditTimelineEntityType.Client,
@@ -2318,7 +2547,7 @@ public sealed class AuditEntryExplanationViewModelTests
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "client.updated",
                     AuditTimelineEntityType.Client,
@@ -2345,7 +2574,7 @@ public sealed class AuditEntryExplanationViewModelTests
             OriginalOccurredAt);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "card.assigned",
                     AuditTimelineEntityType.Client,
@@ -2386,7 +2615,7 @@ public sealed class AuditEntryExplanationViewModelTests
             OriginalOccurredAt);
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "card.changed",
                     AuditTimelineEntityType.Client,
@@ -2417,7 +2646,7 @@ public sealed class AuditEntryExplanationViewModelTests
             OriginalOccurredAt.AddDays(-1));
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "card.cleared",
                     AuditTimelineEntityType.Client,
@@ -2440,13 +2669,237 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Current card", explanation.ChangedFields);
     }
 
+    [Theory]
+    [InlineData("client.created", "Профіль клієнта створено")]
+    [InlineData("client.updated", "Профіль клієнта оновлено")]
+    [InlineData("card.assigned", "Картку призначено клієнту")]
+    [InlineData("card.changed", "Поточну картку замінено")]
+    [InlineData("card.cleared", "Поточну картку очищено")]
+    public void ClientAuditActionsUseTheActiveCultureAtReadTime(
+        string actionType,
+        string expectedTitle)
+    {
+        var clientId = Guid.NewGuid();
+        var original = CardAssignment("CARD-01", "CARD01", OriginalOccurredAt.AddDays(-1));
+        var current = CardAssignment("CARD-02", "CARD02", OriginalOccurredAt);
+        var entry = actionType switch
+        {
+            "client.created" => Entry(
+                actionType,
+                AuditTimelineEntityType.Client,
+                clientId,
+                new { },
+                new
+                {
+                    Surname = "Raw",
+                    Name = "None",
+                    Patronymic = (string?)null,
+                    Phone = "Active",
+                    OperationalStatus = "active",
+                    Comment = "Inactive",
+                    CardNumber = "None",
+                    DuplicateWarningAcknowledgements = Array.Empty<object>(),
+                },
+                related: new
+                {
+                    CardAssignmentId = (Guid?)Guid.NewGuid(),
+                    DuplicateWarningAcknowledgementIds = Array.Empty<Guid>(),
+                    MatchedClientIds = Array.Empty<Guid>(),
+                }),
+            "client.updated" => Entry(
+                actionType,
+                AuditTimelineEntityType.Client,
+                clientId,
+                ClientIdentity("Raw", "None", null, "Active", "active", "Inactive", OriginalOccurredAt.AddDays(-1)),
+                new
+                {
+                    Surname = "Raw",
+                    Name = "None",
+                    Patronymic = (string?)null,
+                    Phone = "Active",
+                    OperationalStatus = "inactive",
+                    Comment = "Inactive",
+                    UpdatedAt = OriginalOccurredAt,
+                    DuplicateWarningAcknowledgements = Array.Empty<object>(),
+                },
+                related: new
+                {
+                    DuplicateWarningAcknowledgementIds = Array.Empty<Guid>(),
+                    MatchedClientIds = Array.Empty<Guid>(),
+                }),
+            "card.assigned" => Entry(actionType, AuditTimelineEntityType.Client, clientId, new { }, current, related: new
+            {
+                PreviousCardAssignmentId = (Guid?)null,
+                CurrentCardAssignmentId = (Guid?)current.Id,
+            }),
+            "card.changed" => Entry(actionType, AuditTimelineEntityType.Client, clientId, original, current, related: new
+            {
+                PreviousCardAssignmentId = (Guid?)original.Id,
+                CurrentCardAssignmentId = (Guid?)current.Id,
+            }),
+            "card.cleared" => Entry(actionType, AuditTimelineEntityType.Client, clientId, original, new { }, related: new
+            {
+                PreviousCardAssignmentId = (Guid?)original.Id,
+                CurrentCardAssignmentId = (Guid?)null,
+            }),
+            _ => throw new InvalidOperationException(),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry, WebCultures.Ukrainian));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(expectedTitle, explanation.Title);
+        Assert.DoesNotContain(explanation.BeforeFacts.Concat(explanation.AfterFacts), fact =>
+            fact.Label is "Name" or "Phone" or "Current card" or "Card number");
+    }
+
+    [Fact]
+    public void ClientAuditDoesNotTranslateRawValuesThatMatchControlledEnglishWords()
+    {
+        var clientId = Guid.NewGuid();
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "client.created",
+                    AuditTimelineEntityType.Client,
+                    clientId,
+                    new { },
+                    new
+                    {
+                        Surname = "None",
+                        Name = "Active",
+                        Patronymic = "Inactive",
+                        Phone = "None",
+                        OperationalStatus = "active",
+                        Comment = "Duplicate phone",
+                        CardNumber = "None",
+                        DuplicateWarningAcknowledgements = Array.Empty<object>(),
+                    },
+                    related: new
+                    {
+                        CardAssignmentId = (Guid?)Guid.NewGuid(),
+                        DuplicateWarningAcknowledgementIds = Array.Empty<Guid>(),
+                        MatchedClientIds = Array.Empty<Guid>(),
+                    }),
+                WebCultures.Ukrainian));
+
+        Assert.Equal("None Active Inactive", FactValue(explanation.AfterFacts, "Повне ім’я"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Телефон"));
+        Assert.Equal("Duplicate phone", FactValue(explanation.AfterFacts, "Коментар"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Поточна картка"));
+        Assert.Equal("Активний", FactValue(explanation.AfterFacts, "Операційний статус"));
+    }
+
+    [Fact]
+    public void ClientAuditUnknownControlledWarningCodeFailsClosed()
+    {
+        var matchedClientId = Guid.NewGuid();
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "client.created",
+                    AuditTimelineEntityType.Client,
+                    Guid.NewGuid(),
+                    new { },
+                    new
+                    {
+                        Surname = "Raw",
+                        Name = "Data",
+                        Patronymic = (string?)null,
+                        Phone = (string?)null,
+                        OperationalStatus = "active",
+                        Comment = (string?)null,
+                        CardNumber = (string?)null,
+                        DuplicateWarningAcknowledgements = new[]
+                        {
+                            new { WarningType = "unknown_warning", MatchedClientId = matchedClientId, Reason = "Raw" },
+                        },
+                    },
+                    related: new
+                    {
+                        CardAssignmentId = (Guid?)null,
+                        DuplicateWarningAcknowledgementIds = new[] { Guid.NewGuid() },
+                        MatchedClientIds = new[] { matchedClientId },
+                    }),
+                WebCultures.Ukrainian));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Читабельний підсумок зміни недоступний", explanation.Title);
+    }
+
+    [Theory]
+    [InlineData("client.created")]
+    [InlineData("client.updated")]
+    public void ClientAuditUnknownOperationalStatusFailsClosed(string actionType)
+    {
+        var clientId = Guid.NewGuid();
+        var entry = actionType == "client.created"
+            ? Entry(
+                actionType,
+                AuditTimelineEntityType.Client,
+                clientId,
+                new { },
+                new
+                {
+                    Surname = "Raw",
+                    Name = "Data",
+                    Patronymic = (string?)null,
+                    Phone = (string?)null,
+                    OperationalStatus = "unknown_status",
+                    Comment = (string?)null,
+                    CardNumber = (string?)null,
+                    DuplicateWarningAcknowledgements = Array.Empty<object>(),
+                },
+                related: new
+                {
+                    CardAssignmentId = (Guid?)null,
+                    DuplicateWarningAcknowledgementIds = Array.Empty<Guid>(),
+                    MatchedClientIds = Array.Empty<Guid>(),
+                })
+            : Entry(
+                actionType,
+                AuditTimelineEntityType.Client,
+                clientId,
+                ClientIdentity(
+                    "Raw",
+                    "Data",
+                    null,
+                    null,
+                    "active",
+                    null,
+                    OriginalOccurredAt.AddDays(-1)),
+                new
+                {
+                    Surname = "Raw",
+                    Name = "Data",
+                    Patronymic = (string?)null,
+                    Phone = (string?)null,
+                    OperationalStatus = "unknown_status",
+                    Comment = (string?)null,
+                    UpdatedAt = OriginalOccurredAt,
+                    DuplicateWarningAcknowledgements = Array.Empty<object>(),
+                },
+                related: new
+                {
+                    DuplicateWarningAcknowledgementIds = Array.Empty<Guid>(),
+                    MatchedClientIds = Array.Empty<Guid>(),
+                });
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry, WebCultures.Ukrainian));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Читабельний підсумок зміни недоступний", explanation.Title);
+    }
+
     [Fact]
     public void StaffDisplayNameUpdateShowsStoredBeforeAndAfterProfiles()
     {
         var accountId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_account.display_name_updated",
                     AuditTimelineEntityType.StaffAccount,
@@ -2476,7 +2929,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var accountId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_account.created",
                     AuditTimelineEntityType.StaffAccount,
@@ -2516,7 +2969,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void StaffAccountCreationMapsSharedReceptionAdminAccountType()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_account.created",
                     AuditTimelineEntityType.StaffAccount,
@@ -2546,7 +2999,7 @@ public sealed class AuditEntryExplanationViewModelTests
         bool isActive)
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_account.created",
                     AuditTimelineEntityType.StaffAccount,
@@ -2568,7 +3021,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void StaffAccountCreationWithNonEmptyBeforeSummaryFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_account.created",
                     AuditTimelineEntityType.StaffAccount,
@@ -2592,7 +3045,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var accountId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_account.display_name_updated",
                     AuditTimelineEntityType.StaffAccount,
@@ -2611,7 +3064,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var accountId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_account.activated",
                     AuditTimelineEntityType.StaffAccount,
@@ -2641,7 +3094,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var accountId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_account.deactivated",
                     AuditTimelineEntityType.StaffAccount,
@@ -2666,7 +3119,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void StaffDeactivationWithoutRequiredReasonFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_account.deactivated",
                     AuditTimelineEntityType.StaffAccount,
@@ -2689,7 +3142,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var accountId = Guid.NewGuid();
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_credentials.configured",
                     AuditTimelineEntityType.StaffAccount,
@@ -2727,7 +3180,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void StaffCredentialConfigurationCanShowEndedSessionImpact()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_credentials.configured",
                     AuditTimelineEntityType.StaffAccount,
@@ -2748,7 +3201,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void StaffCredentialResetShowsReplacementAndEndedSessions()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_credentials.reset",
                     AuditTimelineEntityType.StaffAccount,
@@ -2777,7 +3230,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void StaffCredentialResetWithoutRequiredReasonFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_credentials.reset",
                     AuditTimelineEntityType.StaffAccount,
@@ -2798,7 +3251,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void StaffCredentialSummaryWithNegativeSessionCountFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "staff_credentials.configured",
                     AuditTimelineEntityType.StaffAccount,
@@ -2812,6 +3265,184 @@ public sealed class AuditEntryExplanationViewModelTests
 
         Assert.False(explanation.IsAvailable);
         Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Theory]
+    [InlineData("staff_account.created", "Обліковий запис працівника створено")]
+    [InlineData("staff_account.display_name_updated", "Відображуване ім’я працівника оновлено")]
+    [InlineData("staff_account.activated", "Обліковий запис працівника активовано")]
+    [InlineData("staff_account.deactivated", "Обліковий запис працівника деактивовано")]
+    [InlineData("staff_credentials.configured", "Облікові дані працівника налаштовано")]
+    [InlineData("staff_credentials.reset", "Облікові дані працівника скинуто")]
+    public void StaffAuditActionsUseTheActiveUkrainianCultureAtReadTime(
+        string actionType,
+        string expectedTitle)
+    {
+        var accountId = Guid.NewGuid();
+        var entry = actionType switch
+        {
+            "staff_account.created" => Entry(actionType, AuditTimelineEntityType.StaffAccount, accountId, new { }, new
+            {
+                DisplayName = "Active",
+                AccountType = "named_admin",
+                Role = "admin",
+                IsActive = true,
+            }),
+            "staff_account.display_name_updated" => Entry(actionType, AuditTimelineEntityType.StaffAccount, accountId,
+                new { DisplayName = "None" }, new { DisplayName = "Active" }),
+            "staff_account.activated" => Entry(actionType, AuditTimelineEntityType.StaffAccount, accountId,
+                new { IsActive = false }, new { IsActive = true, EndedSessionCount = 0 }),
+            "staff_account.deactivated" => Entry(actionType, AuditTimelineEntityType.StaffAccount, accountId,
+                new { IsActive = true }, new { IsActive = false, EndedSessionCount = 1 }, reason: "Raw"),
+            "staff_credentials.configured" => Entry(actionType, AuditTimelineEntityType.StaffAccount, accountId,
+                new { CredentialsConfigured = false }, new { CredentialsConfigured = true, EndedSessionCount = 0 }),
+            "staff_credentials.reset" => Entry(actionType, AuditTimelineEntityType.StaffAccount, accountId,
+                new { CredentialsConfigured = true }, new { CredentialsConfigured = true, EndedSessionCount = 1 }, reason: "Raw"),
+            _ => throw new InvalidOperationException(),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry, WebCultures.Ukrainian));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(expectedTitle, explanation.Title);
+        Assert.DoesNotContain(
+            explanation.BeforeFacts.Concat(explanation.AfterFacts),
+            fact => fact.Label is "Staff account" or "Display name" or "Status" or "Credential state");
+    }
+
+    [Fact]
+    public void StaffAuditKeepsRawDisplayNamesThatMatchControlledEnglishWords()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "staff_account.display_name_updated",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { DisplayName = "Active" },
+                    new { DisplayName = "None" }),
+                WebCultures.Ukrainian));
+
+        Assert.Equal("Active", FactValue(explanation.BeforeFacts, "Відображуване ім’я"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Відображуване ім’я"));
+    }
+
+    [Fact]
+    public void StaffAuditUnknownAccountTypeFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "staff_account.created",
+                    AuditTimelineEntityType.StaffAccount,
+                    Guid.NewGuid(),
+                    new { },
+                    new
+                    {
+                        DisplayName = "Active",
+                        AccountType = "unknown_account_type",
+                        Role = "admin",
+                        IsActive = true,
+                    }),
+                WebCultures.Ukrainian));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Читабельний підсумок зміни недоступний", explanation.Title);
+    }
+
+    [Theory]
+    [InlineData("staff_account.created")]
+    [InlineData("staff_account.display_name_updated")]
+    [InlineData("staff_account.activated")]
+    [InlineData("staff_account.deactivated")]
+    [InlineData("staff_credentials.configured")]
+    [InlineData("staff_credentials.reset")]
+    public void StaffAuditUnexpectedSummaryFieldsFailClosed(string actionType)
+    {
+        var accountId = Guid.NewGuid();
+        var entry = actionType switch
+        {
+            "staff_account.created" => Entry(
+                actionType,
+                AuditTimelineEntityType.StaffAccount,
+                accountId,
+                new { },
+                new
+                {
+                    DisplayName = "Raw",
+                    AccountType = "named_admin",
+                    Role = "admin",
+                    IsActive = true,
+                    Unexpected = "value",
+                }),
+            "staff_account.display_name_updated" => Entry(
+                actionType,
+                AuditTimelineEntityType.StaffAccount,
+                accountId,
+                new { DisplayName = "Before" },
+                new { DisplayName = "After", IsActive = true }),
+            "staff_account.activated" => Entry(
+                actionType,
+                AuditTimelineEntityType.StaffAccount,
+                accountId,
+                new { IsActive = false },
+                new { IsActive = true, EndedSessionCount = 0, DisplayName = "Raw" }),
+            "staff_account.deactivated" => Entry(
+                actionType,
+                AuditTimelineEntityType.StaffAccount,
+                accountId,
+                new { IsActive = true },
+                new { IsActive = false, EndedSessionCount = 0, DisplayName = "Raw" },
+                reason: "Raw"),
+            "staff_credentials.configured" => Entry(
+                actionType,
+                AuditTimelineEntityType.StaffAccount,
+                accountId,
+                new { CredentialsConfigured = false },
+                new { CredentialsConfigured = true, EndedSessionCount = 0, IsActive = true }),
+            "staff_credentials.reset" => Entry(
+                actionType,
+                AuditTimelineEntityType.StaffAccount,
+                accountId,
+                new { CredentialsConfigured = true },
+                new { CredentialsConfigured = true, EndedSessionCount = 0, IsActive = true },
+                reason: "Raw"),
+            _ => throw new InvalidOperationException(),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry, WebCultures.Ukrainian));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Читабельний підсумок зміни недоступний", explanation.Title);
+    }
+
+    [Theory]
+    [InlineData("related")]
+    [InlineData("before")]
+    [InlineData("after")]
+    public void NonObjectAuditSummariesFailClosed(string summary)
+    {
+        var entry = Entry(
+            "payment.canceled",
+            AuditTimelineEntityType.Payment,
+            Guid.NewGuid(),
+            new { },
+            new { });
+        entry = summary switch
+        {
+            "related" => entry with { RelatedEntityRefsJson = "[]" },
+            "before" => entry with { BeforeSummaryJson = "[]" },
+            "after" => entry with { AfterSummaryJson = "[]" },
+            _ => throw new InvalidOperationException(),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry, WebCultures.Ukrainian));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Читабельний підсумок зміни недоступний", explanation.Title);
     }
 
     [Theory]
@@ -2848,7 +3479,7 @@ public sealed class AuditEntryExplanationViewModelTests
         AuditTimelineEntityType entityType)
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(actionType, entityType, Guid.NewGuid(), new { }, new { })));
 
         Assert.False(explanation.IsAvailable);
@@ -2861,7 +3492,7 @@ public sealed class AuditEntryExplanationViewModelTests
     public void MalformedSupportedSummaryFailsClosed()
     {
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
-            AuditEntryExplanationViewModel.Create(
+            Explain(
                 Entry(
                     "payment.corrected",
                     AuditTimelineEntityType.Payment,
@@ -2878,7 +3509,7 @@ public sealed class AuditEntryExplanationViewModelTests
     [Fact]
     public void UnsupportedActionKeepsExistingTimelineRenderingOnly()
     {
-        Assert.Null(AuditEntryExplanationViewModel.Create(
+        Assert.Null(Explain(
             Entry(
                 "client.unknown",
                 AuditTimelineEntityType.Client,
@@ -3183,7 +3814,10 @@ public sealed class AuditEntryExplanationViewModelTests
 
     private static NonWorkingDayAuditFixture NonWorkingDayAudit(
         bool replaceReason,
-        int correctionSucceededCountDelta = 0)
+        int correctionSucceededCountDelta = 0,
+        bool mismatchRelatedScope = false,
+        bool expiredPreview = false,
+        bool reverseRelatedScope = false)
     {
         var periodId = Guid.NewGuid();
         var originalStartDate = new DateOnly(2026, 1, 30);
@@ -3262,6 +3896,7 @@ public sealed class AuditEntryExplanationViewModelTests
             .Select(application => application.MembershipId)
             .Concat(replacementMembershipIds)
             .Distinct()
+            .Order()
             .ToArray();
         var before = new
         {
@@ -3271,7 +3906,9 @@ public sealed class AuditEntryExplanationViewModelTests
             {
                 ConfirmationFingerprint = "non-working-day-test-fingerprint",
                 IssuedAt = previewedAt,
-                ExpiresAt = confirmedAt.AddMinutes(10),
+                ExpiresAt = expiredPreview
+                    ? confirmedAt.AddMinutes(-1)
+                    : confirmedAt.AddMinutes(10),
                 OldAffectedCount = originalApplications.Length,
                 NewAffectedCount = replacementApplications.Length,
             },
@@ -3284,7 +3921,9 @@ public sealed class AuditEntryExplanationViewModelTests
             {
                 ConfirmationFingerprint = "non-working-day-cancel-test-fingerprint",
                 IssuedAt = previewedAt,
-                ExpiresAt = confirmedAt.AddMinutes(10),
+                ExpiresAt = expiredPreview
+                    ? confirmedAt.AddMinutes(-1)
+                    : confirmedAt.AddMinutes(10),
                 OldAffectedCount = originalApplications.Length,
                 NewAffectedCount = 0,
             },
@@ -3332,12 +3971,87 @@ public sealed class AuditEntryExplanationViewModelTests
                     .ToArray(),
             },
         };
+        var correctedRelatedMembershipIds = affectedUnionIds.ToArray();
+        if (mismatchRelatedScope)
+        {
+            correctedRelatedMembershipIds[0] = Guid.NewGuid();
+        }
+        else if (reverseRelatedScope)
+        {
+            Array.Reverse(correctedRelatedMembershipIds);
+        }
+
+        var correctedRelated = new
+        {
+            OriginalPeriodId = periodId,
+            ReplacementPeriodId = (Guid?)replacementPeriod.PeriodId,
+            CancellationId = (Guid?)null,
+            OldMembershipIds = originalApplications
+                .Select(application => application.MembershipId)
+                .ToArray(),
+            NewMembershipIds = replacementApplications
+                .Select(application => application.MembershipId)
+                .ToArray(),
+            AffectedMembershipIds = correctedRelatedMembershipIds,
+            AffectedClientIds = originalApplications
+                .Select(application => application.ClientId)
+                .Concat(replacementApplications.Select(application => application.ClientId))
+                .Distinct()
+                .Order()
+                .ToArray(),
+        };
+        var canceledRelatedMembershipIds = originalApplications
+            .Select(application => application.MembershipId)
+            .Distinct()
+            .Order()
+            .ToArray();
+        if (mismatchRelatedScope)
+        {
+            canceledRelatedMembershipIds[0] = Guid.NewGuid();
+        }
+        else if (reverseRelatedScope)
+        {
+            Array.Reverse(canceledRelatedMembershipIds);
+        }
+
+        var canceledRelated = new
+        {
+            OriginalPeriodId = periodId,
+            ReplacementPeriodId = (Guid?)null,
+            CancellationId = (Guid?)canceledAfter.Cancellation.CancellationId,
+            OldMembershipIds = originalApplications
+                .Select(application => application.MembershipId)
+                .ToArray(),
+            NewMembershipIds = Array.Empty<Guid>(),
+            AffectedMembershipIds = canceledRelatedMembershipIds,
+            AffectedClientIds = originalApplications
+                .Select(application => application.ClientId)
+                .Distinct()
+                .Order()
+                .ToArray(),
+        };
+        var oldApplicationDetails = string.Join(
+            "; ",
+            originalApplications.Select(application =>
+                $"Membership {application.MembershipId:N}"[..19]
+                + $" / Client {application.ClientId:N}"[..18]
+                + $": {application.StartDate:M/d/yyyy} to {application.EndDate:M/d/yyyy}"));
+        var newApplicationDetails = string.Join(
+            "; ",
+            replacementApplications.Select(application =>
+                $"Membership {application.MembershipId:N}"[..19]
+                + $" / Client {application.ClientId:N}"[..18]
+                + $": {application.AppliedStartDate:M/d/yyyy} to {application.AppliedEndDate:M/d/yyyy}"));
         return new NonWorkingDayAuditFixture(
             periodId,
             before,
             canceledBefore,
             correctedAfter,
-            canceledAfter);
+            canceledAfter,
+            correctedRelated,
+            canceledRelated,
+            oldApplicationDetails,
+            newApplicationDetails);
     }
 
     private static NonWorkingDayAdditionAuditFixture NonWorkingDayAdditionAudit(
@@ -3635,7 +4349,11 @@ public sealed class AuditEntryExplanationViewModelTests
         object Before,
         object CanceledBefore,
         object CorrectedAfter,
-        object CanceledAfter);
+        object CanceledAfter,
+        object CorrectedRelated,
+        object CanceledRelated,
+        string OldApplicationDetails,
+        string NewApplicationDetails);
 
     private sealed record NonWorkingDayAdditionAuditFixture(
         Guid PeriodId,

@@ -1,4 +1,6 @@
 @using System.Globalization
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
 @model AddPaymentFormViewModel
 @{
     var input = Model.Input;
@@ -10,15 +12,15 @@
 <details id="add-payment-action-panel"
          class="profile-action-panel"
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>Add payment</summary>
+    <summary>@L["Payment.Add"]</summary>
     <div class="profile-action-content">
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>Payment not added</strong>
+                <strong>@L["Payment.NotAdded"]</strong>
                 <ul>
                     @foreach (var message in Model.Errors
-                        .Select(AddPaymentFormViewModel.DisplayError)
+                        .Select(error => ReceptionCommandErrorLocalizer.Display(L, error))
                         .Distinct(StringComparer.Ordinal))
                     {
                         <li>@message</li>
@@ -28,8 +30,8 @@
         }
 
         <div class="warning-block warning-caution">
-            <strong>Membership state is unchanged</strong>
-            <span>This standalone payment does not close negative visits or recalculate membership state.</span>
+            <strong>@L["Payment.StateUnchanged"]</strong>
+            <span>@L["Payment.StateUnchangedHint"]</span>
         </div>
 
         <form id="add-payment-form-@clientKey"
@@ -53,18 +55,18 @@
 
             <dl class="payment-fixed-context">
                 <div>
-                    <dt>Method</dt>
-                    <dd>Cash</dd>
+                    <dt>@L["Payment.Method"]</dt>
+                    <dd>@L["Payment.Cash"]</dd>
                 </div>
                 <div>
-                    <dt>Currency</dt>
+                    <dt>@L["Payment.Currency"]</dt>
                     <dd>@AddPaymentFormViewModel.Currency</dd>
                 </div>
             </dl>
 
             <div class="action-form-grid">
                 <div class="form-field">
-                    <label for="payment-amount-@clientKey">Amount (UAH)</label>
+                    <label for="payment-amount-@clientKey">@L["Payment.AmountUah"]</label>
                     <input id="payment-amount-@clientKey"
                            type="number"
                            name="form.Amount"
@@ -76,11 +78,11 @@
                 </div>
 
                 <div class="form-field">
-                    <label for="payment-context-@clientKey">Payment context</label>
+                    <label for="payment-context-@clientKey">@L["Payment.Context"]</label>
                     <select id="payment-context-@clientKey"
                             name="form.PaymentContext"
                             required>
-                        <option value="" selected="@(input.PaymentContext is null ? "selected" : null)">Choose context</option>
+                        <option value="" selected="@(input.PaymentContext is null ? "selected" : null)">@L["Payment.ChooseContext"]</option>
                         @foreach (var paymentContext in AddPaymentFormViewModel.SupportedContexts)
                         {
                             <option value="@paymentContext"
@@ -92,21 +94,21 @@
                 </div>
 
                 <div class="form-field form-field-wide">
-                    <label for="payment-membership-@clientKey">Membership (optional)</label>
+                    <label for="payment-membership-@clientKey">@L["Payment.MembershipOptional"]</label>
                     <select id="payment-membership-@clientKey" name="form.MembershipId">
-                        <option value="" selected="@(input.MembershipId is null ? "selected" : null)">No membership</option>
+                        <option value="" selected="@(input.MembershipId is null ? "selected" : null)">@L["Payment.NoMembership"]</option>
                         @foreach (var membership in Model.MembershipOptions)
                         {
                             <option value="@membership.MembershipId"
                                     selected="@(input.MembershipId == membership.MembershipId ? "selected" : null)">
-                                @membership.TypeNameSnapshot | @MembershipStatusLabel(membership.Status) | ends @membership.EffectiveEndDate.ToString("yyyy-MM-dd")
+                                @membership.TypeNameSnapshot | @MembershipStatusLabel(membership.Status) | @L["Payment.Ends"] @ReceptionDisplayFormatter.Date(membership.EffectiveEndDate)
                             </option>
                         }
                     </select>
                 </div>
 
                 <div class="form-field form-field-wide">
-                    <label for="payment-occurred-at-@clientKey">Occurred (UTC)</label>
+                    <label for="payment-occurred-at-@clientKey">@L["Payment.OccurredUtc"]</label>
                     <input id="payment-occurred-at-@clientKey"
                            type="datetime-local"
                            name="form.OccurredAtUtc"
@@ -116,7 +118,7 @@
                 </div>
 
                 <div class="form-field form-field-wide">
-                    <label for="payment-comment-@clientKey">Comment (optional)</label>
+                    <label for="payment-comment-@clientKey">@L["Field.CommentOptional"]</label>
                     <textarea id="payment-comment-@clientKey"
                               name="form.Comment"
                               maxlength="@AddPaymentFormViewModel.CommentMaxLength">@input.Comment</textarea>
@@ -127,37 +129,37 @@
                 <span id="add-payment-loading"
                       class="request-indicator htmx-indicator"
                       role="status"
-                      aria-live="polite">Adding payment...</span>
+                      aria-live="polite">@L["Payment.Adding"]</span>
                 <button type="submit"
                         data-add-payment-submit
-                        data-busy-text="Adding...">Add payment</button>
+                        data-busy-text="@L["Action.Adding"]">@L["Payment.Add"]</button>
             </div>
         </form>
     </div>
 </details>
 
 @functions {
-    private static string PaymentContextLabel(PaymentContext paymentContext)
+    private string PaymentContextLabel(PaymentContext paymentContext)
     {
         return paymentContext switch
         {
-            PaymentContext.MembershipSale => "Membership sale",
-            PaymentContext.OneOff => "One-off",
-            PaymentContext.Trial => "Trial",
-            PaymentContext.Other => "Other",
-            _ => "Unsupported",
+            PaymentContext.MembershipSale => L["Payment.Context.MembershipSale"],
+            PaymentContext.OneOff => L["Payment.Context.OneOff"],
+            PaymentContext.Trial => L["Payment.Context.Trial"],
+            PaymentContext.Other => L["Payment.Context.Other"],
+            _ => L["Error.Generic"],
         };
     }
 
-    private static string MembershipStatusLabel(string status)
+    private string MembershipStatusLabel(string status)
     {
         return status switch
         {
-            ClientMembershipSummaryStatusCodes.Active => "active",
-            ClientMembershipSummaryStatusCodes.Expired => "expired",
-            ClientMembershipSummaryStatusCodes.Canceled => "canceled",
-            ClientMembershipSummaryStatusCodes.Corrected => "corrected",
-            _ => status,
+            ClientMembershipSummaryStatusCodes.Active => L["Status.Active"],
+            ClientMembershipSummaryStatusCodes.Expired => L["Status.Expired"],
+            ClientMembershipSummaryStatusCodes.Canceled => L["Status.Canceled"],
+            ClientMembershipSummaryStatusCodes.Corrected => L["Status.Corrected"],
+            _ => L["Error.Generic"],
         };
     }
 }

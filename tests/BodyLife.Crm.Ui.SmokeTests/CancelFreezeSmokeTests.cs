@@ -5,7 +5,7 @@ namespace BodyLife.Crm.Ui.SmokeTests;
 public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IAsyncLifetime
 {
     private const string CancellationConfirmation =
-        "I confirm this Freeze was added by mistake and should be canceled.";
+        "I confirm this freeze was added by mistake and should be canceled.";
 
     private readonly ReceptionAppFixture _app;
     private IPlaywright? _playwright;
@@ -111,13 +111,13 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
                 "affected Membership snapshot");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    $"{FormatDate(freezeBefore.StartDate)} to {FormatDate(freezeBefore.EndDate)}",
+                    $"{DisplayDate(freezeBefore.StartDate)} to {DisplayDate(freezeBefore.EndDate)}",
                     new() { Exact = true }),
                 viewportName,
                 "canonical Freeze range");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "The Freeze remains visible as canceled and Membership extension state is recalculated.",
+                    "The freeze remains visible as canceled and membership state is recalculated.",
                     new() { Exact = true }),
                 viewportName,
                 "cancellation consequence warning");
@@ -144,7 +144,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
             panel = freezeRow.Locator($"#cancel-freeze-panel-{freezeId:N}");
             await ExpectVisibleAsync(
                 panel.GetByText(
-                    "Confirm that this Freeze should be canceled.",
+                    "Confirm this action before continuing.",
                     new() { Exact = true }),
                 viewportName,
                 "server confirmation error");
@@ -208,7 +208,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
                 membershipStateAfter.EffectiveEndDate);
             await ExpectVisibleAsync(
                 profile.Locator(".membership-summary-grid").GetByText(
-                    FormatDate(membershipStateAfter.EffectiveEndDate),
+                    DisplayDate(membershipStateAfter.EffectiveEndDate),
                     new() { Exact = true }),
                 viewportName,
                 "recalculated effective end date");
@@ -227,6 +227,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
 
         return await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -419,5 +420,12 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
     private static string FormatDate(DateOnly date)
     {
         return date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string DisplayDate(DateOnly date)
+    {
+        return date.ToString(
+            "d",
+            System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture));
     }
 }

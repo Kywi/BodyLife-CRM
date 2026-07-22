@@ -100,34 +100,6 @@ public sealed record CorrectPaymentFormViewModel(
             IsOpen: true);
     }
 
-    public static string DisplayError(CommandError error)
-    {
-        ArgumentNullException.ThrowIfNull(error);
-
-        return error.Code switch
-        {
-            CommandErrorCode.ReasonRequired =>
-                "Enter why this Payment should be corrected or canceled.",
-            CommandErrorCode.AlreadyCanceled =>
-                "This Payment was already canceled or replaced. Canonical history was refreshed.",
-            CommandErrorCode.DayClosedRequiresOwner =>
-                "This correction affects a reconciled day and requires Owner approval.",
-            CommandErrorCode.PermissionDenied =>
-                "The current account or session cannot correct this Payment.",
-            CommandErrorCode.NotFound when error.Field == "replacement.membershipId" =>
-                "The replacement Membership is no longer available for this client. Canonical choices were refreshed.",
-            CommandErrorCode.NotFound =>
-                "This Payment is no longer available. Canonical history was refreshed.",
-            CommandErrorCode.DuplicateSubmission =>
-                "This correction form was already used with different data. Review the refreshed form before retrying.",
-            CommandErrorCode.ConcurrencyConflict or CommandErrorCode.StaleState =>
-                "Payment state changed. Canonical history was refreshed; review before retrying.",
-            CommandErrorCode.MembershipNotEligible =>
-                "This Payment or replacement Membership requires a different workflow.",
-            _ => error.Message,
-        };
-    }
-
     private static CorrectPaymentFormInput NormalizeInput(
         CorrectPaymentFormInput input,
         ClientProfile profile,

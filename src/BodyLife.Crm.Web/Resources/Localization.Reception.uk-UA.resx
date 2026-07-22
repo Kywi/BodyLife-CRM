@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?><root>
+<data name="Dashboard.Title" xml:space="preserve"><value>Панель рецепції</value></data>
+  <data name="Search.Label" xml:space="preserve"><value>Пошук клієнта</value></data>
+  <data name="Search.Placeholder" xml:space="preserve"><value>Картка, ім’я, телефон або останні 4 цифри</value></data>
+  <data name="Action.Search" xml:space="preserve"><value>Шукати</value></data>
+  <data name="Action.Clear" xml:space="preserve"><value>Очистити</value></data>
+  <data name="Search.Mode" xml:space="preserve"><value>Режим пошуку</value></data>
+  <data name="Search.Mode.Auto" xml:space="preserve"><value>Авто</value></data>
+  <data name="Search.Mode.Card" xml:space="preserve"><value>Картка</value></data>
+  <data name="Search.Mode.Name" xml:space="preserve"><value>Ім’я</value></data>
+  <data name="Search.Mode.Phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="Search.Mode.LastFour" xml:space="preserve"><value>Останні 4</value></data>
+  <data name="Search.IncludeInactive" xml:space="preserve"><value>Показати неактивних</value></data>
+  <data name="Search.Loading" xml:space="preserve"><value>Пошук…</value></data>
+<data name="Error.Generic" xml:space="preserve"><value>Не вдалося виконати дію. Оновіть робоче місце Рецепції та спробуйте ще раз.</value></data>
+  <data name="Error.Validation.MembershipType" xml:space="preserve"><value>Виберіть активний тип абонемента.</value></data>
+  <data name="Error.Validation.VisitKind" xml:space="preserve"><value>Виберіть абонементне, разове або пробне відвідування.</value></data>
+  <data name="Error.Validation.Reason" xml:space="preserve"><value>Вкажіть причину.</value></data>
+  <data name="Error.Validation.Confirmation" xml:space="preserve"><value>Підтвердьте дію перед продовженням.</value></data>
+  <data name="Error.Validation.Amount" xml:space="preserve"><value>Вкажіть суму, більшу за нуль.</value></data>
+  <data name="Error.Validation.StartDate" xml:space="preserve"><value>Вкажіть дату початку.</value></data>
+  <data name="Error.Validation.EndDate" xml:space="preserve"><value>Вкажіть дату завершення.</value></data>
+  <data name="Error.Validation.DateRange" xml:space="preserve"><value>Дата завершення не може бути раніше дати початку.</value></data>
+  <data name="Error.PermissionDenied" xml:space="preserve"><value>Поточний обліковий запис або сеанс не має дозволу на цю дію.</value></data>
+  <data name="Error.NotFound" xml:space="preserve"><value>Цей запис більше недоступний. Оновіть робоче місце Рецепції.</value></data>
+  <data name="Error.NotFound.Membership" xml:space="preserve"><value>Вибраний абонемент більше недоступний. Оновіть дані та перевірте варіанти.</value></data>
+  <data name="Error.NotFound.MembershipType" xml:space="preserve"><value>Вибраний тип абонемента більше недоступний. Оновіть каталог.</value></data>
+  <data name="Error.DuplicateSubmission" xml:space="preserve"><value>Цю форму вже використано з іншими даними. Перевірте оновлену форму та спробуйте ще раз.</value></data>
+  <data name="Error.StaleState" xml:space="preserve"><value>Дані змінилися під час надсилання. Канонічні дані Рецепції оновлено; перевірте їх і спробуйте ще раз.</value></data>
+  <data name="Error.ReasonRequired" xml:space="preserve"><value>Вкажіть причину виправлення.</value></data>
+  <data name="Error.AlreadyCanceled" xml:space="preserve"><value>Цей запис уже скасовано. Канонічну історію оновлено.</value></data>
+  <data name="Error.DayClosedRequiresOwner" xml:space="preserve"><value>Виправлення за звірений день потребує Власника.</value></data>
+  <data name="Error.MembershipTypeInactive" xml:space="preserve"><value>Вибраний тип абонемента неактивний. Виберіть активний тип.</value></data>
+  <data name="Error.MembershipNotEligible" xml:space="preserve"><value>Вибраний абонемент не підходить для цієї дії. Перевірте поточний стан.</value></data>
+  <data name="Error.NegativeDecisionRequired" xml:space="preserve"><value>Перед видачею виберіть, як обробити від’ємні відвідування.</value></data>
+  <data name="Error.FreezeConflictsWithVisit" xml:space="preserve"><value>Діапазон замороження перетинається з активним врахованим відвідуванням. Виправте відвідування або змініть діапазон.</value></data>
+  <data name="Error.RecalculationFailed" xml:space="preserve"><value>Канонічний стан абонемента недоступний. Оновіть робоче місце Рецепції та спробуйте ще раз.</value></data>
+<data name="Workspace.SearchResults" xml:space="preserve"><value>Результати пошуку</value></data>
+  <data name="Workspace.MatchCount" xml:space="preserve"><value>Збігів: {0}</value></data>
+  <data name="Workspace.Ready" xml:space="preserve"><value>Готово до пошуку</value></data>
+  <data name="Workspace.Unavailable" xml:space="preserve"><value>Пошук недоступний</value></data>
+  <data name="Workspace.Empty" xml:space="preserve"><value>Клієнтів не знайдено</value></data>
+  <data name="Workspace.OpenClient" xml:space="preserve"><value>Відкрити: {0}</value></data>
+  <data name="Workspace.Through" xml:space="preserve"><value>до</value></data>
+  <data name="Workspace.ClientWarnings" xml:space="preserve"><value>Попередження клієнта</value></data>
+  <data name="Action.MoreResults" xml:space="preserve"><value>Більше результатів</value></data>
+  <data name="Field.Card" xml:space="preserve"><value>Картка</value></data>
+  <data name="Field.Phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="Value.NoCurrentCard" xml:space="preserve"><value>Немає поточної картки</value></data>
+  <data name="Value.NoPhone" xml:space="preserve"><value>Немає телефону</value></data>
+  <data name="Value.NoCurrentMembership" xml:space="preserve"><value>Немає поточного абонемента</value></data>
+  <data name="Status.Active" xml:space="preserve"><value>Активний</value></data>
+  <data name="Status.Inactive" xml:space="preserve"><value>Неактивний</value></data>
+  <data name="Match.ExactCard" xml:space="preserve"><value>Точна картка</value></data>
+  <data name="Match.ExactPhone" xml:space="preserve"><value>Точний телефон</value></data>
+  <data name="Match.PhoneLastFour" xml:space="preserve"><value>Останні 4 цифри телефону</value></data>
+  <data name="Match.ExactName" xml:space="preserve"><value>Точне ім’я</value></data>
+  <data name="Match.PartialCard" xml:space="preserve"><value>Часткова картка</value></data>
+  <data name="Match.PartialPhone" xml:space="preserve"><value>Частковий телефон</value></data>
+  <data name="Match.PartialName" xml:space="preserve"><value>Часткове ім’я</value></data>
+  <data name="Match.Generic" xml:space="preserve"><value>Збіг</value></data>
+<data name="Profile.Title" xml:space="preserve"><value>Профіль клієнта</value></data>
+  <data name="Profile.Loading" xml:space="preserve"><value>Завантаження клієнта…</value></data>
+  <data name="Profile.Empty" xml:space="preserve"><value>Клієнта не вибрано</value></data>
+  <data name="Profile.OpenDailyReport" xml:space="preserve"><value>Відкрити денний звіт</value></data>
+  <data name="Profile.Unavailable" xml:space="preserve"><value>Клієнт недоступний</value></data>
+  <data name="Profile.CurrentCard" xml:space="preserve"><value>Поточна картка</value></data>
+  <data name="Profile.Updated" xml:space="preserve"><value>Оновлено</value></data>
+  <data name="Profile.CardAssigned" xml:space="preserve"><value>Картку призначено</value></data>
+  <data name="Profile.Note" xml:space="preserve"><value>Примітка рецепції</value></data>
+  <data name="Profile.CurrentMembership" xml:space="preserve"><value>Поточний абонемент</value></data>
+  <data name="Profile.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Profile.RemainingVisits" xml:space="preserve"><value>Залишок відвідувань</value></data>
+  <data name="Profile.EffectiveEnd" xml:space="preserve"><value>Фактична дата завершення</value></data>
+<data name="Freeze.Add" xml:space="preserve"><value>Додати замороження</value></data>
+  <data name="Freeze.NotAdded" xml:space="preserve"><value>Замороження не додано</value></data>
+  <data name="Freeze.Range" xml:space="preserve"><value>Діапазон абонемента (обидві дати включно)</value></data>
+  <data name="Freeze.RangeHint" xml:space="preserve"><value>Початок має бути в межах вибраного абонемента. Завершення може перейти фактичну дату завершення.</value></data>
+  <data name="Freeze.VisitHint" xml:space="preserve"><value>Активне враховане відвідування в діапазоні блокує замороження.</value></data>
+  <data name="Field.Membership" xml:space="preserve"><value>Абонемент</value></data>
+  <data name="Action.ChooseMembership" xml:space="preserve"><value>Виберіть абонемент</value></data>
+  <data name="Freeze.Start" xml:space="preserve"><value>Дата початку замороження</value></data>
+  <data name="Freeze.End" xml:space="preserve"><value>Дата завершення замороження</value></data>
+  <data name="Field.Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="Field.CommentOptional" xml:space="preserve"><value>Коментар (необов’язково)</value></data>
+  <data name="Freeze.Adding" xml:space="preserve"><value>Додавання замороження…</value></data>
+  <data name="Action.Adding" xml:space="preserve"><value>Додавання…</value></data>
+<data name="Freeze.Cancel" xml:space="preserve"><value>Скасувати замороження</value></data>
+  <data name="Freeze.NotCanceled" xml:space="preserve"><value>Замороження не скасовано</value></data>
+  <data name="Range.To" xml:space="preserve"><value>до</value></data>
+  <data name="Freeze.OriginalReason" xml:space="preserve"><value>Початкова причина</value></data>
+  <data name="Correction.KeepsHistory" xml:space="preserve"><value>Виправлення зберігає історію</value></data>
+  <data name="Freeze.CancelHint" xml:space="preserve"><value>Замороження лишається в історії як скасоване, а стан абонемента перераховується.</value></data>
+  <data name="Freeze.CancellationReason" xml:space="preserve"><value>Причина скасування</value></data>
+  <data name="Freeze.CancellationComment" xml:space="preserve"><value>Коментар до скасування (необов’язково)</value></data>
+  <data name="Freeze.CancelConfirm" xml:space="preserve"><value>Підтверджую, що це замороження додали помилково і його слід скасувати.</value></data>
+  <data name="Freeze.Canceling" xml:space="preserve"><value>Скасування замороження…</value></data>
+  <data name="Action.Canceling" xml:space="preserve"><value>Скасування…</value></data>
+  <data name="Visit.Cancel" xml:space="preserve"><value>Скасувати відвідування</value></data>
+  <data name="Visit.NotCanceled" xml:space="preserve"><value>Відвідування не скасовано</value></data>
+  <data name="Field.Visit" xml:space="preserve"><value>Відвідування</value></data>
+  <data name="Field.Occurred" xml:space="preserve"><value>Час події</value></data>
+  <data name="Visit.CorrectionRecords" xml:space="preserve"><value>Записи виправлення відвідування</value></data>
+  <data name="Visit.ClientHistory" xml:space="preserve"><value>Історія клієнта</value></data>
+  <data name="Visit.AuditTimeline" xml:space="preserve"><value>Хронологія аудиту</value></data>
+  <data name="Visit.CancelHint" xml:space="preserve"><value>Відвідування лишається в історії як скасоване, а стан абонемента перераховується.</value></data>
+  <data name="Visit.CancelConfirm" xml:space="preserve"><value>Підтверджую, що це відвідування записали помилково і його слід скасувати.</value></data>
+  <data name="Visit.Canceling" xml:space="preserve"><value>Скасування відвідування…</value></data>
+<data name="Payment.Add" xml:space="preserve"><value>Додати платіж</value></data>
+  <data name="Payment.NotAdded" xml:space="preserve"><value>Платіж не додано</value></data>
+  <data name="Payment.StateUnchanged" xml:space="preserve"><value>Стан абонемента не змінюється</value></data>
+  <data name="Payment.StateUnchangedHint" xml:space="preserve"><value>Цей окремий платіж не закриває від’ємні відвідування і не перераховує стан абонемента.</value></data>
+  <data name="Payment.Method" xml:space="preserve"><value>Спосіб</value></data>
+  <data name="Payment.Cash" xml:space="preserve"><value>Готівка</value></data>
+  <data name="Payment.Currency" xml:space="preserve"><value>Валюта</value></data>
+  <data name="Payment.AmountUah" xml:space="preserve"><value>Сума (UAH)</value></data>
+  <data name="Payment.Context" xml:space="preserve"><value>Контекст платежу</value></data>
+  <data name="Payment.ChooseContext" xml:space="preserve"><value>Виберіть контекст</value></data>
+  <data name="Payment.MembershipOptional" xml:space="preserve"><value>Абонемент (необов’язково)</value></data>
+  <data name="Payment.NoMembership" xml:space="preserve"><value>Без абонемента</value></data>
+  <data name="Payment.Ends" xml:space="preserve"><value>до</value></data>
+  <data name="Payment.OccurredUtc" xml:space="preserve"><value>Час події (UTC)</value></data>
+  <data name="Payment.Adding" xml:space="preserve"><value>Додавання платежу…</value></data>
+  <data name="Payment.Context.MembershipSale" xml:space="preserve"><value>Продаж абонемента</value></data>
+  <data name="Payment.Context.OneOff" xml:space="preserve"><value>Разове</value></data>
+  <data name="Payment.Context.Trial" xml:space="preserve"><value>Пробне</value></data>
+  <data name="Payment.Context.Other" xml:space="preserve"><value>Інше</value></data>
+  <data name="Status.Expired" xml:space="preserve"><value>Прострочений</value></data>
+  <data name="Status.Canceled" xml:space="preserve"><value>Скасований</value></data>
+  <data name="Status.Corrected" xml:space="preserve"><value>Виправлений</value></data>
+<data name="Payment.CorrectOrCancel" xml:space="preserve"><value>Виправити або скасувати платіж</value></data>
+  <data name="Payment.CorrectionNotApplied" xml:space="preserve"><value>Виправлення платежу не застосовано</value></data>
+  <data name="Payment.OriginalAmount" xml:space="preserve"><value>Початкова сума</value></data>
+  <data name="Payment.OriginalContext" xml:space="preserve"><value>Початковий контекст</value></data>
+  <data name="Payment.OriginalDate" xml:space="preserve"><value>Початкова дата</value></data>
+  <data name="Payment.CorrectionRecords" xml:space="preserve"><value>Записи виправлення платежу</value></data>
+  <data name="Payment.CorrectionHint" xml:space="preserve"><value>Початковий платіж лишається в історії, а виправлення записується як окремий факт.</value></data>
+  <data name="Payment.CorrectionMode" xml:space="preserve"><value>Режим виправлення</value></data>
+  <data name="Payment.Replace" xml:space="preserve"><value>Замінити платіж</value></data>
+  <data name="Payment.Cancel" xml:space="preserve"><value>Скасувати платіж</value></data>
+  <data name="Payment.Replacement" xml:space="preserve"><value>Платіж-замінник</value></data>
+  <data name="Payment.ReplacementAmountUah" xml:space="preserve"><value>Сума заміни (UAH)</value></data>
+  <data name="Payment.ReplacementContext" xml:space="preserve"><value>Контекст заміни</value></data>
+  <data name="Payment.ReplacementMembershipOptional" xml:space="preserve"><value>Абонемент для заміни (необов’язково)</value></data>
+  <data name="Payment.ReplacementOccurredUtc" xml:space="preserve"><value>Час платежу-замінника (UTC)</value></data>
+  <data name="Payment.ReplacementCommentOptional" xml:space="preserve"><value>Коментар до заміни (необов’язково)</value></data>
+  <data name="Payment.CorrectionCommentOptional" xml:space="preserve"><value>Коментар до виправлення (необов’язково)</value></data>
+  <data name="Payment.CorrectionConfirm" xml:space="preserve"><value>Підтверджую виправлення платежу зі збереженням початкової історії.</value></data>
+  <data name="Payment.ApplyingCorrection" xml:space="preserve"><value>Застосування виправлення…</value></data>
+  <data name="Action.Applying" xml:space="preserve"><value>Застосування…</value></data>
+  <data name="Payment.ApplyCorrection" xml:space="preserve"><value>Застосувати виправлення</value></data>
+<data name="Profile.Warnings" xml:space="preserve"><value>Попередження профілю</value></data>
+  <data name="Membership.Warnings" xml:space="preserve"><value>Попередження абонемента</value></data>
+  <data name="Membership.Timeline" xml:space="preserve"><value>Хронологія абонемента</value></data>
+  <data name="Membership.ExtensionHistory" xml:space="preserve"><value>Історія продовжень</value></data>
+  <data name="Membership.ExtensionSource" xml:space="preserve"><value>Джерело продовження</value></data>
+  <data name="Field.InclusiveRange" xml:space="preserve"><value>Діапазон (обидві дати включно)</value></data>
+  <data name="Visit.Recent" xml:space="preserve"><value>Останні відвідування</value></data>
+  <data name="Visit.NoneRecorded" xml:space="preserve"><value>Відвідувань ще немає</value></data>
+  <data name="Payment.Recent" xml:space="preserve"><value>Останні платежі</value></data>
+  <data name="Payment.NoneRecorded" xml:space="preserve"><value>Платежів ще немає</value></data>
+  <data name="List.LatestCount" xml:space="preserve"><value>Останніх: {0}</value></data>
+  <data name="Field.Recorded" xml:space="preserve"><value>Час запису</value></data>
+  <data name="Field.Source" xml:space="preserve"><value>Джерело</value></data>
+  <data name="Correction.Cancellation" xml:space="preserve"><value>Скасування</value></data>
+  <data name="Visit.CancelUnavailable" xml:space="preserve"><value>Скасування тимчасово недоступне. Оновіть профіль.</value></data>
+  <data name="Visit.CancelRestricted" xml:space="preserve"><value>Ваш обліковий запис не може скасувати це відвідування.</value></data>
+  <data name="Payment.CorrectedReplacement" xml:space="preserve"><value>Виправлений платіж-замінник</value></data>
+  <data name="Payment.CorrectedReplacementHint" xml:space="preserve"><value>Цей платіж замінює початковий готівковий запис.</value></data>
+  <data name="Payment.Replaced" xml:space="preserve"><value>Замінений платіж</value></data>
+  <data name="Payment.ReplacedHint" xml:space="preserve"><value>Цей початковий готівковий запис замінено виправленням.</value></data>
+  <data name="Correction.Changed" xml:space="preserve"><value>Змінено: {0}</value></data>
+  <data name="Profile.Records" xml:space="preserve"><value>Записи клієнта</value></data>
+  <data name="Warning.ClientInactive.Title" xml:space="preserve"><value>Неактивний клієнт</value></data>
+  <data name="Warning.ClientInactive.Message" xml:space="preserve"><value>Цей клієнт операційно неактивний.</value></data>
+  <data name="Warning.NoCurrentCard.Title" xml:space="preserve"><value>Немає поточної картки</value></data>
+  <data name="Warning.NoCurrentCard.Message" xml:space="preserve"><value>У цього клієнта немає поточної картки.</value></data>
+  <data name="Warning.NegativeBalance.Title" xml:space="preserve"><value>Від’ємний залишок</value></data>
+  <data name="Warning.NegativeBalance.Message" xml:space="preserve"><value>Абонемент має від’ємний залишок відвідувань.</value></data>
+  <data name="Warning.Expired.Title" xml:space="preserve"><value>Абонемент прострочено</value></data>
+  <data name="Warning.Expired.Message" xml:space="preserve"><value>Строк дії абонемента минув.</value></data>
+  <data name="Warning.ZeroRemaining.Title" xml:space="preserve"><value>Нульовий залишок</value></data>
+  <data name="Warning.ZeroRemaining.Message" xml:space="preserve"><value>В абонементі не залишилося відвідувань.</value></data>
+  <data name="Warning.EndingSoon.Title" xml:space="preserve"><value>Скоро завершується</value></data>
+  <data name="Warning.EndingSoon.Message" xml:space="preserve"><value>Абонемент завершується протягом семи днів.</value></data>
+  <data name="Warning.LowRemaining.Title" xml:space="preserve"><value>Малий залишок</value></data>
+  <data name="Warning.LowRemaining.Message" xml:space="preserve"><value>В абонементі залишилося лише одне або два відвідування.</value></data>
+  <data name="Warning.AmbiguousMembership.Title" xml:space="preserve"><value>Потрібно перевірити абонемент</value></data>
+  <data name="Warning.AmbiguousMembership.Message" xml:space="preserve"><value>Поточними можуть бути кілька абонементів. Перевірте хронологію перед дією.</value></data>
+  <data name="Warning.Attention" xml:space="preserve"><value>Увага</value></data>
+  <data name="Warning.Generic.Message" xml:space="preserve"><value>Перевірте поточний канонічний стан перед продовженням.</value></data>
+  <data name="Visit.Kind.Membership" xml:space="preserve"><value>Абонементне відвідування</value></data>
+  <data name="Visit.Kind.OneOff" xml:space="preserve"><value>Разове відвідування</value></data>
+  <data name="Visit.Kind.Trial" xml:space="preserve"><value>Пробне відвідування</value></data>
+  <data name="Origin.Normal" xml:space="preserve"><value>Звичайне введення</value></data>
+  <data name="Origin.ManualBackfill" xml:space="preserve"><value>Ручне внесення заднім числом</value></data>
+  <data name="Origin.PaperFallback" xml:space="preserve"><value>Внесення з паперового журналу</value></data>
+  <data name="Origin.FutureImport" xml:space="preserve"><value>Майбутній імпорт</value></data>
+  <data name="Value.UnknownSource" xml:space="preserve"><value>Невідоме джерело</value></data>
+  <data name="Value.UnknownMethod" xml:space="preserve"><value>Невідомий спосіб</value></data>
+  <data name="Value.Unknown" xml:space="preserve"><value>Невідомо</value></data>
+  <data name="Payment.Context.NegativeClosure" xml:space="preserve"><value>Закриття від’ємного залишку</value></data>
+  <data name="Field.Payment" xml:space="preserve"><value>Платіж</value></data>
+  <data name="Field.Freeze" xml:space="preserve"><value>Замороження</value></data>
+  <data name="Field.NonWorkingDay" xml:space="preserve"><value>Неробочий день</value></data>
+  <data name="Status.Replaced" xml:space="preserve"><value>Замінено</value></data>
+  <data name="Field.Amount" xml:space="preserve"><value>сума</value></data>
+  <data name="Field.OccurredTime" xml:space="preserve"><value>час події</value></data>
+  <data name="Field.Context" xml:space="preserve"><value>контекст</value></data>
+  <data name="Field.Comment" xml:space="preserve"><value>коментар</value></data>
+<data name="Client.Create" xml:space="preserve"><value>Створити клієнта</value></data>
+  <data name="Client.NotCreated" xml:space="preserve"><value>Клієнта не створено</value></data>
+  <data name="Client.Edit" xml:space="preserve"><value>Редагувати клієнта</value></data>
+  <data name="Client.NotUpdated" xml:space="preserve"><value>Клієнта не оновлено</value></data>
+  <data name="Client.Surname" xml:space="preserve"><value>Прізвище</value></data>
+  <data name="Client.Name" xml:space="preserve"><value>Ім’я</value></data>
+  <data name="Client.Patronymic" xml:space="preserve"><value>По батькові</value></data>
+  <data name="Client.OperationalStatus" xml:space="preserve"><value>Операційний статус</value></data>
+  <data name="Card.Number" xml:space="preserve"><value>Номер картки</value></data>
+  <data name="Duplicate.Review" xml:space="preserve"><value>Перевірка можливого дубля</value></data>
+  <data name="Duplicate.ConfirmCreate" xml:space="preserve"><value>Я перевірив(ла) збіг і підтверджую, що потрібно створити нового клієнта.</value></data>
+  <data name="Duplicate.ConfirmUpdate" xml:space="preserve"><value>Я перевірив(ла), що оновлюється правильний клієнт.</value></data>
+  <data name="Duplicate.AcknowledgementReason" xml:space="preserve"><value>Причина підтвердження</value></data>
+  <data name="Duplicate.Phone" xml:space="preserve"><value>Однаковий телефон</value></data>
+  <data name="Duplicate.SimilarName" xml:space="preserve"><value>Схоже ім’я</value></data>
+  <data name="Duplicate.Warning" xml:space="preserve"><value>Попередження про можливий дубль</value></data>
+  <data name="Client.Creating" xml:space="preserve"><value>Створення клієнта…</value></data>
+  <data name="Action.Creating" xml:space="preserve"><value>Створення…</value></data>
+  <data name="Client.Saving" xml:space="preserve"><value>Збереження клієнта…</value></data>
+  <data name="Action.Saving" xml:space="preserve"><value>Збереження…</value></data>
+  <data name="Client.SaveChanges" xml:space="preserve"><value>Зберегти зміни</value></data>
+  <data name="Card.Manage" xml:space="preserve"><value>Керувати карткою</value></data>
+  <data name="Card.NotUpdated" xml:space="preserve"><value>Картку не оновлено</value></data>
+  <data name="Card.ClearCurrent" xml:space="preserve"><value>Очистити поточну картку</value></data>
+  <data name="Card.NewNumber" xml:space="preserve"><value>Новий номер картки</value></data>
+  <data name="Card.Saving" xml:space="preserve"><value>Збереження картки…</value></data>
+  <data name="Card.Save" xml:space="preserve"><value>Зберегти картку</value></data>
+  <data name="Error.CardNumberAlreadyCurrent" xml:space="preserve"><value>Цю картку вже призначено іншому поточному клієнту.</value></data>
+  <data name="Error.DuplicateWarningNotAcknowledged" xml:space="preserve"><value>Перевірте й підтвердьте кожне актуальне попередження про можливий дубль.</value></data>
+  <data name="Error.WarningAcknowledgementRequired" xml:space="preserve"><value>Підтвердьте поточне попередження абонемента перед продовженням.</value></data>
+  <data name="Error.VisitDuringFreeze" xml:space="preserve"><value>Дата відвідування припадає на активне замороження.</value></data>
+  <data name="Error.PreviewExpired" xml:space="preserve"><value>Попередній перегляд застарів. Оновіть його та перевірте поточні значення.</value></data>
+  <data name="Error.AffectedScopeChanged" xml:space="preserve"><value>Перелік зачеплених записів змінився. Оновіть і підтвердьте поточний канонічний перелік.</value></data>
+<data name="Membership.Issue" xml:space="preserve"><value>Видати абонемент</value></data>
+  <data name="Membership.NotIssued" xml:space="preserve"><value>Абонемент не видано</value></data>
+  <data name="Membership.IssueUnavailable" xml:space="preserve"><value>Видача абонемента недоступна</value></data>
+  <data name="Membership.NoActiveTypes" xml:space="preserve"><value>Немає активних типів абонементів</value></data>
+  <data name="Membership.NoActiveTypesHint" xml:space="preserve"><value>У каталозі немає доступного типу для звичайної видачі.</value></data>
+  <data name="Membership.Type" xml:space="preserve"><value>Тип абонемента</value></data>
+  <data name="Field.StartDate" xml:space="preserve"><value>Дата початку</value></data>
+  <data name="Preview.Unavailable" xml:space="preserve"><value>Попередній перегляд недоступний</value></data>
+  <data name="Membership.IssuePreview" xml:space="preserve"><value>Попередній перегляд видачі</value></data>
+  <data name="Preview.Refreshing" xml:space="preserve"><value>Оновлення попереднього перегляду…</value></data>
+  <data name="Membership.SnapshotName" xml:space="preserve"><value>Назва у знімку</value></data>
+  <data name="Membership.Duration" xml:space="preserve"><value>Тривалість</value></data>
+  <data name="Membership.VisitLimit" xml:space="preserve"><value>Ліміт відвідувань</value></data>
+  <data name="Membership.SnapshotPrice" xml:space="preserve"><value>Ціна у знімку</value></data>
+  <data name="Membership.BaseEnd" xml:space="preserve"><value>Базове завершення</value></data>
+  <data name="Membership.InitialRemaining" xml:space="preserve"><value>Початковий залишок</value></data>
+  <data name="Membership.ExtensionDays" xml:space="preserve"><value>Дні продовження</value></data>
+  <data name="Membership.ExistingNegativeVisits" xml:space="preserve"><value>Наявні від’ємні відвідування</value></data>
+  <data name="Membership.NegativeBalance" xml:space="preserve"><value>Залишок: −{0}</value></data>
+  <data name="Membership.NegativeSince" xml:space="preserve"><value>від {0}</value></data>
+  <data name="Status.Unavailable" xml:space="preserve"><value>Недоступно</value></data>
+  <data name="Membership.AddSalePayment" xml:space="preserve"><value>Додати готівковий платіж за продаж абонемента</value></data>
+  <data name="Membership.Issuing" xml:space="preserve"><value>Видача абонемента…</value></data>
+  <data name="Membership.IssuingShort" xml:space="preserve"><value>Видача…</value></data>
+  <data name="Membership.NegativeDecision.LeaveVisible" xml:space="preserve"><value>Залишити від’ємний залишок видимим</value></data>
+  <data name="Membership.NegativeDecision.Cover" xml:space="preserve"><value>Покрити новим абонементом</value></data>
+  <data name="Membership.NegativeDecision.Closure" xml:space="preserve"><value>Записати явне закриття</value></data>
+<data name="Visit.Mark" xml:space="preserve"><value>Позначити відвідування</value></data>
+  <data name="Visit.NotMarked" xml:space="preserve"><value>Відвідування не позначено</value></data>
+  <data name="Visit.ActionUnavailable" xml:space="preserve"><value>Позначення відвідування недоступне</value></data>
+  <data name="Visit.Date" xml:space="preserve"><value>Дата відвідування</value></data>
+  <data name="Visit.RecordedAs" xml:space="preserve"><value>Час події</value></data>
+  <data name="Visit.Type" xml:space="preserve"><value>Тип відвідування</value></data>
+  <data name="Visit.OneOff" xml:space="preserve"><value>Разове</value></data>
+  <data name="Visit.Trial" xml:space="preserve"><value>Пробне</value></data>
+  <data name="Visit.NoActiveMemberships" xml:space="preserve"><value>Немає абонементів з активним життєвим циклом. Свідомо виберіть разове або пробне відвідування.</value></data>
+  <data name="Visit.MembershipChoice" xml:space="preserve"><value>Вибір абонемента</value></data>
+  <data name="Visit.Remaining" xml:space="preserve"><value>Залишок</value></data>
+  <data name="Visit.Eligibility" xml:space="preserve"><value>Доступність</value></data>
+  <data name="Visit.MembershipBlocked" xml:space="preserve"><value>Абонемент заблоковано для цієї дії</value></data>
+  <data name="Visit.Marking" xml:space="preserve"><value>Позначення відвідування…</value></data>
+  <data name="Visit.MarkingShort" xml:space="preserve"><value>Позначення…</value></data>
+  <data name="Visit.Eligibility.Selectable" xml:space="preserve"><value>Можна вибрати</value></data>
+  <data name="Visit.Eligibility.FutureStart" xml:space="preserve"><value>Ще не почався</value></data>
+  <data name="Visit.Eligibility.FrozenDate" xml:space="preserve"><value>Дата в замороженні</value></data>
+  <data name="Visit.Eligibility.BeforeStart.Message" xml:space="preserve"><value>Дата відвідування раніше початку цього абонемента.</value></data>
+  <data name="Visit.Eligibility.Frozen.Message" xml:space="preserve"><value>Дата відвідування входить до активного замороження, яке не можна обійти.</value></data>
+  <data name="Visit.Eligibility.Inactive.Message" xml:space="preserve"><value>Життєвий цикл цього абонемента неактивний.</value></data>
+  <data name="Visit.Eligibility.Unavailable.Message" xml:space="preserve"><value>Цей абонемент не можна вибрати для дати відвідування.</value></data>
+  <data name="Visit.Acknowledge.Expired" xml:space="preserve"><value>Підтверджую, що абонемент прострочений на дату відвідування.</value></data>
+  <data name="Visit.Acknowledge.ZeroRemaining" xml:space="preserve"><value>Підтверджую, що це відвідування зробить залишок абонемента від’ємним.</value></data>
+  <data name="Visit.Acknowledge.Negative" xml:space="preserve"><value>Підтверджую, що абонемент уже має від’ємний залишок відвідувань.</value></data>
+  <data name="Visit.Acknowledge.Generic" xml:space="preserve"><value>Підтверджую поточне попередження абонемента.</value></data>
+<data name="Operation.Completed" xml:space="preserve"><value>{0}.</value></data>
+  <data name="Operation.WithAuditReference" xml:space="preserve"><value>{0}. Посилання аудиту: {1}.</value></data>
+  <data name="Operation.ClientCreated" xml:space="preserve"><value>Клієнта створено</value></data>
+  <data name="Operation.ClientUpdated" xml:space="preserve"><value>Клієнта оновлено</value></data>
+  <data name="Operation.CardCleared" xml:space="preserve"><value>Картку очищено</value></data>
+  <data name="Operation.CardChanged" xml:space="preserve"><value>Картку змінено</value></data>
+  <data name="Operation.CardAssigned" xml:space="preserve"><value>Картку призначено</value></data>
+  <data name="Operation.MembershipIssuedWithPayment" xml:space="preserve"><value>Абонемент видано з готівковим платежем</value></data>
+  <data name="Operation.MembershipIssued" xml:space="preserve"><value>Абонемент видано</value></data>
+  <data name="Operation.VisitMarked" xml:space="preserve"><value>Відвідування позначено</value></data>
+  <data name="Operation.FreezeAdded" xml:space="preserve"><value>Замороження додано</value></data>
+  <data name="Operation.FreezeCanceledAfterClose" xml:space="preserve"><value>Замороження скасовано після звірення дня</value></data>
+  <data name="Operation.FreezeCanceled" xml:space="preserve"><value>Замороження скасовано</value></data>
+  <data name="Operation.VisitCanceledAfterClose" xml:space="preserve"><value>Відвідування скасовано після звірення дня</value></data>
+  <data name="Operation.VisitCanceled" xml:space="preserve"><value>Відвідування скасовано</value></data>
+  <data name="Operation.PaymentAdded" xml:space="preserve"><value>Платіж додано</value></data>
+  <data name="Operation.PaymentCorrectedAfterClose" xml:space="preserve"><value>Платіж виправлено після звірення дня</value></data>
+  <data name="Operation.PaymentCorrected" xml:space="preserve"><value>Платіж виправлено</value></data>
+  <data name="Operation.PaymentCanceledAfterClose" xml:space="preserve"><value>Платіж скасовано після звірення дня</value></data>
+  <data name="Operation.PaymentCanceled" xml:space="preserve"><value>Платіж скасовано</value></data>
+<data name="Error.Validation.Membership" xml:space="preserve"><value>Виберіть доступний абонемент.</value></data>
+  <data name="Error.Validation.NegativeDecision" xml:space="preserve"><value>Виберіть підтримуваний спосіб обробки від’ємного залишку.</value></data>
+  <data name="Error.Validation.CorrectionMode" xml:space="preserve"><value>Виберіть заміну або скасування.</value></data>
+  <data name="Error.Validation.PaymentContext" xml:space="preserve"><value>Виберіть підтримуваний контекст платежу.</value></data>
+  <data name="Error.Validation.OccurredAt" xml:space="preserve"><value>Вкажіть коректний час події для цієї дії.</value></data>
+  <data name="Error.Validation.Comment" xml:space="preserve"><value>Коментар задовгий або некоректний.</value></data>
+  <data name="Error.Validation.OriginalPayment" xml:space="preserve"><value>Потрібно вказати початковий платіж.</value></data>
+  <data name="Error.Validation.ReplacementMembership" xml:space="preserve"><value>Виберіть коректний абонемент для заміни або залиште поле порожнім.</value></data>
+  <data name="Error.Validation.Surname" xml:space="preserve"><value>Вкажіть прізвище клієнта.</value></data>
+  <data name="Error.Validation.Name" xml:space="preserve"><value>Вкажіть ім’я клієнта.</value></data>
+  <data name="Error.Validation.CardNumber" xml:space="preserve"><value>Вкажіть коректний номер картки.</value></data>
+</root>

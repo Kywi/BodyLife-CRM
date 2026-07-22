@@ -1,8 +1,10 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages.Reports;
 
@@ -10,7 +12,8 @@ public sealed class DailyModel(
     IBodyLifeRequestContextResolver requestContextResolver,
     IBodyLifeQueryHandler<GenerateDailyReportQuery, GenerateDailyReportResult>
         generateDailyReport,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IStringLocalizer<BodyLife.Crm.Web.Localization.Reports> localizer)
     : PageModel
 {
     [BindProperty(SupportsGet = true, Name = "date")]
@@ -29,7 +32,7 @@ public sealed class DailyModel(
     {
         if (!ModelState.IsValid)
         {
-            LoadError = "Enter a valid business date.";
+            LoadError = localizer["Error.InvalidInput"];
             return;
         }
 
@@ -40,5 +43,7 @@ public sealed class DailyModel(
                 BusinessDate.Value,
                 IncludeDrillDown: true),
             cancellationToken);
+        if (Result is { Status: not GenerateDailyReportStatus.Success })
+            LoadError = ReportsPresentation.Error(localizer, Result.Status);
     }
 }

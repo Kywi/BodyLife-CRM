@@ -1,4 +1,6 @@
 @model BodyLife.Crm.Web.Pages.Owner.NonWorkingDayPreviewWorkspaceViewModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<BodyLife.Crm.Web.Localization.Owner> OwnerLocalizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<BodyLife.Crm.Web.Localization.Shared> SharedLocalizer
 @{
     var input = Model.Input;
     var preview = Model.Preview;
@@ -10,14 +12,14 @@
      data-non-working-day-preview-workspace>
     <section class="non-working-day-preview-input" aria-labelledby="preview-impact-form-title">
         <header class="catalog-create-header">
-            <h2 id="preview-impact-form-title">Preview closure impact</h2>
-            <span class="status-chip status-owner">Owner only</span>
+            <h2 id="preview-impact-form-title">@OwnerLocalizer["NonWorkingDays.PreviewTitle"]</h2>
+            <span class="status-chip status-owner">@OwnerLocalizer["NonWorkingDays.OwnerOnly"]</span>
         </header>
 
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>@(Model.ErrorHeading ?? "Review this operation")</strong>
+                <strong>@(Model.ErrorHeading ?? OwnerLocalizer["NonWorkingDays.ReviewOperation"])</strong>
                 <ul>
                     @foreach (var message in Model.Errors
                         .Select(error => error.Message)
@@ -43,7 +45,7 @@
               data-busy-form>
             <div class="non-working-day-preview-grid">
                 <div class="form-field">
-                    <label for="non-working-day-start-date">Start date</label>
+                    <label for="non-working-day-start-date">@OwnerLocalizer["NonWorkingDays.StartDate"]</label>
                     <input id="non-working-day-start-date"
                            name="form.ProposedStartDate"
                            type="date"
@@ -51,7 +53,7 @@
                            required />
                 </div>
                 <div class="form-field">
-                    <label for="non-working-day-end-date">End date</label>
+                    <label for="non-working-day-end-date">@OwnerLocalizer["NonWorkingDays.EndDate"]</label>
                     <input id="non-working-day-end-date"
                            name="form.ProposedEndDate"
                            type="date"
@@ -59,7 +61,7 @@
                            required />
                 </div>
                 <div class="form-field non-working-day-reason-code">
-                    <label for="non-working-day-reason-code">Reason code</label>
+                    <label for="non-working-day-reason-code">@OwnerLocalizer["NonWorkingDays.ReasonCode"]</label>
                     <input id="non-working-day-reason-code"
                            name="form.ReasonCode"
                            type="text"
@@ -69,7 +71,7 @@
                            autocomplete="off" />
                 </div>
                 <div class="form-field non-working-day-reason-comment">
-                    <label for="non-working-day-reason-comment">Reason comment (optional)</label>
+                    <label for="non-working-day-reason-comment">@OwnerLocalizer["NonWorkingDays.ReasonComment"]</label>
                     <textarea id="non-working-day-reason-comment"
                               name="form.ReasonComment"
                               rows="3"
@@ -78,10 +80,10 @@
                 <div class="non-working-day-preview-actions">
                     <button type="submit"
                             data-preview-non-working-day-submit
-                            data-busy-text="Calculating...">Preview impact</button>
+                            data-busy-text="@OwnerLocalizer["NonWorkingDays.Calculating"]">@OwnerLocalizer["NonWorkingDays.PreviewImpact"]</button>
                     <span id="non-working-day-preview-loading"
                           class="request-indicator"
-                          role="status">Calculating canonical impact...</span>
+                          role="status">@OwnerLocalizer["NonWorkingDays.CalculatingImpact"]</span>
                 </div>
             </div>
         </form>
@@ -106,47 +108,47 @@
 
             <header class="non-working-day-impact-header">
                 <div>
-                    <p class="eyebrow">Owner review</p>
-                    <h2 id="non-working-day-impact-title">Impact preview</h2>
+                    <p class="eyebrow">@OwnerLocalizer["NonWorkingDays.OwnerReview"]</p>
+                    <h2 id="non-working-day-impact-title">@OwnerLocalizer["NonWorkingDays.ImpactPreview"]</h2>
                 </div>
                 <span class="status-chip status-active">
-                    Valid until @FormatTimestamp(preview.Confirmation.ExpiresAt)
+                    @OwnerLocalizer["NonWorkingDays.ValidUntil", FormatTimestamp(preview.Confirmation.ExpiresAt)]
                 </span>
             </header>
 
             <dl class="non-working-day-impact-summary">
                 <div>
-                    <dt>Affected memberships</dt>
+                    <dt>@OwnerLocalizer["NonWorkingDays.AffectedMemberships"]</dt>
                     <dd>@preview.AffectedCount</dd>
                 </div>
                 <div>
-                    <dt>Inclusive period</dt>
-                    <dd>@FormatRange(preview.Period)</dd>
+                    <dt>@OwnerLocalizer["NonWorkingDays.InclusivePeriod"]</dt>
+                    <dd>@DisplayRange(preview.Period)</dd>
                 </div>
                 <div>
-                    <dt>Period days</dt>
+                    <dt>@OwnerLocalizer["NonWorkingDays.PeriodDays"]</dt>
                     <dd>@preview.Period.InclusiveDays</dd>
                 </div>
                 <div>
-                    <dt>Overlap warnings</dt>
+                    <dt>@OwnerLocalizer["NonWorkingDays.OverlapWarnings"]</dt>
                     <dd>@preview.OverlapWarningCount</dd>
                 </div>
             </dl>
 
             <div class="non-working-day-full-period-notice" role="note">
-                <strong>Full period applies</strong>
+                <strong>@OwnerLocalizer["NonWorkingDays.FullPeriodApplies"]</strong>
                 <p>
-                    Every affected Membership receives @FormatRange(preview.Period), even when it overlaps only one endpoint. Existing extension sources remain union-counted.
+                    @OwnerLocalizer["NonWorkingDays.FullPeriodNotice", DisplayRange(preview.Period)]
                 </p>
             </div>
 
             @if (preview.AffectedMemberships.Count == 0)
             {
-                <p class="empty-state">No Memberships are affected by this period.</p>
+                <p class="empty-state">@OwnerLocalizer["NonWorkingDays.NoAffected"]</p>
             }
             else
             {
-                <ol class="non-working-day-impact-list" aria-label="Affected Memberships">
+                <ol class="non-working-day-impact-list" aria-label="@OwnerLocalizer["NonWorkingDays.AffectedMemberships"]">
                     @foreach (var membership in preview.AffectedMemberships)
                     {
                         <li class="non-working-day-impact-row"
@@ -161,36 +163,36 @@
                                            asp-route-clientId="@membership.ClientId">@membership.ClientDisplayName</a>
                                     </h3>
                                     <p class="non-working-day-impact-reference">
-                                        Membership @ShortReference(membership.MembershipId)
+                                        @OwnerLocalizer["NonWorkingDays.MembershipReference", ShortReference(membership.MembershipId)]
                                     </p>
                                 </div>
                                 <span class="status-chip status-active">
-                                    +@membership.AddedUniqueExtensionDays unique days
+                                    @WebPluralizer.UniqueDays(SharedLocalizer, membership.AddedUniqueExtensionDays)
                                 </span>
                             </header>
 
                             <dl class="non-working-day-impact-meta">
                                 <div>
-                                    <dt>Full applied range</dt>
-                                    <dd>@FormatRange(membership.AppliedRange)</dd>
+                                <dt>@OwnerLocalizer["NonWorkingDays.FullAppliedRange"]</dt>
+                                    <dd>@DisplayRange(membership.AppliedRange)</dd>
                                 </div>
                                 <div>
-                                    <dt>Effective end</dt>
+                                <dt>@OwnerLocalizer["NonWorkingDays.EffectiveEnd"]</dt>
                                     <dd>
-                                        @FormatDate(membership.BeforeEffectiveEndDate)
-                                        to @FormatDate(membership.EstimatedAfterEffectiveEndDate)
+                                        @DisplayDate(membership.BeforeEffectiveEndDate)
+                                        @OwnerLocalizer["NonWorkingDays.To"] @DisplayDate(membership.EstimatedAfterEffectiveEndDate)
                                     </dd>
                                 </div>
                                 <div>
-                                    <dt>Extension days</dt>
+                                <dt>@OwnerLocalizer["NonWorkingDays.ExtensionDays"]</dt>
                                     <dd>
                                         @membership.BeforeExtensionDays
-                                        to @membership.EstimatedAfterExtensionDays
+                                        @OwnerLocalizer["NonWorkingDays.To"] @membership.EstimatedAfterExtensionDays
                                     </dd>
                                 </div>
                                 <div>
-                                    <dt>Existing overlap</dt>
-                                    <dd>@membership.ExistingOverlapDays days</dd>
+                                <dt>@OwnerLocalizer["NonWorkingDays.ExistingOverlap"]</dt>
+                                <dd>@WebPluralizer.Days(SharedLocalizer, membership.ExistingOverlapDays)</dd>
                                 </div>
                             </dl>
 
@@ -198,8 +200,7 @@
                             {
                                 <div class="non-working-day-overlap-warning" role="note">
                                     <strong>
-                                        @membership.OverlapWarnings.Count existing extension
-                                        @(membership.OverlapWarnings.Count == 1 ? "overlap" : "overlaps")
+                                        @OwnerLocalizer["NonWorkingDays.ExistingOverlaps", membership.OverlapWarnings.Count]
                                     </strong>
                                     <ul>
                                         @foreach (var warning in membership.OverlapWarnings)
@@ -207,7 +208,7 @@
                                             <li data-overlap-source-type="@warning.SourceType"
                                                 data-overlap-source-id="@warning.SourceId">
                                                 @SourceTypeLabel(warning.SourceType): @warning.SourceLabel,
-                                                @FormatRange(warning.OverlapRange), @warning.OverlapDays days
+                                                @DisplayRange(warning.OverlapRange), @WebPluralizer.Days(SharedLocalizer, warning.OverlapDays)
                                             </li>
                                         }
                                     </ul>
@@ -257,12 +258,11 @@
 
                 <div class="non-working-day-confirmation-review">
                     <div>
-                        <p class="eyebrow">Final confirmation</p>
-                        <h3>Apply this exact scope</h3>
+                        <p class="eyebrow">@OwnerLocalizer["NonWorkingDays.FinalConfirmation"]</p>
+                        <h3>@OwnerLocalizer["NonWorkingDays.ApplyExactScope"]</h3>
                     </div>
                     <p>
-                        The command will create one immutable application for each of the
-                        @preview.AffectedCount affected Memberships and synchronously recalculate their canonical state.
+                        @OwnerLocalizer["NonWorkingDays.ConfirmationNotice", preview.AffectedCount]
                     </p>
                 </div>
 
@@ -274,8 +274,7 @@
                            value="true"
                            required />
                     <span>
-                        I confirm this exact set of @preview.AffectedCount Memberships receives the full
-                        @FormatRange(preview.Period) period.
+                        @OwnerLocalizer["NonWorkingDays.ConfirmScope", preview.AffectedCount, DisplayRange(preview.Period)]
                     </span>
                 </label>
 
@@ -283,10 +282,10 @@
                     <span id="non-working-day-confirmation-loading"
                           class="request-indicator htmx-indicator"
                           role="status"
-                          aria-live="polite">Adding period and recalculating Memberships...</span>
+                          aria-live="polite">@OwnerLocalizer["NonWorkingDays.AddingAndRecalculating"]</span>
                     <button type="submit"
                             data-confirm-non-working-day-submit
-                            data-busy-text="Adding period...">Add non-working period</button>
+                            data-busy-text="@OwnerLocalizer["NonWorkingDays.AddingPeriod"]">@OwnerLocalizer["NonWorkingDays.AddPeriod"]</button>
                 </div>
             </form>
         </section>
@@ -302,63 +301,63 @@
                  data-confirmed-status="@confirmedPeriod.Status.ToString().ToLowerInvariant()"
                  data-confirmed-audit-id="@confirmedPeriod.AuditEntryId">
             <div class="operation-message operation-success" role="status">
-                <strong>Non-working period added</strong>
-                <span>The exact affected scope was stored and every Membership was recalculated before commit.</span>
+                <strong>@OwnerLocalizer["NonWorkingDays.PeriodAdded"]</strong>
+                <span>@OwnerLocalizer["NonWorkingDays.PeriodAddedNotice"]</span>
             </div>
 
             <header class="non-working-day-impact-header">
                 <div>
-                    <p class="eyebrow">Canonical result</p>
-                    <h2 id="non-working-day-confirmed-title">Confirmed period</h2>
+                    <p class="eyebrow">@OwnerLocalizer["NonWorkingDays.CanonicalResult"]</p>
+                    <h2 id="non-working-day-confirmed-title">@OwnerLocalizer["NonWorkingDays.ConfirmedPeriod"]</h2>
                 </div>
                 <span class="status-chip status-active">@StatusLabel(confirmedPeriod.Status)</span>
             </header>
 
             <dl class="non-working-day-impact-summary">
                 <div>
-                    <dt>Affected memberships</dt>
+                    <dt>@OwnerLocalizer["NonWorkingDays.AffectedMemberships"]</dt>
                     <dd>@confirmedPeriod.AffectedCount</dd>
                 </div>
                 <div>
-                    <dt>Inclusive period</dt>
-                    <dd>@FormatRange(confirmedPeriod.Period)</dd>
+                    <dt>@OwnerLocalizer["NonWorkingDays.InclusivePeriod"]</dt>
+                    <dd>@DisplayRange(confirmedPeriod.Period)</dd>
                 </div>
                 <div>
-                    <dt>Period days</dt>
+                    <dt>@OwnerLocalizer["NonWorkingDays.PeriodDays"]</dt>
                     <dd>@confirmedPeriod.Period.InclusiveDays</dd>
                 </div>
                 <div>
-                    <dt>Audit reference</dt>
+                    <dt>@OwnerLocalizer["NonWorkingDays.AuditReference"]</dt>
                     <dd>@ShortReference(confirmedPeriod.AuditEntryId)</dd>
                 </div>
             </dl>
 
             <dl class="non-working-day-confirmed-reason">
                 <div>
-                    <dt>Reason code</dt>
+                    <dt>@OwnerLocalizer["NonWorkingDays.ReasonCode"]</dt>
                     <dd>@confirmedPeriod.ReasonCode</dd>
                 </div>
                 <div>
-                    <dt>Reason comment</dt>
-                    <dd>@(confirmedPeriod.ReasonComment ?? "None")</dd>
+                    <dt>@OwnerLocalizer["NonWorkingDays.ReasonComment"]</dt>
+                    <dd>@(confirmedPeriod.ReasonComment ?? OwnerLocalizer["NonWorkingDays.None"])</dd>
                 </div>
             </dl>
 
             <div class="non-working-day-scope-confirmed" role="note">
-                <strong>Exact scope captured</strong>
+                <strong>@OwnerLocalizer["NonWorkingDays.ExactScopeCaptured"]</strong>
                 <p>
-                    Every row below is a committed application of the full period. Later Membership changes do not silently alter this snapshot.
+                    @OwnerLocalizer["NonWorkingDays.ExactScopeNotice"]
                 </p>
             </div>
 
             @if (confirmedPeriod.Applications.Count == 0)
             {
-                <p class="empty-state">This confirmed period affected no Memberships.</p>
+                <p class="empty-state">@OwnerLocalizer["NonWorkingDays.ConfirmedNoAffected"]</p>
             }
             else
             {
                 <ol class="non-working-day-impact-list"
-                    aria-label="Confirmed affected Memberships">
+                    aria-label="@OwnerLocalizer["NonWorkingDays.ConfirmedAffectedMemberships"]">
                     @foreach (var application in confirmedPeriod.Applications)
                     {
                         <li class="non-working-day-impact-row"
@@ -376,7 +375,7 @@
                                            asp-route-clientId="@application.ClientId">@application.ClientDisplayName</a>
                                     </h3>
                                     <p class="non-working-day-impact-reference">
-                                        Membership @ShortReference(application.MembershipId)
+                                        @OwnerLocalizer["NonWorkingDays.MembershipReference", ShortReference(application.MembershipId)]
                                     </p>
                                 </div>
                                 <span class="status-chip status-active">@StatusLabel(application.Status)</span>
@@ -384,19 +383,19 @@
 
                             <dl class="non-working-day-impact-meta">
                                 <div>
-                                    <dt>Full applied range</dt>
-                                    <dd>@FormatRange(application.AppliedRange)</dd>
+                                <dt>@OwnerLocalizer["NonWorkingDays.FullAppliedRange"]</dt>
+                                    <dd>@DisplayRange(application.AppliedRange)</dd>
                                 </div>
                                 <div>
-                                    <dt>Current effective end</dt>
-                                    <dd>@FormatDate(application.CurrentEffectiveEndDate)</dd>
+                                <dt>@OwnerLocalizer["NonWorkingDays.CurrentEffectiveEnd"]</dt>
+                                    <dd>@DisplayDate(application.CurrentEffectiveEndDate)</dd>
                                 </div>
                                 <div>
-                                    <dt>Current extension days</dt>
+                                <dt>@OwnerLocalizer["NonWorkingDays.CurrentExtensionDays"]</dt>
                                     <dd>@application.CurrentExtensionDays</dd>
                                 </div>
                                 <div>
-                                    <dt>State recalculated</dt>
+                                <dt>@OwnerLocalizer["NonWorkingDays.StateRecalculated"]</dt>
                                     <dd>@FormatTimestamp(application.RecalculatedAt)</dd>
                                 </div>
                             </dl>
@@ -420,16 +419,9 @@
         return date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    private static string FormatRange(DateRange range)
-    {
-        return $"{FormatDate(range.StartDate)} to {FormatDate(range.EndDate)}";
-    }
-
     private static string FormatTimestamp(DateTimeOffset timestamp)
     {
-        return timestamp.UtcDateTime.ToString(
-            "yyyy-MM-dd HH:mm 'UTC'",
-            System.Globalization.CultureInfo.InvariantCulture);
+        return $"{timestamp.UtcDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture)} UTC";
     }
 
     private static string ShortReference(Guid id)
@@ -437,25 +429,31 @@
         return id.ToString("N")[..8];
     }
 
-    private static string SourceTypeLabel(string sourceType)
+    private string SourceTypeLabel(string sourceType)
     {
         return sourceType switch
         {
-            "freeze" => "Freeze",
-            "non_working_day" => "Non-working period",
-            "adjustment" => "Adjustment",
-            _ => "Extension source",
+            "freeze" => OwnerLocalizer["NonWorkingDay.Source.Freeze"],
+            "non_working_day" => OwnerLocalizer["NonWorkingDay.Source.NonWorkingDay"],
+            "adjustment" => OwnerLocalizer["NonWorkingDay.Source.Adjustment"],
+            _ => OwnerLocalizer["NonWorkingDay.Source.Extension"],
         };
     }
 
-    private static string StatusLabel(NonWorkingDayCorrectionSourceStatus status)
+    private string StatusLabel(NonWorkingDayCorrectionSourceStatus status)
     {
         return status switch
         {
-            NonWorkingDayCorrectionSourceStatus.Active => "Active",
-            NonWorkingDayCorrectionSourceStatus.Corrected => "Corrected",
-            NonWorkingDayCorrectionSourceStatus.Canceled => "Canceled",
-            _ => "Unsupported",
+            NonWorkingDayCorrectionSourceStatus.Active => OwnerLocalizer["NonWorkingDay.Status.Active"],
+            NonWorkingDayCorrectionSourceStatus.Corrected => OwnerLocalizer["NonWorkingDay.Status.Corrected"],
+            NonWorkingDayCorrectionSourceStatus.Canceled => OwnerLocalizer["NonWorkingDay.Status.Canceled"],
+            _ => OwnerLocalizer["NonWorkingDay.Status.Unsupported"],
         };
     }
+
+    private static string DisplayDate(DateOnly date) =>
+        date.ToString("d", System.Globalization.CultureInfo.CurrentCulture);
+
+    private static string DisplayRange(DateRange range) =>
+        $"{DisplayDate(range.StartDate)} – {DisplayDate(range.EndDate)}";
 }

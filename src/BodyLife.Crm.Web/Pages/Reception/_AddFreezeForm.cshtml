@@ -1,4 +1,6 @@
 @using System.Globalization
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
 @model AddFreezeFormViewModel
 @{
     var input = Model.Input;
@@ -10,15 +12,15 @@
 <details id="add-freeze-action-panel"
          class="profile-action-panel"
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>Add freeze</summary>
+    <summary>@L["Freeze.Add"]</summary>
     <div class="profile-action-content">
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>Freeze not added</strong>
+                <strong>@L["Freeze.NotAdded"]</strong>
                 <ul>
                     @foreach (var message in Model.Errors
-                        .Select(AddFreezeFormViewModel.DisplayError)
+                        .Select(error => ReceptionCommandErrorLocalizer.Display(L, error))
                         .Distinct(StringComparer.Ordinal))
                     {
                         <li>@message</li>
@@ -28,9 +30,9 @@
         }
 
         <div class="warning-block warning-caution">
-            <strong>Inclusive membership range</strong>
-            <span>Start must be within the selected Membership window. End may cross its current effective end date.</span>
-            <span>An active counted Membership Visit inside the range blocks the Freeze.</span>
+            <strong>@L["Freeze.Range"]</strong>
+            <span>@L["Freeze.RangeHint"]</span>
+            <span>@L["Freeze.VisitHint"]</span>
         </div>
 
         <form id="add-freeze-form-@clientKey"
@@ -55,23 +57,23 @@
 
             <div class="action-form-grid">
                 <div class="form-field form-field-wide">
-                    <label for="freeze-membership-@clientKey">Membership</label>
+                    <label for="freeze-membership-@clientKey">@L["Field.Membership"]</label>
                     <select id="freeze-membership-@clientKey"
                             name="form.MembershipId"
                             required>
-                        <option value="" selected="@(input.MembershipId is null ? "selected" : null)">Choose membership</option>
+                        <option value="" selected="@(input.MembershipId is null ? "selected" : null)">@L["Action.ChooseMembership"]</option>
                         @foreach (var membership in Model.MembershipOptions)
                         {
                             <option value="@membership.MembershipId"
                                     selected="@(input.MembershipId == membership.MembershipId ? "selected" : null)">
-                                @membership.TypeNameSnapshot | @MembershipStatusLabel(membership.Status) | ends @membership.EffectiveEndDate.ToString("yyyy-MM-dd")
+                                @membership.TypeNameSnapshot | @MembershipStatusLabel(membership.Status) | @L["Payment.Ends"] @ReceptionDisplayFormatter.Date(membership.EffectiveEndDate)
                             </option>
                         }
                     </select>
                 </div>
 
                 <div class="form-field">
-                    <label for="freeze-start-date-@clientKey">Freeze start date</label>
+                    <label for="freeze-start-date-@clientKey">@L["Freeze.Start"]</label>
                     <input id="freeze-start-date-@clientKey"
                            type="date"
                            name="form.StartDate"
@@ -80,7 +82,7 @@
                 </div>
 
                 <div class="form-field">
-                    <label for="freeze-end-date-@clientKey">Freeze end date</label>
+                    <label for="freeze-end-date-@clientKey">@L["Freeze.End"]</label>
                     <input id="freeze-end-date-@clientKey"
                            type="date"
                            name="form.EndDate"
@@ -89,7 +91,7 @@
                 </div>
 
                 <div class="form-field form-field-wide">
-                    <label for="freeze-reason-@clientKey">Reason</label>
+                    <label for="freeze-reason-@clientKey">@L["Field.Reason"]</label>
                     <textarea id="freeze-reason-@clientKey"
                               name="form.Reason"
                               maxlength="@AddFreezeFormViewModel.ReasonMaxLength"
@@ -97,7 +99,7 @@
                 </div>
 
                 <div class="form-field form-field-wide">
-                    <label for="freeze-comment-@clientKey">Comment (optional)</label>
+                    <label for="freeze-comment-@clientKey">@L["Field.CommentOptional"]</label>
                     <textarea id="freeze-comment-@clientKey"
                               name="form.Comment"
                               maxlength="@AddFreezeFormViewModel.CommentMaxLength">@input.Comment</textarea>
@@ -108,23 +110,23 @@
                 <span id="add-freeze-loading"
                       class="request-indicator htmx-indicator"
                       role="status"
-                      aria-live="polite">Adding freeze...</span>
+                      aria-live="polite">@L["Freeze.Adding"]</span>
                 <button type="submit"
                         data-add-freeze-submit
-                        data-busy-text="Adding...">Add freeze</button>
+                        data-busy-text="@L["Action.Adding"]">@L["Freeze.Add"]</button>
             </div>
         </form>
     </div>
 </details>
 
 @functions {
-    private static string MembershipStatusLabel(string status)
+    private string MembershipStatusLabel(string status)
     {
         return status switch
         {
-            ClientMembershipSummaryStatusCodes.Active => "active",
-            ClientMembershipSummaryStatusCodes.Expired => "expired",
-            _ => status,
+            ClientMembershipSummaryStatusCodes.Active => L["Status.Active"],
+            ClientMembershipSummaryStatusCodes.Expired => L["Status.Expired"],
+            _ => L["Value.Unknown"],
         };
     }
 }

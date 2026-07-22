@@ -1,17 +1,18 @@
 @page
 @model BodyLife.Crm.Web.Pages.Owner.MembershipTypesModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<BodyLife.Crm.Web.Localization.Shared> SharedLocalizer
 @{
-    ViewData["Title"] = "Membership types";
+    ViewData["Title"] = Model.T("MembershipTypes.Title");
 }
 
 <main class="page-shell">
     <section class="owner-management" aria-labelledby="membership-types-title">
         <header class="management-header">
             <div>
-                <p class="eyebrow">Owner settings</p>
-                <h1 id="membership-types-title">Membership types</h1>
+                <p class="eyebrow">@Model.T("MembershipTypes.OwnerSettings")</p>
+                <h1 id="membership-types-title">@Model.T("MembershipTypes.Title")</h1>
             </div>
-            <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+            <a class="secondary-link" asp-page="/Reception/Index">@Model.T("MembershipTypes.Reception")</a>
         </header>
 
         @if (!string.IsNullOrWhiteSpace(Model.OperationMessage))
@@ -27,16 +28,16 @@
 
             <section class="catalog-create-section" aria-labelledby="create-membership-type-title">
                 <header class="catalog-create-header">
-                    <h2 id="create-membership-type-title">Add membership type</h2>
-                    <span class="status-chip status-owner">Owner only</span>
+                    <h2 id="create-membership-type-title">@Model.T("MembershipTypes.Add")</h2>
+                    <span class="status-chip status-owner">@Model.T("MembershipTypes.OwnerOnly")</span>
                 </header>
 
                 @if (Model.CreateForm.Errors.Count > 0)
                 {
                     <div class="command-error-summary" role="alert">
-                        <strong>Membership type not created</strong>
+                        <strong>@Model.T("MembershipTypes.CreateFailed")</strong>
                         <ul>
-                            @foreach (var message in Model.CreateForm.Errors.Select(DisplayCreateError).Distinct(StringComparer.Ordinal))
+                            @foreach (var message in Model.CreateForm.Errors.Select(Model.DisplayError).Distinct(StringComparer.Ordinal))
                             {
                                 <li>@message</li>
                             }
@@ -54,7 +55,7 @@
 
                     <div class="membership-type-create-grid">
                         <div class="form-field form-field-span-2">
-                            <label for="membership-type-name">Name</label>
+                            <label for="membership-type-name">@Model.T("MembershipTypes.Name")</label>
                             <input id="membership-type-name"
                                    name="form.Name"
                                    type="text"
@@ -63,7 +64,7 @@
                                    autocomplete="off" />
                         </div>
                         <div class="form-field">
-                            <label for="membership-type-duration">Duration (days)</label>
+                            <label for="membership-type-duration">@Model.T("MembershipTypes.Duration")</label>
                             <input id="membership-type-duration"
                                    name="form.DurationDays"
                                    type="number"
@@ -73,7 +74,7 @@
                                    required />
                         </div>
                         <div class="form-field">
-                            <label for="membership-type-visits">Visit limit</label>
+                            <label for="membership-type-visits">@Model.T("MembershipTypes.VisitLimit")</label>
                             <input id="membership-type-visits"
                                    name="form.VisitsLimit"
                                    type="number"
@@ -83,7 +84,7 @@
                                    required />
                         </div>
                         <div class="form-field">
-                            <label for="membership-type-price">Price amount</label>
+                            <label for="membership-type-price">@Model.T("MembershipTypes.PriceAmount")</label>
                             <input id="membership-type-price"
                                    name="form.PriceAmount"
                                    type="number"
@@ -93,7 +94,7 @@
                                    required />
                         </div>
                         <div class="form-field">
-                            <label for="membership-type-currency">Currency</label>
+                            <label for="membership-type-currency">@Model.T("MembershipTypes.Currency")</label>
                             <input id="membership-type-currency"
                                    name="form.PriceCurrency"
                                    type="text"
@@ -103,13 +104,13 @@
                                    autocomplete="off" />
                         </div>
                         <div class="form-field form-field-span-2">
-                            <label for="membership-type-comment">Comment</label>
+                            <label for="membership-type-comment">@Model.T("MembershipTypes.Comment")</label>
                             <textarea id="membership-type-comment"
                                       name="form.Comment"
                                       rows="3">@createInput.Comment</textarea>
                         </div>
                         <div class="catalog-create-actions">
-                            <button type="submit" data-busy-text="Adding...">Add membership type</button>
+                            <button type="submit" data-busy-text="@Model.T("MembershipTypes.Adding")">@Model.T("MembershipTypes.Add")</button>
                         </div>
                     </div>
                 </form>
@@ -119,19 +120,19 @@
         <section class="membership-type-list" aria-labelledby="membership-type-list-title">
             <header class="list-header">
                 <div>
-                    <h2 id="membership-type-list-title">Future sales catalog</h2>
+                    <h2 id="membership-type-list-title">@Model.T("MembershipTypes.Catalog")</h2>
                     <p class="list-breakdown">
-                        <span>@Model.ActiveCount active</span>
-                        <span>@Model.InactiveCount inactive</span>
+                        <span>@Model.T("MembershipTypes.ActiveCount", Model.ActiveCount)</span>
+                        <span>@Model.T("MembershipTypes.InactiveCount", Model.InactiveCount)</span>
                     </p>
                 </div>
                 <div class="catalog-list-summary">
                     @if (Model.CanManageCatalog)
                     {
-                        <span class="status-chip status-owner">Owner managed</span>
+                        <span class="status-chip status-owner">@Model.T("MembershipTypes.OwnerManaged")</span>
                     }
                     <span class="list-count">
-                        @Model.MembershipTypes.Count @(Model.MembershipTypes.Count == 1 ? "type" : "types")
+                        @Model.T("MembershipTypes.TypeCount", Model.MembershipTypes.Count)
                     </span>
                 </div>
             </header>
@@ -139,9 +140,9 @@
             @if (Model.CatalogErrors.Count > 0)
             {
                 <div class="command-error-summary" role="alert">
-                    <strong>Catalog not updated</strong>
+                    <strong>@Model.T("MembershipTypes.CatalogFailed")</strong>
                     <ul>
-                        @foreach (var message in Model.CatalogErrors.Select(DisplayCatalogError).Distinct(StringComparer.Ordinal))
+                        @foreach (var message in Model.CatalogErrors.Select(Model.DisplayError).Distinct(StringComparer.Ordinal))
                         {
                             <li>@message</li>
                         }
@@ -151,7 +152,7 @@
 
             @if (Model.MembershipTypes.Count == 0)
             {
-                <p class="empty-state">No membership types yet.</p>
+                <p class="empty-state">@Model.T("MembershipTypes.Empty")</p>
             }
             else
             {
@@ -166,42 +167,42 @@
                         <header class="membership-type-header">
                             <h3>@membershipType.Name</h3>
                             <span class="status-chip @(membershipType.IsActive ? "status-active" : "status-inactive")">
-                                @(membershipType.IsActive ? "Active" : "Inactive")
+                                @(membershipType.IsActive ? Model.T("MembershipTypes.Active") : Model.T("MembershipTypes.Inactive"))
                             </span>
                         </header>
 
                         <dl class="membership-type-meta">
                             <div>
-                                <dt>Duration</dt>
-                                <dd>@membershipType.DurationDays days</dd>
+                                <dt>@Model.T("MembershipTypes.Duration")</dt>
+                                <dd>@WebPluralizer.Days(SharedLocalizer, membershipType.DurationDays)</dd>
                             </div>
                             <div>
-                                <dt>Visit limit</dt>
+                                <dt>@Model.T("MembershipTypes.VisitLimit")</dt>
                                 <dd>@membershipType.VisitsLimit</dd>
                             </div>
                             <div>
-                                <dt>Price</dt>
+                                <dt>@Model.T("MembershipTypes.Price")</dt>
                                 <dd>@MembershipTypesModel.FormatPrice(membershipType.Price)</dd>
                             </div>
                             <div>
-                                <dt>Created</dt>
+                                <dt>@Model.T("MembershipTypes.Created")</dt>
                                 <dd>@MembershipTypesModel.FormatTimestamp(membershipType.CreatedAt)</dd>
                             </div>
                             <div>
-                                <dt>Updated</dt>
+                                <dt>@Model.T("MembershipTypes.Updated")</dt>
                                 <dd>@MembershipTypesModel.FormatTimestamp(membershipType.UpdatedAt)</dd>
                             </div>
                             <div>
-                                <dt>Deactivated</dt>
+                                <dt>@Model.T("MembershipTypes.Deactivated")</dt>
                                 <dd>
                                     @(membershipType.DeactivatedAt is { } deactivatedAt
                                         ? MembershipTypesModel.FormatTimestamp(deactivatedAt)
-                                        : "Not deactivated")
+                                        : Model.T("MembershipTypes.NotDeactivated"))
                                 </dd>
                             </div>
                             <div class="membership-type-comment">
-                                <dt>Comment</dt>
-                                <dd>@(membershipType.Comment ?? "No comment")</dd>
+                                <dt>@Model.T("MembershipTypes.Comment")</dt>
+                                <dd>@(membershipType.Comment ?? Model.T("MembershipTypes.NoComment"))</dd>
                             </div>
                         </dl>
 
@@ -211,14 +212,14 @@
                             var editInput = editForm.Input;
 
                             <details class="membership-type-edit-panel" open="@(editForm.IsOpen ? "open" : null)">
-                                <summary>Edit catalog values</summary>
+                                <summary>@Model.T("MembershipTypes.EditValues")</summary>
                                 <div class="membership-type-edit-content">
                                     @if (editForm.Errors.Count > 0)
                                     {
                                         <div class="command-error-summary" role="alert">
-                                            <strong>Membership type not updated</strong>
+                                            <strong>@Model.T("MembershipTypes.UpdateFailed")</strong>
                                             <ul>
-                                                @foreach (var message in editForm.Errors.Select(DisplayEditError).Distinct(StringComparer.Ordinal))
+                                                @foreach (var message in editForm.Errors.Select(Model.DisplayError).Distinct(StringComparer.Ordinal))
                                                 {
                                                     <li>@message</li>
                                                 }
@@ -238,7 +239,7 @@
 
                                         <div class="membership-type-edit-grid">
                                             <div class="form-field form-field-span-2">
-                                                <label for="edit-membership-type-name-@membershipTypeKey">Name</label>
+                                                <label for="edit-membership-type-name-@membershipTypeKey">@Model.T("MembershipTypes.Name")</label>
                                                 <input id="edit-membership-type-name-@membershipTypeKey"
                                                        name="form.Name"
                                                        type="text"
@@ -247,7 +248,7 @@
                                                        autocomplete="off" />
                                             </div>
                                             <div class="form-field">
-                                                <label for="edit-membership-type-duration-@membershipTypeKey">Duration (days)</label>
+                                                <label for="edit-membership-type-duration-@membershipTypeKey">@Model.T("MembershipTypes.Duration")</label>
                                                 <input id="edit-membership-type-duration-@membershipTypeKey"
                                                        name="form.DurationDays"
                                                        type="number"
@@ -257,7 +258,7 @@
                                                        required />
                                             </div>
                                             <div class="form-field">
-                                                <label for="edit-membership-type-visits-@membershipTypeKey">Visit limit</label>
+                                                <label for="edit-membership-type-visits-@membershipTypeKey">@Model.T("MembershipTypes.VisitLimit")</label>
                                                 <input id="edit-membership-type-visits-@membershipTypeKey"
                                                        name="form.VisitsLimit"
                                                        type="number"
@@ -267,7 +268,7 @@
                                                        required />
                                             </div>
                                             <div class="form-field">
-                                                <label for="edit-membership-type-price-@membershipTypeKey">Price amount</label>
+                                                <label for="edit-membership-type-price-@membershipTypeKey">@Model.T("MembershipTypes.PriceAmount")</label>
                                                 <input id="edit-membership-type-price-@membershipTypeKey"
                                                        name="form.PriceAmount"
                                                        type="number"
@@ -277,7 +278,7 @@
                                                        required />
                                             </div>
                                             <div class="form-field">
-                                                <label for="edit-membership-type-currency-@membershipTypeKey">Currency</label>
+                                                <label for="edit-membership-type-currency-@membershipTypeKey">@Model.T("MembershipTypes.Currency")</label>
                                                 <input id="edit-membership-type-currency-@membershipTypeKey"
                                                        name="form.PriceCurrency"
                                                        type="text"
@@ -287,13 +288,13 @@
                                                        autocomplete="off" />
                                             </div>
                                             <div class="form-field form-field-span-2">
-                                                <label for="edit-membership-type-comment-@membershipTypeKey">Catalog comment</label>
+                                                <label for="edit-membership-type-comment-@membershipTypeKey">@Model.T("MembershipTypes.CatalogComment")</label>
                                                 <textarea id="edit-membership-type-comment-@membershipTypeKey"
                                                           name="form.Comment"
                                                           rows="2">@editInput.Comment</textarea>
                                             </div>
                                             <div class="form-field form-field-span-full">
-                                                <label for="edit-membership-type-reason-@membershipTypeKey">Reason for change</label>
+                                                <label for="edit-membership-type-reason-@membershipTypeKey">@Model.T("MembershipTypes.ChangeReason")</label>
                                                 <textarea id="edit-membership-type-reason-@membershipTypeKey"
                                                           name="form.Reason"
                                                           rows="2"
@@ -303,7 +304,7 @@
                                             <div class="catalog-edit-actions">
                                                 <button class="secondary-button"
                                                         type="submit"
-                                                        data-busy-text="Saving...">Save changes</button>
+                                                        data-busy-text="@Model.T("MembershipTypes.Saving")">@Model.T("MembershipTypes.Save")</button>
                                             </div>
                                         </div>
                                     </form>
@@ -321,14 +322,14 @@
 
                             <details class="membership-type-deactivate-panel"
                                      open="@(deactivateForm.IsOpen ? "open" : null)">
-                                <summary>Deactivate membership type</summary>
+                                <summary>@Model.T("MembershipTypes.Deactivate")</summary>
                                 <div class="membership-type-deactivate-content">
                                     @if (deactivateForm.Errors.Count > 0)
                                     {
                                         <div class="command-error-summary" role="alert">
-                                            <strong>Membership type not deactivated</strong>
+                                            <strong>@Model.T("MembershipTypes.DeactivateFailed")</strong>
                                             <ul>
-                                                @foreach (var message in deactivateForm.Errors.Select(DisplayDeactivateError).Distinct(StringComparer.Ordinal))
+                                                @foreach (var message in deactivateForm.Errors.Select(Model.DisplayError).Distinct(StringComparer.Ordinal))
                                                 {
                                                     <li>@message</li>
                                                 }
@@ -342,14 +343,14 @@
                                           asp-page="/Owner/MembershipTypes"
                                           asp-page-handler="Deactivate"
                                           data-busy-form
-                                          data-confirm="Deactivate this membership type for future sales?">
+                                          data-confirm="@Model.T("MembershipTypes.DeactivateConfirm")">
                                         <input type="hidden" name="form.MembershipTypeId" value="@deactivateInput.MembershipTypeId" />
                                         <input type="hidden" name="form.ExpectedUpdatedAt" value="@deactivateInput.ExpectedUpdatedAt.ToString("O")" />
                                         <input type="hidden" name="form.IdempotencyKey" value="@deactivateInput.IdempotencyKey" />
 
                                         <div class="membership-type-deactivate-grid">
                                             <div class="form-field">
-                                                <label for="deactivate-membership-type-reason-@membershipTypeKey">Reason for deactivation</label>
+                                                <label for="deactivate-membership-type-reason-@membershipTypeKey">@Model.T("MembershipTypes.DeactivateReason")</label>
                                                 <textarea id="deactivate-membership-type-reason-@membershipTypeKey"
                                                           name="form.Reason"
                                                           rows="2"
@@ -358,7 +359,7 @@
                                             </div>
                                             <button class="danger-button"
                                                     type="submit"
-                                                    data-busy-text="Deactivating...">Deactivate</button>
+                                                    data-busy-text="@Model.T("MembershipTypes.Deactivating")">@Model.T("MembershipTypes.Deactivate")</button>
                                         </div>
                                     </form>
                                 </div>
@@ -370,75 +371,3 @@
         </section>
     </section>
 </main>
-
-@functions {
-    private static string DisplayCreateError(CommandError error)
-    {
-        return error.Code switch
-        {
-            CommandErrorCode.DuplicateSubmission =>
-                "This submission key was already used. Refresh the catalog before creating another type.",
-            CommandErrorCode.ConcurrencyConflict =>
-                "The catalog changed concurrently. Review the refreshed catalog before trying again.",
-            _ => RemoveParameterSuffix(error.Message),
-        };
-    }
-
-    private static string DisplayEditError(CommandError error)
-    {
-        return error.Code switch
-        {
-            CommandErrorCode.StaleState =>
-                "This membership type changed after the form was opened. Canonical values were reloaded; review them before saving again.",
-            CommandErrorCode.ConcurrencyConflict =>
-                "The catalog changed concurrently. Canonical values were reloaded; review them before saving again.",
-            CommandErrorCode.DuplicateSubmission =>
-                "This submission key was already used. Canonical values and a fresh key were loaded; review them before saving again.",
-            CommandErrorCode.NotFound =>
-                "The membership type was not found. The canonical catalog was refreshed.",
-            _ => RemoveParameterSuffix(error.Message),
-        };
-    }
-
-    private static string DisplayDeactivateError(CommandError error)
-    {
-        return error.Code switch
-        {
-            CommandErrorCode.StaleState =>
-                "This membership type changed after the deactivation form was opened. Canonical state was reloaded; review it before trying again.",
-            CommandErrorCode.ConcurrencyConflict =>
-                "The catalog changed concurrently. Canonical state was reloaded; review it before trying again.",
-            CommandErrorCode.DuplicateSubmission =>
-                "This submission key was already used. Canonical state and a fresh key were loaded; review them before trying again.",
-            CommandErrorCode.AlreadyInactive =>
-                "This membership type is already inactive. The canonical catalog was refreshed.",
-            CommandErrorCode.NotFound =>
-                "The membership type was not found. The canonical catalog was refreshed.",
-            _ => RemoveParameterSuffix(error.Message),
-        };
-    }
-
-    private static string DisplayCatalogError(CommandError error)
-    {
-        return error.Code switch
-        {
-            CommandErrorCode.AlreadyInactive =>
-                "This membership type is already inactive. The canonical catalog was refreshed.",
-            CommandErrorCode.StaleState or CommandErrorCode.ConcurrencyConflict =>
-                "The catalog item changed concurrently. The canonical catalog was refreshed.",
-            CommandErrorCode.DuplicateSubmission =>
-                "This submission key was already used. The canonical catalog was refreshed.",
-            CommandErrorCode.NotFound =>
-                "The membership type was not found. The canonical catalog was refreshed.",
-            _ => RemoveParameterSuffix(error.Message),
-        };
-    }
-
-    private static string RemoveParameterSuffix(string message)
-    {
-        var parameterIndex = message.IndexOf("(Parameter '", StringComparison.Ordinal);
-        return parameterIndex > 0
-            ? message[..parameterIndex].TrimEnd()
-            : message;
-    }
-}

@@ -103,31 +103,6 @@ public sealed record IssueMembershipFormViewModel(
             IsOpen: true);
     }
 
-    public static string DisplayError(CommandError error)
-    {
-        return error.Code switch
-        {
-            CommandErrorCode.DuplicateSubmission =>
-                "This issue form was already used with different data. Review and retry with the refreshed form.",
-            CommandErrorCode.PermissionDenied =>
-                "The current account or session is not allowed to issue this membership.",
-            CommandErrorCode.NotFound when error.Field == "membershipTypeId" =>
-                "The selected membership type is no longer available. Review the current catalog.",
-            CommandErrorCode.NotFound =>
-                "The client is no longer available. Refresh the reception workspace.",
-            CommandErrorCode.MembershipTypeInactive =>
-                "The selected membership type became inactive. Choose an active type.",
-            CommandErrorCode.NegativeDecisionRequired =>
-                "Choose how the existing negative visits remain handled before issuing.",
-            CommandErrorCode.MembershipNotEligible =>
-                "The selected negative handling option is not available. Review the refreshed preview.",
-            CommandErrorCode.RecalculationFailed =>
-                "Canonical membership state is unavailable. Refresh before issuing.",
-            CommandErrorCode.ConcurrencyConflict or CommandErrorCode.StaleState =>
-                "Membership data changed while submitting. Canonical profile and preview data were refreshed.",
-            _ => error.Message,
-        };
-    }
 }
 
 public sealed class IssueMembershipFormInput

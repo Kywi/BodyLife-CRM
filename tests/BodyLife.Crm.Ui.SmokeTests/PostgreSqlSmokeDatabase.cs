@@ -1848,8 +1848,14 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     CancellationId = (Guid?)null,
                     OldMembershipIds = correctedOldMembershipIds,
                     NewMembershipIds = correctedNewMembershipIds,
-                    AffectedMembershipIds = correctedNewMembershipIds,
-                    AffectedClientIds = correctedNewClientIds,
+                    AffectedMembershipIds = correctedNewMembershipIds
+                        .Distinct()
+                        .Order()
+                        .ToArray(),
+                    AffectedClientIds = correctedNewClientIds
+                        .Distinct()
+                        .Order()
+                        .ToArray(),
                 },
                 ownerAccountId,
                 "owner",
@@ -1876,8 +1882,14 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     CancellationId = (Guid?)nonWorkingDayCancellationId,
                     OldMembershipIds = canceledMembershipIds,
                     NewMembershipIds = Array.Empty<Guid>(),
-                    AffectedMembershipIds = canceledMembershipIds,
-                    AffectedClientIds = canceledClientIds,
+                    AffectedMembershipIds = canceledMembershipIds
+                        .Distinct()
+                        .Order()
+                        .ToArray(),
+                    AffectedClientIds = canceledClientIds
+                        .Distinct()
+                        .Order()
+                        .ToArray(),
                 },
                 ownerAccountId,
                 "owner",

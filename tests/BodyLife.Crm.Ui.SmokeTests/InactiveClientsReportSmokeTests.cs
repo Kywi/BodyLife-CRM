@@ -45,6 +45,7 @@ public sealed class InactiveClientsReportSmokeTests : IClassFixture<ReceptionApp
         Assert.Equal(scenario.PageSize + 1, scenario.KnownInactiveClientCount);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -156,16 +157,16 @@ public sealed class InactiveClientsReportSmokeTests : IClassFixture<ReceptionApp
                 viewportName,
                 "inactive Client card");
             await ExpectVisibleAsync(
-                featuredRow.GetByText("60 days inactive", new() { Exact = true }),
+                featuredRow.GetByText("60 days", new() { Exact = true }),
                 viewportName,
                 "canonical days-inactive value");
             await ExpectVisibleAsync(
-                featuredRow.GetByText("Client inactive", new() { Exact = true }),
+                featuredRow.GetByText("Inactive", new() { Exact = true }),
                 viewportName,
                 "separate operational status");
             await ExpectVisibleAsync(
                 featuredRow.GetByText(
-                    $"{scenario.FeaturedLastVisitAt:yyyy-MM-dd HH:mm} UTC",
+                    $"{scenario.FeaturedLastVisitAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
                     new() { Exact = true }),
                 viewportName,
                 "last active Visit timestamp");
@@ -177,7 +178,9 @@ public sealed class InactiveClientsReportSmokeTests : IClassFixture<ReceptionApp
                 "current Membership summary");
             await ExpectVisibleAsync(
                 featuredRow.GetByText(
-                    scenario.FeaturedEffectiveEndDate.ToString("yyyy-MM-dd"),
+                    scenario.FeaturedEffectiveEndDate.ToString(
+                        "d",
+                        System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture)),
                     new() { Exact = true }),
                 viewportName,
                 "canonical Membership effective end");
@@ -287,7 +290,7 @@ public sealed class InactiveClientsReportSmokeTests : IClassFixture<ReceptionApp
                 viewportName,
                 "never-visited label without an invented date");
             await ExpectVisibleAsync(
-                neverVisitedRow.GetByText("No Membership", new() { Exact = true }),
+                neverVisitedRow.GetByText("No membership", new() { Exact = true }),
                 viewportName,
                 "honest missing Membership summary");
             Assert.Equal(
@@ -339,6 +342,7 @@ public sealed class InactiveClientsReportSmokeTests : IClassFixture<ReceptionApp
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -377,7 +381,7 @@ public sealed class InactiveClientsReportSmokeTests : IClassFixture<ReceptionApp
             var error = page.GetByRole(AriaRole.Alert);
             await ExpectVisibleAsync(error, "tablet", "inactive-clients offset error");
             Assert.Contains(
-                "Offset must be between 0 and 10000.",
+                "Enter valid report filters.",
                 await error.InnerTextAsync(),
                 StringComparison.Ordinal);
             Assert.Equal(0, await page.Locator("[data-inactive-client-rows]").CountAsync());

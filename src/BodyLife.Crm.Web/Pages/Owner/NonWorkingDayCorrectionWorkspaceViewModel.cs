@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Resources;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.NonWorkingDays;
 
@@ -13,6 +15,9 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
     string? IdempotencyKey,
     NonWorkingDayCanonicalCorrection? ConfirmedCorrection)
 {
+    private static readonly ResourceManager OwnerResources = new(
+        "BodyLife.Crm.Web.Resources.Localization.Owner",
+        typeof(NonWorkingDayCorrectionWorkspaceViewModel).Assembly);
     public const int ReplacementReasonCodeMaxLength =
         NonWorkingDayPreviewInput.ReasonCodeMaxLength;
     public const int ReplacementReasonCommentMaxLength =
@@ -44,9 +49,8 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
                 new NonWorkingDayCorrectionPreviewFormInput(),
                 [new NonWorkingDayCorrectionPreviewFormError(
                     Field: null,
-                    result.ErrorMessage
-                        ?? "Active non-working periods could not be loaded.")],
-                ErrorHeading: "Correction periods unavailable",
+                    T("NonWorkingDays.Correction.Error.LoadActive"))],
+                ErrorHeading: T("NonWorkingDays.Correction.Heading.Unavailable"),
                 Preview: null,
                 CanonicalSource: null,
                 IdempotencyKey: null,
@@ -83,7 +87,7 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
             activePeriods,
             Copy(submittedInput),
             errors,
-            "Correction preview not created");
+            T("NonWorkingDays.Correction.Heading.PreviewFailed"));
     }
 
     public static NonWorkingDayCorrectionWorkspaceViewModel FromPreviewResult(
@@ -115,7 +119,7 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
             activePeriods,
             Copy(submittedInput),
             [PreviewOrCanonicalError(result, canonicalResult)],
-            "Correction preview not created");
+            T("NonWorkingDays.Correction.Heading.PreviewFailed"));
     }
 
     public static NonWorkingDayCorrectionWorkspaceViewModel
@@ -124,14 +128,19 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
             NonWorkingDayCorrectionConfirmationFormInput submittedInput,
             PreviewCorrectNonWorkingDayResult refreshedPreview,
             GetNonWorkingDayResult? canonicalResult,
-            IReadOnlyList<CommandError> commandErrors)
+            IReadOnlyList<CommandError> commandErrors,
+            bool preserveLocalizedAdapterMessages)
     {
         ArgumentNullException.ThrowIfNull(activePeriods);
         ArgumentNullException.ThrowIfNull(submittedInput);
         ArgumentNullException.ThrowIfNull(refreshedPreview);
         ArgumentNullException.ThrowIfNull(commandErrors);
 
-        var errors = commandErrors.Select(CommandError).ToList();
+        var errors = commandErrors
+            .Select(error => preserveLocalizedAdapterMessages
+                ? AdapterError(error)
+                : CommandError(error))
+            .ToList();
         if (TryGetCanonicalPreview(
                 refreshedPreview,
                 canonicalResult,
@@ -144,7 +153,7 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
                 preview!,
                 canonicalSource!,
                 errors.AsReadOnly(),
-                "Correction not applied");
+                T("NonWorkingDays.Correction.Heading.NotApplied"));
         }
 
         errors.Add(PreviewOrCanonicalError(refreshedPreview, canonicalResult));
@@ -152,14 +161,15 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
             activePeriods,
             Copy(submittedInput),
             errors.AsReadOnly(),
-            "Correction not applied");
+            T("NonWorkingDays.Correction.Heading.NotApplied"));
     }
 
     public static NonWorkingDayCorrectionWorkspaceViewModel
         FromConfirmationFailure(
             GetActiveNonWorkingDaysForCorrectionResult activePeriods,
             NonWorkingDayCorrectionConfirmationFormInput submittedInput,
-            IReadOnlyList<CommandError> commandErrors)
+            IReadOnlyList<CommandError> commandErrors,
+            bool preserveLocalizedAdapterMessages)
     {
         ArgumentNullException.ThrowIfNull(activePeriods);
         ArgumentNullException.ThrowIfNull(submittedInput);
@@ -167,8 +177,12 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
         return Failure(
             activePeriods,
             Copy(submittedInput),
-            commandErrors.Select(CommandError).ToArray(),
-            "Correction not applied");
+            commandErrors
+                .Select(error => preserveLocalizedAdapterMessages
+                    ? AdapterError(error)
+                    : CommandError(error))
+                .ToArray(),
+            T("NonWorkingDays.Correction.Heading.NotApplied"));
     }
 
     public static NonWorkingDayCorrectionWorkspaceViewModel FromCanonicalOutcome(
@@ -204,7 +218,7 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
             SuccessfulItems(activePeriods),
             InputFor(SuccessfulItems(activePeriods).FirstOrDefault()),
             [CorrectionOutcomeError(result)],
-            ErrorHeading: "Correction result unavailable",
+            ErrorHeading: T("NonWorkingDays.Correction.Heading.OutcomeUnavailable"),
             Preview: null,
             CanonicalSource: null,
             IdempotencyKey: null,
@@ -346,8 +360,7 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
         return result.Status == PreviewCorrectNonWorkingDayStatus.Success
             ? new NonWorkingDayCorrectionPreviewFormError(
                 Field: null,
-                canonicalResult?.ErrorMessage
-                    ?? "The original non-working period changed. Refresh and preview the correction again.")
+                T("NonWorkingDays.Correction.Error.OriginalChanged"))
             : PreviewError(result);
     }
 
@@ -357,19 +370,19 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
         var message = result.Status switch
         {
             PreviewCorrectNonWorkingDayStatus.NotFound =>
-                "The selected non-working period no longer exists.",
+                T("NonWorkingDays.Correction.Error.NotFound"),
             PreviewCorrectNonWorkingDayStatus.AlreadyCanceled =>
-                "The selected non-working period is already canceled.",
+                T("NonWorkingDays.Correction.Error.AlreadyCanceled"),
             PreviewCorrectNonWorkingDayStatus.StaleState =>
-                "The selected non-working period was already corrected. Refresh the active list.",
+                T("NonWorkingDays.Correction.Error.Stale"),
             PreviewCorrectNonWorkingDayStatus.SourceInconsistent =>
-                "Canonical source records are inconsistent, so correction impact cannot be shown.",
+                T("NonWorkingDays.Correction.Error.SourceInconsistent"),
             PreviewCorrectNonWorkingDayStatus.RecalculationFailed =>
-                "Canonical Membership replacement impact could not be calculated.",
+                T("NonWorkingDays.Correction.Error.Recalculation"),
             PreviewCorrectNonWorkingDayStatus.ValidationFailed =>
-                result.ErrorMessage ?? "Review the correction preview input.",
+                T("NonWorkingDays.Correction.Error.Validation"),
             PreviewCorrectNonWorkingDayStatus.PermissionDenied =>
-                "An active Owner session is required to preview a correction.",
+                T("NonWorkingDays.Correction.Error.Permission"),
             _ => throw new InvalidOperationException(
                 $"Unsupported correction preview status {result.Status}."),
         };
@@ -385,22 +398,40 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
         var message = error.Code switch
         {
             CommandErrorCode.PreviewExpired =>
-                "The correction preview expired. Review the refreshed exact old and new scope before confirming again.",
+                T("NonWorkingDays.Correction.Error.PreviewExpired"),
             CommandErrorCode.AffectedScopeChanged =>
-                "The correction scope changed. Review the refreshed exact old and new scope before confirming again.",
+                T("NonWorkingDays.Correction.Error.ScopeChanged"),
             CommandErrorCode.ConcurrencyConflict or CommandErrorCode.StaleState =>
-                "Canonical NonWorkingDay or Membership state changed. Review a fresh correction preview.",
+                T("NonWorkingDays.Correction.Error.StateChanged"),
             CommandErrorCode.AlreadyCanceled =>
-                "The selected non-working period is already canceled.",
+                T("NonWorkingDays.Correction.Error.AlreadyCanceled"),
             CommandErrorCode.NotFound =>
-                "The selected non-working period no longer exists.",
+                T("NonWorkingDays.Correction.Error.NotFound"),
             CommandErrorCode.DuplicateSubmission =>
-                "This correction was not applied. Review the refreshed preview and confirm it again.",
+                T("NonWorkingDays.Correction.Error.Duplicate"),
             CommandErrorCode.RecalculationFailed =>
-                "Membership recalculation did not complete, so no correction was committed.",
-            _ => error.Message,
+                T("NonWorkingDays.Correction.Error.Recalculation"),
+            _ => T("NonWorkingDays.Correction.Error.Generic"),
         };
         return new NonWorkingDayCorrectionPreviewFormError(error.Field, message);
+    }
+
+    private static NonWorkingDayCorrectionPreviewFormError AdapterError(
+        CommandError error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        if (error.Code is not (
+                CommandErrorCode.ValidationFailed
+                or CommandErrorCode.ReasonRequired)
+            || string.IsNullOrWhiteSpace(error.Message))
+        {
+            throw new InvalidOperationException(
+                "Only localized Web adapter validation errors can be preserved.");
+        }
+
+        return new NonWorkingDayCorrectionPreviewFormError(
+            error.Field,
+            error.Message);
     }
 
     private static NonWorkingDayCorrectionPreviewFormError CorrectionOutcomeError(
@@ -408,9 +439,16 @@ public sealed record NonWorkingDayCorrectionWorkspaceViewModel(
     {
         return new NonWorkingDayCorrectionPreviewFormError(
             result.ErrorField,
-            result.ErrorMessage
-                ?? "The canonical non-working period correction could not be loaded.");
+            T("NonWorkingDays.Correction.Error.OutcomeLoad"));
     }
+
+    private static string T(string key) =>
+        OwnerResources.GetString(key, CultureInfo.CurrentUICulture)
+        ?? OwnerResources.GetString(
+            "NonWorkingDays.Correction.Error.Generic",
+            CultureInfo.CurrentUICulture)
+        ?? throw new InvalidOperationException(
+            "The Owner localization resources are unavailable.");
 
     private static bool IsSameOriginalSource(
         NonWorkingDayCorrectionSource original,

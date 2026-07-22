@@ -52,6 +52,7 @@ public sealed class LowRemainingReportSmokeTests : IClassFixture<ReceptionAppFix
             scenario.PageSize);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -159,7 +160,7 @@ public sealed class LowRemainingReportSmokeTests : IClassFixture<ReceptionAppFix
                 "low-remaining Membership type snapshot");
             await ExpectVisibleAsync(
                 negativeRow.GetByText(
-                    "Membership has a negative visit balance.",
+                    "This membership has a negative visit balance.",
                     new() { Exact = true }),
                 viewportName,
                 "negative-balance warning");
@@ -176,7 +177,7 @@ public sealed class LowRemainingReportSmokeTests : IClassFixture<ReceptionAppFix
             Assert.Equal("0", await zeroRow.GetAttributeAsync("data-remaining-visits"));
             await ExpectVisibleAsync(
                 zeroRow.GetByText(
-                    "Membership has no remaining visits.",
+                    "This membership has no remaining visits.",
                     new() { Exact = true }),
                 viewportName,
                 "zero-remaining warning");
@@ -195,13 +196,13 @@ public sealed class LowRemainingReportSmokeTests : IClassFixture<ReceptionAppFix
                 await oneRemainingRow.GetAttributeAsync("data-remaining-visits"));
             await ExpectVisibleAsync(
                 oneRemainingRow.GetByText(
-                    $"{scenario.OneRemainingLastVisitAt:yyyy-MM-dd HH:mm} UTC",
+                    $"{scenario.OneRemainingLastVisitAt.UtcDateTime.ToString("g", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UTC",
                     new() { Exact = true }),
                 viewportName,
                 "last counted Visit");
             await ExpectVisibleAsync(
                 oneRemainingRow.GetByText(
-                    "Membership has 1-2 remaining visits.",
+                    "This membership has only one or two visits remaining.",
                     new() { Exact = true }),
                 viewportName,
                 "low-remaining warning");
@@ -270,6 +271,7 @@ public sealed class LowRemainingReportSmokeTests : IClassFixture<ReceptionAppFix
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -302,7 +304,7 @@ public sealed class LowRemainingReportSmokeTests : IClassFixture<ReceptionAppFix
             var error = page.GetByRole(AriaRole.Alert);
             await ExpectVisibleAsync(error, "tablet", "low-remaining threshold error");
             Assert.Contains(
-                "Remaining-visits threshold cannot be negative.",
+                "Enter valid report filters.",
                 await error.InnerTextAsync(),
                 StringComparison.Ordinal);
             Assert.Equal(0, await page.Locator("[data-low-remaining-rows]").CountAsync());

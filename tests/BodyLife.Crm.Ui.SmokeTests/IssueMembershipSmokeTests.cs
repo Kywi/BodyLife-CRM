@@ -100,11 +100,8 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
             await RefreshPreviewDateAsync(page, probeDate);
             panel = profile.Locator("#issue-membership-action-panel");
             await ExpectVisibleAsync(
-                panel.Locator("[data-issue-preview-base-end]").Filter(
-                    new LocatorFilterOptions
-                    {
-                        HasText = probeDate.AddDays(29).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    }),
+                panel.Locator(
+                    $"[data-issue-preview-base-end][data-iso-date='{probeDate.AddDays(29).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}']"),
                 viewportName,
                 "refreshed base end date");
             await RefreshPreviewDateAsync(page, today);
@@ -136,7 +133,7 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
             if (includePayment)
             {
                 var paymentToggle = panel.GetByLabel(
-                    "Add cash membership-sale payment",
+                    "Add a cash membership-sale payment",
                     new() { Exact = true });
                 await paymentToggle.CheckAsync();
                 var paymentAmount = panel.GetByLabel("Amount (UAH)", new() { Exact = true });
@@ -148,7 +145,7 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
                 panel = profile.Locator("#issue-membership-action-panel");
                 await ExpectVisibleAsync(
                     panel.GetByText(
-                        "Payment amount must be greater than zero.",
+                        "Enter an amount greater than zero.",
                         new() { Exact = true }),
                     viewportName,
                     "positive issue payment requirement");
@@ -228,7 +225,8 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
             {
                 Assert.Equal(existingState, await _app.ReadMembershipStateAsync(unchangedMembershipId));
                 await ExpectVisibleAsync(
-                    profile.GetByText("Multiple active memberships require explicit selection."),
+                    profile.GetByText(
+                        "More than one membership could be current. Review the timeline before acting."),
                     viewportName,
                     "canonical ambiguous membership warning");
             }
@@ -259,7 +257,7 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
         string idempotencyKey)
     {
         await ExpectVisibleAsync(
-            panel.GetByText("Balance: -1", new() { Exact = false }),
+            panel.GetByText("Balance: −1", new() { Exact = false }),
             viewportName,
             "existing negative balance");
         var options = panel.Locator("input[name='form.NegativeHandlingDecision']");
@@ -276,7 +274,7 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
         panel = profile.Locator("#issue-membership-action-panel");
         await ExpectVisibleAsync(
             panel.GetByText(
-                "Choose how the existing negative visits remain handled before issuing.",
+                "Choose how to handle existing negative visits before issuing.",
                 new() { Exact = true }),
             viewportName,
             "negative decision requirement");
@@ -291,7 +289,7 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
                 "handler=IssueMembershipPreview",
                 StringComparison.OrdinalIgnoreCase));
         await panel.GetByLabel(
-            "Leave negative balance visible",
+            "Leave the negative balance visible",
             new() { Exact = true }).CheckAsync();
         AssertHtmxResponse(await responseTask);
         await WaitForHtmxSettleAsync(page);
@@ -316,6 +314,7 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
 
         return await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

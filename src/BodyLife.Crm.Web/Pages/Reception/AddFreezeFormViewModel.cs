@@ -81,30 +81,6 @@ public sealed record AddFreezeFormViewModel(
             IsOpen: true);
     }
 
-    public static string DisplayError(CommandError error)
-    {
-        return error.Code switch
-        {
-            CommandErrorCode.DuplicateSubmission =>
-                "This Freeze form was already used with different data. Review and retry with the refreshed form.",
-            CommandErrorCode.PermissionDenied =>
-                "The current account or session is not allowed to add this Freeze.",
-            CommandErrorCode.NotFound when error.Field == "membershipId" =>
-                "The selected Membership is no longer available for this Client. Review the current choices.",
-            CommandErrorCode.NotFound =>
-                "The Client is no longer available. Refresh the reception workspace.",
-            CommandErrorCode.MembershipNotEligible =>
-                "The selected Membership or Freeze range is not eligible. Review the current Membership dates.",
-            CommandErrorCode.FreezeConflictsWithVisit =>
-                "The Freeze range overlaps an active counted Membership Visit. Cancel or correct the Visit, or change the range.",
-            CommandErrorCode.RecalculationFailed =>
-                "Membership state could not be recalculated, so the Freeze was not added.",
-            CommandErrorCode.ConcurrencyConflict or CommandErrorCode.StaleState =>
-                "Membership context changed while submitting. Canonical profile data was refreshed; review and try again.",
-            _ => error.Message,
-        };
-    }
-
     private static IReadOnlyList<ClientMembershipSummary> EligibleMembershipOptions(
         ClientProfile profile)
     {

@@ -76,32 +76,6 @@ public sealed record CancelVisitFormViewModel(
             IsOpen: true);
     }
 
-    public static string DisplayError(CommandError error)
-    {
-        ArgumentNullException.ThrowIfNull(error);
-
-        return error.Code switch
-        {
-            CommandErrorCode.ReasonRequired =>
-                "Enter why this Visit should be canceled.",
-            CommandErrorCode.AlreadyCanceled =>
-                "This Visit was already canceled. Canonical history was refreshed.",
-            CommandErrorCode.DayClosedRequiresOwner =>
-                "This Visit belongs to a reconciled day and requires Owner correction.",
-            CommandErrorCode.PermissionDenied =>
-                "The current account or session cannot cancel this Visit.",
-            CommandErrorCode.NotFound =>
-                "This Visit is no longer available. Canonical history was refreshed.",
-            CommandErrorCode.DuplicateSubmission =>
-                "This cancellation form was already used with different data. Review the refreshed form before retrying.",
-            CommandErrorCode.ConcurrencyConflict or CommandErrorCode.StaleState =>
-                "Visit state changed. Canonical history was refreshed; review before retrying.",
-            CommandErrorCode.RecalculationFailed =>
-                "The Visit was not canceled because canonical Membership state could not be recalculated.",
-            _ => error.Message,
-        };
-    }
-
     private static CancelVisitFormInput CopyInput(
         CancelVisitFormInput input,
         string? idempotencyKey,

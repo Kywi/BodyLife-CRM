@@ -44,6 +44,7 @@ public sealed class EndingSoonReportSmokeTests : IClassFixture<ReceptionAppFixtu
         var scenario = await _app.EnsureEndingSoonReportScenarioAsync();
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,
@@ -150,13 +151,13 @@ public sealed class EndingSoonReportSmokeTests : IClassFixture<ReceptionAppFixtu
                 "ending-soon Membership type snapshot");
             await ExpectVisibleAsync(
                 zeroRemainingRow.GetByText(
-                    "Membership has no remaining visits.",
+                    "This membership has no remaining visits.",
                     new() { Exact = true }),
                 viewportName,
                 "zero-remaining warning");
             await ExpectVisibleAsync(
                 zeroRemainingRow.GetByText(
-                    "Membership ends within 7 days.",
+                    "This membership ends within seven days.",
                     new() { Exact = true }),
                 viewportName,
                 "ending-soon warning");
@@ -250,6 +251,7 @@ public sealed class EndingSoonReportSmokeTests : IClassFixture<ReceptionAppFixtu
         Assert.NotNull(_browser);
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = 1024,
@@ -282,7 +284,7 @@ public sealed class EndingSoonReportSmokeTests : IClassFixture<ReceptionAppFixtu
             var error = page.GetByRole(AriaRole.Alert);
             await ExpectVisibleAsync(error, "tablet", "ending-soon threshold error");
             Assert.Contains(
-                "Days threshold must be between 0 and 365.",
+                "Enter valid report filters.",
                 await error.InnerTextAsync(),
                 StringComparison.Ordinal);
             Assert.Equal(0, await page.Locator("[data-ending-soon-rows]").CountAsync());

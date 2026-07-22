@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Resources;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.NonWorkingDays;
 
@@ -11,6 +13,9 @@ public sealed record NonWorkingDayPreviewWorkspaceViewModel(
     string? IdempotencyKey,
     NonWorkingDayCanonicalPeriod? ConfirmedPeriod)
 {
+    private static readonly ResourceManager OwnerResources = new(
+        "BodyLife.Crm.Web.Resources.Localization.Owner",
+        typeof(NonWorkingDayPreviewWorkspaceViewModel).Assembly);
     public const int ReasonCodeMaxLength = NonWorkingDayPreviewInput.ReasonCodeMaxLength;
     public const int ReasonCommentMaxLength = NonWorkingDayPreviewInput.ReasonCommentMaxLength;
 
@@ -51,8 +56,13 @@ public sealed record NonWorkingDayPreviewWorkspaceViewModel(
 
         return new NonWorkingDayPreviewWorkspaceViewModel(
             Copy(submittedInput),
-            [PreviewError(result)],
-            "Impact preview not created",
+            [PreviewError(
+                result,
+                submittedInput.ProposedStartDate,
+                submittedInput.ProposedEndDate,
+                submittedInput.ReasonCode,
+                submittedInput.ReasonComment)],
+            T("NonWorkingDays.PreviewFailed"),
             Preview: null,
             IdempotencyKey: null,
             ConfirmedPeriod: null);
@@ -61,28 +71,36 @@ public sealed record NonWorkingDayPreviewWorkspaceViewModel(
     public static NonWorkingDayPreviewWorkspaceViewModel FromConfirmationRefresh(
         NonWorkingDayConfirmationFormInput submittedInput,
         PreviewNonWorkingDayImpactResult refreshedPreview,
-        IReadOnlyList<CommandError> commandErrors)
+        IReadOnlyList<CommandError> commandErrors,
+        bool preserveLocalizedAdapterMessages)
     {
         ArgumentNullException.ThrowIfNull(submittedInput);
         ArgumentNullException.ThrowIfNull(refreshedPreview);
         ArgumentNullException.ThrowIfNull(commandErrors);
 
         var errors = commandErrors
-            .Select(CommandError)
+            .Select(error => preserveLocalizedAdapterMessages
+                ? AdapterError(error)
+                : CommandError(error))
             .ToList();
         if (refreshedPreview.Status == PreviewNonWorkingDayImpactStatus.Success)
         {
             return FromSuccessfulPreview(
                 refreshedPreview,
                 errors.AsReadOnly(),
-                "Non-working period not added");
+                T("NonWorkingDays.NotAdded"));
         }
 
-        errors.Add(PreviewError(refreshedPreview));
+        errors.Add(PreviewError(
+            refreshedPreview,
+            submittedInput.ProposedStartDate,
+            submittedInput.ProposedEndDate,
+            submittedInput.ReasonCode,
+            submittedInput.ReasonComment));
         return new NonWorkingDayPreviewWorkspaceViewModel(
             Copy(submittedInput),
             errors.AsReadOnly(),
-            "Non-working period not added",
+            T("NonWorkingDays.NotAdded"),
             Preview: null,
             IdempotencyKey: null,
             ConfirmedPeriod: null);
@@ -120,10 +138,9 @@ public sealed record NonWorkingDayPreviewWorkspaceViewModel(
             [
                 new NonWorkingDayPreviewFormError(
                     result.ErrorField,
-                    result.ErrorMessage
-                        ?? "The confirmed non-working period could not be loaded."),
+                    T("NonWorkingDays.Error.Load")),
             ],
-            ErrorHeading = "Confirmed period unavailable",
+            ErrorHeading = T("NonWorkingDays.ConfirmedUnavailable"),
         };
     }
 
@@ -151,20 +168,69 @@ public sealed record NonWorkingDayPreviewWorkspaceViewModel(
     }
 
     private static NonWorkingDayPreviewFormError PreviewError(
-        PreviewNonWorkingDayImpactResult result)
+        PreviewNonWorkingDayImpactResult result,
+        DateOnly? proposedStartDate,
+        DateOnly? proposedEndDate,
+        string? reasonCode,
+        string? reasonComment)
     {
         var message = result.Status switch
         {
             PreviewNonWorkingDayImpactStatus.PermissionDenied =>
-                "An active Owner session is required to preview NonWorkingDay impact.",
+                T("NonWorkingDays.Error.Permission"),
             PreviewNonWorkingDayImpactStatus.RecalculationFailed =>
-                "Canonical Membership impact could not be calculated. No NonWorkingDay data was changed.",
+                T("NonWorkingDays.Error.Recalculation"),
             PreviewNonWorkingDayImpactStatus.ValidationFailed =>
-                result.ErrorMessage ?? "Review the proposed period and reason.",
+                ValidationMessage(
+                    result.ErrorField,
+                    proposedStartDate,
+                    proposedEndDate,
+                    reasonCode,
+                    reasonComment),
             _ => throw new InvalidOperationException(
                 $"Unsupported NonWorkingDay preview status {result.Status}."),
         };
         return new NonWorkingDayPreviewFormError(result.ErrorField, message);
+    }
+
+    private static string ValidationMessage(
+        string? field,
+        DateOnly? proposedStartDate,
+        DateOnly? proposedEndDate,
+        string? reasonCode,
+        string? reasonComment)
+    {
+        return field switch
+        {
+            "proposedStartDate" => T("NonWorkingDays.Error.StartRequired"),
+            "proposedEndDate" when proposedStartDate is { } startDate
+                && proposedEndDate is { } endDate
+                && endDate < startDate => T("NonWorkingDays.Error.EndBeforeStart"),
+            "proposedEndDate" => T("NonWorkingDays.Error.EndRequired"),
+            "reasonCode" when string.IsNullOrWhiteSpace(reasonCode) =>
+                T("NonWorkingDays.Error.ReasonCodeRequired"),
+            "reasonCode" => T(
+                "NonWorkingDays.Error.ReasonCodeTooLong",
+                ReasonCodeMaxLength),
+            "reasonComment" when reasonComment?.Length > ReasonCommentMaxLength =>
+                T(
+                    "NonWorkingDays.Error.ReasonCommentTooLong",
+                    ReasonCommentMaxLength),
+            _ => T("NonWorkingDays.Error.Validation"),
+        };
+    }
+
+    private static NonWorkingDayPreviewFormError AdapterError(CommandError error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        if (error.Code != CommandErrorCode.ValidationFailed
+            || string.IsNullOrWhiteSpace(error.Message))
+        {
+            throw new InvalidOperationException(
+                "Only localized Web adapter validation errors can be preserved.");
+        }
+
+        return new NonWorkingDayPreviewFormError(error.Field, error.Message);
     }
 
     private static NonWorkingDayPreviewFormError CommandError(CommandError error)
@@ -173,18 +239,31 @@ public sealed record NonWorkingDayPreviewWorkspaceViewModel(
         var message = error.Code switch
         {
             CommandErrorCode.PreviewExpired =>
-                "The preview expired. Review the refreshed exact scope before confirming again.",
+                T("NonWorkingDays.Error.PreviewExpired"),
             CommandErrorCode.AffectedScopeChanged =>
-                "The affected Membership scope changed. Review the refreshed exact scope before confirming again.",
+                T("NonWorkingDays.Error.ScopeChanged"),
             CommandErrorCode.ConcurrencyConflict or CommandErrorCode.StaleState =>
-                "Canonical Membership state changed. Review the refreshed exact scope before confirming again.",
+                T("NonWorkingDays.Error.StateChanged"),
             CommandErrorCode.DuplicateSubmission =>
-                "This confirmation was not applied. Review the refreshed preview and confirm it again.",
+                T("NonWorkingDays.Error.Duplicate"),
             CommandErrorCode.RecalculationFailed =>
-                "Membership recalculation did not complete, so no NonWorkingDay data was committed.",
-            _ => error.Message,
+                T("NonWorkingDays.Error.Recalculation"),
+            _ => T("NonWorkingDays.Error.Generic"),
         };
         return new NonWorkingDayPreviewFormError(error.Field, message);
+    }
+
+    private static string T(string key, params object[] arguments)
+    {
+        var value = OwnerResources.GetString(key, CultureInfo.CurrentUICulture)
+            ?? OwnerResources.GetString(
+                "NonWorkingDays.Error.Generic",
+                CultureInfo.CurrentUICulture)
+            ?? throw new InvalidOperationException(
+                "The Owner localization resources are unavailable.");
+        return arguments.Length == 0
+            ? value
+            : string.Format(CultureInfo.CurrentCulture, value, arguments);
     }
 
     private static NonWorkingDayPreviewFormInput Copy(

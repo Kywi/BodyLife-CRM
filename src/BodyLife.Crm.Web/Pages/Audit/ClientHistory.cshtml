@@ -1,307 +1,153 @@
 @page
 @model BodyLife.Crm.Web.Pages.Audit.ClientHistoryModel
-@{
-    ViewData["Title"] = "Client history";
-    var historyPage = Model.HistoryPage;
-    var errorMessage = Model.LoadError ?? Model.Result?.ErrorMessage;
-}
-
+@using BodyLife.Crm.SharedKernel
+@{ var P=Model.Presentation; ViewData["Title"]=P.Text("History.Title"); var historyPage=Model.HistoryPage; var errorMessage=Model.LoadError ?? (Model.Result is null || historyPage is not null ? null : P.HistoryError(Model.Result.Status)); }
 <main class="page-shell audit-page client-history-page" data-client-history-page>
-    <section class="audit-layout" aria-labelledby="client-history-title">
-        <header class="report-header">
-            <div>
-                <p class="eyebrow">Business history</p>
-                <h1 id="client-history-title">Client history</h1>
-            </div>
-            <nav class="report-header-actions" aria-label="History navigation">
-                <a class="secondary-link" asp-page="/Audit/Timeline">Audit timeline</a>
-                <a class="secondary-link" asp-page="/Reports/Daily">Reports</a>
-                <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
-            </nav>
-        </header>
-
-        <form class="audit-filter"
-              method="get"
-              asp-page="/Audit/ClientHistory"
-              data-busy-form>
-            <div class="audit-filter-grid client-history-filter-grid">
-                <div class="audit-filter-field">
-                    <label for="history-client-id">Client ID</label>
-                    <input id="history-client-id"
-                           name="clientId"
-                           type="text"
-                           value="@Model.ClientId"
-                           inputmode="text"
-                           autocomplete="off"
-                           required />
-                </div>
-                <div class="audit-filter-field">
-                    <label for="history-entity">Source type</label>
-                    <select id="history-entity" name="entity">
-                        <option value="">All source facts</option>
-                        @foreach (var option in ClientHistoryModel.EntityOptions)
-                        {
-                            <option value="@option.Value"
-                                    selected="@(Model.EntityFilter == option.Value ? "selected" : null)">
-                                @option.Label
-                            </option>
-                        }
-                    </select>
-                </div>
-                <div class="audit-filter-field">
-                    <label for="history-occurred-from">Occurred from (UTC)</label>
-                    <input id="history-occurred-from"
-                           name="from"
-                           type="date"
-                           value="@Model.OccurredFromDate?.ToString("yyyy-MM-dd")" />
-                </div>
-                <div class="audit-filter-field">
-                    <label for="history-occurred-to">Occurred through (UTC)</label>
-                    <input id="history-occurred-to"
-                           name="to"
-                           type="date"
-                           value="@Model.OccurredToDate?.ToString("yyyy-MM-dd")" />
-                </div>
-            </div>
-            <div class="audit-filter-actions">
-                <button type="submit" data-busy-text="Loading...">Load history</button>
-                <a class="secondary-link" asp-page="/Audit/ClientHistory">Clear</a>
-            </div>
-        </form>
-
-        @if (!string.IsNullOrWhiteSpace(errorMessage))
-        {
-            <div class="warning-block warning-danger audit-error" role="alert">
-                <strong>History unavailable</strong>
-                <span>@errorMessage</span>
-            </div>
-        }
-        else if (Model.ClientId is null)
-        {
-            <p class="empty-state">Enter a Client ID to inspect canonical business history.</p>
-        }
-        else if (historyPage is not null)
-        {
-            @if (Model.ClientProfile is { } profile)
-            {
-                <section class="client-history-summary" aria-label="Selected client">
-                    <div class="client-history-identity">
-                        <span>Selected client</span>
-                        <strong data-client-history-name>@profile.DisplayName</strong>
-                    </div>
-                    <div>
-                        <span>Phone</span>
-                        <strong>@(profile.Phone ?? "Not provided")</strong>
-                    </div>
-                    <div>
-                        <span>Current card</span>
-                        <strong data-client-history-card>@(profile.CurrentCard?.CardNumber ?? "Not assigned")</strong>
-                    </div>
-                    <div>
-                        <span>Client ID</span>
-                        <strong class="client-history-id">@profile.ClientId</strong>
-                    </div>
-                </section>
-            }
-            else
-            {
-                <div class="audit-context">
-                    <span>
-                        Client ID
-                        <strong>@historyPage.ClientId</strong>
-                    </span>
-                </div>
-            }
-
-            <section class="audit-source-section" aria-labelledby="client-history-results-title">
-                <header class="report-section-header client-history-results-header">
-                    <div>
-                        <p class="eyebrow">Canonical source facts</p>
-                        <h2 id="client-history-results-title">History</h2>
-                    </div>
-                    <span class="result-count">
-                        Page @Model.CurrentPageNumber · @Model.Rows.Count rows
-                    </span>
-                </header>
-
-                @if (Model.Rows.Count == 0)
-                {
-                    <p class="empty-state">No history rows match these filters.</p>
-                }
-                else
-                {
-                    <ol class="audit-entry-list client-history-list" data-client-history-list>
-                        @foreach (var row in Model.Rows)
-                        {
-                            <li class="audit-entry client-history-row @row.GroupClass @(row.ChangedAfterClose ? "audit-entry-changed-after-close" : row.EntryOrigin is EntryOrigin.ManualBackfill or EntryOrigin.PaperFallback ? "audit-entry-backdated" : null)"
-                                data-client-history-row
-                                data-audit-entry-id="@row.AuditEntryId.Value"
-                                data-source-kind="@row.Kind"
-                                data-entry-origin="@row.EntryOrigin"
-                                data-account-kind="@row.ActorAccountKind"
-                                data-changed-after-close="@row.ChangedAfterClose.ToString().ToLowerInvariant()">
-                                <header class="audit-entry-header">
-                                    <div>
-                                        <p class="audit-entry-kind">@row.GroupLabel</p>
-                                        <h3>@row.Title</h3>
-                                    </div>
-                                    <div class="audit-entry-flags">
-                                        <span class="status-chip @row.StatusClass">@row.StatusLabel</span>
-                                        <span class="status-chip @TimelineModel.EntryOriginClass(row.EntryOrigin)">
-                                            @TimelineModel.EntryOriginLabel(row.EntryOrigin)
-                                        </span>
-                                        @if (row.ChangedAfterClose)
-                                        {
-                                            <span class="status-chip audit-changed-after-close">Changed after close</span>
-                                        }
-                                    </div>
-                                </header>
-
-                                <dl class="audit-entry-meta client-history-event-meta">
-                                    <div>
-                                        <dt>Occurred</dt>
-                                        <dd>@TimelineModel.TimestampLabel(row.OccurredAt)</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Recorded</dt>
-                                        <dd>@TimelineModel.TimestampLabel(row.RecordedAt)</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Account</dt>
-                                        <dd>@TimelineModel.AccountKindLabel(row.ActorAccountKind)</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Role</dt>
-                                        <dd>@TimelineModel.RoleLabel(row.ActorRole)</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Device</dt>
-                                        <dd>@row.DeviceLabel</dd>
-                                    </div>
-                                    <div>
-                                        <dt>Session</dt>
-                                        <dd>@TimelineModel.ShortId(row.SessionId.Value)</dd>
-                                    </div>
-                                </dl>
-
-                                <dl class="client-history-facts" aria-label="Source facts">
-                                    @foreach (var fact in row.Facts)
-                                    {
-                                        <div>
-                                            <dt>@fact.Label</dt>
-                                            <dd>@fact.Value</dd>
-                                        </div>
-                                    }
-                                </dl>
-
-                                @if (row.Change is { } change)
-                                {
-                                    <section class="client-history-change" data-client-history-change>
-                                        <strong>@change.Label</strong>
-                                        <span>@change.Reason</span>
-                                        @if (!string.IsNullOrWhiteSpace(change.Comment))
-                                        {
-                                            <span>@change.Comment</span>
-                                        }
-                                        @if (change.Details.Count > 0)
-                                        {
-                                            <dl>
-                                                @foreach (var detail in change.Details)
-                                                {
-                                                    <div>
-                                                        <dt>@detail.Label</dt>
-                                                        <dd>@detail.Value</dd>
-                                                    </div>
-                                                }
-                                            </dl>
-                                        }
-                                    </section>
-                                }
-
-                                @if (!string.IsNullOrWhiteSpace(row.Narrative))
-                                {
-                                    <p class="client-history-narrative">@row.Narrative</p>
-                                }
-
-                                @if (!string.IsNullOrWhiteSpace(row.AuditReason)
-                                    || !string.IsNullOrWhiteSpace(row.AuditComment))
-                                {
-                                    <div class="audit-entry-note">
-                                        @if (!string.IsNullOrWhiteSpace(row.AuditReason))
-                                        {
-                                            <strong class="audit-entry-reason">@row.AuditReason</strong>
-                                        }
-                                        @if (!string.IsNullOrWhiteSpace(row.AuditComment))
-                                        {
-                                            <span>@row.AuditComment</span>
-                                        }
-                                    </div>
-                                }
-
-                                <details class="client-history-identifiers">
-                                    <summary>Source identifiers</summary>
-                                    <dl>
-                                        <div>
-                                            <dt>Audit entry ID</dt>
-                                            <dd><code>@row.AuditEntryId.Value</code></dd>
-                                        </div>
-                                        <div>
-                                            <dt>Source entity ID</dt>
-                                            <dd><code>@row.SourceEntityId</code></dd>
-                                        </div>
-                                        <div>
-                                            <dt>Actor account ID</dt>
-                                            <dd><code>@row.ActorAccountId.Value</code></dd>
-                                        </div>
-                                        @foreach (var identifier in row.Identifiers)
-                                        {
-                                            <div>
-                                                <dt>@identifier.Label</dt>
-                                                <dd><code>@identifier.Value</code></dd>
-                                            </div>
-                                        }
-                                    </dl>
-                                </details>
-                            </li>
-                        }
-                    </ol>
-                }
-            </section>
-
-            @if (Model.PreviousOffset is not null || historyPage.HasMore)
-            {
-                <nav class="report-pagination" aria-label="Client history pages">
-                    <span class="report-pagination-slot">
-                        @if (Model.PreviousOffset is { } previousOffset)
-                        {
-                            <a class="secondary-link"
-                               asp-page="/Audit/ClientHistory"
-                               asp-route-clientId="@Model.ClientId"
-                               asp-route-entity="@Model.EntityFilter"
-                               asp-route-from="@Model.OccurredFromDate?.ToString("yyyy-MM-dd")"
-                               asp-route-to="@Model.OccurredToDate?.ToString("yyyy-MM-dd")"
-                               asp-route-offset="@previousOffset">
-                                Previous
-                            </a>
-                        }
-                    </span>
-                    <span class="result-count">Page @Model.CurrentPageNumber</span>
-                    <span class="report-pagination-slot report-pagination-next">
-                        @if (historyPage.HasMore && historyPage.NextOffset is { } nextOffset)
-                        {
-                            <a class="secondary-link"
-                               asp-page="/Audit/ClientHistory"
-                               asp-route-clientId="@Model.ClientId"
-                               asp-route-entity="@Model.EntityFilter"
-                               asp-route-from="@Model.OccurredFromDate?.ToString("yyyy-MM-dd")"
-                               asp-route-to="@Model.OccurredToDate?.ToString("yyyy-MM-dd")"
-                               asp-route-offset="@nextOffset">
-                                Next
-                            </a>
-                        }
-                    </span>
-                </nav>
-            }
-        }
-    </section>
-</main>
+<header class="report-header">
+<div>
+<p class="eyebrow">@P.Text("BusinessHistory")</p>
+<h1 id="client-history-title">@P.Text("History.Title")</h1>
+</div>
+<nav class="report-header-actions" aria-label="@P.Text("HistoryNavigation")">
+<a class="secondary-link" asp-page="/Audit/Timeline">@P.Text("Timeline.Title")</a>
+<a class="secondary-link" asp-page="/Reports/Daily">@P.Text("Navigation.Reports")</a>
+<a class="secondary-link" asp-page="/Reception/Index">@P.Text("Navigation.Reception")</a>
+</nav>
+</header>
+<form class="audit-filter" method="get" asp-page="/Audit/ClientHistory" data-busy-form>
+<div class="audit-filter-grid client-history-filter-grid">
+<div class="audit-filter-field">
+<label for="history-client-id">@P.Text("ClientId")</label>
+<input id="history-client-id" name="clientId" type="text" value="@Model.ClientId" inputmode="text" autocomplete="off" required />
+</div>
+<div class="audit-filter-field">
+<label for="history-entity">@P.Text("SourceType")</label>
+<select id="history-entity" name="entity">
+<option value="">@P.Text("AllSourceFacts")</option>@foreach(var option in ClientHistoryModel.EntityOptions){<option value="@option.Value" selected="@(Model.EntityFilter == option.Value ? "selected" : null)">@P.Text(option.Label)</option>}</select>
+</div>
+<div class="audit-filter-field">
+<label for="history-occurred-from">@P.Text("OccurredFrom")</label>
+<input id="history-occurred-from" name="from" type="date" value="@Model.OccurredFromDate?.ToString("yyyy-MM-dd")" />
+</div>
+<div class="audit-filter-field">
+<label for="history-occurred-to">@P.Text("OccurredThrough")</label>
+<input id="history-occurred-to" name="to" type="date" value="@Model.OccurredToDate?.ToString("yyyy-MM-dd")" />
+</div>
+</div>
+<div class="audit-filter-actions">
+<button type="submit" data-busy-text="@P.Text("Loading")">@P.Text("Load")</button>
+<a class="secondary-link" asp-page="/Audit/ClientHistory">@P.Text("Filter.Clear")</a>
+</div>
+</form>
+@if(!string.IsNullOrWhiteSpace(errorMessage)){<div class="warning-block warning-danger audit-error" role="alert">
+<strong>@P.Text("HistoryUnavailable")</strong>
+<span>@errorMessage</span>
+</div>}else if(Model.ClientId is null){<p class="empty-state">@P.Text("EnterClient")</p>}else if(historyPage is not null){
+@if(Model.ClientProfile is { } profile){<section class="client-history-summary" aria-label="@P.Text("SelectedClient")">
+<div class="client-history-identity">
+<span>@P.Text("SelectedClient")</span>
+<strong data-client-history-name>@profile.DisplayName</strong>
+</div>
+<div>
+<span>@P.Text("Client.Phone")</span>
+<strong>@(profile.Phone??P.Text("NoPhone"))</strong>
+</div>
+<div>
+<span>@P.Text("CurrentCard")</span>
+<strong data-client-history-card>@(profile.CurrentCard?.CardNumber??P.Text("NoCard"))</strong>
+</div>
+<div>
+<span>@P.Text("ClientId")</span>
+<strong class="client-history-id">@profile.ClientId</strong>
+</div>
+</section>}else{<div class="audit-context">
+<span>@P.Text("ClientId") <strong>@historyPage.ClientId</strong>
+</span>
+</div>}
+<section class="audit-source-section" aria-labelledby="client-history-results-title">
+<header class="report-section-header client-history-results-header">
+<div>
+<p class="eyebrow">@P.Text("CanonicalFacts")</p>
+<h2 id="client-history-results-title">@P.Text("History.SectionTitle")</h2>
+</div>
+<span class="result-count">@P.Text("Page",Model.CurrentPageNumber) · @P.Rows(Model.Rows.Count)</span>
+</header>
+@if(Model.Rows.Count==0){<p class="empty-state">@P.Text("NoHistoryRows")</p>}else{<ol class="audit-entry-list client-history-list" data-client-history-list>@foreach(var row in Model.Rows){<li class="audit-entry client-history-row @row.GroupClass @P.EntryClass(row.ChangedAfterClose,row.EntryOrigin)" data-client-history-row data-audit-entry-id="@row.AuditEntryId.Value" data-source-kind="@row.Kind" data-entry-origin="@row.EntryOrigin" data-account-kind="@row.ActorAccountKind" data-changed-after-close="@row.ChangedAfterClose.ToString().ToLowerInvariant()">
+<header class="audit-entry-header">
+<div>
+<p class="audit-entry-kind">@row.GroupLabel</p>
+<h3>@row.Title</h3>
+</div>
+<div class="audit-entry-flags">
+<span class="status-chip @row.StatusClass">@row.StatusLabel</span>
+<span class="status-chip @P.EntryOriginClass(row.EntryOrigin)">@P.EntryOrigin(row.EntryOrigin)</span>@if(row.ChangedAfterClose){<span class="status-chip audit-changed-after-close">@P.Text("ChangedAfterClose")</span>}</div>
+</header>
+<dl class="audit-entry-meta client-history-event-meta">
+<div>
+<dt>@P.Text("Meta.Occurred")</dt>
+<dd>@P.Timestamp(row.OccurredAt)</dd>
+</div>
+<div>
+<dt>@P.Text("Meta.Recorded")</dt>
+<dd>@P.Timestamp(row.RecordedAt)</dd>
+</div>
+<div>
+<dt>@P.Text("Meta.Account")</dt>
+<dd>@P.AccountKind(row.ActorAccountKind)</dd>
+</div>
+<div>
+<dt>@P.Text("Meta.Role")</dt>
+<dd>@P.Role(row.ActorRole)</dd>
+</div>
+<div>
+<dt>@P.Text("Meta.Device")</dt>
+<dd>@row.DeviceLabel</dd>
+</div>
+<div>
+<dt>@P.Text("Meta.Session")</dt>
+<dd>@P.ShortId(row.SessionId.Value)</dd>
+</div>
+</dl>
+<dl class="client-history-facts" aria-label="@P.Text("SourceFacts")">@foreach(var fact in row.Facts){<div>
+<dt>@fact.Label</dt>
+<dd>@fact.Value</dd>
+</div>}</dl>
+@if(row.Change is { } change){<section class="client-history-change" data-client-history-change>
+<strong>@change.Label</strong>
+<span>@change.Reason</span>@if(!string.IsNullOrWhiteSpace(change.Comment)){<span>@change.Comment</span>}@if(change.Details.Count>0){<dl>@foreach(var detail in change.Details){<div>
+<dt>@detail.Label</dt>
+<dd>@detail.Value</dd>
+</div>}</dl>}</section>}@if(!string.IsNullOrWhiteSpace(row.Narrative)){<p class="client-history-narrative">@row.Narrative</p>}@if(!string.IsNullOrWhiteSpace(row.AuditReason)||!string.IsNullOrWhiteSpace(row.AuditComment)){<div class="audit-entry-note">@if(!string.IsNullOrWhiteSpace(row.AuditReason)){<strong class="audit-entry-reason">@row.AuditReason</strong>}@if(!string.IsNullOrWhiteSpace(row.AuditComment)){<span>@row.AuditComment</span>}</div>}
+<details class="client-history-identifiers">
+<summary>@P.Text("SourceIdentifiers")</summary>
+<dl>
+<div>
+<dt>@P.Text("AuditEntryId")</dt>
+<dd>
+<code>@row.AuditEntryId.Value</code>
+</dd>
+</div>
+<div>
+<dt>@P.Text("SourceEntityId")</dt>
+<dd>
+<code>@row.SourceEntityId</code>
+</dd>
+</div>
+<div>
+<dt>@P.Text("ActorAccountId")</dt>
+<dd>
+<code>@row.ActorAccountId.Value</code>
+</dd>
+</div>@foreach(var identifier in row.Identifiers){<div>
+<dt>@identifier.Label</dt>
+<dd>
+<code>@identifier.Value</code>
+</dd>
+</div>}</dl>
+</details>
+</li>}</ol>}</section>
+@if(Model.PreviousOffset is not null||historyPage.HasMore){<nav class="report-pagination" aria-label="@P.Text("HistoryPages")">
+<span class="report-pagination-slot">@if(Model.PreviousOffset is { } previousOffset){<a class="secondary-link" asp-page="/Audit/ClientHistory" asp-route-clientId="@Model.ClientId" asp-route-entity="@Model.EntityFilter" asp-route-from="@Model.OccurredFromDate?.ToString("yyyy-MM-dd")" asp-route-to="@Model.OccurredToDate?.ToString("yyyy-MM-dd")" asp-route-offset="@previousOffset">@P.Text("Pagination.Previous")</a>}</span>
+<span class="result-count">@P.Text("Page",Model.CurrentPageNumber)</span>
+<span class="report-pagination-slot report-pagination-next">@if(historyPage.HasMore&&historyPage.NextOffset is { } nextOffset){<a class="secondary-link" asp-page="/Audit/ClientHistory" asp-route-clientId="@Model.ClientId" asp-route-entity="@Model.EntityFilter" asp-route-from="@Model.OccurredFromDate?.ToString("yyyy-MM-dd")" asp-route-to="@Model.OccurredToDate?.ToString("yyyy-MM-dd")" asp-route-offset="@nextOffset">@P.Text("Pagination.Next")</a>}</span>
+</nav>}}</main>

@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?><root>
+<data name="Dashboard.Title" xml:space="preserve"><value>Reception</value></data>
+  <data name="Search.Label" xml:space="preserve"><value>Client search</value></data>
+  <data name="Search.Placeholder" xml:space="preserve"><value>Card, name, phone or last 4</value></data>
+  <data name="Action.Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Action.Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Search.Mode" xml:space="preserve"><value>Search mode</value></data>
+  <data name="Search.Mode.Auto" xml:space="preserve"><value>Auto</value></data>
+  <data name="Search.Mode.Card" xml:space="preserve"><value>Card</value></data>
+  <data name="Search.Mode.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Search.Mode.Phone" xml:space="preserve"><value>Phone</value></data>
+  <data name="Search.Mode.LastFour" xml:space="preserve"><value>Last 4</value></data>
+  <data name="Search.IncludeInactive" xml:space="preserve"><value>Include inactive</value></data>
+  <data name="Search.Loading" xml:space="preserve"><value>Searching…</value></data>
+<data name="Error.Generic" xml:space="preserve"><value>We could not complete this action. Refresh the Reception workspace and try again.</value></data>
+  <data name="Error.Validation.MembershipType" xml:space="preserve"><value>Choose an active membership type.</value></data>
+  <data name="Error.Validation.VisitKind" xml:space="preserve"><value>Choose membership, one-off, or trial for this visit.</value></data>
+  <data name="Error.Validation.Reason" xml:space="preserve"><value>Enter a reason.</value></data>
+  <data name="Error.Validation.Confirmation" xml:space="preserve"><value>Confirm this action before continuing.</value></data>
+  <data name="Error.Validation.Amount" xml:space="preserve"><value>Enter an amount greater than zero.</value></data>
+  <data name="Error.Validation.StartDate" xml:space="preserve"><value>Enter a start date.</value></data>
+  <data name="Error.Validation.EndDate" xml:space="preserve"><value>Enter an end date.</value></data>
+  <data name="Error.Validation.DateRange" xml:space="preserve"><value>The end date must not be before the start date.</value></data>
+  <data name="Error.PermissionDenied" xml:space="preserve"><value>Your current account or session is not allowed to do this.</value></data>
+  <data name="Error.NotFound" xml:space="preserve"><value>This record is no longer available. Refresh the Reception workspace.</value></data>
+  <data name="Error.NotFound.Membership" xml:space="preserve"><value>The selected membership is no longer available. Refresh and review the current choices.</value></data>
+  <data name="Error.NotFound.MembershipType" xml:space="preserve"><value>The selected membership type is no longer available. Refresh and review the catalog.</value></data>
+  <data name="Error.DuplicateSubmission" xml:space="preserve"><value>This form was already used with different data. Review the refreshed form and try again.</value></data>
+  <data name="Error.StaleState" xml:space="preserve"><value>Data changed while you were submitting. Canonical Reception data was refreshed; review and try again.</value></data>
+  <data name="Error.ReasonRequired" xml:space="preserve"><value>Enter a reason for this correction.</value></data>
+  <data name="Error.AlreadyCanceled" xml:space="preserve"><value>This record was already canceled. Canonical history was refreshed.</value></data>
+  <data name="Error.DayClosedRequiresOwner" xml:space="preserve"><value>This reconciled-day correction requires the Owner.</value></data>
+  <data name="Error.MembershipTypeInactive" xml:space="preserve"><value>The selected membership type is inactive. Choose an active type.</value></data>
+  <data name="Error.MembershipNotEligible" xml:space="preserve"><value>The selected membership is not eligible for this action. Review the current state.</value></data>
+  <data name="Error.NegativeDecisionRequired" xml:space="preserve"><value>Choose how to handle existing negative visits before issuing.</value></data>
+  <data name="Error.FreezeConflictsWithVisit" xml:space="preserve"><value>The freeze range overlaps an active counted visit. Correct the visit or change the range.</value></data>
+  <data name="Error.RecalculationFailed" xml:space="preserve"><value>Canonical membership state is unavailable. Refresh the Reception workspace and try again.</value></data>
+<data name="Workspace.SearchResults" xml:space="preserve"><value>Search results</value></data>
+  <data name="Workspace.MatchCount" xml:space="preserve"><value>{0} matches</value></data>
+  <data name="Workspace.Ready" xml:space="preserve"><value>Ready for search</value></data>
+  <data name="Workspace.Unavailable" xml:space="preserve"><value>Search unavailable</value></data>
+  <data name="Workspace.Empty" xml:space="preserve"><value>No clients found</value></data>
+  <data name="Workspace.OpenClient" xml:space="preserve"><value>Open {0}</value></data>
+  <data name="Workspace.Through" xml:space="preserve"><value>through</value></data>
+  <data name="Workspace.ClientWarnings" xml:space="preserve"><value>Client warnings</value></data>
+  <data name="Action.MoreResults" xml:space="preserve"><value>More results</value></data>
+  <data name="Field.Card" xml:space="preserve"><value>Card</value></data>
+  <data name="Field.Phone" xml:space="preserve"><value>Phone</value></data>
+  <data name="Value.NoCurrentCard" xml:space="preserve"><value>No current card</value></data>
+  <data name="Value.NoPhone" xml:space="preserve"><value>No phone</value></data>
+  <data name="Value.NoCurrentMembership" xml:space="preserve"><value>No current membership</value></data>
+  <data name="Status.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Status.Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Match.ExactCard" xml:space="preserve"><value>Exact card</value></data>
+  <data name="Match.ExactPhone" xml:space="preserve"><value>Exact phone</value></data>
+  <data name="Match.PhoneLastFour" xml:space="preserve"><value>Phone last 4</value></data>
+  <data name="Match.ExactName" xml:space="preserve"><value>Exact name</value></data>
+  <data name="Match.PartialCard" xml:space="preserve"><value>Partial card</value></data>
+  <data name="Match.PartialPhone" xml:space="preserve"><value>Partial phone</value></data>
+  <data name="Match.PartialName" xml:space="preserve"><value>Partial name</value></data>
+  <data name="Match.Generic" xml:space="preserve"><value>Match</value></data>
+<data name="Profile.Title" xml:space="preserve"><value>Client profile</value></data>
+  <data name="Profile.Loading" xml:space="preserve"><value>Loading client…</value></data>
+  <data name="Profile.Empty" xml:space="preserve"><value>No client selected</value></data>
+  <data name="Profile.OpenDailyReport" xml:space="preserve"><value>Open daily report</value></data>
+  <data name="Profile.Unavailable" xml:space="preserve"><value>Client unavailable</value></data>
+  <data name="Profile.CurrentCard" xml:space="preserve"><value>Current card</value></data>
+  <data name="Profile.Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="Profile.CardAssigned" xml:space="preserve"><value>Card assigned</value></data>
+  <data name="Profile.Note" xml:space="preserve"><value>Reception note</value></data>
+  <data name="Profile.CurrentMembership" xml:space="preserve"><value>Current membership</value></data>
+  <data name="Profile.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Profile.RemainingVisits" xml:space="preserve"><value>Remaining visits</value></data>
+  <data name="Profile.EffectiveEnd" xml:space="preserve"><value>Effective end date</value></data>
+<data name="Freeze.Add" xml:space="preserve"><value>Add freeze</value></data>
+  <data name="Freeze.NotAdded" xml:space="preserve"><value>Freeze not added</value></data>
+  <data name="Freeze.Range" xml:space="preserve"><value>Inclusive membership range</value></data>
+  <data name="Freeze.RangeHint" xml:space="preserve"><value>Start must be within the selected Membership window. End may cross its current effective end date.</value></data>
+  <data name="Freeze.VisitHint" xml:space="preserve"><value>An active counted Membership Visit inside the range blocks the Freeze.</value></data>
+  <data name="Field.Membership" xml:space="preserve"><value>Membership</value></data>
+  <data name="Action.ChooseMembership" xml:space="preserve"><value>Choose membership</value></data>
+  <data name="Freeze.Start" xml:space="preserve"><value>Freeze start date</value></data>
+  <data name="Freeze.End" xml:space="preserve"><value>Freeze end date</value></data>
+  <data name="Field.Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Field.CommentOptional" xml:space="preserve"><value>Comment (optional)</value></data>
+  <data name="Freeze.Adding" xml:space="preserve"><value>Adding freeze…</value></data>
+  <data name="Action.Adding" xml:space="preserve"><value>Adding…</value></data>
+<data name="Freeze.Cancel" xml:space="preserve"><value>Cancel freeze</value></data>
+  <data name="Freeze.NotCanceled" xml:space="preserve"><value>Freeze not canceled</value></data>
+  <data name="Range.To" xml:space="preserve"><value>to</value></data>
+  <data name="Freeze.OriginalReason" xml:space="preserve"><value>Original reason</value></data>
+  <data name="Correction.KeepsHistory" xml:space="preserve"><value>Correction keeps history</value></data>
+  <data name="Freeze.CancelHint" xml:space="preserve"><value>The freeze remains visible as canceled and membership state is recalculated.</value></data>
+  <data name="Freeze.CancellationReason" xml:space="preserve"><value>Cancellation reason</value></data>
+  <data name="Freeze.CancellationComment" xml:space="preserve"><value>Cancellation comment (optional)</value></data>
+  <data name="Freeze.CancelConfirm" xml:space="preserve"><value>I confirm this freeze was added by mistake and should be canceled.</value></data>
+  <data name="Freeze.Canceling" xml:space="preserve"><value>Canceling freeze…</value></data>
+  <data name="Action.Canceling" xml:space="preserve"><value>Canceling…</value></data>
+  <data name="Visit.Cancel" xml:space="preserve"><value>Cancel visit</value></data>
+  <data name="Visit.NotCanceled" xml:space="preserve"><value>Visit not canceled</value></data>
+  <data name="Field.Visit" xml:space="preserve"><value>Visit</value></data>
+  <data name="Field.Occurred" xml:space="preserve"><value>Event time</value></data>
+  <data name="Visit.CorrectionRecords" xml:space="preserve"><value>Visit correction records</value></data>
+  <data name="Visit.ClientHistory" xml:space="preserve"><value>Client history</value></data>
+  <data name="Visit.AuditTimeline" xml:space="preserve"><value>Audit timeline</value></data>
+  <data name="Visit.CancelHint" xml:space="preserve"><value>The visit remains visible as canceled and membership state is recalculated.</value></data>
+  <data name="Visit.CancelConfirm" xml:space="preserve"><value>I confirm this visit was recorded by mistake and should be canceled.</value></data>
+  <data name="Visit.Canceling" xml:space="preserve"><value>Canceling visit…</value></data>
+<data name="Payment.Add" xml:space="preserve"><value>Add payment</value></data>
+  <data name="Payment.NotAdded" xml:space="preserve"><value>Payment not added</value></data>
+  <data name="Payment.StateUnchanged" xml:space="preserve"><value>Membership state is unchanged</value></data>
+  <data name="Payment.StateUnchangedHint" xml:space="preserve"><value>This standalone payment does not close negative visits or recalculate membership state.</value></data>
+  <data name="Payment.Method" xml:space="preserve"><value>Method</value></data>
+  <data name="Payment.Cash" xml:space="preserve"><value>Cash</value></data>
+  <data name="Payment.Currency" xml:space="preserve"><value>Currency</value></data>
+  <data name="Payment.AmountUah" xml:space="preserve"><value>Amount (UAH)</value></data>
+  <data name="Payment.Context" xml:space="preserve"><value>Payment context</value></data>
+  <data name="Payment.ChooseContext" xml:space="preserve"><value>Choose context</value></data>
+  <data name="Payment.MembershipOptional" xml:space="preserve"><value>Membership (optional)</value></data>
+  <data name="Payment.NoMembership" xml:space="preserve"><value>No membership</value></data>
+  <data name="Payment.Ends" xml:space="preserve"><value>ends</value></data>
+  <data name="Payment.OccurredUtc" xml:space="preserve"><value>Event time (UTC)</value></data>
+  <data name="Payment.Adding" xml:space="preserve"><value>Adding payment…</value></data>
+  <data name="Payment.Context.MembershipSale" xml:space="preserve"><value>Membership sale</value></data>
+  <data name="Payment.Context.OneOff" xml:space="preserve"><value>One-off</value></data>
+  <data name="Payment.Context.Trial" xml:space="preserve"><value>Trial</value></data>
+  <data name="Payment.Context.Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Status.Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Status.Canceled" xml:space="preserve"><value>Canceled</value></data>
+  <data name="Status.Corrected" xml:space="preserve"><value>Corrected</value></data>
+<data name="Payment.CorrectOrCancel" xml:space="preserve"><value>Correct or cancel payment</value></data>
+  <data name="Payment.CorrectionNotApplied" xml:space="preserve"><value>Payment correction not applied</value></data>
+  <data name="Payment.OriginalAmount" xml:space="preserve"><value>Original amount</value></data>
+  <data name="Payment.OriginalContext" xml:space="preserve"><value>Original context</value></data>
+  <data name="Payment.OriginalDate" xml:space="preserve"><value>Original date</value></data>
+  <data name="Payment.CorrectionRecords" xml:space="preserve"><value>Payment correction records</value></data>
+  <data name="Payment.CorrectionHint" xml:space="preserve"><value>The original payment remains visible and the correction is recorded as a separate source fact.</value></data>
+  <data name="Payment.CorrectionMode" xml:space="preserve"><value>Correction mode</value></data>
+  <data name="Payment.Replace" xml:space="preserve"><value>Replace payment</value></data>
+  <data name="Payment.Cancel" xml:space="preserve"><value>Cancel payment</value></data>
+  <data name="Payment.Replacement" xml:space="preserve"><value>Replacement payment</value></data>
+  <data name="Payment.ReplacementAmountUah" xml:space="preserve"><value>Replacement amount (UAH)</value></data>
+  <data name="Payment.ReplacementContext" xml:space="preserve"><value>Replacement context</value></data>
+  <data name="Payment.ReplacementMembershipOptional" xml:space="preserve"><value>Replacement membership (optional)</value></data>
+  <data name="Payment.ReplacementOccurredUtc" xml:space="preserve"><value>Replacement occurred (UTC)</value></data>
+  <data name="Payment.ReplacementCommentOptional" xml:space="preserve"><value>Replacement comment (optional)</value></data>
+  <data name="Payment.CorrectionCommentOptional" xml:space="preserve"><value>Correction comment (optional)</value></data>
+  <data name="Payment.CorrectionConfirm" xml:space="preserve"><value>I confirm this payment should be corrected and its original history preserved.</value></data>
+  <data name="Payment.ApplyingCorrection" xml:space="preserve"><value>Applying correction…</value></data>
+  <data name="Action.Applying" xml:space="preserve"><value>Applying…</value></data>
+  <data name="Payment.ApplyCorrection" xml:space="preserve"><value>Apply correction</value></data>
+<data name="Profile.Warnings" xml:space="preserve"><value>Profile warnings</value></data>
+  <data name="Membership.Warnings" xml:space="preserve"><value>Membership warnings</value></data>
+  <data name="Membership.Timeline" xml:space="preserve"><value>Membership timeline</value></data>
+  <data name="Membership.ExtensionHistory" xml:space="preserve"><value>Extension history</value></data>
+  <data name="Membership.ExtensionSource" xml:space="preserve"><value>Extension source</value></data>
+  <data name="Field.InclusiveRange" xml:space="preserve"><value>Range (both dates inclusive)</value></data>
+  <data name="Visit.Recent" xml:space="preserve"><value>Recent visits</value></data>
+  <data name="Visit.NoneRecorded" xml:space="preserve"><value>No visits recorded</value></data>
+  <data name="Payment.Recent" xml:space="preserve"><value>Recent payments</value></data>
+  <data name="Payment.NoneRecorded" xml:space="preserve"><value>No payments recorded</value></data>
+  <data name="List.LatestCount" xml:space="preserve"><value>Latest: {0}</value></data>
+  <data name="Field.Recorded" xml:space="preserve"><value>Recorded time</value></data>
+  <data name="Field.Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Correction.Cancellation" xml:space="preserve"><value>Cancellation</value></data>
+  <data name="Visit.CancelUnavailable" xml:space="preserve"><value>Cancellation is temporarily unavailable. Refresh the profile.</value></data>
+  <data name="Visit.CancelRestricted" xml:space="preserve"><value>Your account cannot cancel this visit.</value></data>
+  <data name="Payment.CorrectedReplacement" xml:space="preserve"><value>Corrected replacement</value></data>
+  <data name="Payment.CorrectedReplacementHint" xml:space="preserve"><value>This payment replaces the original cash entry.</value></data>
+  <data name="Payment.Replaced" xml:space="preserve"><value>Replaced payment</value></data>
+  <data name="Payment.ReplacedHint" xml:space="preserve"><value>This original cash entry was replaced by a correction.</value></data>
+  <data name="Correction.Changed" xml:space="preserve"><value>Changed: {0}</value></data>
+  <data name="Profile.Records" xml:space="preserve"><value>Client records</value></data>
+  <data name="Warning.ClientInactive.Title" xml:space="preserve"><value>Inactive client</value></data>
+  <data name="Warning.ClientInactive.Message" xml:space="preserve"><value>This client is operationally inactive.</value></data>
+  <data name="Warning.NoCurrentCard.Title" xml:space="preserve"><value>No current card</value></data>
+  <data name="Warning.NoCurrentCard.Message" xml:space="preserve"><value>This client has no current card.</value></data>
+  <data name="Warning.NegativeBalance.Title" xml:space="preserve"><value>Negative balance</value></data>
+  <data name="Warning.NegativeBalance.Message" xml:space="preserve"><value>This membership has a negative visit balance.</value></data>
+  <data name="Warning.Expired.Title" xml:space="preserve"><value>Expired membership</value></data>
+  <data name="Warning.Expired.Message" xml:space="preserve"><value>This membership has expired by date.</value></data>
+  <data name="Warning.ZeroRemaining.Title" xml:space="preserve"><value>Zero remaining</value></data>
+  <data name="Warning.ZeroRemaining.Message" xml:space="preserve"><value>This membership has no remaining visits.</value></data>
+  <data name="Warning.EndingSoon.Title" xml:space="preserve"><value>Ending soon</value></data>
+  <data name="Warning.EndingSoon.Message" xml:space="preserve"><value>This membership ends within seven days.</value></data>
+  <data name="Warning.LowRemaining.Title" xml:space="preserve"><value>Low remaining</value></data>
+  <data name="Warning.LowRemaining.Message" xml:space="preserve"><value>This membership has only one or two visits remaining.</value></data>
+  <data name="Warning.AmbiguousMembership.Title" xml:space="preserve"><value>Membership selection requires review</value></data>
+  <data name="Warning.AmbiguousMembership.Message" xml:space="preserve"><value>More than one membership could be current. Review the timeline before acting.</value></data>
+  <data name="Warning.Attention" xml:space="preserve"><value>Attention</value></data>
+  <data name="Warning.Generic.Message" xml:space="preserve"><value>Review the current canonical state before continuing.</value></data>
+  <data name="Visit.Kind.Membership" xml:space="preserve"><value>Membership visit</value></data>
+  <data name="Visit.Kind.OneOff" xml:space="preserve"><value>One-off visit</value></data>
+  <data name="Visit.Kind.Trial" xml:space="preserve"><value>Trial visit</value></data>
+  <data name="Origin.Normal" xml:space="preserve"><value>Normal</value></data>
+  <data name="Origin.ManualBackfill" xml:space="preserve"><value>Manual backfill</value></data>
+  <data name="Origin.PaperFallback" xml:space="preserve"><value>Paper fallback</value></data>
+  <data name="Origin.FutureImport" xml:space="preserve"><value>Future import</value></data>
+  <data name="Value.UnknownSource" xml:space="preserve"><value>Unknown source</value></data>
+  <data name="Value.UnknownMethod" xml:space="preserve"><value>Unknown method</value></data>
+  <data name="Value.Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Payment.Context.NegativeClosure" xml:space="preserve"><value>Negative closure</value></data>
+  <data name="Field.Payment" xml:space="preserve"><value>Payment</value></data>
+  <data name="Field.Freeze" xml:space="preserve"><value>Freeze</value></data>
+  <data name="Field.NonWorkingDay" xml:space="preserve"><value>Non-working day</value></data>
+  <data name="Status.Replaced" xml:space="preserve"><value>Replaced</value></data>
+  <data name="Field.Amount" xml:space="preserve"><value>amount</value></data>
+  <data name="Field.OccurredTime" xml:space="preserve"><value>occurred time</value></data>
+  <data name="Field.Context" xml:space="preserve"><value>context</value></data>
+  <data name="Field.Comment" xml:space="preserve"><value>comment</value></data>
+<data name="Client.Create" xml:space="preserve"><value>Create client</value></data>
+  <data name="Client.NotCreated" xml:space="preserve"><value>Client not created</value></data>
+  <data name="Client.Edit" xml:space="preserve"><value>Edit client</value></data>
+  <data name="Client.NotUpdated" xml:space="preserve"><value>Client not updated</value></data>
+  <data name="Client.Surname" xml:space="preserve"><value>Surname</value></data>
+  <data name="Client.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Client.Patronymic" xml:space="preserve"><value>Patronymic</value></data>
+  <data name="Client.OperationalStatus" xml:space="preserve"><value>Operational status</value></data>
+  <data name="Card.Number" xml:space="preserve"><value>Card number</value></data>
+  <data name="Duplicate.Review" xml:space="preserve"><value>Duplicate review</value></data>
+  <data name="Duplicate.ConfirmCreate" xml:space="preserve"><value>I reviewed this match and confirm that a new client is required.</value></data>
+  <data name="Duplicate.ConfirmUpdate" xml:space="preserve"><value>I verified that this is the correct client update.</value></data>
+  <data name="Duplicate.AcknowledgementReason" xml:space="preserve"><value>Acknowledgement reason</value></data>
+  <data name="Duplicate.Phone" xml:space="preserve"><value>Duplicate phone</value></data>
+  <data name="Duplicate.SimilarName" xml:space="preserve"><value>Similar name</value></data>
+  <data name="Duplicate.Warning" xml:space="preserve"><value>Duplicate warning</value></data>
+  <data name="Client.Creating" xml:space="preserve"><value>Creating client…</value></data>
+  <data name="Action.Creating" xml:space="preserve"><value>Creating…</value></data>
+  <data name="Client.Saving" xml:space="preserve"><value>Saving client…</value></data>
+  <data name="Action.Saving" xml:space="preserve"><value>Saving…</value></data>
+  <data name="Client.SaveChanges" xml:space="preserve"><value>Save changes</value></data>
+  <data name="Card.Manage" xml:space="preserve"><value>Manage card</value></data>
+  <data name="Card.NotUpdated" xml:space="preserve"><value>Card not updated</value></data>
+  <data name="Card.ClearCurrent" xml:space="preserve"><value>Clear current card</value></data>
+  <data name="Card.NewNumber" xml:space="preserve"><value>New card number</value></data>
+  <data name="Card.Saving" xml:space="preserve"><value>Saving card…</value></data>
+  <data name="Card.Save" xml:space="preserve"><value>Save card</value></data>
+  <data name="Error.CardNumberAlreadyCurrent" xml:space="preserve"><value>This card is already assigned to another current client.</value></data>
+  <data name="Error.DuplicateWarningNotAcknowledged" xml:space="preserve"><value>Review and acknowledge every current duplicate warning.</value></data>
+  <data name="Error.WarningAcknowledgementRequired" xml:space="preserve"><value>Acknowledge the current membership warning before continuing.</value></data>
+  <data name="Error.VisitDuringFreeze" xml:space="preserve"><value>This visit date falls within an active freeze.</value></data>
+  <data name="Error.PreviewExpired" xml:space="preserve"><value>The preview expired. Refresh it and review the current values.</value></data>
+  <data name="Error.AffectedScopeChanged" xml:space="preserve"><value>The affected scope changed. Refresh and confirm the current canonical scope.</value></data>
+<data name="Membership.Issue" xml:space="preserve"><value>Issue membership</value></data>
+  <data name="Membership.NotIssued" xml:space="preserve"><value>Membership not issued</value></data>
+  <data name="Membership.IssueUnavailable" xml:space="preserve"><value>Issue action unavailable</value></data>
+  <data name="Membership.NoActiveTypes" xml:space="preserve"><value>No active membership types</value></data>
+  <data name="Membership.NoActiveTypesHint" xml:space="preserve"><value>No catalog item is available for ordinary issue.</value></data>
+  <data name="Membership.Type" xml:space="preserve"><value>Membership type</value></data>
+  <data name="Field.StartDate" xml:space="preserve"><value>Start date</value></data>
+  <data name="Preview.Unavailable" xml:space="preserve"><value>Preview unavailable</value></data>
+  <data name="Membership.IssuePreview" xml:space="preserve"><value>Issue preview</value></data>
+  <data name="Preview.Refreshing" xml:space="preserve"><value>Refreshing preview…</value></data>
+  <data name="Membership.SnapshotName" xml:space="preserve"><value>Snapshot name</value></data>
+  <data name="Membership.Duration" xml:space="preserve"><value>Duration</value></data>
+  <data name="Membership.VisitLimit" xml:space="preserve"><value>Visit limit</value></data>
+  <data name="Membership.SnapshotPrice" xml:space="preserve"><value>Snapshot price</value></data>
+  <data name="Membership.BaseEnd" xml:space="preserve"><value>Base end</value></data>
+  <data name="Membership.InitialRemaining" xml:space="preserve"><value>Initial remaining</value></data>
+  <data name="Membership.ExtensionDays" xml:space="preserve"><value>Extension days</value></data>
+  <data name="Membership.ExistingNegativeVisits" xml:space="preserve"><value>Existing negative visits</value></data>
+  <data name="Membership.NegativeBalance" xml:space="preserve"><value>Balance: −{0}</value></data>
+  <data name="Membership.NegativeSince" xml:space="preserve"><value>since {0}</value></data>
+  <data name="Status.Unavailable" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="Membership.AddSalePayment" xml:space="preserve"><value>Add a cash membership-sale payment</value></data>
+  <data name="Membership.Issuing" xml:space="preserve"><value>Issuing membership…</value></data>
+  <data name="Membership.IssuingShort" xml:space="preserve"><value>Issuing…</value></data>
+  <data name="Membership.NegativeDecision.LeaveVisible" xml:space="preserve"><value>Leave the negative balance visible</value></data>
+  <data name="Membership.NegativeDecision.Cover" xml:space="preserve"><value>Cover with the new membership</value></data>
+  <data name="Membership.NegativeDecision.Closure" xml:space="preserve"><value>Record an explicit closure</value></data>
+<data name="Visit.Mark" xml:space="preserve"><value>Mark visit</value></data>
+  <data name="Visit.NotMarked" xml:space="preserve"><value>Visit not marked</value></data>
+  <data name="Visit.ActionUnavailable" xml:space="preserve"><value>Visit action unavailable</value></data>
+  <data name="Visit.Date" xml:space="preserve"><value>Visit date</value></data>
+  <data name="Visit.RecordedAs" xml:space="preserve"><value>Event time</value></data>
+  <data name="Visit.Type" xml:space="preserve"><value>Visit type</value></data>
+  <data name="Visit.OneOff" xml:space="preserve"><value>One-off</value></data>
+  <data name="Visit.Trial" xml:space="preserve"><value>Trial</value></data>
+  <data name="Visit.NoActiveMemberships" xml:space="preserve"><value>No lifecycle-active memberships. Deliberately choose one-off or trial.</value></data>
+  <data name="Visit.MembershipChoice" xml:space="preserve"><value>Membership choice</value></data>
+  <data name="Visit.Remaining" xml:space="preserve"><value>Remaining</value></data>
+  <data name="Visit.Eligibility" xml:space="preserve"><value>Eligibility</value></data>
+  <data name="Visit.MembershipBlocked" xml:space="preserve"><value>Membership blocked</value></data>
+  <data name="Visit.Marking" xml:space="preserve"><value>Marking visit…</value></data>
+  <data name="Visit.MarkingShort" xml:space="preserve"><value>Marking…</value></data>
+  <data name="Visit.Eligibility.Selectable" xml:space="preserve"><value>Selectable</value></data>
+  <data name="Visit.Eligibility.FutureStart" xml:space="preserve"><value>Future start</value></data>
+  <data name="Visit.Eligibility.FrozenDate" xml:space="preserve"><value>Frozen date</value></data>
+  <data name="Visit.Eligibility.BeforeStart.Message" xml:space="preserve"><value>The visit date is before this membership starts.</value></data>
+  <data name="Visit.Eligibility.Frozen.Message" xml:space="preserve"><value>An active freeze includes the visit date and cannot be overridden.</value></data>
+  <data name="Visit.Eligibility.Inactive.Message" xml:space="preserve"><value>This membership is not lifecycle-active.</value></data>
+  <data name="Visit.Eligibility.Unavailable.Message" xml:space="preserve"><value>This membership cannot be selected for the visit date.</value></data>
+  <data name="Visit.Acknowledge.Expired" xml:space="preserve"><value>I acknowledge that this membership is expired for the visit date.</value></data>
+  <data name="Visit.Acknowledge.ZeroRemaining" xml:space="preserve"><value>I acknowledge that this visit will move the membership below zero.</value></data>
+  <data name="Visit.Acknowledge.Negative" xml:space="preserve"><value>I acknowledge that this membership already has a negative visit balance.</value></data>
+  <data name="Visit.Acknowledge.Generic" xml:space="preserve"><value>I acknowledge the current membership warning.</value></data>
+<data name="Operation.Completed" xml:space="preserve"><value>{0}.</value></data>
+  <data name="Operation.WithAuditReference" xml:space="preserve"><value>{0}. Audit reference {1}.</value></data>
+  <data name="Operation.ClientCreated" xml:space="preserve"><value>Client created</value></data>
+  <data name="Operation.ClientUpdated" xml:space="preserve"><value>Client updated</value></data>
+  <data name="Operation.CardCleared" xml:space="preserve"><value>Card cleared</value></data>
+  <data name="Operation.CardChanged" xml:space="preserve"><value>Card changed</value></data>
+  <data name="Operation.CardAssigned" xml:space="preserve"><value>Card assigned</value></data>
+  <data name="Operation.MembershipIssuedWithPayment" xml:space="preserve"><value>Membership issued with cash payment</value></data>
+  <data name="Operation.MembershipIssued" xml:space="preserve"><value>Membership issued</value></data>
+  <data name="Operation.VisitMarked" xml:space="preserve"><value>Visit marked</value></data>
+  <data name="Operation.FreezeAdded" xml:space="preserve"><value>Freeze added</value></data>
+  <data name="Operation.FreezeCanceledAfterClose" xml:space="preserve"><value>Freeze canceled after a reconciled day</value></data>
+  <data name="Operation.FreezeCanceled" xml:space="preserve"><value>Freeze canceled</value></data>
+  <data name="Operation.VisitCanceledAfterClose" xml:space="preserve"><value>Visit canceled after a reconciled day</value></data>
+  <data name="Operation.VisitCanceled" xml:space="preserve"><value>Visit canceled</value></data>
+  <data name="Operation.PaymentAdded" xml:space="preserve"><value>Payment added</value></data>
+  <data name="Operation.PaymentCorrectedAfterClose" xml:space="preserve"><value>Payment corrected after a reconciled day</value></data>
+  <data name="Operation.PaymentCorrected" xml:space="preserve"><value>Payment corrected</value></data>
+  <data name="Operation.PaymentCanceledAfterClose" xml:space="preserve"><value>Payment canceled after a reconciled day</value></data>
+  <data name="Operation.PaymentCanceled" xml:space="preserve"><value>Payment canceled</value></data>
+<data name="Error.Validation.Membership" xml:space="preserve"><value>Choose an available membership.</value></data>
+  <data name="Error.Validation.NegativeDecision" xml:space="preserve"><value>Choose a supported negative-balance decision.</value></data>
+  <data name="Error.Validation.CorrectionMode" xml:space="preserve"><value>Choose replace or cancel.</value></data>
+  <data name="Error.Validation.PaymentContext" xml:space="preserve"><value>Choose a supported payment context.</value></data>
+  <data name="Error.Validation.OccurredAt" xml:space="preserve"><value>Enter a valid occurred time for this workflow.</value></data>
+  <data name="Error.Validation.Comment" xml:space="preserve"><value>The comment is too long or invalid.</value></data>
+  <data name="Error.Validation.OriginalPayment" xml:space="preserve"><value>The original payment is required.</value></data>
+  <data name="Error.Validation.ReplacementMembership" xml:space="preserve"><value>Choose a valid replacement membership or leave it empty.</value></data>
+  <data name="Error.Validation.Surname" xml:space="preserve"><value>Enter the client surname.</value></data>
+  <data name="Error.Validation.Name" xml:space="preserve"><value>Enter the client name.</value></data>
+  <data name="Error.Validation.CardNumber" xml:space="preserve"><value>Enter a valid card number.</value></data>
+</root>

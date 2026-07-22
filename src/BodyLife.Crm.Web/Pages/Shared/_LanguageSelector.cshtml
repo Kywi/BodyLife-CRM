@@ -1,0 +1,26 @@
+@using System.Globalization
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Shared> SharedLocalizer
+@{
+    var current = CultureInfo.CurrentUICulture.Name;
+    var returnUrl = Context.Request.PathBase + Context.Request.Path + Context.Request.QueryString;
+}
+<nav class="language-selector" aria-label="@SharedLocalizer["LanguageSelector.Label"]">
+    @foreach (var culture in WebCultures.Supported)
+    {
+        var isCurrent = string.Equals(current, culture.Name, StringComparison.OrdinalIgnoreCase);
+        <form method="post" asp-page="/SetLanguage" class="language-selector-form">
+            <input name="culture" type="hidden" value="@culture.Name" />
+            <input name="returnUrl" type="hidden" value="@returnUrl" />
+            <button type="submit"
+                    class="language-selector-button"
+                    lang="@culture.Name"
+                    aria-current="@(isCurrent ? "true" : "false")"
+                    disabled="@isCurrent">
+                @SharedLocalizer[culture.Name == WebCultures.Ukrainian
+                    ? "LanguageSelector.Ukrainian"
+                    : "LanguageSelector.English"]
+            </button>
+        </form>
+    }
+</nav>

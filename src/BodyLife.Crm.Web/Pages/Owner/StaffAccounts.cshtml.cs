@@ -3,6 +3,7 @@ using BodyLife.Crm.SharedKernel;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages.Owner;
 
@@ -10,7 +11,8 @@ public sealed class StaffAccountsModel(
     StaffAccountQueryService accountQueryService,
     StaffAccountLifecycleService accountLifecycleService,
     StaffCredentialsService credentialsService,
-    IBodyLifeRequestContextResolver requestContextResolver) : PageModel
+    IBodyLifeRequestContextResolver requestContextResolver,
+    IStringLocalizer<BodyLife.Crm.Web.Localization.Owner> localizer) : PageModel
 {
     [TempData]
     public string? OperationMessage { get; set; }
@@ -21,6 +23,8 @@ public sealed class StaffAccountsModel(
     public IReadOnlyList<StaffAccountSummary> StaffAccounts { get; private set; } = [];
 
     public bool OperationSucceeded => string.Equals(OperationTone, "success", StringComparison.Ordinal);
+
+    public string T(string key, params object[] arguments) => localizer[key, arguments];
 
     public async Task OnGetAsync(CancellationToken cancellationToken)
     {
@@ -38,7 +42,7 @@ public sealed class StaffAccountsModel(
             displayName,
             cancellationToken);
 
-        return RedirectWithResult(result.Succeeded, result.Message, result.AuditEntryId);
+        return RedirectWithLifecycleResult(result);
     }
 
     public async Task<IActionResult> OnPostUpdateDisplayNameAsync(
@@ -52,7 +56,7 @@ public sealed class StaffAccountsModel(
             displayName,
             cancellationToken);
 
-        return RedirectWithResult(result.Succeeded, result.Message, result.AuditEntryId);
+        return RedirectWithLifecycleResult(result);
     }
 
     public async Task<IActionResult> OnPostSetCredentialsAsync(
@@ -69,7 +73,7 @@ public sealed class StaffAccountsModel(
             password,
             cancellationToken);
 
-        return RedirectWithResult(result.Succeeded, result.Message, result.AuditEntryId);
+        return RedirectWithCredentialsResult(result);
     }
 
     public async Task<IActionResult> OnPostSetActiveStateAsync(
@@ -84,29 +88,64 @@ public sealed class StaffAccountsModel(
             isActive,
             cancellationToken);
 
-        return RedirectWithResult(result.Succeeded, result.Message, result.AuditEntryId);
+        return RedirectWithLifecycleResult(result);
     }
 
-    public static string AccountKindLabel(AccountKind accountKind)
+    public string AccountKindLabel(AccountKind accountKind)
     {
         return accountKind switch
         {
-            AccountKind.NamedAdmin => "Named Admin",
-            AccountKind.SharedReceptionAdmin => "Shared Reception/Admin",
-            _ => "Staff account",
+            AccountKind.NamedAdmin => T("StaffAccounts.AccountKind.NamedAdmin"),
+            AccountKind.SharedReceptionAdmin => T("StaffAccounts.AccountKind.SharedReceptionAdmin"),
+            _ => T("StaffAccounts.AccountKind.Staff"),
         };
     }
 
-    private RedirectToPageResult RedirectWithResult(
-        bool succeeded,
-        string message,
-        AuditEntryId? auditEntryId)
+    private RedirectToPageResult RedirectWithLifecycleResult(StaffAccountLifecycleResult result)
     {
-        OperationTone = succeeded ? "success" : "error";
-        OperationMessage = auditEntryId is { } value
-            ? $"{message} Audit reference {value.Value.ToString("N")[..8]}."
-            : message;
+        OperationTone = result.Succeeded ? "success" : "error";
+        OperationMessage = WithAuditReference(LifecycleMessage(result.Status), result.AuditEntryId);
 
         return RedirectToPage();
     }
+
+    private RedirectToPageResult RedirectWithCredentialsResult(StaffCredentialsResult result)
+    {
+        OperationTone = result.Succeeded ? "success" : "error";
+        OperationMessage = WithAuditReference(CredentialsMessage(result.Status), result.AuditEntryId);
+
+        return RedirectToPage();
+    }
+
+    private string WithAuditReference(string message, AuditEntryId? auditEntryId) =>
+        auditEntryId is { } value
+            ? T("StaffAccounts.AuditReference", message, value.Value.ToString("N")[..8])
+            : message;
+
+    private string LifecycleMessage(StaffAccountLifecycleStatus status) => status switch
+    {
+        StaffAccountLifecycleStatus.Created => T("StaffAccounts.Result.Created"),
+        StaffAccountLifecycleStatus.DisplayNameUpdated => T("StaffAccounts.Result.DisplayNameUpdated"),
+        StaffAccountLifecycleStatus.Activated => T("StaffAccounts.Result.Activated"),
+        StaffAccountLifecycleStatus.Deactivated => T("StaffAccounts.Result.Deactivated"),
+        StaffAccountLifecycleStatus.AlreadyActive => T("StaffAccounts.Result.AlreadyActive"),
+        StaffAccountLifecycleStatus.AlreadyInactive => T("StaffAccounts.Result.AlreadyInactive"),
+        StaffAccountLifecycleStatus.PermissionDenied => T("StaffAccounts.Error.PermissionDenied"),
+        StaffAccountLifecycleStatus.ValidationFailed => T("StaffAccounts.Error.Validation"),
+        StaffAccountLifecycleStatus.NotFound => T("StaffAccounts.Error.NotFound"),
+        StaffAccountLifecycleStatus.OwnerAccountProtected => T("StaffAccounts.Error.OwnerProtected"),
+        _ => T("StaffAccounts.Error.Generic"),
+    };
+
+    private string CredentialsMessage(StaffCredentialsStatus status) => status switch
+    {
+        StaffCredentialsStatus.Configured => T("StaffAccounts.Result.CredentialsConfigured"),
+        StaffCredentialsStatus.Reset => T("StaffAccounts.Result.CredentialsReset"),
+        StaffCredentialsStatus.PermissionDenied => T("StaffAccounts.Error.PermissionDenied"),
+        StaffCredentialsStatus.ValidationFailed => T("StaffAccounts.Error.Validation"),
+        StaffCredentialsStatus.NotFound => T("StaffAccounts.Error.NotFound"),
+        StaffCredentialsStatus.OwnerAccountProtected => T("StaffAccounts.Error.OwnerProtected"),
+        StaffCredentialsStatus.LoginNameAlreadyInUse => T("StaffAccounts.Error.LoginInUse"),
+        _ => T("StaffAccounts.Error.Generic"),
+    };
 }

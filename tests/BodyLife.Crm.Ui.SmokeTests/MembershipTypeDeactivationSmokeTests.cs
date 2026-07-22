@@ -84,7 +84,7 @@ public sealed class MembershipTypeDeactivationSmokeTests : IClassFixture<Recepti
 
             await ExpectVisibleAsync(
                 page.GetByText(
-                    "Reason or command comment is required to deactivate a membership type.",
+                    "Review the highlighted values.",
                     new() { Exact = true }),
                 viewportName,
                 "server reason validation");
@@ -108,7 +108,7 @@ public sealed class MembershipTypeDeactivationSmokeTests : IClassFixture<Recepti
 
             await ExpectVisibleAsync(
                 page.GetByText(
-                    "This membership type changed after the deactivation form was opened. Canonical state was reloaded; review it before trying again.",
+                    "This membership type changed. Review the refreshed values.",
                     new() { Exact = true }),
                 viewportName,
                 "stale-state guidance");
@@ -198,7 +198,7 @@ public sealed class MembershipTypeDeactivationSmokeTests : IClassFixture<Recepti
 
             await ExpectVisibleAsync(
                 page.GetByText(
-                    "This membership type is already inactive. The canonical catalog was refreshed.",
+                    "This membership type is already inactive. The catalog was refreshed.",
                     new() { Exact = true }),
                 viewportName,
                 "already-inactive guidance");
@@ -274,6 +274,7 @@ public sealed class MembershipTypeDeactivationSmokeTests : IClassFixture<Recepti
     {
         return await _browser!.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

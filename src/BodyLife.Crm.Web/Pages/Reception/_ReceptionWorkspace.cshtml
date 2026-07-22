@@ -1,36 +1,39 @@
 @model ReceptionWorkspaceViewModel
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Reception> L
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Shared> SharedL
 @{
     var searchResult = Model.SearchResult;
 }
 
 <section id="reception-workspace" class="reception-workspace">
-    <section class="search-results-region" aria-label="Search results" aria-live="polite">
+    <section class="search-results-region" aria-label="@L["Workspace.SearchResults"]" aria-live="polite">
         <header class="region-header">
-            <h2>Search results</h2>
+            <h2>@L["Workspace.SearchResults"]</h2>
             @if (searchResult is { Status: SearchClientsStatus.Success })
             {
                 var matchCount = searchResult.Items.Count;
-                <span class="result-count">@(matchCount == 1 ? "1 match" : $"{matchCount} matches")</span>
+                <span class="result-count">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Workspace.MatchCount"], matchCount)</span>
             }
         </header>
 
         @if (searchResult is null)
         {
             <div class="operational-empty">
-                <strong>Ready for search</strong>
+                <strong>@L["Workspace.Ready"]</strong>
             </div>
         }
         else if (searchResult.Status != SearchClientsStatus.Success)
         {
             <div class="warning-block warning-danger" role="alert">
-                <strong>Search unavailable</strong>
-                <span>@searchResult.ErrorMessage</span>
+                <strong>@L["Workspace.Unavailable"]</strong>
+                <span>@L["Error.Generic"]</span>
             </div>
         }
         else if (searchResult.Items.Count == 0)
         {
             <div class="operational-empty no-search-results">
-                <strong>No clients found</strong>
+                <strong>@L["Workspace.Empty"]</strong>
             </div>
 
             @if (Model.CreateClientForm is not null)
@@ -67,7 +70,7 @@
 
                     <a class="client-result-row"
                        href="@fullProfileUrl"
-                       aria-label="Open @item.DisplayName"
+                       aria-label="@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Workspace.OpenClient"], item.DisplayName)"
                        hx-get="@htmxProfileUrl"
                        hx-target="#client-profile"
                        hx-swap="outerHTML show:top"
@@ -82,12 +85,12 @@
 
                         <dl class="client-result-meta">
                             <div>
-                                <dt>Card</dt>
-                                <dd>@(item.CurrentCardNumber ?? "No current card")</dd>
+                                <dt>@L["Field.Card"]</dt>
+                                <dd>@(item.CurrentCardNumber ?? L["Value.NoCurrentCard"])</dd>
                             </div>
                             <div>
-                                <dt>Phone</dt>
-                                <dd>@(item.Phone ?? "No phone")</dd>
+                                <dt>@L["Field.Phone"]</dt>
+                                <dd>@(item.Phone ?? L["Value.NoPhone"])</dd>
                             </div>
                         </dl>
 
@@ -95,23 +98,23 @@
                             <span class="match-chip">@MatchTypeLabel(item.MatchType)</span>
                             @if (item.CurrentMembership is null)
                             {
-                                <span class="membership-compact">No current membership</span>
+                                <span class="membership-compact">@L["Value.NoCurrentMembership"]</span>
                             }
                             else
                             {
                                 <span class="membership-compact">
-                                    @item.CurrentMembership.Status / @item.CurrentMembership.RemainingVisits visits /
-                                    through @item.CurrentMembership.EffectiveEndDate.ToString("yyyy-MM-dd")
+                                    @MembershipStatusLabel(item.CurrentMembership.Status) / @WebPluralizer.Visits(SharedL, item.CurrentMembership.RemainingVisits) /
+                                    @L["Workspace.Through"] @ReceptionDisplayFormatter.Date(item.CurrentMembership.EffectiveEndDate)
                                 </span>
                             }
                         </div>
 
                         @if (item.Warnings.Count > 0)
                         {
-                            <ul class="warning-chip-list" aria-label="Client warnings">
+                            <ul class="warning-chip-list" aria-label="@L["Workspace.ClientWarnings"]">
                                 @foreach (var warning in item.Warnings)
                                 {
-                                    <li>@warning.Message</li>
+                                    <li>@WarningMessage(warning.Code)</li>
                                 }
                             </ul>
                         }
@@ -147,7 +150,7 @@
                    hx-target="#reception-workspace"
                    hx-swap="outerHTML"
                    hx-sync="#reception-search:replace"
-                   hx-indicator="#search-loading">More results</a>
+                   hx-indicator="#search-loading">@L["Action.MoreResults"]</a>
             }
         }
     </section>
@@ -163,25 +166,47 @@
             : "status-inactive";
     }
 
-    private static string OperationalStatusLabel(ClientOperationalStatus status)
+    private string OperationalStatusLabel(ClientOperationalStatus status)
     {
         return status == ClientOperationalStatus.Active
-            ? "Active"
-            : "Inactive";
+            ? L["Status.Active"]
+            : L["Status.Inactive"];
     }
 
-    private static string MatchTypeLabel(ClientSearchMatchType matchType)
+    private string MatchTypeLabel(ClientSearchMatchType matchType)
     {
         return matchType switch
         {
-            ClientSearchMatchType.ExactCard => "Exact card",
-            ClientSearchMatchType.ExactPhone => "Exact phone",
-            ClientSearchMatchType.PhoneLastFour => "Phone last 4",
-            ClientSearchMatchType.ExactName => "Exact name",
-            ClientSearchMatchType.PartialCard => "Partial card",
-            ClientSearchMatchType.PartialPhone => "Partial phone",
-            ClientSearchMatchType.PartialName => "Partial name",
-            _ => "Match",
+            ClientSearchMatchType.ExactCard => L["Match.ExactCard"],
+            ClientSearchMatchType.ExactPhone => L["Match.ExactPhone"],
+            ClientSearchMatchType.PhoneLastFour => L["Match.PhoneLastFour"],
+            ClientSearchMatchType.ExactName => L["Match.ExactName"],
+            ClientSearchMatchType.PartialCard => L["Match.PartialCard"],
+            ClientSearchMatchType.PartialPhone => L["Match.PartialPhone"],
+            ClientSearchMatchType.PartialName => L["Match.PartialName"],
+            _ => L["Match.Generic"],
+        };
+    }
+
+    private string MembershipStatusLabel(string status)
+    {
+        return status switch
+        {
+            ClientMembershipSummaryStatusCodes.Active => L["Status.Active"],
+            ClientMembershipSummaryStatusCodes.Expired => L["Status.Expired"],
+            ClientMembershipSummaryStatusCodes.Canceled => L["Status.Canceled"],
+            ClientMembershipSummaryStatusCodes.Corrected => L["Status.Corrected"],
+            _ => L["Value.Unknown"],
+        };
+    }
+
+    private string WarningMessage(string code)
+    {
+        return code switch
+        {
+            "client_inactive" => L["Warning.ClientInactive.Message"],
+            "no_current_card" => L["Warning.NoCurrentCard.Message"],
+            _ => L["Warning.Generic.Message"],
         };
     }
 }

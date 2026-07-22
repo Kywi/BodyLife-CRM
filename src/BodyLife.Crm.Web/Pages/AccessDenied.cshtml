@@ -1,13 +1,14 @@
 @page
+@inject Microsoft.Extensions.Localization.IStringLocalizer<BodyLife.Crm.Web.Localization.Authentication> AuthenticationLocalizer
 @{
-    ViewData["Title"] = "Access denied";
+    ViewData["Title"] = AuthenticationLocalizer["AccessDenied.Title"];
 }
 
 <main class="page-shell auth-shell">
     <section class="restricted-panel" aria-labelledby="access-denied-title">
-        <p class="eyebrow">Restricted</p>
-        <h1 id="access-denied-title">Owner access required</h1>
-        <p>This account cannot manage staff accounts.</p>
-        <a class="secondary-link" asp-page="/Reception/Index">Return to reception</a>
+        <p class="eyebrow">@AuthenticationLocalizer["AccessDenied.Eyebrow"]</p>
+        <h1 id="access-denied-title">@AuthenticationLocalizer["AccessDenied.Heading"]</h1>
+        <p>@AuthenticationLocalizer["AccessDenied.Message"]</p>
+        <a class="secondary-link" asp-page="/Reception/Index">@AuthenticationLocalizer["AccessDenied.ReturnToReception"]</a>
     </section>
 </main>

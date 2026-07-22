@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MembershipTypes.Title" xml:space="preserve"><value>Типи абонементів</value></data>
+  <data name="MembershipTypes.OwnerSettings" xml:space="preserve"><value>Налаштування власника</value></data>
+  <data name="MembershipTypes.Reception" xml:space="preserve"><value>Рецепція</value></data>
+  <data name="MembershipTypes.Add" xml:space="preserve"><value>Додати тип абонемента</value></data>
+  <data name="MembershipTypes.OwnerOnly" xml:space="preserve"><value>Лише власник</value></data>
+  <data name="MembershipTypes.CreateFailed" xml:space="preserve"><value>Не вдалося створити тип абонемента</value></data>
+  <data name="MembershipTypes.Name" xml:space="preserve"><value>Назва</value></data>
+  <data name="MembershipTypes.Duration" xml:space="preserve"><value>Тривалість (днів)</value></data>
+  <data name="MembershipTypes.VisitLimit" xml:space="preserve"><value>Ліміт відвідувань</value></data>
+  <data name="MembershipTypes.PriceAmount" xml:space="preserve"><value>Сума ціни</value></data>
+  <data name="MembershipTypes.Currency" xml:space="preserve"><value>Валюта</value></data>
+  <data name="MembershipTypes.Comment" xml:space="preserve"><value>Коментар</value></data>
+  <data name="MembershipTypes.Adding" xml:space="preserve"><value>Додавання…</value></data>
+  <data name="MembershipTypes.Catalog" xml:space="preserve"><value>Каталог майбутніх продажів</value></data>
+  <data name="MembershipTypes.ActiveCount" xml:space="preserve"><value>Активні: {0}</value></data>
+  <data name="MembershipTypes.InactiveCount" xml:space="preserve"><value>Неактивні: {0}</value></data>
+  <data name="MembershipTypes.OwnerManaged" xml:space="preserve"><value>Керує власник</value></data>
+  <data name="MembershipTypes.TypeCount" xml:space="preserve"><value>Типів: {0}</value></data>
+  <data name="MembershipTypes.CatalogFailed" xml:space="preserve"><value>Не вдалося оновити каталог</value></data>
+  <data name="MembershipTypes.Empty" xml:space="preserve"><value>Типів абонементів ще немає.</value></data>
+  <data name="MembershipTypes.Active" xml:space="preserve"><value>Активний</value></data>
+  <data name="MembershipTypes.Inactive" xml:space="preserve"><value>Неактивний</value></data>
+  <data name="MembershipTypes.Price" xml:space="preserve"><value>Ціна</value></data>
+  <data name="MembershipTypes.Created" xml:space="preserve"><value>Створено</value></data>
+  <data name="MembershipTypes.Updated" xml:space="preserve"><value>Оновлено</value></data>
+  <data name="MembershipTypes.Deactivated" xml:space="preserve"><value>Деактивовано</value></data>
+  <data name="MembershipTypes.NotDeactivated" xml:space="preserve"><value>Не деактивовано</value></data>
+  <data name="MembershipTypes.NoComment" xml:space="preserve"><value>Без коментаря</value></data>
+  <data name="MembershipTypes.EditValues" xml:space="preserve"><value>Змінити значення каталогу</value></data>
+  <data name="MembershipTypes.UpdateFailed" xml:space="preserve"><value>Не вдалося оновити тип абонемента</value></data>
+  <data name="MembershipTypes.CatalogComment" xml:space="preserve"><value>Коментар каталогу</value></data>
+  <data name="MembershipTypes.ChangeReason" xml:space="preserve"><value>Причина зміни</value></data>
+  <data name="MembershipTypes.Saving" xml:space="preserve"><value>Збереження…</value></data>
+  <data name="MembershipTypes.Save" xml:space="preserve"><value>Зберегти зміни</value></data>
+  <data name="MembershipTypes.Deactivate" xml:space="preserve"><value>Деактивувати тип абонемента</value></data>
+  <data name="MembershipTypes.DeactivateFailed" xml:space="preserve"><value>Не вдалося деактивувати тип абонемента</value></data>
+  <data name="MembershipTypes.DeactivateConfirm" xml:space="preserve"><value>Деактивувати цей тип абонемента для майбутніх продажів?</value></data>
+  <data name="MembershipTypes.DeactivateReason" xml:space="preserve"><value>Причина деактивації</value></data>
+  <data name="MembershipTypes.Deactivating" xml:space="preserve"><value>Деактивація…</value></data>
+  <data name="MembershipTypes.Success.Created" xml:space="preserve"><value>Тип абонемента створено.</value></data>
+  <data name="MembershipTypes.Success.CreatedWithAudit" xml:space="preserve"><value>Тип абонемента створено. Посилання аудиту: {0}.</value></data>
+  <data name="MembershipTypes.Success.Updated" xml:space="preserve"><value>Тип абонемента оновлено.</value></data>
+  <data name="MembershipTypes.Success.UpdatedWithAudit" xml:space="preserve"><value>Тип абонемента оновлено. Посилання аудиту: {0}.</value></data>
+  <data name="MembershipTypes.Success.Deactivated" xml:space="preserve"><value>Тип абонемента деактивовано.</value></data>
+  <data name="MembershipTypes.Success.DeactivatedWithAudit" xml:space="preserve"><value>Тип абонемента деактивовано. Посилання аудиту: {0}.</value></data>
+  <data name="MembershipTypes.Error.Duration" xml:space="preserve"><value>Введіть тривалість цілим числом.</value></data>
+  <data name="MembershipTypes.Error.VisitLimit" xml:space="preserve"><value>Введіть ліміт відвідувань цілим числом.</value></data>
+  <data name="MembershipTypes.Error.Price" xml:space="preserve"><value>Введіть коректну невід'ємну ціну.</value></data>
+  <data name="MembershipTypes.Error.Currency" xml:space="preserve"><value>Введіть валюту ціни.</value></data>
+  <data name="MembershipTypes.Error.Validation" xml:space="preserve"><value>Перевірте введені значення.</value></data>
+  <data name="MembershipTypes.Error.DuplicateSubmission" xml:space="preserve"><value>Це надсилання вже оброблено. Перевірте оновлений каталог.</value></data>
+  <data name="MembershipTypes.Error.Stale" xml:space="preserve"><value>Тип абонемента змінився. Перевірте оновлені значення.</value></data>
+  <data name="MembershipTypes.Error.Concurrency" xml:space="preserve"><value>Каталог змінився паралельно. Перевірте оновлений каталог.</value></data>
+  <data name="MembershipTypes.Error.NotFound" xml:space="preserve"><value>Тип абонемента не знайдено. Каталог оновлено.</value></data>
+  <data name="MembershipTypes.Error.AlreadyInactive" xml:space="preserve"><value>Цей тип абонемента вже неактивний. Каталог оновлено.</value></data>
+  <data name="MembershipTypes.Error.Generic" xml:space="preserve"><value>Не вдалося оновити каталог. Перевірте значення та повторіть спробу.</value></data>
+  <data name="StaffAccounts.Title" xml:space="preserve"><value>Облікові записи персоналу</value></data>
+  <data name="StaffAccounts.OwnerSettings" xml:space="preserve"><value>Налаштування власника</value></data>
+  <data name="StaffAccounts.Reception" xml:space="preserve"><value>Рецепція</value></data>
+  <data name="StaffAccounts.Add" xml:space="preserve"><value>Додати обліковий запис</value></data>
+  <data name="StaffAccounts.AccountType" xml:space="preserve"><value>Тип облікового запису</value></data>
+  <data name="StaffAccounts.AccountKind.NamedAdmin" xml:space="preserve"><value>Іменований адміністратор</value></data>
+  <data name="StaffAccounts.AccountKind.SharedReceptionAdmin" xml:space="preserve"><value>Спільний обліковий запис рецепції/адміністратора</value></data>
+  <data name="StaffAccounts.AccountKind.Staff" xml:space="preserve"><value>Обліковий запис персоналу</value></data>
+  <data name="StaffAccounts.DisplayName" xml:space="preserve"><value>Відображуване ім'я</value></data>
+  <data name="StaffAccounts.Creating" xml:space="preserve"><value>Створення…</value></data>
+  <data name="StaffAccounts.AddAccount" xml:space="preserve"><value>Додати запис</value></data>
+  <data name="StaffAccounts.CurrentStaff" xml:space="preserve"><value>Поточний персонал</value></data>
+  <data name="StaffAccounts.AccountCount" xml:space="preserve"><value>Записів: {0}</value></data>
+  <data name="StaffAccounts.Empty" xml:space="preserve"><value>Облікових записів персоналу ще немає.</value></data>
+  <data name="StaffAccounts.Active" xml:space="preserve"><value>Активний</value></data>
+  <data name="StaffAccounts.Inactive" xml:space="preserve"><value>Неактивний</value></data>
+  <data name="StaffAccounts.Login" xml:space="preserve"><value>Логін</value></data>
+  <data name="StaffAccounts.NotConfigured" xml:space="preserve"><value>Не налаштовано</value></data>
+  <data name="StaffAccounts.ActiveSessions" xml:space="preserve"><value>Активні сеанси</value></data>
+  <data name="StaffAccounts.SessionCount" xml:space="preserve"><value>{0}</value></data>
+  <data name="StaffAccounts.Saving" xml:space="preserve"><value>Збереження…</value></data>
+  <data name="StaffAccounts.SaveName" xml:space="preserve"><value>Зберегти ім'я</value></data>
+  <data name="StaffAccounts.ResetCredentials" xml:space="preserve"><value>Скинути облікові дані</value></data>
+  <data name="StaffAccounts.SetCredentials" xml:space="preserve"><value>Задати облікові дані</value></data>
+  <data name="StaffAccounts.NewPassword" xml:space="preserve"><value>Новий пароль</value></data>
+  <data name="StaffAccounts.ResetReason" xml:space="preserve"><value>Причина скидання</value></data>
+  <data name="StaffAccounts.DeactivateConfirm" xml:space="preserve"><value>Деактивувати цей запис і завершити його активні сеанси?</value></data>
+  <data name="StaffAccounts.Access" xml:space="preserve"><value>Доступ</value></data>
+  <data name="StaffAccounts.DeactivateReason" xml:space="preserve"><value>Причина деактивації</value></data>
+  <data name="StaffAccounts.Deactivating" xml:space="preserve"><value>Деактивація…</value></data>
+  <data name="StaffAccounts.Deactivate" xml:space="preserve"><value>Деактивувати</value></data>
+  <data name="StaffAccounts.ActivationNote" xml:space="preserve"><value>Вхід заблоковано, доки цей обліковий запис не активовано.</value></data>
+  <data name="StaffAccounts.Activating" xml:space="preserve"><value>Активація…</value></data>
+  <data name="StaffAccounts.Activate" xml:space="preserve"><value>Активувати</value></data>
+  <data name="StaffAccounts.AuditReference" xml:space="preserve"><value>{0} Посилання аудиту: {1}.</value></data>
+  <data name="StaffAccounts.Result.Created" xml:space="preserve"><value>Обліковий запис персоналу створено.</value></data>
+  <data name="StaffAccounts.Result.DisplayNameUpdated" xml:space="preserve"><value>Відображуване ім'я оновлено.</value></data>
+  <data name="StaffAccounts.Result.Activated" xml:space="preserve"><value>Обліковий запис активовано.</value></data>
+  <data name="StaffAccounts.Result.Deactivated" xml:space="preserve"><value>Обліковий запис деактивовано.</value></data>
+  <data name="StaffAccounts.Result.AlreadyActive" xml:space="preserve"><value>Обліковий запис уже активний.</value></data>
+  <data name="StaffAccounts.Result.AlreadyInactive" xml:space="preserve"><value>Обліковий запис уже неактивний.</value></data>
+  <data name="StaffAccounts.Result.CredentialsConfigured" xml:space="preserve"><value>Облікові дані налаштовано.</value></data>
+  <data name="StaffAccounts.Result.CredentialsReset" xml:space="preserve"><value>Облікові дані скинуто.</value></data>
+  <data name="StaffAccounts.Error.PermissionDenied" xml:space="preserve"><value>Потрібен доступ власника.</value></data>
+  <data name="StaffAccounts.Error.Validation" xml:space="preserve"><value>Перевірте дані облікового запису та повторіть спробу.</value></data>
+  <data name="StaffAccounts.Error.NotFound" xml:space="preserve"><value>Обліковий запис не знайдено.</value></data>
+  <data name="StaffAccounts.Error.OwnerProtected" xml:space="preserve"><value>Обліковим записом власника керує початкове налаштування.</value></data>
+  <data name="StaffAccounts.Error.LoginInUse" xml:space="preserve"><value>Цей логін уже використовується.</value></data>
+  <data name="StaffAccounts.Error.Generic" xml:space="preserve"><value>Не вдалося оновити обліковий запис. Повторіть спробу.</value></data>
+  <data name="NonWorkingDays.Title" xml:space="preserve"><value>Неробочі дні</value></data>
+  <data name="NonWorkingDays.OwnerOperations" xml:space="preserve"><value>Операції власника</value></data>
+  <data name="NonWorkingDays.Reception" xml:space="preserve"><value>Рецепція</value></data>
+  <data name="NonWorkingDays.Error.PeriodRequired" xml:space="preserve"><value>Потрібен вихідний неробочий період.</value></data>
+  <data name="NonWorkingDays.Error.ConfirmImpact" xml:space="preserve"><value>Підтвердьте точний список абонементів і повний застосований період.</value></data>
+  <data name="NonWorkingDays.Error.StartRequired" xml:space="preserve"><value>Потрібна дата початку неробочого періоду.</value></data>
+  <data name="NonWorkingDays.Error.EndRequired" xml:space="preserve"><value>Потрібна дата завершення неробочого періоду.</value></data>
+  <data name="NonWorkingDays.Error.EndBeforeStart" xml:space="preserve"><value>Дата завершення має бути не раніше дати початку.</value></data>
+  <data name="NonWorkingDays.Error.ReasonCodeRequired" xml:space="preserve"><value>Вкажіть код причини.</value></data>
+  <data name="NonWorkingDays.Error.ReasonCodeTooLong" xml:space="preserve"><value>Код причини має містити не більше {0} символів.</value></data>
+  <data name="NonWorkingDays.Error.ReasonCommentTooLong" xml:space="preserve"><value>Коментар до причини має містити не більше {0} символів.</value></data>
+  <data name="NonWorkingDays.Error.PreviewToken" xml:space="preserve"><value>Потрібен канонічний токен підтвердження попереднього перегляду.</value></data>
+  <data name="NonWorkingDays.Error.ScopeFingerprint" xml:space="preserve"><value>Потрібен канонічний відбиток обсягу впливу.</value></data>
+  <data name="NonWorkingDays.Error.IdempotencyKey" xml:space="preserve"><value>Потрібен ключ захисту від повторного надсилання.</value></data>
+  <data name="NonWorkingDays.Error.SelectActivePeriod" xml:space="preserve"><value>Виберіть активний неробочий період.</value></data>
+  <data name="NonWorkingDays.Error.PeriodNoLongerActive" xml:space="preserve"><value>Вибраний період більше не активний. Оновіть список.</value></data>
+  <data name="NonWorkingDays.Error.SelectCorrectionMode" xml:space="preserve"><value>Виберіть підтримуваний режим виправлення.</value></data>
+  <data name="NonWorkingDays.Error.CorrectionReason" xml:space="preserve"><value>Потрібна причина виправлення довжиною не більше {0} символів.</value></data>
+  <data name="NonWorkingDays.Error.CorrectionComment" xml:space="preserve"><value>Потрібен коментар виправлення довжиною не більше {0} символів.</value></data>
+  <data name="NonWorkingDays.Error.ConfirmCorrection" xml:space="preserve"><value>Підтвердьте точні початковий і новий обсяги абонементів перед застосуванням виправлення.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementStartRequired" xml:space="preserve"><value>Потрібна дата початку заміни.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementEndRequired" xml:space="preserve"><value>Потрібна дата завершення заміни.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementEndBeforeStart" xml:space="preserve"><value>Дата завершення заміни має бути не раніше дати початку.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementReasonCode" xml:space="preserve"><value>Потрібен код причини заміни довжиною не більше {0} символів.</value></data>
+  <data name="NonWorkingDays.Error.ReplacementReasonComment" xml:space="preserve"><value>Коментар причини заміни має містити не більше {0} символів.</value></data>
+  <data name="NonWorkingDays.Error.CorrectionToken" xml:space="preserve"><value>Потрібен канонічний токен підтвердження виправлення.</value></data>
+  <data name="NonWorkingDays.Error.CorrectionFingerprint" xml:space="preserve"><value>Потрібен канонічний відбиток обсягу виправлення.</value></data>
+  <data name="NonWorkingDays.PreviewTitle" xml:space="preserve"><value>Попередній перегляд впливу закриття</value></data>
+  <data name="NonWorkingDays.OwnerOnly" xml:space="preserve"><value>Лише власник</value></data>
+  <data name="NonWorkingDays.ReviewOperation" xml:space="preserve"><value>Перевірте цю операцію</value></data>
+  <data name="NonWorkingDays.StartDate" xml:space="preserve"><value>Дата початку</value></data>
+  <data name="NonWorkingDays.EndDate" xml:space="preserve"><value>Дата завершення</value></data>
+  <data name="NonWorkingDays.ReasonCode" xml:space="preserve"><value>Код причини</value></data>
+  <data name="NonWorkingDays.ReasonComment" xml:space="preserve"><value>Коментар причини (необов'язково)</value></data>
+  <data name="NonWorkingDays.Calculating" xml:space="preserve"><value>Обчислення…</value></data>
+  <data name="NonWorkingDays.PreviewImpact" xml:space="preserve"><value>Переглянути вплив</value></data>
+  <data name="NonWorkingDays.CalculatingImpact" xml:space="preserve"><value>Обчислення канонічного впливу…</value></data>
+  <data name="NonWorkingDays.OwnerReview" xml:space="preserve"><value>Перевірка власника</value></data>
+  <data name="NonWorkingDays.ImpactPreview" xml:space="preserve"><value>Перегляд впливу</value></data>
+  <data name="NonWorkingDays.ValidUntil" xml:space="preserve"><value>Дійсно до {0}</value></data>
+  <data name="NonWorkingDays.AffectedMemberships" xml:space="preserve"><value>Абонементи, яких стосується період</value></data>
+  <data name="NonWorkingDays.InclusivePeriod" xml:space="preserve"><value>Період (обидві дати включно)</value></data>
+  <data name="NonWorkingDays.PeriodDays" xml:space="preserve"><value>Дні періоду</value></data>
+  <data name="NonWorkingDays.OverlapWarnings" xml:space="preserve"><value>Попередження про перетин</value></data>
+  <data name="NonWorkingDays.FullPeriodApplies" xml:space="preserve"><value>Застосовується повний період</value></data>
+  <data name="NonWorkingDays.FullPeriodNotice" xml:space="preserve"><value>До кожного абонемента, якого стосується період, застосовується весь період {0} (обидві дати включно), навіть якщо перетин є лише по одній межі. Наявні джерела продовження об’єднуються без подвійного підрахунку.</value></data>
+  <data name="NonWorkingDays.NoAffected" xml:space="preserve"><value>Цей період не впливає на абонементи.</value></data>
+  <data name="NonWorkingDays.PreviewFailed" xml:space="preserve"><value>Не вдалося створити перегляд впливу</value></data>
+  <data name="NonWorkingDays.NotAdded" xml:space="preserve"><value>Неробочий період не додано</value></data>
+  <data name="NonWorkingDays.Error.Load" xml:space="preserve"><value>Не вдалося завантажити підтверджений неробочий період.</value></data>
+  <data name="NonWorkingDays.ConfirmedUnavailable" xml:space="preserve"><value>Підтверджений період недоступний</value></data>
+  <data name="NonWorkingDays.Error.Permission" xml:space="preserve"><value>Потрібен активний сеанс власника.</value></data>
+  <data name="NonWorkingDays.Error.Recalculation" xml:space="preserve"><value>Перерахунок абонементів не завершився, тому дані не збережено.</value></data>
+  <data name="NonWorkingDays.Error.Validation" xml:space="preserve"><value>Перевірте запропонований період і причину.</value></data>
+  <data name="NonWorkingDays.Error.PreviewExpired" xml:space="preserve"><value>Термін дії перегляду минув. Перевірте оновлений точний обсяг.</value></data>
+  <data name="NonWorkingDays.Error.ScopeChanged" xml:space="preserve"><value>Обсяг абонементів, яких стосується період, змінився. Перевірте оновлений точний обсяг.</value></data>
+  <data name="NonWorkingDays.Error.StateChanged" xml:space="preserve"><value>Канонічний стан абонементів змінився. Перевірте оновлений точний обсяг.</value></data>
+  <data name="NonWorkingDays.Error.Duplicate" xml:space="preserve"><value>Це підтвердження не застосовано. Перевірте оновлений перегляд.</value></data>
+  <data name="NonWorkingDays.Error.Generic" xml:space="preserve"><value>Не вдалося виконати операцію. Перевірте дані та повторіть спробу.</value></data>
+  <data name="NonWorkingDays.MembershipReference" xml:space="preserve"><value>Абонемент {0}</value></data>
+  <data name="NonWorkingDays.FullAppliedRange" xml:space="preserve"><value>Повний застосований діапазон (обидві дати включно)</value></data>
+  <data name="NonWorkingDays.EffectiveEnd" xml:space="preserve"><value>Фактична дата завершення</value></data>
+  <data name="NonWorkingDays.To" xml:space="preserve"><value>до</value></data>
+  <data name="NonWorkingDays.ExtensionDays" xml:space="preserve"><value>Дні продовження</value></data>
+  <data name="NonWorkingDays.ExistingOverlap" xml:space="preserve"><value>Наявний перетин</value></data>
+  <data name="NonWorkingDays.ExistingOverlaps" xml:space="preserve"><value>Наявних перетинів продовжень: {0}</value></data>
+  <data name="NonWorkingDays.FinalConfirmation" xml:space="preserve"><value>Остаточне підтвердження</value></data>
+  <data name="NonWorkingDays.ApplyExactScope" xml:space="preserve"><value>Застосувати цей точний обсяг</value></data>
+  <data name="NonWorkingDays.ConfirmationNotice" xml:space="preserve"><value>Команда створить незмінні записи для точного підтвердженого обсягу (кількість абонементів: {0}) і синхронно перерахує канонічний стан.</value></data>
+  <data name="NonWorkingDays.ConfirmScope" xml:space="preserve"><value>Підтверджую точний обсяг (кількість абонементів: {0}) і застосування всього періоду {1} (обидві дати включно).</value></data>
+  <data name="NonWorkingDays.AddingAndRecalculating" xml:space="preserve"><value>Додавання періоду та перерахунок абонементів…</value></data>
+  <data name="NonWorkingDays.AddingPeriod" xml:space="preserve"><value>Додавання періоду…</value></data>
+  <data name="NonWorkingDays.AddPeriod" xml:space="preserve"><value>Додати неробочий період</value></data>
+  <data name="NonWorkingDays.PeriodAdded" xml:space="preserve"><value>Неробочий період додано</value></data>
+  <data name="NonWorkingDays.PeriodAddedNotice" xml:space="preserve"><value>Точний обсяг впливу збережено, а кожен абонемент перераховано перед фіксацією.</value></data>
+  <data name="NonWorkingDays.CanonicalResult" xml:space="preserve"><value>Канонічний результат</value></data>
+  <data name="NonWorkingDays.ConfirmedPeriod" xml:space="preserve"><value>Підтверджений період</value></data>
+  <data name="NonWorkingDays.AuditReference" xml:space="preserve"><value>Посилання аудиту</value></data>
+  <data name="NonWorkingDays.None" xml:space="preserve"><value>Немає</value></data>
+  <data name="NonWorkingDays.ExactScopeCaptured" xml:space="preserve"><value>Точний обсяг зафіксовано</value></data>
+  <data name="NonWorkingDays.ExactScopeNotice" xml:space="preserve"><value>Кожен рядок нижче є збереженим застосуванням повного періоду. Подальші зміни абонемента не змінюють цей знімок непомітно.</value></data>
+  <data name="NonWorkingDays.ConfirmedNoAffected" xml:space="preserve"><value>Цей підтверджений період не вплинув на абонементи.</value></data>
+  <data name="NonWorkingDays.ConfirmedAffectedMemberships" xml:space="preserve"><value>Підтверджені абонементи, яких стосується період</value></data>
+  <data name="NonWorkingDays.CurrentEffectiveEnd" xml:space="preserve"><value>Поточна фактична дата завершення</value></data>
+  <data name="NonWorkingDays.CurrentExtensionDays" xml:space="preserve"><value>Поточні дні продовження</value></data>
+  <data name="NonWorkingDays.StateRecalculated" xml:space="preserve"><value>Стан перераховано</value></data>
+  <data name="NonWorkingDays.Correction.Error.AlreadyCanceled" xml:space="preserve"><value>Вибраний неробочий період уже скасовано.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Duplicate" xml:space="preserve"><value>Це виправлення не застосовано. Перевірте оновлений перегляд.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Generic" xml:space="preserve"><value>Не вдалося виконати виправлення. Перевірте дані та повторіть спробу.</value></data>
+  <data name="NonWorkingDays.Correction.Error.LoadActive" xml:space="preserve"><value>Не вдалося завантажити активні неробочі періоди.</value></data>
+  <data name="NonWorkingDays.Correction.Error.NotFound" xml:space="preserve"><value>Вибраний неробочий період більше не існує.</value></data>
+  <data name="NonWorkingDays.Correction.Error.OriginalChanged" xml:space="preserve"><value>Вихідний неробочий період змінився. Оновіть і перегляньте виправлення знову.</value></data>
+  <data name="NonWorkingDays.Correction.Error.OutcomeLoad" xml:space="preserve"><value>Не вдалося завантажити канонічний результат виправлення.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Permission" xml:space="preserve"><value>Для перегляду виправлення потрібен активний сеанс власника.</value></data>
+  <data name="NonWorkingDays.Correction.Error.PreviewExpired" xml:space="preserve"><value>Термін перегляду виправлення минув. Перевірте оновлений точний обсяг.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Recalculation" xml:space="preserve"><value>Перерахунок абонементів не завершився, тому виправлення не зафіксовано.</value></data>
+  <data name="NonWorkingDays.Correction.Error.ScopeChanged" xml:space="preserve"><value>Обсяг виправлення змінився. Перевірте оновлений точний обсяг.</value></data>
+  <data name="NonWorkingDays.Correction.Error.SourceInconsistent" xml:space="preserve"><value>Канонічні вихідні записи неузгоджені, тому вплив виправлення не можна показати.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Stale" xml:space="preserve"><value>Вибраний неробочий період уже виправлено. Оновіть активний список.</value></data>
+  <data name="NonWorkingDays.Correction.Error.StateChanged" xml:space="preserve"><value>Канонічний стан змінився. Перегляньте новий перегляд виправлення.</value></data>
+  <data name="NonWorkingDays.Correction.Error.Validation" xml:space="preserve"><value>Перевірте дані перегляду виправлення.</value></data>
+  <data name="NonWorkingDays.Correction.Heading.NotApplied" xml:space="preserve"><value>Виправлення не застосовано</value></data>
+  <data name="NonWorkingDays.Correction.Heading.OutcomeUnavailable" xml:space="preserve"><value>Результат виправлення недоступний</value></data>
+  <data name="NonWorkingDays.Correction.Heading.PreviewFailed" xml:space="preserve"><value>Перегляд виправлення не створено</value></data>
+  <data name="NonWorkingDays.Correction.Heading.Unavailable" xml:space="preserve"><value>Періоди для виправлення недоступні</value></data>
+<data name="NonWorkingDay.CorrectionReview" xml:space="preserve"><value>Перевірка виправлення</value></data>
+  <data name="NonWorkingDay.CorrectPeriod" xml:space="preserve"><value>Виправити наявний період</value></data>
+  <data name="NonWorkingDay.OwnerOnly" xml:space="preserve"><value>Лише Власник</value></data>
+  <data name="NonWorkingDay.CorrectionPreviewNotCreated" xml:space="preserve"><value>Попередній перегляд виправлення не створено</value></data>
+  <data name="NonWorkingDay.NoActivePeriods" xml:space="preserve"><value>Немає активних неробочих періодів для виправлення.</value></data>
+  <data name="NonWorkingDay.ActivePeriod" xml:space="preserve"><value>Активний період</value></data>
+  <data name="NonWorkingDay.MembershipCount" xml:space="preserve"><value>Абонементів: {0}</value></data>
+  <data name="NonWorkingDay.CorrectionMode" xml:space="preserve"><value>Режим виправлення</value></data>
+  <data name="NonWorkingDay.ReplaceRange" xml:space="preserve"><value>Замінити діапазон</value></data>
+  <data name="NonWorkingDay.ReplaceReason" xml:space="preserve"><value>Замінити причину</value></data>
+  <data name="NonWorkingDay.CancelPeriod" xml:space="preserve"><value>Скасувати період</value></data>
+<data name="NonWorkingDay.ReplacementRange" xml:space="preserve"><value>Діапазон заміни</value></data>
+  <data name="NonWorkingDay.StartDate" xml:space="preserve"><value>Дата початку</value></data>
+  <data name="NonWorkingDay.EndDate" xml:space="preserve"><value>Дата завершення</value></data>
+  <data name="NonWorkingDay.ReplacementReason" xml:space="preserve"><value>Причина заміни</value></data>
+  <data name="NonWorkingDay.ReasonCode" xml:space="preserve"><value>Код причини</value></data>
+  <data name="NonWorkingDay.ReasonCommentOptional" xml:space="preserve"><value>Коментар до причини (необов’язково)</value></data>
+  <data name="NonWorkingDay.CorrectionReason" xml:space="preserve"><value>Причина виправлення</value></data>
+  <data name="NonWorkingDay.CorrectionComment" xml:space="preserve"><value>Коментар до виправлення</value></data>
+  <data name="NonWorkingDay.Calculating" xml:space="preserve"><value>Обчислення…</value></data>
+  <data name="NonWorkingDay.PreviewCorrection" xml:space="preserve"><value>Переглянути виправлення</value></data>
+  <data name="NonWorkingDay.CalculatingScope" xml:space="preserve"><value>Обчислення старого і нового канонічного обсягу…</value></data>
+  <data name="Common.None" xml:space="preserve"><value>Немає</value></data>
+  <data name="Error.Generic" xml:space="preserve"><value>Не вдалося виконати операцію. Перевірте дані та повторіть спробу.</value></data>
+  <data name="Range.To" xml:space="preserve"><value>до</value></data>
+  <data name="NonWorkingDay.AuditReference" xml:space="preserve"><value>Посилання аудиту</value></data>
+  <data name="NonWorkingDay.CurrentEffectiveEnd" xml:space="preserve"><value>Поточна фактична дата завершення</value></data>
+  <data name="NonWorkingDay.CurrentExtensionDays" xml:space="preserve"><value>Поточні дні продовження</value></data>
+  <data name="NonWorkingDay.ExistingOverlap" xml:space="preserve"><value>Наявний перетин</value></data>
+  <data name="NonWorkingDay.FullAppliedRange" xml:space="preserve"><value>Повний застосований діапазон (обидві дати включно)</value></data>
+  <data name="NonWorkingDay.MembershipReference" xml:space="preserve"><value>Абонемент {0}</value></data>
+  <data name="NonWorkingDay.ReasonComment" xml:space="preserve"><value>Коментар до причини</value></data>
+  <data name="NonWorkingDay.Status.Active" xml:space="preserve"><value>Активний</value></data>
+  <data name="NonWorkingDay.Status.Canceled" xml:space="preserve"><value>Скасований</value></data>
+  <data name="NonWorkingDay.Status.Corrected" xml:space="preserve"><value>Виправлений</value></data>
+  <data name="NonWorkingDay.Status.Unsupported" xml:space="preserve"><value>Не підтримується</value></data>
+  <data name="NonWorkingDay.Source.Freeze" xml:space="preserve"><value>Замороження</value></data>
+  <data name="NonWorkingDay.Source.NonWorkingDay" xml:space="preserve"><value>Неробочий період</value></data>
+  <data name="NonWorkingDay.Source.Adjustment" xml:space="preserve"><value>Коригування</value></data>
+  <data name="NonWorkingDay.Source.Extension" xml:space="preserve"><value>Джерело продовження</value></data>
+  <data name="NonWorkingDay.Correction.PreviewCreated" xml:space="preserve"><value>Попередній перегляд виправлення створено</value></data>
+  <data name="NonWorkingDay.Correction.PreviewNoChanges" xml:space="preserve"><value>Ділові дані ще не змінено.</value></data>
+  <data name="NonWorkingDay.Correction.OwnerReview" xml:space="preserve"><value>Перевірка власника</value></data>
+  <data name="NonWorkingDay.Correction.ValidUntil" xml:space="preserve"><value>Дійсно до {0}</value></data>
+  <data name="NonWorkingDay.Correction.OriginalMemberships" xml:space="preserve"><value>Початкові абонементи</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmedScope" xml:space="preserve"><value>Підтверджений обсяг</value></data>
+  <data name="NonWorkingDay.Correction.ScopeBehavior" xml:space="preserve"><value>Поведінка обсягу</value></data>
+  <data name="NonWorkingDay.Correction.Reason" xml:space="preserve"><value>Причина виправлення</value></data>
+  <data name="NonWorkingDay.Correction.OriginalSource" xml:space="preserve"><value>Початкове джерело</value></data>
+  <data name="NonWorkingDay.Correction.OriginalAffectedMemberships" xml:space="preserve"><value>Абонементи, яких стосувався початковий період</value></data>
+  <data name="NonWorkingDay.Correction.OriginalScope" xml:space="preserve"><value>Початковий обсяг</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementSource" xml:space="preserve"><value>Джерело заміни</value></data>
+  <data name="NonWorkingDay.Correction.FullReplacementApplies" xml:space="preserve"><value>Застосовується повний період заміни</value></data>
+  <data name="NonWorkingDay.Correction.FullReplacementHint" xml:space="preserve"><value>До кожного абонемента з нового обсягу застосовується весь період {0} (обидві дати включно), навіть якщо перетин є лише по одній межі. Початковий період виключено перед оцінюванням цього впливу.</value></data>
+  <data name="NonWorkingDay.Correction.NoReplacementMemberships" xml:space="preserve"><value>Період заміни не впливає на жоден абонемент.</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementAffectedMemberships" xml:space="preserve"><value>Абонементи, яких стосується заміна</value></data>
+  <data name="NonWorkingDay.Correction.EffectiveEndWithoutOriginal" xml:space="preserve"><value>Фактична дата завершення без початкового періоду</value></data>
+  <data name="NonWorkingDay.Correction.ExtensionWithoutOriginal" xml:space="preserve"><value>Дні продовження без початкового періоду</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementOverlap" xml:space="preserve"><value>Наявний перетин із діапазоном заміни</value></data>
+  <data name="NonWorkingDay.Correction.ScopeUnchanged" xml:space="preserve"><value>Точний обсяг і діапазон залишаються незмінними</value></data>
+  <data name="NonWorkingDay.Correction.ScopeUnchangedHint" xml:space="preserve"><value>Точний обсяг застосувань не змінюється (кількість: {0}) і зберігає {1}. Замінюється лише джерело причини на {2}.</value></data>
+  <data name="NonWorkingDay.Correction.ApplicationsStop" xml:space="preserve"><value>Факти застосування, що припинять діяти. Кількість: {0}</value></data>
+  <data name="NonWorkingDay.Correction.CancelHint" xml:space="preserve"><value>Початковий період і записи застосувань залишаються у скасованій історії. Команда підтвердження перерахує абонементи.</value></data>
+  <data name="NonWorkingDay.Correction.FinalConfirmation" xml:space="preserve"><value>Остаточне підтвердження</value></data>
+  <data name="NonWorkingDay.Correction.FinalConfirmationHint" xml:space="preserve"><value>Команда збереже початкове джерело в історії, зафіксує точний підтверджений обсяг, перерахує абонементи (кількість: {0}) і атомарно додасть одну подію аудиту власника.</value></data>
+  <data name="NonWorkingDay.Correction.Applying" xml:space="preserve"><value>Застосування виправлення…</value></data>
+  <data name="NonWorkingDay.Correction.ResultCommitted" xml:space="preserve"><value>Вихідні факти, точний обсяг застосування, перерахунок абонементів, ідемпотентність і бізнес-аудит зафіксовано разом.</value></data>
+  <data name="NonWorkingDay.Correction.CanonicalResult" xml:space="preserve"><value>Канонічний результат</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementMemberships" xml:space="preserve"><value>Абонементи заміни</value></data>
+  <data name="NonWorkingDay.Correction.RecalculatedUnion" xml:space="preserve"><value>Перераховане об’єднання</value></data>
+  <data name="NonWorkingDay.Correction.OccurredAt" xml:space="preserve"><value>Час події</value></data>
+  <data name="NonWorkingDay.Correction.RecordedAt" xml:space="preserve"><value>Час запису</value></data>
+  <data name="NonWorkingDay.Correction.OriginalSourceRetained" xml:space="preserve"><value>Початкове джерело збережено</value></data>
+  <data name="NonWorkingDay.Correction.CommittedOriginalScope" xml:space="preserve"><value>Зафіксований початковий обсяг</value></data>
+  <data name="NonWorkingDay.Correction.RecalculatedAt" xml:space="preserve"><value>Час перерахунку</value></data>
+  <data name="NonWorkingDay.Correction.ReplacementSourceCommitted" xml:space="preserve"><value>Джерело заміни зафіксовано</value></data>
+  <data name="NonWorkingDay.Correction.CommittedReplacementScope" xml:space="preserve"><value>Зафіксований обсяг заміни</value></data>
+  <data name="NonWorkingDay.Correction.CancellationCommittedHint" xml:space="preserve"><value>Скасування {0} зберегло початковий період і застосування у скасованій історії. Кожен абонемент вище показує канонічний стан після перерахунку.</value></data>
+  <data name="NonWorkingDay.Correction.Mode.ReplaceRange" xml:space="preserve"><value>Перегляд заміни діапазону</value></data>
+  <data name="NonWorkingDay.Correction.Mode.ReplaceReason" xml:space="preserve"><value>Перегляд заміни причини</value></data>
+  <data name="NonWorkingDay.Correction.Mode.Cancel" xml:space="preserve"><value>Перегляд скасування</value></data>
+  <data name="NonWorkingDay.Correction.Mode.Unsupported" xml:space="preserve"><value>Непідтримуваний перегляд виправлення</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmationTitle.ReplaceRange" xml:space="preserve"><value>Застосувати цей точний обсяг заміни</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmationTitle.ReplaceReason" xml:space="preserve"><value>Замінити причину для цього точного обсягу</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmationTitle.Cancel" xml:space="preserve"><value>Скасувати цей точний початковий обсяг</value></data>
+  <data name="NonWorkingDay.Correction.ConfirmationTitle.Unsupported" xml:space="preserve"><value>Непідтримуване виправлення</value></data>
+  <data name="NonWorkingDay.Correction.Acknowledgement.ReplaceRange" xml:space="preserve"><value>Підтверджую припинення дії початкових застосувань (кількість: {0}) та точний новий обсяг (кількість абонементів: {1}), до якого застосовується весь період {2} (обидві дати включно).</value></data>
+  <data name="NonWorkingDay.Correction.Acknowledgement.ReplaceReason" xml:space="preserve"><value>Підтверджую, що точний обсяг застосувань (кількість: {0}) та повні застосовані діапазони не змінюються, а причина замінюється.</value></data>
+  <data name="NonWorkingDay.Correction.Acknowledgement.Cancel" xml:space="preserve"><value>Підтверджую, що початкові застосування припинять діяти (кількість: {0}) і залишаться видимими у скасованій історії.</value></data>
+  <data name="NonWorkingDay.Correction.Acknowledgement.Unsupported" xml:space="preserve"><value>Підтверджую це виправлення.</value></data>
+  <data name="NonWorkingDay.Correction.Button.ReplaceRange" xml:space="preserve"><value>Застосувати виправлення діапазону</value></data>
+  <data name="NonWorkingDay.Correction.Button.ReplaceReason" xml:space="preserve"><value>Застосувати виправлення причини</value></data>
+  <data name="NonWorkingDay.Correction.Button.Cancel" xml:space="preserve"><value>Скасувати неробочий період</value></data>
+  <data name="NonWorkingDay.Correction.Button.Unsupported" xml:space="preserve"><value>Застосувати виправлення</value></data>
+  <data name="NonWorkingDay.Correction.Busy.Cancel" xml:space="preserve"><value>Скасування періоду й перерахунок абонементів…</value></data>
+  <data name="NonWorkingDay.Correction.Busy.Replace" xml:space="preserve"><value>Заміна періоду й перерахунок абонементів…</value></data>
+  <data name="NonWorkingDay.Correction.Outcome.Canceled" xml:space="preserve"><value>Неробочий період скасовано</value></data>
+  <data name="NonWorkingDay.Correction.Outcome.Corrected" xml:space="preserve"><value>Неробочий період виправлено</value></data>
+  <data name="NonWorkingDay.Correction.Scope.Recompute" xml:space="preserve"><value>Перерахувати точний обсяг заміни</value></data>
+  <data name="NonWorkingDay.Correction.Scope.Preserve" xml:space="preserve"><value>Зберегти точні застосування</value></data>
+  <data name="NonWorkingDay.Correction.Scope.Deactivate" xml:space="preserve"><value>Деактивувати початковий обсяг</value></data>
+</root>

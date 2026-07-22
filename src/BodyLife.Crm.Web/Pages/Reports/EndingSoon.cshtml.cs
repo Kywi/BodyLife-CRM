@@ -1,9 +1,11 @@
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Reports;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages.Reports;
 
@@ -12,7 +14,8 @@ public sealed class EndingSoonModel(
     IBodyLifeQueryHandler<
         ListEndingSoonMembershipsQuery,
         ListEndingSoonMembershipsResult> listEndingSoonMemberships,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IStringLocalizer<BodyLife.Crm.Web.Localization.Reports> localizer)
     : PageModel
 {
     private const int PageSize = 10;
@@ -49,7 +52,7 @@ public sealed class EndingSoonModel(
     {
         if (!ModelState.IsValid)
         {
-            LoadError = "Enter a valid as-of date, threshold and page offset.";
+            LoadError = localizer["Error.InvalidInput"];
             return;
         }
 
@@ -64,10 +67,12 @@ public sealed class EndingSoonModel(
                 Limit: PageSize,
                 Offset: Offset.Value),
             cancellationToken);
+        if (Result is { Status: not ListEndingSoonMembershipsStatus.Success })
+            LoadError = ReportsPresentation.Error(localizer, Result.Status);
 
         if (Result is { Status: ListEndingSoonMembershipsStatus.Success, Page: null })
         {
-            LoadError = "Ending-soon report returned no canonical Memberships page.";
+            LoadError = localizer["Error.Unavailable"];
         }
     }
 }

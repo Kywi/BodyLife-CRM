@@ -1,18 +1,20 @@
 @model CardAssignmentFormViewModel
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
 @{
     var input = Model.Input;
     var clientKey = input.ClientId.ToString("N");
 }
 
 <details id="card-action-panel" class="profile-action-panel" open="@(Model.IsOpen ? "open" : null)">
-    <summary>Manage card</summary>
+    <summary>@L["Card.Manage"]</summary>
     <div class="profile-action-content">
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>Card not updated</strong>
+                <strong>@L["Card.NotUpdated"]</strong>
                 <ul>
-                    @foreach (var message in Model.Errors.Select(DisplayError).Distinct(StringComparer.Ordinal))
+                    @foreach (var message in Model.Errors.Select(error => ReceptionCommandErrorLocalizer.Display(L, error)).Distinct(StringComparer.Ordinal))
                     {
                         <li>@message</li>
                     }
@@ -22,8 +24,8 @@
 
         <dl class="card-current-state">
             <div>
-                <dt>Current card</dt>
-                <dd>@(Model.CurrentCardNumber ?? "No current card")</dd>
+                <dt>@L["Profile.CurrentCard"]</dt>
+                <dd>@(Model.CurrentCardNumber ?? L["Value.NoCurrentCard"])</dd>
             </div>
         </dl>
 
@@ -57,12 +59,12 @@
                            value="true"
                            data-clear-card-input
                            checked="@(input.ClearCurrentCard ? "checked" : null)" />
-                    <span>Clear current card</span>
+                    <span>@L["Card.ClearCurrent"]</span>
                 </label>
             }
 
             <div class="form-field">
-                <label for="new-card-number-@clientKey">New card number</label>
+                <label for="new-card-number-@clientKey">@L["Card.NewNumber"]</label>
                 <input id="new-card-number-@clientKey"
                        name="form.NewCardNumber"
                        type="text"
@@ -75,7 +77,7 @@
             @if (Model.HasCurrentCard)
             {
                 <div class="form-field">
-                    <label for="card-change-reason-@clientKey">Reason</label>
+                    <label for="card-change-reason-@clientKey">@L["Field.Reason"]</label>
                     <input id="card-change-reason-@clientKey"
                            name="form.Reason"
                            type="text"
@@ -90,23 +92,9 @@
                 <span id="card-action-loading"
                       class="request-indicator htmx-indicator"
                       role="status"
-                      aria-live="polite">Saving card...</span>
-                <button type="submit" data-busy-text="Saving...">Save card</button>
+                      aria-live="polite">@L["Card.Saving"]</span>
+                <button type="submit" data-busy-text="@L["Action.Saving"]">@L["Card.Save"]</button>
             </div>
         </form>
     </div>
 </details>
-
-@functions {
-    private static string DisplayError(CommandError error)
-    {
-        return error.Code switch
-        {
-            CommandErrorCode.CardNumberAlreadyCurrent =>
-                "Card number is already assigned to another current client.",
-            CommandErrorCode.ConcurrencyConflict =>
-                "Card assignment changed while the update was being saved. Canonical state was refreshed.",
-            _ => error.Message,
-        };
-    }
-}

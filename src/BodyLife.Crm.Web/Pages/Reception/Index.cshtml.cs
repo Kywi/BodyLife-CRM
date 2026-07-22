@@ -7,9 +7,11 @@ using BodyLife.Crm.Modules.MembershipTypes;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.Modules.Visits;
 using BodyLife.Crm.SharedKernel;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
 
 namespace BodyLife.Crm.Web.Pages.Reception;
 
@@ -39,7 +41,8 @@ public sealed class IndexModel(
     IBodyLifeCommandHandler<CreatePaymentCommand> createPayment,
     IBodyLifeCommandHandler<CorrectPaymentCommand> correctPayment,
     IBodyLifeCommandHandler<CancelVisitCommand> cancelVisit,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> receptionLocalizer)
     : PageModel
 {
     private const int SearchPageSize = 20;
@@ -362,7 +365,7 @@ public sealed class IndexModel(
                 [
                     new CommandError(
                         CommandErrorCode.ValidationFailed,
-                        "Choose membership, one-off or trial for this Visit.",
+                        receptionLocalizer["Error.Validation.VisitKind"],
                         "visitKind"),
                 ],
                 forceCanonicalRefresh: false,
@@ -631,9 +634,7 @@ public sealed class IndexModel(
 
         ApplySearchContext(form);
         ClientId = rereadTarget.Value;
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"Client created. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : "Client created.";
+        var message = LocalizedOperationMessage("Operation.ClientCreated", result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -672,9 +673,7 @@ public sealed class IndexModel(
 
         ApplySearchContext(form);
         ClientId = rereadTarget.Value;
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"Client updated. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : "Client updated.";
+        var message = LocalizedOperationMessage("Operation.ClientUpdated", result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -733,14 +732,12 @@ public sealed class IndexModel(
 
         ApplySearchContext(form);
         ClientId = rereadTarget.Value;
-        var outcome = form.ClearCurrentCard
-            ? "Card cleared"
+        var outcomeKey = form.ClearCurrentCard
+            ? "Operation.CardCleared"
             : form.ExpectedCurrentCardAssignmentId.HasValue
-                ? "Card changed"
-                : "Card assigned";
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"{outcome}. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : $"{outcome}.";
+                ? "Operation.CardChanged"
+                : "Operation.CardAssigned";
+        var message = LocalizedOperationMessage(outcomeKey, result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -783,12 +780,10 @@ public sealed class IndexModel(
 
         ApplySearchContext(form);
         ClientId = rereadTarget.Value;
-        var outcome = form.IncludePayment
-            ? "Membership issued with cash payment"
-            : "Membership issued";
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"{outcome}. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : $"{outcome}.";
+        var outcomeKey = form.IncludePayment
+            ? "Operation.MembershipIssuedWithPayment"
+            : "Operation.MembershipIssued";
+        var message = LocalizedOperationMessage(outcomeKey, result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -829,9 +824,7 @@ public sealed class IndexModel(
 
         ApplySearchContext(form);
         ClientId = rereadTarget.Value;
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"Visit marked. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : "Visit marked.";
+        var message = LocalizedOperationMessage("Operation.VisitMarked", result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -877,9 +870,7 @@ public sealed class IndexModel(
 
         ApplySearchContext(form);
         ClientId = rereadTarget.Value;
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"Freeze added. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : "Freeze added.";
+        var message = LocalizedOperationMessage("Operation.FreezeAdded", result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -933,12 +924,10 @@ public sealed class IndexModel(
         }
 
         ClientId = rereadTarget.Value;
-        var outcome = result.ChangedAfterClose
-            ? "Freeze canceled after reconciled day"
-            : "Freeze canceled";
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"{outcome}. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : $"{outcome}.";
+        var outcomeKey = result.ChangedAfterClose
+            ? "Operation.FreezeCanceledAfterClose"
+            : "Operation.FreezeCanceled";
+        var message = LocalizedOperationMessage(outcomeKey, result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -992,12 +981,10 @@ public sealed class IndexModel(
         }
 
         ClientId = rereadTarget.Value;
-        var outcome = result.ChangedAfterClose
-            ? "Visit canceled after reconciled day"
-            : "Visit canceled";
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"{outcome}. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : $"{outcome}.";
+        var outcomeKey = result.ChangedAfterClose
+            ? "Operation.VisitCanceledAfterClose"
+            : "Operation.VisitCanceled";
+        var message = LocalizedOperationMessage(outcomeKey, result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -1040,9 +1027,7 @@ public sealed class IndexModel(
 
         ApplySearchContext(form);
         ClientId = rereadTarget.Value;
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"Payment added. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : "Payment added.";
+        var message = LocalizedOperationMessage("Operation.PaymentAdded", result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -1101,17 +1086,14 @@ public sealed class IndexModel(
 
         ApplySearchContext(form);
         ClientId = rereadTarget.Value;
-        var outcome = form.Mode == PaymentCorrectionMode.Replace
-            ? "Payment corrected"
-            : "Payment canceled";
-        if (result.ChangedAfterClose)
+        var outcomeKey = (form.Mode, result.ChangedAfterClose) switch
         {
-            outcome += " after reconciled day";
-        }
-
-        var message = result.AuditEntryId is { } auditEntryId
-            ? $"{outcome}. Audit reference {auditEntryId.Value.ToString("N")[..8]}."
-            : $"{outcome}.";
+            (PaymentCorrectionMode.Replace, true) => "Operation.PaymentCorrectedAfterClose",
+            (PaymentCorrectionMode.Replace, false) => "Operation.PaymentCorrected",
+            (PaymentCorrectionMode.Cancel, true) => "Operation.PaymentCanceledAfterClose",
+            _ => "Operation.PaymentCanceled",
+        };
+        var message = LocalizedOperationMessage(outcomeKey, result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -1335,10 +1317,7 @@ public sealed class IndexModel(
             {
                 Profile = Workspace.Profile with
                 {
-                    OperationMessage = errors
-                        .Select(CancelVisitFormViewModel.DisplayError)
-                        .FirstOrDefault()
-                        ?? "Visit cancellation could not be completed.",
+                    OperationMessage = LocalizedCommandError(errors),
                     OperationSucceeded = false,
                 },
             };
@@ -1429,10 +1408,7 @@ public sealed class IndexModel(
             {
                 Profile = Workspace.Profile with
                 {
-                    OperationMessage = errors
-                        .Select(AddFreezeFormViewModel.DisplayError)
-                        .FirstOrDefault()
-                        ?? "Freeze could not be added.",
+                    OperationMessage = LocalizedCommandError(errors),
                     OperationSucceeded = false,
                 },
             };
@@ -1503,10 +1479,7 @@ public sealed class IndexModel(
             {
                 Profile = Workspace.Profile with
                 {
-                    OperationMessage = errors
-                        .Select(CancelFreezeFormViewModel.DisplayError)
-                        .FirstOrDefault()
-                        ?? "Freeze cancellation could not be completed.",
+                    OperationMessage = LocalizedCommandError(errors),
                     OperationSucceeded = false,
                 },
             };
@@ -1583,10 +1556,7 @@ public sealed class IndexModel(
             {
                 Profile = Workspace.Profile with
                 {
-                    OperationMessage = errors
-                        .Select(CorrectPaymentFormViewModel.DisplayError)
-                        .FirstOrDefault()
-                        ?? "Payment correction could not be completed.",
+                    OperationMessage = LocalizedCommandError(errors),
                     OperationSucceeded = false,
                 },
             };
@@ -2557,6 +2527,25 @@ public sealed class IndexModel(
         Mode = form.SearchMode;
         IncludeInactive = form.SearchIncludeInactive;
         PageCursor = form.SearchPageCursor;
+    }
+
+    private string LocalizedOperationMessage(string outcomeKey, AuditEntryId? auditEntryId)
+    {
+        var outcome = receptionLocalizer[outcomeKey];
+        return auditEntryId is { } id
+            ? receptionLocalizer[
+                "Operation.WithAuditReference",
+                outcome,
+                id.Value.ToString("N")[..8]]
+            : receptionLocalizer["Operation.Completed", outcome];
+    }
+
+    private string LocalizedCommandError(IReadOnlyList<CommandError> errors)
+    {
+        var error = errors.FirstOrDefault();
+        return error is null
+            ? receptionLocalizer["Error.Generic"]
+            : ReceptionCommandErrorLocalizer.Display(receptionLocalizer, error);
     }
 
     private bool IsHtmxRequest()

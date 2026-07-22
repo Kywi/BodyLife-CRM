@@ -47,6 +47,7 @@ public sealed class CorrectionRecordNavigationSmokeTests
         var occurredDate = scenario.OccurredDate.ToString("yyyy-MM-dd");
         var context = await _browser.NewContextAsync(new BrowserNewContextOptions
         {
+            Locale = ReceptionAppFixture.WorkflowCulture,
             ViewportSize = new ViewportSize
             {
                 Width = width,

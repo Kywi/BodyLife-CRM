@@ -1,4 +1,7 @@
 @using System.Globalization
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Shared> S
 @using BodyLife.Crm.Modules.MembershipTypes
 @model IssueMembershipFormViewModel
 @{
@@ -14,15 +17,15 @@
 <details id="issue-membership-action-panel"
          class="profile-action-panel"
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>Issue membership</summary>
+    <summary>@L["Membership.Issue"]</summary>
     <div class="profile-action-content">
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary" role="alert">
-                <strong>Membership not issued</strong>
+                <strong>@L["Membership.NotIssued"]</strong>
                 <ul>
                     @foreach (var message in Model.Errors
-                        .Select(IssueMembershipFormViewModel.DisplayError)
+                        .Select(error => ReceptionCommandErrorLocalizer.Display(L, error))
                         .Distinct(StringComparer.Ordinal))
                     {
                         <li>@message</li>
@@ -34,15 +37,15 @@
         @if (Model.MembershipTypesResult.Status != GetMembershipTypesForIssueStatus.Success)
         {
             <div class="warning-block warning-danger" role="alert">
-                <strong>Issue action unavailable</strong>
-                <span>@(Model.MembershipTypesResult.ErrorMessage ?? "Membership catalog could not be loaded.")</span>
+                <strong>@L["Membership.IssueUnavailable"]</strong>
+                <span>@L["Error.Generic"]</span>
             </div>
         }
         else if (Model.MembershipTypes.Count == 0)
         {
             <div class="warning-block warning-caution" role="status">
-                <strong>No active membership types</strong>
-                <span>There is no catalog item available for ordinary issue.</span>
+                <strong>@L["Membership.NoActiveTypes"]</strong>
+                <span>@L["Membership.NoActiveTypesHint"]</span>
             </div>
         }
         else
@@ -70,7 +73,7 @@
 
                 <div class="action-form-grid issue-membership-inputs">
                     <div class="form-field">
-                        <label for="membership-type-@clientKey">Membership type</label>
+                        <label for="membership-type-@clientKey">@L["Membership.Type"]</label>
                         <select id="membership-type-@clientKey"
                                 name="form.MembershipTypeId"
                                 required
@@ -92,7 +95,7 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="membership-start-date-@clientKey">Start date</label>
+                        <label for="membership-start-date-@clientKey">@L["Field.StartDate"]</label>
                         <input id="membership-start-date-@clientKey"
                                type="date"
                                name="form.StartDate"
@@ -111,52 +114,53 @@
                 @if (Model.PreviewResult is { Status: not PreviewIssueMembershipStatus.Success })
                 {
                     <div class="warning-block warning-danger" role="alert">
-                        <strong>Preview unavailable</strong>
-                        <span>@(Model.PreviewResult.ErrorMessage ?? "Canonical membership preview could not be loaded.")</span>
+                        <strong>@L["Preview.Unavailable"]</strong>
+                        <span>@L["Error.Generic"]</span>
                     </div>
                 }
                 else if (preview is not null)
                 {
                     <section class="issue-membership-preview" aria-labelledby="issue-membership-preview-title-@clientKey">
                         <header class="issue-membership-preview-header">
-                            <h4 id="issue-membership-preview-title-@clientKey">Issue preview</h4>
+                            <h4 id="issue-membership-preview-title-@clientKey">@L["Membership.IssuePreview"]</h4>
                             <span id="issue-membership-preview-loading"
                                   class="request-indicator htmx-indicator"
                                   role="status"
-                                  aria-live="polite">Refreshing preview...</span>
+                                  aria-live="polite">@L["Preview.Refreshing"]</span>
                         </header>
 
                         <dl class="issue-membership-snapshot">
                             <div>
-                                <dt>Snapshot name</dt>
+                                <dt>@L["Membership.SnapshotName"]</dt>
                                 <dd>@preview.Snapshot.TypeName</dd>
                             </div>
                             <div>
-                                <dt>Duration</dt>
-                                <dd>@preview.Snapshot.DurationDays days</dd>
+                                <dt>@L["Membership.Duration"]</dt>
+                                <dd>@WebPluralizer.Days(S, preview.Snapshot.DurationDays)</dd>
                             </div>
                             <div>
-                                <dt>Visit limit</dt>
+                                <dt>@L["Membership.VisitLimit"]</dt>
                                 <dd>@preview.Snapshot.VisitsLimit</dd>
                             </div>
                             <div>
-                                <dt>Snapshot price</dt>
+                                <dt>@L["Membership.SnapshotPrice"]</dt>
                                 <dd>@MoneyLabel(preview.Snapshot.Price)</dd>
                             </div>
                             <div>
-                                <dt>Base end</dt>
-                                <dd data-issue-preview-base-end>@preview.BaseEndDate.ToString("yyyy-MM-dd")</dd>
+                                <dt>@L["Membership.BaseEnd"]</dt>
+                                <dd data-issue-preview-base-end
+                                    data-iso-date="@preview.BaseEndDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@ReceptionDisplayFormatter.Date(preview.BaseEndDate)</dd>
                             </div>
                             <div>
-                                <dt>Effective end</dt>
-                                <dd>@preview.ExpectedInitialEffectiveEndDate.ToString("yyyy-MM-dd")</dd>
+                                <dt>@L["Profile.EffectiveEnd"]</dt>
+                                <dd>@ReceptionDisplayFormatter.Date(preview.ExpectedInitialEffectiveEndDate)</dd>
                             </div>
                             <div>
-                                <dt>Initial remaining</dt>
+                                <dt>@L["Membership.InitialRemaining"]</dt>
                                 <dd>@preview.ExpectedInitialRemainingVisits</dd>
                             </div>
                             <div>
-                                <dt>Extension days</dt>
+                                <dt>@L["Membership.ExtensionDays"]</dt>
                                 <dd>@preview.ExpectedInitialExtensionDays</dd>
                             </div>
                         </dl>
@@ -165,19 +169,19 @@
                         {
                             <div class="warning-block @WarningClass(warning.Severity)">
                                 <strong>@WarningTitle(warning.Code)</strong>
-                                <span>@warning.Message</span>
+                                <span>@WarningMessage(warning.Code)</span>
                             </div>
                         }
 
                         @if (preview.ExistingNegativeState is { } negativeState)
                         {
                             <fieldset class="issue-negative-decision">
-                                <legend>Existing negative visits</legend>
+                                <legend>@L["Membership.ExistingNegativeVisits"]</legend>
                                 <p>
-                                    Balance: -@negativeState.NegativeBalance
+                                    @L["Membership.NegativeBalance", negativeState.NegativeBalance]
                                     @if (negativeState.FirstNegativeVisitDate is { } firstNegativeDate)
                                     {
-                                        <span>since @firstNegativeDate.ToString("yyyy-MM-dd")</span>
+                                        <span>@L["Membership.NegativeSince", ReceptionDisplayFormatter.Date(firstNegativeDate)]</span>
                                     }
                                 </p>
                                 <div class="issue-negative-options">
@@ -201,7 +205,7 @@
                                                 <strong>@NegativeDecisionLabel(option.Decision)</strong>
                                                 @if (!option.IsAvailable)
                                                 {
-                                                    <small>Unavailable</small>
+                                                    <small>@L["Status.Unavailable"]</small>
                                                 }
                                             </span>
                                         </label>
@@ -213,7 +217,7 @@
                 }
 
                 <fieldset class="issue-payment-choice">
-                    <legend>Payment</legend>
+                    <legend>@L["Field.Payment"]</legend>
                     <label class="issue-payment-toggle" for="issue-payment-toggle-@clientKey">
                         <input id="issue-payment-toggle-@clientKey"
                                type="checkbox"
@@ -221,26 +225,26 @@
                                value="true"
                                checked="@(input.IncludePayment ? "checked" : null)"
                                data-issue-payment-toggle />
-                        <span>Add cash membership-sale payment</span>
+                        <span>@L["Membership.AddSalePayment"]</span>
                     </label>
 
                     <div class="issue-payment-fields" data-issue-payment-fields>
                         <dl class="payment-fixed-context">
                             <div>
-                                <dt>Method</dt>
-                                <dd>Cash</dd>
+                                <dt>@L["Payment.Method"]</dt>
+                                <dd>@L["Payment.Cash"]</dd>
                             </div>
                             <div>
-                                <dt>Currency</dt>
+                                <dt>@L["Payment.Currency"]</dt>
                                 <dd>@IssueMembershipFormViewModel.Currency</dd>
                             </div>
                             <div>
-                                <dt>Context</dt>
-                                <dd>Membership sale</dd>
+                                <dt>@L["Field.Context"]</dt>
+                                <dd>@L["Payment.Context.MembershipSale"]</dd>
                             </div>
                         </dl>
                         <div class="form-field">
-                            <label for="issue-payment-amount-@clientKey">Amount (UAH)</label>
+                            <label for="issue-payment-amount-@clientKey">@L["Payment.AmountUah"]</label>
                             <input id="issue-payment-amount-@clientKey"
                                    type="number"
                                    name="form.PaymentAmount"
@@ -256,7 +260,7 @@
                 </fieldset>
 
                 <div class="form-field">
-                    <label for="issue-membership-comment-@clientKey">Comment (optional)</label>
+                    <label for="issue-membership-comment-@clientKey">@L["Field.CommentOptional"]</label>
                     <textarea id="issue-membership-comment-@clientKey"
                               name="form.Comment"
                               maxlength="@IssueMembershipFormViewModel.CommentMaxLength">@input.Comment</textarea>
@@ -266,11 +270,11 @@
                     <span id="issue-membership-loading"
                           class="request-indicator htmx-indicator"
                           role="status"
-                          aria-live="polite">Issuing membership...</span>
+                          aria-live="polite">@L["Membership.Issuing"]</span>
                     <button type="submit"
                             data-issue-membership-submit
-                            data-busy-text="Issuing..."
-                            disabled="@(!Model.CanSubmit ? "disabled" : null)">Issue membership</button>
+                            data-busy-text="@L["Membership.IssuingShort"]"
+                            disabled="@(!Model.CanSubmit ? "disabled" : null)">@L["Membership.Issue"]</button>
                 </div>
             </form>
         }
@@ -280,7 +284,7 @@
 @functions {
     private static string MoneyLabel(Money money)
     {
-        return $"{money.Amount.ToString("0.00", CultureInfo.InvariantCulture)} {money.Currency}";
+        return ReceptionDisplayFormatter.Money(money);
     }
 
     private static string WarningClass(MembershipWarningSeverity severity)
@@ -290,27 +294,40 @@
             : "warning-caution";
     }
 
-    private static string WarningTitle(string code)
+    private string WarningTitle(string code)
     {
         return code switch
         {
-            MembershipWarningCodes.NegativeBalance => "Negative balance",
-            MembershipWarningCodes.ExpiredByDate => "Expired membership",
-            MembershipWarningCodes.ZeroRemaining => "Zero remaining",
-            MembershipWarningCodes.EndingSoon => "Ending soon",
-            MembershipWarningCodes.LowRemaining => "Low remaining",
-            _ => "Membership warning",
+            MembershipWarningCodes.NegativeBalance => L["Warning.NegativeBalance.Title"],
+            MembershipWarningCodes.ExpiredByDate => L["Warning.Expired.Title"],
+            MembershipWarningCodes.ZeroRemaining => L["Warning.ZeroRemaining.Title"],
+            MembershipWarningCodes.EndingSoon => L["Warning.EndingSoon.Title"],
+            MembershipWarningCodes.LowRemaining => L["Warning.LowRemaining.Title"],
+            _ => L["Warning.Attention"],
         };
     }
 
-    private static string NegativeDecisionLabel(MembershipNegativeHandlingDecision decision)
+    private string WarningMessage(string code)
+    {
+        return code switch
+        {
+            MembershipWarningCodes.NegativeBalance => L["Warning.NegativeBalance.Message"],
+            MembershipWarningCodes.ExpiredByDate => L["Warning.Expired.Message"],
+            MembershipWarningCodes.ZeroRemaining => L["Warning.ZeroRemaining.Message"],
+            MembershipWarningCodes.EndingSoon => L["Warning.EndingSoon.Message"],
+            MembershipWarningCodes.LowRemaining => L["Warning.LowRemaining.Message"],
+            _ => L["Warning.Generic.Message"],
+        };
+    }
+
+    private string NegativeDecisionLabel(MembershipNegativeHandlingDecision decision)
     {
         return decision switch
         {
-            MembershipNegativeHandlingDecision.LeaveVisible => "Leave negative balance visible",
-            MembershipNegativeHandlingDecision.CoverWithNewMembership => "Cover with new membership",
-            MembershipNegativeHandlingDecision.RecordExplicitClosure => "Record explicit closure",
-            _ => "Unsupported decision",
+            MembershipNegativeHandlingDecision.LeaveVisible => L["Membership.NegativeDecision.LeaveVisible"],
+            MembershipNegativeHandlingDecision.CoverWithNewMembership => L["Membership.NegativeDecision.Cover"],
+            MembershipNegativeHandlingDecision.RecordExplicitClosure => L["Membership.NegativeDecision.Closure"],
+            _ => L["Value.Unknown"],
         };
     }
 }

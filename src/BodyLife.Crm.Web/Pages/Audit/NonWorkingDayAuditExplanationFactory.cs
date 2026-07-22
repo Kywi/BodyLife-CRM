@@ -1,15 +1,14 @@
-using System.Globalization;
 using System.Text.Json;
 using BodyLife.Crm.Modules.Audit;
 
 namespace BodyLife.Crm.Web.Pages.Audit;
 
-internal static class NonWorkingDayAuditExplanationFactory
+public sealed class NonWorkingDayAuditExplanationFactory(AuditPresentation presentation)
 {
     private static readonly JsonSerializerOptions AuditJsonOptions =
         new(JsonSerializerDefaults.Web);
 
-    internal static AuditEntryExplanationViewModel CreateAddition(
+    internal AuditEntryExplanationViewModel CreateAddition(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -74,48 +73,57 @@ internal static class NonWorkingDayAuditExplanationFactory
         }
 
         var applicationDetails = applications.Count == 0
-            ? "None"
+            ? presentation.Value("None")
             : string.Join(
                 "; ",
                 applications.Select(application =>
-                    $"Membership {TimelineModel.ShortId(application.MembershipId)} / "
-                    + $"Client {TimelineModel.ShortId(application.ClientId)}: "
-                    + $"{application.StartDate:yyyy-MM-dd} to {application.EndDate:yyyy-MM-dd}"));
+                    presentation.Text(
+                        "Template.NonWorkingApplicationDetail",
+                        presentation.ShortId(application.MembershipId),
+                        presentation.ShortId(application.ClientId),
+                        presentation.Date(application.StartDate),
+                        presentation.Date(application.EndDate))));
         var previewScopeLabel = scopeFingerprint.Length <= 12
             ? scopeFingerprint
             : scopeFingerprint[..12];
 
         return new AuditEntryExplanationViewModel(
             "non-working-day-added",
-            "Non-working period and affected scope recorded",
-            "The Owner-confirmed application rows are an immutable transaction snapshot. Membership extension unions are recalculated by Memberships and are not recomputed by this audit explanation.",
-            "Confirmed preview",
-            "Recorded period",
+            presentation.Explanation("NonWorkingDayAdded.Title"),
+            presentation.Explanation("NonWorkingDayAdded.Narrative"),
+            presentation.Explanation("NonWorkingDayAdded.Before"),
+            presentation.Explanation("NonWorkingDayAdded.After"),
             [
                 Fact("Preview scope", previewScopeLabel),
-                Fact("Preview issued", TimelineModel.TimestampLabel(previewIssuedAt)),
-                Fact("Preview expires", TimelineModel.TimestampLabel(previewExpiresAt)),
+                Fact("Preview issued", presentation.Timestamp(previewIssuedAt)),
+                Fact("Preview expires", presentation.Timestamp(previewExpiresAt)),
                 Fact(
                     "Affected memberships",
-                    preview.AffectedCount.ToString(CultureInfo.InvariantCulture)),
+                    presentation.Number(preview.AffectedCount)),
             ],
             [
-                Fact("Non-working period", TimelineModel.ShortId(period.PeriodId)),
+                Fact("Non-working period", presentation.ShortId(period.PeriodId)),
                 .. PeriodFacts(period, applications.Count, "Active"),
                 Fact("Application details", applicationDetails),
                 Fact("Recalculated memberships", RecalculationLabel(recalculation)),
-                Fact("Recorded", TimelineModel.TimestampLabel(period.CreatedAt)),
+                Fact("Recorded", presentation.Timestamp(period.CreatedAt)),
             ],
-            ChangedFields: "Non-working period, Confirmed affected scope",
+            ChangedFields: JoinChanged("NonWorkingPeriod", "ConfirmedAffectedScope"),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateCorrection(
+    internal AuditEntryExplanationViewModel CreateCorrection(
         AuditTimelineEntry entry,
+        JsonElement related,
         JsonElement before,
         JsonElement after)
     {
-        var summary = ReadSummary(entry, before, after, expectedOriginalStatus: "corrected");
+        var summary = ReadSummary(
+            entry,
+            related,
+            before,
+            after,
+            expectedOriginalStatus: "corrected");
         var replacement = summary.ReplacementPeriod
             ?? throw new JsonException("A corrected period requires a replacement period.");
         if (summary.Mode is not ("replace_range" or "replace_reason")
@@ -145,9 +153,9 @@ internal static class NonWorkingDayAuditExplanationFactory
         }
 
         var changedFields = new List<string>();
-        AddChangedField(changedFields, rangeChanged, "Date range");
+        AddChangedField(changedFields, rangeChanged, "DateRange");
         AddChangedField(changedFields, reasonChanged, "Reason");
-        AddChangedField(changedFields, scopeChanged, "Affected scope");
+        AddChangedField(changedFields, scopeChanged, "AffectedScope");
         if (changedFields.Count == 0)
         {
             throw new JsonException("Non-working day correction did not change business values.");
@@ -155,27 +163,39 @@ internal static class NonWorkingDayAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "non-working-day-corrected",
-            "Original non-working period preserved; replacement added",
-            "The original period remains in history with Corrected status. A new active period and application snapshot replace it, and the stored affected union was recalculated successfully.",
-            "Original period",
-            "Replacement period",
-            PeriodFacts(summary.BeforePeriod, summary.OldAffectedCount, "Active"),
+            presentation.Explanation("NonWorkingDayCorrected.Title"),
+            presentation.Explanation("NonWorkingDayCorrected.Narrative"),
+            presentation.Explanation("NonWorkingDayCorrected.Before"),
+            presentation.Explanation("NonWorkingDayCorrected.After"),
+            [
+                .. PeriodFacts(summary.BeforePeriod, summary.OldAffectedCount, "Active"),
+                Fact("Application details", ApplicationDetails(summary.BeforeApplications)),
+            ],
             [
                 Fact("Correction type", CorrectionModeLabel(summary.Mode)),
-                Fact("Original status", "Corrected"),
+                Fact("Original status", presentation.Status("Corrected")),
                 .. PeriodFacts(replacement, summary.NewAffectedCount, "Active"),
+                Fact(
+                    "Application details",
+                    ApplicationDetails(summary.ReplacementApplications)),
                 Fact("Recalculated memberships", RecalculationLabel(summary.Recalculation)),
             ],
-            string.Join(", ", changedFields),
+            string.Join(", ", changedFields.Select(presentation.Changed)),
             IsAvailable: true);
     }
 
-    internal static AuditEntryExplanationViewModel CreateCancellation(
+    internal AuditEntryExplanationViewModel CreateCancellation(
         AuditTimelineEntry entry,
+        JsonElement related,
         JsonElement before,
         JsonElement after)
     {
-        var summary = ReadSummary(entry, before, after, expectedOriginalStatus: "canceled");
+        var summary = ReadSummary(
+            entry,
+            related,
+            before,
+            after,
+            expectedOriginalStatus: "canceled");
         var cancellation = summary.Cancellation
             ?? throw new JsonException("A canceled period requires a cancellation fact.");
         if (summary.Mode != "cancel"
@@ -191,29 +211,34 @@ internal static class NonWorkingDayAuditExplanationFactory
 
         return new AuditEntryExplanationViewModel(
             "non-working-day-canceled",
-            "Original non-working period preserved; cancellation added",
-            "The original period and application records remain in history. A separate cancellation fact deactivates the stored scope, and the affected Memberships were recalculated successfully.",
-            "Original period",
-            "After cancellation",
-            PeriodFacts(summary.BeforePeriod, summary.OldAffectedCount, "Active"),
+            presentation.Explanation("NonWorkingDayCanceled.Title"),
+            presentation.Explanation("NonWorkingDayCanceled.Narrative"),
+            presentation.Explanation("NonWorkingDayCanceled.Before"),
+            presentation.Explanation("NonWorkingDayCanceled.After"),
             [
-                Fact("Original fact", "Preserved"),
-                Fact("Period", DateRangeLabel(summary.BeforePeriod)),
-                Fact("Status", "Canceled"),
-                Fact("Active applications", "0"),
-                Fact("Recalculated memberships", RecalculationLabel(summary.Recalculation)),
-                Fact("Canceled", TimelineModel.TimestampLabel(cancellation.RecordedAt)),
+                .. PeriodFacts(summary.BeforePeriod, summary.OldAffectedCount, "Active"),
+                Fact("Application details", ApplicationDetails(summary.BeforeApplications)),
             ],
-            ChangedFields: "Period status, Active affected scope",
+            [
+                Fact("Original fact", presentation.Value("Preserved")),
+                Fact("Period", DateRangeLabel(summary.BeforePeriod)),
+                Fact("Status", presentation.Status("Canceled")),
+                Fact("Active applications", presentation.Number(0)),
+                Fact("Recalculated memberships", RecalculationLabel(summary.Recalculation)),
+                Fact("Canceled", presentation.Timestamp(cancellation.RecordedAt)),
+            ],
+            ChangedFields: JoinChanged("PeriodStatus", "ActiveAffectedScope"),
             IsAvailable: true);
     }
 
     private static NonWorkingDaySummary ReadSummary(
         AuditTimelineEntry entry,
+        JsonElement related,
         JsonElement before,
         JsonElement after,
         string expectedOriginalStatus)
     {
+        var relatedDto = Deserialize<CorrectionRelatedDto>(related);
         var beforeDto = Deserialize<BeforeSummaryDto>(before);
         var afterDto = Deserialize<AfterSummaryDto>(after);
         var preview = beforeDto.Preview
@@ -230,10 +255,37 @@ internal static class NonWorkingDayAuditExplanationFactory
             ? null
             : ReadCancellation(afterDto.Cancellation);
         var recalculation = ReadRecalculation(afterDto.Recalculation);
-        var affectedMembershipIds = beforeApplications
+        var oldMembershipIds = beforeApplications
             .Select(application => application.MembershipId)
-            .Concat(replacementApplications.Select(application => application.MembershipId))
-            .ToHashSet();
+            .ToArray();
+        var newMembershipIds = replacementApplications
+            .Select(application => application.MembershipId)
+            .ToArray();
+        var affectedMembershipIds = OrderedDistinctUnion(oldMembershipIds, newMembershipIds);
+        var affectedClientIds = OrderedDistinctUnion(
+            beforeApplications.Select(application => application.ClientId),
+            replacementApplications.Select(application => application.ClientId));
+        var relatedOldMembershipIds = ReadIdList(
+            relatedDto.OldMembershipIds,
+            "oldMembershipIds",
+            requireDistinct: true);
+        var relatedNewMembershipIds = ReadIdList(
+            relatedDto.NewMembershipIds,
+            "newMembershipIds",
+            requireDistinct: true);
+        var relatedAffectedMembershipIds = ReadIdList(
+            relatedDto.AffectedMembershipIds,
+            "affectedMembershipIds",
+            requireDistinct: true);
+        var relatedAffectedClientIds = ReadIdList(
+            relatedDto.AffectedClientIds,
+            "affectedClientIds",
+            requireDistinct: true);
+        var confirmationFingerprint = RequireText(
+            preview.ConfirmationFingerprint,
+            "confirmationFingerprint");
+        var previewIssuedAt = RequireTimestamp(preview.IssuedAt ?? default, "issuedAt");
+        var previewExpiresAt = RequireTimestamp(preview.ExpiresAt ?? default, "expiresAt");
 
         if (preview.OldAffectedCount < 0
             || preview.NewAffectedCount < 0
@@ -242,6 +294,7 @@ internal static class NonWorkingDayAuditExplanationFactory
             || afterDto.AffectedUnionCount < 0
             || beforePeriod.PeriodId != entry.EntityId
             || afterOriginalPeriod.PeriodId != entry.EntityId
+            || relatedDto.OriginalPeriodId != entry.EntityId
             || beforePeriod.Status != "active"
             || afterOriginalPeriod.Status != expectedOriginalStatus
             || (afterOriginalPeriod with { Status = "active" }) != beforePeriod
@@ -252,12 +305,29 @@ internal static class NonWorkingDayAuditExplanationFactory
             || afterDto.OldAffectedCount != beforeApplications.Count
             || preview.NewAffectedCount != replacementApplications.Count
             || afterDto.NewAffectedCount != replacementApplications.Count
-            || afterDto.AffectedUnionCount != affectedMembershipIds.Count
+            || afterDto.AffectedUnionCount != affectedMembershipIds.Length
             || recalculation.RequestedCount != afterDto.AffectedUnionCount
             || recalculation.SucceededCount != afterDto.AffectedUnionCount
-            || !affectedMembershipIds.SetEquals(recalculation.MembershipIds))
+            || !affectedMembershipIds.ToHashSet().SetEquals(recalculation.MembershipIds)
+            || !relatedOldMembershipIds.SequenceEqual(oldMembershipIds)
+            || !relatedNewMembershipIds.SequenceEqual(newMembershipIds)
+            || !relatedAffectedMembershipIds.SequenceEqual(affectedMembershipIds)
+            || !relatedAffectedClientIds.SequenceEqual(affectedClientIds)
+            || string.IsNullOrWhiteSpace(confirmationFingerprint)
+            || previewIssuedAt > entry.RecordedAt
+            || previewExpiresAt < entry.RecordedAt
+            || previewExpiresAt <= previewIssuedAt)
         {
             throw new JsonException("Non-working day affected scope is inconsistent.");
+        }
+
+        if (expectedOriginalStatus == "corrected"
+            ? relatedDto.ReplacementPeriodId != replacementPeriod?.PeriodId
+                || relatedDto.CancellationId is not null
+            : relatedDto.ReplacementPeriodId is not null
+                || relatedDto.CancellationId != cancellation?.CancellationId)
+        {
+            throw new JsonException("Non-working day correction references are inconsistent.");
         }
 
         return new NonWorkingDaySummary(
@@ -425,7 +495,7 @@ internal static class NonWorkingDayAuditExplanationFactory
         return ids;
     }
 
-    private static IReadOnlyList<AuditEntryExplanationFactViewModel> PeriodFacts(
+    private IReadOnlyList<AuditEntryExplanationFactViewModel> PeriodFacts(
         SourcePeriodSnapshot period,
         int affectedCount,
         string statusLabel)
@@ -433,12 +503,34 @@ internal static class NonWorkingDayAuditExplanationFactory
         return
         [
             Fact("Period", DateRangeLabel(period)),
-            Fact("Inclusive days", period.InclusiveDays.ToString(CultureInfo.InvariantCulture)),
-            Fact("Reason code", ReasonCodeLabel(period.ReasonCode)),
-            Fact("Reason comment", period.ReasonComment ?? "None"),
-            Fact("Affected memberships", affectedCount.ToString(CultureInfo.InvariantCulture)),
-            Fact("Status", statusLabel),
+            Fact("Inclusive days", presentation.Days(period.InclusiveDays)),
+            Fact("Reason code", period.ReasonCode),
+            Fact("Reason comment", period.ReasonComment ?? presentation.Value("None")),
+            Fact("Affected memberships", presentation.Number(affectedCount)),
+            Fact("Status", presentation.Status(statusLabel)),
         ];
+    }
+
+    private string ApplicationDetails(IReadOnlyList<ApplicationScopeSnapshot> applications)
+    {
+        return applications.Count == 0
+            ? presentation.Value("None")
+            : string.Join(
+                "; ",
+                applications.Select(application =>
+                    presentation.Text(
+                        "Template.NonWorkingApplicationDetail",
+                        presentation.ShortId(application.MembershipId),
+                        presentation.ShortId(application.ClientId),
+                        presentation.Date(application.StartDate),
+                        presentation.Date(application.EndDate))));
+    }
+
+    private static Guid[] OrderedDistinctUnion(
+        IEnumerable<Guid> first,
+        IEnumerable<Guid> second)
+    {
+        return first.Concat(second).Distinct().Order().ToArray();
     }
 
     private static T Deserialize<T>(JsonElement element)
@@ -513,24 +605,54 @@ internal static class NonWorkingDayAuditExplanationFactory
         }
     }
 
-    private static string DateRangeLabel(SourcePeriodSnapshot period) =>
-        $"{period.StartDate:yyyy-MM-dd} to {period.EndDate:yyyy-MM-dd}";
+    private string DateRangeLabel(SourcePeriodSnapshot period) =>
+        presentation.Text(
+            "Template.DateRange",
+            presentation.Date(period.StartDate),
+            presentation.Date(period.EndDate));
 
-    private static string RecalculationLabel(RecalculationSnapshot recalculation) =>
-        $"{recalculation.SucceededCount.ToString(CultureInfo.InvariantCulture)} of {recalculation.RequestedCount.ToString(CultureInfo.InvariantCulture)}";
+    private string RecalculationLabel(RecalculationSnapshot recalculation) =>
+        presentation.Text(
+            "Template.RecalculationCount",
+            presentation.Number(recalculation.SucceededCount),
+            presentation.Number(recalculation.RequestedCount));
 
-    private static string CorrectionModeLabel(string mode) => mode switch
+    private string CorrectionModeLabel(string mode) => mode switch
     {
-        "replace_range" => "Date range replaced",
-        "replace_reason" => "Reason replaced",
+        "replace_range" => presentation.Text("CorrectionMode.ReplaceRange"),
+        "replace_reason" => presentation.Text("CorrectionMode.ReplaceReason"),
         _ => throw new JsonException("Correction mode is not supported."),
     };
 
-    private static string ReasonCodeLabel(string reasonCode) =>
-        CultureInfo.InvariantCulture.TextInfo.ToTitleCase(reasonCode.Replace('_', ' '));
+    private string JoinChanged(params string[] keys) =>
+        string.Join(", ", keys.Select(presentation.Changed));
 
-    private static AuditEntryExplanationFactViewModel Fact(string label, string value) =>
-        new(label, value);
+    private AuditEntryExplanationFactViewModel Fact(string label, string value)
+    {
+        var semanticKey = label switch
+        {
+            "Preview scope" => "PreviewScope",
+            "Preview issued" => "PreviewIssued",
+            "Preview expires" => "PreviewExpires",
+            "Affected memberships" => "AffectedMemberships",
+            "Non-working period" => "NonWorkingPeriod",
+            "Application details" => "ApplicationDetails",
+            "Recalculated memberships" => "RecalculatedMemberships",
+            "Recorded" => "Recorded",
+            "Period" => "Period",
+            "Inclusive days" => "InclusiveDays",
+            "Reason code" => "ReasonCode",
+            "Reason comment" => "ReasonComment",
+            "Status" => "Status",
+            "Correction type" => "CorrectionType",
+            "Original status" => "OriginalStatus",
+            "Original fact" => "OriginalFact",
+            "Active applications" => "ActiveApplications",
+            "Canceled" => "Canceled",
+            _ => throw new InvalidOperationException($"Unsupported non-working-day audit fact label '{label}'."),
+        };
+        return new AuditEntryExplanationFactViewModel(presentation.Fact(semanticKey), value);
+    }
 
     private sealed record NonWorkingDaySummary(
         SourcePeriodSnapshot BeforePeriod,
@@ -724,9 +846,32 @@ internal static class NonWorkingDayAuditExplanationFactory
 
     private sealed class PreviewDto
     {
+        public required string? ConfirmationFingerprint { get; init; }
+
+        public required DateTimeOffset? IssuedAt { get; init; }
+
+        public required DateTimeOffset? ExpiresAt { get; init; }
+
         public required int OldAffectedCount { get; init; }
 
         public required int NewAffectedCount { get; init; }
+    }
+
+    private sealed class CorrectionRelatedDto
+    {
+        public required Guid OriginalPeriodId { get; init; }
+
+        public required Guid? ReplacementPeriodId { get; init; }
+
+        public required Guid? CancellationId { get; init; }
+
+        public required List<Guid>? OldMembershipIds { get; init; }
+
+        public required List<Guid>? NewMembershipIds { get; init; }
+
+        public required List<Guid>? AffectedMembershipIds { get; init; }
+
+        public required List<Guid>? AffectedClientIds { get; init; }
     }
 
     private sealed class CancellationDto

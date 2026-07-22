@@ -90,32 +90,6 @@ public sealed record CancelFreezeFormViewModel(
             IsOpen: true);
     }
 
-    public static string DisplayError(CommandError error)
-    {
-        ArgumentNullException.ThrowIfNull(error);
-
-        return error.Code switch
-        {
-            CommandErrorCode.ReasonRequired =>
-                "Enter why this Freeze should be canceled.",
-            CommandErrorCode.AlreadyCanceled =>
-                "This Freeze was already canceled. Canonical history was refreshed.",
-            CommandErrorCode.DayClosedRequiresOwner =>
-                "This Freeze belongs to a reconciled day and requires Owner correction.",
-            CommandErrorCode.PermissionDenied =>
-                "The current account or session cannot cancel this Freeze.",
-            CommandErrorCode.NotFound =>
-                "This Freeze is no longer available. Canonical history was refreshed.",
-            CommandErrorCode.DuplicateSubmission =>
-                "This cancellation form was already used with different data. Review the refreshed form before retrying.",
-            CommandErrorCode.ConcurrencyConflict or CommandErrorCode.StaleState =>
-                "Freeze state changed. Canonical history was refreshed; review before retrying.",
-            CommandErrorCode.RecalculationFailed =>
-                "The Freeze was not canceled because canonical Membership state could not be recalculated.",
-            _ => error.Message,
-        };
-    }
-
     private static CancelFreezeFormInput CopyInput(
         CancelFreezeFormInput input,
         string? idempotencyKey,

@@ -14,8 +14,16 @@ public sealed record AuditEntryExplanationViewModel(
     IReadOnlyList<AuditEntryExplanationFactViewModel> BeforeFacts,
     IReadOnlyList<AuditEntryExplanationFactViewModel> AfterFacts,
     string? ChangedFields,
-    bool IsAvailable)
+    bool IsAvailable);
+
+public sealed class AuditEntryExplanationPresenter(
+    AuditPresentation presentation,
+    ClientAuditExplanationFactory clientFactory,
+    StaffAccountAuditExplanationFactory staffAccountFactory,
+    NonWorkingDayAuditExplanationFactory nonWorkingDayFactory)
 {
+    public AuditPresentation Presentation { get; } = presentation;
+
     private static readonly IReadOnlyDictionary<string, string> KindsByAction =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -50,7 +58,7 @@ public sealed record AuditEntryExplanationViewModel(
 
     public static IEnumerable<string> ReadableActionTypes => KindsByAction.Keys;
 
-    public static AuditEntryExplanationViewModel? Create(AuditTimelineEntry entry)
+    public AuditEntryExplanationViewModel? Create(AuditTimelineEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
@@ -64,6 +72,14 @@ public sealed record AuditEntryExplanationViewModel(
             using var related = JsonDocument.Parse(entry.RelatedEntityRefsJson);
             using var before = JsonDocument.Parse(entry.BeforeSummaryJson);
             using var after = JsonDocument.Parse(entry.AfterSummaryJson);
+            if (related.RootElement.ValueKind != JsonValueKind.Object
+                || before.RootElement.ValueKind != JsonValueKind.Object
+                || after.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                throw new JsonException(
+                    "Audit explanation summaries must be JSON objects.");
+            }
+
             return entry.ActionType switch
             {
                 "membership_type.created"
@@ -74,68 +90,68 @@ public sealed record AuditEntryExplanationViewModel(
                         before.RootElement,
                         after.RootElement),
                 "client.created" when entry.EntityType == AuditTimelineEntityType.Client
-                    => ClientAuditExplanationFactory.CreateClientCreation(
+                    => clientFactory.CreateClientCreation(
                         entry,
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "client.updated" when entry.EntityType == AuditTimelineEntityType.Client
-                    => ClientAuditExplanationFactory.CreateClientUpdate(
+                    => clientFactory.CreateClientUpdate(
                         entry,
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "card.assigned" when entry.EntityType == AuditTimelineEntityType.Client
-                    => ClientAuditExplanationFactory.CreateCardAssignment(
+                    => clientFactory.CreateCardAssignment(
                         entry,
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "card.changed" when entry.EntityType == AuditTimelineEntityType.Client
-                    => ClientAuditExplanationFactory.CreateCardChange(
+                    => clientFactory.CreateCardChange(
                         entry,
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "card.cleared" when entry.EntityType == AuditTimelineEntityType.Client
-                    => ClientAuditExplanationFactory.CreateCardClear(
+                    => clientFactory.CreateCardClear(
                         entry,
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "staff_account.created"
                     when entry.EntityType == AuditTimelineEntityType.StaffAccount
-                    => StaffAccountAuditExplanationFactory.CreateAccountCreation(
+                    => staffAccountFactory.CreateAccountCreation(
                         entry,
                         before.RootElement,
                         after.RootElement),
                 "staff_account.display_name_updated"
                     when entry.EntityType == AuditTimelineEntityType.StaffAccount
-                    => StaffAccountAuditExplanationFactory.CreateDisplayNameUpdate(
+                    => staffAccountFactory.CreateDisplayNameUpdate(
                         entry,
                         before.RootElement,
                         after.RootElement),
                 "staff_account.activated"
                     when entry.EntityType == AuditTimelineEntityType.StaffAccount
-                    => StaffAccountAuditExplanationFactory.CreateActivation(
+                    => staffAccountFactory.CreateActivation(
                         entry,
                         before.RootElement,
                         after.RootElement),
                 "staff_account.deactivated"
                     when entry.EntityType == AuditTimelineEntityType.StaffAccount
-                    => StaffAccountAuditExplanationFactory.CreateDeactivation(
+                    => staffAccountFactory.CreateDeactivation(
                         entry,
                         before.RootElement,
                         after.RootElement),
                 "staff_credentials.configured"
                     when entry.EntityType == AuditTimelineEntityType.StaffAccount
-                    => StaffAccountAuditExplanationFactory.CreateCredentialConfiguration(
+                    => staffAccountFactory.CreateCredentialConfiguration(
                         entry,
                         before.RootElement,
                         after.RootElement),
                 "staff_credentials.reset"
                     when entry.EntityType == AuditTimelineEntityType.StaffAccount
-                    => StaffAccountAuditExplanationFactory.CreateCredentialReset(
+                    => staffAccountFactory.CreateCredentialReset(
                         entry,
                         before.RootElement,
                         after.RootElement),
@@ -161,21 +177,23 @@ public sealed record AuditEntryExplanationViewModel(
                         after.RootElement),
                 "non_working_day.added"
                     when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
-                    => NonWorkingDayAuditExplanationFactory.CreateAddition(
+                    => nonWorkingDayFactory.CreateAddition(
                         entry,
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "non_working_day.corrected"
                     when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
-                    => NonWorkingDayAuditExplanationFactory.CreateCorrection(
+                    => nonWorkingDayFactory.CreateCorrection(
                         entry,
+                        related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "non_working_day.canceled"
                     when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
-                    => NonWorkingDayAuditExplanationFactory.CreateCancellation(
+                    => nonWorkingDayFactory.CreateCancellation(
                         entry,
+                        related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "freeze.added" when entry.EntityType == AuditTimelineEntityType.Freeze
@@ -216,7 +234,7 @@ public sealed record AuditEntryExplanationViewModel(
         }
     }
 
-    private static AuditEntryExplanationViewModel CreateMembershipTypeCreation(
+    private AuditEntryExplanationViewModel CreateMembershipTypeCreation(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -253,19 +271,15 @@ public sealed record AuditEntryExplanationViewModel(
                 TimelineModel.TimestampLabel(deactivatedAt)));
         }
 
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("MembershipTypeCreated",
             "membership-type-created",
-            "Membership type created",
-            "The full catalog values established for future Membership issues are shown. Later catalog edits do not change already issued Membership snapshots.",
-            "Before creation",
-            "Created catalog",
-            [Fact("Membership type", "Not present")],
+            [Fact("Membership type", Presentation.Value("NotPresent"))],
             createdFacts,
-            ChangedFields: "Membership type catalog",
+            ChangedFields: Presentation.Changed("MembershipTypeCatalog"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreateMembershipTypeEdit(
+    private AuditEntryExplanationViewModel CreateMembershipTypeEdit(
         JsonElement before,
         JsonElement after)
     {
@@ -284,19 +298,15 @@ public sealed record AuditEntryExplanationViewModel(
             throw new JsonException("Membership type edit summary is inconsistent.");
         }
 
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("MembershipTypeEdited",
             "membership-type-edited",
-            "Membership type catalog updated",
-            "The catalog values changed for future Membership issues. Already issued Membership snapshots remain unchanged.",
-            "Original catalog",
-            "Updated catalog",
             MembershipTypeFacts(original),
             MembershipTypeFacts(updated),
             string.Join(", ", changedFields),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreateMembershipOpeningState(
+    private AuditEntryExplanationViewModel CreateMembershipOpeningState(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -324,14 +334,10 @@ public sealed record AuditEntryExplanationViewModel(
             throw new JsonException("Membership opening-state identity is inconsistent.");
         }
 
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("MembershipOpeningStateCreated",
             "membership-opening-state-created",
-            "Membership opening state recorded",
-            "The manual-backfill declaration is a canonical source fact. Recalculated Membership values are shown separately as rebuildable Memberships-owned state.",
-            "Before declaration",
-            "Recorded opening state",
             [
-                Fact("Opening state", "Not present"),
+                Fact("Opening state", Presentation.Value("NotPresent")),
                 Fact("Membership", TimelineModel.ShortId(created.MembershipId)),
             ],
             [
@@ -341,53 +347,54 @@ public sealed record AuditEntryExplanationViewModel(
                 Fact("Opening as of", DateLabel(created.OpeningAsOfDate)),
                 Fact(
                     "Declared remaining visits",
-                    created.DeclaredRemainingVisits.ToString(CultureInfo.InvariantCulture)),
+                    Presentation.Number(created.DeclaredRemainingVisits)),
                 Fact(
                     "Declared negative balance",
-                    created.DeclaredNegativeBalance.ToString(CultureInfo.InvariantCulture)),
+                    Presentation.Number(created.DeclaredNegativeBalance)),
                 Fact(
                     "Known effective end",
                     created.KnownEffectiveEndDate is { } knownEnd
                         ? DateLabel(knownEnd)
-                        : "Not declared"),
+                        : Presentation.Value("NotDeclared")),
                 Fact(
                     "Known extension",
                     created.KnownExtensionDays is { } knownExtension
-                        ? $"{knownExtension.ToString(CultureInfo.InvariantCulture)} days"
-                        : "Not declared"),
+                        ? Presentation.Days(knownExtension)
+                        : Presentation.Value("NotDeclared")),
                 Fact("Source reference", created.SourceReference),
                 Fact(
                     "Entry batch",
                     created.EntryBatchId is { } entryBatchId
                         ? TimelineModel.ShortId(entryBatchId)
-                        : "None"),
+                        : Presentation.Value("None")),
                 Fact("Entry origin", StoredEntryOriginLabel("manual_backfill")),
                 Fact("Occurred", TimelineModel.TimestampLabel(entry.OccurredAt)),
                 Fact("Source status", StatusLabel(created.Status)),
                 Fact(
                     "Recalculated remaining visits",
-                    created.RecalculatedState.RemainingVisits.ToString(
-                        CultureInfo.InvariantCulture)),
+                    Presentation.Number(
+                        created.RecalculatedState.RemainingVisits)),
                 Fact(
                     "Recalculated negative balance",
-                    created.RecalculatedState.NegativeBalance.ToString(
-                        CultureInfo.InvariantCulture)),
+                    Presentation.Number(
+                        created.RecalculatedState.NegativeBalance)),
                 Fact(
                     "Recalculated effective end",
                     DateLabel(created.RecalculatedState.EffectiveEndDate)),
                 Fact(
                     "Recalculated extension",
-                    $"{created.RecalculatedState.ExtensionDays.ToString(CultureInfo.InvariantCulture)} days"),
+                    Presentation.Days(
+                        created.RecalculatedState.ExtensionDays)),
                 Fact(
                     "Recalculation version",
-                    created.RecalculatedState.RecalculationVersion.ToString(
-                        CultureInfo.InvariantCulture)),
+                    Presentation.Number(
+                        created.RecalculatedState.RecalculationVersion)),
             ],
-            ChangedFields: "Opening state, Membership state cache",
+            ChangedFields: JoinChanged("OpeningState", "MembershipStateCache"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreateMembershipTypeDeactivation(
+    private AuditEntryExplanationViewModel CreateMembershipTypeDeactivation(
         JsonElement before,
         JsonElement after)
     {
@@ -407,12 +414,8 @@ public sealed record AuditEntryExplanationViewModel(
             throw new JsonException("Membership type deactivation summary is inconsistent.");
         }
 
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("MembershipTypeDeactivated",
             "membership-type-deactivated",
-            "Membership type deactivated",
-            "The catalog record and already issued Membership history remain preserved. This type is no longer available for future ordinary issue.",
-            "Before deactivation",
-            "After deactivation",
             MembershipTypeFacts(original),
             [
                 .. MembershipTypeFacts(deactivated),
@@ -420,11 +423,11 @@ public sealed record AuditEntryExplanationViewModel(
                     "Deactivated",
                     TimelineModel.TimestampLabel(deactivated.DeactivatedAt.Value)),
             ],
-            ChangedFields: "Catalog status",
+            ChangedFields: Presentation.Changed("CatalogStatus"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreateVisitMarked(
+    private AuditEntryExplanationViewModel CreateVisitMarked(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -496,11 +499,13 @@ public sealed record AuditEntryExplanationViewModel(
             visit.Acknowledgements);
         List<AuditEntryExplanationFactViewModel> beforeFacts =
         [
-            Fact("Visit", "Not present"),
+            Fact("Visit", Presentation.Value("NotPresent")),
             Fact("Membership", OptionalIdLabel(visit.MembershipId)),
             Fact(
                 "Consumption",
-                visit.ConsumptionId is null ? "Not applicable" : "Not present"),
+                visit.ConsumptionId is null
+                    ? Presentation.Value("NotApplicable")
+                    : Presentation.Value("NotPresent")),
         ];
         AddVisitMarkedMembershipFacts(beforeFacts, beforeState);
 
@@ -510,38 +515,32 @@ public sealed record AuditEntryExplanationViewModel(
             Fact("Visit", TimelineModel.ShortId(visit.VisitId)),
             Fact("Client", TimelineModel.ShortId(visit.ClientId)),
             Fact("Occurred", TimelineModel.TimestampLabel(visit.OccurredAt)),
-            Fact("Status", "Active"),
+            Fact("Status", Presentation.Status("Active")),
             Fact("Membership", OptionalIdLabel(visit.MembershipId)),
             Fact(
                 "Consumption",
                 visit.ConsumptionId is { } consumptionId
-                    ? $"Counted / {TimelineModel.ShortId(consumptionId)}"
-                    : "Not applicable"),
+                    ? Presentation.Text(
+                        "Template.CountedId",
+                        TimelineModel.ShortId(consumptionId))
+                    : Presentation.Value("NotApplicable")),
             Fact("Selection", VisitSelectionLabel(visit.VisitKind)),
             Fact("Warning acknowledgements", acknowledgementLabel),
         ];
         AddVisitMarkedMembershipFacts(afterFacts, afterState);
 
         var isMembershipVisit = visit.MembershipId is not null;
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation(isMembershipVisit ? "VisitMarked.Membership" : visit.VisitKind == "one_off" ? "VisitMarked.OneOff" : "VisitMarked.Trial",
             "visit-marked",
-            isMembershipVisit
-                ? "Membership visit and consumption recorded"
-                : $"{visitKindLabel} recorded",
-            isMembershipVisit
-                ? "The Membership was selected explicitly. The counted consumption and stored before/after Membership values come from the successful command; this view does not recalculate them."
-                : $"The {visitKindLabel.ToLowerInvariant()} was recorded in an explicit non-membership context, without Membership consumption or recalculation.",
-            "Before visit",
-            "Recorded visit",
             beforeFacts,
             afterFacts,
             ChangedFields: isMembershipVisit
-                ? "Visit, counted consumption, Membership state"
-                : "Visit only",
+                ? JoinChanged("Visit", "CountedConsumption", "MembershipState")
+                : Presentation.Changed("VisitOnly"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreateVisitCancellation(
+    private AuditEntryExplanationViewModel CreateVisitCancellation(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -574,7 +573,7 @@ public sealed record AuditEntryExplanationViewModel(
         var beforeFacts = new List<AuditEntryExplanationFactViewModel>
         {
             Fact("Visit type", VisitKindLabel(RequireString(originalVisit, "visitKind"))),
-            Fact("Status", "Active"),
+            Fact("Status", Presentation.Status("Active")),
             Fact("Occurred", TimelineModel.TimestampLabel(
                 RequireTimestamp(originalVisit, "occurredAt"))),
             Fact("Membership", OptionalIdLabel(membershipId)),
@@ -584,32 +583,24 @@ public sealed record AuditEntryExplanationViewModel(
 
         var afterFacts = new List<AuditEntryExplanationFactViewModel>
         {
-            Fact("Original fact", "Preserved"),
-            Fact("Status", "Canceled"),
+            Fact("Original fact", Presentation.Value("Preserved")),
+            Fact("Status", Presentation.Status("Canceled")),
             Fact("Membership", OptionalIdLabel(membershipId)),
             Fact("Consumption", ConsumptionStatusLabel(canceledConsumptionStatus)),
         };
         AddMembershipFacts(afterFacts, afterMembership);
 
-        var narrative = membershipId is null
-            ? "The original Visit remains in history, and a separate cancellation record marks it canceled. No Membership consumption was involved."
-            : "The original Visit remains in history. Its counted consumption was canceled, and the stored Membership state was reread after recalculation.";
-
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation(membershipId is null ? "VisitCanceled.WithoutMembership" : "VisitCanceled.WithMembership",
             "visit-canceled",
-            "Original Visit preserved; cancellation added",
-            narrative,
-            "Original visit",
-            "After cancellation",
             beforeFacts,
             afterFacts,
             ChangedFields: membershipId is null
-                ? "Visit status"
-                : "Visit status, consumption status, Membership state",
+                ? Presentation.Changed("VisitStatus")
+                : JoinChanged("VisitStatus", "ConsumptionStatus", "MembershipState"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreateFreezeCancellation(
+    private AuditEntryExplanationViewModel CreateFreezeCancellation(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -661,41 +652,37 @@ public sealed record AuditEntryExplanationViewModel(
             beforeMembership.ExtensionDays != afterMembership.ExtensionDays
             || beforeMembership.EffectiveEndDate != afterMembership.EffectiveEndDate;
 
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("FreezeCanceled",
             "freeze-canceled",
-            "Original Freeze preserved; cancellation added",
-            "The original Freeze remains in history with Canceled status. The stored before/after Membership state comes from canonical recalculation; overlapping active extensions can leave the effective end unchanged.",
-            "Original freeze",
-            "After cancellation",
             [
                 Fact("Period", FreezeRangeLabel(original)),
                 Fact(
                     "Inclusive days",
-                    original.InclusiveDays.ToString(CultureInfo.InvariantCulture)),
+                    Presentation.Days(original.InclusiveDays)),
                 Fact("Freeze reason", original.Reason),
-                Fact("Status", "Active"),
+                Fact("Status", Presentation.Status("Active")),
                 Fact("Original entry origin", StoredEntryOriginLabel(originalEntryOrigin)),
                 Fact(
                     "Extension days",
-                    beforeMembership.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+                    Presentation.Days(beforeMembership.ExtensionDays)),
                 Fact("Effective end", DateLabel(beforeMembership.EffectiveEndDate)),
             ],
             [
-                Fact("Original fact", "Preserved"),
-                Fact("Status", "Canceled"),
+                Fact("Original fact", Presentation.Value("Preserved")),
+                Fact("Status", Presentation.Status("Canceled")),
                 Fact(
                     "Extension days",
-                    afterMembership.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+                    Presentation.Days(afterMembership.ExtensionDays)),
                 Fact("Effective end", DateLabel(afterMembership.EffectiveEndDate)),
                 Fact("Cancellation recorded", TimelineModel.TimestampLabel(cancellationRecordedAt)),
             ],
             ChangedFields: membershipStateChanged
-                ? "Freeze status, Membership extension state"
-                : "Freeze status",
+                ? JoinChanged("FreezeStatus", "MembershipExtensionState")
+                : Presentation.Changed("FreezeStatus"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreateFreezeAddition(
+    private AuditEntryExplanationViewModel CreateFreezeAddition(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -737,18 +724,14 @@ public sealed record AuditEntryExplanationViewModel(
             beforeMembership.ExtensionDays != afterMembership.ExtensionDays
             || beforeMembership.EffectiveEndDate != afterMembership.EffectiveEndDate;
 
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("FreezeAdded",
             "freeze-added",
-            "Freeze source recorded",
-            "The inclusive Freeze range is a canonical source fact. Stored Membership extension values come from canonical union recalculation, so overlap can leave the effective end unchanged.",
-            "Before Freeze",
-            "Recorded Freeze",
             [
-                Fact("Freeze", "Not present"),
+                Fact("Freeze", Presentation.Value("NotPresent")),
                 Fact("Membership", TimelineModel.ShortId(freeze.MembershipId)),
                 Fact(
                     "Extension days",
-                    beforeMembership.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+                    Presentation.Days(beforeMembership.ExtensionDays)),
                 Fact("Effective end", DateLabel(beforeMembership.EffectiveEndDate)),
             ],
             [
@@ -758,7 +741,7 @@ public sealed record AuditEntryExplanationViewModel(
                 Fact("Period", FreezeRangeLabel(freeze)),
                 Fact(
                     "Inclusive days",
-                    freeze.InclusiveDays.ToString(CultureInfo.InvariantCulture)),
+                    Presentation.Days(freeze.InclusiveDays)),
                 Fact("Freeze reason", freeze.Reason),
                 Fact("Occurred", TimelineModel.TimestampLabel(occurredAt)),
                 Fact("Entry origin", StoredEntryOriginLabel(entryOrigin)),
@@ -766,20 +749,20 @@ public sealed record AuditEntryExplanationViewModel(
                     "Entry batch",
                     entryBatchId is { } batchId
                         ? TimelineModel.ShortId(batchId)
-                        : "None"),
+                        : Presentation.Value("None")),
                 Fact("Source status", StatusLabel(freeze.Status)),
                 Fact(
                     "Extension days",
-                    afterMembership.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+                    Presentation.Days(afterMembership.ExtensionDays)),
                 Fact("Effective end", DateLabel(afterMembership.EffectiveEndDate)),
             ],
             ChangedFields: membershipStateChanged
-                ? "Freeze source, Membership extension state"
-                : "Freeze source",
+                ? JoinChanged("FreezeSource", "MembershipExtensionState")
+                : Presentation.Changed("FreezeSource"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreatePaymentCorrection(
+    private AuditEntryExplanationViewModel CreatePaymentCorrection(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -805,22 +788,18 @@ public sealed record AuditEntryExplanationViewModel(
             throw new JsonException("Payment correction summary identity is inconsistent.");
         }
 
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("PaymentCorrected",
             "payment-corrected",
-            "Original Payment preserved; replacement added",
-            "The original Payment remains in history with Replaced status. The replacement is the active cash fact used by canonical reports.",
-            "Original payment",
-            "Replacement payment",
             PaymentFacts(original),
             [
-                Fact("Original status", "Replaced"),
+                Fact("Original status", Presentation.Status("Replaced")),
                 .. PaymentFacts(replacement),
             ],
             string.Join(", ", changedFields.Select(ChangedFieldLabel)),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreatePaymentCreation(
+    private AuditEntryExplanationViewModel CreatePaymentCreation(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -852,14 +831,10 @@ public sealed record AuditEntryExplanationViewModel(
         }
 
         var context = PaymentContextLabel(payment.PaymentContext);
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("PaymentCreated",
             "payment-created",
-            "Cash payment recorded",
-            "This explanation shows the stored Payment source fact. Daily cash reports continue to read canonical active Payment rows rather than calculating totals from audit.",
-            "Before payment",
-            "Recorded payment",
             [
-                Fact("Payment", "Not present"),
+                Fact("Payment", Presentation.Value("NotPresent")),
             ],
             [
                 Fact("Payment", TimelineModel.ShortId(payment.PaymentId)),
@@ -869,13 +844,13 @@ public sealed record AuditEntryExplanationViewModel(
                 Fact("Context", context),
                 Fact("Membership", OptionalIdLabel(payment.MembershipId)),
                 Fact("Occurred", TimelineModel.TimestampLabel(payment.OccurredAt)),
-                Fact("Status", "Active"),
+                Fact("Status", Presentation.Status("Active")),
             ],
-            ChangedFields: "Payment",
+            ChangedFields: Presentation.Changed("Payment"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreatePaymentCancellation(
+    private AuditEntryExplanationViewModel CreatePaymentCancellation(
         AuditTimelineEntry entry,
         JsonElement before,
         JsonElement after)
@@ -895,19 +870,15 @@ public sealed record AuditEntryExplanationViewModel(
             throw new JsonException("Payment cancellation summary identity is inconsistent.");
         }
 
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("PaymentCanceled",
             "payment-canceled",
-            "Original Payment preserved; cancellation added",
-            "The original Payment remains in history, and a separate cancellation record marks it canceled for canonical cash totals.",
-            "Original payment",
-            "After cancellation",
             PaymentFacts(original),
             PaymentFacts(canceled),
-            ChangedFields: "Payment status",
+            ChangedFields: Presentation.Changed("PaymentStatus"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel CreateMembershipIssue(
+    private AuditEntryExplanationViewModel CreateMembershipIssue(
         AuditTimelineEntry entry,
         JsonElement related,
         JsonElement before,
@@ -942,13 +913,13 @@ public sealed record AuditEntryExplanationViewModel(
             issue.NegativeHandlingDecision);
         List<AuditEntryExplanationFactViewModel> beforeFacts =
         [
-            Fact("Membership", "Not present"),
+            Fact("Membership", Presentation.Value("NotPresent")),
             Fact(
                 "Existing negative balance",
                 issue.ExistingNegativeState is null
-                    ? "None"
-                    : issue.ExistingNegativeState.NegativeBalance.ToString(
-                        CultureInfo.InvariantCulture)),
+                    ? Presentation.Value("None")
+                    : Presentation.Number(
+                        issue.ExistingNegativeState.NegativeBalance)),
         ];
         if (issue.ExistingNegativeState is { } existingNegativeState)
         {
@@ -965,10 +936,10 @@ public sealed record AuditEntryExplanationViewModel(
             Fact("Type snapshot", issue.Snapshot.TypeName),
             Fact(
                 "Duration",
-                $"{issue.Snapshot.DurationDays.ToString(CultureInfo.InvariantCulture)} days"),
+                Presentation.Days(issue.Snapshot.DurationDays)),
             Fact(
                 "Visit limit",
-                issue.Snapshot.VisitsLimit.ToString(CultureInfo.InvariantCulture)),
+                Presentation.Number(issue.Snapshot.VisitsLimit)),
             Fact(
                 "Snapshot price",
                 MoneyLabel(
@@ -979,16 +950,16 @@ public sealed record AuditEntryExplanationViewModel(
             Fact("Status", MembershipStatusLabel(issue.Status)),
             Fact(
                 "Initial counted visits",
-                issue.InitialState.CountedVisits.ToString(CultureInfo.InvariantCulture)),
+                Presentation.Number(issue.InitialState.CountedVisits)),
             Fact(
                 "Initial remaining visits",
-                issue.InitialState.RemainingVisits.ToString(CultureInfo.InvariantCulture)),
+                Presentation.Number(issue.InitialState.RemainingVisits)),
             Fact(
                 "Initial negative balance",
-                issue.InitialState.NegativeBalance.ToString(CultureInfo.InvariantCulture)),
+                Presentation.Number(issue.InitialState.NegativeBalance)),
             Fact(
                 "Initial extension days",
-                issue.InitialState.ExtensionDays.ToString(CultureInfo.InvariantCulture)),
+                Presentation.Days(issue.InitialState.ExtensionDays)),
             Fact(
                 "Initial effective end date",
                 DateLabel(issue.InitialState.EffectiveEndDate)),
@@ -1003,7 +974,7 @@ public sealed record AuditEntryExplanationViewModel(
 
         if (issue.Payment is null)
         {
-            afterFacts.Add(Fact("Payment", "None"));
+            afterFacts.Add(Fact("Payment", Presentation.Value("None")));
         }
         else
         {
@@ -1016,33 +987,51 @@ public sealed record AuditEntryExplanationViewModel(
                 TimelineModel.ShortId(issue.Payment.PaymentId)));
         }
 
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("MembershipIssued",
             "membership-issued",
-            "Membership issued with immutable terms",
-            "The issue-time terms and stored initial Membership state are shown. Later MembershipType catalog edits do not rewrite this snapshot.",
-            "Before issue",
-            "Issued Membership",
             beforeFacts,
             afterFacts,
-            ChangedFields: "Issued Membership",
+            ChangedFields: Presentation.Changed("IssuedMembership"),
             IsAvailable: true);
     }
 
-    private static AuditEntryExplanationViewModel Unavailable(string kind)
+    private AuditEntryExplanationViewModel Unavailable(string kind)
     {
-        return new AuditEntryExplanationViewModel(
+        return CreateExplanation("Unavailable",
             kind,
-            "Readable change summary unavailable",
-            "The stored business summary could not be displayed safely.",
-            BeforeLabel: string.Empty,
-            AfterLabel: string.Empty,
             BeforeFacts: [],
             AfterFacts: [],
             ChangedFields: null,
-            IsAvailable: false);
+            IsAvailable: false,
+            HasBeforeAfterSections: false);
     }
 
-    private static IReadOnlyList<AuditEntryExplanationFactViewModel> PaymentFacts(
+    private AuditEntryExplanationViewModel CreateExplanation(
+        string resourceKey,
+        string Kind,
+        IReadOnlyList<AuditEntryExplanationFactViewModel> BeforeFacts,
+        IReadOnlyList<AuditEntryExplanationFactViewModel> AfterFacts,
+        string? ChangedFields,
+        bool IsAvailable,
+        bool HasBeforeAfterSections = true)
+    {
+        return new AuditEntryExplanationViewModel(
+            Kind,
+            Presentation.Explanation($"{resourceKey}.Title"),
+            Presentation.Explanation($"{resourceKey}.Narrative"),
+            HasBeforeAfterSections
+                ? Presentation.Explanation($"{resourceKey}.Before")
+                : string.Empty,
+            HasBeforeAfterSections
+                ? Presentation.Explanation($"{resourceKey}.After")
+                : string.Empty,
+            BeforeFacts,
+            AfterFacts,
+            ChangedFields,
+            IsAvailable);
+    }
+
+    private IReadOnlyList<AuditEntryExplanationFactViewModel> PaymentFacts(
         PaymentSnapshot payment)
     {
         return
@@ -1056,7 +1045,7 @@ public sealed record AuditEntryExplanationViewModel(
         ];
     }
 
-    private static IReadOnlyList<AuditEntryExplanationFactViewModel> MembershipTypeFacts(
+    private IReadOnlyList<AuditEntryExplanationFactViewModel> MembershipTypeFacts(
         MembershipTypeCatalogSnapshot membershipType)
     {
         return
@@ -1064,15 +1053,21 @@ public sealed record AuditEntryExplanationViewModel(
             Fact("Name", membershipType.Name),
             Fact(
                 "Duration",
-                $"{membershipType.DurationDays.ToString(CultureInfo.InvariantCulture)} days"),
+                Presentation.Days(membershipType.DurationDays)),
             Fact(
                 "Visit limit",
-                membershipType.VisitsLimit.ToString(CultureInfo.InvariantCulture)),
+                Presentation.Number(membershipType.VisitsLimit)),
             Fact(
                 "Price",
                 MoneyLabel(membershipType.PriceAmount, membershipType.PriceCurrency)),
-            Fact("Status", membershipType.IsActive ? "Active" : "Inactive"),
-            Fact("Catalog comment", membershipType.Comment ?? "None"),
+            Fact(
+                "Status",
+                membershipType.IsActive
+                    ? Presentation.Status("Active")
+                    : Presentation.Status("Inactive")),
+            Fact(
+                "Catalog comment",
+                membershipType.Comment ?? Presentation.Value("None")),
         ];
     }
 
@@ -1205,35 +1200,35 @@ public sealed record AuditEntryExplanationViewModel(
             RequireNullableTimestamp(summary, "deactivatedAt"));
     }
 
-    private static IReadOnlyList<string> MembershipTypeChangedFields(
+    private IReadOnlyList<string> MembershipTypeChangedFields(
         MembershipTypeCatalogSnapshot original,
         MembershipTypeCatalogSnapshot updated)
     {
         var changedFields = new List<string>();
         if (original.Name != updated.Name)
         {
-            changedFields.Add("Name");
+            changedFields.Add(Presentation.Changed("Name"));
         }
 
         if (original.DurationDays != updated.DurationDays)
         {
-            changedFields.Add("Duration");
+            changedFields.Add(Presentation.Changed("Duration"));
         }
 
         if (original.VisitsLimit != updated.VisitsLimit)
         {
-            changedFields.Add("Visit limit");
+            changedFields.Add(Presentation.Changed("VisitLimit"));
         }
 
         if (original.PriceAmount != updated.PriceAmount
             || original.PriceCurrency != updated.PriceCurrency)
         {
-            changedFields.Add("Price");
+            changedFields.Add(Presentation.Changed("Price"));
         }
 
         if (original.Comment != updated.Comment)
         {
-            changedFields.Add("Catalog comment");
+            changedFields.Add(Presentation.Changed("CatalogComment"));
         }
 
         return changedFields;
@@ -1359,7 +1354,7 @@ public sealed record AuditEntryExplanationViewModel(
             RequireStringArray(state, "warnings"));
     }
 
-    private static void AddVisitMarkedMembershipFacts(
+    private void AddVisitMarkedMembershipFacts(
         ICollection<AuditEntryExplanationFactViewModel> facts,
         VisitMarkedMembershipStateSnapshot? state)
     {
@@ -1370,18 +1365,18 @@ public sealed record AuditEntryExplanationViewModel(
 
         facts.Add(Fact(
             "Counted visits",
-            state.CountedVisits.ToString(CultureInfo.InvariantCulture)));
+            Presentation.Number(state.CountedVisits)));
         facts.Add(Fact(
             "Remaining visits",
-            state.RemainingVisits.ToString(CultureInfo.InvariantCulture)));
+            Presentation.Number(state.RemainingVisits)));
         facts.Add(Fact(
             "Negative balance",
-            state.NegativeBalance.ToString(CultureInfo.InvariantCulture)));
+            Presentation.Number(state.NegativeBalance)));
         facts.Add(Fact(
             "First negative visit date",
             state.FirstNegativeVisitDate is { } date
                 ? DateLabel(date)
-                : "Not recorded"));
+                : Presentation.Value("NotRecorded")));
         facts.Add(Fact(
             "Membership warnings",
             MembershipWarningsLabel(state.Warnings)));
@@ -1413,7 +1408,7 @@ public sealed record AuditEntryExplanationViewModel(
             RequireInt32(state.Value, "negativeBalance"));
     }
 
-    private static void AddMembershipFacts(
+    private void AddMembershipFacts(
         ICollection<AuditEntryExplanationFactViewModel> facts,
         MembershipStateSnapshot? membershipState)
     {
@@ -1424,15 +1419,89 @@ public sealed record AuditEntryExplanationViewModel(
 
         facts.Add(Fact(
             "Remaining visits",
-            membershipState.RemainingVisits.ToString(CultureInfo.InvariantCulture)));
+            Presentation.Number(membershipState.RemainingVisits)));
         facts.Add(Fact(
             "Negative balance",
-            membershipState.NegativeBalance.ToString(CultureInfo.InvariantCulture)));
+            Presentation.Number(membershipState.NegativeBalance)));
     }
 
-    private static AuditEntryExplanationFactViewModel Fact(string label, string value)
+    private string JoinChanged(params string[] keys) =>
+        string.Join(", ", keys.Select(Presentation.Changed));
+
+    private AuditEntryExplanationFactViewModel Fact(string key, string value)
     {
-        return new AuditEntryExplanationFactViewModel(label, value);
+        var semanticKey = key switch
+        {
+            "Membership type" => "MembershipType",
+            "Membership" => "Membership",
+            "Client" => "Client",
+            "Visit" => "Visit",
+            "Visit type" => "VisitType",
+            "Payment" => "Payment",
+            "Freeze" => "Freeze",
+            "Opening state" => "OpeningState",
+            "Opening as of" => "OpeningAsOf",
+            "Source reference" => "SourceReference",
+            "Amount" => "Amount",
+            "Method" => "Method",
+            "Context" => "Context",
+            "Consumption" => "Consumption",
+            "Selection" => "Selection",
+            "Warning acknowledgements" => "WarningAcknowledgements",
+            "Status" => "Status",
+            "Source status" => "SourceStatus",
+            "Original status" => "OriginalStatus",
+            "Original fact" => "OriginalFact",
+            "Occurred" => "Occurred",
+            "Created" => "Created",
+            "Deactivated" => "Deactivated",
+            "Entry origin" => "EntryOrigin",
+            "Original entry origin" => "OriginalEntryOrigin",
+            "Period" => "Period",
+            "Freeze reason" => "FreezeReason",
+            "Cancellation recorded" => "CancellationRecorded",
+            "Effective end" => "EffectiveEnd",
+            "Negative handling" => "NegativeHandling",
+            "Type snapshot" => "TypeSnapshot",
+            "Base end date" => "BaseEndDate",
+            "Start date" => "StartDate",
+            "Name" => "Name",
+            "Catalog comment" => "CatalogComment",
+            "Duration" => "Duration",
+            "Visit limit" => "VisitLimit",
+            "Price" => "Price",
+            "Declared remaining visits" => "DeclaredRemainingVisits",
+            "Declared negative balance" => "DeclaredNegativeBalance",
+            "Known effective end" => "KnownEffectiveEnd",
+            "Known extension" => "KnownExtension",
+            "Entry batch" => "EntryBatch",
+            "Recalculated remaining visits" => "RecalculatedRemainingVisits",
+            "Recalculated negative balance" => "RecalculatedNegativeBalance",
+            "Recalculated effective end" => "RecalculatedEffectiveEnd",
+            "Recalculated extension" => "RecalculatedExtension",
+            "Recalculation version" => "RecalculationVersion",
+            "Inclusive days" => "InclusiveDays",
+            "Extension days" => "ExtensionDays",
+            "Counted visits" => "CountedVisits",
+            "Remaining visits" => "RemainingVisits",
+            "Negative balance" => "NegativeBalance",
+            "First negative visit date" => "FirstNegativeVisitDate",
+            "Membership warnings" => "MembershipWarnings",
+            "Existing negative balance" => "ExistingNegativeBalance",
+            "Snapshot price" => "SnapshotPrice",
+            "Initial counted visits" => "InitialCountedVisits",
+            "Initial remaining visits" => "InitialRemainingVisits",
+            "Initial negative balance" => "InitialNegativeBalance",
+            "Initial extension days" => "InitialExtensionDays",
+            "Initial effective end date" => "InitialEffectiveEndDate",
+            "Initial first negative visit date" => "InitialFirstNegativeVisitDate",
+            "Payment record" => "PaymentRecord",
+            _ => throw new InvalidOperationException(
+                $"Unsupported Audit explanation fact label '{key}'."),
+        };
+        return new AuditEntryExplanationFactViewModel(
+            Presentation.Fact(semanticKey),
+            value);
     }
 
     private static JsonElement RequireObject(JsonElement parent, string propertyName)
@@ -1749,22 +1818,22 @@ public sealed record AuditEntryExplanationViewModel(
         return items;
     }
 
-    private static string MoneyLabel(decimal amount, string currency)
+    private string MoneyLabel(decimal amount, string currency)
     {
-        return $"{amount.ToString("0.##", CultureInfo.InvariantCulture)} {currency.ToUpperInvariant()}";
+        return Presentation.Money(new BodyLife.Crm.SharedKernel.Money(amount, currency));
     }
 
-    private static string FreezeRangeLabel(FreezeSnapshot freeze)
+    private string FreezeRangeLabel(FreezeSnapshot freeze)
     {
-        return $"{DateLabel(freeze.StartDate)} to {DateLabel(freeze.EndDate)}";
+        return Presentation.Text("Template.DateRange", DateLabel(freeze.StartDate), DateLabel(freeze.EndDate));
     }
 
-    private static string DateLabel(DateOnly date)
+    private string DateLabel(DateOnly date)
     {
-        return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        return Presentation.Date(date);
     }
 
-    private static void ValidateEntryBatch(string entryOrigin, Guid? entryBatchId)
+    private void ValidateEntryBatch(string entryOrigin, Guid? entryBatchId)
     {
         _ = StoredEntryOriginLabel(entryOrigin);
         if (entryOrigin == "normal" && entryBatchId is not null)
@@ -1785,82 +1854,82 @@ public sealed record AuditEntryExplanationViewModel(
         };
     }
 
-    private static string StoredEntryOriginLabel(string entryOrigin)
+    private string StoredEntryOriginLabel(string entryOrigin)
     {
         return entryOrigin switch
         {
-            "normal" => "Normal entry",
-            "manual_backfill" => "Manual backfill",
-            "paper_fallback" => "Paper fallback",
-            "future_import" => "Future import",
+            "normal" => Presentation.EntryOrigin(EntryOrigin.Normal),
+            "manual_backfill" => Presentation.EntryOrigin(EntryOrigin.ManualBackfill),
+            "paper_fallback" => Presentation.EntryOrigin(EntryOrigin.PaperFallback),
+            "future_import" => Presentation.EntryOrigin(EntryOrigin.FutureImport),
             _ => throw new JsonException("Stored entry origin is not supported."),
         };
     }
 
-    private static string OptionalIdLabel(Guid? id)
+    private string OptionalIdLabel(Guid? id)
     {
-        return id is { } value ? TimelineModel.ShortId(value) : "No Membership";
+        return id is { } value ? Presentation.ShortId(value) : Presentation.Value("NoMembership");
     }
 
-    private static string VisitKindLabel(string value)
+    private string VisitKindLabel(string value)
     {
         return value switch
         {
-            "membership" => "Membership visit",
-            "one_off" => "One-off visit",
-            "trial" => "Trial visit",
+            "membership" => Presentation.VisitKind(BodyLife.Crm.Modules.Visits.VisitKind.Membership),
+            "one_off" => Presentation.VisitKind(BodyLife.Crm.Modules.Visits.VisitKind.OneOff),
+            "trial" => Presentation.VisitKind(BodyLife.Crm.Modules.Visits.VisitKind.Trial),
             _ => throw new JsonException("Visit kind is not supported."),
         };
     }
 
-    private static string VisitSelectionLabel(string visitKind)
+    private string VisitSelectionLabel(string visitKind)
     {
         return visitKind switch
         {
-            "membership" => "Explicit Membership",
-            "one_off" => "Explicit one-off context",
-            "trial" => "Explicit trial context",
+            "membership" => Presentation.Text("Visit.Selection.Membership"),
+            "one_off" => Presentation.Text("Visit.Selection.OneOff"),
+            "trial" => Presentation.Text("Visit.Selection.Trial"),
             _ => throw new JsonException("Visit kind is not supported."),
         };
     }
 
-    private static string VisitAcknowledgementsLabel(
+    private string VisitAcknowledgementsLabel(
         IReadOnlyList<string> acknowledgements)
     {
         return LabelsOrNone(
             acknowledgements,
             acknowledgement => acknowledgement switch
             {
-                "expired" => "Expired membership",
-                "zero_remaining" => "Zero remaining",
-                "negative_remaining" => "Negative balance",
+                "expired" => Presentation.Text("Visit.Warning.Expired"),
+                "zero_remaining" => Presentation.Text("Visit.Warning.ZeroRemaining"),
+                "negative_remaining" => Presentation.Text("Visit.Warning.NegativeRemaining"),
                 _ => throw new JsonException(
                     "Visit warning acknowledgement is not supported."),
             });
     }
 
-    private static string MembershipWarningsLabel(IReadOnlyList<string> warnings)
+    private string MembershipWarningsLabel(IReadOnlyList<string> warnings)
     {
         return LabelsOrNone(
             warnings,
             warning => warning switch
             {
-                "membership_negative_balance" => "Negative balance",
-                "membership_expired_by_date" => "Expired membership",
-                "membership_zero_remaining" => "Zero remaining",
-                "membership_ending_soon" => "Ending soon",
-                "membership_low_remaining" => "Low remaining",
+                "membership_negative_balance" => Presentation.Text("Membership.Warning.NegativeBalance"),
+                "membership_expired_by_date" => Presentation.Text("Membership.Warning.Expired"),
+                "membership_zero_remaining" => Presentation.Text("Membership.Warning.ZeroRemaining"),
+                "membership_ending_soon" => Presentation.Text("Membership.Warning.EndingSoon"),
+                "membership_low_remaining" => Presentation.Text("Membership.Warning.LowRemaining"),
                 _ => throw new JsonException("Membership warning is not supported."),
             });
     }
 
-    private static string LabelsOrNone(
+    private string LabelsOrNone(
         IReadOnlyList<string> values,
         Func<string, string> label)
     {
         if (values.Count == 0)
         {
-            return "None";
+            return Presentation.Value("None");
         }
 
         var distinct = values.Distinct(StringComparer.Ordinal).ToArray();
@@ -1872,82 +1941,82 @@ public sealed record AuditEntryExplanationViewModel(
         return string.Join(", ", values.Select(label));
     }
 
-    private static string ConsumptionStatusLabel(string? value)
+    private string ConsumptionStatusLabel(string? value)
     {
         return value switch
         {
-            "active" => "Active",
-            "canceled" => "Canceled",
-            null => "Not applicable",
+            "active" => Presentation.Status("Active"),
+            "canceled" => Presentation.Status("Canceled"),
+            null => Presentation.Value("NotApplicable"),
             _ => throw new JsonException("Visit consumption status is not supported."),
         };
     }
 
-    private static string PaymentContextLabel(string value)
+    private string PaymentContextLabel(string value)
     {
         return value switch
         {
-            "membership_sale" => "Membership sale",
-            "one_off" => "One-off",
-            "trial" => "Trial",
-            "negative_closure" => "Negative closure",
-            "other" => "Other",
+            "membership_sale" => Presentation.PaymentContext(BodyLife.Crm.Modules.Payments.PaymentContext.MembershipSale),
+            "one_off" => Presentation.PaymentContext(BodyLife.Crm.Modules.Payments.PaymentContext.OneOff),
+            "trial" => Presentation.PaymentContext(BodyLife.Crm.Modules.Payments.PaymentContext.Trial),
+            "negative_closure" => Presentation.PaymentContext(BodyLife.Crm.Modules.Payments.PaymentContext.NegativeClosure),
+            "other" => Presentation.PaymentContext(BodyLife.Crm.Modules.Payments.PaymentContext.Other),
             _ => throw new JsonException("Payment context is not supported."),
         };
     }
 
-    private static string PaymentMethodLabel(string value)
+    private string PaymentMethodLabel(string value)
     {
         return value switch
         {
-            "cash" => "Cash",
+            "cash" => Presentation.Text("Payment.Method.Cash"),
             _ => throw new JsonException("Payment method is not supported."),
         };
     }
 
-    private static string MembershipStatusLabel(string value)
+    private string MembershipStatusLabel(string value)
     {
         return value switch
         {
-            "active" => "Active",
+            "active" => Presentation.Status("Active"),
             _ => throw new JsonException("Membership status is not supported."),
         };
     }
 
-    private static string MembershipNegativeHandlingLabel(string? value)
+    private string MembershipNegativeHandlingLabel(string? value)
     {
         return value switch
         {
-            null => "Not required",
-            "leave_visible" => "Existing negative balance left visible",
-            "cover_with_new_membership" => "Covered by the new Membership",
-            "record_explicit_closure" => "Explicit negative closure recorded",
+            null => Presentation.Text("NegativeHandling.NotRequired"),
+            "leave_visible" => Presentation.Text("NegativeHandling.LeaveVisible"),
+            "cover_with_new_membership" => Presentation.Text("NegativeHandling.CoverWithNewMembership"),
+            "record_explicit_closure" => Presentation.Text("NegativeHandling.RecordExplicitClosure"),
             _ => throw new JsonException(
                 "Membership negative handling decision is not supported."),
         };
     }
 
-    private static string StatusLabel(string value)
+    private string StatusLabel(string value)
     {
         return value switch
         {
-            "active" => "Active",
-            "replaced" => "Replaced",
-            "canceled" => "Canceled",
+            "active" => Presentation.Status("Active"),
+            "replaced" => Presentation.Status("Replaced"),
+            "canceled" => Presentation.Status("Canceled"),
             _ => throw new JsonException("Payment status is not supported."),
         };
     }
 
-    private static string ChangedFieldLabel(string value)
+    private string ChangedFieldLabel(string value)
     {
         return value switch
         {
-            "amount" => "Amount",
-            "currency" => "Currency",
-            "occurred_at" => "Occurred time",
-            "payment_context" => "Payment context",
-            "membership_id" => "Membership",
-            "comment" => "Comment",
+            "amount" => Presentation.ChangedField("amount"),
+            "currency" => Presentation.Text("Changed.Currency"),
+            "occurred_at" => Presentation.ChangedField("occurred_at"),
+            "payment_context" => Presentation.ChangedField("payment_context"),
+            "membership_id" => Presentation.ChangedField("membership_id"),
+            "comment" => Presentation.ChangedField("comment"),
             _ => throw new JsonException("Payment correction field is not supported."),
         };
     }

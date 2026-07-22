@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?><root>
+<data name="Daily.Title" xml:space="preserve"><value>Щоденний звіт</value></data>
+  <data name="Ending.Title" xml:space="preserve"><value>Абонементи, що скоро завершаться</value></data>
+  <data name="Low.Title" xml:space="preserve"><value>Абонементи з малим залишком відвідувань</value></data>
+  <data name="Negative.Title" xml:space="preserve"><value>Клієнти з від’ємним залишком відвідувань</value></data>
+  <data name="Inactive.Title" xml:space="preserve"><value>Неактивні клієнти</value></data>
+<data name="Navigation.Reports" xml:space="preserve"><value>Звіти</value></data>
+  <data name="Navigation.Reception" xml:space="preserve"><value>Рецепція</value></data>
+  <data name="Navigation" xml:space="preserve"><value>Навігація звітами</value></data>
+  <data name="Load" xml:space="preserve"><value>Завантажити звіт</value></data>
+  <data name="Loading" xml:space="preserve"><value>Завантаження...</value></data>
+  <data name="Unavailable" xml:space="preserve"><value>Звіт недоступний</value></data>
+  <data name="Error.Unavailable" xml:space="preserve"><value>Звіт недоступний. Спробуйте ще раз.</value></data>
+  <data name="Error.InvalidInput" xml:space="preserve"><value>Введіть коректні параметри звіту.</value></data>
+  <data name="Error.PermissionDenied" xml:space="preserve"><value>У вас немає дозволу на перегляд цього звіту.</value></data>
+<data name="Daily" xml:space="preserve"><value>Щоденний звіт</value></data>
+  <data name="Ending" xml:space="preserve"><value>Скоро завершуються</value></data>
+  <data name="Low" xml:space="preserve"><value>Малий залишок</value></data>
+  <data name="Negative" xml:space="preserve"><value>Від’ємний залишок</value></data>
+  <data name="Inactive" xml:space="preserve"><value>Неактивні клієнти</value></data>
+  <data name="AsOf" xml:space="preserve"><value>Станом на дату</value></data>
+  <data name="BusinessDate" xml:space="preserve"><value>Робоча дата</value></data>
+  <data name="DaysAhead" xml:space="preserve"><value>Днів наперед</value></data>
+  <data name="RemainingAtMost" xml:space="preserve"><value>Залишок відвідувань не більше</value></data>
+  <data name="InactiveAtLeast" xml:space="preserve"><value>Неактивний щонайменше</value></data>
+  <data name="SelectDays" xml:space="preserve"><value>Оберіть дні</value></data>
+  <data name="IncludeNeverVisited" xml:space="preserve"><value>Включати тих, хто не відвідував</value></data>
+<data name="OpenClient" xml:space="preserve"><value>Відкрити клієнта</value></data>
+  <data name="ViewVisits" xml:space="preserve"><value>Переглянути відвідування</value></data>
+  <data name="ExtensionDetails" xml:space="preserve"><value>Деталі продовження</value></data>
+  <data name="ClientHistory" xml:space="preserve"><value>Історія клієнта</value></data>
+  <data name="AuditTimeline" xml:space="preserve"><value>Хронологія аудиту</value></data>
+  <data name="CorrectPayment" xml:space="preserve"><value>Виправити платіж</value></data>
+  <data name="Pagination.Previous" xml:space="preserve"><value>Попередня</value></data>
+  <data name="Pagination.Next" xml:space="preserve"><value>Наступна</value></data>
+  <data name="Page" xml:space="preserve"><value>Сторінка {0}</value></data>
+  <data name="Warnings" xml:space="preserve"><value>Попередження абонемента</value></data>
+<data name="Client.Phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="NoPhone" xml:space="preserve"><value>Немає телефону</value></data>
+  <data name="NoCard" xml:space="preserve"><value>Немає картки</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>Недоступно</value></data>
+  <data name="NotRecorded" xml:space="preserve"><value>Не зафіксовано</value></data>
+  <data name="NeverVisited" xml:space="preserve"><value>Не відвідував</value></data>
+  <data name="NoCountedVisits" xml:space="preserve"><value>Немає врахованих відвідувань</value></data>
+  <data name="NoMembership" xml:space="preserve"><value>Немає абонемента</value></data>
+<data name="EffectiveEnd" xml:space="preserve"><value>Фактична дата завершення</value></data>
+  <data name="RemainingVisits" xml:space="preserve"><value>Залишок відвідувань</value></data>
+  <data name="ExtensionDays" xml:space="preserve"><value>Дні продовження</value></data>
+  <data name="VisitLimit" xml:space="preserve"><value>Ліміт відвідувань</value></data>
+  <data name="CountedVisits" xml:space="preserve"><value>Враховані відвідування</value></data>
+  <data name="LastCountedVisit" xml:space="preserve"><value>Останнє враховане відвідування</value></data>
+  <data name="DaysLeft" xml:space="preserve"><value>Днів залишилось</value></data>
+  <data name="DaysInactive" xml:space="preserve"><value>Днів неактивності</value></data>
+  <data name="CurrentCard" xml:space="preserve"><value>Поточна картка</value></data>
+  <data name="MembershipSummary" xml:space="preserve"><value>Підсумок абонемента</value></data>
+  <data name="MembershipRecord" xml:space="preserve"><value>Запис абонемента</value></data>
+  <data name="FirstNegativeVisit" xml:space="preserve"><value>Перше від’ємне відвідування</value></data>
+  <data name="NegativeBalance" xml:space="preserve"><value>Від’ємний баланс</value></data>
+<data name="Status.EndingSoon" xml:space="preserve"><value>Скоро завершується</value></data>
+  <data name="Status.Negative" xml:space="preserve"><value>Від’ємний</value></data>
+  <data name="Status.NoVisits" xml:space="preserve"><value>Немає відвідувань</value></data>
+  <data name="Status.Low" xml:space="preserve"><value>Малий залишок</value></data>
+  <data name="Status.Active" xml:space="preserve"><value>Активний</value></data>
+  <data name="Status.Inactive" xml:space="preserve"><value>Неактивний</value></data>
+  <data name="Status.Canceled" xml:space="preserve"><value>Скасовано</value></data>
+  <data name="Status.Corrected" xml:space="preserve"><value>Виправлено</value></data>
+  <data name="Status.Replaced" xml:space="preserve"><value>Замінено</value></data>
+<data name="Ambiguous.Body"><value>Є кілька поточних кандидатів абонемента; показано підсумок останнього.</value></data>
+  <data name="Ambiguous.Title"><value>Вибір абонемента потребує перевірки</value></data>
+  <data name="CanonicalMemberships"><value>Канонічний стан абонементів</value></data>
+  <data name="CanonicalState"><value>Канонічний стан відвідувань та абонементів</value></data>
+  <data name="Payment.Cash"><value>Готівка</value></data>
+  <data name="State.Current"><value>Поточний</value></data>
+  <data name="Daily.EmptyVisits"><value>За цю робочу дату немає відвідувань.</value></data>
+  <data name="Daily.Note"><value>Скасовані рядки джерел залишаються видимими й не входять до підсумків.</value></data>
+  <data name="DayStatus"><value>Стан дня</value></data>
+  <data name="Ending.Empty"><value>Немає активних абонементів, що завершуються в межах порогу.</value></data>
+  <data name="Ending.Pages"><value>Сторінки результатів завершення</value></data>
+  <data name="EndsToday"><value>Завершується сьогодні</value></data>
+  <data name="Inclusion.Excluded"><value>Виключено</value></data>
+  <data name="Inactive.Empty"><value>Немає клієнтів за цим порогом неактивності.</value></data>
+  <data name="Inactive.Pages"><value>Сторінки неактивних клієнтів</value></data>
+  <data name="InactiveList"><value>Список неактивних клієнтів</value></data>
+  <data name="Inclusion.Included"><value>Включено</value></data>
+  <data name="Range.Last"><value>Останній</value></data>
+  <data name="Low.Empty"><value>Немає активних абонементів із залишком на рівні чи нижче порогу.</value></data>
+  <data name="Low.Pages"><value>Сторінки малого залишку</value></data>
+  <data name="Negative.Empty"><value>Немає активних абонементів із від’ємним балансом відвідувань.</value></data>
+  <data name="Negative.Pages"><value>Сторінки від’ємних клієнтів</value></data>
+  <data name="NegativeBalances"><value>Від’ємні баланси</value></data>
+  <data name="NoVisitHistory"><value>Немає історії відвідувань</value></data>
+  <data name="Payment"><value>Платежі</value></data>
+  <data name="ReportPage"><value>сторінка звіту</value></data>
+  <data name="VisitFacts"><value>Факти відвідувань</value></data>
+  <data name="VisitKind.Membership"><value>Відвідування за абонементом</value></data>
+  <data name="VisitKind.OneOff"><value>Разове відвідування</value></data>
+  <data name="VisitKind.Trial"><value>Пробне відвідування</value></data>
+  <data name="Visit.Label"><value>Відвідування</value></data>
+<data name="Status.Cancellation"><value>Скасування</value></data>
+  <data name="Status.Changed"><value>Змінено</value></data>
+  <data name="Context.NegativeClosure"><value>Закриття від’ємного залишку</value></data>
+  <data name="Context.OneOff"><value>Разовий платіж</value></data>
+  <data name="Context.Other"><value>Інший платіж</value></data>
+  <data name="Context.Sale"><value>Продаж абонемента</value></data>
+  <data name="Context.Trial"><value>Платіж за пробне відвідування</value></data>
+  <data name="CorrectedReplacement"><value>Виправлена заміна</value></data>
+  <data name="Daily.EmptyPayments"><value>За цю робочу дату немає платежів.</value></data>
+  <data name="Daily.Totals"><value>Щоденні підсумки</value></data>
+  <data name="Ending.Selection"><value>Параметри звіту про завершення</value></data>
+  <data name="Field.Amount"><value>Сума</value></data>
+  <data name="Field.Comment"><value>Коментар</value></data>
+  <data name="Field.Context"><value>Контекст платежу</value></data>
+  <data name="Field.Membership"><value>Абонемент</value></data>
+  <data name="Field.Occurred"><value>Час події</value></data>
+  <data name="Field.Other"><value>Інше поле</value></data>
+  <data name="Inactive.Selection"><value>Параметри звіту про неактивних клієнтів</value></data>
+  <data name="Low.Selection"><value>Параметри звіту про малий залишок</value></data>
+  <data name="Entity.Membership"><value>Абонемент</value></data>
+  <data name="Payment.Method"><value>Спосіб</value></data>
+  <data name="Negative.Selection"><value>Параметри звіту про від’ємний залишок</value></data>
+  <data name="Meta.Occurred"><value>Час події</value></data>
+  <data name="Origin.Backfill"><value>Ручне внесення заднім числом</value></data>
+  <data name="Origin.Import"><value>Майбутній імпорт</value></data>
+  <data name="Origin.Normal"><value>Звичайний запис</value></data>
+  <data name="Origin.Paper"><value>Внесення з паперового журналу</value></data>
+  <data name="Origin.Unknown"><value>Походження запису</value></data>
+  <data name="PaymentFacts"><value>Факти платежів</value></data>
+  <data name="Meta.Recorded"><value>Час запису</value></data>
+  <data name="ReplacedPayment"><value>Замінений платіж</value></data>
+  <data name="Meta.Source"><value>Джерело</value></data>
+  <data name="Status.Open"><value>Відкритий</value></data>
+  <data name="Status.Reconciled"><value>Звірений</value></data>
+  <data name="Value.Unknown"><value>Невідомо</value></data>
+  <data name="UnknownMethod"><value>Невідомий спосіб</value></data>
+  <data name="Warning.NegativeBalance"><value>Абонемент має від’ємний залишок відвідувань.</value></data>
+  <data name="Warning.ExpiredByDate"><value>Строк дії абонемента минув.</value></data>
+  <data name="Warning.ZeroRemaining"><value>В абонементі не залишилося відвідувань.</value></data>
+  <data name="Warning.EndingSoon"><value>Абонемент завершується протягом семи днів.</value></data>
+  <data name="Warning.LowRemaining"><value>В абонементі залишилося лише одне або два відвідування.</value></data>
+  <data name="Warning.Generic"><value>Перевірте поточний стан абонемента.</value></data>
+</root>

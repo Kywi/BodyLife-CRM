@@ -1,4 +1,6 @@
 @model ClientProfileViewModel
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
 @{
     var result = Model.Result;
     var profile = result?.Profile;
@@ -8,24 +10,24 @@
         form => form.Input.FreezeId);
 }
 
-<section id="client-profile" class="client-profile-region" aria-label="Client profile" aria-live="polite">
+<section id="client-profile" class="client-profile-region" aria-label="@L["Profile.Title"]" aria-live="polite">
     <span id="profile-loading"
           class="request-indicator profile-loading htmx-indicator"
           role="status"
-          aria-live="polite">Loading client...</span>
+          aria-live="polite">@L["Profile.Loading"]</span>
 
     @if (result is null)
     {
         <div class="operational-empty profile-empty">
-            <h2>No client selected</h2>
-            <a class="secondary-link" asp-page="/Reports/Daily">Open daily report</a>
+            <h2>@L["Profile.Empty"]</h2>
+            <a class="secondary-link" asp-page="/Reports/Daily">@L["Profile.OpenDailyReport"]</a>
         </div>
     }
     else if (result.Status != GetClientProfileStatus.Success || profile is null)
     {
         <div class="warning-block warning-danger" role="alert">
-            <strong>Client unavailable</strong>
-            <span>@result.ErrorMessage</span>
+            <strong>@L["Profile.Unavailable"]</strong>
+            <span>@L["Error.Generic"]</span>
         </div>
     }
     else
@@ -36,11 +38,11 @@
 
         <header class="client-identity-header">
             <div>
-                <p class="eyebrow">Client profile</p>
+                <p class="eyebrow">@L["Profile.Title"]</p>
                 <h2>@profile.DisplayName</h2>
             </div>
             <span class="status-chip @(profile.OperationalStatus == ClientOperationalStatus.Active ? "status-active" : "status-inactive")">
-                @(profile.OperationalStatus == ClientOperationalStatus.Active ? "Active" : "Inactive")
+                @(profile.OperationalStatus == ClientOperationalStatus.Active ? L["Status.Active"] : L["Status.Inactive"])
             </span>
         </header>
 
@@ -54,12 +56,12 @@
 
         @if (profile.Warnings.Count > 0)
         {
-            <div class="profile-warning-list" aria-label="Profile warnings">
+            <div class="profile-warning-list" aria-label="@L["Profile.Warnings"]">
                 @foreach (var warning in profile.Warnings)
                 {
                     <div class="warning-block warning-caution">
                         <strong>@WarningLabel(warning.Code)</strong>
-                        <span>@warning.Message</span>
+                        <span>@WarningMessage(warning.Code)</span>
                     </div>
                 }
             </div>
@@ -67,22 +69,22 @@
 
         <dl class="client-profile-meta">
             <div>
-                <dt>Current card</dt>
-                <dd>@(profile.CurrentCard?.CardNumber ?? "No current card")</dd>
+                <dt>@L["Profile.CurrentCard"]</dt>
+                <dd>@(profile.CurrentCard?.CardNumber ?? L["Value.NoCurrentCard"])</dd>
             </div>
             <div>
-                <dt>Phone</dt>
-                <dd>@(profile.Phone ?? "No phone")</dd>
+                <dt>@L["Field.Phone"]</dt>
+                <dd>@(profile.Phone ?? L["Value.NoPhone"])</dd>
             </div>
             <div>
-                <dt>Updated</dt>
-                <dd>@profile.UpdatedAt.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                <dt>@L["Profile.Updated"]</dt>
+                <dd>@ReceptionDisplayFormatter.DateTime(profile.UpdatedAt)</dd>
             </div>
             @if (profile.CurrentCard is not null)
             {
                 <div>
-                    <dt>Card assigned</dt>
-                    <dd>@profile.CurrentCard.AssignedAt.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                <dt>@L["Profile.CardAssigned"]</dt>
+                    <dd>@ReceptionDisplayFormatter.DateTime(profile.CurrentCard.AssignedAt)</dd>
                 </div>
             }
         </dl>
@@ -90,47 +92,47 @@
         @if (profile.Comment is not null)
         {
             <section class="client-comment" aria-labelledby="client-comment-title">
-                <h3 id="client-comment-title">Reception note</h3>
+                <h3 id="client-comment-title">@L["Profile.Note"]</h3>
                 <p>@profile.Comment</p>
             </section>
         }
 
         <section class="membership-panel" aria-labelledby="membership-panel-title">
             <header class="membership-panel-header">
-                <h3 id="membership-panel-title">Current membership</h3>
+                <h3 id="membership-panel-title">@L["Profile.CurrentMembership"]</h3>
             </header>
 
             @if (profile.Membership.CurrentMembership is null)
             {
-                <p class="membership-empty">No current membership</p>
+                <p class="membership-empty">@L["Value.NoCurrentMembership"]</p>
             }
             else
             {
                 var membership = profile.Membership.CurrentMembership;
                 <dl class="membership-summary-grid">
                     <div>
-                        <dt>Status</dt>
-                        <dd>@membership.Status</dd>
+                        <dt>@L["Profile.Status"]</dt>
+                        <dd>@MembershipStatusLabel(membership.Status)</dd>
                     </div>
                     <div>
-                        <dt>Remaining visits</dt>
+                        <dt>@L["Profile.RemainingVisits"]</dt>
                         <dd>@membership.RemainingVisits</dd>
                     </div>
                     <div>
-                        <dt>Effective end</dt>
-                        <dd>@membership.EffectiveEndDate.ToString("yyyy-MM-dd")</dd>
+                        <dt>@L["Profile.EffectiveEnd"]</dt>
+                        <dd>@ReceptionDisplayFormatter.Date(membership.EffectiveEndDate)</dd>
                     </div>
                 </dl>
             }
 
             @if (profile.Membership.Warnings.Count > 0)
             {
-                <div class="profile-warning-list" aria-label="Membership warnings">
+                <div class="profile-warning-list" aria-label="@L["Membership.Warnings"]">
                     @foreach (var warning in profile.Membership.Warnings)
                     {
                         <div class="warning-block warning-caution">
                             <strong>@WarningLabel(warning.Code)</strong>
-                            <span>@warning.Message</span>
+                            <span>@WarningMessage(warning.Code)</span>
                         </div>
                     }
                 </div>
@@ -143,8 +145,8 @@
                          data-membership-extension-history>
                     <header class="membership-extension-history-header">
                         <div>
-                            <p class="eyebrow">Membership timeline</p>
-                            <h4 id="membership-extension-history-title">Extension history</h4>
+                            <p class="eyebrow">@L["Membership.Timeline"]</p>
+                            <h4 id="membership-extension-history-title">@L["Membership.ExtensionHistory"]</h4>
                         </div>
                     </header>
 
@@ -170,7 +172,7 @@
                                         data-extension-source-id="@explanation.SourceId">
                                         <header class="membership-extension-row-header">
                                             <div>
-                                                <p class="membership-extension-kind">Extension source</p>
+                                                <p class="membership-extension-kind">@L["Membership.ExtensionSource"]</p>
                                                 <h6>@ExtensionSourceKindLabel(explanation.SourceKind)</h6>
                                             </div>
                                             <span class="status-chip @ExtensionSourceStatusClass(explanation.Status)">
@@ -180,13 +182,13 @@
 
                                         <dl class="membership-extension-meta">
                                             <div>
-                                                <dt>Inclusive range</dt>
+                                                <dt>@L["Field.InclusiveRange"]</dt>
                                                 <dd data-extension-inclusive-range>
-                                                    @explanation.Range.StartDate.ToString("yyyy-MM-dd") to @explanation.Range.EndDate.ToString("yyyy-MM-dd")
+                                                    @ReceptionDisplayFormatter.Date(explanation.Range.StartDate) @L["Range.To"] @ReceptionDisplayFormatter.Date(explanation.Range.EndDate)
                                                 </dd>
                                             </div>
                                             <div>
-                                                <dt>Reason</dt>
+                                                <dt>@L["Field.Reason"]</dt>
                                                 <dd>@explanation.ReasonLabel</dd>
                                             </div>
                                         </dl>
@@ -230,16 +232,16 @@
         {
             <section class="recent-visits" aria-labelledby="recent-visits-title">
                 <header class="recent-visits-header">
-                    <h3 id="recent-visits-title">Recent visits</h3>
+                    <h3 id="recent-visits-title">@L["Visit.Recent"]</h3>
                     @if (recentVisits.HasMore)
                     {
-                        <span class="result-count">Latest @recentVisits.Items.Count</span>
+                        <span class="result-count">@L["List.LatestCount", recentVisits.Items.Count]</span>
                     }
                 </header>
 
                 @if (recentVisits.Items.Count == 0)
                 {
-                    <p class="recent-visits-empty">No visits recorded</p>
+                    <p class="recent-visits-empty">@L["Visit.NoneRecorded"]</p>
                 }
                 else
                 {
@@ -262,23 +264,23 @@
                                         <h4>@VisitContextLabel(visit)</h4>
                                     </div>
                                     <span class="status-chip @(visit.Status == ClientVisitRowStatus.Active ? "status-active" : "status-canceled")">
-                                        @(visit.Status == ClientVisitRowStatus.Active ? "Active" : "Canceled")
+                                        @(visit.Status == ClientVisitRowStatus.Active ? L["Status.Active"] : L["Status.Canceled"])
                                     </span>
                                 </header>
 
                                 <dl class="recent-visit-meta">
                                     <div>
-                                        <dt>Occurred</dt>
-                                        <dd>@visit.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                                        <dt>@L["Field.Occurred"]</dt>
+                                        <dd>@ReceptionDisplayFormatter.DateTime(visit.OccurredAt)</dd>
                                     </div>
                                     <div>
-                                        <dt>Recorded</dt>
-                                        <dd>@visit.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                                        <dt>@L["Field.Recorded"]</dt>
+                                        <dd>@ReceptionDisplayFormatter.DateTime(visit.RecordedAt)</dd>
                                     </div>
                                     @if (visit.EntryOrigin != EntryOrigin.Normal)
                                     {
                                         <div>
-                                            <dt>Source</dt>
+                                            <dt>@L["Field.Source"]</dt>
                                             <dd><span class="source-label">@EntryOriginLabel(visit.EntryOrigin)</span></dd>
                                         </div>
                                     }
@@ -292,10 +294,10 @@
                                 @if (visit.Cancellation is { } cancellation)
                                 {
                                     <div class="recent-visit-cancellation">
-                                        <strong>Cancellation</strong>
+                                        <strong>@L["Correction.Cancellation"]</strong>
                                         <span>@cancellation.Reason</span>
                                         <span>
-                                            @cancellation.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC
+                                            @ReceptionDisplayFormatter.DateTime(cancellation.RecordedAt)
                                             @if (cancellation.EntryOrigin != EntryOrigin.Normal)
                                             {
                                                 <span class="source-label">@EntryOriginLabel(cancellation.EntryOrigin)</span>
@@ -312,8 +314,8 @@
                                     <p class="recent-visit-permission @(canCancel ? "permission-allowed" : "permission-restricted")"
                                        data-visit-cancel-permission>
                                         @(canCancel
-                                            ? "Cancellation action unavailable; refresh the profile."
-                                            : cancellationPermission.DeniedReason ?? "Cancellation restricted")
+                                            ? L["Visit.CancelUnavailable"]
+                                            : L["Visit.CancelRestricted"])
                                     </p>
                                 }
                             </li>
@@ -327,16 +329,16 @@
         {
             <section class="recent-payments" aria-labelledby="recent-payments-title">
                 <header class="recent-payments-header">
-                    <h3 id="recent-payments-title">Recent payments</h3>
+                    <h3 id="recent-payments-title">@L["Payment.Recent"]</h3>
                     @if (recentPayments.HasMore)
                     {
-                        <span class="result-count">Latest @recentPayments.Items.Count</span>
+                        <span class="result-count">@L["List.LatestCount", recentPayments.Items.Count]</span>
                     }
                 </header>
 
                 @if (recentPayments.Items.Count == 0)
                 {
-                    <p class="recent-payments-empty">No payments recorded</p>
+                    <p class="recent-payments-empty">@L["Payment.NoneRecorded"]</p>
                 }
                 else
                 {
@@ -358,28 +360,28 @@
 
                                 <dl class="recent-payment-meta">
                                     <div>
-                                        <dt>Method</dt>
+                                        <dt>@L["Payment.Method"]</dt>
                                         <dd>@PaymentMethodLabel(payment.Method)</dd>
                                     </div>
                                     @if (!string.IsNullOrWhiteSpace(payment.MembershipTypeNameSnapshot))
                                     {
                                         <div>
-                                            <dt>Membership</dt>
+                                            <dt>@L["Field.Membership"]</dt>
                                             <dd>@payment.MembershipTypeNameSnapshot</dd>
                                         </div>
                                     }
                                     <div>
-                                        <dt>Occurred</dt>
-                                        <dd>@payment.OccurredAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                                        <dt>@L["Field.Occurred"]</dt>
+                                        <dd>@ReceptionDisplayFormatter.DateTime(payment.OccurredAt)</dd>
                                     </div>
                                     <div>
-                                        <dt>Recorded</dt>
-                                        <dd>@payment.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+                                        <dt>@L["Field.Recorded"]</dt>
+                                        <dd>@ReceptionDisplayFormatter.DateTime(payment.RecordedAt)</dd>
                                     </div>
                                     @if (payment.EntryOrigin != EntryOrigin.Normal)
                                     {
                                         <div>
-                                            <dt>Source</dt>
+                                            <dt>@L["Field.Source"]</dt>
                                             <dd><span class="source-label">@EntryOriginLabel(payment.EntryOrigin)</span></dd>
                                         </div>
                                     }
@@ -393,10 +395,10 @@
                                 @if (payment.Cancellation is { } paymentCancellation)
                                 {
                                     <div class="recent-payment-cancellation">
-                                        <strong>Cancellation</strong>
+                                        <strong>@L["Correction.Cancellation"]</strong>
                                         <span>@paymentCancellation.Reason</span>
                                         <span>
-                                            @paymentCancellation.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC
+                                            @ReceptionDisplayFormatter.DateTime(paymentCancellation.RecordedAt)
                                             @if (paymentCancellation.EntryOrigin != EntryOrigin.Normal)
                                             {
                                                 <span class="source-label">@EntryOriginLabel(paymentCancellation.EntryOrigin)</span>
@@ -410,12 +412,12 @@
                                     <div class="recent-payment-correction correction-incoming"
                                          data-original-payment-id="@correctionFromOriginal.OriginalPaymentId"
                                          data-replacement-payment-id="@correctionFromOriginal.ReplacementPaymentId">
-                                        <strong>Corrected replacement</strong>
-                                        <span>This payment replaces the original cash entry.</span>
+                                        <strong>@L["Payment.CorrectedReplacement"]</strong>
+                                        <span>@L["Payment.CorrectedReplacementHint"]</span>
                                         <span>@correctionFromOriginal.Reason</span>
-                                        <span>Changed: @ChangedFieldsLabel(correctionFromOriginal.ChangedFields)</span>
+                                        <span>@L["Correction.Changed", ChangedFieldsLabel(correctionFromOriginal.ChangedFields)]</span>
                                         <span>
-                                            @correctionFromOriginal.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC
+                                            @ReceptionDisplayFormatter.DateTime(correctionFromOriginal.RecordedAt)
                                             @if (correctionFromOriginal.EntryOrigin != EntryOrigin.Normal)
                                             {
                                                 <span class="source-label">@EntryOriginLabel(correctionFromOriginal.EntryOrigin)</span>
@@ -429,12 +431,12 @@
                                     <div class="recent-payment-correction correction-outgoing"
                                          data-original-payment-id="@correctionToReplacement.OriginalPaymentId"
                                          data-replacement-payment-id="@correctionToReplacement.ReplacementPaymentId">
-                                        <strong>Replaced payment</strong>
-                                        <span>This original cash entry was replaced by a correction.</span>
+                                        <strong>@L["Payment.Replaced"]</strong>
+                                        <span>@L["Payment.ReplacedHint"]</span>
                                         <span>@correctionToReplacement.Reason</span>
-                                        <span>Changed: @ChangedFieldsLabel(correctionToReplacement.ChangedFields)</span>
+                                        <span>@L["Correction.Changed", ChangedFieldsLabel(correctionToReplacement.ChangedFields)]</span>
                                         <span>
-                                            @correctionToReplacement.RecordedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC
+                                            @ReceptionDisplayFormatter.DateTime(correctionToReplacement.RecordedAt)
                                             @if (correctionToReplacement.EntryOrigin != EntryOrigin.Normal)
                                             {
                                                 <span class="source-label">@EntryOriginLabel(correctionToReplacement.EntryOrigin)</span>
@@ -457,19 +459,19 @@
         }
 
         <nav class="profile-record-links"
-             aria-label="Client records"
+             aria-label="@L["Profile.Records"]"
              data-client-record-links>
             <a class="secondary-link"
                asp-page="/Audit/ClientHistory"
                asp-route-clientId="@profile.ClientId"
                data-client-history-link>
-                Client history
+                @L["Visit.ClientHistory"]
             </a>
             <a class="secondary-link"
                asp-page="/Audit/Timeline"
                asp-route-clientId="@profile.ClientId"
                data-client-audit-link>
-                Audit timeline
+                @L["Visit.AuditTimeline"]
             </a>
         </nav>
 
@@ -486,69 +488,91 @@
 </section>
 
 @functions {
-    private static string WarningLabel(string code)
+    private string WarningLabel(string code)
     {
         return code switch
         {
-            "client_inactive" => "Inactive client",
-            "no_current_card" => "No current card",
-            _ => "Attention",
+            "client_inactive" => L["Warning.ClientInactive.Title"],
+            "no_current_card" => L["Warning.NoCurrentCard.Title"],
+            MembershipWarningCodes.NegativeBalance => L["Warning.NegativeBalance.Title"],
+            MembershipWarningCodes.ExpiredByDate => L["Warning.Expired.Title"],
+            MembershipWarningCodes.ZeroRemaining => L["Warning.ZeroRemaining.Title"],
+            MembershipWarningCodes.EndingSoon => L["Warning.EndingSoon.Title"],
+            MembershipWarningCodes.LowRemaining => L["Warning.LowRemaining.Title"],
+            ClientProfileMembershipWarningCodes.AmbiguousCurrentMembership => L["Warning.AmbiguousMembership.Title"],
+            _ => L["Warning.Attention"],
         };
     }
 
-    private static string VisitKindLabel(VisitKind visitKind)
+    private string WarningMessage(string code)
+    {
+        return code switch
+        {
+            "client_inactive" => L["Warning.ClientInactive.Message"],
+            "no_current_card" => L["Warning.NoCurrentCard.Message"],
+            MembershipWarningCodes.NegativeBalance => L["Warning.NegativeBalance.Message"],
+            MembershipWarningCodes.ExpiredByDate => L["Warning.Expired.Message"],
+            MembershipWarningCodes.ZeroRemaining => L["Warning.ZeroRemaining.Message"],
+            MembershipWarningCodes.EndingSoon => L["Warning.EndingSoon.Message"],
+            MembershipWarningCodes.LowRemaining => L["Warning.LowRemaining.Message"],
+            ClientProfileMembershipWarningCodes.AmbiguousCurrentMembership => L["Warning.AmbiguousMembership.Message"],
+            _ => L["Warning.Generic.Message"],
+        };
+    }
+
+    private string VisitKindLabel(VisitKind visitKind)
     {
         return visitKind switch
         {
-            VisitKind.Membership => "Membership visit",
-            VisitKind.OneOff => "One-off visit",
-            VisitKind.Trial => "Trial visit",
-            _ => "Visit",
+            VisitKind.Membership => L["Visit.Kind.Membership"],
+            VisitKind.OneOff => L["Visit.Kind.OneOff"],
+            VisitKind.Trial => L["Visit.Kind.Trial"],
+            _ => L["Field.Visit"],
         };
     }
 
-    private static string VisitContextLabel(ClientVisitRow visit)
+    private string VisitContextLabel(ClientVisitRow visit)
     {
         return visit.Consumption?.MembershipTypeNameSnapshot
             ?? VisitKindLabel(visit.VisitKind);
     }
 
-    private static string EntryOriginLabel(EntryOrigin entryOrigin)
+    private string EntryOriginLabel(EntryOrigin entryOrigin)
     {
         return entryOrigin switch
         {
-            EntryOrigin.Normal => "Normal",
-            EntryOrigin.ManualBackfill => "Manual backfill",
-            EntryOrigin.PaperFallback => "Paper fallback",
-            EntryOrigin.FutureImport => "Future import",
-            _ => "Unknown source",
+            EntryOrigin.Normal => L["Origin.Normal"],
+            EntryOrigin.ManualBackfill => L["Origin.ManualBackfill"],
+            EntryOrigin.PaperFallback => L["Origin.PaperFallback"],
+            EntryOrigin.FutureImport => L["Origin.FutureImport"],
+            _ => L["Value.UnknownSource"],
         };
     }
 
     private static string MoneyLabel(Money money)
     {
-        return FormattableString.Invariant($"{money.Amount:0.##} {money.Currency}");
+        return ReceptionDisplayFormatter.Money(money);
     }
 
-    private static string PaymentMethodLabel(PaymentMethod method)
+    private string PaymentMethodLabel(PaymentMethod method)
     {
         return method switch
         {
-            PaymentMethod.Cash => "Cash",
-            _ => "Unknown method",
+            PaymentMethod.Cash => L["Payment.Cash"],
+            _ => L["Value.UnknownMethod"],
         };
     }
 
-    private static string PaymentContextLabel(PaymentContext paymentContext)
+    private string PaymentContextLabel(PaymentContext paymentContext)
     {
         return paymentContext switch
         {
-            PaymentContext.MembershipSale => "Membership sale",
-            PaymentContext.OneOff => "One-off payment",
-            PaymentContext.Trial => "Trial payment",
-            PaymentContext.NegativeClosure => "Negative closure",
-            PaymentContext.Other => "Other payment",
-            _ => "Payment",
+            PaymentContext.MembershipSale => L["Payment.Context.MembershipSale"],
+            PaymentContext.OneOff => L["Payment.Context.OneOff"],
+            PaymentContext.Trial => L["Payment.Context.Trial"],
+            PaymentContext.NegativeClosure => L["Payment.Context.NegativeClosure"],
+            PaymentContext.Other => L["Payment.Context.Other"],
+            _ => L["Field.Payment"],
         };
     }
 
@@ -574,15 +598,15 @@
         };
     }
 
-    private static string MembershipStatusLabel(string status)
+    private string MembershipStatusLabel(string status)
     {
         return status switch
         {
-            ClientMembershipSummaryStatusCodes.Active => "Active",
-            ClientMembershipSummaryStatusCodes.Expired => "Expired",
-            ClientMembershipSummaryStatusCodes.Canceled => "Canceled",
-            ClientMembershipSummaryStatusCodes.Corrected => "Corrected",
-            _ => "Unknown",
+            ClientMembershipSummaryStatusCodes.Active => L["Status.Active"],
+            ClientMembershipSummaryStatusCodes.Expired => L["Status.Expired"],
+            ClientMembershipSummaryStatusCodes.Canceled => L["Status.Canceled"],
+            ClientMembershipSummaryStatusCodes.Corrected => L["Status.Corrected"],
+            _ => L["Value.Unknown"],
         };
     }
 
@@ -596,13 +620,13 @@
         };
     }
 
-    private static string ExtensionSourceKindLabel(MembershipExtensionSourceKind sourceKind)
+    private string ExtensionSourceKindLabel(MembershipExtensionSourceKind sourceKind)
     {
         return sourceKind switch
         {
-            MembershipExtensionSourceKind.Freeze => "Freeze",
-            MembershipExtensionSourceKind.NonWorkingDay => "Non-working day",
-            _ => "Unknown source",
+            MembershipExtensionSourceKind.Freeze => L["Field.Freeze"],
+            MembershipExtensionSourceKind.NonWorkingDay => L["Field.NonWorkingDay"],
+            _ => L["Value.UnknownSource"],
         };
     }
 
@@ -633,43 +657,43 @@
         };
     }
 
-    private static string ExtensionSourceStatusLabel(MembershipExtensionSourceStatus status)
+    private string ExtensionSourceStatusLabel(MembershipExtensionSourceStatus status)
     {
         return status switch
         {
-            MembershipExtensionSourceStatus.Active => "Active",
-            MembershipExtensionSourceStatus.Canceled => "Canceled",
-            MembershipExtensionSourceStatus.Corrected => "Corrected",
-            _ => "Unknown",
+            MembershipExtensionSourceStatus.Active => L["Status.Active"],
+            MembershipExtensionSourceStatus.Canceled => L["Status.Canceled"],
+            MembershipExtensionSourceStatus.Corrected => L["Status.Corrected"],
+            _ => L["Value.Unknown"],
         };
     }
 
-    private static string PaymentStatusLabel(ClientPaymentRowStatus status)
+    private string PaymentStatusLabel(ClientPaymentRowStatus status)
     {
         return status switch
         {
-            ClientPaymentRowStatus.Active => "Active",
-            ClientPaymentRowStatus.Canceled => "Canceled",
-            ClientPaymentRowStatus.Replaced => "Replaced",
-            _ => "Unknown",
+            ClientPaymentRowStatus.Active => L["Status.Active"],
+            ClientPaymentRowStatus.Canceled => L["Status.Canceled"],
+            ClientPaymentRowStatus.Replaced => L["Status.Replaced"],
+            _ => L["Value.Unknown"],
         };
     }
 
-    private static string ChangedFieldsLabel(IReadOnlyList<string> changedFields)
+    private string ChangedFieldsLabel(IReadOnlyList<string> changedFields)
     {
         return string.Join(", ", changedFields.Select(ChangedFieldLabel));
     }
 
-    private static string ChangedFieldLabel(string changedField)
+    private string ChangedFieldLabel(string changedField)
     {
         return changedField switch
         {
-            "amount" => "amount",
-            "occurred_at" => "occurred time",
-            "payment_context" => "context",
-            "membership_id" => "membership",
-            "comment" => "comment",
-            _ => changedField.Replace('_', ' '),
+            "amount" => L["Field.Amount"],
+            "occurred_at" => L["Field.OccurredTime"],
+            "payment_context" => L["Field.Context"],
+            "membership_id" => L["Field.Membership"],
+            "comment" => L["Field.Comment"],
+            _ => L["Value.Unknown"],
         };
     }
 }

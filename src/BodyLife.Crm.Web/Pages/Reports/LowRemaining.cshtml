@@ -1,24 +1,22 @@
 @page
 @model BodyLife.Crm.Web.Pages.Reports.LowRemainingModel
+@using BodyLife.Crm.Web.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<BodyLife.Crm.Web.Localization.Reports> L
+@inject IStringLocalizer<BodyLife.Crm.Web.Localization.Shared> S
 @{
-    ViewData["Title"] = "Memberships low on visits";
+    ViewData["Title"] = L["Low.Title"];
     var reportPage = Model.ReportPage;
-    var errorMessage = Model.LoadError ?? Model.Result?.ErrorMessage;
+    var errorMessage = Model.LoadError;
 }
 
 <main class="page-shell report-page" data-low-remaining-report-page>
     <section class="report-layout" aria-labelledby="low-remaining-title">
         <header class="report-header">
             <div>
-                <p class="eyebrow">Reports</p>
-                <h1 id="low-remaining-title">Memberships low on visits</h1>
+                <p class="eyebrow">@L["Navigation.Reports"]</p><h1 id="low-remaining-title">@L["Low.Title"]</h1>
             </div>
-            <nav class="report-header-actions" aria-label="Report navigation">
-                <a class="secondary-link" asp-page="/Reports/Daily">Daily report</a>
-                <a class="secondary-link" asp-page="/Reports/EndingSoon">Ending soon</a>
-                <a class="secondary-link" asp-page="/Reports/NegativeClients">Negative clients</a>
-                <a class="secondary-link" asp-page="/Reports/InactiveClients">Inactive clients</a>
-                <a class="secondary-link" asp-page="/Reception/Index">Reception</a>
+            <nav class="report-header-actions" aria-label="@L["Navigation"]"><a class="secondary-link" asp-page="/Reports/Daily">@L["Daily"]</a><a class="secondary-link" asp-page="/Reports/EndingSoon">@L["Ending"]</a><a class="secondary-link" asp-page="/Reports/NegativeClients">@L["Negative"]</a><a class="secondary-link" asp-page="/Reports/InactiveClients">@L["Inactive"]</a><a class="secondary-link" asp-page="/Reception/Index">@L["Navigation.Reception"]</a>
             </nav>
         </header>
 
@@ -27,7 +25,7 @@
               asp-page="/Reports/LowRemaining"
               data-busy-form>
             <div class="report-date-field">
-                <label for="low-remaining-as-of">As-of date</label>
+                <label for="low-remaining-as-of">@L["AsOf"]</label>
                 <input id="low-remaining-as-of"
                        name="asOf"
                        type="date"
@@ -35,7 +33,7 @@
                        required />
             </div>
             <div class="report-threshold-field">
-                <label for="low-remaining-threshold">Remaining visits at most</label>
+                <label for="low-remaining-threshold">@L["RemainingAtMost"]</label>
                 <input id="low-remaining-threshold"
                        name="remaining"
                        type="number"
@@ -43,44 +41,39 @@
                        min="0"
                        required />
             </div>
-            <button type="submit" data-busy-text="Loading...">Load report</button>
+            <button type="submit" data-busy-text="@L["Loading"]">@L["Load"]</button>
         </form>
 
         @if (!string.IsNullOrWhiteSpace(errorMessage))
         {
             <div class="warning-block warning-danger report-error" role="alert">
-                <strong>Report unavailable</strong>
+                <strong>@L["Unavailable"]</strong>
                 <span>@errorMessage</span>
             </div>
         }
         else if (reportPage is not null)
         {
-            <div class="report-list-context" aria-label="Low-remaining report selection">
+            <div class="report-list-context" aria-label="@L["Low.Selection"]">
                 <span>
-                    <strong>@reportPage.AsOfDate.ToString("yyyy-MM-dd")</strong>
-                    as-of date
+                    <strong>@ReportsPresentation.Date(reportPage.AsOfDate)</strong> @L["AsOf"]
                 </span>
                 <span>
                     <strong>@reportPage.RemainingVisitsThreshold</strong>
-                    remaining-visits threshold
+                    @L["RemainingAtMost"]
                 </span>
-                <span>
-                    <strong>@reportPage.Items.Count</strong>
-                    memberships shown
-                </span>
+                <span>@WebPluralizer.Memberships(S, reportPage.Items.Count)</span>
             </div>
 
             <section class="report-source-section" aria-labelledby="low-remaining-results-title">
                 <header class="report-section-header">
                     <div>
-                        <p class="eyebrow">Canonical Memberships state</p>
-                        <h2 id="low-remaining-results-title">Low remaining visits</h2>
+                        <p class="eyebrow">@L["CanonicalMemberships"]</p><h2 id="low-remaining-results-title">@L["Low"]</h2>
                     </div>
                 </header>
 
                 @if (reportPage.Items.Count == 0)
                 {
-                    <p class="empty-state">No active memberships are at or below this threshold.</p>
+                    <p class="empty-state">@L["Low.Empty"]</p>
                 }
                 else
                 {
@@ -108,40 +101,38 @@
 
                                 <dl class="report-row-meta report-membership-meta">
                                     <div>
-                                        <dt>Phone</dt>
-                                        <dd>@(row.ClientPhone ?? "No phone")</dd>
+                                        <dt>@L["Client.Phone"]</dt><dd>@(row.ClientPhone ?? L["NoPhone"])</dd>
                                     </div>
                                     <div>
-                                        <dt>Visit limit</dt>
+                                        <dt>@L["VisitLimit"]</dt>
                                         <dd>@row.VisitsLimitSnapshot</dd>
                                     </div>
                                     <div>
-                                        <dt>Counted visits</dt>
+                                        <dt>@L["CountedVisits"]</dt>
                                         <dd>@row.CountedVisits</dd>
                                     </div>
                                     <div>
-                                        <dt>Remaining visits</dt>
+                                        <dt>@L["RemainingVisits"]</dt>
                                         <dd>@row.RemainingVisits</dd>
                                     </div>
                                     <div>
-                                        <dt>Last counted visit</dt>
+                                        <dt>@L["LastCountedVisit"]</dt>
                                         <dd>@FormatLastVisit(row.LastCountedVisitAt)</dd>
                                     </div>
                                     <div>
-                                        <dt>Effective end</dt>
-                                        <dd>@row.EffectiveEndDate.ToString("yyyy-MM-dd")</dd>
+                                        <dt>@L["EffectiveEnd"]</dt><dd>@ReportsPresentation.Date(row.EffectiveEndDate)</dd>
                                     </div>
                                 </dl>
 
                                 @if (row.Warnings.Count > 0)
                                 {
                                     <ul class="warning-chip-list report-warning-list"
-                                        aria-label="Membership warnings">
+                                        aria-label="@L["Warnings"]">
                                         @foreach (var warning in row.Warnings)
                                         {
                                             <li class="@WarningClass(warning.Severity)"
                                                 data-membership-warning="@warning.Code">
-                                                @warning.Message
+                                                @ReportsPresentation.WarningMessage(L, warning.Code)
                                             </li>
                                         }
                                     </ul>
@@ -152,7 +143,7 @@
                                        asp-page="/Reception/Index"
                                        asp-route-clientId="@row.ClientId"
                                        asp-fragment="membership-panel-title">
-                                        Open client
+                                        @L["OpenClient"]
                                     </a>
                                     @if (row.HasExtensionExplanation)
                                     {
@@ -160,7 +151,7 @@
                                            asp-page="/Reception/Index"
                                            asp-route-clientId="@row.ClientId"
                                            asp-fragment="membership-extension-history-title">
-                                            Extension details
+                                            @L["ExtensionDetails"]
                                         </a>
                                     }
                                 </footer>
@@ -171,7 +162,7 @@
 
                 @if (Model.PreviousOffset is not null || reportPage.NextOffset is not null)
                 {
-                    <nav class="report-pagination" aria-label="Low-remaining result pages">
+                    <nav class="report-pagination" aria-label="@L["Low.Pages"]">
                         <span class="report-pagination-slot">
                             @if (Model.PreviousOffset is { } previousOffset)
                             {
@@ -180,11 +171,11 @@
                                    asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
                                    asp-route-remaining="@reportPage.RemainingVisitsThreshold"
                                    asp-route-offset="@previousOffset">
-                                    Previous
+                                    @L["Pagination.Previous"]
                                 </a>
                             }
                         </span>
-                        <span class="result-count">Page @Model.CurrentPageNumber</span>
+                        <span class="result-count">@string.Format(L["Page"], Model.CurrentPageNumber)</span>
                         <span class="report-pagination-slot report-pagination-next">
                             @if (reportPage.NextOffset is { } nextOffset)
                             {
@@ -193,7 +184,7 @@
                                    asp-route-asOf="@reportPage.AsOfDate.ToString("yyyy-MM-dd")"
                                    asp-route-remaining="@reportPage.RemainingVisitsThreshold"
                                    asp-route-offset="@nextOffset">
-                                    Next
+                                    @L["Pagination.Next"]
                                 </a>
                             }
                         </span>
@@ -205,22 +196,19 @@
 </main>
 
 @functions {
-    private static string RemainingVisitsLabel(int remainingVisits)
+    private string RemainingVisitsLabel(int remainingVisits)
     {
         return remainingVisits switch
         {
-            1 => "1 visit left",
-            _ => $"{remainingVisits} visits left",
+            _ => WebPluralizer.Visits(S, remainingVisits),
         };
     }
 
-    private static string StatusLabel(int remainingVisits)
+    private string StatusLabel(int remainingVisits)
     {
         return remainingVisits switch
         {
-            < 0 => "Negative",
-            0 => "No visits",
-            _ => "Low remaining",
+            < 0 => L["Status.Negative"], 0 => L["Status.NoVisits"], _ => L["Status.Low"],
         };
     }
 
@@ -231,11 +219,10 @@
             : "status-corrected";
     }
 
-    private static string FormatLastVisit(DateTimeOffset? lastCountedVisitAt)
+    private string FormatLastVisit(DateTimeOffset? lastCountedVisitAt)
     {
         return lastCountedVisitAt is { } timestamp
-            ? $"{timestamp.ToUniversalTime():yyyy-MM-dd HH:mm} UTC"
-            : "No counted visits";
+            ? ReportsPresentation.Timestamp(timestamp) : L["NoCountedVisits"];
     }
 
     private static string WarningClass(MembershipWarningSeverity severity)

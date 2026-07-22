@@ -1,8 +1,10 @@
 using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.Web.Localization;
 using BodyLife.Crm.Web.Operations;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,8 +18,11 @@ builder.Logging.AddJsonConsole(options =>
 });
 
 builder.Services.AddBodyLifePersistence(builder.Configuration);
+builder.Services.AddBodyLifeLocalization();
 builder.Services.AddBodyLifeRequestContext();
 builder.Services.AddScoped<BodyLifeCookieAuthenticationEvents>();
+builder.Services.Configure<MvcOptions>(options =>
+    options.ModelBinderProviders.Insert(0, new LocalizedDecimalModelBinderProvider()));
 
 builder.Services.AddRazorPages(options =>
 {
@@ -88,6 +93,7 @@ app.UseMiddleware<RequestCorrelationMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseRequestLocalization();
 app.UseMiddleware<RequestOutcomeLoggingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
