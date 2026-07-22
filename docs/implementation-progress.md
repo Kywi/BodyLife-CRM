@@ -10076,6 +10076,10 @@ Validation:
   could not rebuild on this filesystem (`Errno 95: Operation not supported`).
   Its generated cache-index change was restored, so no code graph update is
   claimed.
+- `graphify . --update` detected 110 changed code files, four changed
+  project-knowledge documents and one deletion, but stopped before writing a
+  semantic update because no Graphify LLM API backend is configured. It
+  produced no tracked semantic graph change.
 
 Commit:
 
@@ -12072,3 +12076,95 @@ Stop point:
 
 - Milestone 10 is complete and validated. Per the roadmap stop marker and the
   user request, no Milestone 11 work is started in this step.
+
+## Step 187 - Completed bilingual UI hardening
+
+Status: completed. This is a separate post-Milestone 10 hardening step.
+Milestone 11 was not started.
+
+Plan alignment:
+
+- Added only Web-layer localization and presentation behavior for `uk-UA`
+  (default) and `en-US` (alternative); the accepted stack and ADR package are
+  unchanged.
+- Kept business rules, Membership calculations, command authorization,
+  idempotency, audit, canonical rereads, persistence mappings and migrations
+  unchanged.
+- Completed the requested UI audit in
+  `docs/ui-localization-inventory.md`, including every required surface,
+  automated evidence, visual evidence and intentional non-localized values.
+
+Completed:
+
+- Added seven paired semantic resource families: `Shared`, `Authentication`,
+  `Reception`, `Owner`, `Reports`, `Audit` and `Validation`. English text is
+  not used as a resource key, and executable tests enforce exact key parity,
+  placeholder parity and absence of missing-resource fallback.
+- Configured ASP.NET Core request localization with exact supported cultures,
+  `uk-UA` default, cookie then `Accept-Language` provider order, no parent
+  fallback and middleware placement before Razor Pages. Localization
+  dependencies remain in `BodyLife.Crm.Web`.
+- Added the touch-friendly, no-JavaScript language selector to the shared
+  layout, including Login. Its antiforgery-protected POST accepts only the two
+  supported cultures, persists the standard culture cookie and redirects only
+  to a local URL while retaining the current page and htmx culture.
+- Localized Shared/authentication pages; the full Reception search, profile,
+  warning and mutation experience; Membership Types, Staff Accounts and
+  Non-Working Days; all five reports; Audit Timeline; Client History; and all
+  server-rendered htmx fragments, accessibility labels, busy/confirmation
+  text, empty states and validation output.
+- Made the Audit and Client History Web presenters culture-aware without
+  weakening typed fail-closed parsing. All 26 canonical audit actions retain
+  readable localized titles, fact labels and explanations.
+- Replaced user-visible raw Application/query messages with stable Web-layer
+  status/code/field mappings and localized fail-closed fallbacks. The
+  Non-Working-Day confirmation adapter explicitly preserves only its own
+  localized `ValidationFailed` and `ReasonRequired` messages and rejects other
+  message sources.
+- Added culture-aware display formatting for dates, timestamps, decimals and
+  money while preserving ISO/invariant form, route, token, identifier and raw
+  payload values. The decimal binder accepts canonical dot transport in both
+  cultures and native comma transport in `uk-UA` without changing Money
+  semantics.
+- Added Web-only Ukrainian one/few/many plural selection and pinned 1, 2, 5
+  and 21. Updated wrapping and selector styles so longer bilingual controls,
+  tables and warnings remain touch-friendly without horizontal overflow.
+
+Validation:
+
+- Focused Non-Working-Day adapter tests passed 5/5 in both cultures, including
+  fail-closed rejection of an untrusted error code.
+- The focused localization Playwright suite passed 9/9. It covers default and
+  unsupported culture fallback, antiforgery and local redirects, cookie
+  persistence, `uk-UA -> en-US -> uk-UA`, htmx inheritance, independent
+  browser contexts, representative translations, bilingual canonical Payment
+  submission and the complete screenshot matrix.
+- The bilingual visual matrix produced 14 inspected full-page captures:
+  Owner/tablet 1024x768 Reception, Membership Types, Daily Report and Audit in
+  both cultures, plus named-Admin/phone 390x844 Reception, Daily Report and
+  Audit in both cultures. Every capture passed the horizontal-overflow check;
+  critical actions, warnings, wrapping and touch controls remained visible.
+- An independent read-only risk review found no remaining correctness,
+  security, data, ADR or localization blocker after the two focused fixes.
+- A clean final `./scripts/validate.sh` completed with Release build/analyzers
+  at 0 warnings and 0 errors. All suites passed with no failures or skips:
+  `BodyLife.Crm.Tests` 387/387, `BodyLife.Crm.Web.Tests` 278/278,
+  `BodyLife.Crm.Infrastructure.Tests` 525/525 and
+  `BodyLife.Crm.Ui.SmokeTests` 124/124 (1,314 total).
+- The migration gate completed through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`; the EF Core
+  model-drift check reported no schema changes since the latest migration.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+
+Commit:
+
+- `feat(ui): localize the full CRM experience`.
+- `docs(ui): record bilingual localization coverage`.
+
+Stop point:
+
+- Bilingual UI hardening is complete and validated. Milestone 10 remains
+  complete; begin Milestone 11 only under a separate explicit request.
