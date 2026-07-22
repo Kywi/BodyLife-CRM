@@ -11659,3 +11659,69 @@ Next recommended step:
   identity, optional current-card assignment and duplicate-warning
   acknowledgements without exposing unnecessary personal data outside the
   existing Owner/Admin audit scope.
+
+## Step 181 - Created Client audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Closed only the planned `client.created` audit-noise gap. The remaining four
+  raw-only creation events and the Milestone 10 acceptance review remain in
+  scope; Milestone 11 was not started.
+- Implemented the audit-matrix explanation for the stored reception-facing
+  identity, optional current-card assignment and accepted duplicate warnings.
+- Kept normalized name, phone and card search fields out of the readable
+  explanation and out of the production business-audit payload.
+
+Completed:
+
+- Added a fail-closed `client.created` Timeline explanation that requires an
+  empty before-summary, a non-empty Client identity, supported operational
+  status, internally consistent optional card assignment, and exact duplicate
+  acknowledgement counts and matched-Client references.
+- Shows the Client id, display name, optional phone/comment/current card, card
+  assignment id, operational status and accepted duplicate-warning details to
+  the existing Owner/Admin audit audience.
+- Added six presenter cases covering a complete creation, absent optional
+  fields, card-reference mismatch, acknowledgement-reference mismatch,
+  non-empty before state and wrong entity type.
+- Strengthened the real PostgreSQL `CreateClient` workflow test to pin the
+  empty before-summary and complete three-reference/eight-field production
+  audit payload.
+- Added an isolated production-shaped Timeline seed plus Owner/tablet and
+  named-Admin/phone Playwright coverage for readable facts, collapsed raw
+  envelope, touch target, omitted normalization fields and viewport fit.
+- Kept Client command behavior, search normalization, Razor markup, CSS,
+  authorization, EF model and migrations unchanged.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 87/87 and the
+  strengthened real `CommandCommitsCardAcknowledgementsAuditAndIdempotencyAtomically`
+  PostgreSQL test passed 1/1.
+- Focused created-Client Playwright coverage passed 2/2 and the complete
+  `AuditTimelineSmokeTests` regression passed 28/28 with no skipped tests.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports with no overlap or horizontal overflow.
+- The repository-wide `./scripts/validate.sh` gate is intentionally deferred to
+  the requested final Milestone 10 acceptance review after all remaining
+  raw-only events are closed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this Step 181 progress update but
+  stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain client creation`.
+
+Next recommended step:
+
+- Continue the audit-noise review with `membership_type.created`. Explain the
+  immutable catalog values established at creation while keeping issued
+  Membership snapshots and later catalog edits as separate audit facts.

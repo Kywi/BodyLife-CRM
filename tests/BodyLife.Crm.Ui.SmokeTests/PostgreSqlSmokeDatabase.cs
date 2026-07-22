@@ -1194,6 +1194,19 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             MembershipState = freezeAfterMembership,
         };
 
+        const string createdClientDisplayName = "Melnyk Oksana Serhiivna";
+        const string createdClientPhone = "+38 (067) 444-22-11";
+        const string createdClientComment = "Created at reception";
+        const string createdClientCardNumber = "BL-CREATED-2201";
+        const string createdClientAcknowledgementReason =
+            "Family phone confirmed at reception";
+        var clientCreationAuditEntryId = Guid.NewGuid();
+        var createdClientId = Guid.NewGuid();
+        var createdClientCardAssignmentId = Guid.NewGuid();
+        var createdClientAcknowledgementId = Guid.NewGuid();
+        var createdClientMatchedClientId = Guid.NewGuid();
+        var clientCreatedAt = recordedBase.AddHours(8).AddMinutes(30);
+
         const string originalClientDisplayName = "Koval Iryna";
         const string updatedClientDisplayName = "Kovalchuk Iryna Mykolaivna";
         const string originalClientPhone = "067 111 22 33";
@@ -1693,6 +1706,51 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 freezeAfter,
                 ChangedAfterClose: false),
             new(
+                clientCreationAuditEntryId,
+                "client.created",
+                "client",
+                createdClientId,
+                new
+                {
+                    CardAssignmentId = (Guid?)createdClientCardAssignmentId,
+                    DuplicateWarningAcknowledgementIds = new[]
+                    {
+                        createdClientAcknowledgementId,
+                    },
+                    MatchedClientIds = new[] { createdClientMatchedClientId },
+                },
+                sharedAdminAccountId,
+                "shared_reception_admin",
+                "admin",
+                sharedSessionId,
+                sharedDeviceLabel,
+                clientCreatedAt,
+                clientCreatedAt,
+                "normal",
+                Reason: null,
+                Comment: createdClientComment,
+                BeforeSummary: new { },
+                AfterSummary: new
+                {
+                    Surname = "Melnyk",
+                    Name = "Oksana",
+                    Patronymic = "Serhiivna",
+                    Phone = createdClientPhone,
+                    OperationalStatus = "active",
+                    Comment = createdClientComment,
+                    CardNumber = createdClientCardNumber,
+                    DuplicateWarningAcknowledgements = new[]
+                    {
+                        new
+                        {
+                            WarningType = "duplicate_phone",
+                            MatchedClientId = createdClientMatchedClientId,
+                            Reason = createdClientAcknowledgementReason,
+                        },
+                    },
+                },
+                ChangedAfterClose: false),
+            new(
                 clientUpdateAuditEntryId,
                 "client.updated",
                 "client",
@@ -1980,6 +2038,16 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     freezeAfterMembership.ExtensionDays,
                     freezeBeforeMembership.EffectiveEndDate,
                     freezeAfterMembership.EffectiveEndDate),
+                ClientCreation: new ClientCreationAuditExplanationSmokeScenario(
+                    clientCreationAuditEntryId,
+                    createdClientId,
+                    createdClientCardAssignmentId,
+                    createdClientDisplayName,
+                    createdClientPhone,
+                    createdClientComment,
+                    createdClientCardNumber,
+                    createdClientMatchedClientId,
+                    createdClientAcknowledgementReason),
                 ClientAndCards: new ClientCardAuditExplanationSmokeScenario(
                     clientChangeClientId,
                     clientUpdateAuditEntryId,

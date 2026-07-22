@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
@@ -177,10 +178,63 @@ public sealed class PostgreSqlCreateClientCommandTests
         Assert.Equal(command.Envelope.RequestCorrelationId.Value, audit.RequestCorrelationId);
         Assert.Equal("normal", audit.EntryOrigin);
         Assert.Equal(command.Envelope.IdempotencyKey, audit.IdempotencyKey);
-        Assert.Contains("bl - 1001", audit.AfterSummary, StringComparison.Ordinal);
-        Assert.Contains("duplicate_phone", audit.AfterSummary, StringComparison.Ordinal);
-        Assert.Contains("similar_name", audit.AfterSummary, StringComparison.Ordinal);
-        Assert.Contains(matchedClientId.ToString(), audit.RelatedEntityRefs, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("{}", audit.BeforeSummary);
+        using (var related = JsonDocument.Parse(audit.RelatedEntityRefs))
+        {
+            Assert.Equal(3, related.RootElement.EnumerateObject().Count());
+            Assert.NotEqual(
+                Guid.Empty,
+                related.RootElement.GetProperty("cardAssignmentId").GetGuid());
+            Assert.Equal(
+                2,
+                related.RootElement
+                    .GetProperty("duplicateWarningAcknowledgementIds")
+                    .GetArrayLength());
+            Assert.Equal(
+                [matchedClientId],
+                related.RootElement
+                    .GetProperty("matchedClientIds")
+                    .EnumerateArray()
+                    .Select(item => item.GetGuid())
+                    .ToArray());
+        }
+
+        using (var after = JsonDocument.Parse(audit.AfterSummary))
+        {
+            Assert.Equal(8, after.RootElement.EnumerateObject().Count());
+            Assert.Equal("іваненко", after.RootElement.GetProperty("surname").GetString());
+            Assert.Equal("олексій", after.RootElement.GetProperty("name").GetString());
+            Assert.Equal(
+                "петрович",
+                after.RootElement.GetProperty("patronymic").GetString());
+            Assert.Equal(
+                "+38 067 123 45 67",
+                after.RootElement.GetProperty("phone").GetString());
+            Assert.Equal(
+                "active",
+                after.RootElement.GetProperty("operationalStatus").GetString());
+            Assert.Equal(
+                "Reception note",
+                after.RootElement.GetProperty("comment").GetString());
+            Assert.Equal(
+                "bl - 1001",
+                after.RootElement.GetProperty("cardNumber").GetString());
+            var acknowledgements = after.RootElement
+                .GetProperty("duplicateWarningAcknowledgements")
+                .EnumerateArray()
+                .ToArray();
+            Assert.Equal(2, acknowledgements.Length);
+            Assert.Equal(
+                ["duplicate_phone", "similar_name"],
+                acknowledgements
+                    .Select(item => item.GetProperty("warningType").GetString()!)
+                    .ToArray());
+            Assert.All(
+                acknowledgements,
+                item => Assert.Equal(
+                    matchedClientId,
+                    item.GetProperty("matchedClientId").GetGuid()));
+        }
 
         var idempotentClientId = await database.ExecuteScalarAsync<Guid>(
             "select primary_entity_id from bodylife.command_idempotency_keys");
@@ -744,6 +798,7 @@ public sealed class PostgreSqlCreateClientCommandTests
                    entry_origin,
                    idempotency_key,
                    related_entity_refs::text,
+                   before_summary::text,
                    after_summary::text
             from bodylife.business_audit_entries
             where id = @id
@@ -767,7 +822,8 @@ public sealed class PostgreSqlCreateClientCommandTests
             reader.GetString(12),
             reader.IsDBNull(13) ? null : reader.GetString(13),
             reader.GetString(14),
-            reader.GetString(15));
+            reader.GetString(15),
+            reader.GetString(16));
     }
 
     private static Task<long> CountRowsAsync(
@@ -846,6 +902,7 @@ public sealed class PostgreSqlCreateClientCommandTests
         string EntryOrigin,
         string? IdempotencyKey,
         string RelatedEntityRefs,
+        string BeforeSummary,
         string AfterSummary);
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider

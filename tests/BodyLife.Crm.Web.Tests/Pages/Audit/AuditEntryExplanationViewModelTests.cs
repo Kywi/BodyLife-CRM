@@ -1244,6 +1244,207 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void ClientCreationShowsIdentityCardAndDuplicateAcknowledgements()
+    {
+        var clientId = Guid.NewGuid();
+        var cardAssignmentId = Guid.NewGuid();
+        var matchedClientId = Guid.NewGuid();
+        var acknowledgementIds = new[] { Guid.NewGuid(), Guid.NewGuid() };
+        var after = new
+        {
+            Surname = "Kovalchuk",
+            Name = "Iryna",
+            Patronymic = "Mykolaivna",
+            Phone = "+38 (067) 765-43-21",
+            OperationalStatus = "active",
+            Comment = "Created at reception",
+            CardNumber = "BL-2201",
+            DuplicateWarningAcknowledgements = new[]
+            {
+                new
+                {
+                    WarningType = "duplicate_phone",
+                    MatchedClientId = matchedClientId,
+                    Reason = "Family phone confirmed",
+                },
+                new
+                {
+                    WarningType = "similar_name",
+                    MatchedClientId = matchedClientId,
+                    Reason = "Identity checked",
+                },
+            },
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "client.created",
+                    AuditTimelineEntityType.Client,
+                    clientId,
+                    new { },
+                    after,
+                    related: new
+                    {
+                        CardAssignmentId = (Guid?)cardAssignmentId,
+                        DuplicateWarningAcknowledgementIds = acknowledgementIds,
+                        MatchedClientIds = new[] { matchedClientId },
+                    })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("client-created", explanation.Kind);
+        Assert.Equal("Client profile created", explanation.Title);
+        Assert.Equal("Not present", FactValue(explanation.BeforeFacts, "Client"));
+        Assert.Equal(
+            clientId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Client"));
+        Assert.Equal(
+            "Kovalchuk Iryna Mykolaivna",
+            FactValue(explanation.AfterFacts, "Name"));
+        Assert.Equal("BL-2201", FactValue(explanation.AfterFacts, "Current card"));
+        Assert.Equal(
+            cardAssignmentId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Card assignment"));
+        Assert.Equal("2", FactValue(explanation.AfterFacts, "Warnings acknowledged"));
+        Assert.Contains(
+            $"Duplicate phone for Client {matchedClientId.ToString("N")[..8]}: " +
+            "Family phone confirmed",
+            FactValue(explanation.AfterFacts, "Acknowledgement details"),
+            StringComparison.Ordinal);
+        Assert.Contains("Search-normalization fields", explanation.Narrative);
+    }
+
+    [Fact]
+    public void ClientCreationWithoutOptionalFieldsDoesNotInventCardOrWarnings()
+    {
+        var clientId = Guid.NewGuid();
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "client.created",
+                    AuditTimelineEntityType.Client,
+                    clientId,
+                    new { },
+                    new
+                    {
+                        Surname = "Melnyk",
+                        Name = "Oksana",
+                        Patronymic = (string?)null,
+                        Phone = (string?)null,
+                        OperationalStatus = "active",
+                        Comment = (string?)null,
+                        CardNumber = (string?)null,
+                        DuplicateWarningAcknowledgements = Array.Empty<object>(),
+                    },
+                    related: new
+                    {
+                        CardAssignmentId = (Guid?)null,
+                        DuplicateWarningAcknowledgementIds = Array.Empty<Guid>(),
+                        MatchedClientIds = Array.Empty<Guid>(),
+                    })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("Melnyk Oksana", FactValue(explanation.AfterFacts, "Name"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Phone"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Current card"));
+        Assert.Equal("None", FactValue(explanation.AfterFacts, "Card assignment"));
+        Assert.Equal("0", FactValue(explanation.AfterFacts, "Warnings acknowledged"));
+        Assert.DoesNotContain(
+            explanation.AfterFacts,
+            fact => fact.Label == "Acknowledgement details");
+    }
+
+    [Fact]
+    public void ClientCreationWithMismatchedCardReferenceFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "client.created",
+                    AuditTimelineEntityType.Client,
+                    Guid.NewGuid(),
+                    new { },
+                    new
+                    {
+                        Surname = "Melnyk",
+                        Name = "Oksana",
+                        Patronymic = (string?)null,
+                        Phone = (string?)null,
+                        OperationalStatus = "active",
+                        Comment = (string?)null,
+                        CardNumber = (string?)null,
+                        DuplicateWarningAcknowledgements = Array.Empty<object>(),
+                    },
+                    related: new
+                    {
+                        CardAssignmentId = (Guid?)Guid.NewGuid(),
+                        DuplicateWarningAcknowledgementIds = Array.Empty<Guid>(),
+                        MatchedClientIds = Array.Empty<Guid>(),
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void ClientCreationWithMismatchedAcknowledgementReferencesFailsClosed()
+    {
+        var matchedClientId = Guid.NewGuid();
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "client.created",
+                    AuditTimelineEntityType.Client,
+                    Guid.NewGuid(),
+                    new { },
+                    new
+                    {
+                        Surname = "Melnyk",
+                        Name = "Oksana",
+                        Patronymic = (string?)null,
+                        Phone = "067 123 45 67",
+                        OperationalStatus = "active",
+                        Comment = (string?)null,
+                        CardNumber = (string?)null,
+                        DuplicateWarningAcknowledgements = new[]
+                        {
+                            new
+                            {
+                                WarningType = "duplicate_phone",
+                                MatchedClientId = matchedClientId,
+                                Reason = "Confirmed",
+                            },
+                        },
+                    },
+                    related: new
+                    {
+                        CardAssignmentId = (Guid?)null,
+                        DuplicateWarningAcknowledgementIds = Array.Empty<Guid>(),
+                        MatchedClientIds = new[] { matchedClientId },
+                    })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void ClientCreationWithPreExistingSummaryFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "client.created",
+                    AuditTimelineEntityType.Client,
+                    Guid.NewGuid(),
+                    new { Status = "existing" },
+                    new { },
+                    related: new { })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void ClientUpdateShowsStoredProfileChangesAndDuplicateAcknowledgement()
     {
         var clientId = Guid.NewGuid();
@@ -1897,6 +2098,7 @@ public sealed class AuditEntryExplanationViewModelTests
 
     [Theory]
     [InlineData("client.updated", AuditTimelineEntityType.Payment)]
+    [InlineData("client.created", AuditTimelineEntityType.Payment)]
     [InlineData("card.assigned", AuditTimelineEntityType.Payment)]
     [InlineData("card.changed", AuditTimelineEntityType.Payment)]
     [InlineData("card.cleared", AuditTimelineEntityType.Payment)]
@@ -1954,7 +2156,7 @@ public sealed class AuditEntryExplanationViewModelTests
     {
         Assert.Null(AuditEntryExplanationViewModel.Create(
             Entry(
-                "client.created",
+                "client.unknown",
                 AuditTimelineEntityType.Client,
                 Guid.NewGuid(),
                 new { },

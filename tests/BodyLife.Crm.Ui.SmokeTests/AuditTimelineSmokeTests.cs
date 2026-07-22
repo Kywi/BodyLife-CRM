@@ -36,6 +36,161 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
     [Theory]
     [InlineData("owner-tablet", 1024, 768, true)]
     [InlineData("admin-phone", 390, 844, false)]
+    public async Task CreatedClientShowsIdentityCardAndAcceptedDuplicateWarning(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var client = scenario.Explanations.ClientCreation;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} created Client audit smoke");
+
+            var explanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "Client",
+                "client.created",
+                client.AuditEntryId,
+                "client-created",
+                viewportName,
+                entityId: client.ClientId);
+            await ExpectVisibleAsync(
+                explanation.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Client profile created", Exact = true }),
+                viewportName,
+                "created Client explanation title");
+            Assert.Equal(
+                "Not present",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before creation",
+                    "Client"));
+            Assert.Equal(
+                "None",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before creation",
+                    "Current card"));
+            Assert.Equal(
+                "0",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before creation",
+                    "Warnings acknowledged"));
+            Assert.Equal(
+                client.ClientId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created profile",
+                    "Client"));
+            Assert.Equal(
+                client.DisplayName,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created profile",
+                    "Name"));
+            Assert.Equal(
+                client.Phone,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created profile",
+                    "Phone"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created profile",
+                    "Operational status"));
+            Assert.Equal(
+                client.Comment,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created profile",
+                    "Comment"));
+            Assert.Equal(
+                client.CardNumber,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created profile",
+                    "Current card"));
+            Assert.Equal(
+                client.CardAssignmentId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created profile",
+                    "Card assignment"));
+            Assert.Equal(
+                "1",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created profile",
+                    "Warnings acknowledged"));
+            Assert.Equal(
+                $"Duplicate phone for Client {client.MatchedClientId.ToString("N")[..8]}: " +
+                client.AcknowledgementReason,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created profile",
+                    "Acknowledgement details"));
+            await ExpectVisibleAsync(
+                explanation.GetByText("Client profile", new() { Exact = true }),
+                viewportName,
+                "created Client changed field");
+
+            var envelope = explanation
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "created Client audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "created Client raw envelope");
+            var envelopeText = await envelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains(
+                "duplicateWarningAcknowledgements",
+                envelopeText,
+                StringComparison.Ordinal);
+            Assert.DoesNotContain("normalizedFullName", envelopeText, StringComparison.Ordinal);
+            Assert.DoesNotContain("phoneNormalized", envelopeText, StringComparison.Ordinal);
+            Assert.DoesNotContain("cardNumberNormalized", envelopeText, StringComparison.Ordinal);
+            await AssertFitsViewportAsync(page, viewportName, "created Client explanation");
+            await CaptureVisualAsync(page, viewportName, "client-created-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
     public async Task CreatedPaymentShowsStoredCashSourceContext(
         string viewportName,
         int width,

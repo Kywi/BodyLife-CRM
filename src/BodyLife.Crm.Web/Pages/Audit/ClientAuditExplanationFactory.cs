@@ -8,6 +8,89 @@ internal static class ClientAuditExplanationFactory
     private static readonly JsonSerializerOptions AuditJsonOptions =
         new(JsonSerializerDefaults.Web);
 
+    internal static AuditEntryExplanationViewModel CreateClientCreation(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        if (before.ValueKind != JsonValueKind.Object
+            || before.EnumerateObject().Any()
+            || !related.TryGetProperty("cardAssignmentId", out _)
+            || !after.TryGetProperty("patronymic", out _)
+            || !after.TryGetProperty("phone", out _)
+            || !after.TryGetProperty("comment", out _)
+            || !after.TryGetProperty("cardNumber", out _))
+        {
+            throw new JsonException("Client creation summary shape is inconsistent.");
+        }
+
+        var relatedDto = Deserialize<ClientCreationRelatedDto>(related);
+        var createdDto = Deserialize<CreatedClientDto>(after);
+        var created = ReadCreatedClient(createdDto);
+        var acknowledgements = ReadAcknowledgements(
+            createdDto.DuplicateWarningAcknowledgements);
+        var acknowledgementIds = ReadDistinctIds(
+            relatedDto.DuplicateWarningAcknowledgementIds,
+            "duplicateWarningAcknowledgementIds");
+        var matchedClientIds = ReadDistinctIds(
+            relatedDto.MatchedClientIds,
+            "matchedClientIds");
+        var acknowledgedClientIds = acknowledgements
+            .Select(acknowledgement => acknowledgement.MatchedClientId)
+            .ToHashSet();
+        var cardAssignmentId = relatedDto.CardAssignmentId;
+
+        if (entry.EntityId == Guid.Empty
+            || cardAssignmentId == Guid.Empty
+            || (cardAssignmentId is null) != (created.CardNumber is null)
+            || acknowledgementIds.Count != acknowledgements.Count
+            || !matchedClientIds.SetEquals(acknowledgedClientIds))
+        {
+            throw new JsonException("Client creation summary is inconsistent.");
+        }
+
+        List<AuditEntryExplanationFactViewModel> afterFacts =
+        [
+            Fact("Client", TimelineModel.ShortId(entry.EntityId)),
+            Fact("Name", FullName(created)),
+            Fact("Phone", created.Phone ?? "None"),
+            Fact("Operational status", StatusLabel(created.OperationalStatus)),
+            Fact("Comment", created.Comment ?? "None"),
+            Fact("Current card", created.CardNumber ?? "None"),
+            Fact(
+                "Card assignment",
+                cardAssignmentId is { } assignmentId
+                    ? TimelineModel.ShortId(assignmentId)
+                    : "None"),
+            Fact(
+                "Warnings acknowledged",
+                acknowledgements.Count.ToString(
+                    System.Globalization.CultureInfo.InvariantCulture)),
+        ];
+        if (acknowledgements.Count > 0)
+        {
+            afterFacts.Add(Fact(
+                "Acknowledgement details",
+                string.Join("; ", acknowledgements.Select(AcknowledgementLabel))));
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "client-created",
+            "Client profile created",
+            "The stored reception-facing identity, optional current-card assignment and accepted duplicate warnings are shown. Search-normalization fields are intentionally omitted.",
+            "Before creation",
+            "Created profile",
+            [
+                Fact("Client", "Not present"),
+                Fact("Current card", "None"),
+                Fact("Warnings acknowledged", "0"),
+            ],
+            afterFacts,
+            ChangedFields: "Client profile",
+            IsAvailable: true);
+    }
+
     internal static AuditEntryExplanationViewModel CreateClientUpdate(
         AuditTimelineEntry entry,
         JsonElement related,
@@ -191,6 +274,24 @@ internal static class ClientAuditExplanationFactory
             RequireTimestamp(identity.UpdatedAt, "updatedAt"));
     }
 
+    private static ClientCreationSnapshot ReadCreatedClient(CreatedClientDto client)
+    {
+        var status = RequireText(client.OperationalStatus, "operationalStatus");
+        if (status is not ("active" or "inactive"))
+        {
+            throw new JsonException("Client operational status is invalid.");
+        }
+
+        return new ClientCreationSnapshot(
+            RequireText(client.Surname, "surname"),
+            RequireText(client.Name, "name"),
+            ReadOptionalText(client.Patronymic, "patronymic"),
+            ReadOptionalText(client.Phone, "phone"),
+            status,
+            ReadOptionalText(client.Comment, "comment"),
+            ReadOptionalText(client.CardNumber, "cardNumber"));
+    }
+
     private static IReadOnlyList<DuplicateWarningAcknowledgementSnapshot>
         ReadAcknowledgements(
             IReadOnlyList<DuplicateWarningAcknowledgementDto?>? acknowledgements)
@@ -341,6 +442,14 @@ internal static class ClientAuditExplanationFactory
                 .Where(part => part is not null));
     }
 
+    private static string FullName(ClientCreationSnapshot client)
+    {
+        return string.Join(
+            " ",
+            new[] { client.Surname, client.Name, client.Patronymic }
+                .Where(part => part is not null));
+    }
+
     private static string StatusLabel(string status)
     {
         return status switch
@@ -444,6 +553,15 @@ internal static class ClientAuditExplanationFactory
         public IReadOnlyList<Guid>? MatchedClientIds { get; init; }
     }
 
+    private sealed class ClientCreationRelatedDto
+    {
+        public Guid? CardAssignmentId { get; init; }
+
+        public IReadOnlyList<Guid>? DuplicateWarningAcknowledgementIds { get; init; }
+
+        public IReadOnlyList<Guid>? MatchedClientIds { get; init; }
+    }
+
     private class ClientIdentityDto
     {
         public string? Surname { get; init; }
@@ -463,6 +581,27 @@ internal static class ClientAuditExplanationFactory
 
     private sealed class UpdatedClientIdentityDto : ClientIdentityDto
     {
+        public DuplicateWarningAcknowledgementDto?[]?
+            DuplicateWarningAcknowledgements
+        { get; init; }
+    }
+
+    private sealed class CreatedClientDto
+    {
+        public string? Surname { get; init; }
+
+        public string? Name { get; init; }
+
+        public string? Patronymic { get; init; }
+
+        public string? Phone { get; init; }
+
+        public string? OperationalStatus { get; init; }
+
+        public string? Comment { get; init; }
+
+        public string? CardNumber { get; init; }
+
         public DuplicateWarningAcknowledgementDto?[]?
             DuplicateWarningAcknowledgements
         { get; init; }
@@ -502,6 +641,15 @@ internal static class ClientAuditExplanationFactory
             return (Surname, Name, Patronymic);
         }
     }
+
+    private sealed record ClientCreationSnapshot(
+        string Surname,
+        string Name,
+        string? Patronymic,
+        string? Phone,
+        string OperationalStatus,
+        string? Comment,
+        string? CardNumber);
 
     private sealed record DuplicateWarningAcknowledgementSnapshot(
         string WarningType,

@@ -2306,6 +2306,7 @@ public sealed record AuditExplanationSmokeScenario(
     int AfterVisitRemaining,
     NonWorkingDayAuditExplanationSmokeScenario NonWorkingDays,
     FreezeCancellationAuditExplanationSmokeScenario FreezeCancellation,
+    ClientCreationAuditExplanationSmokeScenario ClientCreation,
     ClientCardAuditExplanationSmokeScenario ClientAndCards,
     StaffAccountAuditExplanationSmokeScenario StaffAccounts,
     VisitMarkAuditExplanationSmokeScenario VisitMark,
@@ -2373,6 +2374,17 @@ public sealed record FreezeCancellationAuditExplanationSmokeScenario(
     int AfterExtensionDays,
     DateOnly BeforeEffectiveEndDate,
     DateOnly AfterEffectiveEndDate);
+
+public sealed record ClientCreationAuditExplanationSmokeScenario(
+    Guid AuditEntryId,
+    Guid ClientId,
+    Guid CardAssignmentId,
+    string DisplayName,
+    string Phone,
+    string Comment,
+    string CardNumber,
+    Guid MatchedClientId,
+    string AcknowledgementReason);
 
 public sealed record ClientCardAuditExplanationSmokeScenario(
     Guid ClientId,

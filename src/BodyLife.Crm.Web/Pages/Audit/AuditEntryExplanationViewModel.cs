@@ -25,6 +25,7 @@ public sealed record AuditEntryExplanationViewModel(
             "membership_type.edited" => "membership-type-edited",
             "membership_type.deactivated" => "membership-type-deactivated",
             "membership.issued" => "membership-issued",
+            "client.created" => "client-created",
             "client.updated" => "client-updated",
             "card.assigned" => "card-assigned",
             "card.changed" => "card-changed",
@@ -57,6 +58,12 @@ public sealed record AuditEntryExplanationViewModel(
             using var after = JsonDocument.Parse(entry.AfterSummaryJson);
             return entry.ActionType switch
             {
+                "client.created" when entry.EntityType == AuditTimelineEntityType.Client
+                    => ClientAuditExplanationFactory.CreateClientCreation(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
                 "client.updated" when entry.EntityType == AuditTimelineEntityType.Client
                     => ClientAuditExplanationFactory.CreateClientUpdate(
                         entry,
