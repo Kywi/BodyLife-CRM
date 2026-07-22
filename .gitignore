@@ -131,3 +131,8 @@ temp/
 *.prof
 *.dump
 *.sql
+
+# Local Graphify query helpers and machine-specific caches
+graphify-out/.vocab.txt
+graphify-out/cache/stat-index.json
+graphify-out/memory/query_*_explain_*.md
