@@ -66,7 +66,7 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                 $"{viewportName} negative-clients report smoke");
             await page.GetByRole(
                     AriaRole.Link,
-                    new() { Name = "Daily report", Exact = true })
+                    new() { Name = "Reports", Exact = true })
                 .ClickAsync();
             await page.WaitForURLAsync("**/Reports/Daily**");
             var negativeClientsLink = page.GetByRole(

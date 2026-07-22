@@ -62,7 +62,7 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
 
             var dailyReportLink = page.GetByRole(
                 AriaRole.Link,
-                new() { Name = "Daily report", Exact = true });
+                new() { Name = "Reports", Exact = true });
             await ExpectVisibleAsync(
                 dailyReportLink,
                 viewportName,

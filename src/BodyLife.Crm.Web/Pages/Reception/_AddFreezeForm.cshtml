@@ -12,7 +12,7 @@
 <details id="add-freeze-action-panel"
          class="profile-action-panel"
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>@L["Freeze.Add"]</summary>
+    <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"freeze"' />@L["Freeze.Add"]</summary>
     <div class="profile-action-content">
         @if (Model.Errors.Count > 0)
         {

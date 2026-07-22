@@ -27,7 +27,7 @@
         <header class="catalog-create-header">
             <div>
                 <p class="eyebrow">@L["NonWorkingDay.CorrectionReview"]</p>
-                <h2 id="non-working-day-correction-title">@L["NonWorkingDay.CorrectPeriod"]</h2>
+                <h2 id="non-working-day-correction-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"calendar"' />@L["NonWorkingDay.CorrectPeriod"]</h2>
             </div>
             <span class="status-chip status-owner">@L["NonWorkingDay.OwnerOnly"]</span>
         </header>
@@ -240,7 +240,7 @@
             <header class="non-working-day-impact-header">
                 <div>
                     <p class="eyebrow">@L["NonWorkingDay.Correction.OwnerReview"]</p>
-                    <h2 id="non-working-day-correction-result-title">@ModeLabel(preview.Mode)</h2>
+                    <h2 id="non-working-day-correction-result-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@ModeLabel(preview.Mode)</h2>
                 </div>
                 <span class="status-chip status-active">
                     @L["NonWorkingDay.Correction.ValidUntil", FormatTimestamp(preview.Confirmation.ExpiresAt)]
@@ -510,7 +510,7 @@
                 <div class="non-working-day-confirmation-review">
                     <div>
                         <p class="eyebrow">@L["NonWorkingDay.Correction.FinalConfirmation"]</p>
-                        <h3>@ConfirmationTitle(preview.Mode)</h3>
+                        <h3 class="owner-confirmation-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='@(preview.Mode == NonWorkingDayCorrectionMode.Cancel ? "danger" : "check")' />@ConfirmationTitle(preview.Mode)</h3>
                     </div>
                     <p>@L["NonWorkingDay.Correction.FinalConfirmationHint", previewRecalculatedCount]</p>
                 </div>
@@ -559,7 +559,7 @@
             <header class="non-working-day-impact-header">
                 <div>
                     <p class="eyebrow">@L["NonWorkingDay.Correction.CanonicalResult"]</p>
-                    <h2 id="non-working-day-correction-confirmed-title">@ModeLabel(correction.Mode)</h2>
+                    <h2 id="non-working-day-correction-confirmed-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"check"' />@ModeLabel(correction.Mode)</h2>
                 </div>
                 <span class="status-chip @StatusClass(correction.OriginalPeriod.Status)">
                     @StatusLabel(correction.OriginalPeriod.Status)

@@ -70,7 +70,7 @@ public sealed class LowRemainingReportSmokeTests : IClassFixture<ReceptionAppFix
                 $"{viewportName} low-remaining report smoke");
             await page.GetByRole(
                     AriaRole.Link,
-                    new() { Name = "Daily report", Exact = true })
+                    new() { Name = "Reports", Exact = true })
                 .ClickAsync();
             await page.WaitForURLAsync("**/Reports/Daily**");
             var lowRemainingLink = page.GetByRole(

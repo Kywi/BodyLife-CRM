@@ -17,7 +17,7 @@
 <details id="issue-membership-action-panel"
          class="profile-action-panel"
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>@L["Membership.Issue"]</summary>
+    <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@L["Membership.Issue"]</summary>
     <div class="profile-action-content">
         @if (Model.Errors.Count > 0)
         {

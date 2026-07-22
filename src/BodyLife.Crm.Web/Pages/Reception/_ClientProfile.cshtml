@@ -19,14 +19,14 @@
     @if (result is null)
     {
         <div class="operational-empty profile-empty">
-            <h2>@L["Profile.Empty"]</h2>
+            <h2 class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"info"' />@L["Profile.Empty"]</h2>
             <a class="secondary-link" asp-page="/Reports/Daily">@L["Profile.OpenDailyReport"]</a>
         </div>
     }
     else if (result.Status != GetClientProfileStatus.Success || profile is null)
     {
         <div class="warning-block warning-danger" role="alert">
-            <strong>@L["Profile.Unavailable"]</strong>
+            <strong><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["Profile.Unavailable"]</strong>
             <span>@L["Error.Generic"]</span>
         </div>
     }
@@ -39,7 +39,7 @@
         <header class="client-identity-header">
             <div>
                 <p class="eyebrow">@L["Profile.Title"]</p>
-                <h2>@profile.DisplayName</h2>
+                <h2 class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"account"' />@profile.DisplayName</h2>
             </div>
             <span class="status-chip @(profile.OperationalStatus == ClientOperationalStatus.Active ? "status-active" : "status-inactive")">
                 @(profile.OperationalStatus == ClientOperationalStatus.Active ? L["Status.Active"] : L["Status.Inactive"])
@@ -60,7 +60,7 @@
                 @foreach (var warning in profile.Warnings)
                 {
                     <div class="warning-block warning-caution">
-                        <strong>@WarningLabel(warning.Code)</strong>
+                        <strong><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@WarningLabel(warning.Code)</strong>
                         <span>@WarningMessage(warning.Code)</span>
                     </div>
                 }
@@ -92,14 +92,14 @@
         @if (profile.Comment is not null)
         {
             <section class="client-comment" aria-labelledby="client-comment-title">
-                <h3 id="client-comment-title">@L["Profile.Note"]</h3>
+                <h3 id="client-comment-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"info"' />@L["Profile.Note"]</h3>
                 <p>@profile.Comment</p>
             </section>
         }
 
         <section class="membership-panel" aria-labelledby="membership-panel-title">
             <header class="membership-panel-header">
-                <h3 id="membership-panel-title">@L["Profile.CurrentMembership"]</h3>
+                <h3 id="membership-panel-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@L["Profile.CurrentMembership"]</h3>
             </header>
 
             @if (profile.Membership.CurrentMembership is null)
@@ -131,7 +131,7 @@
                     @foreach (var warning in profile.Membership.Warnings)
                     {
                         <div class="warning-block warning-caution">
-                            <strong>@WarningLabel(warning.Code)</strong>
+                            <strong><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@WarningLabel(warning.Code)</strong>
                             <span>@WarningMessage(warning.Code)</span>
                         </div>
                     }
@@ -232,7 +232,7 @@
         {
             <section class="recent-visits" aria-labelledby="recent-visits-title">
                 <header class="recent-visits-header">
-                    <h3 id="recent-visits-title">@L["Visit.Recent"]</h3>
+                    <h3 id="recent-visits-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"visit"' />@L["Visit.Recent"]</h3>
                     @if (recentVisits.HasMore)
                     {
                         <span class="result-count">@L["List.LatestCount", recentVisits.Items.Count]</span>
@@ -329,7 +329,7 @@
         {
             <section class="recent-payments" aria-labelledby="recent-payments-title">
                 <header class="recent-payments-header">
-                    <h3 id="recent-payments-title">@L["Payment.Recent"]</h3>
+                    <h3 id="recent-payments-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"payment"' />@L["Payment.Recent"]</h3>
                     @if (recentPayments.HasMore)
                     {
                         <span class="result-count">@L["List.LatestCount", recentPayments.Items.Count]</span>

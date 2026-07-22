@@ -12,15 +12,15 @@
 
 <main class="page-shell report-page" data-inactive-clients-report-page>
     <section class="report-layout" aria-labelledby="inactive-clients-title">
-        <header class="report-header">
+        <header class="report-header report-page-header">
             <div>
-                <p class="eyebrow">@L["Navigation.Reports"]</p><h1 id="inactive-clients-title">@L["Inactive.Title"]</h1>
+                <p class="eyebrow"><partial name="/Pages/Shared/_Icon.cshtml" model='"reports"' />@L["Navigation.Reports"]</p><h1 id="inactive-clients-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"users"' />@L["Inactive.Title"]</h1>
             </div>
             <nav class="report-header-actions" aria-label="@L["Navigation"]"><a class="secondary-link" asp-page="/Reports/Daily">@L["Daily"]</a><a class="secondary-link" asp-page="/Reports/EndingSoon">@L["Ending"]</a><a class="secondary-link" asp-page="/Reports/LowRemaining">@L["Low"]</a><a class="secondary-link" asp-page="/Reports/NegativeClients">@L["Negative"]</a><a class="secondary-link" asp-page="/Reception/Index">@L["Navigation.Reception"]</a>
             </nav>
         </header>
 
-        <form class="report-filter report-inactive-filter"
+        <form class="report-filter report-inactive-filter report-filter-card"
               method="get"
               asp-page="/Reports/InactiveClients"
               data-busy-form>
@@ -69,7 +69,7 @@
         }
         else if (reportPage is not null)
         {
-            <div class="report-list-context" aria-label="@L["Inactive.Selection"]">
+            <div class="report-list-context report-list-context-card" aria-label="@L["Inactive.Selection"]">
                 <span>
                     <strong>@ReportsPresentation.Date(reportPage.AsOfDate)</strong> @L["AsOf"]
                 </span>
@@ -85,10 +85,10 @@
                 </span>
             </div>
 
-            <section class="report-source-section" aria-labelledby="inactive-clients-results-title">
+            <section class="report-source-section report-source-card" aria-labelledby="inactive-clients-results-title">
                 <header class="report-section-header">
                     <div>
-                        <p class="eyebrow">@L["CanonicalState"]</p><h2 id="inactive-clients-results-title">@L["InactiveList"]</h2>
+                        <p class="eyebrow"><partial name="/Pages/Shared/_Icon.cshtml" model='"users"' />@L["CanonicalState"]</p><h2 id="inactive-clients-results-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"users"' />@L["InactiveList"]</h2>
                     </div>
                     <span class="result-count">@WebPluralizer.Clients(S, reportPage.Items.Count)</span>
                 </header>

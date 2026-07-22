@@ -1,0 +1,6 @@
+@model string
+@{
+    var iconName = string.IsNullOrWhiteSpace(Model) ? "info" : Model;
+    var spriteUrl = Url.Content("~/images/bodylife-icons.svg");
+}
+<svg class="icon icon-@iconName" aria-hidden="true" focusable="false"><use href="@($"{spriteUrl}#{iconName}")"></use></svg>

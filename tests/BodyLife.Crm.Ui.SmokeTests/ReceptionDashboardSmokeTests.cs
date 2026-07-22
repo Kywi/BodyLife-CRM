@@ -85,6 +85,20 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await ExpectVisibleAsync(searchResults, viewportName, "search results region");
             await ExpectVisibleAsync(clientProfile, viewportName, "client profile region");
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "No client selected" }), viewportName, "initial profile state");
+            var initialCreatePanel = page.Locator("#create-client-action-panel");
+            await ExpectVisibleAsync(initialCreatePanel.Locator("summary"), viewportName, "always available create-client action");
+            Assert.False(
+                await initialCreatePanel.EvaluateAsync<bool>("element => element.open"),
+                "The direct create-client action should start collapsed before a search.");
+            await AssertMinimumTouchTargetAsync(
+                initialCreatePanel.Locator("summary"),
+                viewportName,
+                "create-client action");
+            await initialCreatePanel.Locator("summary").ClickAsync();
+            Assert.True(
+                await initialCreatePanel.EvaluateAsync<bool>("element => element.open"),
+                "Reception should let the operator open client creation without first searching.");
+            await initialCreatePanel.Locator("summary").ClickAsync();
             await AssertMinimumTouchTargetAsync(
                 page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }),
                 viewportName,
@@ -273,6 +287,18 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             await ExpectVisibleAsync(searchResults.GetByText("No clients found", new() { Exact = true }), viewportName, "no-match state");
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "No client selected" }), viewportName, "no-match profile state");
+            var noMatchCreatePanel = page.Locator("#create-client-action-panel");
+            Assert.True(
+                await noMatchCreatePanel.EvaluateAsync<bool>("element => element.open"),
+                "A successful no-match search should open the direct create-client action.");
+
+            await page.Locator("input[name='mode'][value='Card']").CheckAsync();
+            await SubmitHtmxSearchAsync(page, "BL-CARD-PREFILL-NO-MATCH");
+            var cardNoMatchCreatePanel = page.Locator("#create-client-action-panel");
+            Assert.True(await cardNoMatchCreatePanel.EvaluateAsync<bool>("element => element.open"));
+            Assert.Equal(
+                "BL-CARD-PREFILL-NO-MATCH",
+                await cardNoMatchCreatePanel.GetByLabel("Card number", new() { Exact = true }).InputValueAsync());
             await AssertFitsViewportAsync(page, viewportName, "no-match state");
         }
         finally
@@ -417,11 +443,11 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 WaitUntil = WaitUntilState.NetworkIdle,
             });
             await LoginAsync(page, _app.LoginName, _app.Password, "tablet create smoke");
-            await SubmitHtmxSearchAsync(page, "BL-CREATE-TABLET");
+            await SubmitHtmxSearchAsync(page, "RETAINED-NONMATCHING-CREATE-CONTEXT");
 
             var results = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
-            var createPanel = results.Locator("#create-client-action-panel");
+            var createPanel = page.Locator("#create-client-action-panel");
             await ExpectVisibleAsync(
                 createPanel.Locator("summary"),
                 "tablet",
@@ -449,6 +475,9 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.Equal(
                 "CreateDuplicate",
                 await createPanel.GetByLabel("Surname", new() { Exact = true }).InputValueAsync());
+            Assert.True(
+                await createPanel.EvaluateAsync<bool>("element => element.open"),
+                "A failed create-client submit should keep its form open for correction.");
             Assert.Equal(initialClientCount, await _app.CountClientsAsync());
             await createPanel.GetByLabel("Card number", new() { Exact = true })
                 .FillAsync("BL-CREATE-TABLET");
@@ -463,6 +492,9 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 createPanel.GetByRole(AriaRole.Heading, new() { Name = "Duplicate review" }),
                 "tablet",
                 "create duplicate review heading");
+            Assert.True(
+                await createPanel.EvaluateAsync<bool>("element => element.open"),
+                "Duplicate review should keep the create-client form open.");
             Assert.Equal(2, await createPanel.Locator(".duplicate-warning-item").CountAsync());
             Assert.Equal(initialClientCount, await _app.CountClientsAsync());
             await AssertFitsViewportAsync(page, "tablet", "create duplicate review form");
@@ -496,12 +528,17 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "tablet",
                 "create success message");
             await ExpectVisibleAsync(
-                results.GetByRole(
-                    AriaRole.Link,
-                    new() { Name = "Open CreateDuplicate Tablet", Exact = true }),
+                results.GetByText("No clients found", new() { Exact = true }),
                 "tablet",
-                "canonical created search row");
-            Assert.Equal(0, await page.Locator("#create-client-action-panel").CountAsync());
+                "retained nonmatching search context");
+            var canonicalCreatePanel = page.Locator("#create-client-action-panel");
+            await ExpectVisibleAsync(
+                canonicalCreatePanel.Locator("summary"),
+                "tablet",
+                "post-create direct create-client action");
+            Assert.False(
+                await canonicalCreatePanel.EvaluateAsync<bool>("element => element.open"),
+                "The direct create-client action should collapse after the canonical profile reread.");
             Assert.Contains("clientId=", page.Url, StringComparison.Ordinal);
             var clientId = await _app.FindClientIdByCurrentCardAsync("BL-CREATE-TABLET");
             Assert.NotNull(clientId);
@@ -548,7 +585,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             var results = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
-            var createPanel = results.Locator("#create-client-action-panel");
+            var createPanel = page.Locator("#create-client-action-panel");
             await ExpectVisibleAsync(
                 createPanel.Locator("summary"),
                 "phone",

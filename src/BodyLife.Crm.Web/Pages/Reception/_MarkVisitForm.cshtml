@@ -17,7 +17,7 @@
 <details id="mark-visit-action-panel"
          class="profile-action-panel"
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>@L["Visit.Mark"]</summary>
+    <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"visit"' />@L["Visit.Mark"]</summary>
     <div class="profile-action-content">
         @if (Model.Errors.Count > 0)
         {

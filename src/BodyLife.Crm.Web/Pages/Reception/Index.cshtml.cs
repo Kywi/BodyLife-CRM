@@ -17,6 +17,7 @@ namespace BodyLife.Crm.Web.Pages.Reception;
 
 public sealed class IndexModel(
     IBodyLifeRequestContextResolver requestContextResolver,
+    IQueryPermissionResolver queryPermissionResolver,
     IBodyLifeQueryHandler<SearchClientsQuery, SearchClientsResult> searchClients,
     IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult> getClientProfile,
     IBodyLifeQueryHandler<
@@ -2330,12 +2331,19 @@ public sealed class IndexModel(
             "success",
             StringComparison.Ordinal);
         var searchContext = CurrentSearchContext();
-        var createClientForm = !profileClientId.HasValue
+        var createClientPermissions = await queryPermissionResolver.ResolveAsync(
+            [new QueryPermissionRequest(
+                ClientSearchActionKeys.CreateClient,
+                ClientSearchActionKeys.AdminOrOwnerPolicy)],
+            cancellationToken);
+        var shouldOpenCreateClientForm = !profileClientId.HasValue
             && searchResult is { Status: SearchClientsStatus.Success }
-            && searchResult.Items.Count == 0
-            && searchResult.AllowedActions.IsAllowed(ClientSearchActionKeys.CreateClient)
-                ? CreateClientFormViewModel.FromSearchContext(searchContext)
-                : null;
+            && searchResult.Items.Count == 0;
+        var createClientForm = createClientPermissions.IsAllowed(ClientSearchActionKeys.CreateClient)
+            ? CreateClientFormViewModel.FromSearchContext(
+                searchContext,
+                isOpen: shouldOpenCreateClientForm)
+            : null;
         var profileViewModel = await BuildProfileViewModelAsync(
             profileResult,
             searchContext,

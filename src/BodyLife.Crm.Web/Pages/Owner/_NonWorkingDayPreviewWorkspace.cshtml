@@ -12,7 +12,7 @@
      data-non-working-day-preview-workspace>
     <section class="non-working-day-preview-input" aria-labelledby="preview-impact-form-title">
         <header class="catalog-create-header">
-            <h2 id="preview-impact-form-title">@OwnerLocalizer["NonWorkingDays.PreviewTitle"]</h2>
+            <h2 id="preview-impact-form-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"calendar"' />@OwnerLocalizer["NonWorkingDays.PreviewTitle"]</h2>
             <span class="status-chip status-owner">@OwnerLocalizer["NonWorkingDays.OwnerOnly"]</span>
         </header>
 
@@ -109,7 +109,7 @@
             <header class="non-working-day-impact-header">
                 <div>
                     <p class="eyebrow">@OwnerLocalizer["NonWorkingDays.OwnerReview"]</p>
-                    <h2 id="non-working-day-impact-title">@OwnerLocalizer["NonWorkingDays.ImpactPreview"]</h2>
+                    <h2 id="non-working-day-impact-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@OwnerLocalizer["NonWorkingDays.ImpactPreview"]</h2>
                 </div>
                 <span class="status-chip status-active">
                     @OwnerLocalizer["NonWorkingDays.ValidUntil", FormatTimestamp(preview.Confirmation.ExpiresAt)]
@@ -259,7 +259,7 @@
                 <div class="non-working-day-confirmation-review">
                     <div>
                         <p class="eyebrow">@OwnerLocalizer["NonWorkingDays.FinalConfirmation"]</p>
-                        <h3>@OwnerLocalizer["NonWorkingDays.ApplyExactScope"]</h3>
+                        <h3 class="owner-confirmation-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"check"' />@OwnerLocalizer["NonWorkingDays.ApplyExactScope"]</h3>
                     </div>
                     <p>
                         @OwnerLocalizer["NonWorkingDays.ConfirmationNotice", preview.AffectedCount]
@@ -308,7 +308,7 @@
             <header class="non-working-day-impact-header">
                 <div>
                     <p class="eyebrow">@OwnerLocalizer["NonWorkingDays.CanonicalResult"]</p>
-                    <h2 id="non-working-day-confirmed-title">@OwnerLocalizer["NonWorkingDays.ConfirmedPeriod"]</h2>
+                    <h2 id="non-working-day-confirmed-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"check"' />@OwnerLocalizer["NonWorkingDays.ConfirmedPeriod"]</h2>
                 </div>
                 <span class="status-chip status-active">@StatusLabel(confirmedPeriod.Status)</span>
             </header>

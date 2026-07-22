@@ -14,7 +14,7 @@
          class="visit-correction-panel"
          data-cancel-visit-panel
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>@L["Visit.Cancel"]</summary>
+    <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"cancel"' />@L["Visit.Cancel"]</summary>
     <div class="visit-correction-content">
         @if (Model.Errors.Count > 0)
         {

@@ -1,4 +1,10 @@
 @using System.Globalization
+@inject IBodyLifeRequestContextResolver RequestContextResolver
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Shared> SharedLocalizer
+@{
+    var isLogoutRoute = Context.Request.Path.StartsWithSegments("/Logout");
+    var isAuthenticated = RequestContextResolver.TryResolve(out _) && !isLogoutRoute;
+}
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.Name">
 <head>
@@ -7,10 +13,34 @@
     <title>@ViewData["Title"] - BodyLife CRM</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
-    <partial name="_LanguageSelector" />
-    <partial name="_CurrentSession" />
-    @RenderBody()
+<body class="@(isAuthenticated ? "app-body" : "public-body")">
+    @if (isAuthenticated)
+    {
+        <div class="app-frame">
+            <partial name="_AppNavigation" />
+            <div class="app-main-column">
+                <partial name="_CurrentSession" />
+                <div class="app-content">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="public-frame">
+            <header class="public-header">
+                <a class="public-brand" asp-page="/Login">
+                    <img src="~/images/bodylife-logo.png" width="338" height="480" alt="@SharedLocalizer["Brand.LogoAlt"]" />
+                    <span>BodyLife CRM</span>
+                </a>
+                <partial name="_LanguageSelector" />
+            </header>
+            <div class="public-content">
+                @RenderBody()
+            </div>
+        </div>
+    }
     <script src="~/lib/htmx/htmx-2.0.10.min.js" asp-append-version="true" defer></script>
     <script src="~/js/site.js" asp-append-version="true" defer></script>
 </body>

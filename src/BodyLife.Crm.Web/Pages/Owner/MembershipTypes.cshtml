@@ -6,11 +6,11 @@
 }
 
 <main class="page-shell">
-    <section class="owner-management" aria-labelledby="membership-types-title">
+    <section class="owner-management owner-management-catalog" aria-labelledby="membership-types-title">
         <header class="management-header">
             <div>
                 <p class="eyebrow">@Model.T("MembershipTypes.OwnerSettings")</p>
-                <h1 id="membership-types-title">@Model.T("MembershipTypes.Title")</h1>
+                <h1 id="membership-types-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@Model.T("MembershipTypes.Title")</h1>
             </div>
             <a class="secondary-link" asp-page="/Reception/Index">@Model.T("MembershipTypes.Reception")</a>
         </header>
@@ -28,7 +28,7 @@
 
             <section class="catalog-create-section" aria-labelledby="create-membership-type-title">
                 <header class="catalog-create-header">
-                    <h2 id="create-membership-type-title">@Model.T("MembershipTypes.Add")</h2>
+                    <h2 id="create-membership-type-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"plus"' />@Model.T("MembershipTypes.Add")</h2>
                     <span class="status-chip status-owner">@Model.T("MembershipTypes.OwnerOnly")</span>
                 </header>
 
@@ -120,7 +120,7 @@
         <section class="membership-type-list" aria-labelledby="membership-type-list-title">
             <header class="list-header">
                 <div>
-                    <h2 id="membership-type-list-title">@Model.T("MembershipTypes.Catalog")</h2>
+                    <h2 id="membership-type-list-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@Model.T("MembershipTypes.Catalog")</h2>
                     <p class="list-breakdown">
                         <span>@Model.T("MembershipTypes.ActiveCount", Model.ActiveCount)</span>
                         <span>@Model.T("MembershipTypes.InactiveCount", Model.InactiveCount)</span>

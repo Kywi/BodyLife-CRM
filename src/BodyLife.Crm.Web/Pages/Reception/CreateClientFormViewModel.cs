@@ -10,7 +10,8 @@ public sealed record CreateClientFormViewModel(
     bool IsOpen)
 {
     public static CreateClientFormViewModel FromSearchContext(
-        ReceptionSearchContext searchContext)
+        ReceptionSearchContext searchContext,
+        bool isOpen = false)
     {
         return new CreateClientFormViewModel(
             new CreateClientFormInput
@@ -27,7 +28,7 @@ public sealed record CreateClientFormViewModel(
             },
             DuplicateWarnings: [],
             Errors: [],
-            IsOpen: true);
+            IsOpen: isOpen);
     }
 
     public static CreateClientFormViewModel FromSubmission(

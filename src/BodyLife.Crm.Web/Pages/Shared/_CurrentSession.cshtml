@@ -8,51 +8,34 @@
     var deviceLabel = actor.DeviceLabel ?? SharedLocalizer["Session.DeviceUnavailable"];
     var sessionId = actor.SessionId.Value.ToString("N")[..8];
 
-    <header class="app-shell" aria-label="@SharedLocalizer["Session.Current"]">
-        <div class="app-shell-inner">
-            <a class="app-brand" asp-page="/Reception/Index">BodyLife CRM</a>
-            <div class="session-indicator" aria-label="@SharedLocalizer["Session.CurrentAccountAndDevice"]">
-                <span class="session-name">@displayName</span>
-                <span class="session-meta">@AccountTypeLabel(actor.AccountKind) / @RoleLabel(actor.Role)</span>
-                <span class="session-meta">@deviceLabel</span>
-                <span class="session-id">@SharedLocalizer["Session.Identifier", sessionId]</span>
+    <header class="top-context-bar" aria-label="@SharedLocalizer["Session.Current"]">
+        <div class="top-context-identity">
+            <partial name="_Icon" model='@("account")' />
+            <div>
+                <span class="top-context-name">@displayName</span>
+                <span class="top-context-account">@AccountTypeLabel(actor.AccountKind) / @RoleLabel(actor.Role)</span>
             </div>
-            <nav class="shell-actions" aria-label="@SharedLocalizer["Session.Actions"]">
-                <a class="secondary-link" asp-page="/Reports/Daily">@SharedLocalizer["Navigation.DailyReport"]</a>
-                <a class="secondary-link" asp-page="/Audit/Timeline">@SharedLocalizer["Navigation.AuditTimeline"]</a>
-                @if (actor is { Role: ActorRole.Owner, AccountKind: AccountKind.Owner })
-                {
-                    <a class="secondary-link" asp-page="/Owner/MembershipTypes">@SharedLocalizer["Navigation.MembershipTypes"]</a>
-                    <a class="secondary-link" asp-page="/Owner/NonWorkingDays">@SharedLocalizer["Navigation.NonWorkingDays"]</a>
-                    <a class="secondary-link" asp-page="/Owner/StaffAccounts">@SharedLocalizer["Navigation.StaffAccounts"]</a>
-                }
-                <form class="logout-form" asp-page="/Logout" method="post">
-                    <button class="secondary-button" type="submit">@SharedLocalizer["Navigation.Logout"]</button>
-                </form>
-            </nav>
+        </div>
+        <div class="top-context-meta" aria-label="@SharedLocalizer["Session.CurrentAccountAndDevice"]">
+            <span><partial name="_Icon" model='@("account")' /> @deviceLabel</span>
+            <span class="session-id">@SharedLocalizer["Session.Identifier", sessionId]</span>
         </div>
     </header>
 }
 
 @functions {
-    private string AccountTypeLabel(AccountKind accountKind)
+    private string AccountTypeLabel(AccountKind accountKind) => accountKind switch
     {
-        return accountKind switch
-        {
-            AccountKind.Owner => SharedLocalizer["AccountKind.Owner"],
-            AccountKind.NamedAdmin => SharedLocalizer["AccountKind.NamedAdmin"],
-            AccountKind.SharedReceptionAdmin => SharedLocalizer["AccountKind.SharedReceptionAdmin"],
-            _ => SharedLocalizer["AccountKind.Unknown"],
-        };
-    }
+        AccountKind.Owner => SharedLocalizer["AccountKind.Owner"],
+        AccountKind.NamedAdmin => SharedLocalizer["AccountKind.NamedAdmin"],
+        AccountKind.SharedReceptionAdmin => SharedLocalizer["AccountKind.SharedReceptionAdmin"],
+        _ => SharedLocalizer["AccountKind.Unknown"],
+    };
 
-    private string RoleLabel(ActorRole role)
+    private string RoleLabel(ActorRole role) => role switch
     {
-        return role switch
-        {
-            ActorRole.Owner => SharedLocalizer["Role.Owner"],
-            ActorRole.Admin => SharedLocalizer["Role.Admin"],
-            _ => SharedLocalizer["Role.Unknown"],
-        };
-    }
+        ActorRole.Owner => SharedLocalizer["Role.Owner"],
+        ActorRole.Admin => SharedLocalizer["Role.Admin"],
+        _ => SharedLocalizer["Role.Unknown"],
+    };
 }

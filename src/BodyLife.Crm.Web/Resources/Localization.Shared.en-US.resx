@@ -9,11 +9,18 @@
   <data name="Session.DeviceUnavailable" xml:space="preserve"><value>No device label</value></data>
   <data name="Session.Identifier" xml:space="preserve"><value>Session {0}</value></data>
   <data name="Navigation.DailyReport" xml:space="preserve"><value>Daily report</value></data>
+  <data name="Navigation.Reports" xml:space="preserve"><value>Reports</value></data>
   <data name="Navigation.AuditTimeline" xml:space="preserve"><value>Audit timeline</value></data>
   <data name="Navigation.MembershipTypes" xml:space="preserve"><value>Membership types</value></data>
   <data name="Navigation.NonWorkingDays" xml:space="preserve"><value>Non-working days</value></data>
   <data name="Navigation.StaffAccounts" xml:space="preserve"><value>Staff accounts</value></data>
   <data name="Navigation.Logout" xml:space="preserve"><value>Log out</value></data>
+  <data name="Navigation.Label" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Navigation.Main" xml:space="preserve"><value>Main</value></data>
+  <data name="Navigation.Reception" xml:space="preserve"><value>Reception</value></data>
+  <data name="Navigation.ClientHistory" xml:space="preserve"><value>Client history</value></data>
+  <data name="Navigation.OwnerTools" xml:space="preserve"><value>Owner tools</value></data>
+  <data name="Brand.LogoAlt" xml:space="preserve"><value>BodyLife logo</value></data>
   <data name="AccountKind.Owner" xml:space="preserve"><value>Owner account</value></data>
   <data name="AccountKind.NamedAdmin" xml:space="preserve"><value>Named Admin</value></data>
   <data name="AccountKind.SharedReceptionAdmin" xml:space="preserve"><value>Shared Reception/Admin</value></data>

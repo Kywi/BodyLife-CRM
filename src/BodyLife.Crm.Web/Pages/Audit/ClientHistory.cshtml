@@ -3,10 +3,10 @@
 @using BodyLife.Crm.SharedKernel
 @{ var P=Model.Presentation; ViewData["Title"]=P.Text("History.Title"); var historyPage=Model.HistoryPage; var errorMessage=Model.LoadError ?? (Model.Result is null || historyPage is not null ? null : P.HistoryError(Model.Result.Status)); }
 <main class="page-shell audit-page client-history-page" data-client-history-page>
-<header class="report-header">
+<header class="report-header report-page-header">
 <div>
-<p class="eyebrow">@P.Text("BusinessHistory")</p>
-<h1 id="client-history-title">@P.Text("History.Title")</h1>
+<p class="eyebrow"><partial name="/Pages/Shared/_Icon.cshtml" model='"history"' />@P.Text("BusinessHistory")</p>
+<h1 id="client-history-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"history"' />@P.Text("History.Title")</h1>
 </div>
 <nav class="report-header-actions" aria-label="@P.Text("HistoryNavigation")">
 <a class="secondary-link" asp-page="/Audit/Timeline">@P.Text("Timeline.Title")</a>
@@ -14,7 +14,7 @@
 <a class="secondary-link" asp-page="/Reception/Index">@P.Text("Navigation.Reception")</a>
 </nav>
 </header>
-<form class="audit-filter" method="get" asp-page="/Audit/ClientHistory" data-busy-form>
+<form class="audit-filter audit-filter-card" method="get" asp-page="/Audit/ClientHistory" data-busy-form>
 <div class="audit-filter-grid client-history-filter-grid">
 <div class="audit-filter-field">
 <label for="history-client-id">@P.Text("ClientId")</label>
@@ -43,7 +43,7 @@
 <strong>@P.Text("HistoryUnavailable")</strong>
 <span>@errorMessage</span>
 </div>}else if(Model.ClientId is null){<p class="empty-state">@P.Text("EnterClient")</p>}else if(historyPage is not null){
-@if(Model.ClientProfile is { } profile){<section class="client-history-summary" aria-label="@P.Text("SelectedClient")">
+@if(Model.ClientProfile is { } profile){<section class="client-history-summary client-history-summary-card" aria-label="@P.Text("SelectedClient")">
 <div class="client-history-identity">
 <span>@P.Text("SelectedClient")</span>
 <strong data-client-history-name>@profile.DisplayName</strong>
@@ -60,15 +60,15 @@
 <span>@P.Text("ClientId")</span>
 <strong class="client-history-id">@profile.ClientId</strong>
 </div>
-</section>}else{<div class="audit-context">
+</section>}else{<div class="audit-context audit-context-card">
 <span>@P.Text("ClientId") <strong>@historyPage.ClientId</strong>
 </span>
 </div>}
-<section class="audit-source-section" aria-labelledby="client-history-results-title">
+<section class="audit-source-section audit-source-card" aria-labelledby="client-history-results-title">
 <header class="report-section-header client-history-results-header">
 <div>
-<p class="eyebrow">@P.Text("CanonicalFacts")</p>
-<h2 id="client-history-results-title">@P.Text("History.SectionTitle")</h2>
+<p class="eyebrow"><partial name="/Pages/Shared/_Icon.cshtml" model='"history"' />@P.Text("CanonicalFacts")</p>
+<h2 id="client-history-results-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"history"' />@P.Text("History.SectionTitle")</h2>
 </div>
 <span class="result-count">@P.Text("Page",Model.CurrentPageNumber) · @P.Rows(Model.Rows.Count)</span>
 </header>

@@ -133,7 +133,9 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             var cancelPanel = await OpenCancelVisitPanelAsync(
                 activeVisit,
                 viewportName);
-            var cancelForm = cancelPanel.Locator("form");
+            Assert.True(await cancelPanel.EvaluateAsync<bool>("element => element.open"));
+            var cancelForm = cancelPanel.Locator("form[data-cancel-visit-form]");
+            await ExpectVisibleAsync(cancelForm, viewportName, "Cancel Visit form contract");
             Assert.Equal(1, await cancelForm.Locator(
                 "input[name='__RequestVerificationToken']").CountAsync());
             Assert.False(string.IsNullOrWhiteSpace(await cancelForm.Locator(
@@ -147,7 +149,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 new() { Name = CancellationConfirmation, Exact = true })
                 .CheckAsync();
             await AssertMinimumTouchTargetAsync(
-                cancelPanel.GetByRole(AriaRole.Button, new() { Name = "Cancel visit" }),
+                cancelPanel.Locator("button[data-cancel-visit-submit].danger-button"),
                 viewportName,
                 "Cancel Visit button");
             await AssertFitsViewportAsync(page, viewportName, "Cancel Visit form");
@@ -640,7 +642,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         ILocator visitRow,
         string viewportName)
     {
-        var panel = visitRow.Locator("[data-cancel-visit-panel]");
+        var panel = visitRow.Locator("details[data-cancel-visit-panel]");
         await ExpectVisibleAsync(
             panel.Locator("summary"),
             viewportName,
@@ -651,7 +653,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         }
 
         await ExpectVisibleAsync(
-            panel.Locator("form"),
+            panel.Locator("form[data-cancel-visit-form]"),
             viewportName,
             "Cancel Visit form");
         return panel;

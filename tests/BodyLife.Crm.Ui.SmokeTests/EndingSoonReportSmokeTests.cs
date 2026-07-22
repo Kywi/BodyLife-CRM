@@ -62,7 +62,7 @@ public sealed class EndingSoonReportSmokeTests : IClassFixture<ReceptionAppFixtu
                 $"{viewportName} ending-soon report smoke");
             await page.GetByRole(
                     AriaRole.Link,
-                    new() { Name = "Daily report", Exact = true })
+                    new() { Name = "Reports", Exact = true })
                 .ClickAsync();
             await page.WaitForURLAsync("**/Reports/Daily**");
             var endingSoonLink = page.GetByRole(

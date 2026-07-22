@@ -11,7 +11,7 @@
         <header class="reception-header">
             <div>
                 <p class="eyebrow">BodyLife CRM</p>
-                <h1 id="reception-title">@L["Dashboard.Title"]</h1>
+                <h1 id="reception-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"account"' />@L["Dashboard.Title"]</h1>
             </div>
         </header>
 
@@ -29,7 +29,7 @@
                   hx-disabled-elt="find button">
                 <div class="search-primary-row">
                     <div class="search-field">
-                        <label id="client-search-label" for="client-search">@L["Search.Label"]</label>
+                        <label id="client-search-label" for="client-search"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Search.Label"]</label>
                         <input id="client-search"
                                name="q"
                                type="search"
@@ -40,7 +40,7 @@
                                required />
                     </div>
                     <div class="search-command-group">
-                        <button type="submit">@L["Action.Search"]</button>
+                        <button type="submit"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Action.Search"]</button>
                         <a class="secondary-link" asp-page="/Reception/Index">@L["Action.Clear"]</a>
                     </div>
                 </div>

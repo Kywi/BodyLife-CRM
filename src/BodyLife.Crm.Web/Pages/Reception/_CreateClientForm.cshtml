@@ -8,7 +8,7 @@
 <details id="create-client-action-panel"
          class="profile-action-panel search-create-panel"
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>@L["Client.Create"]</summary>
+    <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"plus"' />@L["Client.Create"]</summary>
     <div class="profile-action-content">
         @if (Model.Errors.Count > 0)
         {

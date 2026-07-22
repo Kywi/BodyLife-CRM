@@ -12,15 +12,15 @@
 
 <main class="page-shell report-page" data-low-remaining-report-page>
     <section class="report-layout" aria-labelledby="low-remaining-title">
-        <header class="report-header">
+        <header class="report-header report-page-header">
             <div>
-                <p class="eyebrow">@L["Navigation.Reports"]</p><h1 id="low-remaining-title">@L["Low.Title"]</h1>
+                <p class="eyebrow"><partial name="/Pages/Shared/_Icon.cshtml" model='"reports"' />@L["Navigation.Reports"]</p><h1 id="low-remaining-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["Low.Title"]</h1>
             </div>
             <nav class="report-header-actions" aria-label="@L["Navigation"]"><a class="secondary-link" asp-page="/Reports/Daily">@L["Daily"]</a><a class="secondary-link" asp-page="/Reports/EndingSoon">@L["Ending"]</a><a class="secondary-link" asp-page="/Reports/NegativeClients">@L["Negative"]</a><a class="secondary-link" asp-page="/Reports/InactiveClients">@L["Inactive"]</a><a class="secondary-link" asp-page="/Reception/Index">@L["Navigation.Reception"]</a>
             </nav>
         </header>
 
-        <form class="report-filter report-list-filter"
+        <form class="report-filter report-list-filter report-filter-card"
               method="get"
               asp-page="/Reports/LowRemaining"
               data-busy-form>
@@ -53,7 +53,7 @@
         }
         else if (reportPage is not null)
         {
-            <div class="report-list-context" aria-label="@L["Low.Selection"]">
+            <div class="report-list-context report-list-context-card" aria-label="@L["Low.Selection"]">
                 <span>
                     <strong>@ReportsPresentation.Date(reportPage.AsOfDate)</strong> @L["AsOf"]
                 </span>
@@ -64,10 +64,10 @@
                 <span>@WebPluralizer.Memberships(S, reportPage.Items.Count)</span>
             </div>
 
-            <section class="report-source-section" aria-labelledby="low-remaining-results-title">
+            <section class="report-source-section report-source-card" aria-labelledby="low-remaining-results-title">
                 <header class="report-section-header">
                     <div>
-                        <p class="eyebrow">@L["CanonicalMemberships"]</p><h2 id="low-remaining-results-title">@L["Low"]</h2>
+                        <p class="eyebrow"><partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@L["CanonicalMemberships"]</p><h2 id="low-remaining-results-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@L["Low"]</h2>
                     </div>
                 </header>
 

@@ -9,7 +9,7 @@
 <section id="reception-workspace" class="reception-workspace">
     <section class="search-results-region" aria-label="@L["Workspace.SearchResults"]" aria-live="polite">
         <header class="region-header">
-            <h2>@L["Workspace.SearchResults"]</h2>
+            <h2 class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Workspace.SearchResults"]</h2>
             @if (searchResult is { Status: SearchClientsStatus.Success })
             {
                 var matchCount = searchResult.Items.Count;
@@ -26,7 +26,7 @@
         else if (searchResult.Status != SearchClientsStatus.Success)
         {
             <div class="warning-block warning-danger" role="alert">
-                <strong>@L["Workspace.Unavailable"]</strong>
+                <strong><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["Workspace.Unavailable"]</strong>
                 <span>@L["Error.Generic"]</span>
             </div>
         }
@@ -36,10 +36,6 @@
                 <strong>@L["Workspace.Empty"]</strong>
             </div>
 
-            @if (Model.CreateClientForm is not null)
-            {
-                <partial name="_CreateClientForm" model="Model.CreateClientForm" />
-            }
         }
         else
         {
@@ -114,7 +110,7 @@
                             <ul class="warning-chip-list" aria-label="@L["Workspace.ClientWarnings"]">
                                 @foreach (var warning in item.Warnings)
                                 {
-                                    <li>@WarningMessage(warning.Code)</li>
+                                    <li><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@WarningMessage(warning.Code)</li>
                                 }
                             </ul>
                         }
@@ -152,6 +148,11 @@
                    hx-sync="#reception-search:replace"
                    hx-indicator="#search-loading">@L["Action.MoreResults"]</a>
             }
+        }
+
+        @if (Model.CreateClientForm is not null)
+        {
+            <partial name="_CreateClientForm" model="Model.CreateClientForm" />
         }
     </section>
 

@@ -12,16 +12,16 @@
 
 <main class="page-shell report-page" data-ending-soon-report-page>
     <section class="report-layout" aria-labelledby="ending-soon-title">
-        <header class="report-header">
+        <header class="report-header report-page-header">
             <div>
-                <p class="eyebrow">@L["Navigation.Reports"]</p><h1 id="ending-soon-title">@L["Ending.Title"]</h1>
+                <p class="eyebrow"><partial name="/Pages/Shared/_Icon.cshtml" model='"reports"' />@L["Navigation.Reports"]</p><h1 id="ending-soon-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["Ending.Title"]</h1>
             </div>
             <nav class="report-header-actions" aria-label="@L["Navigation"]">
                 <a class="secondary-link" asp-page="/Reports/Daily">@L["Daily"]</a><a class="secondary-link" asp-page="/Reports/LowRemaining">@L["Low"]</a><a class="secondary-link" asp-page="/Reports/NegativeClients">@L["Negative"]</a><a class="secondary-link" asp-page="/Reports/InactiveClients">@L["Inactive"]</a><a class="secondary-link" asp-page="/Reception/Index">@L["Navigation.Reception"]</a>
             </nav>
         </header>
 
-        <form class="report-filter report-list-filter"
+        <form class="report-filter report-list-filter report-filter-card"
               method="get"
               asp-page="/Reports/EndingSoon"
               data-busy-form>
@@ -55,7 +55,7 @@
         }
         else if (reportPage is not null)
         {
-            <div class="report-list-context" aria-label="@L["Ending.Selection"]">
+            <div class="report-list-context report-list-context-card" aria-label="@L["Ending.Selection"]">
                 <span>
                     <strong>@ReportsPresentation.Date(reportPage.AsOfDate)</strong> @L["AsOf"]
                 </span>
@@ -66,10 +66,10 @@
                 <span>@WebPluralizer.Memberships(S, reportPage.Items.Count)</span>
             </div>
 
-            <section class="report-source-section" aria-labelledby="ending-soon-results-title">
+            <section class="report-source-section report-source-card" aria-labelledby="ending-soon-results-title">
                 <header class="report-section-header">
                     <div>
-                        <p class="eyebrow">@L["CanonicalMemberships"]</p><h2 id="ending-soon-results-title">@L["Ending"]</h2>
+                        <p class="eyebrow"><partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@L["CanonicalMemberships"]</p><h2 id="ending-soon-results-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["Ending"]</h2>
                     </div>
                 </header>
 

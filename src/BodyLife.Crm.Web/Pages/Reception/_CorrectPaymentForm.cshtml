@@ -20,7 +20,7 @@
          class="payment-correction-panel"
          data-correct-payment-panel
          open="@(Model.IsOpen ? "open" : null)">
-    <summary>@L["Payment.CorrectOrCancel"]</summary>
+    <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"cancel"' />@L["Payment.CorrectOrCancel"]</summary>
     <div class="payment-correction-content">
         @if (Model.Errors.Count > 0)
         {
