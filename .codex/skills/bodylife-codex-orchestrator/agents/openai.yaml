@@ -1,0 +1,4 @@
+interface:
+  display_name: "BodyLife Codex Orchestrator"
+  short_description: "Route BodyLife work across model tiers"
+  default_prompt: "Use $bodylife-codex-orchestrator to coordinate this nontrivial BodyLife CRM task with the appropriate model tiers."
