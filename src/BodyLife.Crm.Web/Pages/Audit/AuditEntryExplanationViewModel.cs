@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.Audit;
-using BodyLife.Crm.Modules.Memberships;
 
 namespace BodyLife.Crm.Web.Pages.Audit;
 
@@ -17,41 +16,45 @@ public sealed record AuditEntryExplanationViewModel(
     string? ChangedFields,
     bool IsAvailable)
 {
+    private static readonly IReadOnlyDictionary<string, string> KindsByAction =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["membership_type.created"] = "membership-type-created",
+            ["membership_type.edited"] = "membership-type-edited",
+            ["membership_type.deactivated"] = "membership-type-deactivated",
+            ["membership.issued"] = "membership-issued",
+            ["membership_opening_state.created"] = "membership-opening-state-created",
+            ["client.created"] = "client-created",
+            ["client.updated"] = "client-updated",
+            ["card.assigned"] = "card-assigned",
+            ["card.changed"] = "card-changed",
+            ["card.cleared"] = "card-cleared",
+            ["staff_account.created"] = "staff-account-created",
+            ["staff_account.display_name_updated"] =
+                "staff-account-display-name-updated",
+            ["staff_account.activated"] = "staff-account-activated",
+            ["staff_account.deactivated"] = "staff-account-deactivated",
+            ["staff_credentials.configured"] = "staff-credentials-configured",
+            ["staff_credentials.reset"] = "staff-credentials-reset",
+            ["non_working_day.added"] = "non-working-day-added",
+            ["non_working_day.corrected"] = "non-working-day-corrected",
+            ["non_working_day.canceled"] = "non-working-day-canceled",
+            ["freeze.added"] = "freeze-added",
+            ["freeze.canceled"] = "freeze-canceled",
+            ["visit.marked"] = "visit-marked",
+            ["visit.canceled"] = "visit-canceled",
+            ["payment.created"] = "payment-created",
+            ["payment.corrected"] = "payment-corrected",
+            ["payment.canceled"] = "payment-canceled",
+        };
+
+    public static IEnumerable<string> ReadableActionTypes => KindsByAction.Keys;
+
     public static AuditEntryExplanationViewModel? Create(AuditTimelineEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
-        var kind = entry.ActionType switch
-        {
-            "membership_type.created" => "membership-type-created",
-            "membership_type.edited" => "membership-type-edited",
-            "membership_type.deactivated" => "membership-type-deactivated",
-            "membership.issued" => "membership-issued",
-            "membership_opening_state.created" => "membership-opening-state-created",
-            "client.created" => "client-created",
-            "client.updated" => "client-updated",
-            "card.assigned" => "card-assigned",
-            "card.changed" => "card-changed",
-            "card.cleared" => "card-cleared",
-            "staff_account.created" => "staff-account-created",
-            "staff_account.display_name_updated" => "staff-account-display-name-updated",
-            "staff_account.activated" => "staff-account-activated",
-            "staff_account.deactivated" => "staff-account-deactivated",
-            "staff_credentials.configured" => "staff-credentials-configured",
-            "staff_credentials.reset" => "staff-credentials-reset",
-            "non_working_day.added" => "non-working-day-added",
-            "non_working_day.corrected" => "non-working-day-corrected",
-            "non_working_day.canceled" => "non-working-day-canceled",
-            "freeze.added" => "freeze-added",
-            "freeze.canceled" => "freeze-canceled",
-            "visit.marked" => "visit-marked",
-            "visit.canceled" => "visit-canceled",
-            "payment.created" => "payment-created",
-            "payment.corrected" => "payment-corrected",
-            "payment.canceled" => "payment-canceled",
-            _ => null,
-        };
-        if (kind is null)
+        if (!KindsByAction.TryGetValue(entry.ActionType, out var kind))
         {
             return null;
         }
@@ -1112,22 +1115,6 @@ public sealed record AuditEntryExplanationViewModel(
         var knownExtensionDays = RequireNullableNonNegativeInt32(
             summary,
             "knownExtensionDays");
-
-        try
-        {
-            _ = MembershipOpeningState.FromStoredSource(
-                openingAsOfDate,
-                declaredRemainingVisits,
-                declaredNegativeBalance,
-                knownEffectiveEndDate,
-                knownExtensionDays);
-        }
-        catch (ArgumentException exception)
-        {
-            throw new JsonException(
-                "Membership opening-state declaration is invalid.",
-                exception);
-        }
 
         var recalculated = RequireObject(summary, "recalculatedState");
         return new MembershipOpeningStateCreationSnapshot(

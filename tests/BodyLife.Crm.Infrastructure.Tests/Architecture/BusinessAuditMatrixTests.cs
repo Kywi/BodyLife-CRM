@@ -11,6 +11,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.SharedKernel;
+using BodyLife.Crm.Web.Pages.Audit;
 using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Tests.Architecture;
@@ -53,6 +54,26 @@ public sealed class BusinessAuditMatrixTests
         }
 
         Assert.Equal(matrixActions.Length, dbContext.ChangeTracker.Entries().Count());
+    }
+
+    [Fact]
+    public void EveryCanonicalAuditActionIsFilterableAndOwnerReadable()
+    {
+        var canonicalActions = BusinessAuditMatrixTestCases.All
+            .Select(item => item.ActionType)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        var filterableActions = TimelineModel.ActionOptions
+            .Select(option => option.Value)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        var readableActions = AuditEntryExplanationViewModel.ReadableActionTypes
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(canonicalActions, filterableActions);
+        Assert.Equal(canonicalActions, readableActions);
+        Assert.Equal(26, canonicalActions.Length);
     }
 
     [Fact]

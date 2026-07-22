@@ -1,11 +1,11 @@
 # Business Audit Foundation Inventory
 
-Date: 2026-07-20
+Date: 2026-07-22
 
-Status: Milestone 10 foundation inventory, executable command-matrix gate and
-client-linked audit lookup completed. Append-only hardening is addressed by
-`20260720100603_HardenBusinessAuditAppendOnly`; client-link containment lookup
-is indexed by `20260720110933_AddBusinessAuditClientLookupIndex`.
+Status: Milestone 10 completed and accepted. The executable command matrix,
+append-only storage, canonical client history, global Timeline, readable
+explanations, navigation and technical-log correlation are implemented and
+validated. Milestone 11 has not started.
 
 ## Scope and sources
 
@@ -104,7 +104,7 @@ appender, so command-specific success paths cannot bypass this gate.
 
 ## Client-history audit lookup readiness
 
-`GetClientAuditEntries` is the Audit module subquery for the future composed
+`GetClientAuditEntries` is the Audit module subquery used by the composed
 `GetClientHistory` backend. It requires an active Owner, named Admin or shared
 Reception/Admin session and accepts a client id, an optional half-open
 `occurred_at` range, optional typed entity filters and bounded offset/limit
@@ -130,15 +130,29 @@ timeline index.
 
 This subquery supplies audit summaries only. It does not make audit the source
 of membership, visit, payment, freeze or non-working facts. The composed
-`GetClientHistory` query must still read canonical module source records and
-attach these audit explanations.
+`GetClientHistory` query reads canonical module source records and attaches
+their audit explanations.
 
-## Remaining Milestone 10 work
+## Milestone 10 acceptance closure
 
-- Compose `GetClientHistory` from canonical membership, opening-state, visit,
-  payment, freeze and non-working application source rows plus
-  `GetClientAuditEntries`; preserve corrections/cancellations and origin labels.
-- Implement owner/admin `GetAuditTimeline` with the accepted visibility rules
-  and stable newest-first ordering.
-- Add profile/report correlation links and tablet/phone history UI only after
-  the query contracts are proven.
+All 26 canonical action variants are registered by the persistence matrix,
+available as Timeline filters and handled by a typed readable presenter. The
+cross-layer `EveryCanonicalAuditActionIsFilterableAndOwnerReadable` test keeps
+those three inventories equal. Raw JSON remains available as a collapsed
+support envelope rather than the primary Owner/Admin view.
+
+| Acceptance criterion | Executable evidence |
+|---|---|
+| Owner/Admin can inspect history without technical-log noise | `PostgreSqlGetAuditTimelineQueryTests`, `GetClientHistoryQueryHandlerTests`, `AuditTimelineSmokeTests` and `ClientHistorySmokeTests`. |
+| Every implemented command matches the audit matrix | `BusinessAuditMatrixTests`, `PostgreSqlBusinessAuditMatrixTests` and command-specific PostgreSQL success-path tests. |
+| Corrections preserve and explain original facts | Typed Visit, Payment, Freeze and NonWorkingDay presenters plus source-history and Playwright correction coverage. |
+| Backdated/fallback entries show occurred, recorded and origin | Opening-state/manual-backfill and paper-fallback Timeline/History smoke scenarios. |
+| Shared reception accountability is honest | Timeline and Client History smoke assertions for shared account, session and device labels. |
+| Audit rows are append-only | `20260720100603_HardenBusinessAuditAppendOnly` and `PostgreSqlBusinessAuditAppendOnlyTests`. |
+| Profile/report/correction links retain canonical scope | `ClientHistorySmokeTests`, `DailyReportSmokeTests` and `CorrectionRecordNavigationSmokeTests`. |
+| Audit correlates to technical logs without becoming business truth | `TechnicalLogCorrelationSmokeTests` proves the shared request correlation id. |
+
+The final Release `./scripts/validate.sh` run passed with 0 build warnings or
+errors and 1,177 tests: 387 domain/application, 150 Web, 525
+Infrastructure/PostgreSQL and 115 Playwright, with no failures or skips. EF
+Core reports no model changes since the latest migration.

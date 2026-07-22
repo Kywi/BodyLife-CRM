@@ -1103,7 +1103,7 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
-    public void MembershipOpeningStateCreationWithInvalidDeclarationFailsClosed()
+    public void MembershipOpeningStateCreationWithNegativeSourceValueFailsClosed()
     {
         var openingStateId = Guid.NewGuid();
         var membershipId = Guid.NewGuid();
@@ -1114,7 +1114,7 @@ public sealed class AuditEntryExplanationViewModelTests
             clientId,
             new DateOnly(2026, 7, 13),
             declaredRemainingVisits: -2,
-            declaredNegativeBalance: 1,
+            declaredNegativeBalance: -1,
             knownEffectiveEndDate: null,
             knownExtensionDays: null,
             entryBatchId: null,

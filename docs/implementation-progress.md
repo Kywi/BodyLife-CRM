@@ -11994,3 +11994,81 @@ Next recommended step:
   action types have readable explanations, run the complete validation and EF
   model-drift gates, record the evidence, commit it and stop before Milestone
   11.
+
+## Step 186 - Milestone 10 acceptance review
+
+Status: completed. Milestone 10 is complete. Stopped before Milestone 11.
+
+Plan alignment:
+
+- Reviewed every Milestone 10 task and acceptance criterion against the
+  accepted roadmap, operations audit matrix and executable test inventory.
+- Confirmed that all 26 canonical state-changing audit action variants are
+  filterable and have typed readable explanations; no important action remains
+  raw-only.
+- Did not start backup/restore/paper-fallback readiness work from Milestone 11.
+
+Completed:
+
+- Replaced the duplicated presenter action-kind switch with one readable-action
+  registry and added a cross-layer acceptance test that requires exact equality
+  between the persistence matrix, Timeline filters and readable presenter.
+- Reviewed Owner/Admin access, full-envelope filters and pagination, canonical
+  Client History composition, correction/cancellation preservation,
+  manual-backfill/paper-fallback labels, shared account/session/device
+  accountability, append-only enforcement, profile/report/correction links and
+  technical-log correlation.
+- During the first full gate, the Membership formula-ownership architecture
+  test correctly found a Web dependency on the Memberships-owned
+  `MembershipOpeningState` constructor in the opening-state audit presenter.
+  Removed that duplicate domain validation, retained structural fail-closed
+  parsing and kept domain validity owned by the command, Memberships and its
+  PostgreSQL payload tests. The ownership gate then passed.
+- Updated `docs/audit-foundation-inventory.md` from its earlier foundation state
+  to the completed Milestone 10 implementation and acceptance evidence.
+
+Acceptance result:
+
+- Owner/Admin Timeline and Client History are readable and role protected.
+- Every implemented state-changing command is covered by the 26-action audit
+  matrix, Timeline filter inventory and typed presenter registry.
+- Original and correction/cancellation facts remain visible; no history rewrite
+  workflow exists.
+- Occurred/recorded timestamps, non-normal origin, shared session/device and
+  changed-after-close context are visible where applicable.
+- Canonical module source rows remain business truth; audit supplies
+  explanations and does not own report or Membership formulas.
+- PostgreSQL append-only enforcement and request-correlation support path are
+  covered by executable tests.
+
+Validation:
+
+- The first full gate was not accepted: it reported one architecture failure
+  for the opening-state presenter dependency described above. After the fix,
+  focused Membership ownership tests passed 2/2 and presenter tests passed
+  115/115.
+- A clean Release rerun of `./scripts/validate.sh` completed successfully with
+  build/analyzers at 0 warnings and 0 errors.
+- Full suites passed with no failures or skips: `BodyLife.Crm.Tests` 387/387,
+  `BodyLife.Crm.Web.Tests` 150/150,
+  `BodyLife.Crm.Infrastructure.Tests` 525/525 and
+  `BodyLife.Crm.Ui.SmokeTests` 115/115 (1,177 total).
+- The migration gate completed through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`; the explicit EF Core
+  model-drift check reported no changes since the latest migration.
+- `graphify update .` was attempted after the acceptance code changes but its
+  watcher could not rebuild on this filesystem
+  (`Errno 95: Operation not supported`). Its generated cache-index change was
+  restored, so no code graph update is claimed.
+- `graphify . --update` was attempted after the acceptance documentation
+  update but stopped because no semantic extraction LLM backend is configured;
+  it produced no tracked semantic graph update.
+
+Commit:
+
+- `test(audit): enforce milestone 10 acceptance`.
+
+Stop point:
+
+- Milestone 10 is complete and validated. Per the roadmap stop marker and the
+  user request, no Milestone 11 work is started in this step.
