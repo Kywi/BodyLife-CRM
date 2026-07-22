@@ -12,6 +12,10 @@ BodyLife CRM v1 зберігає бізнесову правду як canonical 
 - Business audit є окремою append-only business history. Technical logs зберігаються окремо в application/hosting logging stack і не замінюють audit.
 - Corrections/cancellations не видаляють бізнес-історію. Вони додають explicit source facts або per-entity cancellation/correction rows, оновлюють active/current marker у тій самій transaction і створюють audit entry.
 - Migration v1 стартує зі sterile database. Manual backfill і paper fallback йдуть через ті самі domain commands з `occurred_at`, `recorded_at`, `entry_origin`, reason/comment і audit.
+- PostgreSQL timestamp facts зберігають exact UTC instants. Fixed business
+  calendar `Europe/Kyiv` використовується на application/query boundaries для
+  DateOnly, local-day filters і UI; database/session time zone не визначає
+  report semantics. (ADR-017)
 
 Потрібні можливості БД:
 
@@ -51,8 +55,10 @@ Common source fact fields:
 
 - `id`.
 - Business identity FK fields, наприклад `client_id`, `membership_id`, `payment_id`.
-- `occurred_at` або business date/range.
-- `recorded_at` - коли запис внесено в систему.
+- `occurred_at` - canonical UTC instant або explicit business `DateOnly`/range,
+  якщо entity справді date-based; local wall input спочатку проходить Kyiv DST
+  validation.
+- `recorded_at` - server-set canonical UTC instant, коли запис внесено в систему.
 - `recorded_by_account_id`.
 - `recorded_session_id` або device/session reference.
 - `entry_origin`: `normal`, `manual_backfill`, `paper_fallback`, `future_import`.
@@ -82,7 +88,7 @@ Recommended derived tables:
 
 | Table | Purpose | Source | Rebuild policy |
 |---|---|---|---|
-| `membership_state_cache` | One row per issued membership with stable derived values. | `issued_memberships`, `membership_opening_states`, `visit_consumptions`, `visits`, `freezes`, `non_working_periods`, `non_working_period_applications`, `membership_adjustments`, negative closures. | Recalculate synchronously in the same transaction for single-membership commands; batch/job recalculation allowed after mass non-working period changes. |
+| `membership_state_cache` | One row per issued membership with stable derived values and `recalculation_version`; Kyiv date semantics require version `7`. | `issued_memberships`, `membership_opening_states`, `visit_consumptions`, `visits`, `freezes`, `non_working_periods`, `non_working_period_applications`, `membership_adjustments`, negative closures. | Recalculate synchronously in the same transaction for single-membership commands. A standalone canonical all-cache rebuild is allowed only as a derived-state release/repair operation; it is rerunnable and does not weaken atomic business commands. |
 | `membership_extension_days` | Explainable extension day rows. Multiple date-bearing sources may point to the same calendar date; state counts distinct row dates. The aggregate cache total may additionally contain honest opening-state or aggregate adjustment days without reconstructed synthetic dates. | Active freezes, active non-working periods and future adjustment contracts that identify concrete calendar days. A numeric `extension_days` adjustment remains explained by its canonical source row instead of fabricated day rows. | Delete/rebuild for affected memberships during recalculation. It is derived, not source truth. |
 | `client_search_index` or stored normalized columns | Fast search by card/name/phone/last 4. | `clients`, current `client_card_assignments`. | Updated in client/card transactions. |
 
@@ -288,6 +294,11 @@ Append-only policy:
 
 Reports are query services over canonical records and Memberships read models. They do not own formulas.
 
+Any selected business date maps to `[Europe/Kyiv midnight, next Europe/Kyiv
+midnight)` and then to UTC instants. Predicates stay half-open; depending on DST,
+the UTC interval is 23, 24 or 25 hours. Audit/history date filters and inactive
+client dates use the same mapping. (ADR-017)
+
 | Report | Source data | Drill-down | Notes |
 |---|---|---|---|
 | Daily cash/visits | `payments` where method cash, active status, `occurred_at` on business date; `visits` and active `visit_consumptions` where `occurred_at` on business date. | Payment rows, visit rows, cancellation/correction rows, related audit. | Excludes canceled payments/visits. If a corrected payment changes date/amount, old and new dates remain explainable. |
@@ -353,6 +364,11 @@ Migration strategy:
 5. Use forward migrations for audit/source tables carefully. Dropping or rewriting source history should require explicit data migration plan and backup.
 6. Add idempotency/duplicate-submit guards at command level, especially visits/payments from reception UI.
 7. Before production use, run a restore rehearsal and then run domain consistency checks on the restored copy.
+8. When a new recalculation contract invalidates derived caches, deploy code and
+   run `scripts/rebuild-membership-state-caches.sh` before application traffic.
+   For version `7`, every issued Membership must finish with current cache state.
+   The command commits per Membership, reports processed counts and is rerun from
+   canonical facts after interruption/non-zero exit; it creates no business audit.
 
 Backup/restore implications:
 
@@ -383,26 +399,36 @@ Main risks:
 - NonWorkingDay mass recalculation slow or partially applied without clear retry semantics.
 - Negative closure workflow hiding old negative visits without explicit source facts.
 - Date arithmetic mismatch with legacy paper convention for membership end date.
+- UTC/Kyiv boundary mistakes around midnight or DST, including assuming every
+  business day is 24 hours.
+- Serving traffic with stale `membership_state_cache.recalculation_version`
+  after a calculation-contract deploy.
 
 Validation scenarios:
 
 1. Issue membership from active MembershipType. Verify snapshot fields are copied and later MembershipType edit does not change issued membership.
 2. Record visit when remaining visits is 1. Verify remaining becomes 0, daily visits includes the row, audit exists.
-3. Record visit when remaining visits is 0. Verify remaining becomes -1, negative balance is 1 and first negative date is set.
-4. Cancel the first negative visit. Verify visit remains visible, state recalculates, daily report excludes it and audit explains cancellation.
-5. Add freeze 2026-01-10..2026-01-12. Verify inclusive 3-day extension and extension days explain the source.
-6. Reject Freeze starting before Membership start or after locked pre-command effective end; verify no source fact, recalculation or success audit is committed.
-7. Accept Freeze whose start is eligible and whose end crosses pre-command effective end; verify the full range participates in extension union.
-8. Reject Freeze overlapping an active counted Membership Visit with `freeze_conflicts_with_visit`; verify Membership-first locking prevents a partial or stale write.
-9. Add non-working period overlapping the freeze. Verify extension counts union calendar days, not sum of sources.
-10. Cancel non-working period. Verify affected memberships recalculate and client history still shows add plus cancel.
-11. Correct payment amount after day close. Verify live daily cash total changes, changed-after-close is visible and audit has before/after plus reason.
-12. Search by exact card number. Verify exact current card match opens the correct client and duplicate current card assignment is blocked.
-13. Search by last four phone digits. Verify non-unique matches produce list, not auto-open.
-14. Enter active membership via manual backfill opening state. Verify no fake visits are generated, state is explainable and audit marks manual backfill.
-15. Enter paper fallback visits/payments next day. Verify `occurred_at` drives reports for the business date while `recorded_at` and audit show late entry.
-16. Close negative visits with a new membership. Verify `membership_negative_closures` and closure items list covered visits; old negative state is not silently hidden.
-17. Restore database to staging. Rebuild membership state, compare caches, verify audit and source rows are transactionally consistent.
+3. Query Kyiv spring/fall transition dates. Verify half-open UTC ranges contain
+   exactly the local day (23/25 hours), boundary rows appear once and UTC-date
+   mismatch does not move them to another business day.
+4. Upgrade caches from recalculation version 6 to 7. Verify source/audit rows are
+   unchanged, Kyiv-derived dates are repaired, all rows reach version 7 and a
+   second rebuild reports verified state.
+5. Record visit when remaining visits is 0. Verify remaining becomes -1, negative balance is 1 and first negative date is set.
+6. Cancel the first negative visit. Verify visit remains visible, state recalculates, daily report excludes it and audit explains cancellation.
+7. Add freeze 2026-01-10..2026-01-12. Verify inclusive 3-day extension and extension days explain the source.
+8. Reject Freeze starting before Membership start or after locked pre-command effective end; verify no source fact, recalculation or success audit is committed.
+9. Accept Freeze whose start is eligible and whose end crosses pre-command effective end; verify the full range participates in extension union.
+10. Reject Freeze overlapping an active counted Membership Visit with `freeze_conflicts_with_visit`; verify Membership-first locking prevents a partial or stale write.
+11. Add non-working period overlapping the freeze. Verify extension counts union calendar days, not sum of sources.
+12. Cancel non-working period. Verify affected memberships recalculate and client history still shows add plus cancel.
+13. Correct payment amount after day close. Verify live daily cash total changes, changed-after-close is visible and audit has before/after plus reason.
+14. Search by exact card number. Verify exact current card match opens the correct client and duplicate current card assignment is blocked.
+15. Search by last four phone digits. Verify non-unique matches produce list, not auto-open.
+16. Enter active membership via manual backfill opening state. Verify no fake visits are generated, state is explainable and audit marks manual backfill.
+17. Enter paper fallback visits/payments next day. Verify `occurred_at` drives reports for the business date while `recorded_at` and audit show late entry.
+18. Close negative visits with a new membership. Verify `membership_negative_closures` and closure items list covered visits; old negative state is not silently hidden.
+19. Restore database to staging. Rebuild membership state, compare caches, verify audit and source rows are transactionally consistent.
 
 Open validation questions to settle before migrations:
 

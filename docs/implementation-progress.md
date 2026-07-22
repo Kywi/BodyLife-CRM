@@ -12168,3 +12168,89 @@ Stop point:
 
 - Bilingual UI hardening is complete and validated. Milestone 10 remains
   complete; begin Milestone 11 only under a separate explicit request.
+
+## Step 188 - Localized business time and rebuilt derived membership state
+
+Status: completed. This is a separate post-Milestone 10 correctness hardening
+step. Milestone 11 was not started.
+
+Plan alignment:
+
+- Accepted ADR-017 without changing the selected ASP.NET Core/Razor/htmx,
+  EF Core/Npgsql or PostgreSQL stack. Canonical instants and technical logs
+  remain UTC; one-gym business/UI time is fixed to `Europe/Kyiv`.
+- Kept Memberships as the only owner of derived membership formulas. The time
+  change only centralizes calendar conversion and rebuilds versioned derived
+  state from canonical source facts.
+- Kept every user-facing business workflow atomic. The standalone all-cache
+  rebuild is an operational release/repair command with per-Membership commits,
+  not a partial fallback for NonWorkingDay or another business command.
+
+Completed:
+
+- Added the shared `BusinessTimeZone` contract with IANA `Europe/Kyiv` and
+  Windows `FLE Standard Time` fallback. It converts UTC instants to Kyiv
+  calendar values, builds DST-aware half-open UTC day ranges and rejects
+  default/first/last-calendar bounds.
+- Defined deterministic local input behavior: spring-forward gaps fail
+  validation; fall-back overlaps select the first chronological occurrence by
+  using the larger valid offset. Command normalization happens before a
+  transaction and propagates one canonical UTC envelope through fingerprinting,
+  source facts, audit and idempotency.
+- Applied Kyiv business dates to Visit, Payment, Freeze, Membership, Client,
+  MembershipType and NonWorkingDay commands; profile/history/audit filters;
+  daily visit/payment reports; inactive-client calculations; first-negative
+  dates and report navigation.
+- Localized all visible timestamps through the active `uk-UA`/`en-US` culture
+  after Kyiv conversion. Removed visible UTC/zone/offset suffixes, made payment
+  `datetime-local` values Kyiv wall time and preserved localized validation
+  state on DST gaps.
+- Raised `membership_state_cache.recalculation_version` from 6 to 7. Added the
+  ordered, idempotent `MembershipStateCacheBulkRebuilder`, CLI aliases and
+  `scripts/rebuild-membership-state-caches.sh`; rebuild changes only derived
+  state, creates no business audit, reports progress/failure and is mandatory
+  before traffic after this deploy.
+- Accepted `docs/adr/017-business-time-zone-and-ui-localization.md` and updated
+  the architecture baseline, domain/data/interaction/UI/operations contracts,
+  ADR index and production-readiness checklist.
+
+Validation:
+
+- Unit coverage locks winter/summer conversion, DST gap/fold behavior,
+  first/last calendar bounds and adjacent supported dates. PostgreSQL coverage
+  locks 23-hour spring and 25-hour fall business days, UTC-midnight/Kyiv-date
+  differences, command normalization/no-residue failures and version-6 to
+  version-7 cache rebuild/rerun without source or audit mutation.
+- Web and Playwright coverage verifies culture-aware Kyiv presentation without
+  timezone suffixes, exact Audit/History DST ranges, Kyiv-local Payment defaults,
+  gap rejection without writes and fold persistence to the selected UTC instant.
+- Independent read-only reviews found and then verified fixes for boundary-day
+  validation and canonical command-envelope propagation. The final review found
+  no remaining blocker, high or medium correctness finding.
+- A clean final `./scripts/validate.sh` completed against PostgreSQL 16.14 with
+  Release build/analyzers at 0 warnings and 0 errors. All suites passed with no
+  failures or skips: `BodyLife.Crm.Tests` 401/401,
+  `BodyLife.Crm.Web.Tests` 292/292,
+  `BodyLife.Crm.Infrastructure.Tests` 536/536 and
+  `BodyLife.Crm.Ui.SmokeTests` 124/124 (1,353 total).
+- The migration gate listed the complete chain through
+  `20260720173659_AddBusinessAuditRecordedTimelineIndex`; the EF Core
+  model-drift check reported no model changes since the latest migration.
+- `graphify update .` was attempted after code and governing-doc changes, but
+  its watcher could not rebuild on this filesystem (`Errno 95: Operation not
+  supported`). No refreshed graph is claimed; generated Graphify cache output
+  remains excluded from this step's commits.
+
+Commit:
+
+- `feat(core): apply Kyiv business-time semantics`.
+- `feat(ui): localize business timestamps`.
+- `feat(ops): add membership cache rebuild command`.
+- `docs(adr): define Kyiv business-time policy`.
+
+Stop point:
+
+- Kyiv business-time hardening and the version-7 cache rebuild path are complete
+  and validated. Deployment must run the documented cache rebuild successfully
+  before traffic. Milestone 10 remains complete; begin Milestone 11 only under a
+  separate explicit request.

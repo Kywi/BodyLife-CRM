@@ -1,6 +1,6 @@
 # BodyLife CRM v1 architecture baseline
 
-Джерело: accepted ADR package у `docs/adr/`, ADR-001..ADR-016, initial package accepted 2026-07-07, ADR-014 accepted 2026-07-14 and ADR-015/ADR-016 accepted 2026-07-16.
+Джерело: accepted ADR package у `docs/adr/`, ADR-001..ADR-017, initial package accepted 2026-07-07, ADR-014 accepted 2026-07-14, ADR-015/ADR-016 accepted 2026-07-16 and ADR-017 accepted 2026-07-22.
 
 Це короткий implementation contract для розробки BodyLife CRM v1. Він не замінює ADR і не вибирає technology stack: мова, framework, database, hosting provider, ORM, queue, UI library та observability vendor мають обиратися окремо. Якщо цей документ конфліктує з ADR, перемагає ADR.
 
@@ -11,6 +11,8 @@ BodyLife CRM v1 - internal hosted web app для одного залу і owner/
 Архітектура v1 - modular monolith: один застосунок, один deploy, одна основна transactional system, top-level modules навколо бізнес-відповідальностей. Core workflow має лишатися транзакційно цілісним: visits, payments, membership recalculation, audit і reports не можуть роз'їжджатися. (ADR-002, ADR-004, ADR-005, ADR-007)
 
 UI model - hybrid server-rendered UI: сервер рендерить сторінки, форми, client profile, reports і settings/admin screens; інтерактивність додається тільки там, де вона прискорює рецепцію. Frontend state не є джерелом бізнес-правил. Усі state-changing дії йдуть через server-side commands/actions і після цього UI перечитує canonical state із сервера. (ADR-003, ADR-013)
+
+Canonical instants і technical logs лишаються UTC, але єдиний business calendar залу - `Europe/Kyiv`. UI показує локальний час через active culture без timezone suffix, а report/audit dates означають локальні calendar days, не UTC days. (ADR-017)
 
 ## 2. Non-negotiable architecture rules
 
@@ -31,6 +33,7 @@ UI model - hybrid server-rendered UI: сервер рендерить сторі
 - Можна: hosting/provider-managed automated backups плюс documented restore runbook і restore rehearsal перед production use. Не можна: вважати backup готовим без перевіреного restore-check або додавати app-level export/backup panel у v1. (ADR-009)
 - Можна: Owner, named Admin і shared Reception/Admin account. Не можна: приписувати shared-account action конкретній фізичній людині, якщо система цього не знає. (ADR-012)
 - Можна: editable MembershipType catalog плюс immutable snapshot у виданому абонементі. Не можна: hard delete MembershipType або дозволити зміні catalog silently змінювати вже видані абонементи. (ADR-011)
+- Можна: зберігати exact instants у UTC, а business date і visible time отримувати через fixed `Europe/Kyiv` contract. Не можна: показувати UTC як reception time, залежати від browser/server zone, будувати Kyiv report date через UTC midnight або silently приймати DST-gap input. (ADR-017)
 
 ## 3. Module map
 
@@ -50,6 +53,7 @@ Not top-level v1 modules: `Extensions`, separate debt ledger, full import/migrat
 ## 4. Allowed dependencies
 
 - UI may call application commands/queries and render server state. UI may add quick/live search, compact results, status panels, warnings, quick actions, loading states and duplicate-submit protection. UI may not own business truth. (ADR-003)
+- UI may format a canonical instant through the shared `Europe/Kyiv` contract and active culture. It may not perform independent offset/DST arithmetic or treat `datetime-local` as UTC. (ADR-003, ADR-017)
 - Application commands may coordinate owned module behavior inside one server-side transaction and may call public commands/queries of other modules where ADR ownership requires it. Direct cross-module table writes are forbidden. (ADR-002, ADR-004)
 - Visits, Payments, Freezes, NonWorkingDays and backfill/fallback workflows may create source facts through their own commands and must cause Memberships recalculation through Memberships public interfaces/hooks. (ADR-004, ADR-005, ADR-010)
 - Membership Visit must submit explicit `membership_id`; one-off/trial creates no consumption. Memberships owns Visit eligibility/warnings, and active inclusive Freeze blocks membership consumption until correction/cancellation. (ADR-014)
@@ -88,6 +92,7 @@ Not top-level v1 modules: `Extensions`, separate debt ledger, full import/migrat
 - Build the first vertical slice around reception dashboard, not generic CRUD: search, client profile/status, record visit, add payment, issue membership, warnings and daily report visibility. (ADR-003, ADR-008)
 - Every state-changing command should define: input validation, authorization policy, actor/account/session metadata, transaction boundary, affected source facts, Memberships recalculation need, audit action, reason/comment requirement, duplicate-submit/idempotency guard and error behavior. (ADR-002, ADR-003, ADR-005, ADR-006, ADR-012)
 - Use `occurred_at` for business event time and `recorded_at` for system entry time in backfill/fallback-capable commands. Store marker `manual_backfill` or `paper_fallback` where applicable. (ADR-001, ADR-010)
+- Normalize `occurred_at`/`recorded_at` instants to UTC. Validate Kyiv wall-time input before a transaction; reject DST gaps, select the first chronological occurrence for a DST fold, and derive DateOnly/report ranges from `Europe/Kyiv`. (ADR-017)
 - Keep Memberships recalculation testable outside UI. Required domain coverage includes inclusive end date, canceled visits, negative visits, first negative date, freeze/non-working overlap as union calendar days, backdated entries and correction-triggered recalculation. (ADR-005)
 - Before Visit persistence, lock ADR-014 in pure Memberships tests: explicit ambiguous selection, expired acknowledgement, future-start rejection, one-off/trial no-consumption, deterministic Visit ordering and active-Freeze blocking. (ADR-014)
 - Before AddFreeze persistence, lock ADR-015 in pure Memberships tests: lifecycle status, inclusive endpoints, before-start/post-expiry rejection, end-after-effective acceptance and active/canceled Visit overlap. (ADR-015)
@@ -96,10 +101,11 @@ Not top-level v1 modules: `Extensions`, separate debt ledger, full import/migrat
 - Implement permissions as policy checks on commands, not as hidden UI-only rules. Owner-only and current-day/day-close correction boundaries must be enforceable server-side. (ADR-012)
 - Design audit schema as part of workflow implementation, not as a later logging add-on. Required audit fields include actor/account, role, session/device, action type, entity type/id, related IDs, `occurred_at`, `recorded_at`, before/after or domain summary, reason/comment and request/correlation ID. (ADR-006, ADR-012)
 - Treat backup/restore and paper fallback as production readiness work: restore runbook, at least one restore rehearsal before production use, owner-visible checklist, backup/restore technical status where available, and clear fallback reconciliation path. (ADR-009, ADR-010)
+- Treat a recalculation-contract version change as a release gate: rebuild every stale `membership_state_cache` from canonical source facts before traffic, log operational progress and rerun safely after interruption. (ADR-005, ADR-009, ADR-017)
 
 ## 7. Quality gates before coding
 
-- ADR traceability gate: each module boundary, command rule, report rule, audit rule and out-of-scope rejection must cite ADR-001..ADR-016 or stay out of the baseline.
+- ADR traceability gate: each module boundary, command rule, report rule, audit rule and out-of-scope rejection must cite ADR-001..ADR-017 or stay out of the baseline.
 - Scope gate: v1 contains no offline-first sync, multi-tenant/SaaS scope, native mobile app, public client portal, client accounts, online payments, turnstile/NFC/QR identity, full import, complex accounting/full POS or long-period financial reports. (ADR-001, ADR-008, ADR-010, ADR-012, ADR-013)
 - Module gate: every state-changing workflow has an owning module and uses public interfaces for cross-module behavior. No direct cross-module writes are allowed. (ADR-002, ADR-004)
 - Membership gate: no UI/report/controller logic may calculate membership state independently. Memberships owns formulas and recalculation tests exist before relying on reports/UI. (ADR-004, ADR-005, ADR-007)
@@ -109,6 +115,8 @@ Not top-level v1 modules: `Extensions`, separate debt ledger, full import/migrat
 - Command gate: server-side command/action path includes authorization, transaction boundary, duplicate-submit guard, recalculation decision, audit entry and canonical reread for UI. (ADR-002, ADR-003, ADR-005, ADR-006, ADR-012)
 - Audit/logging gate: business audit and technical logs have separate storage/semantics; technical logs cannot satisfy business history requirements. (ADR-006)
 - Reporting gate: report totals reconcile with source records and provide drill-down. Daily report handles cancellations/corrections and later corrections remain visible. (ADR-007)
+- Time gate: UTC storage/logs, Kyiv business dates, culture-aware display, min/max rejection, DST gap/fold behavior and 23/24/25-hour daily query ranges have automated coverage. (ADR-017)
 - Backfill/fallback gate: backdated entries support `occurred_at` vs `recorded_at`, marker, actor/account and reason/comment; opening state is a valid source fact, not a database patch. (ADR-010)
 - Permissions/accountability gate: Owner, named Admin and shared Reception/Admin behavior is enforced and represented honestly in audit. (ADR-012)
 - Operations gate: production use waits for managed backup configuration, documented restore runbook, minimum 30-day backup retention expectation, RPO/RTO expectation review, and at least one restore rehearsal with recorded result. (ADR-009)
+- Cache-version gate: deploy does not accept traffic until every issued Membership cache has the current recalculation version; the canonical bulk rebuild is rerunnable and its result is recorded in technical logs. (ADR-005, ADR-009, ADR-017)

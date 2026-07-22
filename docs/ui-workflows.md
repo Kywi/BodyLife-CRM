@@ -15,6 +15,10 @@
 - Усі state-changing дії виконуються через server-side commands/actions.
 - Після успішної дії UI перечитує canonical state із сервера через відповідний query. UI не рахує membership state локально і не залишає optimistic business values як правду.
 - Reports читають canonical source records і Memberships public state/read models. Reports не дублюють membership formulas.
+- Canonical instants показуються як `Europe/Kyiv` local time через active culture
+  (`uk-UA` default, supported `en-US`) без `UTC`, zone name або offset suffix.
+  HTML `datetime-local` означає Kyiv wall time; browser/device zone не змінює
+  value. (ADR-017)
 - V1 не включає full SPA/API як default, client self-service, online payments/POS, untracked direct edits, future import UI або explicit day-close workflow.
 
 ## 2. Tablet-first and phone-friendly expectations
@@ -22,6 +26,8 @@
 - Tablet-first означає, що reception dashboard, search, profile summary, active membership panel, warnings і quick actions мають бути usable на планшеті як основний робочий пристрій рецепції.
 - Phone-friendly означає, що ті самі workflows мають працювати у вузькому viewport без втрати дій: search, selected client, warnings, membership state і primary actions переходять у послідовний reading/action order.
 - Touch interactions не повинні залежати від hover-only affordances.
+- Localized date/time text must remain readable in tablet and phone layouts;
+  no critical timestamp meaning may depend on a hidden timezone tooltip.
 - State-changing buttons показують busy/disabled state після submit і не дозволяють повторний submit тієї самої дії.
 - Confirmation and reason/comment UI для corrections/destructive actions має бути доступним і на tablet, і на phone.
 - Compact layout не має приховувати critical warnings: negative balance, expired membership, zero visits, duplicate identity, changed-after-close і permission restrictions.
@@ -107,6 +113,9 @@
 
 - User goal: record that a client arrived and consume one counted membership visit when applicable.
 - Screen/state: quick action on reception dashboard/profile, using client id, controlled visit kind, explicit selected membership id only for membership kind, business date/occurred_at, server-derived warning requirements and optional comment. Candidate rows show snapshot/name, start/effective-end dates, remaining visits and warnings.
+- Time input/state: visible current/default time is Kyiv local wall time. A
+  spring-forward gap returns localized validation without writes; a fall-back
+  overlap uses the deterministic first occurrence defined by ADR-017.
 - Primary actions: open mark visit; use the sole preselected date-active candidate or deliberately choose among multiple candidates; explicitly select expired membership or one-off/trial when no date-active candidate exists; acknowledge every required zero/negative/expired condition; submit.
 - Warnings: selected membership does not belong to client; no eligible membership selected; future-start membership; zero/negative remaining visits; expired by date; Visit date covered by active Freeze; backdated or paper fallback entry requires reason/comment; possible stale membership state.
 - Confirmations: typed current-state acknowledgement for zero/negative/expired states; deliberate one-off/trial choice; reason/comment for backdated/paper fallback entries. Active Freeze cannot be overridden: correct/cancel it or use one-off/trial without consuming the Membership.
@@ -128,13 +137,16 @@
 ## 12. Workflow: add payment flow
 
 - User goal: record a v1 cash payment and make it visible in client history and daily cash report.
-- Screen/state: payment quick action on profile or issue-membership flow; form includes client, optional membership, amount, currency, payment context, occurred_at/business date and comment.
+- Screen/state: payment quick action on profile or issue-membership flow; form includes client, optional membership, amount, currency, payment context, Kyiv-local `occurred_at` and comment. The server renders the default local value and stores the converted UTC instant.
 - Primary actions: enter cash amount; choose valid payment context; link membership only when relevant; submit `CreatePayment`; return to profile/report context.
 - Warnings: amount must be greater than zero; method is cash in v1; linked membership must belong to the client; backdated/paper fallback entries require reason/comment; standalone payment does not automatically change membership formulas unless tied to issue/negative closure policy.
 - Confirmations: no confirmation for normal current-day cash payment; correction/cancellation is handled by correction flows and requires reason/comment.
 - Loading/duplicate-submit protection: `CreatePayment` uses idempotency key; submit is disabled/busy; repeated tap cannot create duplicate cash rows.
 - Success state: payment appears in client history and selected day's daily cash report; membership panel refreshes only when the payment participates in issue/negative closure policy.
-- Failure state: `validation_failed`, `membership_not_eligible`, `duplicate_submission`, `not_found`, `permission_denied` or conflict errors render in the payment form and leave previous canonical state unchanged.
+- Failure state: `validation_failed`, including a non-existent Kyiv DST time,
+  `membership_not_eligible`, `duplicate_submission`, `not_found`,
+  `permission_denied` or conflict errors render in the payment form and leave
+  previous canonical state unchanged.
 
 ## 13. Workflow: add/cancel freeze flow
 
@@ -163,6 +175,9 @@
 - Screen/state: server-rendered daily report backed by `GenerateDailyReport`, with business date, daily visit count, payment count, cash sum, visit/payment drill-down rows, cancellation/correction rows, changed-after-close labels when present and links to client history/audit.
 - Primary actions: choose business date; load report; expand/open drill-down rows; navigate to client profile/history; start permitted correction from a row.
 - Warnings: canceled visits/payments are excluded from totals; corrections after close change live totals but must be visible in drill-down/audit; report must not compute remaining visits, active status, negative balance or end dates itself.
+- Date semantics: selected date is one Kyiv calendar day. The server queries the
+  half-open UTC range between consecutive Kyiv midnights, including 23/25-hour
+  DST days; the UI never labels that date as UTC.
 - Confirmations: none for report reads; correction actions launched from report require confirmation and reason/comment.
 - Loading/duplicate-submit protection: report load shows loading and replaces stale report responses by business date; read actions do not need idempotency keys.
 - Success state: report displays canonical totals, source rows and explanation links for the selected date.
@@ -172,6 +187,9 @@
 
 - User goal: fix mistaken visits, payments, freezes or owner-only non-working periods while preserving explainable business history.
 - Screen/state: correction entry point from profile history, daily report drill-down or owner non-working screen; form shows original source fact, affected client/membership/date/amount/range, required reason/comment and expected changed-after-close status when relevant.
+- Timestamp presentation: original, replacement, occurred and recorded instants
+  use one culture-aware Kyiv formatter with no timezone suffix. Replacement
+  `datetime-local` follows the same DST validation as creation forms.
 - Primary actions: cancel visit; correct or cancel payment; cancel freeze; owner correct/cancel non-working period with previewed affected scope; submit the appropriate command.
 - Warnings: correction after closed/reconciled day may be Owner-only; original fact may already be canceled/replaced; correction can change membership state and report totals; changed-after-close marker must remain visible in reports/history; non-working correction can affect multiple Memberships and requires Owner preview/confirmation. The preview must make ADR-016 endpoint behavior explicit in business data: any inclusive overlap receives the full period, including when Membership starts or ends inside it.
 - Confirmations: all destructive/correction actions require explicit confirmation plus reason/comment; non-working day add/range correction requires a token bound to the exact ordered Membership set and full applied ranges, and may fail if that scope changes.
@@ -202,3 +220,6 @@
 - Daily report totals come from canonical source records and provide drill-downs to explain corrections/cancellations.
 - Tablet viewport is the primary acceptance target, and phone viewport preserves every critical warning/action in a usable order.
 - Owner/Admin differences are visible in available actions and enforced again by server commands.
+- Representative winter/summer timestamps, DST gap/fold inputs and
+  spring/fall 23/25-hour report dates pass tablet/phone acceptance without any
+  visible UTC suffix or browser-zone dependency. (ADR-017)

@@ -376,6 +376,18 @@ Permissions summary:
 
 Усі бізнесові date ranges у цьому домені inclusive, якщо майбутній ADR не скаже інакше.
 
+Точні моменти `occurred_at` і `recorded_at` є canonical UTC instants. Єдиний
+business calendar залу - `Europe/Kyiv`: business `DateOnly`, first negative
+Visit date, inactive-client cutoff і selected report date визначаються після
+conversion instant у цей календар. Time zone сервера, браузера або пристрою не
+змінює доменний результат.
+
+Local form input означає Kyiv wall time. Неіснуючий spring-forward час є
+validation error; для ambiguous fall-back часу v1 обирає перший chronological
+occurrence (більший valid UTC offset). Один local business day є half-open
+interval від Kyiv midnight до наступного Kyiv midnight, окремо converted у UTC,
+і тому може тривати 23, 24 або 25 годин. (ADR-017)
+
 Для domain tests `duration_days` трактується як кількість активних календарних днів включно зі `start_date`.
 
 ```text
@@ -398,6 +410,12 @@ Memberships recalculates derived state from source facts:
 - backdated entries;
 - corrections;
 - explicit audited adjustments.
+
+`membership_state_cache` є versioned derived state. Kyiv business-date
+semantics відповідають recalculation contract version `7`; stale cache має бути
+перебудований canonical Memberships calculator-ом із source facts, а не
+виправлений прямим update. Derived-only operational rebuild не створює business
+audit. (ADR-005, ADR-017)
 
 Core derived values:
 
@@ -549,6 +567,11 @@ daily_payment_count = active, not-canceled Payments with occurred_at on date
 daily_cash_sum = sum of active, not-canceled cash Payments with occurred_at on date
 ```
 
+`on date` означає `occurred_at >= Kyiv midnight` і
+`occurred_at < next Kyiv midnight` після conversion обох меж у UTC. Це не
+порівняння з UTC calendar date. Client History і Audit date filters застосовують
+той самий business-day contract. (ADR-007, ADR-017)
+
 Ending soon:
 
 ```text
@@ -586,6 +609,8 @@ Backdated visits, payments, freezes, memberships and opening states use domain c
 - marker such as `manual_backfill` або `paper_fallback`.
 
 Recalculation uses business occurrence where relevant. Audit must show that source fact was entered later.
+Local wall-time input проходить Kyiv DST validation і зберігається як canonical
+UTC instant; UI пізніше показує його в active culture без UTC suffix. (ADR-017)
 
 ## 6. Correction and cancellation rules
 

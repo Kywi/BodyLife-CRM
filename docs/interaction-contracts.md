@@ -36,6 +36,13 @@ Recommended interaction pattern для v1:
 - `recorded_at` встановлюється сервером на момент успішного commit;
 - `reason` або `comment`, коли command є correction, cancellation, backdated/fallback entry, card reassignment або owner-sensitive action.
 
+`occurred_at` і `recorded_at` є canonical UTC instants. Якщо UI надсилає
+`datetime-local`, server трактує його як `Europe/Kyiv` wall time: DST gap є
+`validation_failed`, DST overlap обирає перший chronological occurrence
+(більший offset). Unsupported min/max instants і DateOnly boundaries
+відхиляються до transaction, тому не створюють source, audit або idempotency
+success. Date-only domain inputs не отримують implicit UTC conversion. (ADR-017)
+
 Common command result:
 
 - `status`: success або error;
@@ -176,7 +183,7 @@ Common errors:
 ### MarkVisit
 
 - Purpose: зафіксувати Visit and, for membership visit, consume one counted visit from selected Membership.
-- Input: client id; controlled visit kind `membership`, `one_off` or `trial`; explicit membership id only for membership kind; occurred_at/business date; typed current-state acknowledgements for expired/zero/negative conditions; optional comment; common command envelope.
+- Input: client id; controlled visit kind `membership`, `one_off` or `trial`; explicit membership id only for membership kind; Kyiv local `occurred_at` input normalized to UTC; typed current-state acknowledgements for expired/zero/negative conditions; optional comment; common command envelope.
 - Selection: ADR-014 permits multiple lifecycle-active Memberships. Server never selects newest/first implicitly. UI may preselect only one ordinary date-active candidate, but every membership Visit command still submits explicit `membership_id`; ambiguous candidates require deliberate selection.
 - Validation: client exists; selected membership belongs to client and has lifecycle status active; Visit date is not before membership start; future-start/canceled/corrected Membership is ineligible; expired Membership requires explicit expired acknowledgement; 0 or negative remaining visits require their current server-derived acknowledgements; all simultaneous required warning conditions must be acknowledged; one-off/trial rejects membership id and creates no consumption; at most one active counted consumption per visit; backdated/paper fallback entries require reason/comment.
 - Freeze policy: an active Freeze whose inclusive range covers the Visit business date blocks membership kind with `visit_during_freeze`; v1 has no override. Actor must correct/cancel Freeze first or explicitly use one-off/trial without membership consumption.
@@ -204,7 +211,7 @@ Common errors:
 ### CreatePayment
 
 - Purpose: зафіксувати cash Payment for membership sale, one-off/trial, negative closure or other v1 cash context.
-- Input: client id, optional membership id, amount, currency, payment context, occurred_at/business date, comment, common command envelope.
+- Input: client id, optional membership id, amount, currency, payment context, Kyiv local `occurred_at` input normalized to UTC, comment, common command envelope.
 - Validation: client exists; membership, if provided, belongs to client; amount > 0; method is cash in v1; payment context is valid; backdated/paper fallback entries require reason/comment and entry_origin marker.
 - Permissions: Admin + Owner.
 - Transaction boundary: one ACID transaction creates `payments`, optional negative closure source facts if selected by workflow, recalculates affected memberships only when payment participates in membership issue or negative closure policy, and appends audit.
@@ -218,7 +225,7 @@ Common errors:
 
 - Purpose: explicitly correct or cancel a cash Payment while preserving business history.
 - Input: original payment id, correction mode (`replace` or `cancel`), replacement amount/date/context/comment when replacing, reason/comment, common command envelope.
-- Validation: original payment exists; original is not already canceled/replaced unless idempotent repeat; reason required; replacement amount > 0 and method remains cash; replacement membership/client context is valid; closed/reconciled day follows owner policy; old and new occurred dates remain explainable.
+- Validation: original payment exists; original is not already canceled/replaced unless idempotent repeat; reason required; replacement amount > 0 and method remains cash; replacement membership/client context is valid; command and replacement instants satisfy the common Kyiv/UTC boundary; closed/reconciled day follows owner policy; old and new occurred dates remain explainable.
 - Permissions: Admin + Owner for current-day/open-day correction; after day close/reconciliation Owner-only or explicit owner-approved policy.
 - Transaction boundary: one ACID transaction creates cancellation/correction fact, optionally creates replacement `payments` row, marks original status, recalculates affected memberships if payment participates in issue/negative closure policy, and appends audit.
 - Affected modules: Payments, Memberships if linked to issue/negative closure, Reports, Audit, Users/Roles.
@@ -230,7 +237,7 @@ Common errors:
 ### AddFreeze
 
 - Purpose: додати individual Freeze source range that extends one issued Membership.
-- Input: client id, membership id, start date, end date, reason/comment, occurred_at if business event date differs from recorded date, common command envelope.
+- Input: client id, membership id, start date, end date, reason/comment, Kyiv local `occurred_at` normalized to UTC if business event time differs from recorded time, common command envelope.
 - Validation: client and membership exist and match; Membership is lifecycle-active;
   date range is inclusive and `start_date <= end_date`; start is on or after
   Membership start and on or before the locked canonical pre-command effective
@@ -344,7 +351,7 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Input: business date, include drill-down flag, include changed-after-close labels, optional filters for actor/report view.
 - Output shape: business date; daily visit count; payment count; daily cash sum; visit drill-down rows; payment drill-down rows; cancellation/correction rows; day reconciliation status if present; changed-after-close markers; links to audit/history for each row.
 - Source modules: Reports, Visits, Payments, Memberships for membership summaries only, Audit for explanation/drill-down, Users/Roles for permission.
-- Consistency expectations: live direct query over canonical source records. Canceled visits/payments are excluded from totals. Corrections after close change live totals but are visible through drill-down/audit. Report must not compute remaining visits, active status, negative balance or end dates itself.
+- Consistency expectations: live direct query over canonical source records. Business date maps to the half-open UTC range between consecutive `Europe/Kyiv` midnights, which may be 23, 24 or 25 hours. Canceled visits/payments are excluded from totals. Corrections after close change live totals but are visible through drill-down/audit. Report must not compute remaining visits, active status, negative balance or end dates itself.
 
 ### ListEndingSoonMemberships
 
@@ -379,20 +386,21 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Input: client id, date range, entity filters, pagination.
 - Output shape: chronological source facts and corrections: memberships, visits, payments, freezes, non-working applications, opening states, negative closures, audit summaries, entry_origin labels.
 - Source modules: Clients, Memberships, Visits, Payments, Freezes, NonWorkingDays, Audit.
-- Consistency expectations: history shows source facts and correction/cancellation facts, not silent rewritten state. Backfilled and paper fallback entries show both occurred_at and recorded_at.
+- Consistency expectations: history shows source facts and correction/cancellation facts, not silent rewritten state. Date filters use Kyiv business-day half-open UTC ranges. Backfilled and paper fallback entries show both occurred_at and recorded_at as culture-formatted Kyiv local time.
 
 ### GetAuditTimeline
 
 - Input: entity type/id or client id, date range, action filters, pagination, actor context.
 - Output shape: append-only business audit entries with action type, actor/account/session/device, occurred_at, recorded_at, before/after or domain summary, reason/comment, related ids, request correlation id.
 - Source modules: Audit, Users/Roles, related modules for display labels.
-- Consistency expectations: audit explains successful commands and corrections. Audit is not used to compute report totals.
+- Consistency expectations: audit explains successful commands and corrections. Date filters use Kyiv business-day half-open UTC ranges; visible instants are culture-formatted Kyiv local time without a timezone suffix. Audit is not used to compute report totals.
 
 ## 6. Transaction and consistency rules
 
 - Commands that create or change visits, payments, freezes, non-working days, issued memberships, backfill/opening state or corrections must commit source fact, recalculation and audit consistently.
 - Recalculation for single-membership commands is synchronous in the same transaction.
 - NonWorkingDay commands recalculate affected memberships in the same completed action for v1. If this ever becomes async, the command contract must expose pending/failed/retry state before UI treats the action as complete.
+- The standalone versioned Membership cache rebuild is a derived-state release/repair operation, not a business command. It commits one Membership at a time, creates no business audit, logs progress/failure, and is safely rerun after partial completion. It does not change the atomic transaction contract of `AddNonWorkingDay` or any user workflow. (ADR-017)
 - Reports and profile screens read committed state after command success. UI must not optimistically keep calculated membership values after a state-changing command.
 - Idempotency keys are required for fast reception actions that can be double-submitted: `IssueMembership`, `MarkVisit`, `CreatePayment`, `AddFreeze`, and correction/cancellation commands.
 - Membership Visit/Freeze commands share a Membership-first lock order. MarkVisit
@@ -410,6 +418,7 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Non-working day owner workflow needs preview, confirmation and result screens: `PreviewNonWorkingDayImpact`, `AddNonWorkingDay`, `CorrectNonWorkingDay`.
 - Destructive/correction actions need confirmation and reason/comment UI.
 - UI must show current account/session so shared Reception/Admin accountability is honest.
+- UI converts canonical instants to `Europe/Kyiv` and formats them through the active culture without `UTC`/offset suffixes. `datetime-local` means Kyiv wall time and DST validation errors remain editable in the originating form. (ADR-017)
 
 ## 8. Open questions and ADR candidates
 
