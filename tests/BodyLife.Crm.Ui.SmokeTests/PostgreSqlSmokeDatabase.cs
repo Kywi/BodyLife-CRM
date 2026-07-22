@@ -846,6 +846,15 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             Warnings = new[] { "membership_negative_balance" },
         };
 
+        const decimal createdPaymentAmount = 725m;
+        const string createdPaymentCurrency = "UAH";
+        const string createdPaymentContext = "membership_sale";
+        const string createdPaymentComment = "Cash received at reception";
+        var paymentCreationAuditEntryId = Guid.NewGuid();
+        var createdPaymentId = Guid.NewGuid();
+        var createdPaymentOccurredAt = recordedBase.AddHours(11).AddMinutes(30);
+        var createdPaymentRecordedAt = recordedBase.AddHours(12).AddMinutes(10);
+
         var paymentCorrectionAuditEntryId = Guid.NewGuid();
         var originalPaymentId = Guid.NewGuid();
         var replacementPaymentId = Guid.NewGuid();
@@ -1319,6 +1328,47 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                         Selection = "explicit_membership",
                     },
                     MembershipState = markedVisitAfterState,
+                },
+                ChangedAfterClose: false),
+            new(
+                paymentCreationAuditEntryId,
+                "payment.created",
+                "payment",
+                createdPaymentId,
+                new
+                {
+                    ClientId = clientId,
+                    MembershipId = (Guid?)membershipId,
+                },
+                sharedAdminAccountId,
+                "shared_reception_admin",
+                "admin",
+                sharedSessionId,
+                sharedDeviceLabel,
+                createdPaymentOccurredAt,
+                createdPaymentRecordedAt,
+                "normal",
+                Reason: null,
+                createdPaymentComment,
+                new { },
+                new
+                {
+                    Payment = new
+                    {
+                        PaymentId = createdPaymentId,
+                        ClientId = clientId,
+                        MembershipId = (Guid?)membershipId,
+                        Amount = createdPaymentAmount,
+                        Currency = createdPaymentCurrency,
+                        Method = "cash",
+                        PaymentContext = createdPaymentContext,
+                        OccurredAt = createdPaymentOccurredAt,
+                        RecordedAt = createdPaymentRecordedAt,
+                        EntryOrigin = "normal",
+                        EntryBatchId = (Guid?)null,
+                        Comment = createdPaymentComment,
+                        Status = "active",
+                    },
                 },
                 ChangedAfterClose: false),
             new(
@@ -1971,6 +2021,15 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     markedVisitAfterRemaining,
                     markedVisitAfterNegative,
                     markedVisitFirstNegativeDate),
+                PaymentCreation: new PaymentCreationAuditExplanationSmokeScenario(
+                    paymentCreationAuditEntryId,
+                    createdPaymentId,
+                    clientId,
+                    membershipId,
+                    createdPaymentAmount,
+                    createdPaymentCurrency,
+                    createdPaymentContext,
+                    createdPaymentOccurredAt),
                 MembershipIssue: new MembershipIssueAuditExplanationSmokeScenario(
                     membershipIssueAuditEntryId,
                     issuedMembershipId,

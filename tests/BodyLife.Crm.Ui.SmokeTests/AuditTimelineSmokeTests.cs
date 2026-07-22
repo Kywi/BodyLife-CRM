@@ -36,6 +36,139 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
     [Theory]
     [InlineData("owner-tablet", 1024, 768, true)]
     [InlineData("admin-phone", 390, 844, false)]
+    public async Task CreatedPaymentShowsStoredCashSourceContext(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var payment = scenario.Explanations.PaymentCreation;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} created Payment audit smoke");
+
+            var explanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "Payment",
+                "payment.created",
+                payment.AuditEntryId,
+                "payment-created",
+                viewportName,
+                entityId: payment.PaymentId);
+            await ExpectVisibleAsync(
+                explanation.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Cash payment recorded", Exact = true }),
+                viewportName,
+                "created Payment explanation title");
+            Assert.Equal(
+                "Not present",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before payment",
+                    "Payment"));
+            Assert.Equal(
+                payment.PaymentId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded payment",
+                    "Payment"));
+            Assert.Equal(
+                payment.ClientId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded payment",
+                    "Client"));
+            Assert.Equal(
+                $"{payment.Amount.ToString("0.##", CultureInfo.InvariantCulture)} " +
+                payment.Currency,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded payment",
+                    "Amount"));
+            Assert.Equal(
+                "Cash",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded payment",
+                    "Method"));
+            Assert.Equal(
+                "Membership sale",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded payment",
+                    "Context"));
+            Assert.Equal(
+                payment.MembershipId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded payment",
+                    "Membership"));
+            Assert.Equal(
+                $"{payment.OccurredAt:yyyy-MM-dd HH:mm:ss} UTC",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded payment",
+                    "Occurred"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Recorded payment",
+                    "Status"));
+            await ExpectVisibleAsync(
+                explanation.GetByText("Payment", new() { Exact = true }).Last,
+                viewportName,
+                "created Payment changed field");
+
+            var envelope = explanation
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "created Payment audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "created Payment raw envelope");
+            var envelopeText = await envelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains("recordedAt", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("entryOrigin", envelopeText, StringComparison.Ordinal);
+            Assert.Contains(payment.PaymentContext, envelopeText, StringComparison.Ordinal);
+            await AssertFitsViewportAsync(page, viewportName, "created Payment explanation");
+            await CaptureVisualAsync(page, viewportName, "payment-created-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
     public async Task MarkedMembershipVisitShowsConsumptionAndStoredStateChange(
         string viewportName,
         int width,

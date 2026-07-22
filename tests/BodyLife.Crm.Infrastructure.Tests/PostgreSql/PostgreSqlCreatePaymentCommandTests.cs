@@ -98,6 +98,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         Assert.Equal("{}", audit.BeforeSummary);
         using (var related = JsonDocument.Parse(audit.RelatedEntityRefs))
         {
+            Assert.Equal(2, related.RootElement.EnumerateObject().Count());
             Assert.Equal(
                 fixture.ClientId,
                 related.RootElement.GetProperty("clientId").GetGuid());
@@ -108,14 +109,33 @@ public sealed class PostgreSqlCreatePaymentCommandTests
 
         using (var after = JsonDocument.Parse(audit.AfterSummary))
         {
+            Assert.Single(after.RootElement.EnumerateObject());
             var summary = after.RootElement.GetProperty("payment");
+            Assert.Equal(13, summary.EnumerateObject().Count());
             Assert.Equal(paymentId, summary.GetProperty("paymentId").GetGuid());
+            Assert.Equal(
+                fixture.ClientId,
+                summary.GetProperty("clientId").GetGuid());
+            Assert.Equal(
+                fixture.MembershipId,
+                summary.GetProperty("membershipId").GetGuid());
             Assert.Equal(1250m, summary.GetProperty("amount").GetDecimal());
             Assert.Equal("UAH", summary.GetProperty("currency").GetString());
             Assert.Equal("cash", summary.GetProperty("method").GetString());
             Assert.Equal(
                 "membership_sale",
                 summary.GetProperty("paymentContext").GetString());
+            Assert.Equal(
+                PaymentOccurredAt,
+                summary.GetProperty("occurredAt").GetDateTimeOffset());
+            Assert.Equal(
+                TestNow,
+                summary.GetProperty("recordedAt").GetDateTimeOffset());
+            Assert.Equal("normal", summary.GetProperty("entryOrigin").GetString());
+            Assert.Equal(JsonValueKind.Null, summary.GetProperty("entryBatchId").ValueKind);
+            Assert.Equal(
+                "Front desk Payment",
+                summary.GetProperty("comment").GetString());
             Assert.Equal("active", summary.GetProperty("status").GetString());
         }
 

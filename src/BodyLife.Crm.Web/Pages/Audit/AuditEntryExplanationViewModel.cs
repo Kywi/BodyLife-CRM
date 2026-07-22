@@ -40,6 +40,7 @@ public sealed record AuditEntryExplanationViewModel(
             "freeze.canceled" => "freeze-canceled",
             "visit.marked" => "visit-marked",
             "visit.canceled" => "visit-canceled",
+            "payment.created" => "payment-created",
             "payment.corrected" => "payment-corrected",
             "payment.canceled" => "payment-canceled",
             _ => null,
@@ -154,6 +155,12 @@ public sealed record AuditEntryExplanationViewModel(
                         after.RootElement),
                 "visit.canceled" when entry.EntityType == AuditTimelineEntityType.Visit
                     => CreateVisitCancellation(entry, before.RootElement, after.RootElement),
+                "payment.created" when entry.EntityType == AuditTimelineEntityType.Payment
+                    => CreatePaymentCreation(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
                 "payment.corrected" when entry.EntityType == AuditTimelineEntityType.Payment
                     => CreatePaymentCorrection(entry, before.RootElement, after.RootElement),
                 "payment.canceled" when entry.EntityType == AuditTimelineEntityType.Payment
@@ -547,6 +554,61 @@ public sealed record AuditEntryExplanationViewModel(
             IsAvailable: true);
     }
 
+    private static AuditEntryExplanationViewModel CreatePaymentCreation(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        if (before.ValueKind != JsonValueKind.Object
+            || before.EnumerateObject().Any())
+        {
+            throw new JsonException(
+                "A Payment creation cannot have a pre-existing Payment summary.");
+        }
+
+        var relatedClientId = RequireGuid(related, "clientId");
+        var relatedMembershipId = RequireNullableGuid(related, "membershipId");
+        var payment = ReadCreatedPayment(RequireObject(after, "payment"));
+        ValidateEntryBatch(payment.EntryOrigin, payment.EntryBatchId);
+
+        if (payment.PaymentId != entry.EntityId
+            || payment.ClientId != relatedClientId
+            || payment.MembershipId != relatedMembershipId
+            || payment.OccurredAt != entry.OccurredAt
+            || payment.RecordedAt != entry.RecordedAt
+            || payment.EntryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || payment.Comment != entry.Comment
+            || payment.Method != "cash"
+            || payment.Status != "active")
+        {
+            throw new JsonException("Created Payment summary is inconsistent.");
+        }
+
+        var context = PaymentContextLabel(payment.PaymentContext);
+        return new AuditEntryExplanationViewModel(
+            "payment-created",
+            "Cash payment recorded",
+            "This explanation shows the stored Payment source fact. Daily cash reports continue to read canonical active Payment rows rather than calculating totals from audit.",
+            "Before payment",
+            "Recorded payment",
+            [
+                Fact("Payment", "Not present"),
+            ],
+            [
+                Fact("Payment", TimelineModel.ShortId(payment.PaymentId)),
+                Fact("Client", TimelineModel.ShortId(payment.ClientId)),
+                Fact("Amount", MoneyLabel(payment.Amount, payment.Currency)),
+                Fact("Method", PaymentMethodLabel(payment.Method)),
+                Fact("Context", context),
+                Fact("Membership", OptionalIdLabel(payment.MembershipId)),
+                Fact("Occurred", TimelineModel.TimestampLabel(payment.OccurredAt)),
+                Fact("Status", "Active"),
+            ],
+            ChangedFields: "Payment",
+            IsAvailable: true);
+    }
+
     private static AuditEntryExplanationViewModel CreatePaymentCancellation(
         AuditTimelineEntry entry,
         JsonElement before,
@@ -885,6 +947,30 @@ public sealed record AuditEntryExplanationViewModel(
             RequireString(payment, "method"),
             RequireString(payment, "paymentContext"),
             RequireTimestamp(payment, "occurredAt"),
+            RequireString(payment, "status"));
+    }
+
+    private static CreatedPaymentSnapshot ReadCreatedPayment(JsonElement payment)
+    {
+        var amount = RequireDecimal(payment, "amount");
+        if (amount <= 0)
+        {
+            throw new JsonException("Created Payment amount must be positive.");
+        }
+
+        return new CreatedPaymentSnapshot(
+            RequireGuid(payment, "paymentId"),
+            RequireGuid(payment, "clientId"),
+            RequireNullableGuid(payment, "membershipId"),
+            amount,
+            RequireString(payment, "currency"),
+            RequireString(payment, "method"),
+            RequireString(payment, "paymentContext"),
+            RequireTimestamp(payment, "occurredAt"),
+            RequireTimestamp(payment, "recordedAt"),
+            RequireString(payment, "entryOrigin"),
+            RequireNullableGuid(payment, "entryBatchId"),
+            RequireNullableString(payment, "comment"),
             RequireString(payment, "status"));
     }
 
@@ -1547,6 +1633,21 @@ public sealed record AuditEntryExplanationViewModel(
         string Method,
         string PaymentContext,
         DateTimeOffset OccurredAt,
+        string Status);
+
+    private sealed record CreatedPaymentSnapshot(
+        Guid PaymentId,
+        Guid ClientId,
+        Guid? MembershipId,
+        decimal Amount,
+        string Currency,
+        string Method,
+        string PaymentContext,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment,
         string Status);
 
     private sealed record MembershipIssueSnapshot(

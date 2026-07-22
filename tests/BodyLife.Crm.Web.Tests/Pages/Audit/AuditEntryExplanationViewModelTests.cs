@@ -389,6 +389,208 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void PaymentCreationShowsStoredCashSourceContext()
+    {
+        var membershipId = Guid.NewGuid();
+        var payment = Payment(
+            Guid.NewGuid(),
+            membershipId,
+            amount: 1250m,
+            OriginalOccurredAt,
+            status: "active");
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "payment.created",
+                    AuditTimelineEntityType.Payment,
+                    payment.PaymentId,
+                    new { },
+                    new { Payment = payment },
+                    related: new
+                    {
+                        ClientId = payment.ClientId,
+                        MembershipId = (Guid?)membershipId,
+                    },
+                    reason: null,
+                    comment: payment.Comment)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("payment-created", explanation.Kind);
+        Assert.Equal("Cash payment recorded", explanation.Title);
+        Assert.Equal("Not present", FactValue(explanation.BeforeFacts, "Payment"));
+        Assert.Equal("1250 UAH", FactValue(explanation.AfterFacts, "Amount"));
+        Assert.Equal("Cash", FactValue(explanation.AfterFacts, "Method"));
+        Assert.Equal("Membership sale", FactValue(explanation.AfterFacts, "Context"));
+        Assert.Equal(
+            membershipId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Membership"));
+        Assert.Equal("Active", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal("Payment", explanation.ChangedFields);
+        Assert.Contains("canonical active Payment rows", explanation.Narrative);
+    }
+
+    [Theory]
+    [InlineData("one_off", "One-off")]
+    [InlineData("trial", "Trial")]
+    [InlineData("other", "Other")]
+    public void StandalonePaymentCreationShowsContextWithoutInventingMembership(
+        string paymentContext,
+        string expectedContext)
+    {
+        var payment = Payment(
+            Guid.NewGuid(),
+            membershipId: null,
+            amount: 300m,
+            OriginalOccurredAt,
+            status: "active",
+            paymentContext: paymentContext);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "payment.created",
+                    AuditTimelineEntityType.Payment,
+                    payment.PaymentId,
+                    new { },
+                    new { Payment = payment },
+                    related: new
+                    {
+                        ClientId = payment.ClientId,
+                        MembershipId = (Guid?)null,
+                    },
+                    reason: null,
+                    comment: payment.Comment)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(expectedContext, FactValue(explanation.AfterFacts, "Context"));
+        Assert.Equal("No Membership", FactValue(explanation.AfterFacts, "Membership"));
+    }
+
+    [Fact]
+    public void PaymentCreationWithMismatchedRelatedClientFailsClosed()
+    {
+        var payment = Payment(
+            Guid.NewGuid(),
+            membershipId: null,
+            amount: 500m,
+            OriginalOccurredAt,
+            status: "active",
+            paymentContext: "one_off");
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "payment.created",
+                    AuditTimelineEntityType.Payment,
+                    payment.PaymentId,
+                    new { },
+                    new { Payment = payment },
+                    related: new
+                    {
+                        ClientId = Guid.NewGuid(),
+                        MembershipId = (Guid?)null,
+                    },
+                    comment: payment.Comment)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void PaymentCreationWithPreExistingSummaryFailsClosed()
+    {
+        var payment = Payment(
+            Guid.NewGuid(),
+            membershipId: null,
+            amount: 500m,
+            OriginalOccurredAt,
+            status: "active",
+            paymentContext: "one_off");
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "payment.created",
+                    AuditTimelineEntityType.Payment,
+                    payment.PaymentId,
+                    new { PaymentId = payment.PaymentId },
+                    new { Payment = payment },
+                    related: new
+                    {
+                        ClientId = payment.ClientId,
+                        MembershipId = (Guid?)null,
+                    },
+                    comment: payment.Comment)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void PaymentCreationWithNonCashMethodFailsClosed()
+    {
+        var payment = Payment(
+            Guid.NewGuid(),
+            membershipId: null,
+            amount: 500m,
+            OriginalOccurredAt,
+            status: "active",
+            paymentContext: "one_off") with
+        {
+            Method = "card",
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "payment.created",
+                    AuditTimelineEntityType.Payment,
+                    payment.PaymentId,
+                    new { },
+                    new { Payment = payment },
+                    related: new
+                    {
+                        ClientId = payment.ClientId,
+                        MembershipId = (Guid?)null,
+                    },
+                    comment: payment.Comment)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void PaymentCreationWithNonPositiveAmountFailsClosed()
+    {
+        var payment = Payment(
+            Guid.NewGuid(),
+            membershipId: null,
+            amount: 0m,
+            OriginalOccurredAt,
+            status: "active",
+            paymentContext: "one_off");
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "payment.created",
+                    AuditTimelineEntityType.Payment,
+                    payment.PaymentId,
+                    new { },
+                    new { Payment = payment },
+                    related: new
+                    {
+                        ClientId = payment.ClientId,
+                        MembershipId = (Guid?)null,
+                    },
+                    comment: payment.Comment)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void PaymentCorrectionShowsOriginalReplacementAndChangedFields()
     {
         var originalPaymentId = Guid.NewGuid();
@@ -1712,6 +1914,7 @@ public sealed class AuditEntryExplanationViewModelTests
     [InlineData("freeze.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("visit.marked", AuditTimelineEntityType.Payment)]
     [InlineData("visit.canceled", AuditTimelineEntityType.Payment)]
+    [InlineData("payment.created", AuditTimelineEntityType.Visit)]
     [InlineData("payment.corrected", AuditTimelineEntityType.Visit)]
     [InlineData("payment.canceled", AuditTimelineEntityType.Visit)]
     public void SupportedActionWithWrongEntityFailsClosed(
@@ -1939,7 +2142,8 @@ public sealed class AuditEntryExplanationViewModelTests
         Guid? membershipId,
         decimal amount,
         DateTimeOffset occurredAt,
-        string status)
+        string status,
+        string paymentContext = "membership_sale")
     {
         return new PaymentAuditFixture(
             paymentId,
@@ -1948,7 +2152,7 @@ public sealed class AuditEntryExplanationViewModelTests
             amount,
             "UAH",
             "cash",
-            "membership_sale",
+            paymentContext,
             occurredAt,
             occurredAt.AddMinutes(5),
             Guid.NewGuid(),

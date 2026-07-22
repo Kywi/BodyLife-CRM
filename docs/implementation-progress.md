@@ -11593,3 +11593,69 @@ Next recommended step:
   `membership_opening_state.created`, `freeze.added` and
   `non_working_day.added`, plus the final Milestone 10 acceptance review, for
   later steps.
+
+## Step 180 - Created Payment audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Closed only the planned `payment.created` audit-noise gap. The remaining five
+  raw-only creation events and the Milestone 10 acceptance review remain in
+  scope; Milestone 11 was not started.
+- Implemented the operations audit-matrix summary for amount/currency, cash
+  context, Client/optional Membership, occurred time and source status.
+- Kept canonical active Payment rows as report truth. The Timeline explains the
+  stored command summary and does not calculate daily cash totals from audit.
+
+Completed:
+
+- Added a fail-closed `payment.created` Timeline explanation that requires an
+  empty before-summary, exact Payment/Client/optional Membership identities,
+  positive amount, cash method, supported context, active status and matching
+  occurred/recorded/origin/comment source metadata.
+- Shows the stored Payment id, Client, amount/currency, cash method,
+  membership-sale/one-off/trial/other context, optional Membership, occurred
+  time and active status as the primary Owner/Admin facts.
+- Added nine Web presenter cases covering linked and standalone contexts,
+  relationship mismatch, non-empty before state, non-cash method, non-positive
+  amount and wrong entity type.
+- Strengthened the real PostgreSQL `CreatePayment` workflow test to pin the
+  complete two-reference and thirteen-field production audit payload.
+- Added an isolated production-shaped Timeline seed plus Owner/tablet and
+  named-Admin/phone Playwright coverage for readable facts, collapsed raw
+  envelope, touch target and viewport fit.
+- Kept Payment command handling, source persistence, reports, Razor markup,
+  CSS, authorization, EF model and migrations unchanged.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 81/81 and the strengthened
+  real `MembershipPaymentCommitsAuditAndIdempotencyWithoutChangingMembershipState`
+  PostgreSQL test passed 1/1.
+- Focused created-Payment Playwright coverage passed 2/2 and the complete
+  `AuditTimelineSmokeTests` regression passed 26/26 with no skipped tests.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports with no overlap or horizontal overflow.
+- The repository-wide `./scripts/validate.sh` gate is intentionally deferred to
+  the requested final Milestone 10 acceptance review after all remaining
+  raw-only events are closed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this progress update but stopped
+  because no semantic extraction LLM backend is configured; it produced no
+  tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain created payments`.
+
+Next recommended step:
+
+- Continue the audit-noise review with `client.created`. Explain the stored
+  identity, optional current-card assignment and duplicate-warning
+  acknowledgements without exposing unnecessary personal data outside the
+  existing Owner/Admin audit scope.
