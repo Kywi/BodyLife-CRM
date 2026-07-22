@@ -22,6 +22,7 @@ public sealed record AuditEntryExplanationViewModel(
 
         var kind = entry.ActionType switch
         {
+            "membership_type.created" => "membership-type-created",
             "membership_type.edited" => "membership-type-edited",
             "membership_type.deactivated" => "membership-type-deactivated",
             "membership.issued" => "membership-issued",
@@ -58,6 +59,13 @@ public sealed record AuditEntryExplanationViewModel(
             using var after = JsonDocument.Parse(entry.AfterSummaryJson);
             return entry.ActionType switch
             {
+                "membership_type.created"
+                    when entry.EntityType == AuditTimelineEntityType.MembershipType
+                    => CreateMembershipTypeCreation(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
                 "client.created" when entry.EntityType == AuditTimelineEntityType.Client
                     => ClientAuditExplanationFactory.CreateClientCreation(
                         entry,
@@ -179,6 +187,55 @@ public sealed record AuditEntryExplanationViewModel(
         {
             return Unavailable(kind);
         }
+    }
+
+    private static AuditEntryExplanationViewModel CreateMembershipTypeCreation(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        if (entry.EntityId == Guid.Empty
+            || related.ValueKind != JsonValueKind.Object
+            || related.EnumerateObject().Any()
+            || before.ValueKind != JsonValueKind.Object
+            || before.EnumerateObject().Any())
+        {
+            throw new JsonException("Membership type creation summary is inconsistent.");
+        }
+
+        var created = ReadMembershipTypeCatalog(after);
+        if (!created.HasValidLifecycle()
+            || created.CreatedAt != entry.RecordedAt
+            || created.UpdatedAt != created.CreatedAt
+            || (!created.IsActive && created.DeactivatedAt != created.CreatedAt))
+        {
+            throw new JsonException("Membership type creation lifecycle is inconsistent.");
+        }
+
+        List<AuditEntryExplanationFactViewModel> createdFacts =
+        [
+            Fact("Membership type", TimelineModel.ShortId(entry.EntityId)),
+            .. MembershipTypeFacts(created),
+            Fact("Created", TimelineModel.TimestampLabel(created.CreatedAt)),
+        ];
+        if (created.DeactivatedAt is { } deactivatedAt)
+        {
+            createdFacts.Add(Fact(
+                "Deactivated",
+                TimelineModel.TimestampLabel(deactivatedAt)));
+        }
+
+        return new AuditEntryExplanationViewModel(
+            "membership-type-created",
+            "Membership type created",
+            "The full catalog values established for future Membership issues are shown. Later catalog edits do not change already issued Membership snapshots.",
+            "Before creation",
+            "Created catalog",
+            [Fact("Membership type", "Not present")],
+            createdFacts,
+            ChangedFields: "Membership type catalog",
+            IsAvailable: true);
     }
 
     private static AuditEntryExplanationViewModel CreateMembershipTypeEdit(

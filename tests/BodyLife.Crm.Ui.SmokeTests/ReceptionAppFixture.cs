@@ -2311,7 +2311,8 @@ public sealed record AuditExplanationSmokeScenario(
     StaffAccountAuditExplanationSmokeScenario StaffAccounts,
     VisitMarkAuditExplanationSmokeScenario VisitMark,
     PaymentCreationAuditExplanationSmokeScenario PaymentCreation,
-    MembershipIssueAuditExplanationSmokeScenario MembershipIssue);
+    MembershipIssueAuditExplanationSmokeScenario MembershipIssue,
+    MembershipTypeCreationAuditExplanationSmokeScenario MembershipTypeCreation);
 
 public sealed record VisitMarkAuditExplanationSmokeScenario(
     Guid AuditEntryId,
@@ -2351,6 +2352,17 @@ public sealed record MembershipIssueAuditExplanationSmokeScenario(
     DateOnly BaseEndDate,
     int InitialRemainingVisits,
     DateOnly InitialEffectiveEndDate);
+
+public sealed record MembershipTypeCreationAuditExplanationSmokeScenario(
+    Guid AuditEntryId,
+    Guid MembershipTypeId,
+    string Name,
+    int DurationDays,
+    int VisitsLimit,
+    decimal PriceAmount,
+    string PriceCurrency,
+    string Comment,
+    DateTimeOffset CreatedAt);
 
 public sealed record NonWorkingDayAuditExplanationSmokeScenario(
     Guid CorrectedAuditEntryId,

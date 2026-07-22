@@ -919,8 +919,11 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "active");
 
         var membershipTypeId = Guid.NewGuid();
+        var createdMembershipTypeId = Guid.NewGuid();
+        var membershipTypeCreationAuditEntryId = Guid.NewGuid();
         var membershipTypeEditAuditEntryId = Guid.NewGuid();
         var membershipTypeDeactivationAuditEntryId = Guid.NewGuid();
+        var createdMembershipTypeAt = recordedBase.AddHours(3).AddMinutes(30);
         var membershipTypeCreatedAt = recordedBase.AddDays(-60);
         var originalMembershipTypeUpdatedAt = recordedBase.AddDays(-10);
         var membershipTypeEditedAt = recordedBase.AddHours(4);
@@ -934,6 +937,16 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "Original catalog values",
             membershipTypeCreatedAt,
             originalMembershipTypeUpdatedAt,
+            DeactivatedAt: null);
+        var createdMembershipType = new AuditMembershipTypeSummarySeed(
+            "Morning Eight",
+            DurationDays: 30,
+            VisitsLimit: 8,
+            new AuditMoneySummarySeed(1200.50m, "UAH"),
+            IsActive: true,
+            "Before noon only",
+            createdMembershipTypeAt,
+            createdMembershipTypeAt,
             DeactivatedAt: null);
         var editedMembershipType = new AuditMembershipTypeSummarySeed(
             updatedMembershipTypeName,
@@ -1588,6 +1601,25 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 },
                 ChangedAfterClose: false),
             new(
+                membershipTypeCreationAuditEntryId,
+                "membership_type.created",
+                "membership_type",
+                createdMembershipTypeId,
+                new { },
+                ownerAccountId,
+                "owner",
+                "owner",
+                ownerSessionId,
+                ownerDeviceLabel,
+                createdMembershipTypeAt.AddMinutes(-5),
+                createdMembershipTypeAt,
+                "normal",
+                Reason: null,
+                Comment: null,
+                BeforeSummary: new { },
+                AfterSummary: createdMembershipType,
+                ChangedAfterClose: false),
+            new(
                 membershipTypeEditAuditEntryId,
                 "membership_type.edited",
                 "membership_type",
@@ -2111,7 +2143,17 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     issuedStartDate,
                     issuedBaseEndDate,
                     issuedInitialRemainingVisits,
-                    issuedBaseEndDate)));
+                    issuedBaseEndDate),
+                MembershipTypeCreation: new MembershipTypeCreationAuditExplanationSmokeScenario(
+                    membershipTypeCreationAuditEntryId,
+                    createdMembershipTypeId,
+                    createdMembershipType.Name,
+                    createdMembershipType.DurationDays,
+                    createdMembershipType.VisitsLimit,
+                    createdMembershipType.Price.Amount,
+                    createdMembershipType.Price.Currency,
+                    createdMembershipType.Comment!,
+                    createdMembershipTypeAt)));
     }
 
     public async Task<ClientHistorySmokeScenario> SeedClientHistoryAsync(

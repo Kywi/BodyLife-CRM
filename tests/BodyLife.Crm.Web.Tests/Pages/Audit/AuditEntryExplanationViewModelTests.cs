@@ -988,6 +988,150 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void MembershipTypeCreationShowsFullCatalogAndSnapshotBoundary()
+    {
+        var membershipTypeId = Guid.NewGuid();
+        var createdAt = OriginalOccurredAt.AddMinutes(5);
+        var created = MembershipType(
+            "Morning Eight",
+            durationDays: 30,
+            visitsLimit: 8,
+            priceAmount: 1200.50m,
+            comment: "Before noon only") with
+        {
+            CreatedAt = createdAt,
+            UpdatedAt = createdAt,
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_type.created",
+                    AuditTimelineEntityType.MembershipType,
+                    membershipTypeId,
+                    new { },
+                    created,
+                    related: new { })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-type-created", explanation.Kind);
+        Assert.Equal("Membership type created", explanation.Title);
+        Assert.Equal("Not present", FactValue(explanation.BeforeFacts, "Membership type"));
+        Assert.Equal(
+            membershipTypeId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Membership type"));
+        Assert.Equal("Morning Eight", FactValue(explanation.AfterFacts, "Name"));
+        Assert.Equal("30 days", FactValue(explanation.AfterFacts, "Duration"));
+        Assert.Equal("8", FactValue(explanation.AfterFacts, "Visit limit"));
+        Assert.Equal("1200.5 UAH", FactValue(explanation.AfterFacts, "Price"));
+        Assert.Equal("Active", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal(
+            "Before noon only",
+            FactValue(explanation.AfterFacts, "Catalog comment"));
+        Assert.Equal(
+            $"{createdAt:yyyy-MM-dd HH:mm:ss} UTC",
+            FactValue(explanation.AfterFacts, "Created"));
+        Assert.Equal("Membership type catalog", explanation.ChangedFields);
+        Assert.Contains("already issued Membership snapshots", explanation.Narrative);
+    }
+
+    [Fact]
+    public void InactiveMembershipTypeCreationShowsSameTimeDeactivation()
+    {
+        var createdAt = OriginalOccurredAt.AddMinutes(5);
+        var created = MembershipType(
+            "Retired legacy type",
+            durationDays: 30,
+            visitsLimit: 0,
+            priceAmount: 0m,
+            comment: null) with
+        {
+            IsActive = false,
+            CreatedAt = createdAt,
+            UpdatedAt = createdAt,
+            DeactivatedAt = createdAt,
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_type.created",
+                    AuditTimelineEntityType.MembershipType,
+                    Guid.NewGuid(),
+                    new { },
+                    created,
+                    related: new { })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("Inactive", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal(
+            $"{createdAt:yyyy-MM-dd HH:mm:ss} UTC",
+            FactValue(explanation.AfterFacts, "Deactivated"));
+    }
+
+    [Fact]
+    public void MembershipTypeCreationWithExistingBeforeStateFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_type.created",
+                    AuditTimelineEntityType.MembershipType,
+                    Guid.NewGuid(),
+                    new { Status = "existing" },
+                    new { },
+                    related: new { })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void MembershipTypeCreationWithRelatedRecordsFailsClosed()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_type.created",
+                    AuditTimelineEntityType.MembershipType,
+                    Guid.NewGuid(),
+                    new { },
+                    new { },
+                    related: new { ClientId = Guid.NewGuid() })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
+    public void MembershipTypeCreationWithMismatchedLifecycleTimeFailsClosed()
+    {
+        var created = MembershipType(
+            "Morning Eight",
+            durationDays: 30,
+            visitsLimit: 8,
+            priceAmount: 1200m,
+            comment: null) with
+        {
+            CreatedAt = OriginalOccurredAt,
+            UpdatedAt = OriginalOccurredAt,
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            AuditEntryExplanationViewModel.Create(
+                Entry(
+                    "membership_type.created",
+                    AuditTimelineEntityType.MembershipType,
+                    Guid.NewGuid(),
+                    new { },
+                    created,
+                    related: new { })));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void MembershipTypeDeactivationShowsPreservedCatalogAndStatusTransition()
     {
         var membershipTypeId = Guid.NewGuid();
@@ -2097,6 +2241,7 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Theory]
+    [InlineData("membership_type.created", AuditTimelineEntityType.Payment)]
     [InlineData("client.updated", AuditTimelineEntityType.Payment)]
     [InlineData("client.created", AuditTimelineEntityType.Payment)]
     [InlineData("card.assigned", AuditTimelineEntityType.Payment)]

@@ -11725,3 +11725,70 @@ Next recommended step:
 - Continue the audit-noise review with `membership_type.created`. Explain the
   immutable catalog values established at creation while keeping issued
   Membership snapshots and later catalog edits as separate audit facts.
+
+## Step 182 - Created Membership Type audit explanation
+
+Status: completed. Milestone 10 is in progress.
+
+Plan alignment:
+
+- Closed only the planned `membership_type.created` audit-noise gap. The
+  remaining three raw-only creation events and the Milestone 10 acceptance
+  review remain in scope; Milestone 11 was not started.
+- Implemented the audit-matrix requirement to show the full catalog summary
+  established by `CreateMembershipType`.
+- Preserved the Membership snapshot boundary: later catalog edits and already
+  issued Membership terms remain separate facts and explanations.
+
+Completed:
+
+- Added a fail-closed `membership_type.created` Timeline explanation that
+  requires empty related/before summaries, a non-empty primary entity, valid
+  catalog values and a creation lifecycle tied exactly to the audit recorded
+  time.
+- Shows Membership Type id, name, duration, visit limit, price/currency,
+  active status, optional catalog comment and creation time; supported
+  inactive creation also shows its same-time deactivation.
+- Added six presenter cases covering active and inactive creation, existing
+  before state, unexpected related records, lifecycle-time mismatch and wrong
+  entity type.
+- Strengthened the real PostgreSQL `CreateMembershipType` workflow test to pin
+  empty related/before summaries and the complete nine-field catalog payload,
+  including nested price and lifecycle timestamps.
+- Added an isolated production-shaped Timeline seed plus Owner/tablet and
+  named-Admin/phone Playwright coverage for readable facts, collapsed raw
+  envelope, touch target, snapshot-boundary language and viewport fit.
+- Kept Membership Type command behavior, issued Membership snapshots, Razor
+  markup, CSS, authorization, EF model and migrations unchanged.
+
+Validation:
+
+- Release solution build passed with 0 warnings/errors.
+- Focused `AuditEntryExplanationViewModelTests` passed 93/93 and the
+  strengthened real `OwnerCreatesCanonicalActiveTypeWithAuditAndIdempotency`
+  PostgreSQL test passed 1/1.
+- Focused created-Membership-Type Playwright coverage passed 2/2 and the
+  complete `AuditTimelineSmokeTests` regression passed 30/30 with no skipped
+  tests.
+- Screenshot-backed visual checks passed at 1024x768 Owner/tablet and 390x844
+  named-Admin/phone viewports with no overlap or horizontal overflow.
+- The repository-wide `./scripts/validate.sh` gate is intentionally deferred to
+  the requested final Milestone 10 acceptance review after all remaining
+  raw-only events are closed.
+- `graphify update .` was attempted after the code changes but its watcher
+  could not rebuild on this filesystem (`Errno 95: Operation not supported`).
+  Its generated cache-index change was restored, so no code graph update is
+  claimed.
+- `graphify . --update` was attempted after this Step 182 progress update but
+  stopped because no semantic extraction LLM backend is configured; it
+  produced no tracked semantic graph update.
+
+Commit:
+
+- `feat(audit): explain membership type creation`.
+
+Next recommended step:
+
+- Continue the audit-noise review with `membership_opening_state.created`.
+  Explain the imported opening Membership snapshot/state while preserving its
+  explicit opening-state origin and Memberships-owned derived values.

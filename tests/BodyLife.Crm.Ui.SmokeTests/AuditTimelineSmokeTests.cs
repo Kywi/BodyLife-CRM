@@ -1058,6 +1058,129 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
     [Theory]
     [InlineData("owner-tablet", 1024, 768, true)]
     [InlineData("admin-phone", 390, 844, false)]
+    public async Task CreatedMembershipTypeShowsFullFutureCatalogSnapshot(
+        string viewportName,
+        int width,
+        int height,
+        bool useOwner)
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureAuditTimelineScenarioAsync();
+        var membershipType = scenario.Explanations.MembershipTypeCreation;
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = width,
+                Height = height,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                useOwner ? _app.LoginName : _app.AdminLoginName,
+                useOwner ? _app.Password : _app.AdminPassword,
+                $"{viewportName} created Membership type audit smoke");
+
+            var explanation = await OpenExplanationAsync(
+                page,
+                clientId: null,
+                "MembershipType",
+                "membership_type.created",
+                membershipType.AuditEntryId,
+                "membership-type-created",
+                viewportName,
+                entityId: membershipType.MembershipTypeId);
+            await ExpectVisibleAsync(
+                explanation.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Membership type created", Exact = true }),
+                viewportName,
+                "created Membership type explanation title");
+            Assert.Equal(
+                "Not present",
+                await ExplanationFactAsync(
+                    explanation,
+                    "Before creation",
+                    "Membership type"));
+            Assert.Equal(
+                membershipType.MembershipTypeId.ToString("N")[..8],
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created catalog",
+                    "Membership type"));
+            Assert.Equal(
+                membershipType.Name,
+                await ExplanationFactAsync(explanation, "Created catalog", "Name"));
+            Assert.Equal(
+                $"{membershipType.DurationDays.ToString(CultureInfo.InvariantCulture)} days",
+                await ExplanationFactAsync(explanation, "Created catalog", "Duration"));
+            Assert.Equal(
+                membershipType.VisitsLimit.ToString(CultureInfo.InvariantCulture),
+                await ExplanationFactAsync(explanation, "Created catalog", "Visit limit"));
+            Assert.Equal(
+                $"{membershipType.PriceAmount.ToString("0.##", CultureInfo.InvariantCulture)} " +
+                membershipType.PriceCurrency,
+                await ExplanationFactAsync(explanation, "Created catalog", "Price"));
+            Assert.Equal(
+                "Active",
+                await ExplanationFactAsync(explanation, "Created catalog", "Status"));
+            Assert.Equal(
+                membershipType.Comment,
+                await ExplanationFactAsync(
+                    explanation,
+                    "Created catalog",
+                    "Catalog comment"));
+            Assert.Equal(
+                $"{membershipType.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC",
+                await ExplanationFactAsync(explanation, "Created catalog", "Created"));
+            await ExpectVisibleAsync(
+                explanation.GetByText(
+                    "Membership type catalog",
+                    new() { Exact = true }),
+                viewportName,
+                "created Membership type changed field");
+
+            var envelope = explanation
+                .Locator("xpath=ancestor::li")
+                .Locator(".audit-envelope-details");
+            Assert.Null(await envelope.GetAttributeAsync("open"));
+            Assert.False(await envelope.Locator(".audit-json-grid").IsVisibleAsync());
+            var envelopeToggle = envelope.Locator("summary");
+            await AssertMinimumTouchTargetAsync(
+                envelopeToggle,
+                viewportName,
+                "created Membership type audit envelope");
+            await envelopeToggle.ClickAsync();
+            await ExpectVisibleAsync(
+                envelope.Locator(".audit-json-grid"),
+                viewportName,
+                "created Membership type raw envelope");
+            var envelopeText = await envelope.Locator(".audit-json-grid").InnerTextAsync();
+            Assert.Contains("createdAt", envelopeText, StringComparison.Ordinal);
+            Assert.Contains("deactivatedAt", envelopeText, StringComparison.Ordinal);
+            Assert.DoesNotContain("initialState", envelopeText, StringComparison.Ordinal);
+            await AssertFitsViewportAsync(
+                page,
+                viewportName,
+                "created Membership type explanation");
+            await CaptureVisualAsync(
+                page,
+                viewportName,
+                "membership-type-created-explanation");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("owner-tablet", 1024, 768, true)]
+    [InlineData("admin-phone", 390, 844, false)]
     public async Task MembershipTypeSettingsEntriesLeadWithReadableCatalogChanges(
         string viewportName,
         int width,

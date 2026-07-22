@@ -65,17 +65,23 @@ public sealed class PostgreSqlCreateMembershipTypeCommandTests
         Assert.Equal(command.Envelope.RequestCorrelationId.Value, audit.RequestCorrelationId);
         Assert.Equal("normal", audit.EntryOrigin);
         Assert.Equal(command.Envelope.IdempotencyKey, audit.IdempotencyKey);
+        Assert.Equal("{}", audit.RelatedEntityRefs);
         Assert.Equal("{}", audit.BeforeSummary);
 
         using var afterSummary = JsonDocument.Parse(audit.AfterSummary);
         var summary = afterSummary.RootElement;
+        Assert.Equal(9, summary.EnumerateObject().Count());
         Assert.Equal("Morning Eight", summary.GetProperty("name").GetString());
         Assert.Equal(30, summary.GetProperty("durationDays").GetInt32());
         Assert.Equal(8, summary.GetProperty("visitsLimit").GetInt32());
-        Assert.Equal(1200.50m, summary.GetProperty("price").GetProperty("amount").GetDecimal());
-        Assert.Equal("UAH", summary.GetProperty("price").GetProperty("currency").GetString());
+        var priceSummary = summary.GetProperty("price");
+        Assert.Equal(2, priceSummary.EnumerateObject().Count());
+        Assert.Equal(1200.50m, priceSummary.GetProperty("amount").GetDecimal());
+        Assert.Equal("UAH", priceSummary.GetProperty("currency").GetString());
         Assert.True(summary.GetProperty("isActive").GetBoolean());
         Assert.Equal("Before noon only.", summary.GetProperty("comment").GetString());
+        Assert.Equal(TestNow, summary.GetProperty("createdAt").GetDateTimeOffset());
+        Assert.Equal(TestNow, summary.GetProperty("updatedAt").GetDateTimeOffset());
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("deactivatedAt").ValueKind);
 
         var idempotency = await ReadIdempotencyAsync(database);
@@ -577,6 +583,7 @@ public sealed class PostgreSqlCreateMembershipTypeCommandTests
                    request_correlation_id,
                    entry_origin,
                    idempotency_key,
+                   related_entity_refs::text,
                    before_summary::text,
                    after_summary::text
             from bodylife.business_audit_entries
@@ -600,7 +607,8 @@ public sealed class PostgreSqlCreateMembershipTypeCommandTests
             reader.GetString(11),
             reader.IsDBNull(12) ? null : reader.GetString(12),
             reader.GetString(13),
-            reader.GetString(14));
+            reader.GetString(14),
+            reader.GetString(15));
     }
 
     private static async Task<IdempotencyRow> ReadIdempotencyAsync(
@@ -714,6 +722,7 @@ public sealed class PostgreSqlCreateMembershipTypeCommandTests
         string RequestCorrelationId,
         string EntryOrigin,
         string? IdempotencyKey,
+        string RelatedEntityRefs,
         string BeforeSummary,
         string AfterSummary);
 
