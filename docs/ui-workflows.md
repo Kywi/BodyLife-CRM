@@ -34,6 +34,8 @@
 
 ## 3. Workflow: reception dashboard
 
+Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv business date, with the exact same lifecycle-active effective-end-date range semantics as the Ending Soon report. A successful empty result may display zero; permission, validation, recalculation and source-consistency failures display unavailable/error, never fake zero. Activity now uses `GetReceptionActivity` for the explicit Kyiv recorded business date: render empty/loading/failure states and label manual-backfill/paper-fallback rows with distinct occurred and recorded timestamps. The query retains an opaque cursor for stable continuation; the Wave 1 Home intentionally renders a five-row preview and routes to the complete History surface instead of paginating that compact card. The server returns UTC instants; Web alone converts instants to Kyiv using the active culture. DST filtering uses the half-open Kyiv day range, and compact Membership status/warnings are explicitly as of the selected recorded business date.
+
 - User goal: швидко знайти клієнта, побачити його current membership state і виконати reception action без переходу в generic admin CRUD.
 - Screen/state: server-rendered reception dashboard з поточним account/session/device indicator, search island, compact result area, selected client/profile area або empty state, daily report link/summary, allowed quick actions from server permissions.
 - Primary actions: search by card/name/phone/last4; open exact card match; choose one result from multiple results; open client profile; mark visit; issue membership; add payment; add freeze; open daily report.

@@ -51,6 +51,8 @@ public static class ServiceCollectionExtensions
             new HmacNonWorkingDayCorrectionTokenService(
                 NonWorkingDayPreviewTokenOptions.FromConfiguration(configuration),
                 provider.GetRequiredService<TimeProvider>()));
+        services.AddScoped<IReceptionActivityCursorProtector>(_ => new ReceptionActivityCursorCodec(
+            NonWorkingDayPreviewTokenOptions.FromConfiguration(configuration)));
         services.TryAddSingleton<PasswordHashingService>();
         services.AddScoped<BusinessAuditAppender>();
         services.AddScoped<
@@ -156,6 +158,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeQueryHandler<GenerateDailyReportQuery, GenerateDailyReportResult>,
             GenerateDailyReportQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<GetReceptionAttentionCountsQuery, GetReceptionAttentionCountsResult>,
+            GetReceptionAttentionCountsQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<GetReceptionAttentionSummaryQuery, GetReceptionAttentionSummaryResult>,
+            GetReceptionAttentionSummaryQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<GetReceptionActivityQuery, GetReceptionActivityResult>,
+            GetReceptionActivityQueryHandler>();
         services.AddScoped<
             IBodyLifeQueryHandler<GetClientHistoryQuery, GetClientHistoryResult>,
             GetClientHistoryQueryHandler>();
