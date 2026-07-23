@@ -12383,3 +12383,106 @@ Stop point:
   until Phase 0 locks the approved package and the Wave 1 Activity/Attention
   query contracts are specified in the governing workflow/interaction
   documents.
+
+## Step 191 - Locked visual references and implemented the Wave 1 Home anchor
+
+Status: in progress at the explicit product checkpoint. Phase 0 is completed
+and locked; Wave 1 is implemented and automatically validated but is not
+visually approved yet. Waves 2–6 and Milestone 11 were not started.
+
+Plan alignment:
+
+- Kept the accepted ASP.NET Core Razor Pages/htmx, EF Core/Npgsql and
+  PostgreSQL stack. No schema, migration, command, business-rule, hosting or ADR
+  direction changed.
+- Preserved Memberships ownership of membership formulas and Reports ownership
+  of report semantics. Home composes public read contracts and formats their
+  canonical results; it does not count rows or derive membership state in
+  Razor.
+- Enforced the migration plan's stop/go rule: the separate `/` Home anchor must
+  receive explicit side-by-side user/product-owner approval before Waves 2–6
+  begin.
+
+Completed:
+
+- Copied the 12 approved `bodylife-light-v1` PNG/HTML/logo artifacts into the
+  UI smoke project, verified every supplied SHA-256 value and recorded the
+  delivered Windows Chrome, inner CSS width, DPR, palette, typography, radius,
+  shell, work-rail and logo metadata.
+- Added reviewed `GetReceptionAttentionCounts`,
+  `GetReceptionAttentionSummary` and `GetReceptionActivity` read contracts.
+  PostgreSQL handlers use canonical Memberships state and business-audit/source
+  facts, typed failure results, Kyiv recorded-day filtering, stable
+  `(recorded_at, id)` keyset order and an HMAC-signed cursor bound to query
+  inputs.
+- Made `/` a separate authenticated Home while keeping `/Reception/Index` as
+  Clients. Home renders real five-row Activity, Kyiv Today cash/visit/payment
+  metrics, Ending Soon/Negative attention destinations, truthful account,
+  device and session context, Quick Search and direct permission-gated Create
+  Client without a failed-search prerequisite.
+- Rebuilt the shared authenticated shell around the locked reference:
+  `108px + 14px` compact rounded rail, the supplied transparent BodyLife logo,
+  exact Home/Clients/Reports/History active states, collapsed Owner-only
+  secondary tools, compact accessible UA/EN control and one-column phone order.
+- Applied the accepted light semantic palette: dark high-frequency CTA, darker
+  accessible blue for navigation/focus/info, green success, amber
+  ending/low/attention, red-orange negative/cancel/destructive and restrained
+  violet Owner context. Every semantic color retains text or icon meaning.
+- Activity preserves correction/cancellation and origin labels. Non-normal
+  backfill/fallback rows show distinct Kyiv-localized `OccurredAt` and
+  `RecordedAt` values, including when the fact date differs from the entry
+  date.
+- Updated pre-existing workflow and navigation smoke tests to follow the new
+  separate Home/Clients routes and collapsed Owner tools instead of restoring
+  the rejected root-alias UX.
+
+Validation:
+
+- Exact reference hashes passed. Candidate captures were generated twice with
+  identical SHA-256 values at tablet `1024x768`, phone `390x844`, delivered
+  desktop CSS width `736` at DPR `1.5` and phone CSS width `320` at DPR `1.5`.
+  Chrome for Testing `149.0.7827.55` ran on WSL2 Linux with `DejaVu Sans`
+  resolving the delivered system font stack.
+- `ReceptionHomeSmokeTests` passed 4/4 twice and asserts the canonical seeded
+  clients/states, real Today/Attention data, correction/origin/timestamp
+  provenance, typed destinations, direct create, exact navigation, one main
+  landmark, 44px actions, visible focus, phone semantic order and zero
+  horizontal overflow. The updated affected workflow/navigation subset passed
+  86/86.
+- Focused read-contract tests passed 3/3 and PostgreSQL Activity/Attention tests
+  passed 5/5. The membership formula-ownership architecture guard explicitly
+  allowlists only the new reviewed Memberships read contract and remains green.
+- The final Release `./scripts/validate.sh` gate passed with 0 build warnings or
+  errors, formatting/analyzers clean and no failures or skips:
+  `BodyLife.Crm.Tests` 404/404, `BodyLife.Crm.Web.Tests` 292/292,
+  `BodyLife.Crm.Infrastructure.Tests` 541/541 and
+  `BodyLife.Crm.Ui.SmokeTests` 132/132 (1,369 total). The migration list remains
+  unchanged through `20260720173659_AddBusinessAuditRecordedTimelineIndex`.
+- Earlier full-gate attempts correctly exposed and led to fixes for two handler
+  formatting lines, the explicit cross-module contract allowlist and stale UI
+  test assumptions about the former root alias/expanded Owner navigation.
+- Independent review found no P0, schema, ADR, authorization, domain-ownership
+  or reference-hash issue. Its only P1, missing distinct occurred time for
+  backfill/fallback activity, was fixed and covered by Playwright. The
+  five-row-preview versus cursor behavior was clarified in the workflow
+  contract.
+- `graphify update .` was attempted after code changes and could not rebuild on
+  this filesystem (`Errno 95: Operation not supported`). The required semantic
+  `graphify . --update` was attempted after governing-document changes and
+  stopped because no extraction LLM API key is configured. No refreshed graph
+  is claimed and generated Graphify memory output is excluded from the task
+  commits.
+
+Commits:
+
+- `test(ui): lock the BodyLife visual references`.
+- `feat(reports): add reception Home read models`.
+- `feat(ui): implement the Wave 1 reception Home`.
+- `docs(ui): record the Wave 1 fidelity checkpoint`.
+
+Stop point:
+
+- Show the locked desktop/mobile Home references beside the regenerated Wave 1
+  candidate captures and request explicit user/product-owner approval. Do not
+  start Wave 2, migrate later route compositions or mark Wave 1 `approved`
+  until that decision is recorded.

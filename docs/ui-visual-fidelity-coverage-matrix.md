@@ -1,7 +1,8 @@
 # Матриця охоплення візуальної відповідності UI
 
 Дата: 2026-07-22
-Статус: **not started**. Це acceptance ledger для плану
+Статус: **in progress — Wave 1 candidate awaiting product-owner approval**.
+Phase 0 is locked; Waves 2–6 are not started. Це acceptance ledger для плану
 `ui-visual-fidelity-migration-plan.md`; `approved` означає explicit side-by-side
 product-owner approval, не лише green automated tests.
 
@@ -21,12 +22,12 @@ product-owner approval, не лише green automated tests.
 
 | Anchor | Reference | Required canonical state | Status | Required approval |
 | --- | --- | --- | --- | --- |
-| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | not started | User/product-owner side-by-side |
+| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | candidate — awaiting approval | User/product-owner side-by-side of the locked reference and `/tmp/bodylife-wave1-captures/wave1-home-tablet-1024x768-uk.png`; native-width diagnostic: `wave1-home-reference-desktop-736x526-uk.png` |
 | Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | not started | User/product-owner side-by-side |
 | Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive | not started | User/product-owner side-by-side |
 | Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | not started | User/product-owner side-by-side |
 | Cancel Visit desktop | `branded-light-5-cancel-visit.png` 1104x861 | reason/confirmation, permission, stale/concurrency, canceled and backfill/fallback labels | not started | User/product-owner side-by-side |
-| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; default/empty/loading/search states | not started | User/product-owner side-by-side |
+| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus Quick Search and Today | candidate — awaiting approval | User/product-owner side-by-side of the locked reference and `/tmp/bodylife-wave1-captures/wave1-home-phone-390x844-uk.png`; native-width diagnostic: `wave1-home-reference-phone-320x844-uk.png` |
 | Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping | not started | User/product-owner side-by-side |
 | Cancel Visit phone | `branded-mobile-cancel.png` 480x1818 | expanded danger/correction card and keyboard/focus order | not started | User/product-owner side-by-side |
 
@@ -40,8 +41,8 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Route | Wave | Actors | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- | --- |
-| `/` (Reception root alias) | 1 | Owner, named Admin, shared Admin | dashboard default/empty/loading/success; Activity and Attention unavailable; exact Home active state | not started | — |
-| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale | not started | — |
+| `/` (separate Reception Home) | 1 | Owner, named Admin, shared Admin | dashboard default/empty/loading/success; Activity and Attention unavailable; exact Home active state | candidate — awaiting approval | `ReceptionHomeSmokeTests` target/native captures; `UiStyleCoverageSmokeTests`; explicit approval pending |
+| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale | in progress — Wave 1 shell/direct-create entry only | Direct `?create=true` opens the permission-gated create panel without search; search/create composition remains Wave 2 and profile/actions remain Wave 3 |
 | `/Owner/MembershipTypes` | 4 | Owner; Admin denial | empty/catalog/create/edit/deactivate/validation/permission; long bilingual names | not started | — |
 | `/Owner/NonWorkingDays` | 4 | Owner; Admin denial | empty/list/preview/confirmation/affected-scope-changed/expired-token/correct/cancel/success | not started | — |
 | `/Owner/StaffAccounts` | 4 | Owner; Admin denial | empty/list/create/activate/deactivate/credentials/validation/permission; named/shared labels | not started | — |
@@ -62,7 +63,7 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Partial | Wave | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- |
-| Reception `_ReceptionWorkspace.cshtml` | 1–3 | dashboard/client modes; empty/loading/exact/multiple/no-result/error; stable targets | not started | — |
+| Reception `_ReceptionWorkspace.cshtml` | 2–3 | Clients workspace empty/loading/exact/multiple/no-result/error; stable targets; Home is now the separate root page | not started | — |
 | Reception `_ClientProfile.cshtml` | 3 | unavailable/active/zero/negative/expired/ending/low/inactive; actions/history/context | not started | — |
 | Reception `_CreateClientForm.cshtml` | 2 | direct open; validation; duplicate review/ack; permission; busy; success collapse | not started | — |
 | Reception `_UpdateClientForm.cshtml` | 3 | validation; duplicate review/ack; busy; success; permission | not started | — |
@@ -81,11 +82,26 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Partial | Wave | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- |
-| `_Layout.cshtml` | 1, 5 | authenticated/public shells; skip link; main landmarks; no overflow | not started | — |
-| `_AppNavigation.cshtml` | 1, 4–5 | Home/Clients/Report/History mapping; exact/location state; Owner tools; logout | not started | — |
-| `_CurrentSession.cshtml` | 1 | Owner/named/shared labels; fixed/masked long session/device ids; phone order | not started | — |
-| `_LanguageSelector.cshtml` | 1, 5 | uk-UA/en-US; long labels; POST success/failure; keyboard/focus | not started | — |
-| `_Icon.cshtml` | 1–5 | local sprite, accessible labels where needed, semantic color not sole signal | not started | — |
+| `_Layout.cshtml` | 1, 5 | authenticated/public shells; skip link; main landmarks; no overflow | Wave 1 candidate — awaiting approval | Home authenticated shell is covered at target/native widths; public-shell final gallery remains Wave 5 |
+| `_AppNavigation.cshtml` | 1, 4–5 | Home/Clients/Report/History mapping; exact/location state; Owner tools; logout | Wave 1 candidate — awaiting approval | Exact Home/Clients and section Report/History state, Owner disclosure, logout reachability and 44px targets are covered; later-route gallery remains pending |
+| `_CurrentSession.cshtml` | 1 | Owner/named/shared labels; fixed/masked long session/device ids; phone order | Wave 1 candidate — awaiting approval | Truthful account kind, device and session remain visible in Home desktop/phone captures |
+| `_LanguageSelector.cshtml` | 1, 5 | uk-UA/en-US; long labels; POST success/failure; keyboard/focus | Wave 1 candidate — awaiting approval | Compact UA/EN control retains full accessible labels; localization regression coverage passes |
+| `_Icon.cshtml` | 1–5 | local sprite, accessible labels where needed, semantic color not sole signal | Wave 1 candidate — awaiting approval | Home/navigation icon slice covered; Waves 2–6 still require their own row evidence |
+
+## Wave 1 checkpoint evidence
+
+- All 12 locked Phase 0 artifacts match their recorded SHA-256 values.
+- `ReceptionHomeSmokeTests` renders canonical seeded Activity, Today and
+  Attention data at both target and delivered native CSS widths. It asserts
+  exact active navigation, one main landmark, truthful session context,
+  direct-create reachability, distinct occurred/recorded provenance, 44px
+  actions, visible focus, responsive order and no horizontal overflow.
+- Shared-shell and localization regression checks cover Owner tablet, Admin
+  phone and both `uk-UA`/`en-US`; read-contract and PostgreSQL query tests cover
+  typed errors, cursor integrity and canonical source behavior.
+- Independent review found no P0. Its one P1 (missing distinct occurred time
+  for backfill/fallback) was fixed and locked by Playwright assertions. This
+  ledger deliberately remains unapproved until the side-by-side user decision.
 
 ## Per-row execution checklist
 
