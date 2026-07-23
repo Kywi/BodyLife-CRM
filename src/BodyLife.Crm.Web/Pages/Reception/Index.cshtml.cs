@@ -66,6 +66,9 @@ public sealed class IndexModel(
     [BindProperty(SupportsGet = true, Name = "correctPaymentId")]
     public Guid? CorrectPaymentId { get; set; }
 
+    [BindProperty(SupportsGet = true, Name = "create")]
+    public bool Create { get; set; }
+
     [TempData]
     public string? ClientOperationMessage { get; set; }
 
@@ -2337,8 +2340,8 @@ public sealed class IndexModel(
                 ClientSearchActionKeys.AdminOrOwnerPolicy)],
             cancellationToken);
         var shouldOpenCreateClientForm = !profileClientId.HasValue
-            && searchResult is { Status: SearchClientsStatus.Success }
-            && searchResult.Items.Count == 0;
+            && (Create || (searchResult is { Status: SearchClientsStatus.Success }
+                && searchResult.Items.Count == 0));
         var createClientForm = createClientPermissions.IsAllowed(ClientSearchActionKeys.CreateClient)
             ? CreateClientFormViewModel.FromSearchContext(
                 searchContext,

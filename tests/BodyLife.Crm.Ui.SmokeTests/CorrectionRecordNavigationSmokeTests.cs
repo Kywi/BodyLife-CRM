@@ -212,6 +212,9 @@ public sealed class CorrectionRecordNavigationSmokeTests
         await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
+        await page.GotoAsync(
+            new Uri(_app.BaseAddress, "/Reception/Index").ToString(),
+            new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
     }
 
     private static async Task OpenClientProfileAsync(

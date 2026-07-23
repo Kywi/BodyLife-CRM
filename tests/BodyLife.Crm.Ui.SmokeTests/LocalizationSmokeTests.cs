@@ -257,7 +257,7 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
         "Client history")]
     [InlineData(
         Ukrainian,
-        "Панель рецепції",
+        "Рецепція",
         "Видати абонемент",
         "Позначити відвідування",
         "Додати платіж",
@@ -269,7 +269,7 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
         "Історія клієнта")]
     public async Task AuthenticatedPagesRenderRepresentativeTranslations(
         string culture,
-        string receptionTitle,
+        string homeTitle,
         string issueMembership,
         string markVisit,
         string addPayment,
@@ -290,7 +290,7 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
             await LoginAsync(page, _app.LoginName, _app.Password, $"localization {culture} owner");
 
             await AssertCultureAsync(page, culture);
-            await ExpectVisibleAsync(page.Locator("#reception-title"), receptionTitle, "localized Reception title");
+            await ExpectVisibleAsync(page.Locator("#home-title"), homeTitle, "localized Home title");
 
             await page.GotoAsync(new Uri(
                 _app.BaseAddress,

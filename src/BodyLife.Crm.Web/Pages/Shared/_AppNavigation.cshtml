@@ -7,7 +7,8 @@
     var isOwner = actor is { Role: ActorRole.Owner, AccountKind: AccountKind.Owner };
     var reportsActive = path.StartsWithSegments("/Reports");
     var dailyReportActive = path.StartsWithSegments("/Reports/Daily");
-    var receptionActive = path == "/" || path.StartsWithSegments("/Reception");
+    var homeActive = path == "/";
+    var receptionActive = path.StartsWithSegments("/Reception");
     var historyActive = path.StartsWithSegments("/Audit/ClientHistory");
     var auditActive = path.StartsWithSegments("/Audit/Timeline");
     var membershipTypesActive = path.StartsWithSegments("/Owner/MembershipTypes");
@@ -15,7 +16,7 @@
     var staffAccountsActive = path.StartsWithSegments("/Owner/StaffAccounts");
 }
 <aside class="app-sidebar" aria-label="@SharedLocalizer["Navigation.Label"]">
-    <a class="sidebar-brand" asp-page="/Reception/Index">
+    <a class="sidebar-brand" asp-page="/Index">
         <img src="~/images/bodylife-logo.png" width="338" height="480" alt="@SharedLocalizer["Brand.LogoAlt"]" />
         <span>BodyLife CRM</span>
     </a>
@@ -23,24 +24,30 @@
     <nav class="sidebar-navigation" aria-label="@SharedLocalizer["Navigation.Label"]">
         <section class="navigation-group" aria-labelledby="navigation-main">
             <h2 id="navigation-main">@SharedLocalizer["Navigation.Main"]</h2>
+            <a class="navigation-link @(homeActive ? "is-active" : null)" asp-page="/Index" aria-current="@(homeActive ? "page" : null)">
+                <partial name="_Icon" model='@("home")' /><span>@SharedLocalizer["Navigation.Home"]</span>
+            </a>
             <a class="navigation-link @(receptionActive ? "is-active" : null)" asp-page="/Reception/Index" aria-current="@(receptionActive ? "page" : null)">
-                <partial name="_Icon" model='@("reception")' /><span>@SharedLocalizer["Navigation.Reception"]</span>
+                <partial name="_Icon" model='@("reception")' /><span>@SharedLocalizer["Navigation.Clients"]</span>
             </a>
             <a class="navigation-link @(dailyReportActive ? "is-active" : reportsActive ? "is-section-active" : null)" asp-page="/Reports/Daily" aria-current="@(dailyReportActive ? "page" : reportsActive ? "location" : null)">
                 <partial name="_Icon" model='@("reports")' /><span>@SharedLocalizer["Navigation.Reports"]</span>
             </a>
-            <a class="navigation-link @(historyActive ? "is-active" : null)" asp-page="/Audit/ClientHistory" aria-current="@(historyActive ? "page" : null)">
-                <partial name="_Icon" model='@("history")' /><span>@SharedLocalizer["Navigation.ClientHistory"]</span>
-            </a>
-            <a class="navigation-link @(auditActive ? "is-active" : null)" asp-page="/Audit/Timeline" aria-current="@(auditActive ? "page" : null)">
-                <partial name="_Icon" model='@("audit")' /><span>@SharedLocalizer["Navigation.AuditTimeline"]</span>
+            <a class="navigation-link @(auditActive ? "is-active" : historyActive ? "is-section-active" : null)" asp-page="/Audit/Timeline" aria-current="@(auditActive ? "page" : historyActive ? "location" : null)">
+                <partial name="_Icon" model='@("audit")' /><span>@SharedLocalizer["Navigation.History"]</span>
             </a>
         </section>
 
         @if (isOwner)
         {
-            <section class="navigation-group" aria-labelledby="navigation-owner">
-                <h2 id="navigation-owner">@SharedLocalizer["Navigation.OwnerTools"]</h2>
+            <details class="owner-tools" aria-labelledby="navigation-owner" @(membershipTypesActive || nonWorkingDaysActive || staffAccountsActive ? "open" : null)>
+                <summary id="navigation-owner"
+                         aria-label="@SharedLocalizer["Navigation.OwnerTools"]"
+                         title="@SharedLocalizer["Navigation.OwnerTools"]">
+                    <partial name="_Icon" model='@("users")' />
+                    <span>@SharedLocalizer["Navigation.More"]</span>
+                </summary>
+                <div class="owner-tools-links">
                 <a class="navigation-link @(membershipTypesActive ? "is-active" : null)" asp-page="/Owner/MembershipTypes" aria-current="@(membershipTypesActive ? "page" : null)">
                     <partial name="_Icon" model='@("membership")' /><span>@SharedLocalizer["Navigation.MembershipTypes"]</span>
                 </a>
@@ -50,7 +57,8 @@
                 <a class="navigation-link @(staffAccountsActive ? "is-active" : null)" asp-page="/Owner/StaffAccounts" aria-current="@(staffAccountsActive ? "page" : null)">
                     <partial name="_Icon" model='@("users")' /><span>@SharedLocalizer["Navigation.StaffAccounts"]</span>
                 </a>
-            </section>
+                </div>
+            </details>
         }
     </nav>
 

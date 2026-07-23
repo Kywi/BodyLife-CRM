@@ -26,7 +26,7 @@ builder.Services.Configure<MvcOptions>(options =>
 
 builder.Services.AddRazorPages(options =>
 {
-    options.Conventions.AddPageRoute("/Reception/Index", string.Empty);
+    options.Conventions.AuthorizePage("/Index", BodyLifeAuthorizationPolicies.AdminOrOwner);
     options.Conventions.AuthorizeFolder("/Owner", BodyLifeAuthorizationPolicies.OwnerOnly);
     options.Conventions.AuthorizeFolder("/Reception", BodyLifeAuthorizationPolicies.AdminOrOwner);
     options.Conventions.AuthorizeFolder("/Reports", BodyLifeAuthorizationPolicies.AdminOrOwner);

@@ -4344,8 +4344,17 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
     public async Task SeedDailyReportAsync(
         Guid recordedByAccountId,
         Guid clientId,
-        DateOnly businessDate)
+        DateOnly businessDate,
+        int minuteOffset = 0)
     {
+        if (minuteOffset is < 0 or > 30)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(minuteOffset),
+                minuteOffset,
+                "The daily report seed offset must be between 0 and 30 minutes.");
+        }
+
         var sessionId = Guid.NewGuid();
         var activeVisitId = Guid.NewGuid();
         var canceledVisitId = Guid.NewGuid();
@@ -4356,7 +4365,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var paymentCorrectionId = Guid.NewGuid();
         var paymentCancellationId = Guid.NewGuid();
         var dayStart = new DateTimeOffset(
-            businessDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+                businessDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+            .AddMinutes(minuteOffset);
         var activeVisitOccurredAt = dayStart.AddHours(9);
         var activeVisitRecordedAt = activeVisitOccurredAt.AddMinutes(5);
         var canceledVisitOccurredAt = dayStart.AddHours(10);

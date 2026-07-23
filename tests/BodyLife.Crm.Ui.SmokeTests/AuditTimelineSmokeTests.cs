@@ -1057,7 +1057,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
 
             var auditNavigation = page.GetByRole(
                 AriaRole.Link,
-                new() { Name = "Audit timeline", Exact = true });
+                new() { Name = "History", Exact = true });
             await AssertMinimumTouchTargetAsync(
                 auditNavigation,
                 viewportName,

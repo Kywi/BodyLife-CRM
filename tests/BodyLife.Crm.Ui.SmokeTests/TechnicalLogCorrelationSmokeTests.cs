@@ -148,5 +148,6 @@ public sealed class TechnicalLogCorrelationSmokeTests :
             .FillAsync("support correlation tablet");
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
+        await page.Locator("details.owner-tools > summary").ClickAsync();
     }
 }

@@ -9,7 +9,7 @@
   <data name="Session.DeviceUnavailable" xml:space="preserve"><value>Пристрій не вказано</value></data>
   <data name="Session.Identifier" xml:space="preserve"><value>Сеанс {0}</value></data>
   <data name="Navigation.DailyReport" xml:space="preserve"><value>Щоденний звіт</value></data>
-  <data name="Navigation.Reports" xml:space="preserve"><value>Звіти</value></data>
+  <data name="Navigation.Reports" xml:space="preserve"><value>Звіт</value></data>
   <data name="Navigation.AuditTimeline" xml:space="preserve"><value>Журнал аудиту</value></data>
   <data name="Navigation.MembershipTypes" xml:space="preserve"><value>Типи абонементів</value></data>
   <data name="Navigation.NonWorkingDays" xml:space="preserve"><value>Неробочі дні</value></data>
@@ -18,8 +18,32 @@
   <data name="Navigation.Label" xml:space="preserve"><value>Основна навігація</value></data>
   <data name="Navigation.Main" xml:space="preserve"><value>Основне</value></data>
   <data name="Navigation.Reception" xml:space="preserve"><value>Рецепція</value></data>
+  <data name="Navigation.Home" xml:space="preserve"><value>Головна</value></data>
+  <data name="Navigation.Clients" xml:space="preserve"><value>Клієнти</value></data>
+  <data name="Navigation.History" xml:space="preserve"><value>Історія</value></data>
+  <data name="Home.Title" xml:space="preserve"><value>Рецепція</value></data>
+  <data name="Home.BusinessDay" xml:space="preserve"><value>Поточний бізнес-день</value></data>
+  <data name="Home.Activity" xml:space="preserve"><value>Активність зараз</value></data>
+  <data name="Home.ActivitySubtitle" xml:space="preserve"><value>Останні дії рецепції за сьогодні</value></data>
+  <data name="Home.AllHistory" xml:space="preserve"><value>Вся історія</value></data>
+  <data name="Home.NoActivity" xml:space="preserve"><value>Сьогодні дій рецепції ще не було.</value></data>
+  <data name="Home.QuickSearch" xml:space="preserve"><value>Швидкий пошук</value></data>
+  <data name="Home.SearchLabel" xml:space="preserve"><value>Картка, ім’я або телефон</value></data>
+  <data name="Home.Search" xml:space="preserve"><value>Знайти клієнта</value></data>
+  <data name="Home.Create" xml:space="preserve"><value>Створити клієнта</value></data>
+  <data name="Home.Today" xml:space="preserve"><value>Сьогодні</value></data>
+  <data name="Home.Visits" xml:space="preserve"><value>Візити</value></data>
+  <data name="Home.Payments" xml:space="preserve"><value>Оплати</value></data>
+  <data name="Home.Cash" xml:space="preserve"><value>Готівка</value></data>
+  <data name="Home.EndingSoon" xml:space="preserve"><value>Скоро завершуються: {0}</value></data>
+  <data name="Home.Negative" xml:space="preserve"><value>Від'ємний баланс: {0}</value></data>
+  <data name="Home.Unavailable" xml:space="preserve"><value>Дані зараз недоступні. Спробуйте оновити сторінку.</value></data>
+  <data name="Home.Remaining" xml:space="preserve"><value>Залишок: {0}</value></data><data name="Home.EffectiveEnd" xml:space="preserve"><value>До {0}</value></data><data name="Home.Warning.membership_negative_balance" xml:space="preserve"><value>Від'ємний баланс</value></data><data name="Home.Warning.membership_expired_by_date" xml:space="preserve"><value>Абонемент завершився</value></data><data name="Home.Warning.membership_zero_remaining" xml:space="preserve"><value>Нуль відвідувань</value></data><data name="Home.Warning.membership_ending_soon" xml:space="preserve"><value>Скоро завершується</value></data><data name="Home.Warning.membership_low_remaining" xml:space="preserve"><value>Мало відвідувань</value></data>
+  <data name="Navigation.SkipToMain" xml:space="preserve"><value>Перейти до основного вмісту</value></data><data name="Home.OpenClient" xml:space="preserve"><value>Відкрити</value></data><data name="Home.OpenReport" xml:space="preserve"><value>Звіт</value></data><data name="Home.Correction" xml:space="preserve"><value>Виправлення / скасування</value></data><data name="Home.ChangedAfterClose" xml:space="preserve"><value>Змінено після закриття дня</value></data><data name="Home.MembershipAmbiguous" xml:space="preserve"><value>Кілька активних абонементів</value></data><data name="Home.Origin.ManualBackfill" xml:space="preserve"><value>Ручне перенесення</value></data><data name="Home.Origin.PaperFallback" xml:space="preserve"><value>Паперовий запис</value></data><data name="Home.Origin.FutureImport" xml:space="preserve"><value>Імпорт</value></data><data name="Home.State.Active" xml:space="preserve"><value>Активний</value></data><data name="Home.State.Zero" xml:space="preserve"><value>Нуль відвідувань</value></data><data name="Home.State.Negative" xml:space="preserve"><value>Від'ємний баланс</value></data><data name="Home.State.Expired" xml:space="preserve"><value>Завершився</value></data><data name="Home.VisitBalance" xml:space="preserve"><value>{0} віз.</value></data><data name="Home.RecordedAt" xml:space="preserve"><value>Внесено</value></data><data name="Home.OccurredAt" xml:space="preserve"><value>Подія</value></data>
+  <data name="Home.Action.ClientCreated" xml:space="preserve"><value>Створено клієнта</value></data><data name="Home.Action.ClientUpdated" xml:space="preserve"><value>Оновлено клієнта</value></data><data name="Home.Action.CardAssigned" xml:space="preserve"><value>Призначено картку</value></data><data name="Home.Action.CardChanged" xml:space="preserve"><value>Змінено картку</value></data><data name="Home.Action.CardCleared" xml:space="preserve"><value>Видалено картку</value></data><data name="Home.Action.MembershipIssued" xml:space="preserve"><value>Оформлено абонемент</value></data><data name="Home.Action.MembershipOpeningStateCreated" xml:space="preserve"><value>Додано початковий стан</value></data><data name="Home.Action.VisitMarked" xml:space="preserve"><value>Позначено відвідування</value></data><data name="Home.Action.VisitCanceled" xml:space="preserve"><value>Скасовано відвідування</value></data><data name="Home.Action.PaymentCreated" xml:space="preserve"><value>Створено оплату</value></data><data name="Home.Action.PaymentCorrected" xml:space="preserve"><value>Виправлено оплату</value></data><data name="Home.Action.PaymentCanceled" xml:space="preserve"><value>Скасовано оплату</value></data><data name="Home.Action.FreezeAdded" xml:space="preserve"><value>Додано заморозку</value></data><data name="Home.Action.FreezeCanceled" xml:space="preserve"><value>Скасовано заморозку</value></data>
   <data name="Navigation.ClientHistory" xml:space="preserve"><value>Історія клієнта</value></data>
   <data name="Navigation.OwnerTools" xml:space="preserve"><value>Інструменти власника</value></data>
+  <data name="Navigation.More" xml:space="preserve"><value>Ще</value></data>
   <data name="Brand.LogoAlt" xml:space="preserve"><value>Логотип BodyLife</value></data>
   <data name="AccountKind.Owner" xml:space="preserve"><value>Обліковий запис власника</value></data>
   <data name="AccountKind.NamedAdmin" xml:space="preserve"><value>Іменований адміністратор</value></data>

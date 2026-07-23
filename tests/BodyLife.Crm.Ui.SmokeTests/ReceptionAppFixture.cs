@@ -24,12 +24,14 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public const string WorkflowCulture = "en-US";
 
     private readonly ConcurrentQueue<string> _output = new();
+    private readonly object _receptionHomeSeedLock = new();
     private readonly object _endingSoonReportSeedLock = new();
     private readonly object _lowRemainingReportSeedLock = new();
     private readonly object _negativeClientsReportSeedLock = new();
     private readonly object _inactiveClientsReportSeedLock = new();
     private readonly object _auditTimelineSeedLock = new();
     private readonly object _clientHistorySeedLock = new();
+    private Task<ReceptionHomeSmokeScenario>? _receptionHomeSeedTask;
     private Task<EndingSoonReportSmokeScenario>? _endingSoonReportSeedTask;
     private Task<LowRemainingReportSmokeScenario>? _lowRemainingReportSeedTask;
     private Task<NegativeClientsReportSmokeScenario>? _negativeClientsReportSeedTask;
@@ -587,6 +589,14 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         }
     }
 
+    public Task<ReceptionHomeSmokeScenario> EnsureReceptionHomeScenarioAsync()
+    {
+        lock (_receptionHomeSeedLock)
+        {
+            return _receptionHomeSeedTask ??= SeedReceptionHomeScenarioAsync();
+        }
+    }
+
     public Task<LowRemainingReportSmokeScenario> EnsureLowRemainingReportScenarioAsync()
     {
         lock (_lowRemainingReportSeedLock)
@@ -1063,6 +1073,93 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             DailyReportClientId,
             DailyReportBusinessDate);
+    }
+
+    private async Task<ReceptionHomeSmokeScenario>
+        SeedReceptionHomeScenarioAsync()
+    {
+        if (_ownerAccountId == Guid.Empty || _activeMembershipTypeId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "The reception Home fixture dependencies are not initialized.");
+        }
+
+        var businessDate = BusinessTimeZone.GetBusinessDate(
+            TimeProvider.System.GetUtcNow());
+        var database = RequireDatabase();
+
+        var activeClientId = await database.SeedClientAsync(
+            _ownerAccountId,
+            "Іваненко",
+            "Марія",
+            "+380 67 710 10 01",
+            "BL-HOME-ACTIVE");
+        await database.SeedIssuedMembershipAsync(
+            _ownerAccountId,
+            activeClientId,
+            _activeMembershipTypeId,
+            "Home active snapshot",
+            visitsLimitSnapshot: 8,
+            startDate: businessDate.AddDays(-7),
+            durationDays: 30);
+
+        var endingSoonClientId = await database.SeedClientAsync(
+            _ownerAccountId,
+            "Сидоренко",
+            "Ірина",
+            "+380 67 710 10 02",
+            "BL-HOME-ENDING");
+        await database.SeedIssuedMembershipAsync(
+            _ownerAccountId,
+            endingSoonClientId,
+            _activeMembershipTypeId,
+            "Home ending-soon snapshot",
+            visitsLimitSnapshot: 2,
+            startDate: businessDate.AddDays(-7),
+            durationDays: 10);
+
+        var negativeClientId = await database.SeedClientAsync(
+            _ownerAccountId,
+            "Гнатюк",
+            "Олексій",
+            "+380 67 710 10 03",
+            "BL-HOME-NEGATIVE");
+        var negativeMembershipId = await database.SeedIssuedMembershipAsync(
+            _ownerAccountId,
+            negativeClientId,
+            _activeMembershipTypeId,
+            "Home negative snapshot",
+            visitsLimitSnapshot: 0,
+            startDate: businessDate.AddDays(-7),
+            durationDays: 30);
+        await database.InsertExternalCountedVisitAsync(
+            negativeClientId,
+            negativeMembershipId);
+
+        await database.SeedDailyReportAsync(
+            _ownerAccountId,
+            activeClientId,
+            businessDate,
+            minuteOffset: 3);
+        await database.SeedDailyReportAsync(
+            _ownerAccountId,
+            endingSoonClientId,
+            businessDate,
+            minuteOffset: 2);
+        await database.SeedDailyReportAsync(
+            _ownerAccountId,
+            negativeClientId,
+            businessDate,
+            minuteOffset: 1);
+
+        return new ReceptionHomeSmokeScenario(
+            businessDate,
+            activeClientId,
+            "Іваненко Марія",
+            endingSoonClientId,
+            "Сидоренко Ірина",
+            negativeClientId,
+            "Гнатюк Олексій");
     }
 
     private async Task<EndingSoonReportSmokeScenario>
@@ -2218,6 +2315,15 @@ public sealed record NonWorkingDayAddSmokeScenario(
 
     public string ScopeEntrantClientDisplayName => $"Confirm {ViewportLabel} Entrant";
 }
+
+public sealed record ReceptionHomeSmokeScenario(
+    DateOnly BusinessDate,
+    Guid ActiveClientId,
+    string ActiveClientDisplayName,
+    Guid EndingSoonClientId,
+    string EndingSoonClientDisplayName,
+    Guid NegativeClientId,
+    string NegativeClientDisplayName);
 
 public sealed record EndingSoonReportSmokeScenario(
     DateOnly AsOfDate,

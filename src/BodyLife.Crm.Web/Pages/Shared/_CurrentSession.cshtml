@@ -7,20 +7,41 @@
     var displayName = User.Identity?.Name ?? AccountTypeLabel(actor.AccountKind);
     var deviceLabel = actor.DeviceLabel ?? SharedLocalizer["Session.DeviceUnavailable"];
     var sessionId = actor.SessionId.Value.ToString("N")[..8];
+    var isHome = ViewData["IsHome"] as bool? == true;
 
-    <header class="top-context-bar" aria-label="@SharedLocalizer["Session.Current"]">
-        <div class="top-context-identity">
-            <partial name="_Icon" model='@("account")' />
-            <div>
-                <span class="top-context-name">@displayName</span>
-                <span class="top-context-account">@AccountTypeLabel(actor.AccountKind) / @RoleLabel(actor.Role)</span>
+    @if (isHome)
+    {
+        <section class="top-context-bar home-session" aria-label="@SharedLocalizer["Session.Current"]">
+            <span class="home-session-account">
+                <partial name="_Icon" model='@("account")' />
+                <strong>@displayName</strong>
+                <span aria-hidden="true">·</span>
+                @RoleLabel(actor.Role)
+            </span>
+            <span class="home-session-device">
+                <partial name="_Icon" model='@("device")' />
+                @deviceLabel
+                <span aria-hidden="true">·</span>
+                <span class="session-id">@SharedLocalizer["Session.Identifier", sessionId]</span>
+            </span>
+        </section>
+    }
+    else
+    {
+        <section class="top-context-bar" aria-label="@SharedLocalizer["Session.Current"]">
+            <div class="top-context-identity">
+                <partial name="_Icon" model='@("account")' />
+                <div>
+                    <span class="top-context-name">@displayName</span>
+                    <span class="top-context-account">@AccountTypeLabel(actor.AccountKind) / @RoleLabel(actor.Role)</span>
+                </div>
             </div>
-        </div>
-        <div class="top-context-meta" aria-label="@SharedLocalizer["Session.CurrentAccountAndDevice"]">
-            <span><partial name="_Icon" model='@("account")' /> @deviceLabel</span>
-            <span class="session-id">@SharedLocalizer["Session.Identifier", sessionId]</span>
-        </div>
-    </header>
+            <div class="top-context-meta" aria-label="@SharedLocalizer["Session.CurrentAccountAndDevice"]">
+                <span><partial name="_Icon" model='@("device")' /> @deviceLabel</span>
+                <span class="session-id">@SharedLocalizer["Session.Identifier", sessionId]</span>
+            </div>
+        </section>
+    }
 }
 
 @functions {

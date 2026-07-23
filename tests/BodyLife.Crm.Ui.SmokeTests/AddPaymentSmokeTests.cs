@@ -298,6 +298,9 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
         await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
+        await page.GotoAsync(
+            new Uri(_app.BaseAddress, "/Reception/Index").ToString(),
+            new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
         await page.GetByRole(AriaRole.Heading, new() { Name = "Reception" }).WaitForAsync();
         return page;
     }

@@ -1,0 +1,129 @@
+@page
+@model BodyLife.Crm.Web.Pages.IndexModel
+@using System.Globalization
+@using BodyLife.Crm.Modules.Reports
+@using BodyLife.Crm.Modules.Memberships
+@using BodyLife.Crm.SharedKernel
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Shared> L
+@{
+    ViewData["Title"] = L["Home.Title"];
+    var culture = CultureInfo.CurrentCulture;
+    var daily = Model.DailyResult is { Status: GenerateDailyReportStatus.Success } ? Model.DailyResult.Report : null;
+    var attention = Model.AttentionResult is { Status: GetReceptionAttentionSummaryStatus.Success } ? Model.AttentionResult.Summary : null;
+    var activity = Model.ActivityResult is { Status: GetReceptionActivityStatus.Success } ? Model.ActivityResult.Page : null;
+}
+<main class="page-shell home-page" aria-labelledby="home-title">
+    <header class="home-context">
+        <div class="home-title-line"><h1 id="home-title">@L["Home.Title"]</h1><p class="home-date-badge"><partial name="_Icon" model='@("calendar")' /> @Model.BusinessDate.ToString("d MMMM", culture) · @BusinessTimeZone.ConvertInstantToLocal(Model.Now).ToString("t", culture)</p></div>
+        <p class="home-business-day">@L["Home.BusinessDay"]</p>
+        <partial name="/Pages/Shared/_CurrentSession.cshtml" />
+    </header>
+    <div class="home-grid">
+        <section class="home-activity card" aria-labelledby="activity-title">
+            <div class="home-section-heading"><div><h2 id="activity-title">@L["Home.Activity"]</h2><p>@L["Home.ActivitySubtitle"]</p></div><a asp-page="/Audit/Timeline">@L["Home.AllHistory"]</a></div>
+            @if (activity is null)
+            {
+                <p class="status-message status-danger">@L["Home.Unavailable"]</p>
+            }
+            else if (activity.Items.Count == 0)
+            {
+                <p class="status-message">@L["Home.NoActivity"]</p>
+            }
+            else
+            {
+                <ol class="activity-list">
+                @foreach (var item in activity.Items)
+                {
+                    <li class="@ActivityTone(item)"
+                        data-activity-event="@item.EventType"
+                        data-entry-origin="@item.EntryOrigin"
+                        data-membership-selection="@item.MembershipState.SelectionStatus">
+                        <span class="activity-avatar" aria-hidden="true">@Initials(item.ClientDisplayName)</span>
+                        <div class="activity-copy">
+                            <strong>@item.ClientDisplayName</strong>
+                            @if (item.MembershipState.SelectionStatus == ReceptionActivityMembershipSelectionStatus.Ambiguous)
+                            {
+                                <span class="activity-status activity-warning"><span class="activity-status-mark"></span>@L["Home.MembershipAmbiguous"]</span>
+                                <span class="activity-candidates">@string.Join(" · ", item.MembershipState.Candidates.Select(MembershipSummary))</span>
+                            }
+                            else if (item.MembershipState.TimelineState is { } state)
+                            {
+                                <span class="activity-status @MembershipTone(state)"><span class="activity-status-mark"></span>@MembershipSummary(state)</span>
+                            }
+                            <span class="activity-event-meta">
+                                <span>@ActivityLabel(item.EventType)</span>
+                                @if (item.IsCorrectionOrCancellation) { <span class="activity-meta-danger">· @L["Home.Correction"]</span> }
+                                @if (item.EntryOrigin != EntryOrigin.Normal) { <span class="activity-meta-info">· @L[$"Home.Origin.{item.EntryOrigin}"]</span> }
+                                @if (item.ChangedAfterClose) { <span class="activity-meta-warning">· @L["Home.ChangedAfterClose"]</span> }
+                            </span>
+                        </div>
+                        <span class="activity-times">
+                            <span class="activity-recorded-at">@L["Home.RecordedAt"] <time datetime="@item.RecordedAt.ToString("O")">@BusinessTimeZone.ConvertInstantToLocal(item.RecordedAt).ToString("t", culture)</time></span>
+                            @if (item.EntryOrigin != EntryOrigin.Normal)
+                            {
+                                <span class="activity-occurred-at">@L["Home.OccurredAt"] <time datetime="@item.OccurredAt.ToString("O")">@BusinessTimeZone.ConvertInstantToLocal(item.OccurredAt).ToString("t", culture)</time></span>
+                            }
+                        </span>
+                        <a class="activity-open" asp-page="/Reception/Index" asp-route-clientId="@item.ClientId">@L["Home.OpenClient"]</a>
+                    </li>
+                }
+                </ol>
+            }
+        </section>
+        <aside class="home-rail">
+            <section class="card" aria-labelledby="quick-search-title">
+                <h2 id="quick-search-title"><partial name="_Icon" model='@("search")' /> @L["Home.QuickSearch"]</h2>
+                <form method="get" asp-page="/Reception/Index" role="search">
+                    <label class="visually-hidden" for="home-search">@L["Home.SearchLabel"]</label>
+                    <input id="home-search" name="q" type="search" maxlength="200" placeholder="@L["Home.SearchLabel"]" />
+                    <input name="mode" type="hidden" value="Auto" />
+                    <button type="submit">@L["Home.Search"]</button>
+                </form>
+                <a class="button-link home-create" asp-page="/Reception/Index" asp-route-create="true">@L["Home.Create"]</a>
+            </section>
+            <section class="card" aria-labelledby="today-title">
+                <div class="today-heading"><h2 id="today-title">@L["Home.Today"]</h2><a class="home-report-link" asp-page="/Reports/Daily">@L["Home.OpenReport"]</a></div>
+                @if (daily is null)
+                {
+                    <p class="status-message status-danger">@L["Home.Unavailable"]</p>
+                }
+                else
+                {
+                    <dl class="today-metrics"><div><dt>@L["Home.Visits"]</dt><dd>@daily.VisitCount</dd></div><div><dt>@L["Home.Payments"]</dt><dd>@daily.PaymentCount</dd></div><div><dt>@L["Home.Cash"]</dt><dd>@FormatMoney(daily.DailyCashSum.Amount, culture) @(daily.DailyCashSum.Currency == "UAH" ? "₴" : daily.DailyCashSum.Currency)</dd></div></dl>
+                }
+                @if (attention is null)
+                {
+                    <p class="status-message status-danger">@L["Home.Unavailable"]</p>
+                }
+                else
+                {
+                    <p class="attention-warning"><partial name="_Icon" model='@("calendar")' /> <a asp-page="@AttentionRoute(attention.EndingSoonReportDestination)">@L["Home.EndingSoon", attention.EndingSoonMembershipCount]</a></p>
+                    <p class="attention-danger"><partial name="_Icon" model='@("warning")' /> <a asp-page="@AttentionRoute(attention.NegativeClientsReportDestination)">@L["Home.Negative", attention.NegativeClientCount]</a></p>
+                }
+            </section>
+        </aside>
+    </div>
+</main>
+
+@functions {
+    private string ActivityLabel(ReceptionActivityEventType type) => L[$"Home.Action.{type}"].Value;
+    private string AttentionRoute(ReceptionAttentionDestination destination) => destination switch { ReceptionAttentionDestination.EndingSoon => "/Reports/EndingSoon", ReceptionAttentionDestination.NegativeClients => "/Reports/NegativeClients", _ => "/Reports/Daily" };
+    private static string Initials(string name) => string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(part => char.ToUpperInvariant(part[0])));
+    private string WarningLabel(string code) => L[$"Home.Warning.{code}"].Value;
+    private string MembershipSummary(ReceptionActivityMembershipCandidate state)
+    {
+        var stateLabels = state.Warnings
+            .Select(warning => WarningLabel(warning.Code))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var stateLabel = stateLabels.Length == 0
+            ? L["Home.State.Active"].Value
+            : string.Join(" · ", stateLabels);
+        return $"{stateLabel} · {L["Home.VisitBalance", state.RemainingVisits]}";
+    }
+    private static string FormatMoney(decimal amount, CultureInfo culture) => decimal.Truncate(amount) == amount ? amount.ToString("N0", culture) : amount.ToString("N2", culture);
+    private static string MembershipTone(ReceptionActivityMembershipCandidate state) => state.Warnings.Any(warning => warning.Severity == MembershipWarningSeverity.Danger) ? "activity-danger" : state.Warnings.Count > 0 ? "activity-warning" : "activity-success";
+    private static bool IsCancellation(ReceptionActivityEventType type) => type is ReceptionActivityEventType.VisitCanceled or ReceptionActivityEventType.PaymentCanceled or ReceptionActivityEventType.FreezeCanceled;
+    private static string ActivityTone(ReceptionActivityItem item) => IsCancellation(item.EventType) ? "activity-tone-danger" : item.MembershipState.SelectionStatus == ReceptionActivityMembershipSelectionStatus.Ambiguous || item.IsCorrectionOrCancellation ? "activity-tone-warning" : item.MembershipState.TimelineState?.Warnings.Any(warning => warning.Severity == MembershipWarningSeverity.Danger) == true ? "activity-tone-danger" : item.MembershipState.TimelineState?.Warnings.Any() == true ? "activity-tone-warning" : item.EntryOrigin != EntryOrigin.Normal || item.ChangedAfterClose ? "activity-tone-info" : "activity-tone-success";
+}

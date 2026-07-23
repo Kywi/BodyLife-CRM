@@ -4,6 +4,7 @@
 @{
     var isLogoutRoute = Context.Request.Path.StartsWithSegments("/Logout");
     var isAuthenticated = RequestContextResolver.TryResolve(out _) && !isLogoutRoute;
+    var isHome = ViewData["IsHome"] as bool? == true;
 }
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.Name">
@@ -14,13 +15,17 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="@(isAuthenticated ? "app-body" : "public-body")">
+    <a class="skip-link" href="#main-content">@SharedLocalizer["Navigation.SkipToMain"]</a>
     @if (isAuthenticated)
     {
         <div class="app-frame">
             <partial name="_AppNavigation" />
             <div class="app-main-column">
-                <partial name="_CurrentSession" />
-                <div class="app-content">
+                @if (!isHome)
+                {
+                    <partial name="_CurrentSession" />
+                }
+                <div id="main-content" class="app-content" tabindex="-1">
                     @RenderBody()
                 </div>
             </div>
@@ -36,7 +41,7 @@
                 </a>
                 <partial name="_LanguageSelector" />
             </header>
-            <div class="public-content">
+            <div id="main-content" class="public-content" tabindex="-1">
                 @RenderBody()
             </div>
         </div>

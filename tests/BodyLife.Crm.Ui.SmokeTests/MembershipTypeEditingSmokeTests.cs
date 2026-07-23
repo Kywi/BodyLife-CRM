@@ -271,6 +271,7 @@ public sealed class MembershipTypeEditingSmokeTests : IClassFixture<ReceptionApp
         await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
+        await page.Locator("details.owner-tools > summary").ClickAsync();
     }
 
     private static async Task ExpectVisibleAsync(

@@ -195,6 +195,10 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
         await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
+        if (string.Equals(loginName, _app.LoginName, StringComparison.Ordinal))
+        {
+            await page.Locator("details.owner-tools > summary").ClickAsync();
+        }
     }
 
     private static ILocator FindAccountRow(IPage page, string displayName)

@@ -165,6 +165,7 @@ public sealed class MembershipTypeCreationSmokeTests : IClassFixture<ReceptionAp
         await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
+        await page.Locator("details.owner-tools > summary").ClickAsync();
     }
 
     private static async Task<string> ReadIdempotencyKeyAsync(ILocator form)

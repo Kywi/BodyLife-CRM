@@ -1207,6 +1207,10 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await page.GotoAsync(new Uri(new Uri(page.Url), "/Reception/Index").ToString(), new PageGotoOptions
+        {
+            WaitUntil = WaitUntilState.NetworkIdle,
+        });
     }
 
     private static async Task SubmitHtmxSearchAsync(IPage page, string query)

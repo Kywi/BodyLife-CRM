@@ -69,23 +69,39 @@ public sealed class UiStyleCoverageSmokeTests : IClassFixture<ReceptionAppFixtur
                 StringComparison.Ordinal);
 
             var mainNavigation = page.Locator("section[aria-labelledby='navigation-main']");
-            var receptionLink = mainNavigation
-                .GetByRole(AriaRole.Link, new() { Name = "Reception", Exact = true });
-            await ExpectVisibleAsync(receptionLink, viewportName, "Reception navigation");
-            Assert.Equal("page", await receptionLink.GetAttributeAsync("aria-current"));
+            var homeLink = mainNavigation.GetByRole(AriaRole.Link, new() { Name = "Home", Exact = true });
+            var receptionLink = mainNavigation.GetByRole(AriaRole.Link, new() { Name = "Clients", Exact = true });
+            await ExpectVisibleAsync(homeLink, viewportName, "Home navigation");
+            Assert.Equal("page", await homeLink.GetAttributeAsync("aria-current"));
+            Assert.Null(await receptionLink.GetAttributeAsync("aria-current"));
             Assert.Equal(
                 1,
                 await page.Locator(".sidebar-navigation a[aria-current='page']").CountAsync());
             await AssertMinimumTouchTargetsAsync(
-                page.Locator(".sidebar-navigation .navigation-link"),
+                mainNavigation.Locator(".navigation-link"),
                 viewportName,
-                "navigation action");
+                "primary navigation action");
 
             if (isOwner)
             {
                 var ownerGroup = page.Locator("[aria-labelledby='navigation-owner']");
                 await ExpectVisibleAsync(ownerGroup, viewportName, "Owner tools navigation");
-                Assert.Equal(3, await ownerGroup.GetByRole(AriaRole.Link).CountAsync());
+                Assert.Equal("DETAILS", await ownerGroup.EvaluateAsync<string>("element => element.tagName"));
+                Assert.Equal(3, await ownerGroup.Locator("a.navigation-link").CountAsync());
+                await AssertMinimumTouchTargetsAsync(
+                    ownerGroup.Locator("summary"),
+                    viewportName,
+                    "Owner tools disclosure");
+                await ownerGroup.Locator("summary").ClickAsync();
+                await ExpectVisibleAsync(
+                    ownerGroup.GetByRole(AriaRole.Link).First,
+                    viewportName,
+                    "Owner tools destination");
+                await AssertMinimumTouchTargetsAsync(
+                    ownerGroup.GetByRole(AriaRole.Link),
+                    viewportName,
+                    "Owner tools destination");
+                await ownerGroup.Locator("summary").ClickAsync();
             }
             else
             {

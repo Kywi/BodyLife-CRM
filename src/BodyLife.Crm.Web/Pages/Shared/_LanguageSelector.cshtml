@@ -9,17 +9,21 @@
     @foreach (var culture in WebCultures.Supported)
     {
         var isCurrent = string.Equals(current, culture.Name, StringComparison.OrdinalIgnoreCase);
+        var isUkrainian = culture.Name == WebCultures.Ukrainian;
+        var languageName = SharedLocalizer[isUkrainian
+            ? "LanguageSelector.Ukrainian"
+            : "LanguageSelector.English"];
         <form method="post" asp-page="/SetLanguage" class="language-selector-form">
             <input name="culture" type="hidden" value="@culture.Name" />
             <input name="returnUrl" type="hidden" value="@returnUrl" />
             <button type="submit"
                     class="language-selector-button"
                     lang="@culture.Name"
+                    aria-label="@languageName"
+                    title="@languageName"
                     aria-current="@(isCurrent ? "true" : "false")"
                     disabled="@isCurrent">
-                @SharedLocalizer[culture.Name == WebCultures.Ukrainian
-                    ? "LanguageSelector.Ukrainian"
-                    : "LanguageSelector.English"]
+                <span aria-hidden="true">@(isUkrainian ? "UA" : "EN")</span>
             </button>
         </form>
     }
