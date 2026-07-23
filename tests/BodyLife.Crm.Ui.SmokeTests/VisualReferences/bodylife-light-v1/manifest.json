@@ -1,0 +1,40 @@
+{
+  "referenceVersion": "bodylife-light-v1",
+  "sourcePath": "/mnt/c/Users/genik.DESKTOP-C1V0MQJ/.codex/visualizations/2026/07/16/019f6c81-30dd-78c2-a4c7-9ca5921af44d",
+  "capture": {
+    "desktop": "outer 768x1100; inner iframe 736 CSS px; DPR 1.5; output 1104px wide",
+    "mobile": "outer 352x1400; inner iframe 320 CSS px; DPR 1.5; output 480px wide",
+    "browser": "Chrome on Windows; executable known, exact delivered version unknown",
+    "businessDate": "2026-07-16"
+  },
+  "hardStopHashRule": "Any artifact SHA-256 mismatch is a hard stop: do not continue visual-fidelity work until the external delivery is reverified and user approval is recorded.",
+  "artifacts": [
+    { "file": "branded-light-1-reception-home.png", "type": "image/png", "dimensions": "1104x789", "sha256": "6beb8e1479c5bd471bf1458e87512f8d13fd800354c6dcb0870cec6b473e7792" },
+    { "file": "branded-light-2-client-search.png", "type": "image/png", "dimensions": "1104x773", "sha256": "fead8b437663ec0df6f083d65066fa3c079fa8a54f039febba5966f854e9a8ac" },
+    { "file": "branded-light-3-client-profile.png", "type": "image/png", "dimensions": "1104x1134", "sha256": "e8e6303f7cc16b753060a41da32ff71a2ff0cdc0f0d1f50adb30b1ac641cfbf6" },
+    { "file": "branded-light-4-create-client.png", "type": "image/png", "dimensions": "1104x1011", "sha256": "bb1ceb7a927a0a090afc4704a46264b17943cf19b993d9d2f5ca9373fd88c127" },
+    { "file": "branded-light-5-cancel-visit.png", "type": "image/png", "dimensions": "1104x861", "sha256": "2b7a6aad244dbea376dd1ea58359e366fbae7399cfddb8bced53e0a8efe491b6" },
+    { "file": "branded-mobile-home.png", "type": "image/png", "dimensions": "480x2450", "sha256": "094f5e0ee585f31e3cb57d888501572a6a9fe6a50225e0657337b5c4fa5aed49" },
+    { "file": "branded-mobile-profile.png", "type": "image/png", "dimensions": "480x2381", "sha256": "50c7c01abb46638d2292e18198f2486695bd7d9479fae78bc9b7649c3758ed27" },
+    { "file": "branded-mobile-cancel.png", "type": "image/png", "dimensions": "480x1818", "sha256": "a650db723d64bce621e9d0b368ae315166ee50a60ac944c9a09d14b1a3e48bbd" },
+    { "file": "bodylife-light-reception-branded.html", "type": "text/html", "sha256": "57294858d431bdecc7189795776855f17f090093ec5ded00d3a1319bda3617ea" },
+    { "file": "bodylife-light-reception-branded-rendered.html", "type": "text/html", "sha256": "7f69b601f1865974e409cd06116804fa6509d81868a398becac79d21618d8c5a" },
+    { "file": "bodylife-logo-transparent.png", "type": "image/png", "dimensions": "338x480", "sha256": "34bcb5bc8e64ee833249799167ba00a89ca9faea587c0cf61480ad78c5c53048" },
+    { "file": "bodylife-logo-transparent-master.png", "type": "image/png", "dimensions": "1086x1448", "sha256": "96566435e379387affd3810709a48225673653cd2c26e374085254941702dc7d" }
+  ],
+  "renderedHtmlTokens": {
+    "canvas": "#ffffff",
+    "foreground": "#1a1c1f",
+    "referenceBlue": "#339cff",
+    "implementationFilledNavigationBlue": "accessible darker blue required",
+    "semantic": "success, warning, destructive red-orange and restrained violet retain text/icon labels",
+    "fontSans": "-apple-system, system-ui, Segoe UI, sans-serif",
+    "fontSizeBase": "14px",
+    "radius": "12.5px",
+    "cardRadius": "20px",
+    "appGrid": "108px rail + 14px gap",
+    "workRail": "190-210px + 14px gap",
+    "stack": "12px",
+    "logo": "76px desktop / 56px mobile"
+  }
+}
