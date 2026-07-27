@@ -167,7 +167,9 @@ public sealed class ClientAuditExplanationFactory(AuditPresentation presentation
             || current is null
             || refs.PreviousCardAssignmentId is not null
             || refs.CurrentCardAssignmentId != current.Id
-            || current.AssignedAt != entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                current.AssignedAt,
+                entry.OccurredAt))
         {
             throw new JsonException("Card assignment summary is inconsistent.");
         }
@@ -199,8 +201,12 @@ public sealed class ClientAuditExplanationFactory(AuditPresentation presentation
             || refs.PreviousCardAssignmentId != original.Id
             || refs.CurrentCardAssignmentId != current.Id
             || original.Id == current.Id
-            || original.AssignedAt > entry.OccurredAt
-            || current.AssignedAt != entry.OccurredAt
+            || AuditTimestampPrecision.CompareAtPostgreSqlPrecision(
+                original.AssignedAt,
+                entry.OccurredAt) > 0
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                current.AssignedAt,
+                entry.OccurredAt)
             || !HasReasonOrComment(entry))
         {
             throw new JsonException("Card change summary is inconsistent.");
@@ -234,7 +240,9 @@ public sealed class ClientAuditExplanationFactory(AuditPresentation presentation
             || current is not null
             || refs.PreviousCardAssignmentId != original.Id
             || refs.CurrentCardAssignmentId is not null
-            || original.AssignedAt > entry.OccurredAt
+            || AuditTimestampPrecision.CompareAtPostgreSqlPrecision(
+                original.AssignedAt,
+                entry.OccurredAt) > 0
             || !HasReasonOrComment(entry))
         {
             throw new JsonException("Card clear summary is inconsistent.");

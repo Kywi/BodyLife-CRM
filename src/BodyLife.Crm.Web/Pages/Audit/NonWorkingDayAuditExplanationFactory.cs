@@ -52,13 +52,19 @@ public sealed class NonWorkingDayAuditExplanationFactory(AuditPresentation prese
         if (entry.EntityId == Guid.Empty
             || period.PeriodId != entry.EntityId
             || period.Status != "active"
-            || period.CreatedAt != entry.RecordedAt
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                period.CreatedAt,
+                entry.RecordedAt)
             || period.InclusiveDays != period.EndDate.DayNumber - period.StartDate.DayNumber + 1
             || preview.AffectedCount < 0
             || preview.AffectedCount != applications.Count
             || afterDto.AffectedMembershipCount != applications.Count
-            || previewIssuedAt > entry.RecordedAt
-            || previewExpiresAt < entry.RecordedAt
+            || AuditTimestampPrecision.CompareAtPostgreSqlPrecision(
+                previewIssuedAt,
+                entry.RecordedAt) > 0
+            || AuditTimestampPrecision.CompareAtPostgreSqlPrecision(
+                previewExpiresAt,
+                entry.RecordedAt) < 0
             || previewExpiresAt <= previewIssuedAt
             || applications.Any(application =>
                 application.StartDate != period.StartDate
@@ -130,7 +136,9 @@ public sealed class NonWorkingDayAuditExplanationFactory(AuditPresentation prese
             || summary.Cancellation is not null
             || replacement.Status != "active"
             || replacement.PeriodId == summary.BeforePeriod.PeriodId
-            || replacement.CreatedAt != entry.RecordedAt
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                replacement.CreatedAt,
+                entry.RecordedAt)
             || summary.ReplacementApplications.Any(application =>
                 application.StartDate != replacement.StartDate
                 || application.EndDate != replacement.EndDate))
@@ -204,7 +212,9 @@ public sealed class NonWorkingDayAuditExplanationFactory(AuditPresentation prese
             || summary.NewAffectedCount != 0
             || cancellation.NonWorkingPeriodId != summary.BeforePeriod.PeriodId
             || cancellation.Reason != entry.Reason
-            || cancellation.RecordedAt != entry.RecordedAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                cancellation.RecordedAt,
+                entry.RecordedAt))
         {
             throw new JsonException("Non-working day cancellation summary is inconsistent.");
         }
@@ -314,8 +324,12 @@ public sealed class NonWorkingDayAuditExplanationFactory(AuditPresentation prese
             || !relatedAffectedMembershipIds.SequenceEqual(affectedMembershipIds)
             || !relatedAffectedClientIds.SequenceEqual(affectedClientIds)
             || string.IsNullOrWhiteSpace(confirmationFingerprint)
-            || previewIssuedAt > entry.RecordedAt
-            || previewExpiresAt < entry.RecordedAt
+            || AuditTimestampPrecision.CompareAtPostgreSqlPrecision(
+                previewIssuedAt,
+                entry.RecordedAt) > 0
+            || AuditTimestampPrecision.CompareAtPostgreSqlPrecision(
+                previewExpiresAt,
+                entry.RecordedAt) < 0
             || previewExpiresAt <= previewIssuedAt)
         {
             throw new JsonException("Non-working day affected scope is inconsistent.");

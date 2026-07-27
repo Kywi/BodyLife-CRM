@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
@@ -6,6 +7,8 @@ using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
+using BodyLife.Crm.Web.Localization;
+using BodyLife.Crm.Web.Pages.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -133,6 +136,112 @@ public sealed class PostgreSqlGetAuditTimelineQueryTests
         Assert.Equal($"audit-{tiedLowerId:N}", visit.RequestCorrelationId.Value);
         Assert.Equal($"key-{tiedLowerId:N}", visit.IdempotencyKey);
         Assert.True(visit.ChangedAfterClose);
+    }
+
+    [PostgreSqlFact]
+    public async Task FreezeExplanationSurvivesPostgreSqlTimestampPrecisionRoundTrip()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database);
+        var auditId = Guid.NewGuid();
+        var freezeId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var occurredAt = TestNow.AddMinutes(-10).AddTicks(1);
+        var recordedAt = TestNow.AddMinutes(-5).AddTicks(9);
+        var jsonOffset = TimeSpan.FromHours(2);
+        var beforeMembership = new
+        {
+            MembershipId = membershipId,
+            ClientId = fixture.ClientId,
+            RemainingVisits = 7,
+            NegativeBalance = 0,
+            ExtensionDays = 3,
+            EffectiveEndDate = new DateOnly(2026, 8, 21),
+            Warnings = Array.Empty<string>(),
+        };
+
+        await InsertAuditAsync(
+            database,
+            fixture.Owner,
+            auditId,
+            "freeze.added",
+            "freeze",
+            freezeId,
+            new
+            {
+                ClientId = fixture.ClientId,
+                MembershipId = membershipId,
+            },
+            occurredAt,
+            recordedAt,
+            reason: "Active test freeze",
+            beforeSummary: new
+            {
+                MembershipState = beforeMembership,
+            },
+            afterSummary: new
+            {
+                Freeze = new
+                {
+                    FreezeId = freezeId,
+                    ClientId = fixture.ClientId,
+                    MembershipId = membershipId,
+                    StartDate = new DateOnly(2026, 7, 27),
+                    EndDate = new DateOnly(2026, 7, 27),
+                    InclusiveDays = 1,
+                    Reason = "Active test freeze",
+                    OccurredAt = occurredAt.ToOffset(jsonOffset),
+                    RecordedAt = recordedAt.ToOffset(jsonOffset),
+                    EntryOrigin = "normal",
+                    EntryBatchId = (Guid?)null,
+                    Status = "active",
+                },
+                MembershipState = new
+                {
+                    MembershipId = membershipId,
+                    ClientId = fixture.ClientId,
+                    RemainingVisits = 7,
+                    NegativeBalance = 0,
+                    ExtensionDays = 4,
+                    EffectiveEndDate = new DateOnly(2026, 8, 22),
+                    Warnings = Array.Empty<string>(),
+                },
+            });
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetAuditTimelineQuery(
+                fixture.Owner,
+                EntityId: freezeId,
+                EntityType: AuditTimelineEntityType.Freeze),
+            CancellationToken.None);
+        var entry = Assert.Single(AssertSuccess(result).Items);
+
+        Assert.NotEqual(occurredAt, entry.OccurredAt);
+        Assert.NotEqual(recordedAt, entry.RecordedAt);
+        Assert.Equal(0, entry.OccurredAt.UtcDateTime.Ticks % 10);
+        Assert.Equal(0, entry.RecordedAt.UtcDateTime.Ticks % 10);
+
+        var previousCulture = CultureInfo.CurrentCulture;
+        var previousUiCulture = CultureInfo.CurrentUICulture;
+        try
+        {
+            var culture = CultureInfo.GetCultureInfo("en-US");
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            using var services = CreateExplanationServices();
+            var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+                services.GetRequiredService<AuditEntryExplanationPresenter>()
+                    .Create(entry));
+            Assert.True(explanation.IsAvailable);
+            Assert.Equal("freeze-added", explanation.Kind);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+            CultureInfo.CurrentUICulture = previousUiCulture;
+        }
     }
 
     [PostgreSqlFact]
@@ -387,6 +496,14 @@ public sealed class PostgreSqlGetAuditTimelineQueryTests
             new FixedTimeProvider(TestNow));
     }
 
+    private static ServiceProvider CreateExplanationServices()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddBodyLifeLocalization();
+        return services.BuildServiceProvider();
+    }
+
     private static async Task<AuditTimelineFixture> SeedFixtureAsync(
         PostgreSqlTestDatabase database)
     {
@@ -551,7 +668,9 @@ public sealed class PostgreSqlGetAuditTimelineQueryTests
         string entryOrigin = "normal",
         string? reason = null,
         string? comment = null,
-        bool changedAfterClose = false)
+        bool changedAfterClose = false,
+        object? beforeSummary = null,
+        object? afterSummary = null)
     {
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
@@ -594,8 +713,8 @@ public sealed class PostgreSqlGetAuditTimelineQueryTests
                 @recorded_at,
                 @reason,
                 @comment,
-                '{}'::jsonb,
-                '{"state":"recorded"}'::jsonb,
+                @before_summary,
+                @after_summary,
                 @request_correlation_id,
                 @entry_origin,
                 @idempotency_key,
@@ -624,6 +743,12 @@ public sealed class PostgreSqlGetAuditTimelineQueryTests
             reason ?? (object)DBNull.Value;
         command.Parameters.Add("comment", NpgsqlDbType.Varchar).Value =
             comment ?? (object)DBNull.Value;
+        command.Parameters.Add("before_summary", NpgsqlDbType.Jsonb).Value =
+            JsonSerializer.Serialize(beforeSummary ?? new { }, AuditJsonOptions);
+        command.Parameters.Add("after_summary", NpgsqlDbType.Jsonb).Value =
+            JsonSerializer.Serialize(
+                afterSummary ?? new { State = "recorded" },
+                AuditJsonOptions);
         command.Parameters.AddWithValue("request_correlation_id", $"audit-{id:N}");
         command.Parameters.AddWithValue("entry_origin", entryOrigin);
         command.Parameters.AddWithValue("idempotency_key", $"key-{id:N}");

@@ -2033,6 +2033,55 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void FreezeAdditionAllowsSubMicrosecondTimestampPrecisionLostByPostgreSql()
+    {
+        var entryOccurredAt = OriginalOccurredAt;
+        var entryRecordedAt = OriginalOccurredAt.AddMinutes(5);
+        var fixture = FreezeAdditionAudit(
+            membershipStateChanges: true,
+            occurredAt: entryOccurredAt.AddTicks(1),
+            recordedAt: entryRecordedAt.AddTicks(9));
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "freeze.added",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related,
+                    occurredAt: entryOccurredAt,
+                    recordedAt: entryRecordedAt)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("freeze-added", explanation.Kind);
+    }
+
+    [Fact]
+    public void FreezeAdditionRejectsTimestampFromAnotherPostgreSqlMicrosecond()
+    {
+        var entryRecordedAt = OriginalOccurredAt.AddMinutes(5);
+        var fixture = FreezeAdditionAudit(
+            membershipStateChanges: true,
+            recordedAt: entryRecordedAt.AddTicks(10));
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "freeze.added",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related,
+                    recordedAt: entryRecordedAt)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void FreezeAdditionAllowsUnchangedStateWhenRangeOverlapsExistingExtensions()
     {
         var fixture = FreezeAdditionAudit(membershipStateChanges: false);
@@ -4210,7 +4259,9 @@ public sealed class AuditEntryExplanationViewModelTests
         bool membershipStateChanges,
         bool decreaseAfterMembership = false,
         int inclusiveDays = 3,
-        string sourceReason = "Correction reason")
+        string sourceReason = "Correction reason",
+        DateTimeOffset? occurredAt = null,
+        DateTimeOffset? recordedAt = null)
     {
         var freezeId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
@@ -4249,8 +4300,8 @@ public sealed class AuditEntryExplanationViewModelTests
                 endDate,
                 inclusiveDays,
                 sourceReason,
-                OriginalOccurredAt,
-                OriginalOccurredAt.AddMinutes(5),
+                occurredAt ?? OriginalOccurredAt,
+                recordedAt ?? OriginalOccurredAt.AddMinutes(5),
                 "normal",
                 EntryBatchId: null,
                 "active"),

@@ -12605,3 +12605,49 @@ Stop point:
 - Collect user feedback on the conventional sidebar, Activity/rail proportions
   and responsive stacking before adding further screens or migrating any
   presentation into the production Razor UI.
+
+## Step 195 - Preserved readable audit summaries after PostgreSQL timestamp round-trips
+
+Status: completed. The production audit timeline now renders valid stored
+business summaries whose source timestamps had greater precision than
+PostgreSQL can retain.
+
+Completed:
+
+- Reproduced the failure on the seeded `freeze.added` audit entry: JSON
+  summaries retained 100-nanosecond digits while canonical `timestamptz`
+  columns reread at microsecond precision, so exact timestamp equality made the
+  presenter fail closed.
+- Added one UTC-instant comparison boundary that floors both values to
+  PostgreSQL microsecond precision. Values within the same stored microsecond
+  compare consistently; values in different microseconds still fail closed.
+- Applied the boundary to summary-versus-canonical timestamps for membership
+  types, visits, freezes, payments, issued memberships, card assignments and
+  non-working-day workflows. Summary-internal invariants remain exact.
+- Added unit regressions for accepted sub-microsecond loss and rejected
+  full-microsecond differences.
+- Added a PostgreSQL-backed Npgsql write/reread regression with residual ticks
+  and a non-UTC JSON offset for the same instant, then verified the real audit
+  presenter remains available.
+- Restarted the seeded manual server and confirmed the affected timeline entry
+  now renders the readable freeze fact, before/after membership extension
+  state, period, reason and provenance.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- `dotnet format BodyLife.Crm.sln --verify-no-changes` passed.
+- All 294 Web tests passed; the 154 focused audit explanation tests passed.
+- All 6 PostgreSQL audit timeline query tests passed, including the new
+  storage round-trip regression.
+- `/health/ready` returned `Healthy` with PostgreSQL available and schema
+  current; the authenticated `/Audit/Timeline` check rendered
+  `freeze-added` as available.
+- Independent review found no remaining P0/P1/P2 issue after the PostgreSQL
+  regression was added.
+
+Stop point:
+
+- The manual demo remains available at `http://localhost:5097` with its seeded
+  data. Milestone 11 remains the next roadmap milestone; it was not started by
+  this audit display fix.

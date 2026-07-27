@@ -251,7 +251,9 @@ public sealed class AuditEntryExplanationPresenter(
 
         var created = ReadMembershipTypeCatalog(after);
         if (!created.HasValidLifecycle()
-            || created.CreatedAt != entry.RecordedAt
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                created.CreatedAt,
+                entry.RecordedAt)
             || created.UpdatedAt != created.CreatedAt
             || (!created.IsActive && created.DeactivatedAt != created.CreatedAt))
         {
@@ -444,8 +446,12 @@ public sealed class AuditEntryExplanationPresenter(
             || visit.ClientId != relatedClientId
             || visit.MembershipId != relatedMembershipId
             || visit.ConsumptionId != relatedConsumptionId
-            || visit.OccurredAt != entry.OccurredAt
-            || visit.RecordedAt != entry.RecordedAt
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                visit.OccurredAt,
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                visit.RecordedAt,
+                entry.RecordedAt)
             || visit.EntryOrigin != EntryOriginValue(entry.EntryOrigin)
             || visit.Comment != entry.Comment
             || visit.Status != "active")
@@ -639,8 +645,12 @@ public sealed class AuditEntryExplanationPresenter(
             || afterMembership.ExtensionDays > beforeMembership.ExtensionDays
             || afterMembership.EffectiveEndDate > beforeMembership.EffectiveEndDate
             || RequireString(cancellation, "reason") != entry.Reason
-            || RequireTimestamp(cancellation, "occurredAt") != entry.OccurredAt
-            || cancellationRecordedAt != entry.RecordedAt
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                RequireTimestamp(cancellation, "occurredAt"),
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                cancellationRecordedAt,
+                entry.RecordedAt)
             || cancellationEntryOrigin != EntryOriginValue(entry.EntryOrigin)
             || RequireBoolean(cancellation, "changedAfterClose")
                 != entry.ChangedAfterClose)
@@ -712,8 +722,12 @@ public sealed class AuditEntryExplanationPresenter(
             || afterMembership.ExtensionDays < beforeMembership.ExtensionDays
             || afterMembership.EffectiveEndDate < beforeMembership.EffectiveEndDate
             || freeze.Reason != entry.Reason
-            || occurredAt != entry.OccurredAt
-            || recordedAt != entry.RecordedAt
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                occurredAt,
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                recordedAt,
+                entry.RecordedAt)
             || entryOrigin != EntryOriginValue(entry.EntryOrigin)
             || freeze.Status != "active")
         {
@@ -820,8 +834,12 @@ public sealed class AuditEntryExplanationPresenter(
         if (payment.PaymentId != entry.EntityId
             || payment.ClientId != relatedClientId
             || payment.MembershipId != relatedMembershipId
-            || payment.OccurredAt != entry.OccurredAt
-            || payment.RecordedAt != entry.RecordedAt
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                payment.OccurredAt,
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                payment.RecordedAt,
+                entry.RecordedAt)
             || payment.EntryOrigin != EntryOriginValue(entry.EntryOrigin)
             || payment.Comment != entry.Comment
             || payment.Method != "cash"
@@ -901,7 +919,9 @@ public sealed class AuditEntryExplanationPresenter(
             || issue.MembershipTypeId != relatedMembershipTypeId
             || issue.Payment?.PaymentId != relatedPaymentId
             || issue.StartDate > issue.BaseEndDate
-            || issue.IssuedAt != entry.RecordedAt
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                issue.IssuedAt,
+                entry.RecordedAt)
             || issue.Status != "active"
             || (issue.NegativeHandlingDecision is null)
                 != (issue.ExistingNegativeState is null))
