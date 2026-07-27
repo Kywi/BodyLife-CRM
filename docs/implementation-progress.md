@@ -12716,3 +12716,68 @@ Stop point:
   Attention-first rail. Do not migrate this review-only composition into the
   production Razor shell or treat it as Wave 1 approval without updating the
   accepted UI contract and completing the existing visual-fidelity approval.
+
+## Step 197 - Extended the published template lab across every implemented page
+
+Status: completed and published as the fifth review-only template-lab
+iteration. Production Razor UI and the Wave 1 approval status remain unchanged.
+
+Completed:
+
+- Expanded the static lab from Home to all 16 implemented page routes:
+  reception search/profile states, five Reports screens, Audit timeline and
+  client history, three Owner tools, Login, Logged out, Access denied and
+  Error.
+- Reused the approved header and responsive navigation shell on every
+  authenticated fixture. Shared Reception/Admin and Owner contexts are
+  labelled honestly, Owner links remain confined to Owner fixtures, and the
+  Shared access-denied fixture retains its authenticated context.
+- Added compact reusable presentation patterns for client membership
+  snapshots, warning/action states, report totals and source rows, audit
+  provenance, Owner confirmation scope, public terminal screens and
+  touch-friendly forms/tables.
+- Added deterministic whitelisted review states for exact-card and ambiguous
+  search, zero/negative/expired memberships, stale and blocked actions,
+  changed-after-close reports, empty/unavailable queries, Owner validation and
+  scope changes, and Login failures. Unknown query states fail back to each
+  route's explicit default.
+- Kept the lab public-safe and review-only: flat relative Pages links, fictional
+  fixtures, no backend requests, authentication, cookies, storage, form posts
+  or browser-owned business calculations.
+
+Validation:
+
+- Bundled Chromium passed 48 default-route checks across 1440px, 1024px and
+  390px, 62 valid-state/default-fallback checks and 6 interaction checks with
+  no failures. Coverage included drawer focus containment, Escape/focus return,
+  inert background, layout stability, no-JavaScript navigation, search and
+  review dialogs.
+- Static validation confirmed exactly 16 HTML routes, one heading per route,
+  valid local links/assets/fragments, unique IDs, resolved ARIA references,
+  44px touch controls and no root-absolute or external runtime dependencies.
+  JavaScript syntax and `git diff --check` passed.
+- Two independent read-only reviews found no remaining P0/P1 issue after the
+  final accessibility, state-context and shell-consistency fixes.
+- GitHub Pages deployment run `30270234784` completed successfully. The live
+  Home, negative-client, changed-after-close report, Owner scope-change and
+  Login-error fixtures passed 11 Chromium checks at 1440px and 390px,
+  including the mobile drawer.
+- Full CI run `30270234822` passed build, analyzers, tests and PostgreSQL
+  migrations.
+- `graphify update .` was attempted after the prototype change, but its local
+  rebuild stopped with filesystem error 95. The required semantic
+  `graphify . --update` then scanned the pending corpus and stopped before
+  rebuilding because no supported LLM API key is configured. No refreshed
+  graph is claimed, and the pre-existing generated Graphify memory file remains
+  excluded.
+
+Commit:
+
+- `ec3eb73` (`feat(ui): extend template lab across application`).
+
+Stop point:
+
+- Collect page-by-page feedback in the published lab and iterate on the static
+  template before proposing any production Razor migration. The lab remains
+  design review evidence only; Wave 1 acceptance still requires the real
+  authenticated Razor candidate and its existing gates.
