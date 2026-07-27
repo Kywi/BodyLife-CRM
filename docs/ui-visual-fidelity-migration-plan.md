@@ -20,6 +20,18 @@ product-owner approval. Waves 2–6 are not started.
   explicitly accepts the Wave 1 desktop/mobile Home comparison. Green tests do
   not constitute that approval.
 
+### GitHub Pages template lab
+
+`docs/ui-prototype/` is a separate, public-safe static template laboratory
+requested for rapid tablet/phone composition review. It may use clearly
+labelled deterministic fixture content because it has no backend, commands,
+authentication or canonical reads. It is not the CRM application, a production
+hosting option, a Wave 1 candidate, or acceptance evidence, and feedback on it
+does not change any wave status. Formal approval still requires the real
+authenticated Razor Pages candidate, canonical data/failure states and the
+acceptance gates below. Never publish real client, session or operational data
+through this artifact.
+
 ## Рішення та межі
 
 Поточний UI є функціонально валідованим light-theme baseline, але **не є

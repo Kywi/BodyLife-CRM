@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="BodyLife CRM — статичний review-only прототип Home.">
+  <title>BodyLife CRM — Home prototype</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/prototype.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Перейти до вмісту</a>
+  <div class="demo-banner" role="note">
+    <strong>Template lab · не acceptance-кандидат</strong><span>Детерміновані демо-дані · без бекенду, авторизації та команд</span>
+  </div>
+  <div class="app-shell">
+    <aside class="navigation" aria-label="Основна навігація">
+      <a class="brand" href="#top" aria-label="BodyLife CRM, Home">
+        <img src="assets/bodylife-logo-transparent.png" width="338" height="480" alt="Body Life">
+      </a>
+      <nav>
+        <a class="nav-link active" href="#top" aria-current="page"><span aria-hidden="true">⌂</span><span>Home</span></a>
+        <a class="nav-link" href="#clients" data-review-link><span aria-hidden="true">◉</span><span>Clients</span></a>
+        <a class="nav-link" href="#report" data-review-link><span aria-hidden="true">▤</span><span>Report</span></a>
+        <a class="nav-link" href="#history" data-review-link><span aria-hidden="true">◷</span><span>History</span></a>
+      </nav>
+      <div class="nav-footer">
+        <span class="role-tag">Shared account</span>
+        <button class="quiet-button" type="button" data-review-link>Завершити <span aria-hidden="true">↗</span></button>
+      </div>
+    </aside>
+
+    <div class="workspace" id="top">
+      <header class="context-bar">
+        <div>
+          <p class="eyebrow">Рецепція · Київ</p>
+          <h1>Home</h1>
+          <p class="muted">Четвер, 16 липня 2026 · демо-стан о 12:45</p>
+        </div>
+        <div class="session-card" aria-label="Контекст демонстраційної сесії">
+          <span class="session-icon" aria-hidden="true">▣</span>
+          <div><strong>Shared Reception/Admin</strong><span>tablet 01 · demo session c4f7a8</span></div>
+        </div>
+      </header>
+
+      <main id="main-content" tabindex="-1">
+        <div class="review-callout" role="note">
+          <span aria-hidden="true">ⓘ</span>
+          <p><strong>Що перевіряємо:</strong> ієрархію Home, touch-first навігацію, статуси та порядок для tablet/phone. Це майданчик для пошуку шаблону, а не доказ приймання Wave 1; інтеракції лише показують стани й нічого не зберігають.</p>
+        </div>
+        <div class="home-grid">
+          <section class="card activity-card" aria-labelledby="activity-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Операції рецепції</p>
+                <h2 id="activity-title">Activity now</h2>
+                <p class="muted">Останні зафіксовані демо-події</p>
+              </div>
+              <label class="filter-label">Фільтр
+                <select id="activity-filter" aria-label="Фільтрувати активність">
+                  <option value="all">Усі події</option>
+                  <option value="visit">Візити</option>
+                  <option value="payment">Оплати</option>
+                  <option value="attention">Увага</option>
+                </select>
+              </label>
+            </div>
+            <div class="activity-list" id="activity-list">
+              <article class="activity-row success" data-type="visit">
+                <div class="avatar">МІ</div><div><strong>Марія Іваненко</strong><p><span class="status-dot"></span>Візит зафіксовано · Active · 8 візитів</p></div><time datetime="2026-07-16T12:30">12:30</time><button type="button" class="row-button" data-detail="Візит Марії Іваненко — Active, 8 візитів. Це статичні демо-дані.">Деталі</button>
+              </article>
+              <article class="activity-row danger" data-type="attention">
+                <div class="avatar">ОГ</div><div><strong>Олексій Гнатюк</strong><p><span class="status-dot"></span>Негативний баланс · −2 візити</p></div><time datetime="2026-07-16T12:18">12:18</time><button type="button" class="row-button" data-detail="Олексій Гнатюк потребує перевірки: негативний баланс −2 візити. Без переходу до профілю в цьому прототипі.">Деталі</button>
+              </article>
+              <article class="activity-row warning" data-type="attention">
+                <div class="avatar">ІС</div><div><strong>Ірина Сидоренко</strong><p><span class="status-dot"></span>Закінчується скоро · 2 візити</p></div><time datetime="2026-07-16T11:56">11:56</time><button type="button" class="row-button" data-detail="Ірина Сидоренко: абонемент закінчується скоро, залишилось 2 візити. Статичний review state.">Деталі</button>
+              </article>
+              <article class="activity-row success" data-type="payment">
+                <div class="avatar">КВ</div><div><strong>Катерина Василенко</strong><p><span class="status-dot"></span>Оплату зафіксовано · 1 200 ₴</p></div><time datetime="2026-07-16T11:41">11:41</time><button type="button" class="row-button" data-detail="Демо-оплата Катерини Василенко: 1 200 ₴. Прототип не виконує payment command.">Деталі</button>
+              </article>
+              <article class="activity-row danger" data-type="attention">
+                <div class="avatar">ОК</div><div><strong>Олег Коваленко</strong><p><span class="status-dot"></span>Абонемент завершився 14.07</p></div><time datetime="2026-07-16T11:32">11:32</time><button type="button" class="row-button" data-detail="Олег Коваленко: прострочений абонемент. Це лише демонстраційна картка.">Деталі</button>
+              </article>
+            </div>
+            <p id="activity-empty" class="empty-state" hidden>Для цього фільтра немає демонстраційних подій.</p>
+            <div id="detail-panel" class="detail-panel" hidden aria-live="polite"></div>
+          </section>
+
+          <aside class="side-rail" aria-label="Швидкі інструменти та підсумки">
+            <section class="card" id="clients" aria-labelledby="search-title">
+              <p class="eyebrow">Clients</p><h2 id="search-title">Quick Search</h2>
+              <p class="muted">Картка, ПІБ, телефон або останні 4 цифри</p>
+              <form id="search-form" novalidate>
+                <label for="client-search">Пошук клієнта</label>
+                <input id="client-search" name="query" type="search" autocomplete="off" placeholder="Наприклад, Іваненко" aria-describedby="search-help">
+                <p id="search-help" class="sr-only">Демо-пошук показує статичні стани і не передає дані.</p>
+                <button class="primary-button" type="submit">Знайти клієнта <span aria-hidden="true">→</span></button>
+              </form>
+              <div id="search-result" class="search-result" aria-live="polite"></div>
+              <button class="secondary-button" type="button" id="create-client">＋ Створити клієнта</button>
+              <p class="demo-caption">Відкриває лише review-повідомлення; створення не виконується.</p>
+            </section>
+
+            <section class="card" id="report" aria-labelledby="today-title">
+              <div class="section-heading compact"><div><p class="eyebrow">Report</p><h2 id="today-title">Today</h2></div><button class="text-button" type="button" data-review-link>Звіт</button></div>
+              <dl class="metrics">
+                <div><dt>Візити</dt><dd>24</dd></div><div><dt>Оплати</dt><dd>8</dd></div><div><dt>Готівка</dt><dd>12 400 ₴</dd></div>
+              </dl>
+              <div class="attention" aria-labelledby="attention-title" id="history">
+                <h3 id="attention-title">Attention</h3>
+                <button type="button" class="attention-item warning" data-detail="3 memberships ending soon — review destination only."><span aria-hidden="true">!</span><span><strong>3</strong> абонементи закінчуються скоро</span><span aria-hidden="true">›</span></button>
+                <button type="button" class="attention-item danger" data-detail="2 clients have negative balance — review destination only."><span aria-hidden="true">!</span><span><strong>2</strong> клієнти з негативним балансом</span><span aria-hidden="true">›</span></button>
+              </div>
+              <p class="demo-caption">Метрики та попередження — фіксований демо-набір, не звіт системи.</p>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+  <dialog id="review-dialog" aria-labelledby="dialog-title"><div class="dialog-content"><p class="eyebrow">Review-only</p><h2 id="dialog-title">Дія недоступна в прототипі</h2><p id="dialog-message">Цей статичний макет не має бекенду або команд.</p><button class="primary-button" type="button" id="close-dialog">Зрозуміло</button></div></dialog>
+  <script src="assets/app.js"></script>
+</body>
+</html>

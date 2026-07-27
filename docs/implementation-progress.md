@@ -12486,3 +12486,44 @@ Stop point:
   candidate captures and request explicit user/product-owner approval. Do not
   start Wave 2, migrate later route compositions or mark Wave 1 `approved`
   until that decision is recorded.
+
+## Step 192 - Added the GitHub Pages UI template lab
+
+Status: completed as a review-only design tool. The Wave 1 visual-fidelity
+checkpoint remains unchanged and unapproved; Waves 2–6 and Milestone 11 were
+not started.
+
+Completed:
+
+- Added a standalone static Home template lab under `docs/ui-prototype/` for
+  rapid tablet/phone composition review without changing production Razor
+  Pages, commands, authentication, persistence or canonical read ownership.
+- Clearly labels all content as deterministic demo data and the artifact as
+  non-production and non-acceptance evidence. Real client/session/operational
+  data is explicitly forbidden.
+- Represents the compact Home shell, activity, quick search, direct create,
+  Today metrics and Attention states. Search demonstrates exact-card profile
+  preview and touch-selectable ambiguous results without persistence.
+- Added a least-privilege GitHub Pages workflow scoped to the prototype paths.
+  Official actions are pinned to verified immutable commit SHAs.
+- Recorded the template-lab boundary in the visual-fidelity migration plan.
+  Formal Wave 1 approval still requires the authenticated Razor candidate with
+  canonical data and the existing acceptance gates.
+
+Validation:
+
+- `git diff --check`, HTML parsing/local asset resolution, JavaScript syntax
+  and selector checks, static HTTP asset smoke and workflow YAML parsing
+  passed.
+- The approved logo copy matches the locked SHA-256.
+- Structural checks confirmed semantic landmarks, unique IDs, 44px touch
+  targets, responsive tablet/phone rules and reduced-motion handling.
+- Chromium runtime capture was attempted but hung in the local WSL environment,
+  so a rendered overflow/focus/console pass remains to be confirmed by the
+  Pages deployment.
+
+Stop point:
+
+- Publish the template lab through GitHub Pages and collect user feedback on
+  the Home composition. Do not treat that feedback as Wave 1 approval; compare
+  and approve the real Razor candidate separately before Wave 2.

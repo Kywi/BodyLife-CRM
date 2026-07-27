@@ -1,0 +1,27 @@
+.demo-result-button {
+  display: grid;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.demo-result-button span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 500;
+}
+
+.demo-result-button:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
