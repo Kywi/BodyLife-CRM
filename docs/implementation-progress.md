@@ -12527,3 +12527,37 @@ Stop point:
 - Publish the template lab through GitHub Pages and collect user feedback on
   the Home composition. Do not treat that feedback as Wave 1 approval; compare
   and approve the real Razor candidate separately before Wave 2.
+
+## Step 193 - Iterated the template navigation and Activity hierarchy
+
+Status: completed and published as the second review-only template-lab
+iteration. Production Razor UI and the Wave 1 approval status remain unchanged.
+
+Completed:
+
+- Replaced the template's confusing fixed compact rail with a hamburger-driven
+  left drawer. It is collapsible on wide screens and opens as an overlay on
+  tablet/phone with close, backdrop and Escape behavior.
+- Added focus return, modal Tab containment, closed-state inert/assistive-
+  technology isolation, open-state background isolation and reduced-motion
+  handling.
+- Rebuilt Activity as spaced event cards with explicit success/warning/danger
+  labels, clearer client/event/summary hierarchy, labelled Kyiv timestamps and
+  44px detail actions.
+- Added a distinct info/provenance `paper_fallback` example with separate
+  occurred and recorded times; filtering now clears stale event details.
+
+Validation:
+
+- JavaScript syntax, HTML IDs/ARIA/local assets, static HTTP responses and
+  `git diff --check` passed.
+- Independent review confirmed the drawer's closed/open accessibility state,
+  navigation close behavior, focus return and provenance semantics after
+  fixes. No P0/P1 finding remains.
+- Browser automation could not run in the local WSL environment; the deployed
+  Pages artifact remains the visual tablet/phone review surface.
+
+Stop point:
+
+- Collect user feedback on the adaptive drawer, header density and Activity
+  card readability before extending the template lab to more screens.

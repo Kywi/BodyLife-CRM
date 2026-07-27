@@ -25,3 +25,13 @@
   border-color: var(--blue);
   background: var(--blue-soft);
 }
+
+/* Compact context controls also make the wide rail intentionally collapsible. */
+.menu-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit; font-weight: 700; padding: 8px 10px; cursor: pointer; }
+.header-wordmark { display: inline-flex; gap: 4px; align-items: baseline; color: var(--ink); font-weight: 850; font-size: 17px; text-decoration: none; }
+.header-wordmark span { color: var(--blue); font-size: 11px; letter-spacing: .08em; }
+.context-title { padding-left: 4px; border-left: 1px solid var(--line); }
+body.drawer-collapsed .app-shell { grid-template-columns: 0 minmax(0, 1fr); }
+body.drawer-collapsed .navigation { display: none; }
+.activity-event.info { border-left-color: var(--blue); }
+.event-badge.info { color: #075c9f; background: var(--blue-soft); }
