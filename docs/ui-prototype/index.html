@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="BodyLife CRM — статичний review-only прототип Home.">
   <title>BodyLife CRM — Home prototype</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14'%3EB%3C/text%3E%3C/svg%3E">
+  <script>document.documentElement.classList.add('js');</script>
   <link rel="stylesheet" href="assets/styles.css">
-  <link rel="stylesheet" href="assets/prototype.css">
 </head>
 <body>
   <a class="skip-link" href="#main-content">Перейти до вмісту</a>
@@ -24,10 +25,10 @@
         <button class="drawer-close" type="button" data-drawer-close aria-label="Закрити навігацію"><span aria-hidden="true">×</span></button>
       </div>
       <nav>
-        <a class="nav-link active" href="#top" aria-current="page"><span aria-hidden="true">⌂</span><span>Home</span></a>
-        <a class="nav-link" href="#clients" data-review-link><span aria-hidden="true">◉</span><span>Clients</span></a>
-        <a class="nav-link" href="#report" data-review-link><span aria-hidden="true">▤</span><span>Report</span></a>
-        <a class="nav-link" href="#history" data-review-link><span aria-hidden="true">◷</span><span>History</span></a>
+        <a class="nav-link active" href="#top" aria-current="page" aria-label="Home"><span aria-hidden="true">⌂</span><span>Home</span></a>
+        <a class="nav-link" href="#clients" data-review-link aria-label="Clients"><span aria-hidden="true">◉</span><span>Clients</span></a>
+        <a class="nav-link" href="#report" data-review-link aria-label="Report"><span aria-hidden="true">▤</span><span>Report</span></a>
+        <a class="nav-link" href="#history" data-review-link aria-label="History"><span aria-hidden="true">◷</span><span>History</span></a>
       </nav>
       <div class="nav-footer">
         <span class="role-tag">Shared Reception/Admin</span>
@@ -39,7 +40,7 @@
     <div class="workspace" id="top">
       <header class="context-bar">
         <div class="context-leading">
-          <button class="menu-button" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="true" aria-label="Відкрити навігацію">
+          <button class="menu-button" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="true" aria-label="Згорнути навігацію">
             <span aria-hidden="true">☰</span><span class="menu-button-label">Меню</span>
           </button>
           <a class="header-wordmark" href="#top" aria-label="BodyLife CRM, Home">BodyLife<span>CRM</span></a>

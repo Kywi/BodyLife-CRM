@@ -12561,3 +12561,47 @@ Stop point:
 
 - Collect user feedback on the adaptive drawer, header density and Activity
   card readability before extending the template lab to more screens.
+
+## Step 194 - Rebuilt the template as a conventional application shell
+
+Status: completed and published as the third review-only template-lab
+iteration. Production Razor UI and Wave 1 approval remain unchanged.
+
+Completed:
+
+- Reproduced the rejected shell failure in Chromium: desktop collapse placed
+  the workspace into a zero-width grid track and increased document height
+  from about 1,188px to 2,636px. The old collapse mechanism was removed.
+- Rebuilt the template as a full-width application shell with a flush-left
+  240px sidebar, straight separator and main workspace filling the remaining
+  viewport. Desktop collapse retains a stable 72px icon rail instead of hiding
+  a grid child.
+- Kept Activity as the dominant main column and aligned a 300–360px Quick
+  Search/Today rail to the far-right content edge. At 1024px the measured
+  columns are 638px/320px; at 899px and below they form one operational column.
+- Tablet/phone navigation is fixed and out of normal layout flow, so opening
+  the overlay cannot change workspace geometry or document height.
+- Consolidated the prototype CSS into one maintainable stylesheet and removed
+  the old override layer.
+- Preserved closed/open drawer accessibility, no-JavaScript navigation
+  fallback, stable collapsed-link names, session context, activity provenance,
+  search states and review-only boundaries.
+
+Validation:
+
+- Repository Playwright Chromium passed at 1280x900, 1024x768, 768x1024 and
+  390x844 with no console/page errors or horizontal overflow.
+- At desktop the sidebar measures 240px expanded and 72px collapsed; workspace
+  width remains positive and Activity expands naturally. At tablet/phone the
+  workspace, Home grid and document height are unchanged when the drawer opens.
+- HTML IDs/ARIA/local assets, JavaScript syntax, static HTTP responses and
+  `git diff --check` passed.
+- Independent re-review found no remaining P0/P1/P2 issue after fixes for
+  collapsed navigation names, initial overlay paint, tablet proportions and
+  the artificial Activity minimum height.
+
+Stop point:
+
+- Collect user feedback on the conventional sidebar, Activity/rail proportions
+  and responsive stacking before adding further screens or migrating any
+  presentation into the production Razor UI.

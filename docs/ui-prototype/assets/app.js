@@ -9,7 +9,7 @@
   const workspace = document.querySelector('.workspace');
   const demoBanner = document.querySelector('.demo-banner');
   const skipLink = document.querySelector('.skip-link');
-  const smallViewport = window.matchMedia('(max-width: 960px)');
+  const smallViewport = window.matchMedia('(max-width: 1099px)');
   let opener = null;
 
   const showDialog = (text, heading = 'Дія недоступна в прототипі') => {
@@ -21,7 +21,6 @@
   const isDrawerOpen = () => document.body.classList.contains('drawer-open');
   const syncDrawer = () => {
     const isSmall = smallViewport.matches;
-    document.body.classList.toggle('drawer-ready', isSmall);
     document.body.classList.remove('drawer-open', 'drawer-locked', 'drawer-collapsed');
     overlay.hidden = true;
     drawer.inert = isSmall;
