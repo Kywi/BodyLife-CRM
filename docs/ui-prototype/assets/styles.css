@@ -10,3 +10,4 @@
 @media(max-width:760px){.drawer-logout{display:flex}.header-account>div span:not(.session-icon){display:none}.header-account>div .account-role-compact:not(.session-icon){display:inline}.header-account>div{font-size:11px;line-height:1.2}html:not(.js) .navigation .nav-footer{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;padding:0}html:not(.js) .navigation .nav-footer p{margin:0}}
 @media(max-width:600px){html:not(.js) .navigation nav{grid-template-columns:1fr 1fr}}
 @media(max-width:390px){.header-account>div{max-width:100px}}
+@media(max-width:1099px){html:not(.js) .menu-button{display:none}}
