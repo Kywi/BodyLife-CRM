@@ -12651,3 +12651,68 @@ Stop point:
 - The manual demo remains available at `http://localhost:5097` with its seeded
   data. Milestone 11 remains the next roadmap milestone; it was not started by
   this audit display fix.
+
+## Step 196 - Reorganized the published Home template around reception priorities
+
+Status: completed and published as the fourth review-only template-lab
+iteration. Production Razor UI and the Wave 1 approval status remain unchanged.
+
+Completed:
+
+- Replaced the separate Quick Search card with a global header ordered as
+  BodyLife brand, dominant client search, then the honest shared
+  Reception/Admin session and logout controls.
+- Kept desktop navigation as a flush-left 240px column below the header and
+  removed its desktop collapse mode. The hamburger is hidden and disabled on
+  wide screens; it appears only at 1099px and below when navigation becomes an
+  overlay drawer.
+- Added a two-row tablet header and a phone layout with full-width search,
+  direct Create Client access, a compact account label and logout inside the
+  drawer. A static, non-overlapping navigation fallback remains usable when
+  JavaScript is disabled.
+- Made Activity rows shorter while preserving 44px actions, increasing emphasis
+  on the client name and server-style status, and keeping timestamps, session
+  and provenance details readable at 11px.
+- Split Attention into the first card in the right rail and placed Today below
+  it. At 899px and below, Activity remains first and the two rail cards stack
+  afterward in the same priority order.
+- Preserved exact-current-card auto-open and added reviewable ambiguous and
+  no-result search states with card/phone/status disambiguation and a direct
+  Create Client continuation.
+
+Validation:
+
+- Bundled Playwright Chromium passed at 1440x1000, 1280x900, 1024x768,
+  768x1024 and 390x844 with no console/page errors, horizontal overflow or
+  elements extending beyond the viewport.
+- Desktop checks confirmed the hamburger is hidden and the Activity column is
+  wider than the 340px rail. Tablet/phone checks confirmed stable drawer
+  geometry, inert background, focus containment, Escape close, focus return
+  and an available phone logout.
+- JavaScript-disabled checks at 1024px, 768px and 390px confirmed that
+  navigation remains in document flow, all links stay visible, `#clients`
+  resolves to search and no content is overlaid.
+- Exact-card, ambiguous-result, zero-result and Create Client demo states
+  passed. JavaScript syntax, HTML parsing/local assets and `git diff --check`
+  passed.
+- GitHub Pages deployment run `30264392220` completed successfully. The
+  published page at `https://kywi.github.io/BodyLife-CRM/` passed live Chromium
+  checks at 1440px and 390px.
+- The full CI gate initially hit a transient Docker Hub timeout while pulling
+  PostgreSQL; rerun `30264392203` then passed build, analyzers, tests and
+  PostgreSQL migrations. Independent review found no remaining P0/P1/P2 issue.
+- The required semantic `graphify . --update` was attempted after this
+  project-knowledge update and stopped before rebuilding because no supported
+  LLM API key is configured. No refreshed graph is claimed, and the
+  pre-existing generated Graphify memory file remains excluded.
+
+Commit:
+
+- `ec2323f` (`feat(ui): rebuild prototype header and priority rail`).
+
+Stop point:
+
+- Collect feedback on the global search header, compact Activity density and
+  Attention-first rail. Do not migrate this review-only composition into the
+  production Razor shell or treat it as Wave 1 approval without updating the
+  accepted UI contract and completing the existing visual-fidelity approval.
