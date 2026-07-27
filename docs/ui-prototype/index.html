@@ -8,8 +8,9 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14'%3EB%3C/text%3E%3C/svg%3E">
   <script>document.documentElement.classList.add('js');</script>
   <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/fixtures.css">
 </head>
-<body>
+<body data-states="normal,empty,unavailable" data-default-state="normal">
   <a class="skip-link" href="#main-content">Перейти до вмісту</a>
   <div class="demo-banner" role="note"><strong>Template lab · не acceptance-кандидат</strong><span>Детерміновані демо-дані · без бекенду, авторизації та команд</span></div>
   <div class="app-shell">
@@ -17,19 +18,19 @@
     <aside class="navigation" id="app-navigation" aria-label="Основна навігація">
       <div class="drawer-heading"><span class="drawer-label">Навігація</span><button class="drawer-close" type="button" data-drawer-close aria-label="Закрити навігацію"><span aria-hidden="true">×</span></button></div>
       <nav>
-        <a class="nav-link active" href="#top" aria-current="page" aria-label="Home"><span aria-hidden="true">⌂</span><span>Home</span></a>
-        <a class="nav-link" href="#clients" data-review-link aria-label="Clients"><span aria-hidden="true">◉</span><span>Clients</span></a>
-        <a class="nav-link" href="#report" data-review-link aria-label="Report"><span aria-hidden="true">▤</span><span>Report</span></a>
-        <a class="nav-link" href="#history" data-review-link aria-label="History"><span aria-hidden="true">◷</span><span>History</span></a>
+        <a class="nav-link active" href="./index.html" aria-current="page" aria-label="Home"><span aria-hidden="true">⌂</span><span>Home</span></a>
+        <a class="nav-link" href="./clients.html" aria-label="Clients"><span aria-hidden="true">◉</span><span>Clients</span></a>
+        <a class="nav-link" href="./reports-daily.html" aria-label="Reports"><span aria-hidden="true">▤</span><span>Reports</span></a>
+        <a class="nav-link" href="./audit-timeline.html" aria-label="History"><span aria-hidden="true">◷</span><span>History</span></a>
       </nav>
-      <div class="nav-footer"><span class="role-tag">Shared Reception/Admin</span><p>tablet 01 · demo session c4f7a8</p><button class="logout-button drawer-logout" type="button" data-review-link>Завершити сеанс <span aria-hidden="true">↗</span></button></div>
+      <div class="nav-footer"><span class="role-tag">Shared Reception/Admin</span><p>tablet 01 · demo session c4f7a8</p><a class="logout-button drawer-logout" href="./logged-out.html">Завершити сеанс <span aria-hidden="true">↗</span></a></div>
     </aside>
 
     <div class="workspace" id="top">
       <header class="global-header" id="app-header">
         <div class="header-brand">
           <button class="menu-button" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="false" aria-label="Відкрити навігацію" hidden><span aria-hidden="true">☰</span><span class="sr-only">Меню</span></button>
-          <a class="brand" href="#top" aria-label="BodyLife CRM, Home"><img src="assets/bodylife-logo-transparent.png" width="338" height="480" alt="Body Life"><span>BodyLife<small>CRM</small></span></a>
+          <a class="brand" href="./index.html" aria-label="BodyLife CRM, Home"><img src="assets/bodylife-logo-transparent.png" width="338" height="480" alt="Body Life"><span>BodyLife<small>CRM</small></span></a>
         </div>
         <div class="header-search-zone" id="clients">
           <form id="search-form" class="header-search" novalidate>
@@ -43,14 +44,15 @@
         </div>
         <div class="header-account" aria-label="Shared Reception/Admin · tablet 01 · demo session c4f7a8">
           <span class="session-icon" aria-hidden="true">▣</span><div><strong><span class="account-role-full">Shared Reception/Admin</span><span class="account-role-compact" aria-hidden="true">Reception/Admin</span></strong><span class="account-session">tablet 01 · demo session c4f7a8</span></div>
-          <button class="logout-button" type="button" data-review-link>Завершити сеанс <span aria-hidden="true">↗</span></button>
+          <a class="logout-button" href="./logged-out.html">Завершити сеанс <span aria-hidden="true">↗</span></a>
         </div>
       </header>
 
       <main id="main-content" tabindex="-1">
         <section class="workspace-heading" aria-labelledby="home-title"><div><p class="eyebrow">Рецепція · Київ</p><h1 id="home-title">Home</h1></div><p>Четвер, 16 липня 2026 · демо-стан о 12:45</p></section>
         <div class="review-callout" role="note"><span aria-hidden="true">ⓘ</span><p><strong>Що перевіряємо:</strong> ієрархію Home, touch-first навігацію, статуси та порядок для tablet/phone. Це майданчик для пошуку шаблону, а не доказ приймання Wave 1; інтеракції лише показують стани й нічого не зберігають.</p></div>
-        <div class="home-grid">
+        <div class="state-links home-state-links"><a href="?state=normal">normal</a><a href="?state=empty">empty</a><a href="?state=unavailable">unavailable</a></div>
+        <div class="home-grid" data-state-panel="normal">
           <section class="card activity-card" aria-labelledby="activity-title">
             <div class="section-heading"><div><p class="eyebrow">Операції рецепції</p><h2 id="activity-title">Activity now</h2><p class="muted">Останні зафіксовані демо-події · Київський час</p></div><label class="filter-label">Фільтр<select id="activity-filter" aria-label="Фільтрувати активність"><option value="all">Усі події</option><option value="visit">Візити</option><option value="payment">Оплати</option><option value="attention">Увага</option></select></label></div>
             <div class="activity-list" id="activity-list">
@@ -63,10 +65,12 @@
             <p id="activity-empty" class="empty-state" hidden>Для цього фільтра немає демонстраційних подій.</p><section id="detail-panel" class="detail-panel" hidden tabindex="-1" aria-labelledby="detail-title"><h3 id="detail-title">Деталі демо-події</h3><p id="detail-content"></p></section>
           </section>
           <aside class="side-rail" aria-label="Попередження та підсумки">
-            <section class="card attention-card" id="history" aria-labelledby="attention-title"><p class="eyebrow">Потребує уваги</p><h2 id="attention-title">Attention</h2><button type="button" class="attention-item warning" data-detail="3 memberships ending soon — review destination only."><span aria-hidden="true">!</span><span><strong>3</strong> абонементи закінчуються скоро</span><span aria-hidden="true">›</span></button><button type="button" class="attention-item danger" data-detail="2 clients have negative balance — review destination only."><span aria-hidden="true">!</span><span><strong>2</strong> клієнти з негативним балансом</span><span aria-hidden="true">›</span></button></section>
-            <section class="card" id="report" aria-labelledby="today-title"><div class="section-heading compact"><div><p class="eyebrow">Report</p><h2 id="today-title">Today</h2></div><button class="text-button" type="button" data-review-link>Звіт</button></div><dl class="metrics"><div><dt>Візити</dt><dd>24</dd></div><div><dt>Оплати</dt><dd>8</dd></div><div><dt>Готівка</dt><dd>12 400 ₴</dd></div></dl><p class="demo-caption">Метрики та попередження — фіксований демо-набір, не звіт системи.</p></section>
+            <section class="card attention-card" id="history" aria-labelledby="attention-title"><p class="eyebrow">Потребує уваги</p><h2 id="attention-title">Attention</h2><a class="attention-item warning" href="./reports-ending-soon.html"><span aria-hidden="true">!</span><span><strong>3</strong> абонементи закінчуються скоро</span><span aria-hidden="true">›</span></a><a class="attention-item danger" href="./reports-negative-clients.html"><span aria-hidden="true">!</span><span><strong>2</strong> клієнти з негативним балансом</span><span aria-hidden="true">›</span></a></section>
+            <section class="card" id="report" aria-labelledby="today-title"><div class="section-heading compact"><div><p class="eyebrow">Report</p><h2 id="today-title">Today</h2></div><a class="text-button" href="./reports-daily.html">Звіт</a></div><dl class="metrics"><div><dt>Візити</dt><dd>24</dd></div><div><dt>Оплати</dt><dd>8</dd></div><div><dt>Готівка</dt><dd>12 400 ₴</dd></div></dl><p class="demo-caption">Метрики та попередження — фіксований демо-набір, не звіт системи.</p></section>
           </aside>
         </div>
+        <section class="card" data-state-panel="empty" hidden><div class="section-heading"><div><p class="eyebrow">Операції рецепції</p><h2>Activity now</h2></div></div><p class="empty-state">Для вибраного review state немає демонстраційної активності.</p><div class="side-rail"><section class="card attention-card"><h2>Attention</h2><p>Попередження лишаються доступними у звичному правому контексті.</p></section><section class="card"><h2>Today</h2><p>Фіктивні метрики не подаються як звіт у empty state.</p></section></div></section>
+        <section class="card" data-state-panel="unavailable" hidden><div class="notice danger"><h2>Activity недоступна</h2><p>Не показуємо вигадані totals або часткові activity rows. У CRM запит можна повторити.</p></div></section>
       </main>
     </div>
   </div>

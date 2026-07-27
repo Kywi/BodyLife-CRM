@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Low remaining — BodyLife review lab</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14'%3EB%3C/text%3E%3C/svg%3E">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/fixtures.css">
+</head>
+<body data-states="default,empty,unavailable" data-default-state="default">
+  <a class="skip-link" href="#main-content">Перейти до вмісту</a>
+  <div class="demo-banner" role="note"><strong>Review-only / public-safe lab</strong><span>Детерміновані фіктивні дані · без команд і запису</span></div>
+  <div class="app-shell">
+    <div class="drawer-overlay" data-drawer-overlay hidden></div>
+    <aside class="navigation" id="app-navigation" aria-label="Основна навігація">
+      <div class="drawer-heading"><span class="drawer-label">Навігація</span><button class="drawer-close" type="button" data-drawer-close aria-label="Закрити навігацію">×</button></div>
+      <nav><a class="nav-link" href="./index.html"><span>⌂ Home</span></a><a class="nav-link" href="./clients.html"><span>◉ Clients</span></a><a class="nav-link active" href="./reports-daily.html" aria-current="page"><span>▤ Reports</span></a><a class="nav-link" href="./audit-timeline.html"><span>◷ History</span></a></nav>
+      <div class="nav-footer"><span class="role-tag">Shared Reception/Admin</span><p>tablet 01 · demo session R-204</p><a class="logout-button drawer-logout" href="./logged-out.html">Завершити сеанс</a></div>
+    </aside>
+    <div class="workspace">
+      <header class="global-header">
+        <div class="header-brand"><button class="menu-button" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="false" aria-label="Відкрити навігацію" hidden>☰</button><a class="brand" href="./index.html"><img src="assets/bodylife-logo-transparent.png" width="338" height="480" alt="Body Life"><span>BodyLife<small>CRM</small></span></a></div>
+        <div class="header-search-zone"><form id="search-form" class="header-search" novalidate><label class="sr-only" for="client-search">Пошук клієнта</label><input id="client-search" type="search" placeholder="Картка, ПІБ, телефон або останні 4 цифри"><button class="primary-button search-submit" type="submit">Знайти<span class="sr-only"> клієнта</span><span aria-hidden="true">→</span></button></form><div id="search-result" class="search-result" aria-live="polite"></div></div>
+        <div class="header-account"><span class="session-icon" aria-hidden="true">▣</span><div><strong>Shared Reception/Admin</strong><span class="account-session">tablet 01 · demo session R-204</span></div><a class="logout-button" href="./logged-out.html">Завершити сеанс</a></div>
+      </header>
+      <main id="main-content" tabindex="-1"><nav class="local-nav" aria-label="Reports"><a href="./reports-daily.html">Daily</a><a href="./reports-ending-soon.html">Ending soon</a><a href="./reports-low-remaining.html">Low remaining</a><a href="./reports-negative-clients.html">Negative</a><a href="./reports-inactive-clients.html">Inactive</a></nav><div class="page-content"><section class="card page-card"><a class="brand public-brand" href="./index.html"><img src="assets/bodylife-logo-transparent.png" alt="Body Life"><span>BodyLife<small>CRM</small></span></a><p class="eyebrow">Reports · Shared Reception/Admin fixture</p><h1>Малий залишок занять</h1><nav class="state-links"><a href="./reports-daily.html">Daily</a><a href="./reports-ending-soon.html">Ending soon</a><a href="./reports-low-remaining.html">Low remaining</a><a href="./reports-negative-clients.html">Negative</a><a href="./reports-inactive-clients.html">Inactive</a></nav><div class="toolbar"><label>Поріг<select><option>≤ 3 заняття</option></select></label><button class="secondary-button" data-review-action>Змінити preview</button></div><div class="state-links"><a href="?state=default">default · 2</a><a href="?state=empty">empty</a><a href="?state=unavailable">unavailable</a></div><div data-state-panel="default" class="stack"><div class="row"><div><strong>Ірина Іваненко</strong><span class="chip warn">Залишок snapshot: 2</span></div><a href="./clients.html?state=low-remaining">Профіль</a></div><div class="row"><div><strong>Микола Шевченко</strong><span class="chip warn">Залишок snapshot: 1</span></div><a href="./clients.html">Профіль</a></div><p class="muted">Сторінка 1 з 1 · pagination concept</p></div><div data-state-panel="empty" hidden class="notice info">Немає клієнтів за заданим порогом.</div><div data-state-panel="unavailable" hidden class="notice danger">Query недоступний; список не показано.</div></section></div></main>
+    </div>
+  </div>
+  <dialog id="review-dialog" aria-labelledby="dialog-title"><div class="dialog-content"><p class="eyebrow">Review-only</p><h2 id="dialog-title">Дія недоступна в прототипі</h2><p id="dialog-message">Дані не записуються.</p><button class="primary-button" type="button" id="close-dialog">Зрозуміло</button></div></dialog>
+  <script src="assets/app.js"></script>
+</body>
+</html>
