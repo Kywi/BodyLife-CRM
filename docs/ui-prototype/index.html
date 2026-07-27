@@ -11,133 +11,60 @@
 </head>
 <body>
   <a class="skip-link" href="#main-content">Перейти до вмісту</a>
-  <div class="demo-banner" role="note">
-    <strong>Template lab · не acceptance-кандидат</strong><span>Детерміновані демо-дані · без бекенду, авторизації та команд</span>
-  </div>
+  <div class="demo-banner" role="note"><strong>Template lab · не acceptance-кандидат</strong><span>Детерміновані демо-дані · без бекенду, авторизації та команд</span></div>
   <div class="app-shell">
     <div class="drawer-overlay" data-drawer-overlay hidden></div>
     <aside class="navigation" id="app-navigation" aria-label="Основна навігація">
-      <div class="drawer-heading">
-        <a class="brand" href="#top" aria-label="BodyLife CRM, Home">
-          <img src="assets/bodylife-logo-transparent.png" width="338" height="480" alt="Body Life">
-          <span>BodyLife</span>
-        </a>
-        <button class="drawer-close" type="button" data-drawer-close aria-label="Закрити навігацію"><span aria-hidden="true">×</span></button>
-      </div>
+      <div class="drawer-heading"><span class="drawer-label">Навігація</span><button class="drawer-close" type="button" data-drawer-close aria-label="Закрити навігацію"><span aria-hidden="true">×</span></button></div>
       <nav>
         <a class="nav-link active" href="#top" aria-current="page" aria-label="Home"><span aria-hidden="true">⌂</span><span>Home</span></a>
         <a class="nav-link" href="#clients" data-review-link aria-label="Clients"><span aria-hidden="true">◉</span><span>Clients</span></a>
         <a class="nav-link" href="#report" data-review-link aria-label="Report"><span aria-hidden="true">▤</span><span>Report</span></a>
         <a class="nav-link" href="#history" data-review-link aria-label="History"><span aria-hidden="true">◷</span><span>History</span></a>
       </nav>
-      <div class="nav-footer">
-        <span class="role-tag">Shared Reception/Admin</span>
-        <p>tablet 01 · demo session c4f7a8</p>
-        <button class="quiet-button" type="button" data-review-link>Завершити сеанс <span aria-hidden="true">↗</span></button>
-      </div>
+      <div class="nav-footer"><span class="role-tag">Shared Reception/Admin</span><p>tablet 01 · demo session c4f7a8</p><button class="logout-button drawer-logout" type="button" data-review-link>Завершити сеанс <span aria-hidden="true">↗</span></button></div>
     </aside>
 
     <div class="workspace" id="top">
-      <header class="context-bar">
-        <div class="context-leading">
-          <button class="menu-button" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="true" aria-label="Згорнути навігацію">
-            <span aria-hidden="true">☰</span><span class="menu-button-label">Меню</span>
-          </button>
-          <a class="header-wordmark" href="#top" aria-label="BodyLife CRM, Home">BodyLife<span>CRM</span></a>
-          <div class="context-title">
-            <p class="eyebrow">Рецепція · Київ</p>
-            <h1>Home</h1>
-          </div>
+      <header class="global-header" id="app-header">
+        <div class="header-brand">
+          <button class="menu-button" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="false" aria-label="Відкрити навігацію" hidden><span aria-hidden="true">☰</span><span class="sr-only">Меню</span></button>
+          <a class="brand" href="#top" aria-label="BodyLife CRM, Home"><img src="assets/bodylife-logo-transparent.png" width="338" height="480" alt="Body Life"><span>BodyLife<small>CRM</small></span></a>
         </div>
-        <div class="context-summary">
-          <p class="muted">Четвер, 16 липня 2026 · демо-стан о 12:45</p>
-          <div class="session-card" aria-label="Контекст демонстраційної сесії">
-            <span class="session-icon" aria-hidden="true">▣</span>
-            <div><strong>Shared Reception/Admin</strong><span>tablet 01 · demo session c4f7a8</span></div>
-          </div>
+        <div class="header-search-zone" id="clients">
+          <form id="search-form" class="header-search" novalidate>
+            <label class="sr-only" for="client-search">Пошук клієнта за карткою, ПІБ, телефоном або останніми 4 цифрами</label>
+            <input id="client-search" name="query" type="search" autocomplete="off" placeholder="Картка, ПІБ, телефон або останні 4 цифри" aria-describedby="search-help">
+            <button class="primary-button search-submit" type="submit">Знайти<span class="sr-only"> клієнта</span><span aria-hidden="true">→</span></button>
+            <button class="create-client-button" type="button" id="create-client">＋ Створити клієнта</button>
+          </form>
+          <p id="search-help" class="sr-only">Демо-пошук показує статичні стани і не передає дані.</p>
+          <div id="search-result" class="search-result" aria-live="polite"></div>
+        </div>
+        <div class="header-account" aria-label="Shared Reception/Admin · tablet 01 · demo session c4f7a8">
+          <span class="session-icon" aria-hidden="true">▣</span><div><strong><span class="account-role-full">Shared Reception/Admin</span><span class="account-role-compact" aria-hidden="true">Reception/Admin</span></strong><span class="account-session">tablet 01 · demo session c4f7a8</span></div>
+          <button class="logout-button" type="button" data-review-link>Завершити сеанс <span aria-hidden="true">↗</span></button>
         </div>
       </header>
 
       <main id="main-content" tabindex="-1">
-        <div class="review-callout" role="note">
-          <span aria-hidden="true">ⓘ</span>
-          <p><strong>Що перевіряємо:</strong> ієрархію Home, touch-first навігацію, статуси та порядок для tablet/phone. Це майданчик для пошуку шаблону, а не доказ приймання Wave 1; інтеракції лише показують стани й нічого не зберігають.</p>
-        </div>
+        <section class="workspace-heading" aria-labelledby="home-title"><div><p class="eyebrow">Рецепція · Київ</p><h1 id="home-title">Home</h1></div><p>Четвер, 16 липня 2026 · демо-стан о 12:45</p></section>
+        <div class="review-callout" role="note"><span aria-hidden="true">ⓘ</span><p><strong>Що перевіряємо:</strong> ієрархію Home, touch-first навігацію, статуси та порядок для tablet/phone. Це майданчик для пошуку шаблону, а не доказ приймання Wave 1; інтеракції лише показують стани й нічого не зберігають.</p></div>
         <div class="home-grid">
           <section class="card activity-card" aria-labelledby="activity-title">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">Операції рецепції</p>
-                <h2 id="activity-title">Activity now</h2>
-                <p class="muted">Останні зафіксовані демо-події · Київський час</p>
-              </div>
-              <label class="filter-label">Фільтр
-                <select id="activity-filter" aria-label="Фільтрувати активність">
-                  <option value="all">Усі події</option>
-                  <option value="visit">Візити</option>
-                  <option value="payment">Оплати</option>
-                  <option value="attention">Увага</option>
-                </select>
-              </label>
-            </div>
+            <div class="section-heading"><div><p class="eyebrow">Операції рецепції</p><h2 id="activity-title">Activity now</h2><p class="muted">Останні зафіксовані демо-події · Київський час</p></div><label class="filter-label">Фільтр<select id="activity-filter" aria-label="Фільтрувати активність"><option value="all">Усі події</option><option value="visit">Візити</option><option value="payment">Оплати</option><option value="attention">Увага</option></select></label></div>
             <div class="activity-list" id="activity-list">
-              <article class="activity-event success" data-type="visit">
-                <div class="avatar" aria-hidden="true">МІ</div>
-                <div class="event-content"><div class="event-heading"><p class="client-name">Марія Іваненко</p><span class="event-badge success">Успіх · візит</span></div><p class="event-name">Візит зафіксовано</p><p class="event-summary">Активний абонемент · 8 візитів залишилось</p><dl class="event-meta"><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T12:30">16 лип · 12:30 Київ</time></dd></div><div><dt>Сеанс</dt><dd>Shared Reception/Admin · tablet 01</dd></div></dl></div>
-                <button type="button" class="row-button" data-detail="Візит Марії Іваненко зафіксовано о 12:30 за київським часом. Активний абонемент: 8 візитів. Це статичні демо-дані.">Деталі<span class="sr-only">: Марія Іваненко, візит</span></button>
-              </article>
-              <article class="activity-event danger" data-type="attention">
-                <div class="avatar" aria-hidden="true">ОГ</div>
-                <div class="event-content"><div class="event-heading"><p class="client-name">Олексій Гнатюк</p><span class="event-badge danger">Небезпека · негативний баланс</span></div><p class="event-name">Потрібна перевірка абонемента</p><p class="event-summary">Негативний баланс · −2 візити</p><dl class="event-meta"><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T12:18">16 лип · 12:18 Київ</time></dd></div><div><dt>Сеанс</dt><dd>Shared Reception/Admin · tablet 01</dd></div></dl></div>
-                <button type="button" class="row-button" data-detail="Олексій Гнатюк потребує перевірки: негативний баланс −2 візити. У цьому прототипі немає переходу до профілю.">Деталі<span class="sr-only">: Олексій Гнатюк, негативний баланс</span></button>
-              </article>
-              <article class="activity-event warning" data-type="attention">
-                <div class="avatar" aria-hidden="true">ІС</div>
-                <div class="event-content"><div class="event-heading"><p class="client-name">Ірина Сидоренко</p><span class="event-badge warning">Увага · скоро завершиться</span></div><p class="event-name">Нагадування про абонемент</p><p class="event-summary">Залишилось 2 візити · завершення наближається</p><dl class="event-meta"><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T11:56">16 лип · 11:56 Київ</time></dd></div><div><dt>Сеанс</dt><dd>Shared Reception/Admin · tablet 01</dd></div></dl></div>
-                <button type="button" class="row-button" data-detail="Ірина Сидоренко: абонемент закінчується скоро, залишилось 2 візити. Статичний review state.">Деталі<span class="sr-only">: Ірина Сидоренко, абонемент завершується</span></button>
-              </article>
-              <article class="activity-event success" data-type="payment">
-                <div class="avatar" aria-hidden="true">КВ</div>
-                <div class="event-content"><div class="event-heading"><p class="client-name">Катерина Василенко</p><span class="event-badge success">Успіх · оплата</span></div><p class="event-name">Оплату зафіксовано</p><p class="event-summary">Готівка · 1 200 ₴</p><dl class="event-meta"><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T11:41">16 лип · 11:41 Київ</time></dd></div><div><dt>Сеанс</dt><dd>Shared Reception/Admin · tablet 01</dd></div></dl></div>
-                <button type="button" class="row-button" data-detail="Демо-оплата Катерини Василенко: 1 200 ₴. Прототип не виконує payment command.">Деталі<span class="sr-only">: Катерина Василенко, оплата</span></button>
-              </article>
-              <article class="activity-event info" data-type="visit">
-                <div class="avatar" aria-hidden="true">ОК</div>
-                <div class="event-content"><div class="event-heading"><p class="client-name">Олег Коваленко</p><span class="event-badge info">Джерело · paper fallback</span></div><p class="event-name">Візит внесено з паперового журналу</p><p class="event-summary">Причина запису: ранковий збій мережі</p><dl class="event-meta provenance"><div><dt>Відбулося</dt><dd><time datetime="2026-07-15T08:20">15 лип · 08:20 Київ</time></dd></div><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T11:32">16 лип · 11:32 Київ</time></dd></div><div><dt>Походження</dt><dd><span class="origin-badge">paper_fallback</span></dd></div></dl></div>
-                <button type="button" class="row-button" data-detail="Візит Олега Коваленка внесено з paper_fallback: відбувся 15 липня о 08:20 Київ, зафіксований 16 липня о 11:32 Київ. Причина: ранковий збій мережі.">Деталі<span class="sr-only">: Олег Коваленко, паперовий fallback</span></button>
-              </article>
+              <article class="activity-event success" data-type="visit"><div class="avatar" aria-hidden="true">МІ</div><div class="event-content"><div class="event-heading"><p class="client-name">Марія Іваненко</p><span class="event-badge success">Успіх · візит</span></div><p class="event-name">Візит зафіксовано</p><p class="event-summary">Активний абонемент · 8 візитів залишилось</p><dl class="event-meta"><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T12:30">16 лип · 12:30 Київ</time></dd></div><div><dt>Сеанс</dt><dd>Shared Reception/Admin · tablet 01</dd></div></dl></div><button type="button" class="row-button" data-detail="Візит Марії Іваненко зафіксовано о 12:30 за київським часом. Активний абонемент: 8 візитів. Це статичні демо-дані.">Деталі<span class="sr-only">: Марія Іваненко, візит</span></button></article>
+              <article class="activity-event danger" data-type="attention"><div class="avatar" aria-hidden="true">ОГ</div><div class="event-content"><div class="event-heading"><p class="client-name">Олексій Гнатюк</p><span class="event-badge danger">Небезпека · негативний баланс</span></div><p class="event-name">Потрібна перевірка абонемента</p><p class="event-summary">Негативний баланс · −2 візити</p><dl class="event-meta"><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T12:18">16 лип · 12:18 Київ</time></dd></div><div><dt>Сеанс</dt><dd>Shared Reception/Admin · tablet 01</dd></div></dl></div><button type="button" class="row-button" data-detail="Олексій Гнатюк потребує перевірки: негативний баланс −2 візити. У цьому прототипі немає переходу до профілю.">Деталі<span class="sr-only">: Олексій Гнатюк, негативний баланс</span></button></article>
+              <article class="activity-event warning" data-type="attention"><div class="avatar" aria-hidden="true">ІС</div><div class="event-content"><div class="event-heading"><p class="client-name">Ірина Сидоренко</p><span class="event-badge warning">Увага · скоро завершиться</span></div><p class="event-name">Нагадування про абонемент</p><p class="event-summary">Залишилось 2 візити · завершення наближається</p><dl class="event-meta"><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T11:56">16 лип · 11:56 Київ</time></dd></div><div><dt>Сеанс</dt><dd>Shared Reception/Admin · tablet 01</dd></div></dl></div><button type="button" class="row-button" data-detail="Ірина Сидоренко: абонемент закінчується скоро, залишилось 2 візити. Статичний review state.">Деталі<span class="sr-only">: Ірина Сидоренко, абонемент завершується</span></button></article>
+              <article class="activity-event success" data-type="payment"><div class="avatar" aria-hidden="true">КВ</div><div class="event-content"><div class="event-heading"><p class="client-name">Катерина Василенко</p><span class="event-badge success">Успіх · оплата</span></div><p class="event-name">Оплату зафіксовано</p><p class="event-summary">Готівка · 1 200 ₴</p><dl class="event-meta"><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T11:41">16 лип · 11:41 Київ</time></dd></div><div><dt>Сеанс</dt><dd>Shared Reception/Admin · tablet 01</dd></div></dl></div><button type="button" class="row-button" data-detail="Демо-оплата Катерини Василенко: 1 200 ₴. Прототип не виконує payment command.">Деталі<span class="sr-only">: Катерина Василенко, оплата</span></button></article>
+              <article class="activity-event info" data-type="visit"><div class="avatar" aria-hidden="true">ОК</div><div class="event-content"><div class="event-heading"><p class="client-name">Олег Коваленко</p><span class="event-badge info">Джерело · paper fallback</span></div><p class="event-name">Візит внесено з паперового журналу</p><p class="event-summary">Причина запису: ранковий збій мережі</p><dl class="event-meta provenance"><div><dt>Відбулося</dt><dd><time datetime="2026-07-15T08:20">15 лип · 08:20 Київ</time></dd></div><div><dt>Зафіксовано</dt><dd><time datetime="2026-07-16T11:32">16 лип · 11:32 Київ</time></dd></div><div><dt>Походження</dt><dd><span class="origin-badge">paper_fallback</span></dd></div></dl></div><button type="button" class="row-button" data-detail="Візит Олега Коваленка внесено з paper_fallback: відбувся 15 липня о 08:20 Київ, зафіксований 16 липня о 11:32 Київ. Причина: ранковий збій мережі.">Деталі<span class="sr-only">: Олег Коваленко, паперовий fallback</span></button></article>
             </div>
-            <p id="activity-empty" class="empty-state" hidden>Для цього фільтра немає демонстраційних подій.</p>
-            <section id="detail-panel" class="detail-panel" hidden tabindex="-1" aria-labelledby="detail-title"><h3 id="detail-title">Деталі демо-події</h3><p id="detail-content"></p></section>
+            <p id="activity-empty" class="empty-state" hidden>Для цього фільтра немає демонстраційних подій.</p><section id="detail-panel" class="detail-panel" hidden tabindex="-1" aria-labelledby="detail-title"><h3 id="detail-title">Деталі демо-події</h3><p id="detail-content"></p></section>
           </section>
-
-          <aside class="side-rail" aria-label="Швидкі інструменти та підсумки">
-            <section class="card" id="clients" aria-labelledby="search-title">
-              <p class="eyebrow">Clients</p><h2 id="search-title">Quick Search</h2>
-              <p class="muted">Картка, ПІБ, телефон або останні 4 цифри</p>
-              <form id="search-form" novalidate>
-                <label for="client-search">Пошук клієнта</label>
-                <input id="client-search" name="query" type="search" autocomplete="off" placeholder="Наприклад, Іваненко" aria-describedby="search-help">
-                <p id="search-help" class="sr-only">Демо-пошук показує статичні стани і не передає дані.</p>
-                <button class="primary-button" type="submit">Знайти клієнта <span aria-hidden="true">→</span></button>
-              </form>
-              <div id="search-result" class="search-result" aria-live="polite"></div>
-              <button class="secondary-button" type="button" id="create-client">＋ Створити клієнта</button>
-              <p class="demo-caption">Відкриває лише review-повідомлення; створення не виконується.</p>
-            </section>
-
-            <section class="card" id="report" aria-labelledby="today-title">
-              <div class="section-heading compact"><div><p class="eyebrow">Report</p><h2 id="today-title">Today</h2></div><button class="text-button" type="button" data-review-link>Звіт</button></div>
-              <dl class="metrics">
-                <div><dt>Візити</dt><dd>24</dd></div><div><dt>Оплати</dt><dd>8</dd></div><div><dt>Готівка</dt><dd>12 400 ₴</dd></div>
-              </dl>
-              <div class="attention" aria-labelledby="attention-title" id="history">
-                <h3 id="attention-title">Attention</h3>
-                <button type="button" class="attention-item warning" data-detail="3 memberships ending soon — review destination only."><span aria-hidden="true">!</span><span><strong>3</strong> абонементи закінчуються скоро</span><span aria-hidden="true">›</span></button>
-                <button type="button" class="attention-item danger" data-detail="2 clients have negative balance — review destination only."><span aria-hidden="true">!</span><span><strong>2</strong> клієнти з негативним балансом</span><span aria-hidden="true">›</span></button>
-              </div>
-              <p class="demo-caption">Метрики та попередження — фіксований демо-набір, не звіт системи.</p>
-            </section>
+          <aside class="side-rail" aria-label="Попередження та підсумки">
+            <section class="card attention-card" id="history" aria-labelledby="attention-title"><p class="eyebrow">Потребує уваги</p><h2 id="attention-title">Attention</h2><button type="button" class="attention-item warning" data-detail="3 memberships ending soon — review destination only."><span aria-hidden="true">!</span><span><strong>3</strong> абонементи закінчуються скоро</span><span aria-hidden="true">›</span></button><button type="button" class="attention-item danger" data-detail="2 clients have negative balance — review destination only."><span aria-hidden="true">!</span><span><strong>2</strong> клієнти з негативним балансом</span><span aria-hidden="true">›</span></button></section>
+            <section class="card" id="report" aria-labelledby="today-title"><div class="section-heading compact"><div><p class="eyebrow">Report</p><h2 id="today-title">Today</h2></div><button class="text-button" type="button" data-review-link>Звіт</button></div><dl class="metrics"><div><dt>Візити</dt><dd>24</dd></div><div><dt>Оплати</dt><dd>8</dd></div><div><dt>Готівка</dt><dd>12 400 ₴</dd></div></dl><p class="demo-caption">Метрики та попередження — фіксований демо-набір, не звіт системи.</p></section>
           </aside>
         </div>
       </main>

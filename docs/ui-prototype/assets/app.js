@@ -35,8 +35,10 @@
     workspace.inert = false;
     demoBanner.inert = false;
     skipLink.inert = false;
-    toggle.setAttribute('aria-expanded', String(!isSmall));
-    toggle.setAttribute('aria-label', isSmall ? 'Відкрити навігацію' : 'Згорнути навігацію');
+    toggle.hidden = !isSmall;
+    toggle.disabled = !isSmall;
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Відкрити навігацію');
   };
   const openDrawer = () => {
     if (!smallViewport.matches) return;
@@ -69,10 +71,7 @@
   syncDrawer();
   smallViewport.addEventListener('change', syncDrawer);
   toggle.addEventListener('click', () => {
-    if (smallViewport.matches) { isDrawerOpen() ? hideDrawer() : openDrawer(); return; }
-    const collapsed = document.body.classList.toggle('drawer-collapsed');
-    toggle.setAttribute('aria-expanded', String(!collapsed));
-    toggle.setAttribute('aria-label', collapsed ? 'Відкрити навігацію' : 'Згорнути навігацію');
+    if (smallViewport.matches) { isDrawerOpen() ? hideDrawer() : openDrawer(); }
   });
   closeDrawer.addEventListener('click', () => hideDrawer());
   overlay.addEventListener('click', () => hideDrawer());
@@ -97,23 +96,30 @@
     hideDrawer();
     showDialog('Навігація та завершення сеансу тут навмисно не працюють: це статичний review-only прототип без авторизації чи бекенду.');
   }));
-  document.querySelector('#create-client').addEventListener('click', () => showDialog('Створити клієнта — лише візуальний review state. Жодна форма, команда або дані не існують у цьому прототипі.'));
+  const showCreatePreview = () => showDialog('Створити клієнта — лише візуальний review state. Жодна форма, команда або дані не існують у цьому прототипі.');
+  document.querySelector('#create-client').addEventListener('click', showCreatePreview);
   document.querySelector('#search-form').addEventListener('submit', (event) => {
     event.preventDefault();
     const value = document.querySelector('#client-search').value.trim();
+    const normalized = value.toLocaleLowerCase('uk-UA');
     const result = document.querySelector('#search-result');
     if (!value) { result.innerHTML = '<strong>Введіть запит для демо-стану пошуку.</strong><br><span>Підказка: Іваненко, 4821 або 099.</span>'; return; }
     if (value.replace(/\D/g, '') === '4821') {
-      result.innerHTML = '<div class="result-title">Точний демо-збіг картки</div><button class="demo-result-button" type="button" data-demo-profile="Марія Іваненко · картка 4821 · Active · 8 візитів">Марія Іваненко <span>картка 4821 · Active</span></button>';
+      result.innerHTML = '<div class="result-title">Точний поточний збіг картки</div><button class="demo-result-button" type="button" data-demo-profile="Марія Іваненко · картка 4821 · телефон ••• 44 21 · Active · 8 візитів">Марія Іваненко <span>Збіг: поточна картка 4821 · телефон ••• 44 21 · Active</span></button>';
       result.querySelector('[data-demo-profile]').click();
+    } else if (normalized.includes('іван') || normalized.includes('иван') || normalized.includes('099')) {
+      result.innerHTML = '<div class="result-title">Кілька демо-збігів — звірте картку й телефон</div><button class="demo-result-button" type="button" data-demo-profile="Ірина Іваненко · картка 6132 · телефон ••• 12 34 · Active · 2 візити">Ірина Іваненко <span>Збіг: ПІБ · картка 6132 · телефон ••• 12 34 · Active · 2 візити</span></button><button class="demo-result-button" type="button" data-demo-profile="Ірина Іваненко · без поточної картки · телефон ••• 09 90 · абонемент завершується скоро">Ірина Іваненко <span>Збіг: ПІБ/телефон · без поточної картки · ••• 09 90 · Увага: завершується скоро</span></button>';
     } else {
-      result.innerHTML = '<div class="result-title">Кілька демо-збігів — оберіть клієнта</div><button class="demo-result-button" type="button" data-demo-profile="Ірина Сидоренко · Active · 2 візити">Ірина Сидоренко <span>Active · 2 візити</span></button><button class="demo-result-button" type="button" data-demo-profile="Ірина Савчук · закінчується скоро">Ірина Савчук <span>закінчується скоро</span></button>';
+      result.innerHTML = '<div class="result-title">Клієнта не знайдено</div><p class="result-copy">Уточніть ПІБ, телефон або номер картки. Якщо це новий клієнт, відкрийте демо-стан створення.</p><button class="create-client-button result-create" type="button" data-demo-create>＋ Створити клієнта</button>';
     }
   });
   document.querySelector('#search-result').addEventListener('click', (event) => {
     const profile = event.target.closest('[data-demo-profile]');
-    if (!profile) return;
-    showDialog(`${profile.dataset.demoProfile}. Це неперсистентний preview переходу до профілю; реальні дані не завантажуються.`, 'Демо-профіль клієнта');
+    if (profile) {
+      showDialog(`${profile.dataset.demoProfile}. Це неперсистентний preview переходу до профілю; реальні дані не завантажуються.`, 'Демо-профіль клієнта');
+      return;
+    }
+    if (event.target.closest('[data-demo-create]')) showCreatePreview();
   });
   const empty = document.querySelector('#activity-empty');
   document.querySelector('#activity-filter').addEventListener('change', (event) => {
