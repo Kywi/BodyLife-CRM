@@ -6,11 +6,13 @@
   const toggle = document.querySelector('#nav-toggle') || document.createElement('button');
   const closeDrawer = document.querySelector('[data-drawer-close]') || document.createElement('button');
   const overlay = document.querySelector('[data-drawer-overlay]') || document.createElement('div');
+  const header = document.querySelector('#app-header') || document.createElement('header');
   const workspace = document.querySelector('.workspace') || document.createElement('div');
   const demoBanner = document.querySelector('.demo-banner') || document.createElement('div');
   const skipLink = document.querySelector('.skip-link') || document.createElement('a');
   const smallViewport = window.matchMedia('(max-width: 1099px)');
   let opener = null;
+  let chromeSyncFrame = 0;
 
   const showDialog = (text, heading = 'Дія недоступна в прототипі') => {
     if (!dialog || !title || !message) return;
@@ -20,6 +22,19 @@
   };
   const focusableDrawerElements = () => [...drawer.querySelectorAll('a[href], button:not([disabled])')];
   const isDrawerOpen = () => document.body.classList.contains('drawer-open');
+  const syncDesktopChrome = () => {
+    chromeSyncFrame = 0;
+    if (smallViewport.matches || !header.isConnected) {
+      document.documentElement.style.removeProperty('--desktop-nav-top');
+      return;
+    }
+    const headerBottom = Math.max(0, header.getBoundingClientRect().bottom);
+    document.documentElement.style.setProperty('--desktop-nav-top', `${headerBottom}px`);
+  };
+  const queueDesktopChromeSync = () => {
+    if (chromeSyncFrame) return;
+    chromeSyncFrame = window.requestAnimationFrame(syncDesktopChrome);
+  };
   const syncDrawer = () => {
     const isSmall = smallViewport.matches;
     document.body.classList.remove('drawer-open', 'drawer-locked', 'drawer-collapsed');
@@ -41,6 +56,7 @@
     toggle.disabled = !isSmall;
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-label', 'Відкрити навігацію');
+    queueDesktopChromeSync();
   };
   const openDrawer = () => {
     if (!smallViewport.matches) return;
@@ -72,6 +88,11 @@
 
   syncDrawer();
   smallViewport.addEventListener('change', syncDrawer);
+  window.addEventListener('scroll', queueDesktopChromeSync, { passive: true });
+  window.addEventListener('resize', queueDesktopChromeSync);
+  if ('ResizeObserver' in window && header.isConnected) {
+    new ResizeObserver(queueDesktopChromeSync).observe(header);
+  }
   toggle.addEventListener('click', () => {
     if (smallViewport.matches) { isDrawerOpen() ? hideDrawer() : openDrawer(); }
   });
