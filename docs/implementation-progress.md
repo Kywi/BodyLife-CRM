@@ -12908,3 +12908,73 @@ Stop point:
   lighter type hierarchy and smaller centered chevron. Keep this iteration in
   the public-safe template lab until the existing production Razor
   visual-fidelity approval gates are explicitly resumed.
+
+## Step 200 - Rebuilt the published Reception client profile as a full-width workspace
+
+Status: completed and published as the eighth review-only template-lab
+iteration. Production Razor UI, command workflows, persistence and the Wave 1
+approval status remain unchanged.
+
+Completed:
+
+- Replaced the card-first Client fixture composition with a dedicated
+  full-width profile workspace. The persistent header search remains available,
+  and `← Назад до пошуку` restores the deterministic multiple-result context
+  and moves keyboard focus back to the search field.
+- Moved the four client actions above identity and membership information as a
+  single Ukrainian action group: `Позначити відвідування`,
+  `Видати абонемент`, `Додати платіж` and `Додати заморозку`. The group remains
+  a non-persistent review preview with 44 px minimum touch targets and becomes
+  a compact two-column layout on phones.
+- Replaced the generic two-row history placeholder with a semantic recent
+  visits table. Desktop and phone rows are 44-46 px high, canceled visits remain
+  visible as history, and the restrained `Скасувати` text action explains the
+  real reason/comment and canonical-reread contract without suggesting a hard
+  delete.
+- Preserved the membership/context, status and full entry origin when the
+  tablet/phone layout reduces the visible table from five columns to three.
+  The default profile also retains the final action/table structure when
+  JavaScript is unavailable.
+- Kept all fifteen deterministic Client states and moved their review selector
+  under a quiet `Стани шаблону` disclosure. No production data, backend request,
+  browser-owned membership calculation or command was added.
+
+Validation:
+
+- Bundled Chromium passed 60 state/viewport combinations: all fifteen
+  whitelisted Client states at 1440 px, 1024 px, 760 px and 390 px. Every run
+  had exactly one active state, no console/page error, no horizontal overflow
+  and no visit row above 50 px.
+- Focused interactions passed the cancel preview, mobile drawer open/Escape
+  close, back-to-search focus restoration and JavaScript-disabled default
+  profile. Static validation passed JavaScript syntax, `git diff --check` and
+  all sixteen prototype routes with unique ids, resolved ARIA references and
+  valid local assets/links/fragments.
+- Independent UI review found no P0/P1 issue. Its two concrete findings were
+  corrected before publication: duplicate cancel-preview attributes and
+  abbreviated mobile membership/origin context.
+- GitHub Pages deployment run `30365663463` completed successfully in 23
+  seconds. The live Client profile passed Chromium at 1440 px and 390 px with
+  four top actions, three compact visit rows, no overflow and no console/page
+  errors.
+- `graphify update .` was attempted after the template change and again stopped
+  with local filesystem error 95. The semantic
+  `graphify . --update --no-viz` detected one code and four documentation
+  changes, then stopped before extraction because no supported LLM API key is
+  configured. No refreshed graph is claimed, and generated Graphify output
+  remains excluded.
+- Full backend CI, PostgreSQL migrations and the unrelated production test
+  matrix were intentionally not run or awaited for this static-template-only
+  iteration.
+
+Commit:
+
+- `b90cebc` (`feat(ui): redesign reception client profile`).
+
+Stop point:
+
+- Collect feedback on the published full-width Client profile, top action
+  group and compact visits table. Keep this work in the public-safe review lab;
+  any later production Razor migration must preserve the real warning,
+  authorization, reason/comment, idempotency and canonical-reread contracts and
+  pass the existing visual-fidelity approval gates.
