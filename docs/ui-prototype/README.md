@@ -19,7 +19,8 @@ Pages candidate with canonical data and the acceptance gates in
 | `clients.html` | `default`, `exact-card`, `search-multiple`, `no-result`, `query-failure`, `zero-visits`, `negative`, `expired`, `ending-soon`, `low-remaining`, `inactive`, `duplicate-warning`, `stale`, `freeze-blocked`, `backfill` |
 | `reports-daily.html` | `default`, `changed-after-close`, `empty`, `unavailable` |
 | `reports-ending-soon.html`, `reports-low-remaining.html`, `reports-negative-clients.html`, `reports-inactive-clients.html` | `default`, `empty`, `unavailable` |
-| `audit-timeline.html`, `client-history.html` | `default`, `empty`, `unavailable` |
+| `audit-timeline.html` | `default`, `loading`, `empty`, `unavailable` |
+| `client-history.html` | `default`, `empty`, `unavailable` |
 | `owner-membership-types.html` | `default`, `validation`, `deactivation` |
 | `owner-non-working-days.html` | `default`, `expired-token`, `scope-changed`, `correction` |
 | `owner-staff-accounts.html` | default catalog / action previews |

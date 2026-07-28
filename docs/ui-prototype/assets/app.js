@@ -190,4 +190,86 @@
         : panel.dataset.statePanel !== activeState;
     });
   }
+
+  // Static Audit Log fixture: filters only its public-safe rows and never calls a backend.
+  const auditForm = document.querySelector('#audit-filter-form');
+  if (auditForm) {
+    const auditRows = [...document.querySelectorAll('[data-audit-row]')];
+    const auditDefault = document.querySelector('[data-state-panel="default"]');
+    const auditLoading = document.querySelector('[data-state-panel="loading"]');
+    const auditEmpty = document.querySelector('[data-state-panel="empty"]');
+    const auditUnavailable = document.querySelector('[data-state-panel="unavailable"]');
+    const auditCount = document.querySelector('#audit-count');
+    const auditLive = document.querySelector('#audit-live');
+    const auditInteractive = activeState === defaultState;
+    const auditFilterLock = document.querySelector('#audit-filter-lock');
+    let auditTimer = 0;
+    const setAuditPanel = (panel) => [auditDefault, auditLoading, auditEmpty, auditUnavailable].forEach((item) => { if (item) item.hidden = item !== panel; });
+    const setAuditRowState = (row, open) => {
+      const button = row.querySelector('.audit-toggle');
+      const detailRow = row.nextElementSibling;
+      const label = button?.querySelector('.sr-only');
+      if (!button || !detailRow) return;
+      if (label && !button.dataset.closedLabel) {
+        button.dataset.closedLabel = label.textContent;
+        button.dataset.openLabel = label.textContent.replace(/^Показати/, 'Сховати');
+      }
+      button.setAttribute('aria-expanded', String(open));
+      if (label) label.textContent = open ? button.dataset.openLabel : button.dataset.closedLabel;
+      detailRow.classList.toggle('is-open', open);
+      detailRow.setAttribute('aria-hidden', String(!open));
+    };
+    const closeAuditRow = (row) => setAuditRowState(row, false);
+    const toggleAuditRow = (row) => {
+      const button = row.querySelector('.audit-toggle');
+      if (!button) return;
+      const open = button.getAttribute('aria-expanded') === 'true';
+      auditRows.forEach((candidate) => { if (candidate !== row) closeAuditRow(candidate); });
+      setAuditRowState(row, !open);
+    };
+    auditRows.forEach((row) => {
+      row.querySelector('.audit-toggle')?.addEventListener('click', (event) => { event.stopPropagation(); toggleAuditRow(row); });
+      row.addEventListener('click', (event) => { if (!event.target.closest('button,a,input,select,label')) toggleAuditRow(row); });
+      closeAuditRow(row);
+    });
+    if (!auditInteractive) {
+      [...auditForm.elements].forEach((control) => { control.disabled = true; });
+      const advancedFilters = auditForm.querySelector('.audit-advanced');
+      if (advancedFilters) advancedFilters.inert = true;
+      if (auditFilterLock) auditFilterLock.hidden = false;
+    }
+    const readAuditFilters = () => Object.fromEntries(new FormData(auditForm).entries());
+    const matchesAuditFilter = (row, filters) => {
+      const haystack = `${row.dataset.client} ${row.dataset.clientId} ${row.dataset.entityId}`.toLocaleLowerCase('uk-UA');
+      const client = (filters.client || '').trim().toLocaleLowerCase('uk-UA');
+      const clientId = (filters.clientId || '').trim().toLocaleLowerCase('uk-UA');
+      const entityId = (filters.entityId || '').trim().toLocaleLowerCase('uk-UA');
+      return (!filters.from || row.dataset.date >= filters.from) && (!filters.to || row.dataset.date <= filters.to)
+        && (!filters.action || row.dataset.action === filters.action) && (!filters.actor || row.dataset.actor === filters.actor)
+        && (!filters.entityType || row.dataset.entityType === filters.entityType) && (!client || haystack.includes(client))
+        && (!clientId || row.dataset.clientId.toLocaleLowerCase('uk-UA').includes(clientId))
+        && (!entityId || row.dataset.entityId.toLocaleLowerCase('uk-UA').includes(entityId));
+    };
+    const applyAuditFilters = () => {
+      if (!auditInteractive) {
+        auditLive.textContent = 'Review-state зафіксовано; поверніться до звичайного стану для демо-фільтрації.';
+        return;
+      }
+      window.clearTimeout(auditTimer); setAuditPanel(auditLoading); auditLive.textContent = 'Оновлюємо демонстраційні події…';
+      auditTimer = window.setTimeout(() => {
+        const filters = readAuditFilters(); let visible = 0;
+        auditRows.forEach((row) => { const match = matchesAuditFilter(row, filters); row.hidden = !match; if (row.nextElementSibling) row.nextElementSibling.hidden = !match; if (!match) closeAuditRow(row); if (match) visible += 1; });
+        const label = `${visible} ${visible === 1 ? 'подія' : visible < 5 ? 'події' : 'подій'}`;
+        auditCount.textContent = label; auditLive.textContent = visible ? `Показано ${label}` : 'Подій за вибраними фільтрами не знайдено'; setAuditPanel(visible ? auditDefault : auditEmpty);
+      }, 260);
+    };
+    const clearAuditFilters = () => { auditForm.reset(); applyAuditFilters(); };
+    auditForm.addEventListener('submit', (event) => { event.preventDefault(); applyAuditFilters(); });
+    auditForm.addEventListener('reset', () => { if (auditInteractive) window.setTimeout(applyAuditFilters, 0); });
+    document.querySelectorAll('[data-audit-clear]').forEach((control) => control.addEventListener('click', (event) => {
+      if (!auditInteractive) return;
+      event.preventDefault();
+      clearAuditFilters();
+    }));
+  }
 })();
