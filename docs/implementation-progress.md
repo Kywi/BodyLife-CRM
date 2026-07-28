@@ -12781,3 +12781,71 @@ Stop point:
   template before proposing any production Razor migration. The lab remains
   design review evidence only; Wave 1 acceptance still requires the real
   authenticated Razor candidate and its existing gates.
+
+## Step 198 - Rebuilt the published Audit template as compact master-detail
+
+Status: completed and published as the sixth review-only template-lab
+iteration. Production Razor UI, persistence and the Wave 1 approval status
+remain unchanged.
+
+Completed:
+
+- Replaced the three oversized Audit timeline cards with a full-width semantic
+  table of ten fictional business-audit entries. Desktop master rows are
+  50.5-51 px high, use text-labelled semantic action badges and keep client,
+  actor, recorded time and the one-line business summary scannable.
+- Added one-open row details with three consistent sections: honest
+  account/session/device and audit references, accessible `Було / Стало`
+  differences, and compact changed-field tags. Technical ids remain behind the
+  disclosure, while changed-after-close, paper fallback and manual backfill
+  evidence retain occurred and recorded Kyiv times.
+- Added compact recorded-date, canonical-action, actor and client-name filters,
+  plus client/entity identifiers and entity type under `Більше фільтрів`.
+  Actor and friendly client-name filtering remain an explicitly review-only UX
+  proposal because the production `GetAuditTimeline` query does not yet expose
+  those predicates.
+- Added deterministic loading skeletons, operational empty/unavailable states,
+  immutable non-default review states and a local-only filter preview. The
+  static prototype makes no backend request and does not calculate business
+  truth.
+- Converted the table to labelled cards at 900 px and below without horizontal
+  scrolling. The shared header, sticky desktop rail, mobile drawer, Client
+  History timeline and all other routes remain unchanged.
+
+Validation:
+
+- Bundled Chromium passed at 1920x1080, 1440x1000, 1024x768, 768x1024 and
+  390x844 with no console/page errors or horizontal overflow. All ten collapsed
+  rows fit the initial 1920x1080 viewport; tablet/phone cards, drawer
+  Escape/focus return, one-open details, filters, skeleton, empty/reset,
+  unavailable locking and no-JavaScript detail visibility passed.
+- Static validation passed JavaScript syntax, `git diff --check`, all 16 local
+  routes/assets, unique ids, resolved ARIA references, ten action badges, ten
+  master/detail pairs and exactly three detail sections per event.
+- Independent Audit/UI review found no remaining P0/P1/P2 issue after recorded
+  chronology, canonical `membership_opening_state.created`, fallback evidence,
+  unavailable-state locking, action badges and keyboard/no-JavaScript behavior
+  were corrected.
+- GitHub Pages deployment run `30354491407` completed successfully in 19
+  seconds. The live Audit page passed Chromium at 1440px and 390px, including
+  expansion, local filter/empty/reset behavior and the mobile drawer.
+- `graphify update .` was attempted after the template change and again stopped
+  with local filesystem error 95. The required semantic `graphify . --update`
+  then detected the changed corpus and stopped before extraction because no
+  supported LLM API key is configured. No refreshed graph is claimed. The
+  task's generated Graphify memory and the three pre-existing memory files
+  remain excluded from commits.
+- Full backend CI and PostgreSQL migrations were intentionally not awaited for
+  this static-template-only iteration.
+
+Commit:
+
+- `556745c` (`feat(ui): redesign audit template as master detail`).
+
+Stop point:
+
+- Collect feedback on the published Audit master-detail composition. If actor
+  or friendly client-name filters are later moved into production, extend or
+  map the server query explicitly and add authorization/query tests first.
+  Do not migrate this review-only page into Razor or treat it as Wave 1
+  approval without the existing visual-fidelity approval gates.
