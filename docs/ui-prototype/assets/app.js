@@ -131,6 +131,45 @@
       element.dataset.reviewTitle || 'Review-only дія'
     ));
   });
+  const clientSearch = document.querySelector('#client-search');
+  const focusSearchContext = () => {
+    if (window.location.hash === '#client-search') window.requestAnimationFrame(() => clientSearch?.focus());
+  };
+  window.addEventListener('hashchange', focusSearchContext);
+  focusSearchContext();
+
+  // Presentation-only fixture rows: no membership calculation, cancellation,
+  // command, or delete operation exists in this review-only page.
+  const clientHistoryRows = `
+    <thead><tr><th scope="col">Дата й час</th><th scope="col">Візит / подія</th><th scope="col">Абонемент / контекст</th><th scope="col">Статус / джерело</th><th scope="col"><span class="sr-only">Дія</span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="Дата й час"><time datetime="2026-07-27T09:12:00+03:00">27.07 · 09:12</time></td><td data-label="Візит / подія"><strong>Відвідування</strong><span class="visit-cell-meta"><span>12 занять · Основний</span><span>Зараховано · normal</span></span></td><td data-label="Абонемент / контекст">12 занять · Основний</td><td data-label="Статус / джерело"><span class="chip good">Зараховано</span><span class="origin">normal</span></td><td data-label="Дія"><button class="history-cancel" type="button" data-review-title="Preview скасування" data-review-action="У реальному CRM скасування зберігає цей візит в історії, потребує причини або коментаря та запускає canonical reread.">Скасувати</button></td></tr>
+      <tr><td data-label="Дата й час"><time datetime="2026-07-25T18:40:00+03:00">25.07 · 18:40</time></td><td data-label="Візит / подія"><strong>Відвідування</strong><span class="visit-cell-meta"><span>12 занять · Основний</span><span>Скасовано · normal</span></span></td><td data-label="Абонемент / контекст">12 занять · Основний</td><td data-label="Статус / джерело"><span class="chip danger">Скасовано</span><span class="origin">normal</span></td><td data-label="Дія"><span class="history-kept">Збережено в історії</span></td></tr>
+      <tr><td data-label="Дата й час"><time datetime="2026-07-24T12:00:00+03:00">24.07 · 12:00</time></td><td data-label="Візит / подія"><strong>Відвідування</strong><span class="visit-cell-meta"><span>12 занять · Основний</span><span>Зараховано · manual_backfill</span></span></td><td data-label="Абонемент / контекст">12 занять · Основний</td><td data-label="Статус / джерело"><span class="chip info">Зараховано</span><span class="origin">manual_backfill</span></td><td data-label="Дія"><button class="history-cancel" type="button" data-review-title="Preview скасування" data-review-action="У реальному CRM скасування зберігає цей backfill-візит в історії, потребує причини або коментаря та запускає canonical reread.">Скасувати</button></td></tr>
+    </tbody>`;
+  const bindReviewPreview = (element) => element.addEventListener('click', () => showDialog(
+    element.dataset.reviewAction || 'Це лише review preview. Дані не записуються, команду не виконано і canonical reread відсутній.',
+    element.dataset.reviewTitle || 'Review-only дія'
+  ));
+  document.querySelectorAll('.profile-state').forEach((profile) => {
+    const actions = profile.querySelector('.actions');
+    if (actions) {
+      actions.classList.add('profile-action-toolbar');
+      actions.setAttribute('aria-label', 'Дії з профілем клієнта');
+      actions.innerHTML = '<button type="button" class="primary-button" data-review-action>Позначити відвідування</button><button type="button" data-review-action>Видати абонемент</button><button type="button" data-review-action>Додати платіж</button><button type="button" data-review-action>Додати заморозку</button>';
+      actions.querySelectorAll('[data-review-action]').forEach(bindReviewPreview);
+      profile.prepend(actions);
+    }
+    const table = profile.querySelector('.data-table');
+    if (table) {
+      table.classList.add('visit-history-table');
+      table.innerHTML = `<caption>Останні відвідування та пов’язані події — фіктивні review-only записи</caption>${clientHistoryRows}`;
+      table.querySelectorAll('[data-review-action]').forEach(bindReviewPreview);
+      if (!profile.querySelector('.profile-history-head')) {
+        table.closest('.table-wrap')?.insertAdjacentHTML('beforebegin', '<div class="profile-history-head"><div><p class="eyebrow">Активність клієнта</p><h3>Останні відвідування</h3></div><nav aria-label="Повна історія клієнта"><a href="./client-history.html">Історія клієнта</a><a href="./audit-timeline.html">Журнал аудиту</a></nav></div>');
+      }
+    }
+  });
   const showCreatePreview = () => showDialog('Створити клієнта — лише візуальний review state. Жодна форма, команда або дані не існують у цьому прототипі.');
   document.querySelector('#create-client')?.addEventListener('click', showCreatePreview);
   document.querySelector('#search-form')?.addEventListener('submit', (event) => {
