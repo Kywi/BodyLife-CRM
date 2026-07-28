@@ -12849,3 +12849,62 @@ Stop point:
   map the server query explicitly and add authorization/query tests first.
   Do not migrate this review-only page into Razor or treat it as Wave 1
   approval without the existing visual-fidelity approval gates.
+
+## Step 199 - Unified the published Audit master-detail surface
+
+Status: completed and published as the seventh review-only template-lab
+iteration. Production Razor UI, persistence and the Wave 1 approval status
+remain unchanged.
+
+Completed:
+
+- Turned every desktop Audit master row into a compact rounded surface. An
+  expanded row now becomes the top of the same 12 px-radius component as its
+  detail content, with no gap, mismatched background or detached nested card.
+  The same continuous surface is preserved in the tablet/phone card layout.
+- Restored the full `Клієнт / об’єкт` value as a two-line identity/object pair
+  and kept recorded time and actor context readable without increasing the
+  50 px desktop row height. Only the explicitly one-line short summary may
+  truncate at the narrowest desktop-table width.
+- Replaced the baseline-dependent `⌄` glyph with a centered CSS chevron. The
+  accessible target remains 44 px, while the visible circular control is
+  reduced to 36 px and remains centered in both disclosure states.
+- Calmed the Audit-only type hierarchy without introducing a network font:
+  system/Segoe UI Variable fallbacks remain, headings and semantic badges use
+  700 weight, and table/filter labels use 600 rather than pervasive 800/850.
+
+Validation:
+
+- Bundled Chromium passed at 1920x1080, 1440x1000, 1024x768, 901x900,
+  900x900, 768x1024 and 390x844 with no console/page errors or horizontal
+  overflow. Desktop rows remained exactly 50 px; all ten collapsed rows fit
+  the initial 1920x1080 viewport.
+- Browser geometry confirmed a zero-pixel master/detail gap, matching
+  backgrounds and 12 px outer corners. Client/object labels remained fully
+  visible at every viewport; the one-open disclosure rule, ARIA state,
+  filter/reset flow, loading/empty/unavailable states, mobile drawer and
+  JavaScript-disabled details passed.
+- Static validation confirmed ten master/detail pairs, unique ids, resolved
+  ARIA controls, local-only assets and no external runtime dependency.
+  JavaScript syntax and `git diff --check` passed.
+- GitHub Pages deployment run `30358437946` completed successfully. The live
+  Audit page passed Chromium checks at 1440px and 390px with the new connected
+  surface, full client/object labels and 44 px disclosure target.
+- `graphify update .` was attempted after the code change and again stopped
+  with local filesystem error 95. The semantic `graphify . --update --no-viz`
+  detected one code and two documentation changes, then stopped before
+  extraction because no supported LLM API key is configured. No refreshed
+  graph is claimed, and generated Graphify output remains excluded.
+- Full backend CI and PostgreSQL migrations were intentionally not awaited for
+  this static-template-only iteration.
+
+Commit:
+
+- `444b0c3` (`fix(ui): unify audit master detail presentation`).
+
+Stop point:
+
+- Collect feedback on the connected Audit rows, full identity/object column,
+  lighter type hierarchy and smaller centered chevron. Keep this iteration in
+  the public-safe template lab until the existing production Razor
+  visual-fidelity approval gates are explicitly resumed.
