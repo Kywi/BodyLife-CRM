@@ -216,6 +216,7 @@
       }
       button.setAttribute('aria-expanded', String(open));
       if (label) label.textContent = open ? button.dataset.openLabel : button.dataset.closedLabel;
+      row.classList.toggle('is-expanded', open);
       detailRow.classList.toggle('is-open', open);
       detailRow.setAttribute('aria-hidden', String(!open));
     };
