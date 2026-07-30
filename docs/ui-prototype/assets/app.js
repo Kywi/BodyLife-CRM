@@ -438,6 +438,103 @@
     }));
   }
 
+  // Membership types is an Owner-only, non-persistent catalog fixture. Native
+  // dialogs show the real handler field contracts but never submit a command.
+  const mtCreateDialog = document.querySelector('#mt-create-dialog');
+  const mtEditDialog = document.querySelector('#mt-edit-dialog');
+  const mtDeactivateDialog = document.querySelector('#mt-deactivate-dialog');
+  if (mtCreateDialog || mtEditDialog || mtDeactivateDialog) {
+    let mtOpener = null;
+    const mtDialogs = [mtCreateDialog, mtEditDialog, mtDeactivateDialog].filter(Boolean);
+    const mtText = (value) => {
+      if (!value) return '—';
+      const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value);
+      return match ? `${match[3]}.${match[2]}.${match[1]}, ${match[4]}:${match[5]}` : value;
+    };
+    const closeMtDialog = (dialogToClose) => { if (dialogToClose?.open) dialogToClose.close(); };
+    const openMtDialog = (dialogToOpen, openerElement) => {
+      if (!dialogToOpen) return;
+      closeAccountMenus();
+      hideDrawer({ returnFocus: false });
+      mtOpener = openerElement;
+      document.body.classList.add('mt-dialog-open');
+      dialogToOpen.showModal();
+    };
+    const setMtStatus = (form) => {
+      const status = form.querySelector('[data-mt-status]');
+      if (status) status.textContent = `Preview handler ${form.dataset.mtHandler}: форму не надіслано, дані не змінено, команду та canonical reread не виконано.`;
+    };
+    const populateMtForm = (dialogToPopulate, row) => {
+      const data = row.dataset;
+      dialogToPopulate.querySelectorAll('form').forEach((form) => form.reset());
+      dialogToPopulate.querySelectorAll('[name="form.MembershipTypeId"]').forEach((input) => { input.value = data.id; });
+      dialogToPopulate.querySelectorAll('[name="form.ExpectedUpdatedAt"]').forEach((input) => { input.value = data.updatedAt; });
+      const name = dialogToPopulate.querySelector('[name="form.Name"]');
+      const duration = dialogToPopulate.querySelector('[name="form.DurationDays"]');
+      const visits = dialogToPopulate.querySelector('[name="form.VisitsLimit"]');
+      const price = dialogToPopulate.querySelector('[name="form.PriceAmount"]');
+      const currency = dialogToPopulate.querySelector('[name="form.PriceCurrency"]');
+      if (name) { name.setAttribute('value', data.name); name.value = data.name; }
+      if (duration) { duration.setAttribute('value', data.duration); duration.value = data.duration; }
+      if (visits) { visits.setAttribute('value', data.visits); visits.value = data.visits; }
+      if (price) { price.setAttribute('value', data.price); price.value = data.price; }
+      if (currency) { currency.setAttribute('value', data.currency); currency.value = data.currency; }
+      const comment = dialogToPopulate.querySelector('[name="form.Comment"]');
+      if (comment) comment.value = data.comment;
+      dialogToPopulate.querySelector('[data-mt-created-at]')?.replaceChildren(document.createTextNode(mtText(data.createdAt)));
+      dialogToPopulate.querySelector('[data-mt-updated-at]')?.replaceChildren(document.createTextNode(mtText(data.updatedAt)));
+      dialogToPopulate.querySelector('[data-mt-deactivated-at]')?.replaceChildren(document.createTextNode(mtText(data.deactivatedAt)));
+      dialogToPopulate.querySelector('[data-mt-deactivate-summary]')?.replaceChildren(document.createTextNode(`«${data.name}» стане неактивним для майбутніх звичайних продажів.`));
+      dialogToPopulate.querySelectorAll('[data-mt-status]').forEach((status) => { status.textContent = ''; });
+    };
+    document.querySelector('[data-mt-create]')?.addEventListener('click', (event) => {
+      mtCreateDialog.querySelector('form').reset();
+      mtCreateDialog.querySelector('[data-mt-status]').textContent = '';
+      mtCreateDialog.querySelector('[data-mt-validation]').hidden = true;
+      openMtDialog(mtCreateDialog, event.currentTarget);
+      mtCreateDialog.querySelector('[name="form.Name"]')?.focus();
+    });
+    document.querySelectorAll('[data-mt-edit]').forEach((button) => button.addEventListener('click', (event) => {
+      populateMtForm(mtEditDialog, event.currentTarget.closest('[data-mt-row]'));
+      openMtDialog(mtEditDialog, event.currentTarget);
+      mtEditDialog.querySelector('[name="form.Name"]')?.focus();
+    }));
+    document.querySelectorAll('[data-mt-deactivate]').forEach((button) => button.addEventListener('click', (event) => {
+      populateMtForm(mtDeactivateDialog, event.currentTarget.closest('[data-mt-row]'));
+      openMtDialog(mtDeactivateDialog, event.currentTarget);
+      mtDeactivateDialog.querySelector('[name="form.Reason"]')?.focus();
+    }));
+    document.querySelectorAll('[data-mt-close]').forEach((button) => button.addEventListener('click', () => closeMtDialog(button.closest('dialog'))));
+    mtDialogs.forEach((mtDialog) => {
+      mtDialog.addEventListener('click', (event) => { if (event.target === mtDialog) closeMtDialog(mtDialog); });
+      mtDialog.addEventListener('close', () => {
+        mtDialog.querySelectorAll('form').forEach((form) => form.reset());
+        mtDialog.querySelectorAll('[data-mt-status]').forEach((status) => { status.textContent = ''; });
+        document.body.classList.remove('mt-dialog-open');
+        if (mtOpener instanceof HTMLElement) mtOpener.focus();
+        mtOpener = null;
+      });
+    });
+    document.querySelectorAll('[data-mt-form]').forEach((form) => form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      setMtStatus(form);
+    }));
+    const mtState = new URLSearchParams(window.location.search).get('state');
+    if (mtState === 'validation') {
+      mtCreateDialog.querySelector('form').reset();
+      mtCreateDialog.querySelector('[data-mt-validation]').hidden = false;
+      openMtDialog(mtCreateDialog, null);
+      mtCreateDialog.querySelector('[name="form.Name"]')?.focus();
+    } else if (mtState === 'deactivation') {
+      const activeRow = document.querySelector('[data-mt-row]');
+      if (activeRow) {
+        populateMtForm(mtDeactivateDialog, activeRow);
+        openMtDialog(mtDeactivateDialog, null);
+        mtDeactivateDialog.querySelector('[name="form.Reason"]')?.focus();
+      }
+    }
+  }
+
   // Non-working days is a guarded, page-scoped static parity fixture. It only
   // switches presentation state: all figures stay in server-snapshot HTML.
   const nwdPage = document.querySelector('[data-nwd-page]');
