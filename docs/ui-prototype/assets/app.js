@@ -22,6 +22,14 @@
   };
   const focusableDrawerElements = () => [...drawer.querySelectorAll('a[href], button:not([disabled])')];
   const isDrawerOpen = () => document.body.classList.contains('drawer-open');
+  const accountMenus = () => [...document.querySelectorAll('.account-menu')];
+  const closeAccountMenus = ({ returnFocus = false } = {}) => {
+    accountMenus().forEach((menu) => {
+      if (!menu.open) return;
+      menu.open = false;
+      if (returnFocus) menu.querySelector('.account-trigger')?.focus();
+    });
+  };
   const syncDesktopChrome = () => {
     chromeSyncFrame = 0;
     if (smallViewport.matches || !header.isConnected) {
@@ -60,6 +68,7 @@
   };
   const openDrawer = () => {
     if (!smallViewport.matches) return;
+    closeAccountMenus();
     opener = document.activeElement;
     drawer.inert = false;
     drawer.removeAttribute('aria-hidden');
@@ -111,6 +120,20 @@
     if (!first || !last) return;
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
+  document.addEventListener('click', (event) => {
+    accountMenus().forEach((menu) => {
+      if (menu.open && !menu.contains(event.target)) {
+        menu.open = false;
+      }
+    });
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const openMenu = accountMenus().find((menu) => menu.open);
+    if (!openMenu) return;
+    event.preventDefault();
+    closeAccountMenus({ returnFocus: true });
   });
 
   document.querySelectorAll('#close-dialog, [data-close-dialog]').forEach((button) => {
