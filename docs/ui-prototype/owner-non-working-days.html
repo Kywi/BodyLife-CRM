@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Non-working days — BodyLife review lab</title>
+  <title>Неробочі дні — BodyLife review lab</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14'%3EB%3C/text%3E%3C/svg%3E">
   <script>document.documentElement.classList.add('js');</script>
   <link rel="stylesheet" href="assets/styles.css">
   <link rel="stylesheet" href="assets/fixtures.css">
 </head>
-<body data-states="default,expired-token,scope-changed,correction" data-default-state="default" data-preserve-context="true">
+<body data-states="default,expired-token,scope-changed,correction,correction-confirmed" data-default-state="default" data-preserve-context="true">
   <a class="skip-link" href="#main-content">Перейти до вмісту</a>
   <div class="demo-banner" role="note"><strong>Review-only / public-safe lab</strong><span>Детерміновані фіктивні дані · без команд і запису</span></div>
   <div class="app-shell">
@@ -22,9 +22,142 @@
       <header class="global-header" id="app-header">
         <div class="header-brand"><button class="menu-button" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="false" aria-label="Відкрити навігацію" hidden><span aria-hidden="true">☰</span><span class="sr-only">Меню</span></button><a class="brand" href="./index.html" aria-label="BodyLife CRM, Home"><img src="assets/bodylife-logo-transparent.png" width="338" height="480" alt="Body Life"><span>BodyLife<small>CRM</small></span></a></div>
         <div class="header-search-zone" id="clients"><form id="search-form" class="header-search" novalidate><label class="sr-only" for="client-search">Пошук клієнта за карткою, ПІБ, телефоном або останніми 4 цифрами</label><input id="client-search" name="query" type="search" autocomplete="off" placeholder="Картка, ПІБ, телефон або останні 4 цифри" aria-describedby="search-help"><button class="primary-button search-submit" type="submit">Знайти<span class="sr-only"> клієнта</span><span aria-hidden="true">→</span></button><button class="create-client-button" type="button" id="create-client">＋ Створити клієнта</button></form><p id="search-help" class="sr-only">Демо-пошук показує статичні стани і не передає дані.</p><div id="search-result" class="search-result" aria-live="polite"></div></div>
-        <details class="account-menu account-menu--owner"><summary class="account-trigger" aria-label="Меню акаунта Олени К., Браузер власника"><span class="account-avatar" aria-hidden="true">ОК</span><span class="account-trigger-copy"><strong>Олена К.</strong><span>Owner · Браузер власника</span></span><span class="account-chevron" aria-hidden="true"></span></summary><div class="account-popover"><p class="account-heading">Олена К. (demo)</p><p class="account-kind">Власник · персональний акаунт</p><dl class="account-meta"><div><dt>Пристрій</dt><dd>Браузер власника</dd></div><div><dt>Стан</dt><dd><span class="account-status"><span aria-hidden="true"></span>Активний сеанс</span></dd></div></dl><a class="account-logout" href="./logged-out.html">Завершити сеанс <span aria-hidden="true">↗</span></a></div></details>
+        <details class="account-menu account-menu--owner"><summary class="account-trigger" aria-label="Меню акаунта Олени К., Браузер власника"><span class="account-avatar" aria-hidden="true">ОК</span><span class="account-trigger-copy"><strong>Олена К.</strong><span>Owner · Браузер власника</span></span><span class="account-chevron" aria-hidden="true"></span></summary><div class="account-popover"><p class="account-heading">Олена К. (demo)</p><p class="account-kind">Власник · персональний акаунт</p><dl class="account-meta"><div><dt>Пристрій</dt><dd>Браузер власника</dd></div><div><dt>Стан</dt><dd><span class="account-status"><span aria-hidden="true"></span>Активний сеанс</span></dd></div></dl><section class="review-role-switch" aria-label="Навігація між рольовими екранами"><p>Рольовий екран</p><a href="./index.html">Admin · Home</a><a href="./owner-non-working-days.html" aria-current="true">Owner · Tools</a><small>Відкриває окремий fixture; поточний сеанс і права не змінюються.</small></section><a class="account-logout" href="./logged-out.html">Завершити сеанс <span aria-hidden="true">↗</span></a></div></details>
       </header>
-      <main id="main-content" tabindex="-1"><div class="page-content"><section class="card page-card"><a class="brand public-brand" href="./index.html"><img src="assets/bodylife-logo-transparent.png" alt="Body Life"><span>BodyLife<small>CRM</small></span></a><p class="eyebrow">Owner tools · Owner · Олена К. (demo)</p><h1>Неробочі дні</h1><div class="review-callout"><p>Review-only command boundary: реальна Add/Correct/CancelNonWorkingDay потребує exact immutable affected-scope snapshot і підтвердження.</p></div><div class="state-links"><a href="?state=default">preview</a><a href="?state=expired-token">expired-token</a><a href="?state=scope-changed">scope-changed</a><a href="?state=correction">correction/cancel</a></div><section data-state-panel="default"><div class="form-stack"><label>Початок<input type="date" value="2026-08-24"></label><label>Кінець (inclusive)<input type="date" value="2026-08-25"></label></div><h2>Точний affected scope · fixture</h2><div class="notice info"><b>Period applied in full to every confirmed membership:</b><ul><li>Марія Іваненко · Membership M-104</li><li>Сергій Бондар · Membership M-119</li><li>Алла Коваль · Membership M-121</li></ul><p>Scope fingerprint: demo-scope-8A4 · immutable only in real command.</p></div><button class="primary-button" data-review-action="Preview confirm. Неробочі дні не створюються, recalculation не запускається.">Підтвердити scope · preview</button></section><section data-state-panel="expired-token" hidden class="notice danger"><h2>preview_expired</h2><p>Refresh preview потрібен перед реальною командою; fixture не оновлює scope.</p></section><section data-state-panel="scope-changed" hidden class="notice danger"><h2>affected_scope_changed</h2><p>Підтверджений scope більше не збігається; жодних даних не змінено.</p></section><section data-state-panel="correction" hidden class="notice warn"><h2>Correction / cancel preview</h2><p>Оригінальний period лишається видимим, потрібні причина й підтвердження.</p><button class="danger-button" data-review-action>Скасувати period · preview</button></section></section></div></main>
+      <main id="main-content" tabindex="-1">
+        <div class="page-content nwd-page" data-nwd-page>
+          <header class="nwd-page-header"><div><p class="eyebrow">Owner tools · Олена К. (demo)</p><h1>Неробочі дні</h1><p>Глобальні періоди закриття з точним Owner-confirmed scope.</p></div><span class="nwd-owner-chip">Owner-only · review</span></header>
+          <div class="review-callout"><p><strong>Review-only.</strong> Це шаблон Preview → Confirm → canonical reread; права, токени та дані тут не змінюються.</p></div>
+          <nav class="nwd-state-links state-links" aria-label="Fixtures"><a href="?state=default">valid fixture</a><a href="?state=expired-token">expired-token</a><a href="?state=scope-changed">scope-changed</a><a href="?state=correction">correction</a><a href="?state=correction-confirmed">correction-confirmed</a></nav>
+          <noscript><p class="notice info">Інтерактивні preview та вкладки потребують JavaScript. Нижче доступні обидва розділи як статичний review.</p></noscript>
+
+          <div class="nwd-tabs" role="tablist" aria-label="Неробочі дні">
+            <button id="nwd-plan-tab" type="button" role="tab" aria-selected="true" aria-controls="nwd-plan-panel" tabindex="0">Планувати закриття</button>
+            <button id="nwd-history-tab" type="button" role="tab" aria-selected="false" aria-controls="nwd-history-panel" tabindex="-1">Дійсні та минулі закриття</button>
+          </div>
+
+          <section id="nwd-plan-panel" class="nwd-tab-panel" role="tabpanel" aria-labelledby="nwd-plan-tab">
+            <section class="nwd-surface" aria-labelledby="nwd-plan-heading">
+              <header class="nwd-section-head"><div><p class="eyebrow">PreviewNonWorkingDayImpact</p><h2 id="nwd-plan-heading">Планувати закриття</h2></div><span class="chip info">Preview не створює period</span></header>
+              <form class="nwd-plan-form" data-nwd-form data-backend-handler="Preview" novalidate>
+                <label for="nwd-proposed-start">Початок<input id="nwd-proposed-start" name="form.ProposedStartDate" type="date" value="2026-08-24" required></label>
+                <label for="nwd-proposed-end">Кінець, inclusive<input id="nwd-proposed-end" name="form.ProposedEndDate" type="date" value="2026-08-25" required></label>
+                <label for="nwd-reason-code">Код причини<select id="nwd-reason-code" name="form.ReasonCode" required><option value="maintenance">Технічні роботи</option><option value="holiday">Свято</option><option value="emergency">Позапланове закриття</option></select></label>
+                <label for="nwd-reason-comment">Коментар<input id="nwd-reason-comment" name="form.ReasonComment" type="text" value="Оновлення вентиляції" maxlength="250"></label>
+                <button class="primary-button" type="submit">Розрахувати вплив</button>
+              </form>
+              <p class="nwd-live" data-nwd-preview-status role="status" aria-live="polite">Серверний snapshot нижче — приклад для review.</p>
+            </section>
+
+            <section class="nwd-surface nwd-impact" aria-labelledby="nwd-impact-heading">
+              <header class="nwd-section-head"><div><p class="eyebrow">Exact affected-scope snapshot</p><h2 id="nwd-impact-heading">Вплив: 24–25 серпня 2026</h2></div><span class="chip good">Дійсний до 10:32 · demo</span></header>
+              <dl class="nwd-kpis"><div><dt>Абонементів у scope</dt><dd>3</dd></div><div><dt>Днів, inclusive</dt><dd>2</dd></div><div><dt>Попереджень про перетини</dt><dd>2</dd></div></dl>
+              <div class="notice info"><strong>Повний період застосовується кожному affected Membership.</strong> Навіть endpoint-only overlap отримує всі 2 дні; Memberships рахує union у canonical state.</div>
+              <div class="nwd-table-wrap"><table class="nwd-table"><caption>Server snapshot affected memberships</caption><thead><tr><th scope="col">Клієнт</th><th scope="col">Зміна дати</th><th scope="col">Додано днів</th><th scope="col">Попередження / Перетини</th></tr></thead><tbody>
+                <tr><td data-label="Клієнт"><strong>Марія Іваненко</strong><span>M-104 · Основний</span></td><td data-label="Зміна дати"><span>31.08 → 01.09.2026</span></td><td data-label="Додано днів"><strong class="nwd-days-badge">+1 день</strong><span>1 unique · period: 2</span></td><td data-label="Попередження / Перетини"><details><summary>Freeze 24.08 · 1 день</summary><p>Freeze F-22 вже займає 24.08; union дає +1 unique день, не +2.</p></details></td></tr>
+                <tr><td data-label="Клієнт"><strong>Сергій Бондар</strong><span>M-119 · 12 занять</span></td><td data-label="Зміна дати"><span>14.09 → 15.09.2026</span></td><td data-label="Додано днів"><strong class="nwd-days-badge">+1 день</strong><span>1 unique · period: 2</span></td><td data-label="Попередження / Перетини"><details><summary>Інший period 25.08 · 1 день</summary><p>Активний non-working period уже є 25.08; union додає лише 24.08 без double-count.</p></details></td></tr>
+                <tr><td data-label="Клієнт"><strong>Алла Коваль</strong><span>M-121 · Ранковий</span></td><td data-label="Зміна дати"><span>24.08 → 26.08.2026</span></td><td data-label="Додано днів"><strong class="nwd-days-badge">+2 дні</strong><span>2 unique · endpoint-only</span></td><td data-label="Попередження / Перетини"><span class="chip info">Початок Membership 25.08</span><p>Має inclusive overlap і отримує повний period.</p></td></tr>
+              </tbody></table></div>
+              <form class="nwd-confirm-form" data-nwd-form data-backend-handler="Confirm" novalidate>
+                <input type="hidden" name="form.ProposedStartDate" value="2026-08-24"><input type="hidden" name="form.ProposedEndDate" value="2026-08-25"><input type="hidden" name="form.ReasonCode" value="maintenance"><input type="hidden" name="form.ReasonComment" value="Оновлення вентиляції"><input type="hidden" name="form.ConfirmationToken" value="demo…a91c"><input type="hidden" name="form.ScopeFingerprint" value="scope…8a4d"><input type="hidden" name="form.IdempotencyKey" value="demo-idem…d10e">
+                <div><p><strong>Підтвердження exact scope</strong></p><p class="muted">Fingerprint: <code>scope…8a4d</code> · token дійсний до 10:32 (демо, не справжній токен).</p></div>
+                <label class="nwd-confirm-check" for="nwd-confirmed"><input id="nwd-confirmed" name="form.Confirmed" type="checkbox" value="true" required>Підтверджую 3 Memberships і повний період 24–25.08.2026.</label>
+                <button class="primary-button" type="submit" disabled>Застосувати неробочий період</button>
+              </form>
+              <p class="nwd-live" data-nwd-confirm-status role="status" aria-live="polite">Команда не виконується у review-lab.</p>
+              <div class="notice danger" data-state-panel="expired-token" hidden><strong>preview_expired</strong><p>Confirmation заблоковано: оновіть preview. Жодних даних не змінено.</p></div>
+              <div class="notice danger" data-state-panel="scope-changed" hidden><strong>affected_scope_changed</strong><p>Confirmation заблоковано: exact affected scope змінився. Потрібен новий preview.</p></div>
+            </section>
+          </section>
+
+          <section id="nwd-history-panel" class="nwd-tab-panel" role="tabpanel" aria-labelledby="nwd-history-tab">
+            <section class="nwd-surface" aria-labelledby="nwd-history-heading"><header class="nwd-section-head"><div><p class="eyebrow">History stays explainable</p><h2 id="nwd-history-heading">Дійсні та минулі закриття</h2></div><span class="chip info">Owner-only corrections</span></header><p class="muted">Оригінальне source/history зберігається. Correction preview передує confirmation; replace-range перераховує union старого й нового scope.</p>
+              <div class="nwd-table-wrap"><table class="nwd-table nwd-history-table"><caption>Non-working periods history</caption><thead><tr><th scope="col">Період</th><th scope="col">Причина</th><th scope="col">Scope</th><th scope="col">Статус</th><th scope="col">Дія</th></tr></thead><tbody>
+                <tr class="nwd-active-period"><td data-label="Період"><strong>24–25.08.2026</strong></td><td data-label="Причина">Технічні роботи</td><td data-label="Scope">3 Memberships</td><td data-label="Статус"><span class="chip good">Дійсний</span></td><td data-label="Дія"><button type="button" class="nwd-correction-toggle" aria-expanded="false" aria-controls="nwd-correction-row">Виправити</button></td></tr>
+                <tr id="nwd-correction-row" class="nwd-correction-row"><td colspan="5"><section class="nwd-correction-card" aria-labelledby="nwd-correction-heading">
+                  <header><div><p class="eyebrow">CorrectionPreview → CorrectionConfirm</p><h3 id="nwd-correction-heading">Виправлення period</h3></div><span class="chip warn">Оригінал лишається</span></header>
+                  <form data-nwd-correction-form data-backend-handler="CorrectionPreview" novalidate>
+                    <input name="form.PeriodId" type="hidden" value="period…4017">
+                    <fieldset><legend>Режим</legend><label><input name="form.Mode" type="radio" value="ReplaceRange" checked>Замінити діапазон</label><label><input name="form.Mode" type="radio" value="ReplaceReason">Замінити причину</label><label><input name="form.Mode" type="radio" value="Cancel">Скасувати</label></fieldset>
+                    <div class="nwd-correction-fields" data-nwd-replace-range><label for="nwd-replace-start">Новий початок<input id="nwd-replace-start" name="form.ReplacementStartDate" type="date" value="2026-08-26" required></label><label for="nwd-replace-end">Новий кінець<input id="nwd-replace-end" name="form.ReplacementEndDate" type="date" value="2026-08-28" required></label></div>
+                    <div class="nwd-correction-fields" data-nwd-replace-reason><label for="nwd-replace-code">Новий код причини<input id="nwd-replace-code" name="form.ReplacementReasonCode" type="text" value="maintenance" required></label><label for="nwd-replace-comment">Новий коментар<input id="nwd-replace-comment" name="form.ReplacementReasonComment" type="text" value="Роботи подовжено"></label></div>
+                    <div class="nwd-correction-fields"><label for="nwd-correction-reason">Причина виправлення<input id="nwd-correction-reason" name="form.CorrectionReason" type="text" value="Уточнено тривалість" required></label><label for="nwd-correction-comment">Коментар до виправлення<input id="nwd-correction-comment" name="form.CorrectionComment" type="text" value="За листом підрядника" required></label></div>
+                    <button class="primary-button" type="submit">Preview виправлення</button>
+                  </form>
+                  <p class="nwd-live" data-nwd-correction-status role="status" aria-live="polite">Нижче — три серверні fixture-snapshot для перевірки контракту.</p>
+
+                  <section class="nwd-original-scope" aria-labelledby="nwd-original-scope-heading">
+                    <header><div><p class="eyebrow">Canonical original source</p><h4 id="nwd-original-scope-heading">Exact original scope · 24–25.08.2026</h4></div><span class="chip info">Immutable snapshot · 3</span></header>
+                    <div class="nwd-table-wrap"><table class="nwd-table nwd-scope-table"><caption>Ordered exact original scope</caption><thead><tr><th scope="col">Original #</th><th scope="col">Клієнт / Membership</th><th scope="col">Client ID</th><th scope="col">Повний applied range</th></tr></thead><tbody>
+                      <tr><td data-label="Original #">1</td><td data-label="Клієнт / Membership"><strong>Марія Іваненко</strong><span>M-104</span></td><td data-label="Client ID">C-018</td><td data-label="Повний applied range">24–25.08.2026</td></tr>
+                      <tr><td data-label="Original #">2</td><td data-label="Клієнт / Membership"><strong>Сергій Бондар</strong><span>M-119</span></td><td data-label="Client ID">C-044</td><td data-label="Повний applied range">24–25.08.2026</td></tr>
+                      <tr><td data-label="Original #">3</td><td data-label="Клієнт / Membership"><strong>Алла Коваль</strong><span>M-121</span></td><td data-label="Client ID">C-052</td><td data-label="Повний applied range">24–25.08.2026</td></tr>
+                    </tbody></table></div>
+                  </section>
+
+                  <div class="nwd-correction-preview-stack">
+                    <section class="nwd-correction-preview" data-nwd-correction-preview-mode="ReplaceRange" aria-labelledby="nwd-range-preview-heading">
+                      <header><div><p class="eyebrow">Exact old/new scope</p><h4 id="nwd-range-preview-heading">Preview заміни діапазону</h4></div><span class="chip good">Дійсний до 10:41 · demo</span></header>
+                      <dl class="nwd-correction-kpis"><div><dt>Original scope</dt><dd>3</dd></div><div><dt>Replacement scope</dt><dd>4</dd></div><div><dt>Recalculation union</dt><dd>5</dd></div></dl>
+                      <div class="nwd-scope-comparison"><article><span>Було · source збережено</span><strong>24–25.08.2026</strong><p>3 Memberships · audit …a812</p></article><article><span>Стане · нове source</span><strong>26–28.08.2026</strong><p>4 Memberships · повний inclusive period</p></article></div>
+                      <div class="nwd-table-wrap"><table class="nwd-table nwd-scope-table nwd-replacement-scope-table"><caption>Ordered exact replacement scope</caption><thead><tr><th scope="col">Replacement #</th><th scope="col">Клієнт / Membership</th><th scope="col">Client ID</th><th scope="col">Повний applied range</th></tr></thead><tbody>
+                        <tr><td data-label="Replacement #">1</td><td data-label="Клієнт / Membership"><strong>Марія Іваненко</strong><span>M-104</span></td><td data-label="Client ID">C-018</td><td data-label="Повний applied range">26–28.08.2026</td></tr>
+                        <tr><td data-label="Replacement #">2</td><td data-label="Клієнт / Membership"><strong>Сергій Бондар</strong><span>M-119</span></td><td data-label="Client ID">C-044</td><td data-label="Повний applied range">26–28.08.2026</td></tr>
+                        <tr><td data-label="Replacement #">3</td><td data-label="Клієнт / Membership"><strong>Олег Мельник</strong><span>M-128</span></td><td data-label="Client ID">C-061</td><td data-label="Повний applied range">26–28.08.2026</td></tr>
+                        <tr><td data-label="Replacement #">4</td><td data-label="Клієнт / Membership"><strong>Ірина Левченко</strong><span>M-133</span></td><td data-label="Client ID">C-074</td><td data-label="Повний applied range">26–28.08.2026</td></tr>
+                      </tbody></table></div>
+                      <div class="notice info"><strong>Атомарний перерахунок: old scope ∪ replacement scope = 5 Memberships.</strong> Старий period позначається виправленим; replacement створює власний exact scope.</div>
+                      <form class="nwd-correction-confirm-form" data-nwd-correction-confirm data-backend-handler="CorrectionConfirm" novalidate>
+                        <input name="form.PeriodId" type="hidden" value="period…4017"><input name="form.Mode" type="hidden" value="ReplaceRange"><input name="form.ReplacementStartDate" type="hidden" value="2026-08-26"><input name="form.ReplacementEndDate" type="hidden" value="2026-08-28"><input name="form.ReplacementReasonCode" type="hidden" value="maintenance"><input name="form.ReplacementReasonComment" type="hidden" value="Роботи подовжено"><input name="form.CorrectionReason" type="hidden" value="Уточнено тривалість"><input name="form.CorrectionComment" type="hidden" value="За листом підрядника"><input name="form.ConfirmationToken" type="hidden" value="correction…a91c"><input name="form.ScopeFingerprint" type="hidden" value="old-new-scope…8a4d"><input name="form.IdempotencyKey" type="hidden" value="correction-idem…d10e">
+                        <label class="nwd-confirm-check"><input name="form.Confirmed" type="checkbox" value="true" required>Підтверджую old scope 3, replacement scope 4 і перерахунок union 5 Memberships.</label>
+                        <button class="primary-button" type="submit" disabled>Застосувати заміну</button>
+                      </form>
+                      <p class="nwd-live" data-nwd-correction-confirm-status role="status" aria-live="polite">Команда не виконується у review-lab.</p>
+                    </section>
+
+                    <section class="nwd-correction-preview" data-nwd-correction-preview-mode="ReplaceReason" aria-labelledby="nwd-reason-preview-heading" hidden>
+                      <header><div><p class="eyebrow">Exact scope preserved</p><h4 id="nwd-reason-preview-heading">Preview заміни причини</h4></div><span class="chip good">3 Memberships незмінні</span></header>
+                      <dl class="nwd-correction-kpis"><div><dt>Original scope</dt><dd>3</dd></div><div><dt>Confirmed scope</dt><dd>3</dd></div><div><dt>Recalculation union</dt><dd>3</dd></div></dl>
+                      <div class="nwd-scope-comparison"><article><span>Було</span><strong>maintenance</strong><p>Оновлення вентиляції</p></article><article><span>Стане</span><strong>holiday</strong><p>Святковий графік</p></article></div>
+                      <div class="notice info"><strong>Діапазон і immutable exact scope не змінюються.</strong> Коригується лише причина; старе значення лишається в історії.</div>
+                      <form class="nwd-correction-confirm-form" data-nwd-correction-confirm data-backend-handler="CorrectionConfirm" novalidate>
+                        <input name="form.PeriodId" type="hidden" value="period…4017"><input name="form.Mode" type="hidden" value="ReplaceReason"><input name="form.ReplacementReasonCode" type="hidden" value="holiday"><input name="form.ReplacementReasonComment" type="hidden" value="Святковий графік"><input name="form.CorrectionReason" type="hidden" value="Уточнено причину"><input name="form.CorrectionComment" type="hidden" value="За наказом власника"><input name="form.ConfirmationToken" type="hidden" value="reason…a91c"><input name="form.ScopeFingerprint" type="hidden" value="preserved-scope…8a4d"><input name="form.IdempotencyKey" type="hidden" value="reason-idem…d10e">
+                        <label class="nwd-confirm-check"><input name="form.Confirmed" type="checkbox" value="true" required>Підтверджую збереження exact scope 3 Memberships і заміну лише причини.</label>
+                        <button class="primary-button" type="submit" disabled>Застосувати нову причину</button>
+                      </form>
+                      <p class="nwd-live" data-nwd-correction-confirm-status role="status" aria-live="polite">Команда не виконується у review-lab.</p>
+                    </section>
+
+                    <section class="nwd-correction-preview" data-nwd-correction-preview-mode="Cancel" aria-labelledby="nwd-cancel-preview-heading" hidden>
+                      <header><div><p class="eyebrow">Cancellation preserves history</p><h4 id="nwd-cancel-preview-heading">Preview скасування</h4></div><span class="chip danger">Owner confirmation</span></header>
+                      <dl class="nwd-correction-kpis"><div><dt>Original scope</dt><dd>3</dd></div><div><dt>Active applications</dt><dd>0</dd></div><div><dt>Recalculation union</dt><dd>3</dd></div></dl>
+                      <div class="notice danger"><strong>Застосування period припиниться для 3 Memberships.</strong> Original source, applications та audit не видаляються; canonical state перераховується для original scope.</div>
+                      <form class="nwd-correction-confirm-form" data-nwd-correction-confirm data-backend-handler="CorrectionConfirm" novalidate>
+                        <input name="form.PeriodId" type="hidden" value="period…4017"><input name="form.Mode" type="hidden" value="Cancel"><input name="form.CorrectionReason" type="hidden" value="Закриття не відбулося"><input name="form.CorrectionComment" type="hidden" value="Зал працював за звичайним графіком"><input name="form.ConfirmationToken" type="hidden" value="cancel…a91c"><input name="form.ScopeFingerprint" type="hidden" value="original-scope…8a4d"><input name="form.IdempotencyKey" type="hidden" value="cancel-idem…d10e">
+                        <label class="nwd-confirm-check"><input name="form.Confirmed" type="checkbox" value="true" required>Підтверджую скасування для original scope 3 Memberships і збереження source history.</label>
+                        <button class="nwd-danger-button" type="submit" disabled>Скасувати period</button>
+                      </form>
+                      <p class="nwd-live" data-nwd-correction-confirm-status role="status" aria-live="polite">Команда не виконується у review-lab.</p>
+                    </section>
+                  </div>
+                  <section class="nwd-confirmed-result" data-state-panel="correction-confirmed" aria-labelledby="nwd-confirmed-heading" hidden>
+                    <div class="notice good"><strong id="nwd-confirmed-heading">CorrectionConfirm виконано · demo canonical reread.</strong><p>Original period збережено, replacement scope зафіксовано, 5 Memberships перераховано атомарно. Це лише статичний confirmed fixture.</p></div>
+                    <div class="nwd-table-wrap"><table class="nwd-table nwd-scope-table"><caption>Canonical confirmed replacement applications</caption><thead><tr><th scope="col">Canonical #</th><th scope="col">Клієнт / Membership</th><th scope="col">Client ID</th><th scope="col">Confirmed applied range</th></tr></thead><tbody>
+                      <tr><td data-label="Canonical #">1</td><td data-label="Клієнт / Membership"><strong>Марія Іваненко</strong><span>M-104</span></td><td data-label="Client ID">C-018</td><td data-label="Confirmed applied range">26–28.08.2026</td></tr>
+                      <tr><td data-label="Canonical #">2</td><td data-label="Клієнт / Membership"><strong>Сергій Бондар</strong><span>M-119</span></td><td data-label="Client ID">C-044</td><td data-label="Confirmed applied range">26–28.08.2026</td></tr>
+                      <tr><td data-label="Canonical #">3</td><td data-label="Клієнт / Membership"><strong>Олег Мельник</strong><span>M-128</span></td><td data-label="Client ID">C-061</td><td data-label="Confirmed applied range">26–28.08.2026</td></tr>
+                      <tr><td data-label="Canonical #">4</td><td data-label="Клієнт / Membership"><strong>Ірина Левченко</strong><span>M-133</span></td><td data-label="Client ID">C-074</td><td data-label="Confirmed applied range">26–28.08.2026</td></tr>
+                    </tbody></table></div>
+                    <p class="nwd-union-note"><strong>Recalculation union, ordered:</strong> M-104, M-119, M-121 (old-only), M-128, M-133.</p>
+                  </section>
+                </section></td></tr>
+                <tr><td data-label="Період"><strong>10–11.07.2026</strong></td><td data-label="Причина">Свято</td><td data-label="Scope">4 Memberships</td><td data-label="Статус"><span class="chip warn">Виправлено</span></td><td data-label="Дія"><span class="muted">Оригінал збережено</span></td></tr>
+                <tr><td data-label="Період"><strong>02.06.2026</strong></td><td data-label="Причина">Аварія</td><td data-label="Scope">2 Memberships</td><td data-label="Статус"><span class="chip danger">Скасовано</span></td><td data-label="Дія"><span class="muted">Cancellation fact</span></td></tr>
+              </tbody></table></div>
+            </section>
+          </section>
+        </div>
+      </main>
     </div>
   </div>
   <dialog id="review-dialog" aria-labelledby="dialog-title"><div class="dialog-content"><p class="eyebrow">Review-only</p><h2 id="dialog-title">Дія недоступна в прототипі</h2><p id="dialog-message">Дані не записуються.</p><button class="primary-button" type="button" id="close-dialog">Зрозуміло</button></div></dialog>

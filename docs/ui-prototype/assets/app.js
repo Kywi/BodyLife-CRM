@@ -437,4 +437,189 @@
       setStaffStatus(form, form.dataset.backendHandler);
     }));
   }
+
+  // Non-working days is a guarded, page-scoped static parity fixture. It only
+  // switches presentation state: all figures stay in server-snapshot HTML.
+  const nwdPage = document.querySelector('[data-nwd-page]');
+  if (nwdPage) {
+    const tabs = [...nwdPage.querySelectorAll('.nwd-tabs [role="tab"]')];
+    const planPanel = nwdPage.querySelector('#nwd-plan-panel');
+    const historyPanel = nwdPage.querySelector('#nwd-history-panel');
+    const correctionRow = nwdPage.querySelector('#nwd-correction-row');
+    const correctionToggle = nwdPage.querySelector('.nwd-correction-toggle');
+    const activePeriod = nwdPage.querySelector('.nwd-active-period');
+    const query = new URLSearchParams(window.location.search);
+    const correctionState = ['correction', 'correction-confirmed'].includes(query.get('state'));
+    const showHistory = query.get('tab') === 'history' || correctionState;
+    const activateNwdTab = (tab, focus = false) => {
+      const history = tab.id === 'nwd-history-tab';
+      tabs.forEach((candidate) => {
+        const selected = candidate === tab;
+        candidate.setAttribute('aria-selected', String(selected));
+        candidate.tabIndex = selected ? 0 : -1;
+      });
+      planPanel.hidden = history;
+      historyPanel.hidden = !history;
+      if (focus) tab.focus();
+    };
+    tabs.forEach((tab) => tab.addEventListener('click', () => activateNwdTab(tab)));
+    nwdPage.querySelector('.nwd-tabs')?.addEventListener('keydown', (event) => {
+      const current = tabs.indexOf(document.activeElement);
+      if (current < 0 || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      activateNwdTab(tabs[next], true);
+    });
+    activateNwdTab(nwdPage.querySelector(showHistory ? '#nwd-history-tab' : '#nwd-plan-tab'));
+    const setCorrectionOpen = (open) => {
+      if (correctionRow) {
+        correctionRow.hidden = !open;
+        correctionRow.classList.toggle('is-open', open);
+      }
+      correctionToggle?.setAttribute('aria-expanded', String(open));
+      activePeriod?.classList.toggle('is-open', open);
+    };
+    setCorrectionOpen(correctionState);
+    correctionToggle?.addEventListener('click', () => {
+      const expanded = correctionToggle.getAttribute('aria-expanded') === 'true';
+      setCorrectionOpen(!expanded);
+    });
+
+    const planForm = nwdPage.querySelector('.nwd-plan-form');
+    const confirmation = nwdPage.querySelector('#nwd-confirmed');
+    const confirmButton = nwdPage.querySelector('.nwd-confirm-form button[type="submit"]');
+    const confirmationBlocked = ['expired-token', 'scope-changed'].includes(query.get('state'));
+    let planSnapshotDirty = false;
+    const setPlanConfirmationBlocked = (blocked, message = '') => {
+      if (confirmation) {
+        confirmation.checked = false;
+        confirmation.disabled = blocked;
+      }
+      if (confirmButton) confirmButton.disabled = blocked || !confirmation?.checked;
+      if (message) {
+        const status = nwdPage.querySelector('[data-nwd-confirm-status]');
+        if (status) status.textContent = message;
+      }
+    };
+    setPlanConfirmationBlocked(confirmationBlocked);
+    confirmation?.addEventListener('change', () => {
+      if (confirmButton) confirmButton.disabled = confirmationBlocked || planSnapshotDirty || !confirmation.checked;
+    });
+    planForm?.addEventListener('input', () => {
+      if (confirmationBlocked) return;
+      planSnapshotDirty = true;
+      setPlanConfirmationBlocked(true, 'Параметри змінено — snapshot застарів. Потрібен новий серверний preview.');
+    });
+    planForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const status = nwdPage.querySelector('[data-nwd-preview-status]');
+      const values = new FormData(planForm);
+      const matchesFixture = values.get('form.ProposedStartDate') === '2026-08-24'
+        && values.get('form.ProposedEndDate') === '2026-08-25'
+        && values.get('form.ReasonCode') === 'maintenance'
+        && values.get('form.ReasonComment') === 'Оновлення вентиляції';
+      if (matchesFixture && !confirmationBlocked) {
+        planSnapshotDirty = false;
+        setPlanConfirmationBlocked(false, 'Демо-snapshot 24–25.08 відновлено; жодної серверної команди не виконано.');
+        if (status) status.textContent = 'Preview handler Preview: показано збережений server fixture без розрахунків у браузері.';
+      } else {
+        planSnapshotDirty = true;
+        setPlanConfirmationBlocked(true, 'Статичний lab не обчислює новий scope. Поверніть демо-параметри або відкрийте valid fixture.');
+        if (status) status.textContent = 'Preview handler Preview потребує сервера; старий snapshot більше не можна підтвердити.';
+      }
+    });
+    nwdPage.querySelector('.nwd-confirm-form')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const status = nwdPage.querySelector('[data-nwd-confirm-status]');
+      if (status) status.textContent = 'Confirm handler Confirm: review-only; команда, audit і canonical reread не виконані.';
+    });
+
+    const correctionForm = nwdPage.querySelector('[data-nwd-correction-form]');
+    const rangeFields = nwdPage.querySelector('[data-nwd-replace-range]');
+    const reasonFields = nwdPage.querySelector('[data-nwd-replace-reason]');
+    const correctionPreviews = [...nwdPage.querySelectorAll('[data-nwd-correction-preview-mode]')];
+    const correctionConfirmForms = [...nwdPage.querySelectorAll('[data-nwd-correction-confirm]')];
+    correctionConfirmForms.forEach((form) => {
+      const checkbox = form.querySelector('input[name="form.Confirmed"]');
+      const button = form.querySelector('button[type="submit"]');
+      checkbox?.addEventListener('change', () => {
+        if (button) button.disabled = form.dataset.stale === 'true' || !checkbox.checked;
+      });
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const status = form.parentElement?.querySelector('[data-nwd-correction-confirm-status]');
+        if (status) status.textContent = 'CorrectionConfirm: review-only; source, audit і canonical reread не змінені.';
+      });
+    });
+    const setCorrectionPreviewStale = () => {
+      const mode = correctionForm?.querySelector('input[name="form.Mode"]:checked')?.value;
+      const preview = correctionPreviews.find((item) => item.dataset.nwdCorrectionPreviewMode === mode);
+      const form = preview?.querySelector('[data-nwd-correction-confirm]');
+      const checkbox = form?.querySelector('input[name="form.Confirmed"]');
+      const button = form?.querySelector('button[type="submit"]');
+      if (form) form.dataset.stale = 'true';
+      if (checkbox) {
+        checkbox.checked = false;
+        checkbox.disabled = true;
+      }
+      if (button) button.disabled = true;
+      const status = nwdPage.querySelector('[data-nwd-correction-status]');
+      if (status) status.textContent = 'Параметри correction змінено — confirmation заблоковано до нового серверного preview.';
+    };
+    const updateCorrectionFields = () => {
+      const mode = correctionForm?.querySelector('input[name="form.Mode"]:checked')?.value;
+      const rangeActive = mode === 'ReplaceRange';
+      const reasonActive = mode !== 'Cancel';
+      const replacementStart = correctionForm?.querySelector('input[name="form.ReplacementStartDate"]');
+      const replacementEnd = correctionForm?.querySelector('input[name="form.ReplacementEndDate"]');
+      const replacementCode = correctionForm?.querySelector('input[name="form.ReplacementReasonCode"]');
+      const replacementComment = correctionForm?.querySelector('input[name="form.ReplacementReasonComment"]');
+      const correctionReason = correctionForm?.querySelector('input[name="form.CorrectionReason"]');
+      const correctionComment = correctionForm?.querySelector('input[name="form.CorrectionComment"]');
+      const fixtureValues = mode === 'ReplaceReason'
+        ? ['holiday', 'Святковий графік', 'Уточнено причину', 'За наказом власника']
+        : mode === 'Cancel'
+          ? ['', '', 'Закриття не відбулося', 'Зал працював за звичайним графіком']
+          : ['maintenance', 'Роботи подовжено', 'Уточнено тривалість', 'За листом підрядника'];
+      if (replacementStart) replacementStart.value = '2026-08-26';
+      if (replacementEnd) replacementEnd.value = '2026-08-28';
+      if (replacementCode) replacementCode.value = fixtureValues[0];
+      if (replacementComment) replacementComment.value = fixtureValues[1];
+      if (correctionReason) correctionReason.value = fixtureValues[2];
+      if (correctionComment) correctionComment.value = fixtureValues[3];
+      if (rangeFields) rangeFields.hidden = !rangeActive;
+      if (reasonFields) reasonFields.hidden = !reasonActive;
+      rangeFields?.querySelectorAll('input').forEach((input) => {
+        input.disabled = !rangeActive;
+        input.required = rangeActive;
+      });
+      reasonFields?.querySelectorAll('input').forEach((input) => {
+        input.disabled = !reasonActive;
+        input.required = reasonActive && input.name === 'form.ReplacementReasonCode';
+      });
+      correctionPreviews.forEach((preview) => {
+        preview.hidden = preview.dataset.nwdCorrectionPreviewMode !== mode;
+      });
+      correctionConfirmForms.forEach((form) => {
+        const checkbox = form.querySelector('input[name="form.Confirmed"]');
+        const button = form.querySelector('button[type="submit"]');
+        form.dataset.stale = 'false';
+        if (checkbox) {
+          checkbox.checked = false;
+          checkbox.disabled = false;
+        }
+        if (button) button.disabled = true;
+      });
+    };
+    correctionForm?.querySelectorAll('input[name="form.Mode"]').forEach((control) => control.addEventListener('change', updateCorrectionFields));
+    correctionForm?.addEventListener('input', (event) => {
+      if (event.target.name !== 'form.Mode') setCorrectionPreviewStale();
+    });
+    correctionForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const status = nwdPage.querySelector('[data-nwd-correction-status]');
+      if (status) status.textContent = 'CorrectionPreview потребує сервера; fixture нижче не перераховано, confirmation лишається заблокованим після змін.';
+    });
+    updateCorrectionFields();
+  }
 })();
