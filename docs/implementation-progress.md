@@ -13115,3 +13115,76 @@ Stop point:
   production Razor migration must preserve Owner-only authorization,
   credential/reason validation, active-session termination, audit, secret
   handling and canonical reread behavior.
+
+## Step 203 - Rebuilt the published Non-working days template
+
+Status: completed and published as the eleventh review-only template-lab
+iteration. Production Razor UI, Owner authorization, non-working-period
+commands, persistence and Memberships calculations remain unchanged.
+
+Completed:
+
+- Added one explicit role-fixture navigator to the existing account disclosure
+  on all thirteen authenticated pages. `Admin · Home` and `Owner · Tools`
+  provide a fast review transition without pretending to mutate the current
+  account, session or permissions.
+- Rebuilt Non-working days around two keyboard-operable tabs:
+  `Планувати закриття` and `Дійсні та минулі закриття`. The planning tab now
+  has a compact date/reason/comment form, server-snapshot KPI row, responsive
+  impact table, overlap disclosures and checkbox-gated confirmation.
+- Kept the Memberships contract visible and internally consistent: the fixture
+  applies the full inclusive period to every affected Membership, shows only
+  unique union extension days in effective-date changes, and never calculates
+  dates or affected scope in browser JavaScript.
+- Moved correction and cancellation into the history tab. Replace-range,
+  replace-reason and cancel each retain the production `CorrectionPreview` to
+  `CorrectionConfirm` fields, explicit acknowledgement, confirmation token,
+  scope fingerprint and idempotency key. The original exact scope stays
+  visible for all modes; range replacement also shows ordered replacement
+  applications, canonical confirmed applications and the recalculation union.
+- Added stale-preview invalidation, expired-token and changed-scope fixtures,
+  a canonical-reread confirmed fixture, connected master/detail row styling,
+  44 px touch targets, compact phone cards and a JavaScript-disabled view that
+  leaves both main sections and correction evidence readable.
+
+Validation:
+
+- Bundled Chromium passed the thirteen-route role-navigation smoke and the
+  focused Non-working-days suite at 1440 px, 1024 px, 760 px and 390 px:
+  tab keyboard behavior, confirmation gating, stale preview, three correction
+  modes, exact old/replacement scope, confirmed applications, query fixtures,
+  JavaScript-disabled rendering, console/page errors and horizontal overflow.
+- Static validation passed JavaScript syntax, `git diff --check`, all sixteen
+  HTML routes, unique ids, resolved ARIA references, local links, exact handler
+  field matrices and the expected ten Admin-current plus three Owner-current
+  fixtures.
+- Independent review found no remaining P0 or P1 issue after union/date
+  consistency, stale-preview blocking, no-JavaScript history visibility,
+  role-fixture wording and exact per-membership scope evidence were corrected.
+- GitHub Pages deployment run `30541692119` completed successfully in 18
+  seconds. The live Non-working-days page passed Chromium at 1440 px and
+  390 px, including role navigation, exact scope rows, Cancel mode and the
+  correction-confirmed canonical applications.
+- The required code-only `graphify update .` was attempted after the template
+  change and again stopped with local filesystem error 95. The scoped
+  Non-working-days Graphify query was saved as a `dead_end` because it exposed
+  only broad Owner/Membership context rather than the governing Razor/ADR
+  contracts. The semantic `graphify . --update --no-viz` detected one code and
+  nineteen documentation changes, then stopped before extraction because no
+  supported LLM API key is configured; generated Graphify output remains
+  excluded from commits and no refreshed graph is claimed.
+- Full backend CI, PostgreSQL migrations and the unrelated production test
+  matrix were intentionally not run or awaited for this static-template-only
+  iteration.
+
+Commit:
+
+- `73136d8` (`feat(ui): redesign non-working days template`).
+
+Stop point:
+
+- Collect feedback on the published planning/history split, exact-scope review
+  and Admin/Owner fixture navigation. Keep this work in the public-safe review
+  lab; a later production Razor migration must retain Owner-only authorization,
+  immutable confirmed scope, stale preview rejection, idempotency, append-only
+  audit and canonical Memberships recalculation.
