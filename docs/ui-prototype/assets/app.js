@@ -574,6 +574,7 @@
         correctionRow.classList.toggle('is-open', open);
       }
       correctionToggle?.setAttribute('aria-expanded', String(open));
+      correctionToggle?.setAttribute('aria-label', `${open ? 'Закрити' : 'Відкрити'} виправлення періоду 24–25.08.2026`);
       activePeriod?.classList.toggle('is-open', open);
     };
     setCorrectionOpen(correctionState);
@@ -661,7 +662,7 @@
       }
       if (button) button.disabled = true;
       const status = nwdPage.querySelector('[data-nwd-correction-status]');
-      if (status) status.textContent = 'Параметри correction змінено — confirmation заблоковано до нового серверного preview.';
+      if (status) status.textContent = 'Параметри виправлення змінено — підтвердження заблоковано до нового серверного перегляду впливу.';
     };
     const updateCorrectionFields = () => {
       const mode = correctionForm?.querySelector('input[name="form.Mode"]:checked')?.value;
@@ -715,7 +716,7 @@
     correctionForm?.addEventListener('submit', (event) => {
       event.preventDefault();
       const status = nwdPage.querySelector('[data-nwd-correction-status]');
-      if (status) status.textContent = 'CorrectionPreview потребує сервера; fixture нижче не перераховано, confirmation лишається заблокованим після змін.';
+      if (status) status.textContent = 'Перегляд впливу виправлення потребує сервера; знімок нижче не перераховано, а підтвердження після змін залишається заблокованим.';
     });
     updateCorrectionFields();
   }
