@@ -13267,3 +13267,73 @@ Stop point:
   lab; a later production Razor migration must preserve Owner-only
   authorization, validation, reasons, idempotency, stale-state handling,
   audit, canonical rereads and immutable issued-Membership snapshots.
+
+## Step 205 - Refined the published Non-working-day correction history
+
+Status: completed and published as the thirteenth review-only template-lab
+iteration. Production Razor UI, Owner authorization, NonWorkingDay commands,
+persistence and Memberships calculations remain unchanged.
+
+Completed:
+
+- Rebuilt the history table as one continuous surface with row separators
+  instead of individually rounded cells. The active period and its expanded
+  correction workspace now share one boundary with no overlap offset or
+  detached-card seam.
+- Replaced the uneven wrapped radio controls with one equal-width,
+  keyboard-operable three-option selector for date replacement, reason
+  replacement and cancellation. Tablet keeps all three choices aligned;
+  phone stacks three equal 44 px choices instead of a two-plus-one wrap.
+- Localized the correction summaries, operational labels, confirmation copy
+  and history rows. Working text is at least 13 px, table headings are 12 px,
+  and technical handler/token metadata no longer competes with Owner actions.
+- Moved exact original, replacement and confirmed application sets into
+  native disclosures. Each ordered row retains Membership and Client IDs
+  compactly beneath the client name, the full applied range, and the
+  ADR-016 old/new/recalculation counts without a separate wide ID column.
+- Moved the confirmed canonical outcome beside the correction heading and
+  kept its four replacement applications plus the five-Membership
+  recalculation union available in a compact disclosure.
+
+Validation:
+
+- Bundled Chromium passed the focused history/correction suite at 1440 px,
+  1024 px, 768 px and 390 px: equal mode geometry, attached master/detail
+  seam, three mode transitions, confirmation gating, exact-scope
+  disclosures, confirmed outcome ordering, query routing, no-JavaScript
+  visibility, console/page errors and horizontal overflow.
+- Static validation passed JavaScript syntax, `git diff --check`, all sixteen
+  HTML routes, unique ids, resolved ARIA references, local resources and the
+  exact `CorrectionPreview`/`CorrectionConfirm` field matrices. A separate
+  all-route browser pass completed 96 HTTP/runtime/overflow checks.
+- Independent contract/UI review found no remaining P0, P1 or P2 issue after
+  exact Client IDs were restored inline without reintroducing a wide table
+  column.
+- GitHub Pages deployment run `30546523350` completed successfully in 22
+  seconds. The live Non-working-days page passed 36 focused Chromium checks
+  at 1440 px, 768 px and 390 px, including all modes, exact IDs and the
+  confirmed-state application disclosure.
+- The scoped Graphify query was saved as a `dead_end` because it exposed only
+  broad Owner/Membership nodes rather than the governing Razor/ADR contracts.
+  The required code-only `graphify update .` was attempted after the template
+  change and again stopped with local filesystem error 95. The semantic
+  `graphify . --update --no-viz` then detected one code and twenty-one
+  documentation changes plus one deletion, but stopped before extraction
+  because no supported LLM API key is configured; generated Graphify output
+  remains excluded from commits and no refreshed graph is claimed.
+- Full backend CI, PostgreSQL migrations and the unrelated production test
+  matrix were intentionally not run or awaited for this static-template-only
+  iteration.
+
+Commit:
+
+- `5a9d5e5` (`fix(ui): clarify non-working day corrections`).
+
+Stop point:
+
+- Collect feedback on the published history table, equal correction-mode
+  selector and compact exact-scope disclosures. Keep this work in the
+  public-safe review lab; a later production Razor migration must retain
+  Owner-only authorization, exact immutable scope, inclusive ranges,
+  stale-preview rejection, idempotency, append-only audit, atomic old/new
+  recalculation and canonical rereads.
