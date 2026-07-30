@@ -38,3 +38,19 @@ the shared fixture navigation.
 The Pages workflow publishes only this directory. Never place secrets,
 production exports, real client data, session identifiers, or private
 operational information here.
+
+## Client profile action previews
+
+The `default` and `exact-card` client states share one interactive,
+non-persistent action surface. Its four keyboard-operable tabs preview marking
+a visit, issuing a membership, recording a cash payment and adding a freeze.
+Successful previews replace the submitted form with a confirmation state and
+update the fictional profile/activity table until the page is reloaded.
+
+These interactions are presentation fixtures, not application commands.
+Terminal payments remain visibly unavailable because BodyLife v1 is cash-only.
+Membership and freeze outcomes come from fixed server-preview fixtures; when a
+date or range no longer matches a fixture, the preview is invalidated and
+submission is disabled instead of calculating Membership state in JavaScript.
+Warning, stale, blocked, search and error states do not simulate a successful
+client action.

@@ -161,38 +161,6 @@
   window.addEventListener('hashchange', focusSearchContext);
   focusSearchContext();
 
-  // Presentation-only fixture rows: no membership calculation, cancellation,
-  // command, or delete operation exists in this review-only page.
-  const clientHistoryRows = `
-    <thead><tr><th scope="col">Дата й час</th><th scope="col">Візит / подія</th><th scope="col">Абонемент / контекст</th><th scope="col">Статус / джерело</th><th scope="col"><span class="sr-only">Дія</span></th></tr></thead>
-    <tbody>
-      <tr><td data-label="Дата й час"><time datetime="2026-07-27T09:12:00+03:00">27.07 · 09:12</time></td><td data-label="Візит / подія"><strong>Відвідування</strong><span class="visit-cell-meta"><span>12 занять · Основний</span><span>Зараховано · normal</span></span></td><td data-label="Абонемент / контекст">12 занять · Основний</td><td data-label="Статус / джерело"><span class="chip good">Зараховано</span><span class="origin">normal</span></td><td data-label="Дія"><button class="history-cancel" type="button" data-review-title="Preview скасування" data-review-action="У реальному CRM скасування зберігає цей візит в історії, потребує причини або коментаря та запускає canonical reread.">Скасувати</button></td></tr>
-      <tr><td data-label="Дата й час"><time datetime="2026-07-25T18:40:00+03:00">25.07 · 18:40</time></td><td data-label="Візит / подія"><strong>Відвідування</strong><span class="visit-cell-meta"><span>12 занять · Основний</span><span>Скасовано · normal</span></span></td><td data-label="Абонемент / контекст">12 занять · Основний</td><td data-label="Статус / джерело"><span class="chip danger">Скасовано</span><span class="origin">normal</span></td><td data-label="Дія"><span class="history-kept">Збережено в історії</span></td></tr>
-      <tr><td data-label="Дата й час"><time datetime="2026-07-24T12:00:00+03:00">24.07 · 12:00</time></td><td data-label="Візит / подія"><strong>Відвідування</strong><span class="visit-cell-meta"><span>12 занять · Основний</span><span>Зараховано · manual_backfill</span></span></td><td data-label="Абонемент / контекст">12 занять · Основний</td><td data-label="Статус / джерело"><span class="chip info">Зараховано</span><span class="origin">manual_backfill</span></td><td data-label="Дія"><button class="history-cancel" type="button" data-review-title="Preview скасування" data-review-action="У реальному CRM скасування зберігає цей backfill-візит в історії, потребує причини або коментаря та запускає canonical reread.">Скасувати</button></td></tr>
-    </tbody>`;
-  const bindReviewPreview = (element) => element.addEventListener('click', () => showDialog(
-    element.dataset.reviewAction || 'Це лише review preview. Дані не записуються, команду не виконано і canonical reread відсутній.',
-    element.dataset.reviewTitle || 'Review-only дія'
-  ));
-  document.querySelectorAll('.profile-state').forEach((profile) => {
-    const actions = profile.querySelector('.actions');
-    if (actions) {
-      actions.classList.add('profile-action-toolbar');
-      actions.setAttribute('aria-label', 'Дії з профілем клієнта');
-      actions.innerHTML = '<button type="button" class="primary-button" data-review-action>Позначити відвідування</button><button type="button" data-review-action>Видати абонемент</button><button type="button" data-review-action>Додати платіж</button><button type="button" data-review-action>Додати заморозку</button>';
-      actions.querySelectorAll('[data-review-action]').forEach(bindReviewPreview);
-      profile.prepend(actions);
-    }
-    const table = profile.querySelector('.data-table');
-    if (table) {
-      table.classList.add('visit-history-table');
-      table.innerHTML = `<caption>Останні відвідування та пов’язані події — фіктивні review-only записи</caption>${clientHistoryRows}`;
-      table.querySelectorAll('[data-review-action]').forEach(bindReviewPreview);
-      if (!profile.querySelector('.profile-history-head')) {
-        table.closest('.table-wrap')?.insertAdjacentHTML('beforebegin', '<div class="profile-history-head"><div><p class="eyebrow">Активність клієнта</p><h3>Останні відвідування</h3></div><nav aria-label="Повна історія клієнта"><a href="./client-history.html">Історія клієнта</a><a href="./audit-timeline.html">Журнал аудиту</a></nav></div>');
-      }
-    }
-  });
   const showCreatePreview = () => showDialog('Створити клієнта — лише візуальний review state. Жодна форма, команда або дані не існують у цьому прототипі.');
   document.querySelector('#create-client')?.addEventListener('click', showCreatePreview);
   document.querySelector('#search-form')?.addEventListener('submit', (event) => {
@@ -251,6 +219,213 @@
         ? (!isDefault && panel.dataset.statePanel !== activeState)
         : panel.dataset.statePanel !== activeState;
     });
+  }
+
+  // Client action surface is intentionally one movable, non-persistent review fixture.
+  // Only the default and exact-card states share the same fictional client snapshot.
+  // No browser-side Membership formula or backend call exists here.
+  const actionSurface = document.querySelector('[data-client-action-surface]');
+  const actionWorkspace = document.querySelector('[data-client-action-workspace]');
+  const activeProfile = document.querySelector(`.profile-state[data-state-panel="${activeState}"]`);
+  const interactiveProfileStates = new Set(['default', 'exact-card']);
+  if (actionSurface && activeProfile && activeState === 'exact-card') {
+    activeProfile.querySelector('[data-profile-surface-anchor]')?.replaceWith(actionSurface);
+  }
+  if (actionWorkspace && activeProfile && interactiveProfileStates.has(activeState)) {
+    const actionTabs = [...actionWorkspace.querySelectorAll('[role="tab"]')];
+    const actionPanels = actionTabs.map((tab) => document.querySelector(`#${tab.getAttribute('aria-controls')}`)).filter(Boolean);
+    const actionLive = actionWorkspace.querySelector('.client-action-live');
+    const activateActionTab = (tab, { focus = true } = {}) => {
+      actionTabs.forEach((candidate) => {
+        const selected = candidate === tab;
+        candidate.setAttribute('aria-selected', String(selected));
+        candidate.tabIndex = selected ? 0 : -1;
+        const panel = document.querySelector(`#${candidate.getAttribute('aria-controls')}`);
+        if (panel) {
+          panel.hidden = !selected;
+          panel.classList.toggle('is-active', selected);
+        }
+      });
+      if (focus) tab.focus();
+    };
+    actionTabs.forEach((tab) => tab.addEventListener('click', () => activateActionTab(tab)));
+    actionWorkspace.querySelector('[role="tablist"]')?.addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      const current = actionTabs.indexOf(document.activeElement);
+      if (current < 0) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? actionTabs.length - 1
+        : (current + (event.key === 'ArrowRight' ? 1 : -1) + actionTabs.length) % actionTabs.length;
+      activateActionTab(actionTabs[next]);
+    });
+
+    const issueForm = actionWorkspace.querySelector('[data-client-action-form="issue"]');
+    const includePayment = issueForm?.querySelector('[data-include-payment]');
+    const syncIssuePayment = () => {
+      if (!issueForm || !includePayment) return;
+      const enabled = includePayment.checked;
+      const fields = issueForm.querySelector('.client-action-payment-fields');
+      if (fields) fields.hidden = !enabled;
+      issueForm.querySelectorAll('[data-issue-payment-control]').forEach((control) => { control.disabled = !enabled; });
+      const amount = issueForm.querySelector('[data-issue-payment-amount]');
+      if (amount) amount.required = enabled;
+    };
+    const syncIssuePreview = () => {
+      if (!issueForm) return;
+      const type = issueForm.querySelector('[data-issue-type]');
+      const option = type?.selectedOptions[0];
+      const start = issueForm.querySelector('[data-issue-start]')?.value;
+      const preview = issueForm.querySelector('[data-issue-preview]');
+      const submit = issueForm.querySelector('[data-issue-submit]');
+      const supported = Boolean(option) && start === '2026-07-30';
+      issueForm.dataset.previewReady = String(supported);
+      if (submit) submit.disabled = !supported;
+      if (preview) {
+        preview.classList.toggle('is-unavailable', !supported);
+        const value = preview.querySelector('strong');
+        if (value) {
+          value.textContent = supported
+            ? `${option.dataset.price} · ${option.dataset.visits} · до ${option.dataset.end}`
+            : 'Змініть дату назад на 30.07.2026 або оновіть розрахунок у системі';
+        }
+      }
+    };
+    includePayment?.addEventListener('change', syncIssuePayment);
+    issueForm?.querySelector('[data-issue-type]')?.addEventListener('change', syncIssuePreview);
+    issueForm?.querySelector('[data-issue-start]')?.addEventListener('change', syncIssuePreview);
+
+    const freezeForm = actionWorkspace.querySelector('[data-client-action-form="freeze"]');
+    const syncFreezePreview = () => {
+      if (!freezeForm) return;
+      const start = freezeForm.querySelector('[data-freeze-start]')?.value;
+      const days = freezeForm.querySelector('[data-freeze-days]')?.value;
+      const range = freezeForm.querySelector('[data-freeze-range]');
+      const end = freezeForm.querySelector('[data-freeze-end]');
+      const preview = freezeForm.querySelector('[data-freeze-preview]');
+      const submit = freezeForm.querySelector('[data-freeze-submit]');
+      const supported = start === '2026-08-08' && days === '3';
+      freezeForm.dataset.previewReady = String(supported);
+      if (submit) submit.disabled = !supported;
+      if (range) range.value = supported ? '08–10.08.2026' : 'Потрібне оновлення сервером';
+      if (end) end.value = supported ? '17.08.2026 · +6 днів загалом' : 'Потрібне оновлення сервером';
+      if (preview) {
+        preview.classList.toggle('is-unavailable', !supported);
+        const value = preview.querySelector('strong');
+        if (value) {
+          value.textContent = supported
+            ? '08–10.08.2026 → діє до 17.08.2026, продовження +6'
+            : 'Оновіть попередній розрахунок у системі — локальний розрахунок вимкнено';
+        }
+      }
+    };
+    freezeForm?.querySelector('[data-freeze-start]')?.addEventListener('change', syncFreezePreview);
+    freezeForm?.querySelector('[data-freeze-days]')?.addEventListener('input', syncFreezePreview);
+
+    const addHistoryEvent = (type, form) => {
+      const history = activeProfile.querySelector('[data-fixture-history]');
+      if (!history) return;
+      const visitKind = form?.querySelector('[name="visit-kind"]:checked')?.value;
+      const visitLabels = {
+        membership: ['Абонемент', 'Зараховано'],
+        oneoff: ['Разовий вхід', 'Проведено'],
+        trial: ['Пробний вхід', 'Проведено']
+      };
+      const issueOption = form?.querySelector('[data-issue-type]')?.selectedOptions[0];
+      const messages = {
+        visit: ['Відвідування', ...(visitLabels[visitKind] || visitLabels.membership)],
+        issue: ['Видано абонемент', issueOption?.dataset.tariff || '12 занять / 30 днів', 'Створено'],
+        payment: ['Платіж', 'Готівка', 'Проведено'],
+        freeze: ['Заморозка', '08–10.08.2026', 'Додано']
+      };
+      const [label, context, status] = messages[type];
+      history.insertAdjacentHTML('afterbegin', `<tr><td data-label="Дата й час">30.07 · 16:40</td><td data-label="Подія"><strong>${label}</strong></td><td data-label="Контекст">${context}</td><td data-label="Статус"><span class="chip good">${status}</span></td></tr>`);
+    };
+    const updateFixture = (type, form) => {
+      const visitKind = form.querySelector('[name="visit-kind"]:checked')?.value;
+      if (type === 'visit' && visitKind === 'membership') {
+        activeProfile.querySelector('[data-fixture-remaining]')?.replaceChildren('7 занять');
+      }
+      if (type === 'issue') {
+        const option = form.querySelector('[data-issue-type]')?.selectedOptions[0];
+        if (option) {
+          activeProfile.querySelector('.client-tariff')?.replaceChildren(`Тариф: ${option.dataset.tariff} (${option.dataset.price})`);
+          activeProfile.querySelector('[data-fixture-remaining]')?.replaceChildren(option.dataset.visits);
+          activeProfile.querySelector('[data-fixture-end]')?.replaceChildren(option.dataset.end);
+        }
+      }
+      if (type === 'freeze') {
+        activeProfile.querySelector('[data-fixture-end]')?.replaceChildren('17.08.2026');
+        activeProfile.querySelector('[data-fixture-extension]')?.replaceChildren('+6 днів');
+      }
+      addHistoryEvent(type, form);
+      if (type === 'issue' && includePayment?.checked) addHistoryEvent('payment', form);
+    };
+
+    const resetForm = (form, { focus = false } = {}) => {
+      form.reset();
+      form.hidden = false;
+      form.parentElement?.querySelector('[data-client-action-result]')?.remove();
+      if (form === issueForm) {
+        syncIssuePayment();
+        syncIssuePreview();
+      }
+      if (form === freezeForm) syncFreezePreview();
+      if (focus) form.querySelector('input,select,textarea')?.focus();
+    };
+    const showActionResult = (form, type) => {
+      const panel = form.closest('[role="tabpanel"]');
+      if (!panel) return;
+      panel.querySelector('[data-client-action-result]')?.remove();
+      const labels = {
+        visit: ['Вхід підтверджено', 'Подію додано до таблиці активності.'],
+        issue: ['Абонемент видано', 'Тариф і показники профілю оновлено.'],
+        payment: ['Платіж проведено', 'Касову подію додано без зміни показників абонемента.'],
+        freeze: ['Заморозку додано', 'Дату завершення та загальне продовження оновлено.']
+      };
+      const [title, copy] = labels[type];
+      const result = document.createElement('div');
+      result.className = 'client-action-result';
+      result.dataset.clientActionResult = '';
+      result.innerHTML = `<span class="chip good">Готово</span><strong>${title}</strong><p>${copy}</p><button type="button">Виконати ще раз</button>`;
+      form.hidden = true;
+      form.after(result);
+      result.querySelector('button')?.addEventListener('click', () => resetForm(form, { focus: true }));
+    };
+    actionWorkspace.querySelectorAll('[data-client-action-reset]').forEach((button) => button.addEventListener('click', () => {
+      const form = button.closest('form');
+      if (form) resetForm(form);
+      if (actionLive) actionLive.textContent = 'Поля очищено. Дані профілю не змінено.';
+    }));
+    actionWorkspace.querySelectorAll('[data-client-action-form]').forEach((form) => form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      if (form.dataset.previewReady === 'false') {
+        if (actionLive) actionLive.textContent = 'Спочатку потрібен актуальний попередній розрахунок.';
+        return;
+      }
+      const submit = form.querySelector('button[type="submit"]');
+      if (!submit || submit.disabled) return;
+      const type = form.dataset.clientActionForm;
+      const submitLabel = submit.textContent;
+      submit.disabled = true;
+      submit.textContent = 'Оновлюємо демонстрацію…';
+      form.setAttribute('aria-busy', 'true');
+      if (actionLive) actionLive.textContent = 'Оновлюємо демонстраційні дані…';
+      window.setTimeout(() => {
+        updateFixture(type, form);
+        form.removeAttribute('aria-busy');
+        submit.disabled = false;
+        submit.textContent = submitLabel;
+        showActionResult(form, type);
+        const tab = actionTabs.find((candidate) => candidate.getAttribute('aria-controls') === form.closest('[role="tabpanel"]')?.id);
+        if (tab) tab.focus();
+        if (actionLive) actionLive.textContent = 'Готово. Демонстраційні дані оновлено до перезавантаження сторінки.';
+      }, 420);
+    }));
+    syncIssuePayment();
+    syncIssuePreview();
+    syncFreezePreview();
+    actionPanels.forEach((panel) => panel.classList.toggle('is-active', !panel.hidden));
   }
 
   // Static Audit Log fixture: filters only its public-safe rows and never calls a backend.
