@@ -52,7 +52,7 @@ Derived state:
 - `effective_end_date` не редагується напряму.
 - Зміна дати має source reason: freeze, non-working day, cancellation/correction або явний adjustment з audit.
 - Мінуси є core workflow і рахуються як state абонемента з датою першого мінусового заняття.
-- Закриття мінуса не приховується автоматично: новий абонемент стартує з `first_negative_visit_date` або мінус закривається one-off payments/visits.
+- Закриття мінуса не приховується автоматично: ADR-018 вимагає explicit oldest-first coverage allocations новим ordinary Membership або explicit one-off closure lines/snapshots і exact Payment; Payment сам по собі не змінює negative state.
 - Freeze і non-working days дають extension source records.
 - Перетин freeze/non-working рахується як union calendar days.
 
@@ -77,3 +77,5 @@ Derived state:
 - Додати domain tests для inclusive end date, cancellation, negative visits, first negative date, freeze/non-working overlap і backdated entries.
 - У client profile і reports показувати membership state тільки через Memberships queries.
 - Audit записувати і source fact, і correction/recalculation reason там, де це потрібно для пояснення.
+
+ADR-018 уточнює exact closure/coverage source facts; цей ADR зберігає ownership Memberships над derived state.

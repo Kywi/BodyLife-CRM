@@ -12,7 +12,8 @@
 - Зберігати пояснювану бізнес-історію для візитів, оплат, абонементів, заморозок, неробочих днів, backdated entries і corrections.
 - Розділяти business audit і technical logs: audit відповідає на питання "що сталося в бізнесі і хто це зробив", logs відповідають на питання "що сталося в системі".
 - Не використовувати technical logs як джерело бізнес-правди або як заміну audit.
-- Після кожного state-changing command мати узгоджений commit: source fact, recalculation, canonical read state і audit entry.
+- Після кожного state-changing command мати узгоджений commit: source fact,
+  потрібний для цієї дії recalculation, canonical read state і audit entry.
 - Зробити backup реальним operational capability, а не припущенням: production-ready означає, що restore rehearsal уже виконаний і owner пройшов restore-check.
 - Підтримати paper fallback при втраті інтернету або хостингу без synthetic fake history і без direct database edits.
 - Забезпечити reconciliation після outage через звичайні domain commands, validation, recalculation і audit.
@@ -51,6 +52,7 @@ Audit має бути readable для owner і в обмеженому scope д�
 | `entity_type` / `entity_id` | Primary business entity. |
 | `related_ids` | Client, membership, visit, payment, freeze, non-working period, report day або replacement/correction ids. |
 | `entry_origin` | `normal`, `manual_backfill`, `paper_fallback` або майбутній `future_import`. |
+| `entry_batch_row_id` | Required for `paper_fallback`; resolves to the numbered sheet batch and unique stable line. |
 | `occurred_at` | Canonical UTC instant або explicit business date/range події; owner/admin UI показує instant як localized Kyiv time. |
 | `recorded_at` | Server-set canonical UTC instant успішного commit; visible presentation локалізується окремо. |
 | `before_summary` / `after_summary` | До/після або domain-specific summary там, де це доречно. |
@@ -71,11 +73,14 @@ Queries/read actions не створюють business audit entries за зам�
 | `CreateMembershipType` | `membership_type.created` | Full catalog summary. |
 | `EditMembershipType` | `membership_type.edited` | Before/after catalog fields and reason/comment for meaningful business change. |
 | `DeactivateMembershipType` | `membership_type.deactivated` | Before/after active state and reason. |
-| `IssueMembership` | `membership.issued`; optionally `payment.created`, `membership_negative_closure.created` | Issued snapshot, start date, optional payment, negative handling decision, opening/backfill state when present. |
+| `IssueMembership` | `membership.issued`; `payment.created` | Ordinary type snapshot, start date and one exact full snapshot-price sale Payment in the same commit; negative decision remains explicit. |
 | `MarkVisit` | `visit.marked` | Client, visit kind, membership/consumption, `occurred_at`, before/after membership summary, warning acknowledgement. |
 | `CancelVisit` | `visit.canceled` | Original visit summary, reason, before/after membership summary, changed-after-close marker when relevant. |
-| `CreatePayment` | `payment.created` | Amount, currency, cash context, client/membership link, `occurred_at`. |
-| `CorrectPayment` | `payment.corrected`, `payment.canceled` | Original payment, replacement/cancellation summary, before/after amount/date/context, reason, changed-after-close marker. |
+| `CreatePayment` | `payment.created` | Standalone amount, currency, accepted non-sale/non-closure cash context, client and `occurred_at`. |
+| `CorrectPayment` | `payment.corrected`, `payment.canceled` | Original standalone payment, replacement/cancellation summary, before/after amount/date/context, reason, changed-after-close marker. It rejects sale/closure-linked rows. |
+| `CloseNegativeVisitsOneOff` / `IssueMembership` coverage mode | `membership_negative_closure.created` | Deliberate method/type, oldest-first items/allocations, exact Payment, partial remainder and resulting Membership summary. |
+| `CorrectNegativeVisitCoverage` | `membership_negative_closure.canceled` / `membership_negative_closure.replaced` | Original/replacement items and Payment, reason, before/after negative state and no cash-difference calculation. |
+| `ReplaceIssuedMembership` / `CancelIssuedMembershipSale` | `membership.replaced` / `membership.sale_canceled` | Required reason, original/replacement/canceled sale links, dependency preview/blockers, no refund/delta calculation, changed-after-close marker if applicable. |
 | `AddFreeze` | `freeze.added` | Membership, inclusive range, day count, reason, before/after effective end date summary. |
 | `CancelFreeze` | `freeze.canceled` | Original freeze range, reason, before/after effective end date summary. |
 | `AddNonWorkingDay` | `non_working_day.added` | Period, reason, affected membership count/summary, recalculation summary. |
@@ -89,7 +94,9 @@ Queries/read actions не створюють business audit entries за зам�
   without a timezone suffix. Audit date filters select Kyiv calendar days via
   half-open UTC ranges.
 - `manual_backfill` is allowed only through normal domain commands and only for valid active-client/opening-state scenarios described in ADR-010.
-- `paper_fallback` entries must reference a paper batch id or line reference in `reason`/`comment`.
+- `paper_fallback` entries must reference a first-class paper batch row. The
+  parent batch stores the sheet number once and the row stores a stable line
+  number; `reason`/`comment` remains required explanation, not the identifier.
 - Corrections after a reconciled/closed day require the command result and audit entry to carry a changed-after-close marker.
 - Direct database edits, synthetic fake history and unmarked backdated entries are outside the application contract.
 
@@ -149,7 +156,7 @@ Metrics should be stack-agnostic signals that can later be implemented through t
 | Command latency | Slow quick actions block reception and Owner operations. | Review slow `MarkVisit`, `CreatePayment`, `IssueMembership`, `AddFreeze`, `AddNonWorkingDay` and `CorrectNonWorkingDay`. |
 | Report latency | Daily report and drill-downs must remain usable. | Review slow `GenerateDailyReport` and membership lists. |
 | `MarkVisit` count | Baseline activity and detects outage gaps. | Compare against expected day activity and paper fallback batches. |
-| `CreatePayment` count and daily cash sum | Detects cash/report mismatch early. | Reconcile with daily report and cash drawer process. |
+| Active Payment row count and daily cash sum | Detects cash/report mismatch across standalone, sale and negative-closure actions. | Reconcile with daily report and cash drawer process. |
 | Failed login count | Detects auth mistakes or suspicious access. | Review repeated failures, especially owner account. |
 | Permission denied count for owner-only actions | Detects role misconfiguration or attempted sensitive actions. | Review repeated denials. |
 | Duplicate submission / idempotency hits | Detects double taps/scans and UI retry behavior. | Review repeated hits on quick actions. |
@@ -286,7 +293,7 @@ The restore-check is the owner-visible acceptance procedure that proves a restor
 7. Owner checks that current membership state, remaining visits, negative warning if applicable, payment history, visit history and freeze/non-working explanations look plausible for the backup timestamp.
 8. Owner opens the daily report for a known recent business day and checks visit count, payment count, cash sum, corrections/cancellations and drill-down links.
 9. Owner opens audit/history for at least one recent command and confirms actor/session, `occurred_at`, `recorded_at`, action type and reason/comment are readable.
-10. If the backup included paper fallback or manual backfill records, owner verifies that `entry_origin`, paper batch/source comment, `occurred_at` and `recorded_at` are visible.
+10. If the backup included paper fallback or manual backfill records, owner verifies that `entry_origin`, first-class paper sheet/line reference, explanation, `occurred_at` and `recorded_at` are visible.
 11. Technical operator/developer records restore-check pass/fail, observed RPO/RTO and any discrepancies.
 12. Production readiness passes only if restore-check passes or all blocking discrepancies are corrected and the rehearsal is repeated.
 
@@ -310,14 +317,16 @@ Owner/admin should record the outage start time as soon as practical. If the app
 
 ### Paper fallback rules
 
-- Use a numbered paper batch per outage/business day.
+- Use one numbered paper sheet per batch. An outage or business day may have
+  several sheet batches.
 - Record every row with a stable line number.
 - Keep the original paper sheet until the batch is entered, reconciled and accepted.
 - Record actual business time/date as `occurred_at`, not the later data-entry time.
 - Record who wrote the row on paper and who later entered it into the system.
 - Use normal domain commands after recovery; never direct database edits.
 - Set `entry_origin = paper_fallback` for every entered row.
-- Put paper batch id and line number in reason/comment.
+- Enter the sheet number once on the batch and reference a first-class batch row
+  with a unique stable line number from every created business fact.
 - Require reason/comment for every fallback entry, even if the command would not require it for a normal current-day entry.
 - Preserve validation rules, warning acknowledgements, permissions, idempotency and recalculation.
 - If the fallback row affects a closed/reconciled day, apply the owner/changed-after-close policy.
@@ -327,7 +336,7 @@ Minimum paper row fields:
 
 | Field | Applies to |
 |---|---|
-| Batch id and line number | All fallback rows. |
+| Numbered sheet batch and stable line number | All fallback rows. |
 | Written by | All fallback rows. |
 | Client name and, if known, card/phone | Visits, payments, freezes, memberships. |
 | Business event type | Visit, payment, freeze, membership issue, correction/cancellation note. |
@@ -352,12 +361,15 @@ Minimum paper row fields:
 
 Reconciliation is the process that turns paper fallback into trustworthy system state.
 
-1. Owner/admin creates or labels the paper batch with outage date/time range.
-2. Admin enters rows through normal commands using `entry_origin = paper_fallback`, actual `occurred_at` and paper batch/line reason.
+1. Owner/admin creates one batch for each numbered paper sheet and records the
+   outage date/time range as batch context.
+2. Admin creates/uses each unique batch row and enters it through a normal
+   command using `entry_origin = paper_fallback`, actual `occurred_at`,
+   first-class sheet/line reference and required explanation.
 3. Commands that produce warnings still require acknowledgements; commands that affect closed/reconciled days follow owner policy.
 4. After entry, owner/admin runs `GenerateDailyReport` for every affected business date.
 5. Compare report visit count, payment count and cash sum against the paper batch and cash drawer notes.
-6. Open drill-down rows for fallback entries and confirm the audit timeline shows `paper_fallback`, actor/session, `occurred_at`, `recorded_at` and paper batch reference.
+6. Open drill-down rows for fallback entries and confirm the audit timeline shows `paper_fallback`, actor/session, `occurred_at`, `recorded_at`, numbered sheet and line reference.
 7. Check affected client profiles for membership state, remaining visits, negative balances and freeze/non-working extension explanations.
 8. Resolve mismatches only through correction/cancellation commands with reason/comment; do not edit rows directly.
 9. Mark discrepancies that changed an already reconciled day with changed-after-close markers.
@@ -392,7 +404,12 @@ Support starts by classifying the report:
 ### Correction rules
 
 - Wrong visit: use `CancelVisit`; never delete the visit row silently.
-- Wrong payment: use `CorrectPayment` with replace/cancel mode; daily report totals update through canonical payment status/replacement rows.
+- Wrong standalone payment: use `CorrectPayment` with replace/cancel mode; daily report totals update through canonical payment status/replacement rows.
+- Wrong membership sale: Admin/Owner uses `ReplaceIssuedMembership` or
+  `CancelIssuedMembershipSale`; the linked sale Payment cannot be corrected
+  separately, and the system does not calculate a cash difference/refund.
+- Wrong one-off negative closure: use its complete cancel/replace coverage
+  command so closure items and Payment change together.
 - Wrong freeze: use `CancelFreeze`; add a new correct freeze if needed.
 - Wrong non-working day: owner uses `CorrectNonWorkingDay` with affected-scope preview/confirmation.
 - Wrong card assignment: use `AssignOrChangeCard` with reason/comment.
@@ -450,7 +467,7 @@ Backup/restore:
 
 Paper fallback and reconciliation:
 
-- [ ] Paper fallback template exists with batch id, line number, client/card, event type, `occurred_at`, amount/range/source and reason/comment fields.
+- [ ] Paper fallback template exists with numbered sheet, stable line number, client/card, event type, `occurred_at`, amount/range/source and explanation fields.
 - [ ] Staff know when to stop online commands and switch to paper.
 - [ ] Fallback entry workflow sets `entry_origin = paper_fallback`.
 - [ ] Backdated/fallback entries require reason/comment and preserve `occurred_at` vs `recorded_at`.
@@ -478,6 +495,7 @@ Security/access:
 - Provider-managed backup can create false confidence if restore rehearsal is skipped or owner restore-check is not repeated after infrastructure changes.
 - No app-level export UI in v1 means restore and provider backup discipline are especially important.
 - Paper fallback depends on human discipline; missing batch ids, unclear handwriting or late entry can create reconciliation gaps.
+- ADR-018 requires sheet number once per paper batch and a stable line number per row; reconciliation cannot rely on free-text comments.
 - Shared Reception/Admin account can weaken accountability unless session/device labels and operating procedures are clear.
 - Backdated entries are necessary for fallback/backfill but can erode trust if `entry_origin`, `occurred_at`, `recorded_at` and reason are not visible.
 - Corrections after reconciled days can surprise owner/admin unless changed-after-close markers are prominent in daily report and history.

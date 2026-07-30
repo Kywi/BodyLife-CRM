@@ -1,7 +1,7 @@
 # BodyLife CRM v1 implementation roadmap
 
-Дата: 2026-07-07
-Статус: implementation planning draft після vertical slice
+Дата: 2026-07-07, оновлено 2026-07-30
+Статус: чинний план; Milestones 1-10 виконані, наступний — 10.5
 
 Основа: `docs/architecture-baseline.md`, `docs/domain-model.md`, `docs/data-architecture.md`, `docs/interaction-contracts.md`, `docs/ui-workflows.md`, `docs/ui-design-foundation.md`, `docs/operations-design.md`, `docs/technology-stack-decision.md`, `docs/vertical-slice-plan.md` і accepted ADR package у `docs/adr/`.
 
@@ -28,8 +28,9 @@
 | 8. Freezes and non-working days | 2, 3, 5, 6 | Extension rules, ending-soon reports |
 | 9. Reports | 3, 5, 6, 7, 8 | Owner/admin operational visibility |
 | 10. Business audit/history UI | 2 through 9 | Support, dispute review, correction explanation |
-| 11. Backup/restore/paper fallback readiness | 1 through 10 | Production readiness evidence |
-| 12. Production hardening | 1 through 11 | Go-live |
+| 10.5. ADR-018 sales, negative coverage and replacement | 5 through 10 | Closed core workflows required before operations readiness |
+| 11. Backup/restore/paper fallback readiness | 1 through 10.5 | Production readiness evidence |
+| 12. Production hardening | 1 through 11, including 10.5 | Go-live |
 
 ## Cross-Cutting Rules
 
@@ -38,7 +39,7 @@
 - Reports and UI read canonical state; they do not calculate membership truth locally.
 - UI follows `docs/ui-design-foundation.md` for shared layout/components, warning visibility, tablet-first and phone-friendly consistency.
 - Corrections and cancellations preserve source history and append audit. They do not hard-delete or silently patch business records.
-- Backdated/manual/paper fallback entries use normal domain commands with `occurred_at`, server `recorded_at`, `entry_origin`, actor/session and reason/comment.
+- Backdated/manual/paper fallback entries use normal domain commands with `occurred_at`, server `recorded_at`, `entry_origin`, actor/session and reason/comment. Paper fallback additionally requires one numbered-sheet batch and one unique first-class row reference per entry.
 - PostgreSQL-backed tests are required for constraints, migrations, transactions, row locks, report queries and restore checks.
 - Each milestone should leave the app in a deployable, testable state even when later business workflows are not implemented yet.
 
@@ -284,12 +285,14 @@
 - Milestone 2 for actor/session/permissions.
 - Milestone 3 for client ownership.
 - Milestone 4 for MembershipType snapshots.
-- Accepted product decisions: inclusive date arithmetic in ADR-005; multiple Memberships, explicit Visit selection/no-active behavior and Freeze blocking in ADR-014; one-off negative closure explicitly deferred to Milestone 7.
+- Accepted product decisions: inclusive date arithmetic in ADR-005; multiple Memberships, explicit Visit selection/no-active behavior and Freeze blocking in ADR-014; ADR-018 defines later Milestone 10.5 negative closure/coverage contracts.
 
 ### Задачі
 
 - Створити `issued_memberships`, `membership_opening_states`, `membership_adjustments`, `membership_state_cache`, `membership_extension_days`.
-- Реалізувати `IssueMembership` without silent negative hiding; payment integration can call Payments once Milestone 7 is available.
+- Реалізувати `IssueMembership` without silent negative hiding. Milestone 10.5
+  replaces the earlier optional sale behavior with the accepted ADR-018
+  exact-price Membership-and-Payment transaction.
 - Copy immutable MembershipType snapshot on issue: type name, duration, visits limit, price.
 - Implement base end date formula: `start_date + duration_days - 1 day`, unless business confirms different convention before tests lock.
 - Implement Memberships recalculation service for source facts available at this stage: issued membership, opening state, adjustments, future visit/payment/freeze/non-working inputs through public interfaces.
@@ -403,35 +406,42 @@
 
 ### Ціль
 
-Реалізувати v1 cash Payments: create payment, correction/cancellation by replacement facts, daily cash source truth, issue-membership payment integration and explicit negative-closure behavior if accepted for v1.
+Реалізувати основу окремих готівкових оплат: створення, виправлення або
+скасування зі збереженням історії та правдивим денним звітом. Продаж
+абонемента і погашення мінуса не є окремими оплатами; повні правила ADR-018
+реалізуються в Milestone 10.5.
 
 ### Залежності
 
 - Milestone 2.
 - Milestone 3.
-- Milestone 5.
+- Milestone 5 for client history and future sale integration.
 - Milestone 6 for combined reception/profile/report consistency.
-- Product decision for one-off negative closure and day close/reconciliation policy.
 
 ### Задачі
 
 - Створити `payments`, `payment_cancellations`, `payment_corrections`.
-- Реалізувати `CreatePayment` for cash-only contexts: membership sale, one-off/trial, negative closure or other accepted v1 context.
-- Integrate optional cash payment into `IssueMembership` workflow without splitting transaction consistency.
-- Реалізувати `CorrectPayment` with replace/cancel mode, reason/comment and old/new occurred date explainability.
-- Enforce `amount > 0`, `method = cash`, valid client/membership relationship and entry origin metadata.
-- Recalculate Memberships only when payment participates in issue/negative closure/correction policy.
+- Реалізувати `CreatePayment` only for accepted standalone cash contexts.
+- Реалізувати `CorrectPayment` only for standalone Payment, with replace/cancel
+  mode, reason/comment and old/new occurred date explainability.
+- Enforce `amount > 0`, `method = cash`, valid client/context and entry-origin
+  metadata.
+- Reject `membership_sale` and `negative_closure` in both generic commands;
+  these complete actions are owned by Milestone 10.5.
 - Update daily cash report source queries to read canonical payment status/replacement rows.
 - Add idempotency for quick payment creation and correction/cancellation.
-- Додати UI add payment flow and correction flow from profile/history/report drill-down.
-- Add audit events: `payment.created`, `payment.corrected`, `payment.canceled`, and optional `membership_negative_closure.created`.
+- Додати окрему payment UI action and standalone correction flow from
+  profile/history/report drill-down.
+- Add audit events: `payment.created`, `payment.corrected`, `payment.canceled`.
 
 ### Acceptance Criteria
 
 - Cash payment appears in client history and daily cash source rows after commit.
-- Ordinary standalone payment does not change membership negative state unless explicit negative closure policy is selected.
-- Issue membership with payment commits issued membership, payment, recalculation and audit consistently.
-- Correct/cancel payment preserves original fact and creates replacement/correction/cancellation facts.
+- Standalone payment never changes Membership state, completes an ordinary sale
+  or closes negative Visits.
+- Generic payment commands reject sale-linked and closure-linked contexts.
+- Correct/cancel standalone Payment preserves original fact and creates
+  replacement/correction/cancellation facts.
 - Corrected amount/date changes live daily cash totals through canonical records, not manual report patches.
 - Corrections after closed/reconciled day are Owner-only or follow explicit owner-approved policy.
 - Duplicate payment submit does not create duplicate cash rows.
@@ -440,8 +450,8 @@
 ### Потрібні тести
 
 - Command tests for `CreatePayment` validation, permission, idempotency and audit.
-- Command tests for `CorrectPayment` replace/cancel modes, reason requirement, day-close permission and old/new date explainability.
-- Transaction tests for issue-membership-with-payment rollback on recalculation/audit/payment failure.
+- Command tests for `CorrectPayment` replace/cancel modes, reason requirement,
+  sale/closure rejection, day-close permission and old/new date explainability.
 - Report consistency tests for daily cash count/sum before and after correction/cancellation.
 - PostgreSQL tests for amount/check constraints and FK membership-client consistency.
 - UI tests for add payment, duplicate-submit protection and payment correction.
@@ -450,14 +460,17 @@
 
 - Payment existence may be incorrectly treated as closing negative visits.
 - Payment replacement model can become confusing if original/replacement are not clear in history.
-- Partial payment/accounting expectations can creep into v1.
+- A generic Payment command can accidentally bypass the complete sale or
+  negative-coverage action unless its context is constrained.
 - Cash day close policy is referenced by operations but not fully defined as a command.
 
 ### Що не входить
 
 - Online payments, bank terminals, POS or accounting integration.
 - Complex receivables/debt ledger.
-- Partial-payment accounting beyond accepted v1 cash fact model.
+- Ordinary Membership sale, negative coverage and their correction commands;
+  Milestone 10.5 implements them as complete ADR-018 actions.
+- Partial-payment accounting.
 - Exported invoices/receipts unless separately scoped.
 - Full day close/reconciliation command unless added by decision.
 
@@ -670,7 +683,73 @@
 - Full support ticketing system.
 
 
-## Стоп перед 11 Milestone
+## Стоп після реалізованого Milestone 10
+
+ADR-018 is accepted but not implemented. Milestone 10.5 is the next product
+workflow milestone and must finish before Milestone 11.
+
+## Milestone 10.5. ADR-018 membership sales, negative coverage and replacement
+
+### Ціль
+
+Implement accepted ADR-018 without treating it as already delivered: exact ordinary-sale payment invariant, catalog kinds, oldest-first negative closure/coverage, issued-sale replacement/cancel and first-class paper-sheet metadata.
+
+### Залежності
+
+- Milestones 5 through 10: Memberships state, Visits, Payments, reports and audit/history.
+
+### Задачі
+
+- Add PostgreSQL schema/source facts and constraints for type kind, exact sale links, one-off line snapshots, coverage allocations, replacement/cancel facts and paper batch sheet/line metadata.
+- Add a migration preflight that classifies existing issued rows as sale or
+  opening state and fails on ambiguous, missing, mismatched or duplicate
+  historical sale Payments without inventing or rewriting cash history.
+- Implement `IssueMembership` exact sale, one-off closure/correction,
+  paymentless opening-state creation, issued-sale replace/cancel and paper
+  batch-row commands with deterministic locks, authorization, idempotency,
+  recalculation, audit/history and canonical report rereads.
+- Block generic `CreatePayment`/`CorrectPayment` from sale and negative-closure
+  contexts.
+- Build Razor/htmx preview/confirmation flows that show all methods/consequences without recommending a method/type.
+
+### Acceptance Criteria
+
+- Omitted, under and over ordinary sale payment reject with no partial Membership/Payment/audit state.
+- Zero or two active sale Payments, a price/currency mismatch and generic
+  payment-command bypass are rejected.
+- Manual opening-state declaration commits with zero sale Payments and cannot
+  be mistaken for an ordinary sale.
+- Migration preflight rejects ambiguous historical rows without fabricating a
+  Payment or changing a recorded amount.
+- Catalog edits preserve issued and closure snapshots; partial/full one-off closure and oldest-first coverage remain explainable.
+- Repeated or concurrent allocation cannot cover one Visit twice.
+- New-Membership coverage accepts counts from 1 through its visit limit,
+  rejects 0 and limit + 1, and leaves any excess old negative Visits visible.
+- New-Membership coverage is backdated to the oldest covered Visit and may visibly be expired.
+- Replacement/cancel rolls back on dependency, concurrency, recalculation or audit failure; reports/audit preserve cancellation/replacement explanation.
+- Admin/Owner is allowed and an unauthorized actor is rejected for every
+  ADR-018 correction command.
+- Paper fallback row has first-class sheet/line metadata, duplicate line is
+  rejected and reconciliation uses canonical report/history/audit.
+
+### Потрібні тести
+
+- PostgreSQL tests for zero/two sale Payments, snapshot-price/currency mismatch,
+  paymentless opening mode, context checks, one active coverage per Visit,
+  allocation limit boundary, line totals, duplicate sheet line, FK consistency
+  and deterministic row locks.
+- Migration tests for valid sale/opening classification and refusal of missing,
+  mismatched, duplicate or ambiguous historical Payment rows.
+- Command tests for omitted/under/over payment attempts, generic
+  CreatePayment/CorrectPayment bypass, partial/full oldest-first closure,
+  new-Membership coverage at 0/1/limit/limit+1, concurrent repeated allocation,
+  Admin/Owner/unauthorized permissions, dependency rollback and idempotent
+  retry after both success and failure.
+- Report/audit consistency tests; tablet/phone UI flows; paper-sheet
+  reconciliation drill.
+### Що не входить
+
+- Day close/reconciliation policy, refunds/deltas/cash transfer accounting or direct mutation of dependent facts.
 
 ## Milestone 11. Backup/restore/paper fallback readiness
 
@@ -681,7 +760,7 @@
 ### Залежності
 
 - Milestone 1 for deployment/migration foundation.
-- Milestones 2 through 10 for business data, audit, reports and correction workflows.
+- Milestones 2 through 10.5 for business data, audit, reports, ADR-018 corrections and paper-batch workflow.
 - Chosen hosting/provider backup capabilities.
 
 ### Задачі
@@ -693,9 +772,13 @@
 - Run restore-check procedure with owner: login, search known client, profile state, daily report, audit/history, fallback/backfill labels if present.
 - Record evidence: snapshot timestamp, rehearsal time, operator, restored environment, schema version, observed RPO/RTO, owner result and follow-ups.
 - Add rebuild/consistency checks after restore: current card uniqueness, membership state cache rebuild comparison, daily cash sample, recent audit rows.
-- Create paper fallback template with batch id, line number, client/card, event type, `occurred_at`, payment/range/source and reason/comment fields.
-- Implement or finalize `entry_batches` for `manual_backfill` and `paper_fallback`.
-- Ensure fallback/backdated visits/payments/freezes/memberships use normal commands with `entry_origin`, reason/comment, validation, recalculation and audit.
+- Create paper fallback template with numbered sheet, stable line number,
+  client/card, event type, `occurred_at`, payment/range/source and explanation.
+- Finalize `entry_batches`/`entry_batch_rows` for `manual_backfill` and
+  `paper_fallback`.
+- Ensure fallback/backdated visits/payments/freezes/memberships use normal
+  commands with `entry_origin`, first-class batch row, reason/comment,
+  validation, recalculation and audit.
 - Document reconciliation process: enter paper rows, generate daily reports, compare cash/visit totals, inspect drill-down/audit, correct mismatches only via commands.
 
 ### Acceptance Criteria
@@ -706,7 +789,7 @@
 - Owner completes restore-check and blocking discrepancies are fixed or rehearsal repeated.
 - Rebuilt membership state matches stored `membership_state_cache` on restored copy or drift is explained and fixed.
 - Paper fallback template is ready and understandable by reception/admin staff.
-- Paper fallback entries can be entered with `entry_origin = paper_fallback`, actual `occurred_at`, server `recorded_at`, actor/session and paper batch reference.
+- Paper fallback entries can be entered with `entry_origin = paper_fallback`, actual `occurred_at`, server `recorded_at`, actor/session, paper sheet batch and stable line reference.
 - Reconciliation can prove paper rows, daily report totals, cash totals and audit entries agree.
 - No app-level export UI or developer-only manual dump is treated as primary backup.
 
@@ -744,7 +827,7 @@
 
 ### Залежності
 
-- Milestones 1 through 11.
+- Milestones 1 through 11, including Milestone 10.5.
 - Passed restore rehearsal and owner restore-check.
 - Hosting/deployment target selected and accepted by owner/developer.
 
@@ -790,7 +873,8 @@
 - Last-minute hosting constraints can invalidate backup/restore assumptions.
 - Performance issues can appear only with realistic report/search data.
 - Production hardening can uncover missing product decisions, especially day
-  close, one-off negative closure or NonWorkingDay range boundaries.
+  close or other explicitly open operational policies. ADR-016 and ADR-018
+  already settle NonWorkingDay range boundaries and one-off negative closure.
 - Logs/metrics can leak personal data if reviewed too late.
 - Scope pressure can add v2 surfaces before v1 is stable.
 
@@ -804,7 +888,7 @@
 
 ## Roadmap Done Criteria
 
-- All 12 milestones are represented as issue-tracker-ready epics with goal, dependencies, tasks, acceptance criteria, tests, risks and explicit out-of-scope items.
+- All 12 numbered milestones plus Milestone 10.5 are represented as issue-tracker-ready epics with goal, dependencies, tasks, acceptance criteria, tests, risks and explicit out-of-scope items.
 - Dependencies are visible and no milestone assumes later business modules without naming the dependency.
 - Every state-changing v1 workflow has a command owner, permission policy, transaction boundary, recalculation/audit expectation and tests before production.
 - Reports, audit and operations are implemented as trust-building capabilities, not afterthoughts.

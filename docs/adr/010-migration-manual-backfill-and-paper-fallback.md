@@ -36,6 +36,9 @@ Audit для backfill/fallback має містити:
 - reason/comment;
 - marker: `manual_backfill` або `paper_fallback`.
 
+Для `paper_fallback` ADR-018 additionally requires first-class `entry_batch`
+sheet number and stable row line number; these are not free-text comments.
+
 Для активного абонемента без повної історії дозволений explicit opening state:
 
 - дата старту;
@@ -66,3 +69,4 @@ Audit для backfill/fallback має містити:
 - Opening state має бути валідним source fact, а не прямим database patch.
 - Future import, якщо з'явиться, має йти через staging, validation, commands і audit.
 - UI має показувати backfilled/fallback nature там, де це важливо для history.
+- Paper-sheet rows enter only through normal commands and reconcile through daily report, audit and history; an ordinary membership sale still creates its exact full payment atomically.

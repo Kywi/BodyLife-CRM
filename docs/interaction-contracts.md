@@ -32,6 +32,8 @@ Recommended interaction pattern для v1:
 - `request_correlation_id`;
 - `idempotency_key` для quick actions з ризиком повторного submit;
 - `entry_origin`: `normal`, `manual_backfill`, `paper_fallback` або майбутній `future_import`;
+- `entry_batch_row_id` для batch-backed entry; обов'язковий для
+  `paper_fallback` і веде до numbered sheet + unique line metadata;
 - `occurred_at` або business date/range, якщо command створює бізнес-факт;
 - `recorded_at` встановлюється сервером на момент успішного commit;
 - `reason` або `comment`, коли command є correction, cancellation, backdated/fallback entry, card reassignment або owner-sensitive action.
@@ -131,8 +133,13 @@ Common errors:
 ### CreateMembershipType
 
 - Purpose: створити active catalog type для майбутніх issued memberships.
-- Input: name, duration_days, visits_limit, price, optional comment, optional active flag defaulting to active, common command envelope.
-- Validation: name is present; duration_days > 0; visits_limit >= 0; price >= 0; duplicate active name may warn or block by product policy; no issued membership is created here.
+- Input: name, kind (`ordinary` or `one_off`), duration_days, visits_limit,
+  price, optional comment, optional active flag defaulting to active, common
+  command envelope.
+- Validation: name is present; kind is controlled; duration_days > 0;
+  visits_limit >= 0; active type has price > 0; one_off has visits_limit = 1;
+  duplicate active name may warn or block by product policy; no issued
+  membership is created here.
 - Permissions: Owner-only.
 - Transaction boundary: one ACID transaction creates `membership_types` and audit entry.
 - Affected modules: MembershipTypes, Audit, Users/Roles.
@@ -144,8 +151,13 @@ Common errors:
 ### EditMembershipType
 
 - Purpose: змінити future catalog values of a MembershipType without changing already issued memberships.
-- Input: membership type id, new name, duration_days, visits_limit, price, comment, reason/comment for meaningful business change, common command envelope.
-- Validation: type exists; no hard delete; duration_days > 0; visits_limit >= 0; price >= 0; edits do not mutate issued membership snapshots; deactivation uses `DeactivateMembershipType`.
+- Input: membership type id, new name, duration_days, visits_limit, price,
+  comment, reason/comment for meaningful business change, common command
+  envelope. Kind is read-only.
+- Validation: type exists; no hard delete; kind cannot change; duration_days >
+  0; visits_limit >= 0; active type has price > 0; one_off has visits_limit =
+  1; edits do not mutate issued/closure snapshots; deactivation uses
+  `DeactivateMembershipType`.
 - Permissions: Owner-only.
 - Transaction boundary: one ACID transaction updates `membership_types` future catalog fields and audit entry.
 - Affected modules: MembershipTypes, Memberships for future issue flow only, Audit, Users/Roles.
@@ -165,20 +177,45 @@ Common errors:
 - Recalculation: none. Already issued memberships keep snapshots and remain valid.
 - Audit event: `membership_type.deactivated`; include before/after active state and reason.
 - Possible errors: `permission_denied`, `not_found`, `already_inactive`, `stale_state`, `concurrency_conflict`.
-- UI result: inactive type disappears from ordinary issue-membership selector but remains visible in catalog/history/report filters.
+- UI result: inactive type disappears from ordinary issue-membership and
+  one-off negative-closure selectors but remains visible in
+  catalog/history/report filters.
 
 ### IssueMembership
 
-- Purpose: видати конкретний Membership клієнту з immutable snapshot of MembershipType and optional cash payment in the same workflow.
-- Input: client id, active membership type id, start date, optional comment, optional payment amount/context, negative balance handling decision, optional manual_backfill/opening-state fields when entry_origin requires it, common command envelope.
-- Validation: client exists; membership type exists and is active for ordinary sale; snapshot values are copied from MembershipType at issue time; start date is valid; base end date follows inclusive rule; optional payment amount > 0 and method is cash; if client has negative balance, UI/command must carry explicit decision: leave negative visible, cover by new membership from first negative visit date, or record explicit negative closure; manual backfill/opening state requires reason/source.
+- Purpose: видати конкретний Membership клієнту з immutable ordinary MembershipType snapshot and mandatory exact cash sale Payment in the same workflow.
+- Input: client id, active ordinary membership type id, start date, optional comment, explicit negative handling decision, common command envelope; payment amount is not staff input. A `paper_fallback` sale also supplies a first-class batch row reference.
+- Validation: client exists; type is active `ordinary` with positive price; snapshot values are copied at issue time; start date is valid; base end date follows inclusive rule; created cash Payment equals snapshot price; if client has negative balance, command carries deliberate leave-visible or ADR-018 oldest-first coverage decision. A no-payment historical declaration uses the separate opening-state command, not `IssueMembership`.
 - Permissions: Admin + Owner.
-- Transaction boundary: one ACID transaction creates `issued_memberships`, optional payment/negative closure/opening state facts, initial `membership_state_cache`, extension-day derived rows if relevant, and audit entries. Lock client and affected memberships when negative closure or coverage is involved.
-- Affected modules: Clients, MembershipTypes, Memberships, Payments if payment included, Reports, Audit, Users/Roles.
+- Transaction boundary: one ACID transaction creates a sale-mode
+  `issued_memberships` row, its exact sale Payment, any explicit coverage
+  facts, initial `membership_state_cache`, extension-day derived rows if
+  relevant, and audit entries. Lock client, source/covering memberships and
+  affected Visits when coverage is involved.
+- Affected modules: Clients, MembershipTypes, Memberships, Payments, Reports, Audit, Users/Roles.
 - Recalculation: synchronous recalculation for the new membership and any source/covering membership involved in negative closure. Reports read updated canonical facts after commit.
 - Audit event: `membership.issued`; plus `payment.created` and/or `membership_negative_closure.created` if those source facts are part of the workflow. Include snapshot, start date, payment summary, negative decision, actor/session.
 - Possible errors: `permission_denied`, `not_found`, `membership_type_inactive`, `validation_failed`, `membership_not_eligible`, `negative_decision_required`, `duplicate_submission`, `recalculation_failed`, `concurrency_conflict`.
-- UI result: client profile reopens with new membership state, warnings, payment status if created, and history entries. If negative balance remains, UI keeps negative warning visible.
+- UI result: client profile reopens with new membership state, exact payment status and history entries. If negative balance remains, UI keeps negative warning visible.
+
+### CreateMembershipOpeningState
+
+- Purpose: чесно завести активний історичний абонемент, коли до запуску
+  програми повної історії немає; це не продаж.
+- Input: Client, ordinary MembershipType або дозволений snapshot, start date,
+  opening as-of date, declared remaining/negative state, known
+  end/extension state when available, source reference, required reason and
+  common command envelope with `manual_backfill`.
+- Validation: opening data is internally consistent; origin is
+  `manual_backfill`; no active duplicate opening state exists; no Payment
+  amount/context is accepted or created.
+- Permissions: Admin + Owner.
+- Transaction: creates an immutable `issuance_mode = opening_state` Membership,
+  its opening-state fact, derived state and Audit together; exactly zero
+  membership_sale Payments must exist.
+- Result: reread profile/history with a visible manual-backfill label. The
+  command cannot be used to enter a paper-fallback sale, which uses
+  `IssueMembership` and its exact Payment.
 
 ### MarkVisit
 
@@ -210,26 +247,39 @@ Common errors:
 
 ### CreatePayment
 
-- Purpose: зафіксувати cash Payment for membership sale, one-off/trial, negative closure or other v1 cash context.
-- Input: client id, optional membership id, amount, currency, payment context, Kyiv local `occurred_at` input normalized to UTC, comment, common command envelope.
-- Validation: client exists; membership, if provided, belongs to client; amount > 0; method is cash in v1; payment context is valid; backdated/paper fallback entries require reason/comment and entry_origin marker.
+- Purpose: зафіксувати standalone cash Payment тільки для accepted
+  non-membership-sale context, наприклад one-off/trial Visit або інший окремо
+  дозволений v1 cash fact.
+- Input: client id, amount, currency, accepted standalone payment context, Kyiv
+  local `occurred_at` input normalized to UTC, comment, common command envelope.
+- Validation: client exists; amount > 0; method is cash in v1; context is
+  standalone and valid. `membership_sale` та `negative_closure` rejected:
+  перший створює тільки `IssueMembership`, другий — тільки ADR-018 negative
+  coverage command. Backdated/paper fallback entries require reason/comment,
+  entry origin and first-class batch row reference.
 - Permissions: Admin + Owner.
-- Transaction boundary: one ACID transaction creates `payments`, optional negative closure source facts if selected by workflow, recalculates affected memberships only when payment participates in membership issue or negative closure policy, and appends audit.
-- Affected modules: Payments, Clients, Memberships when linked to issue/negative closure, Reports, Audit, Users/Roles.
-- Recalculation: none for ordinary standalone cash payment unless tied to issue workflow, negative closure or explicit correction policy. Daily cash report reads canonical payment rows after commit.
-- Audit event: `payment.created`; include amount, context, client/membership, occurred_at, actor/session.
+- Transaction boundary: one ACID transaction creates standalone `payments` and appends audit.
+- Affected modules: Payments, Clients, Reports, Audit, Users/Roles.
+- Recalculation: none. Daily cash report reads canonical payment rows after commit.
+- Audit event: `payment.created`; include amount, context, client, occurred_at, actor/session.
 - Possible errors: `permission_denied`, `not_found`, `validation_failed`, `duplicate_submission`, `membership_not_eligible`, `concurrency_conflict`.
-- UI result: payment appears in client history and selected day's daily cash report; membership panel refreshes if payment was part of issue/negative closure workflow.
+- UI result: payment appears in client history and selected day's daily cash report; no Membership state changes.
 
 ### CorrectPayment
 
 - Purpose: explicitly correct or cancel a cash Payment while preserving business history.
 - Input: original payment id, correction mode (`replace` or `cancel`), replacement amount/date/context/comment when replacing, reason/comment, common command envelope.
-- Validation: original payment exists; original is not already canceled/replaced unless idempotent repeat; reason required; replacement amount > 0 and method remains cash; replacement membership/client context is valid; command and replacement instants satisfy the common Kyiv/UTC boundary; closed/reconciled day follows owner policy; old and new occurred dates remain explainable.
+- Validation: original payment exists; its context is not `membership_sale` or
+  `negative_closure`; original is not already canceled/replaced unless
+  idempotent repeat; reason required; replacement amount > 0 and method remains
+  cash; replacement client/context is valid; command and replacement instants
+  satisfy the common Kyiv/UTC boundary; closed/reconciled day follows owner
+  policy; old and new occurred dates remain explainable. Sale/closure-linked
+  payments reject and direct the actor to their complete ADR-018 workflow.
 - Permissions: Admin + Owner for current-day/open-day correction; after day close/reconciliation Owner-only or explicit owner-approved policy.
-- Transaction boundary: one ACID transaction creates cancellation/correction fact, optionally creates replacement `payments` row, marks original status, recalculates affected memberships if payment participates in issue/negative closure policy, and appends audit.
-- Affected modules: Payments, Memberships if linked to issue/negative closure, Reports, Audit, Users/Roles.
-- Recalculation: daily report totals change through canonical payment status/replacement rows. Membership recalculation only when correction changes a payment that has membership-state consequences.
+- Transaction boundary: one ACID transaction creates cancellation/correction fact, optionally creates replacement `payments` row, marks original status and appends audit.
+- Affected modules: Payments, Reports, Audit, Users/Roles.
+- Recalculation: daily report totals change through canonical payment status/replacement rows; standalone payment correction does not change Membership state.
 - Audit event: `payment.corrected` або `payment.canceled`; include before/after payment summary, reason, changed-after-close marker if relevant.
 - Possible errors: `permission_denied`, `not_found`, `already_canceled`, `reason_required`, `day_closed_requires_owner`, `validation_failed`, `recalculation_failed`, `concurrency_conflict`.
 - UI result: client history shows original and correction/replacement; daily report live totals refresh and drill-down shows why totals changed.
@@ -327,9 +377,18 @@ Query access uses the same actor/session context as commands. Reception/profile/
 ### GetMembershipTypesForIssue
 
 - Input: actor context, optional include inactive flag for owner/catalog screens.
-- Output shape: active MembershipType options for ordinary issue flow with name, duration_days, visits_limit, price, comment; inactive types only when requested in owner/catalog context.
+- Output shape: active `ordinary` MembershipType options for ordinary issue flow with name, duration_days, visits_limit, price, comment; inactive/one_off types only when explicitly requested in owner/catalog context.
 - Source modules: MembershipTypes.
-- Consistency expectations: ordinary issue flow shows only active types; issued memberships later use copied snapshots, not live mutable catalog values.
+- Consistency expectations: ordinary issue flow shows only active ordinary types; issued memberships later use copied snapshots, not live mutable catalog values.
+
+### GetOneOffTypesForNegativeClosure
+
+- Input: actor context.
+- Output shape: every active positive-price `one_off` type with one-visit limit,
+  name/duration/price and no preferred/recommended marker.
+- Source modules: MembershipTypes.
+- Consistency expectations: stale/inactive selection fails in the command;
+  closure stores immutable line snapshots.
 
 ### GetMembershipState
 
@@ -340,8 +399,12 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 ### PreviewIssueMembership
 
-- Input: client id, membership type id, proposed start date, optional negative handling choice.
-- Output shape: issue snapshot preview, base end date, expected initial state, existing negative balance warning, first negative visit date, possible negative-closure options, permission result.
+- Input: client id, ordinary membership type id, proposed start date, optional negative handling choice and proposed coverage count.
+- Output shape: issue snapshot, read-only exact payment, base/effective end,
+  expected initial state, existing/open negative count, oldest uncovered Visit
+  date, selected coverage count/remainder, possibly-expired warning, all
+  available methods without recommendation/preselection, permission result and
+  dependency fingerprint.
 - Source modules: Clients, MembershipTypes, Memberships, Users/Roles.
 - Consistency expectations: preview is advisory; `IssueMembership` revalidates all rules in transaction.
 
@@ -416,6 +479,89 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Concurrency conflicts should fail clearly and ask UI to refresh canonical state, not silently overwrite source facts.
 - Direct database edits, synthetic fake history and unmarked backdated entries are outside the application contract.
 
+## ADR-018 sale, coverage and replacement contract
+
+### CloseNegativeVisitsOneOff
+
+- Purpose: partially or fully close a Client's oldest open negative Visits with
+  deliberately selected active one-off catalog types.
+- Input: client id, one or more `(membership_type_id, quantity)` lines,
+  `occurred_at`, optional normal comment and common command envelope. Payment
+  amount is derived from immutable line snapshots, not entered separately.
+- Validation: each type is active `one_off`, positive-price and one-visit;
+  quantities are positive and total does not exceed open negative count;
+  canonical oldest open Visits still match preview; no Visit already has an
+  active closure item; line total/currency equals the one created cash Payment.
+- Permissions: Admin + Owner.
+- Transaction: lock Client, source Memberships and Visits in canonical order;
+  create closure, line snapshots, one item per Visit, exact Payment,
+  recalculation and Audit, or roll back all.
+- Result/errors: reread profile, negative report, history and affected daily
+  report. Stable errors include inactive/stale type, stale oldest set,
+  duplicate coverage, validation, idempotency and concurrency failures.
+
+### New-Membership negative coverage
+
+- This is an `IssueMembership` mode, not a standalone Payment. Input adds a
+  chosen coverage count; exact Visit ids come from the locked oldest-open set.
+- Validation requires
+  `1 <= coverage_count <= new Membership visits_limit_snapshot`; the command
+  cannot make the new Membership negative at issue. If open negative Visits
+  exceed the limit, the oldest limit-sized set is covered and the remainder
+  stays visible.
+- The command forces new `start_date` to the business date of the oldest covered
+  Visit and atomically creates the new Membership, exact sale Payment and
+  allocations. Preview shows covered/remainder counts, new remaining visits,
+  end date and already-expired warning.
+- Partial coverage is valid; uncovered negative Visits stay visible. A repeated
+  or concurrent allocation fails without partial source/audit/cache writes.
+
+### CorrectNegativeVisitCoverage
+
+- Purpose: cancel or replace a mistaken one-off closure without detaching its
+  Payment/items.
+- Input: original closure id, cancel/replace mode, replacement lines when
+  applicable, required reason and common command envelope.
+- Permissions: Admin + Owner. Transaction retains the original, cancels its
+  active items/Payment, optionally creates the full replacement, recalculates
+  source/covering Memberships and updates Audit/reports atomically.
+- No input, output or UI summary contains a calculated refund, extra payment or
+  price difference.
+
+### ReplaceIssuedMembership / CancelIssuedMembershipSale
+
+- Purpose: correct a mistaken ordinary sale or cancel it without replacement.
+- Input: original Membership id, replacement active ordinary type/start date
+  for replace mode, required reason and common command envelope. Payment amount
+  is never an input.
+- Permissions: Admin, including shared Reception/Admin, and Owner. This remains
+  true for an older/closed day; a future close policy adds only a
+  changed-after-close marker.
+- Preview lists counted Visits, Freezes, NonWorkingDay applications and
+  negative-coverage links. Command locks the sale and dependency set. Every
+  transferred effect requires an explicit valid replacement/reallocation fact;
+  any blocker, stale set or rule violation rolls back everything.
+- Replace marks original Membership corrected/replaced, cancels its sale
+  Payment, creates new Membership and exact-price Payment, recalculates and
+  appends Audit. Cancel-only cancels original Membership/Payment. Neither
+  workflow calculates or displays cash difference/refund.
+- Result rereads profile, history, Audit and all affected daily reports.
+
+### CreatePaperFallbackBatch / CreatePaperFallbackBatchRow
+
+- Batch input contains one numbered paper sheet and outage/business date range.
+  Row input contains or requests a positive line number unique inside the batch,
+  event type, actual `occurred_at` and required explanation.
+- Permissions: Admin + Owner. Every normal domain command for that paper row
+  carries `paper_fallback` origin and the first-class batch-row id; server sets
+  `recorded_at`. Duplicate line or mismatched origin fails before business fact.
+- Reconciliation rereads all affected daily reports, profiles, history and Audit
+  before Admin/Owner marks the batch accepted.
+
+All ADR-018 fast actions require idempotency. Lock order is Client, source
+Memberships ordered by id, covering/replacement Membership, affected Visits
+ordered by occurrence/id, then sale/closure Payment rows.
+
 ## 7. UI implications
 
 - Reception dashboard can be built from `SearchClients`, `GetClientProfile`, `GetMembershipState`, `GetMembershipTypesForIssue`, `MarkVisit`, `CreatePayment`, `IssueMembership` and `AddFreeze`.
@@ -430,6 +576,8 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 ADR-014 resolves multiple Memberships, Visit allocation, no-active behavior,
 one-off/trial context and Visit-during-Freeze policy for v1. ADR-005 resolves
-inclusive date arithmetic.
+inclusive date arithmetic. ADR-018 resolves exact ordinary sale, oldest-first
+partial/full negative coverage, sale replacement/cancel and paper sheet/line
+metadata.
 
 - Day close/reconciliation command is not defined here because the requested v1 command list only includes daily report generation. If day close becomes an explicit workflow, add a separate `CloseDailyReconciliation` command with Owner/Admin policy and audit.

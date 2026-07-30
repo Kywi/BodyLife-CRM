@@ -1,6 +1,6 @@
 # BodyLife CRM v1 architecture baseline
 
-Джерело: accepted ADR package у `docs/adr/`, ADR-001..ADR-017, initial package accepted 2026-07-07, ADR-014 accepted 2026-07-14, ADR-015/ADR-016 accepted 2026-07-16 and ADR-017 accepted 2026-07-22.
+Джерело: accepted ADR package у `docs/adr/`, ADR-001..ADR-018; ADR-018 accepted 2026-07-30.
 
 Це короткий implementation contract для розробки BodyLife CRM v1. Він не замінює ADR і не вибирає technology stack: мова, framework, database, hosting provider, ORM, queue, UI library та observability vendor мають обиратися окремо. Якщо цей документ конфліктує з ADR, перемагає ADR.
 
@@ -33,6 +33,7 @@ Canonical instants і technical logs лишаються UTC, але єдиний
 - Можна: hosting/provider-managed automated backups плюс documented restore runbook і restore rehearsal перед production use. Не можна: вважати backup готовим без перевіреного restore-check або додавати app-level export/backup panel у v1. (ADR-009)
 - Можна: Owner, named Admin і shared Reception/Admin account. Не можна: приписувати shared-account action конкретній фізичній людині, якщо система цього не знає. (ADR-012)
 - Можна: editable MembershipType catalog плюс immutable snapshot у виданому абонементі. Не можна: hard delete MembershipType або дозволити зміні catalog silently змінювати вже видані абонементи. (ADR-011)
+- Можна: issue active positive-price `ordinary` type тільки як atomic exact-price Membership + cash Payment sale; one-off types є explicit negative-closure catalog choices. Не можна: optional/under/over ordinary sale payment, Payment-only ordinary sale completion, arbitrary negative-Visit selection або silent coverage. (ADR-018)
 - Можна: зберігати exact instants у UTC, а business date і visible time отримувати через fixed `Europe/Kyiv` contract. Не можна: показувати UTC як reception time, залежати від browser/server zone, будувати Kyiv report date через UTC midnight або silently приймати DST-gap input. (ADR-017)
 
 ## 3. Module map
@@ -42,6 +43,7 @@ Canonical instants і technical logs лишаються UTC, але єдиний
 - `Memberships`: owns issued memberships, opening state, recalculation, active status, remaining visits, negative balance, first negative visit date, effective end date, extension days and warnings. This is the only owner of membership formulas. (ADR-004, ADR-005, ADR-011)
 - `Visits`: owns visit source records, explicit membership consumptions, one-off/trial contexts, cancellations and visit commands. It never infers a Membership, and must trigger Memberships recalculation and business audit after successful counted state changes. (ADR-005, ADR-006, ADR-007, ADR-014)
 - `Payments`: owns payment source records, cash payments, one-off negative closures and payment corrections/cancellations. It must trigger audit and keep reports consistent through canonical records. (ADR-005, ADR-006, ADR-007, ADR-012)
+- `Memberships` coordinates explicit oldest-first negative coverage allocations; `Payments` does not let a standalone payment close negative Visits. Replace/cancel issued sale coordinates Memberships, Payments, dependent facts and Audit atomically. (ADR-018)
 - `Freezes`: owns freeze source records and cancellation/correction workflow. It validates range intent through the Memberships-owned eligibility boundary and does not compute final extension alone; Memberships computes effective state and overlap rules. (ADR-004, ADR-005, ADR-012, ADR-015)
 - `NonWorkingDays`: owns non-working day source records, Owner preview/confirmation, immutable application-scope snapshots and correction/cancellation. It does not mutate membership end dates directly; Memberships computes extension union days. (ADR-004, ADR-005, ADR-012, ADR-016)
 - `Reports`: owns report queries and drill-down views for daily cash/visits, ending-soon memberships, low remaining visits, negative clients and inactive clients. It does not own business formulas. (ADR-007)
@@ -102,10 +104,11 @@ Not top-level v1 modules: `Extensions`, separate debt ledger, full import/migrat
 - Design audit schema as part of workflow implementation, not as a later logging add-on. Required audit fields include actor/account, role, session/device, action type, entity type/id, related IDs, `occurred_at`, `recorded_at`, before/after or domain summary, reason/comment and request/correlation ID. (ADR-006, ADR-012)
 - Treat backup/restore and paper fallback as production readiness work: restore runbook, at least one restore rehearsal before production use, owner-visible checklist, backup/restore technical status where available, and clear fallback reconciliation path. (ADR-009, ADR-010)
 - Treat a recalculation-contract version change as a release gate: rebuild every stale `membership_state_cache` from canonical source facts before traffic, log operational progress and rerun safely after interruption. (ADR-005, ADR-009, ADR-017)
+- Before ADR-018 workflows, test exact sale rollback, oldest-first partial/full closure, backdated possibly-expired coverage, replacement/cancel blockers, locks/idempotency, report/audit explanations and paper sheet/line reconciliation. (ADR-018)
 
 ## 7. Quality gates before coding
 
-- ADR traceability gate: each module boundary, command rule, report rule, audit rule and out-of-scope rejection must cite ADR-001..ADR-017 or stay out of the baseline.
+- ADR traceability gate: each module boundary, command rule, report rule, audit rule and out-of-scope rejection must cite ADR-001..ADR-018 or stay out of the baseline.
 - Scope gate: v1 contains no offline-first sync, multi-tenant/SaaS scope, native mobile app, public client portal, client accounts, online payments, turnstile/NFC/QR identity, full import, complex accounting/full POS or long-period financial reports. (ADR-001, ADR-008, ADR-010, ADR-012, ADR-013)
 - Module gate: every state-changing workflow has an owning module and uses public interfaces for cross-module behavior. No direct cross-module writes are allowed. (ADR-002, ADR-004)
 - Membership gate: no UI/report/controller logic may calculate membership state independently. Memberships owns formulas and recalculation tests exist before relying on reports/UI. (ADR-004, ADR-005, ADR-007)

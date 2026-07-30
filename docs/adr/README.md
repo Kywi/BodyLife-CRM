@@ -2,7 +2,7 @@
 
 Дата початкового пакета: 2026-07-07
 
-Оновлено: 2026-07-22 (ADR-017)
+Оновлено: 2026-07-30 (ADR-018)
 
 Цей пакет фіксує ADR-кандидати з `docs/architecture-research-options.md` і `docs/adr/adr-backlog.md` як прийняті архітектурні рішення для першої web-версії BodyLife CRM.
 
@@ -37,6 +37,7 @@
 | [ADR-015](015-freeze-range-eligibility-policy.md) | Freeze починається тільки в locked pre-command effective date interval lifecycle-active Membership і не може перекривати active counted Membership Visit. |
 | [ADR-016](016-non-working-day-application-scope.md) | NonWorkingDay застосовується snapshot-ом до lifecycle-active Memberships з inclusive overlap і додає кожному весь підтверджений period. |
 | [ADR-017](017-business-time-zone-and-ui-localization.md) | Canonical instants лишаються UTC, а business dates, date filters і локалізований UI використовують фіксований календар `Europe/Kyiv`. |
+| [ADR-018](018-membership-sales-negative-coverage-and-replacement.md) | Ordinary sale завжди має exact-price cash Payment; one-off/new-membership coverage, sale replacement/cancellation і paper-sheet metadata мають explicit audited facts. |
 
 ## Джерела
 
@@ -56,6 +57,7 @@
 6. Перед NonWorkingDays зафіксувати affected-scope і full-period policy: ADR-016.
 7. До reception/report UI зафіксувати UTC storage, Kyiv business day, DST input і culture-aware display: ADR-017.
 8. Зібрати reception vertical slice: ADR-003, ADR-008.
-9. Підтвердити consistency reports після visits/payments/corrections: ADR-007.
-10. Закрити production readiness: ADR-009, ADR-010.
-11. Тримати майбутній client self-service як guardrail, а не scope v1: ADR-013.
+9. Реалізувати exact sale/negative coverage/replacement contracts: ADR-018.
+10. Підтвердити consistency reports після visits/payments/corrections: ADR-007.
+11. Закрити production readiness: ADR-009, ADR-010.
+12. Тримати майбутній client self-service як guardrail, а не scope v1: ADR-013.

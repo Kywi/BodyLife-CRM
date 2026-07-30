@@ -45,7 +45,8 @@ Permissions v1:
 - Owner-only: create/edit/deactivate MembershipType, add/cancel NonWorkingDays, dangerous mass actions, службові налаштування.
 - Admin + Owner: create/edit client, issue membership, take payment, record visit including negative, cancel mistaken visit, add/cancel freeze, view daily cash report.
 - Admin + Owner current-day: correct/cancel payment or freeze with audit reason.
-- After day close/reconciliation: corrections мають бути owner-only або explicit owner-approved policy.
+- ADR-018: Admin + Owner may replace or cancel an issued membership sale with required reason, including an older/closed day; a future day-close policy only marks changed-after-close for this workflow.
+- Other after-day-close corrections remain Owner-only or require explicit owner-approved policy until a separate day-close decision.
 - Long-period financial reports не входять у v1.
 
 Audit:

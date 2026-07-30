@@ -38,6 +38,10 @@ Client. `IssueMembership` не закриває і не змінює status ін
 автоматично. Старий negative або overlapping state залишається видимим, доки
 його не змінить окремий explicit correction/coverage/closure workflow.
 
+ADR-018 makes that workflow precise: negative coverage is oldest-uncovered-first
+and uses explicit allocation/closure facts; a cash Payment never selects or
+silently closes Visits.
+
 Public Memberships query продовжує повертати `none`, `single` або `ambiguous`.
 При `ambiguous` немає canonical current Membership і жоден consumer не має
 права обирати перший, останній або "найкращий" рядок самостійно.

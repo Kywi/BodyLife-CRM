@@ -58,18 +58,28 @@ MembershipType - це шаблон продажу абонемента. Ним �
 - duration_days;
 - visits_limit;
 - price;
+- kind: `ordinary` або `one_off`;
 - is_active;
 - опційний comment.
 
 Lifecycle rules:
 
 - Owner створює, редагує і деактивує MembershipType;
+- kind (`ordinary`/`one_off`) незмінний після створення; для іншого kind Owner
+  деактивує старий type і створює новий;
 - hard delete заборонений;
 - inactive типи недоступні для звичайних нових продажів;
 - inactive типи лишаються видимими в history і Reports;
 - зміни MembershipType не змінюють уже видані Memberships.
+- active `ordinary` і `one_off` sale types мають positive price;
+- `one_off` type має `visits_limit = 1`; таких типів може бути кілька, і
+  адміністратор обирає потрібний без автоматичної рекомендації системи.
 
-Дитячі або спеціальні продукти моделюються окремими MembershipTypes, а не складною характеристикою Client "дитина". Разові й пробні відвідування можуть бути окремим типом або технічним клієнтом/швидким workflow, але їхні Visits і Payments мають потрапляти в daily report.
+Дитячі або спеціальні продукти моделюються окремими MembershipTypes, а не
+складною характеристикою Client "дитина". Разові типи для закриття мінуса
+зберігаються в тому самому каталозі. Окремі one-off/trial Visits без Membership
+лишаються швидким visit context, але їхні Visits і Payments також потрапляють у
+daily report.
 
 ### Issued Membership
 
@@ -83,6 +93,7 @@ Issued Membership - це конкретний абонемент, виданий
 Issued Membership також має:
 
 - Client;
+- issuance mode: `sale` або `opening_state`;
 - start date;
 - base end date;
 - effective end date як derived state;
@@ -92,7 +103,7 @@ Issued Membership також має:
 - negative balance як derived state;
 - first negative visit date як derived state;
 - extension days як derived state;
-- payment relationship;
+- рівно один active exact-price sale Payment для ordinary sale;
 - status/warnings;
 - Actor, який видав абонемент, і recorded time.
 
@@ -146,7 +157,7 @@ Payment фіксує готівку, яку отримав зал. У v1 мет�
 - comment;
 - cancellation/correction state, якщо застосовано.
 
-Partial-payment accounting не моделюється як складний сценарій v1: у звичайному продажі Membership вважається оплаченим цілком. Payment corrections або cancellations впливають на daily cash report і мають бути audited.
+Partial-payment accounting не моделюється як складний сценарій v1: ordinary sale створює рівно один full exact-price cash Payment разом з Membership. Його amount не може бути окремо змінений/canceled, лишивши active Membership без snapshot-price Payment; sale correction йде через ADR-018 replacement/cancel workflow.
 
 ### Freeze
 
@@ -233,7 +244,10 @@ Permissions summary:
 - Owner-only: create/edit/deactivate MembershipType, add/cancel NonWorkingDays, dangerous mass actions, service settings;
 - Admin + Owner: create/edit Client, issue Membership, take Payment, record Visit including negative, cancel mistaken Visit, add/cancel Freeze, view daily cash report;
 - Admin + Owner current-day: correct/cancel Payment або Freeze with audit reason;
-- after day close/reconciliation: corrections є Owner-only або потребують explicit owner-approved policy.
+- ADR-018 issued-sale replace/cancel: Admin + Owner even for an older/closed
+  business day, with reason and changed-after-close marker when applicable;
+- other after-day-close/reconciliation corrections are Owner-only або require
+  explicit owner-approved policy.
 
 ## 3. Invariants
 
@@ -253,7 +267,7 @@ Permissions summary:
 - Remaining visits може бути negative.
 - Negative balance є membership state, а не separate financial debt ledger у v1.
 - First negative visit date рахується як дата першого counted Visit, після якого running remaining visits став меншим за 0.
-- Negative closure є explicit. New Membership може стартувати з first negative visit date, або negative visits можуть закриватися one-off payments/visits, але система не приховує це рішення.
+- Negative closure/coverage є explicit and oldest-uncovered-first. One-off closure stores type/line snapshots and exact Payment; new ordinary Membership starts at the oldest covered Visit business date and uses allocations. Payment alone never hides negative state.
 - Freeze ranges і NonWorkingDay ranges inclusive.
 - New Freeze requires a lifecycle-active Membership. Its start date must be on or
   after the issued Membership start date and on or before the locked canonical
@@ -306,13 +320,22 @@ Permissions summary:
 1. Actor відкриває Client і обирає active MembershipType.
 2. System copies MembershipType snapshot.
 3. Actor обирає start date.
-4. Membership отримує base end date, effective end date, visit limit і initial derived state.
-5. Payment записується в ordinary cash flow.
+4. Для ordinary `sale` система показує read-only snapshot price і не приймає
+   окрему суму від Actor.
+5. Одна transaction створює Membership, exact-price cash Payment, base end
+   date, visit limit, initial derived state та Audit; failure не залишає
+   часткового Membership або Payment.
 6. Visits consume remaining visits і можуть довести balance до 0 або negative.
 7. Freeze і NonWorkingDay source records extend effective end date через recalculation.
 8. Warnings derived для ending soon, low visits, zero visits, negative visits або expired-by-date state.
 9. Membership може завершитись by date, by visits, by both, або бути canceled/corrected.
 10. Будь-яка cancellation, correction або backdated entry перераховує derived state from source facts.
+
+Manual opening state для неповної давньої історії не є ordinary sale і не
+створює вигаданий Payment. Ordinary sale, внесений після збою як
+`paper_fallback`, підкоряється тому самому exact-price правилу.
+Issued Membership із `issuance_mode = opening_state` створюється тільки
+окремою дією manual backfill; режим не можна змінити після створення.
 
 ### Visit lifecycle
 
@@ -325,10 +348,16 @@ Permissions summary:
 
 ### Payment lifecycle
 
-1. Actor records cash Payment for Client and Membership або one-off/trial/negative-closure context.
+1. Ordinary Membership sale creates its exact cash Payment only inside
+   `IssueMembership`; negative closure creates its exact Payment only inside the
+   closure command. Actor may separately record only accepted standalone
+   one-off/trial/other cash context.
 2. Payment appears in client history and daily cash report for its occurred date.
-3. Якщо Payment corrected або canceled, correction is explicit, audited, and reflected in daily report totals.
-4. After day close/reconciliation, correction follows Owner-only або explicit owner-approved policy.
+3. Generic correction/cancel applies only to standalone Payment. Sale/closure
+   Payment changes with its enclosing correction workflow.
+4. Standalone correction after day close/reconciliation follows Owner-only або
+   explicit owner-approved policy; ADR-018 issued-sale replace/cancel remains
+   Admin/Owner and receives a changed-after-close marker.
 
 ### Freeze lifecycle
 
@@ -420,8 +449,18 @@ audit. (ADR-005, ADR-017)
 Core derived values:
 
 ```text
-counted_visits = visits linked to or explicitly covered by the membership
-                 where visit is not canceled
+source_counted_visits =
+  active non-canceled visits originally consumed by this membership
+
+outbound_covered_negative_visits =
+  active closure items whose source membership is this membership
+
+inbound_coverage_visits =
+  active allocation items whose covering membership is this membership
+
+counted_visits = source_counted_visits
+                 - outbound_covered_negative_visits
+                 + inbound_coverage_visits
 
 remaining_visits = visit_limit_snapshot - counted_visits
                    + active visit_balance adjustment deltas
@@ -440,6 +479,10 @@ effective_end_date = base_end_date + extension_days
 ```
 
 `remaining_visits` є signed value і може показуватися як `-1`, `-2` тощо. `negative_balance` - positive size of that negative state для reports і rules.
+
+Closure/allocation rows change effective counting without deleting or rewriting
+the retained original Visit/consumption. Canceling/correcting a closure removes
+its outbound/inbound effect and deterministically rebuilds both Memberships.
 
 ### Controlled membership adjustments
 
@@ -500,13 +543,29 @@ Negative visits не моделюються як separate financial debt ledger 
 Client has negative visits. Check the start date of the new membership.
 ```
 
-Actor має бачити `first_negative_visit_date`. New Membership може start on that date, щоб покрити visits, already used in negative state. Це має бути explicit: workflow records that negative visits are covered by new Membership or by one-off negative closure facts. Old negative state must not disappear just because new Payment exists.
+Actor має бачити `first_negative_visit_date` і всі доступні способи без
+автоматичної рекомендації або попереднього вибору системою. Він явно обирає:
+лишити мінус, закрити його вибраними active one-off types або покрити новим
+ordinary Membership. Payment сам по собі нічого не закриває.
 
 Domain expectation:
 
-- якщо new Membership covers negative visits, relevant negative Visits are counted against or explicitly covered by new Membership from `first_negative_visit_date`;
-- якщо one-off closure chosen, closure fact explains why negative balance is no longer open;
-- якщо neither chosen, negative balance remains visible.
+- coverage завжди бере найдавніші ще непокриті negative Visits клієнта; Actor
+  не може довільно пропустити старіший Visit і закрити новіший;
+- partial і full coverage дозволені; після partial coverage залишок мінуса
+  лишається видимим;
+- one-off closure зберігає вибрані type/price snapshots, quantity, exact cash
+  Payment і окремий item для кожного covered Visit;
+- new ordinary Membership створюється разом з exact-price sale Payment,
+  стартує в business date найдавнішого covered Visit, а explicit allocations
+  споживають його visits limit; `coverage_count` має бути не менше 1 і не
+  більше `visits_limit_snapshot`, тому новий Membership не починає з мінуса;
+- base/effective end date нового Membership рахується від цієї backdated start
+  date, тому він може одразу бути expired; preview має це показати;
+- старі Visits/consumptions не переписуються і не видаляються; closure та
+  allocation facts пояснюють зміну state;
+- якщо Actor лишає мінус або покриває його частково, warning і negative report
+  продовжують показувати відкритий remainder.
 
 ### Freeze extension
 
@@ -608,6 +667,10 @@ Backdated visits, payments, freezes, memberships and opening states use domain c
 - reason/comment;
 - marker such as `manual_backfill` або `paper_fallback`.
 
+Кожний `paper_fallback` fact додатково посилається на first-class batch row:
+один numbered paper sheet на batch і stable line number у межах sheet. Ці поля
+не замінюються текстом comment.
+
 Recalculation uses business occurrence where relevant. Audit must show that source fact was entered later.
 Local wall-time input проходить Kyiv DST validation і зберігається як canonical
 UTC instant; UI пізніше показує його в active culture без UTC suffix. (ADR-017)
@@ -639,6 +702,13 @@ Payment cancellation/correction:
 - daily payment count and cash sum are recalculated for affected occurred date;
 - якщо date або amount changes, both old and new affected daily reports remain explainable;
 - after day close/reconciliation, correction follows Owner-only або explicit owner-approved policy.
+- generic `CreatePayment`/`CorrectPayment` не може створити, скасувати або
+  змінити amount ordinary-sale Payment чи negative-closure Payment окремо від
+  їхнього повного workflow;
+- ordinary-sale amount/cancel correction використовує
+  `ReplaceIssuedMembership` або `CancelIssuedMembershipSale`; one-off closure
+  correction скасовує/замінює closure, items і Payment разом;
+- жоден з цих workflows не рахує і не показує доплату, повернення або різницю.
 
 Freeze cancellation:
 
@@ -656,10 +726,19 @@ NonWorkingDay cancellation:
 
 Membership cancellation/correction:
 
-- canceling issued Membership is explicit and audited;
-- correcting issue-time snapshot, start date або opening state requires correction workflow;
+- Admin/Owner can cancel an issued sale or replace it with a new exact-price
+  sale; older/closed business date не вимагає Owner approval для ADR-018
+  workflow, але лишається visible changed-after-close marker;
+- cancel-only atomically cancels issued Membership and its sale Payment;
+- replacement atomically marks old Membership corrected/replaced, cancels its
+  Payment and creates new Membership plus full snapshot-price Payment;
+- reason is required; original and replacement facts stay in history;
 - changes to MembershipType catalog never silently rewrite issued Memberships;
-- recalculation must include visits, payments, freezes, non-working days and negative closure facts related to corrected membership.
+- preview lists visits, freezes, non-working applications and negative coverage
+  links. They move only through explicit validated replacement/reallocation
+  facts; any invalid dependency blocks the whole command and rolls it back;
+- recalculation must include visits, payments, freezes, non-working days and
+  negative closure facts related to corrected membership.
 
 Backdated correction:
 
@@ -840,9 +919,10 @@ Visit conflict are accepted by ADR-015. NonWorkingDay lifecycle/date
 eligibility, full-period contribution and confirmed scope snapshot are accepted
 by ADR-016.
 
-1. Specify exact one-off negative closure behavior: whether it consumes one-off MembershipType, payment-only closure, or another explicit domain fact.
-2. Define which correction/cancellation actions always require reason/comment and which can use optional comments.
-3. Define day close/reconciliation policy: who closes the day, what owner approval means after close, and how changed-after-close is labeled in Reports.
-4. Choose standard inactive-client default threshold while keeping 14, 30 and 60 days available.
-5. Define whether denied permission attempts are business-audited or only technically logged.
-6. Decide how much historical card-assignment history is visible in v1 beyond current card number and Audit trail.
+ADR-018 resolves ordinary-sale exact payment, one-off closure and replacement/cancel semantics. Day close/reconciliation remains separate.
+
+1. Define which correction/cancellation actions always require reason/comment beyond ADR-018 sale commands.
+2. Define day close/reconciliation policy: who closes the day, what owner approval means after close, and how changed-after-close is labeled in Reports.
+3. Choose standard inactive-client default threshold while keeping 14, 30 and 60 days available.
+4. Define whether denied permission attempts are business-audited or only technically logged.
+5. Decide how much historical card-assignment history is visible in v1 beyond current card number and Audit trail.

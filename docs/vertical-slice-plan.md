@@ -47,7 +47,11 @@ Concrete scenario for the slice:
 6. Reception records visits on `2026-07-01` and `2026-07-02`. Remaining visits becomes `0`.
 7. Reception records a visit on `2026-07-03` after acknowledging the zero/negative warning. Remaining visits becomes `-1`, `negative_balance = 1`, `first_negative_visit_date = 2026-07-03`.
 8. Reception discovers the `2026-07-03` visit was mistaken and uses `CancelVisit` with reason. The visit remains visible as canceled, remaining visits returns to `0`, negative state clears, and the daily report excludes that visit from totals while showing the cancellation in drill-down/history.
-9. Reception or Owner corrects the cash payment from `1000 UAH` to `900 UAH` with reason. The original payment remains explainable; daily cash total for `2026-07-01` becomes `900 UAH`.
+9. Reception records a separate accepted one-off/trial cash Payment for
+   `100 UAH`, then corrects that standalone Payment to `90 UAH` with reason.
+   The original row remains explainable, the membership sale stays exactly
+   `1000 UAH`, Membership state is unchanged and the daily cash total becomes
+   `1090 UAH`. Sale correction itself belongs to ADR-018 Milestone 10.5.
 10. Owner/Admin opens daily report and audit timeline. The report totals, drill-down rows, client profile state and audit entries all reconcile to the same source records.
 
 ## 3. Scope
@@ -81,9 +85,10 @@ UI visual/layout patterns for these screens follow `docs/ui-design-foundation.md
 
 Commands in scope:
 
-- `IssueMembership` with optional cash payment inside the workflow.
+- `IssueMembership` with mandatory read-only exact-price cash payment inside the workflow.
 - `MarkVisit`.
 - `CancelVisit`.
+- `CreatePayment` for the standalone correction proof.
 - `CorrectPayment`.
 - `AddFreeze`.
 
@@ -162,7 +167,7 @@ One narrow technical proof for `occurred_at` vs `recorded_at` may be covered in 
 3. Issue membership with cash payment
    - UI calls `GetMembershipTypesForIssue` and `PreviewIssueMembership`.
    - `IssueMembership` runs in one transaction.
-   - The command validates actor, client, active membership type, start date, payment amount and idempotency key.
+   - The command validates actor, client, active ordinary MembershipType, start date and idempotency key; price is the read-only type snapshot, not staff input.
    - It creates `issued_memberships`, copies snapshot fields, creates the payment source fact, initializes/recalculates `membership_state_cache`, appends `membership.issued` and `payment.created` audit entries, and commits.
    - After success, UI rereads `GetClientProfile`; it does not apply local formulas.
 
@@ -187,9 +192,11 @@ One narrow technical proof for `occurred_at` vs `recorded_at` may be covered in 
    - Daily report excludes the canceled visit from active totals while keeping the row visible in drill-down/history.
 
 7. Correct payment
-   - `CorrectPayment` requires reason/comment.
+   - `CorrectPayment` in this historical slice covers standalone Payment only
+     and requires reason/comment; ADR-018 sale/closure corrections use their
+     complete Milestone 10.5 commands.
    - It preserves the original payment, creates correction/replacement records, appends `payment.corrected` or `payment.canceled`, and commits.
-   - Membership state is not recalculated unless the selected payment correction policy makes it membership-state relevant.
+   - Membership state is unchanged by standalone payment correction.
    - Daily report cash total is recomputed from active canonical payment rows.
 
 8. Report and audit consistency
@@ -220,7 +227,10 @@ Domain tests:
 Application command tests:
 
 - each command validates permissions, idempotency key, stale/concurrency behavior and required reason/comment;
-- successful `IssueMembership`, `AddFreeze`, `MarkVisit`, `CancelVisit` and `CorrectPayment` commit source fact, recalculation and audit together;
+- successful `IssueMembership`, `AddFreeze`, `MarkVisit` and `CancelVisit`
+  commit source fact, required Membership recalculation and audit together;
+- successful standalone `CorrectPayment` commits its correction facts and
+  audit together without changing Membership state;
 - forced recalculation/audit failure rolls back the whole command;
 - duplicate quick-action submit returns duplicate/idempotent result without creating a second visit/payment/freeze;
 - `entry_origin`, `occurred_at` and `recorded_at` are accepted and persisted correctly for one backdated command test, without building the full paper fallback UI.
@@ -284,6 +294,6 @@ The slice is accepted when all of the following are true:
 - Correction semantics: payment replacement/cancellation and visit cancellation must stay explainable without silent history rewrites.
 - Audit noise vs audit gaps: too much audit becomes unreadable, but missing before/after summaries makes disputes hard to resolve.
 - htmx interaction risk: partial refreshes must not leave stale membership values after command success.
-- Visit implementation may regress ADR-014 explicit allocation under ambiguous Memberships; one-off negative closure remains a separate unresolved/deferred policy.
+- Visit implementation may regress ADR-014 explicit allocation under ambiguous Memberships; ADR-018 separately defines negative closure/coverage and must be implemented in Milestone 10.5.
 - Backdated metadata can be technically stored in the slice, but real paper fallback reconciliation still needs a later workflow.
 - Passing the slice does not equal production readiness; backup/restore rehearsal, hosting monitoring, full paper fallback process and owner operations checklist remain separate gates before production use.

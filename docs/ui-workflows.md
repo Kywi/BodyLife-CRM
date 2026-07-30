@@ -127,24 +127,24 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 
 ## 11. Workflow: issue membership flow
 
-- User goal: issue a concrete membership to a client, optionally recording the cash payment in the same workflow.
+- User goal: issue a concrete ordinary membership to a client with its mandatory exact cash sale Payment in the same workflow.
 - Screen/state: profile quick action backed by `GetMembershipTypesForIssue` and `PreviewIssueMembership`; ordinary issue selector shows active membership types only.
-- Primary actions: choose active membership type; choose start date; review snapshot preview, base end date and expected initial state; optionally enter cash payment amount/context; choose explicit negative balance handling when the client already has negative visits; submit `IssueMembership`.
-- Warnings: selected type became inactive; client has negative balance; start date invalid; payment amount invalid; opening/backfill state requires source/reason; preview is advisory and command revalidates in transaction.
-- Confirmations: explicit negative handling decision is required when negative balance exists; backfill/paper fallback issue requires reason/source; no hidden closure of negative visits by payment or new membership.
+- Primary actions: choose active ordinary membership type; choose start date; review snapshot preview, read-only exact price, base end date and expected initial state; choose explicit negative balance handling when the client already has negative visits; submit `IssueMembership`.
+- Warnings: selected type became inactive; client has negative balance; start date invalid; new Membership coverage can already be expired when its required start is old; preview is advisory and command revalidates in transaction.
+- Confirmations: explicit negative handling decision is required when negative balance exists; a paper-fallback sale requires its batch row and explanation; manual opening-state backfill is a separate form and does not create a fake Payment; no hidden closure of negative visits by payment or new membership.
 - Loading/duplicate-submit protection: issue form uses idempotency key; submit is disabled/busy; preview token/state does not replace command validation; after success UI rereads profile and membership state.
-- Success state: profile opens with new membership state, copied issue-time snapshot, warnings, optional payment status and history/audit entries; if negative balance remains, the negative warning remains visible.
+- Success state: profile opens with new membership state, copied issue-time snapshot, warnings, exact payment status and history/audit entries; if negative balance remains, the negative warning remains visible.
 - Failure state: `membership_type_inactive`, `negative_decision_required`, `membership_not_eligible`, `duplicate_submission`, `validation_failed`, `recalculation_failed` or conflict errors keep the form state and show the required correction.
 
 ## 12. Workflow: add payment flow
 
-- User goal: record a v1 cash payment and make it visible in client history and daily cash report.
-- Screen/state: payment quick action on profile or issue-membership flow; form includes client, optional membership, amount, currency, payment context, Kyiv-local `occurred_at` and comment. The server renders the default local value and stores the converted UTC instant.
-- Primary actions: enter cash amount; choose valid payment context; link membership only when relevant; submit `CreatePayment`; return to profile/report context.
-- Warnings: amount must be greater than zero; method is cash in v1; linked membership must belong to the client; backdated/paper fallback entries require reason/comment; standalone payment does not automatically change membership formulas unless tied to issue/negative closure policy.
+- User goal: record an accepted standalone v1 cash payment and make it visible in client history and daily cash report.
+- Screen/state: payment quick action is separate from issue/coverage flows; form includes client, amount, currency, accepted standalone context, Kyiv-local `occurred_at` and comment. The server renders the default local value and stores the converted UTC instant.
+- Primary actions: enter cash amount; choose a valid standalone context such as one-off/trial; submit `CreatePayment`; return to profile/report context.
+- Warnings: amount must be greater than zero; method is cash in v1; `membership_sale` and `negative_closure` are unavailable because their complete workflows create their own exact Payments; paper fallback requires reason/comment and first-class batch row.
 - Confirmations: no confirmation for normal current-day cash payment; correction/cancellation is handled by correction flows and requires reason/comment.
 - Loading/duplicate-submit protection: `CreatePayment` uses idempotency key; submit is disabled/busy; repeated tap cannot create duplicate cash rows.
-- Success state: payment appears in client history and selected day's daily cash report; membership panel refreshes only when the payment participates in issue/negative closure policy.
+- Success state: payment appears in client history and selected day's daily cash report; Membership state is unchanged.
 - Failure state: `validation_failed`, including a non-existent Kyiv DST time,
   `membership_not_eligible`, `duplicate_submission`, `not_found`,
   `permission_denied` or conflict errors render in the payment form and leave
@@ -187,13 +187,26 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 
 ## 15. Workflow: correction flows
 
-- User goal: fix mistaken visits, payments, freezes or owner-only non-working periods while preserving explainable business history.
+- User goal: fix mistaken visits, standalone payments, issued sales, negative
+  closures, freezes or owner-only non-working periods while preserving
+  explainable business history.
 - Screen/state: correction entry point from profile history, daily report drill-down or owner non-working screen; form shows original source fact, affected client/membership/date/amount/range, required reason/comment and expected changed-after-close status when relevant.
 - Timestamp presentation: original, replacement, occurred and recorded instants
   use one culture-aware Kyiv formatter with no timezone suffix. Replacement
   `datetime-local` follows the same DST validation as creation forms.
-- Primary actions: cancel visit; correct or cancel payment; cancel freeze; owner correct/cancel non-working period with previewed affected scope; submit the appropriate command.
-- Warnings: correction after closed/reconciled day may be Owner-only; original fact may already be canceled/replaced; correction can change membership state and report totals; changed-after-close marker must remain visible in reports/history; non-working correction can affect multiple Memberships and requires Owner preview/confirmation. The preview must make ADR-016 endpoint behavior explicit in business data: any inclusive overlap receives the full period, including when Membership starts or ends inside it.
+- Primary actions: cancel visit; correct or cancel standalone payment; replace or
+  cancel issued sale; replace/cancel negative closure; cancel freeze; owner
+  correct/cancel non-working period with previewed affected scope; submit the
+  appropriate command.
+- Warnings: correction after closed/reconciled day may be Owner-only except
+  ADR-018 issued-sale replace/cancel, which remains Admin/Owner and receives a
+  changed-after-close marker; original fact may already be canceled/replaced;
+  generic payment correction cannot detach sale/closure Payment; correction can
+  change membership state and report totals; changed-after-close marker must
+  remain visible in reports/history; non-working correction can affect multiple
+  Memberships and requires Owner preview/confirmation. The preview must make
+  ADR-016 endpoint behavior explicit in business data: any inclusive overlap
+  receives the full period, including when Membership starts or ends inside it.
 - Confirmations: all destructive/correction actions require explicit confirmation plus reason/comment; non-working day add/range correction requires a token bound to the exact ordered Membership set and full applied ranges, and may fail if that scope changes.
 - Loading/duplicate-submit protection: correction/cancellation commands use idempotency keys; submit stays disabled/busy; stale original fact or changed affected scope blocks commit and asks for refresh.
 - Success state: original fact remains visible as canceled/corrected/replaced; replacement facts appear where applicable; membership recalculation and daily report totals refresh from canonical reads; audit entry is available for owner/admin history.
@@ -203,7 +216,13 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 
 - User goal: make it clear which actions are available to reception/admin users and which require owner authority.
 - Screen/state: all server-rendered screens and interactive islands receive actor context and allowed actions from server queries; UI shows current account/session/device so shared Reception/Admin accountability is honest.
-- Primary actions: Admin/Reception can use reception dashboard, search, profile, mark visit, issue membership, add payment, add freeze, daily report and current/open-day corrections where permitted. Owner can do all Admin actions plus owner-only catalog/settings, non-working day add/correction, owner-sensitive report/admin views and corrections after closed/reconciled day when policy requires owner authority.
+- Primary actions: Admin/Reception can use reception dashboard, search, profile,
+  mark visit, issue membership, add standalone payment, add freeze, daily
+  report and current/open-day corrections where permitted. Admin/Reception and
+  Owner may also replace/cancel an issued sale under ADR-018 even for an older
+  day; Owner remains required for other closed-day actions when their policy
+  says so. Owner can do all Admin actions plus owner-only catalog/settings,
+  non-working day add/correction and owner-sensitive report/admin views.
 - Warnings: disabled or hidden actions must match server permission checks; owner-only actions should explain permission requirement; shared account actions must still carry session/device/accountability in audit.
 - Confirmations: owner-sensitive actions keep the same confirmation/reason requirements as commands; owner-only non-working day flow requires preview and confirmation of the exact affected scope, full applied period and estimated canonical change.
 - Loading/duplicate-submit protection: permission is rechecked by the server on every command; client-side disabled state is convenience only; idempotency rules are identical across roles for duplicate-submit risk.
@@ -225,3 +244,11 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 - Representative winter/summer timestamps, DST gap/fold inputs and
   spring/fall 23/25-hour report dates pass tablet/phone acceptance without any
   visible UTC suffix or browser-zone dependency. (ADR-017)
+
+## 18. ADR-018 sales and negative coverage workflow
+
+- Issue form shows a selected active ordinary type and read-only exact snapshot price; it never offers omitted, under or over payment input.
+- Negative panel shows leave-visible, one-off closure and new-Membership coverage with dates, quantities, oldest-first consequence and expired preview. It recommends/preselects neither method nor type; stale/inactive type fails before writes.
+- Mistaken one-off closure has a reason-required cancel/replace action that changes its items and Payment together; generic payment correction cannot detach it from the closure.
+- Replacement/cancel form is Admin/Owner with required reason, explicit no-delta/refund notice, dependent-fact preview and blockers. Success rereads profile, history, audit and affected report state.
+- Paper fallback entry creates/uses one numbered sheet batch and displays a stable line number on every row before reconciliation through daily report and audit/history.

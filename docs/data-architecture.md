@@ -6,7 +6,7 @@ BodyLife CRM v1 зберігає бізнесову правду як canonical 
 
 Основний вибір:
 
-- Source facts зберігаються у звичайних доменних таблицях: clients, card assignments, membership types, issued memberships, visit facts, visit consumptions, payments, freezes, non-working periods, opening states, adjustments, negative closures, day reconciliations.
+- Source facts зберігаються у звичайних доменних таблицях: clients, card assignments, membership types, issued memberships, visit facts, visit consumptions, payments, freezes, non-working periods, opening states, adjustments and negative closures. Day reconciliation додається лише якщо окреме майбутнє рішення затвердить цю дію.
 - Derived state зберігається тільки там, де це дає консистентність або швидкий read: `membership_state_cache`, `membership_extension_days`, пошукові normalized поля. Кожне derived поле має recalculation owner і source records.
 - Reports не є джерелом правди. Вони читають canonical facts і Memberships public queries/read models. Кожен total має drill-down до source rows.
 - Business audit є окремою append-only business history. Technical logs зберігаються окремо в application/hosting logging stack і не замінюють audit.
@@ -46,8 +46,15 @@ Canonical source facts:
 - `non_working_periods` - глобальні закриті дні/періоди залу.
 - `non_working_period_applications` - зафіксований scope affected memberships на момент підтвердження period.
 - `membership_adjustments` - explicit audited adjustments, наприклад exceptional extension day або виправлення issue-time snapshot.
-- `membership_negative_closures` і `membership_negative_closure_items` - явне закриття мінусових visits новим membership або one-off closure workflow.
+- `membership_negative_closures`, `membership_negative_closure_lines` і
+  `membership_negative_closure_items` - явне oldest-first закриття мінусових
+  Visits новим Membership або one-off workflow.
+- `issued_membership_sale_corrections` і
+  `membership_replacement_dependency_items` - retained cancel/replace facts
+  для помилково виданого sale та його залежностей.
 - `day_reconciliations` - факт звірки/close cash day; не заморожує правду, але потрібен для permissions і changed-after-close labels.
+- `entry_batches`, `entry_batch_rows`, `entry_batch_row_entities` -
+  first-class numbered paper sheet/line metadata and links to created facts.
 - Per-entity cancellation/correction tables: `visit_cancellations`, `payment_corrections`, `payment_cancellations`, `freeze_cancellations`, `non_working_period_cancellations`, `membership_corrections`.
 - `business_audit_entries` - append-only бізнес-історія успішних commands.
 
@@ -62,7 +69,8 @@ Common source fact fields:
 - `recorded_by_account_id`.
 - `recorded_session_id` або device/session reference.
 - `entry_origin`: `normal`, `manual_backfill`, `paper_fallback`, `future_import`.
-- `entry_batch_id` nullable для fallback/backfill batches.
+- `entry_batch_row_id` nullable для first-class fallback/backfill batch row;
+  `paper_fallback` source fact вимагає його.
 - `reason` або `comment` nullable/required за command policy.
 - `status` або active marker як query convenience, але source truth для скасування/корекції має бути окремий correction/cancellation fact.
 
@@ -73,8 +81,14 @@ Derived state належить Memberships або Clients/Search module. Він 
 Membership derived state:
 
 - `base_end_date` - deterministic from `start_date + duration_days_snapshot - 1 day`.
-- `counted_visits` - one effective active counted `visit_consumption` per Visit and Membership, where both Visit and effective consumption are active; retained canceled consumption history does not duplicate the Visit.
-- `remaining_visits` - signed value: `visits_limit_snapshot - counted_visits + active visit_balance adjustment deltas`, or the honest opening-state declaration plus adjustments recorded after that declaration; negative-closure rules apply when available.
+- `counted_visits` - active non-canceled Visits originally consumed by the
+  Membership, minus active oldest-first closure items sourced from it, plus
+  active allocation items covered by it. Retained canceled or replaced
+  consumption/coverage history never duplicates an effective Visit.
+- `remaining_visits` - signed value:
+  `visits_limit_snapshot - counted_visits + active visit_balance adjustment deltas`,
+  or the honest opening-state declaration plus adjustments and coverage facts
+  recorded after that declaration.
 - `negative_balance` - `max(0, -remaining_visits)`.
 - `first_negative_visit_date` і optional `first_negative_visit_id` - earliest counted visit that makes running balance negative.
 - `extension_days` - count of unique calendar dates from active freezes/applicable non-working periods plus positive active `extension_days` adjustment deltas.
@@ -98,7 +112,7 @@ Recalculation trigger matrix:
 |---|---|
 | Issue/cancel/correct membership | Affected membership and client current membership summary. |
 | Record/cancel/correct visit | Membership referenced by active consumption; if consumption allocation changes, old and new memberships. |
-| Record/cancel/correct payment | Membership only if payment participates in issue workflow, negative closure or correction policy; daily report reads canonical payment rows. |
+| Create/correct standalone payment | No Membership recalculation; daily report reads canonical payment rows. Sale and negative-closure Payments change only inside their enclosing rows below. |
 | Add/cancel/correct freeze | Affected membership. |
 | Add/cancel/correct non-working period | Exact ADR-016 confirmed scope; correction recalculates the union of retained old scope and confirmed replacement scope. Later Membership/source changes do not silently rewrite an existing scope snapshot. |
 | Create/update opening state | Affected membership. |
@@ -131,10 +145,12 @@ The deterministic card, phone, last-four and name representation used by these f
 
 | Table | Key fields | Relationships | Notes |
 |---|---|---|---|
-| `membership_types` | `id`, `name`, `duration_days`, `visits_limit`, `price_amount`, `price_currency`, `is_active`, `comment`, `created_at`, `updated_at`, `deactivated_at` | Referenced by issued memberships. | Owner-only create/edit/deactivate. No hard delete through app workflows. |
-| `issued_memberships` | `id`, `client_id`, `membership_type_id`, `type_name_snapshot`, `duration_days_snapshot`, `visits_limit_snapshot`, `price_amount_snapshot`, `price_currency_snapshot`, `start_date`, `base_end_date`, `issued_at`, `issued_by_account_id`, `status`, `entry_origin`, `entry_batch_id`, `comment` | `client_id -> clients.id`, `membership_type_id -> membership_types.id` | Snapshot fields are immutable after issue except explicit membership correction. `status`: active/canceled/corrected/current marker for queries. |
-| `membership_opening_states` | `id`, `membership_id`, `opening_as_of_date`, `declared_remaining_visits`, `declared_negative_balance`, `known_effective_end_date`, `known_extension_days`, `source_reference`, `reason`, `recorded_at`, `recorded_by_account_id`, `status` | `membership_id -> issued_memberships.id` | Source fact for manual backfill when old history is incomplete. At most one active opening state per membership. |
-| `membership_adjustments` | `id`, `membership_id`, `adjustment_type`, `days_delta`, `visits_delta`, `money_delta`, `effective_date`, `reason`, `recorded_at`, `recorded_by_account_id`, `recorded_session_id`, `entry_origin`, `entry_batch_id`, `status` | `membership_id -> issued_memberships.id` | Escape hatch for explicit audited corrections. Active v1 calculation accepts only positive day-only `extension_days` and signed non-zero visit-only `visit_balance`; unsupported active money/mixed/unknown shapes fail rebuild. Canceled/corrected history is retained. Prefer domain-specific correction tables when possible. |
+| `membership_types` | `id`, `name`, `kind`, `duration_days`, `visits_limit`, `price_amount`, `price_currency`, `is_active`, `comment`, `created_at`, `updated_at`, `deactivated_at` | Referenced by issued memberships and one-off closure lines. | `kind`: ordinary/one_off and immutable after create. Owner-only create/edit/deactivate. No hard delete. Active sale types have positive price; one_off has one visit. |
+| `issued_memberships` | `id`, `client_id`, `membership_type_id`, `issuance_mode`, `type_name_snapshot`, `duration_days_snapshot`, `visits_limit_snapshot`, `price_amount_snapshot`, `price_currency_snapshot`, `start_date`, `base_end_date`, `issued_at`, `issued_by_account_id`, `status`, `entry_origin`, `entry_batch_row_id`, `comment` | `client_id -> clients.id`, `membership_type_id -> membership_types.id` | `issuance_mode` is immutable `sale` or `opening_state`. Snapshot fields are immutable. An ordinary sale has exactly one active membership_sale Payment linked through `payments.membership_id`; opening-state backfill is explicitly paymentless. |
+| `membership_opening_states` | `id`, `membership_id`, `opening_as_of_date`, `declared_remaining_visits`, `declared_negative_balance`, `known_effective_end_date`, `known_extension_days`, `source_reference`, `reason`, `recorded_at`, `recorded_by_account_id`, `entry_batch_row_id`, `status` | `membership_id -> issued_memberships.id` | Source fact for manual backfill when old history is incomplete. At most one active opening state per membership; no synthetic sale Payment. |
+| `membership_adjustments` | `id`, `membership_id`, `adjustment_type`, `days_delta`, `visits_delta`, `money_delta`, `effective_date`, `reason`, `recorded_at`, `recorded_by_account_id`, `recorded_session_id`, `entry_origin`, `entry_batch_row_id`, `status` | `membership_id -> issued_memberships.id` | Escape hatch for explicit audited corrections. Active v1 calculation accepts only positive day-only `extension_days` and signed non-zero visit-only `visit_balance`; unsupported active money/mixed/unknown shapes fail rebuild. Canceled/corrected history is retained. Prefer domain-specific correction tables when possible. |
+| `issued_membership_sale_corrections` | `id`, `mode`, `original_membership_id`, `original_payment_id`, `replacement_membership_id`, `replacement_payment_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `idempotency_key`, `status` | Required original Membership/Payment; replacement ids required only for replace mode. | Retained Admin/Owner cancel/replace fact. It never stores or derives refund/delta. |
+| `membership_replacement_dependency_items` | `id`, `sale_correction_id`, `dependency_type`, `original_fact_id`, `replacement_fact_id`, `validation_summary`, `status` | References sale correction and original/replacement Visit consumption, Freeze, NonWorking application or negative-coverage fact. | Explicit transfer/reallocation explanation; unsupported or invalid dependency blocks the whole correction. |
 | `membership_state_cache` | `membership_id`, `counted_visits`, `remaining_visits`, `negative_balance`, `first_negative_visit_id`, `first_negative_visit_date`, `extension_days`, `effective_end_date`, `last_counted_visit_at`, `recalculated_at`, `recalculation_version` | `membership_id -> issued_memberships.id` | Derived. One row per membership. Rebuildable from source facts. |
 | `membership_extension_days` | `id`, `membership_id`, `extension_date`, `source_type`, `source_id`, `source_label`, `is_active`, `recalculated_at` | `membership_id -> issued_memberships.id` | Derived explanation rows. `extension_days` counts distinct active `extension_date`. |
 
@@ -142,19 +158,19 @@ The deterministic card, phone, last-four and name representation used by these f
 
 | Table | Key fields | Relationships | Notes |
 |---|---|---|---|
-| `visits` | `id`, `client_id`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `visit_kind`, `entry_origin`, `entry_batch_id`, `comment`, `status` | `client_id -> clients.id` | Fact of arrival. ADR-014 narrows v1 `visit_kind` to membership, one_off or trial. Cancellation keeps the row visible; one_off/trial has no membership consumption. |
+| `visits` | `id`, `client_id`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `visit_kind`, `entry_origin`, `entry_batch_row_id`, `comment`, `status` | `client_id -> clients.id` | Fact of arrival. ADR-014 narrows v1 `visit_kind` to membership, one_off or trial. Cancellation keeps the row visible; one_off/trial has no membership consumption. |
 | `visit_consumptions` | `id`, `visit_id`, repeated `client_id`/`visit_kind`, `membership_id`, `consumption_type`, `source_fact_type`, `source_fact_id`, `recorded_at`, `recorded_by_account_id`, `recorded_session_id`, `status` | Composite `(visit_id, client_id, visit_kind) -> visits`; composite `(membership_id, client_id) -> issued_memberships` | Explicit selected membership for membership kind. Composite FKs prove the Visit and Membership belong to the same Client, while a `visit_kind = membership` check makes consumption impossible for one_off/trial. Initial Milestone 6 storage accepts only active/canceled counted consumption sourced by its Visit; later negative-closure/reallocation semantics require an explicit migration. At most one active counted consumption per Visit. Memberships collapses retained rows to one effective Visit source and uses the effective consumption's server `recorded_at` for deterministic ordering and the opening-state recording-time cutover. |
-| `visit_cancellations` | `id`, `visit_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_id` | `visit_id -> visits.id` | Retained source fact with one row per canceled Visit. A future `CancelVisit` transaction updates `visits.status` and related `visit_consumptions.status` without deleting either source row. |
+| `visit_cancellations` | `id`, `visit_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_row_id` | `visit_id -> visits.id` | Retained source fact with one row per canceled Visit. A future `CancelVisit` transaction updates `visits.status` and related `visit_consumptions.status` without deleting either source row. |
 
 ### Payments, freezes and non-working days
 
 | Table | Key fields | Relationships | Notes |
 |---|---|---|---|
-| `payments` | `id`, `client_id`, `membership_id`, `amount`, `currency`, `method`, `payment_context`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_id`, `comment`, `status` | `client_id -> clients.id`, nullable `membership_id -> issued_memberships.id` | Method v1 is cash. `payment_context`: membership_sale, one_off, trial, negative_closure, other. |
-| `payment_cancellations` | `id`, `payment_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id` | `payment_id -> payments.id` | Source fact. Daily cash report excludes canceled payment. |
-| `payment_corrections` | `id`, `original_payment_id`, `replacement_payment_id`, `changed_fields`, `reason`, `recorded_at`, `recorded_by_account_id`, `session_id` | References `payments` twice. | Replacement row is a new source fact. Old and new occurred dates remain explainable. |
-| `freezes` | `id`, `client_id`, `membership_id`, `start_date`, `end_date`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_id`, `status` | Composite `(membership_id, client_id) -> issued_memberships(id, client_id)` | Inclusive range. The composite FK proves that the selected Membership belongs to the repeated Client. Active freezes contribute extension dates. |
-| `freeze_cancellations` | `id`, `freeze_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_id` | `freeze_id -> freezes.id` | Retained source fact with at most one cancellation per Freeze. Recalculation removes freeze dates from active extension sources. |
+| `payments` | `id`, `client_id`, `membership_id`, `negative_closure_id`, `amount`, `currency`, `method`, `payment_context`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_row_id`, `comment`, `status` | Composite `(membership_id, client_id) -> issued_memberships` for membership_sale; composite `(negative_closure_id, client_id) -> membership_negative_closures` for closure. | Method v1 is cash. membership_sale requires a sale-mode Membership and forbids closure id; negative_closure requires closure id and forbids Membership id. Generic CreatePayment must create neither context. |
+| `payment_cancellations` | `id`, `payment_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id` | `payment_id -> payments.id` | Generic source fact for standalone payments. Sale/closure commands create their own linked cancellation explanation; daily cash report excludes canceled payment. |
+| `payment_corrections` | `id`, `original_payment_id`, `replacement_payment_id`, `changed_fields`, `reason`, `recorded_at`, `recorded_by_account_id`, `session_id` | References standalone `payments` twice. | Generic correction rejects membership_sale/negative_closure contexts; their enclosing ADR-018 workflows own correction. |
+| `freezes` | `id`, `client_id`, `membership_id`, `start_date`, `end_date`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_row_id`, `status` | Composite `(membership_id, client_id) -> issued_memberships(id, client_id)` | Inclusive range. The composite FK proves that the selected Membership belongs to the repeated Client. Active freezes contribute extension dates. |
+| `freeze_cancellations` | `id`, `freeze_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `entry_origin`, `entry_batch_row_id` | `freeze_id -> freezes.id` | Retained source fact with at most one cancellation per Freeze. Recalculation removes freeze dates from active extension sources. |
 | `non_working_periods` | `id`, `start_date`, `end_date`, `reason_code`, `reason_comment`, `created_at`, `created_by_account_id`, `session_id`, `status` | Global source fact. | Owner-only. Inclusive range. |
 | `non_working_period_applications` | `id`, `non_working_period_id`, `membership_id`, `client_id`, `applied_start_date`, `applied_end_date`, `previewed_at`, `confirmed_at`, `status` | References period, membership, client. | Captures the immutable ADR-016 Owner-confirmed scope snapshot. Active applied range equals the full period after any inclusive eligibility overlap; recalculation derives unique union days. |
 | `non_working_period_cancellations` | `id`, `non_working_period_id`, `reason`, `recorded_at`, `recorded_by_account_id`, `session_id` | `non_working_period_id -> non_working_periods.id` | Owner-only source fact. Affected memberships recalculate. |
@@ -163,15 +179,19 @@ The deterministic card, phone, last-four and name representation used by these f
 
 | Table | Key fields | Relationships | Notes |
 |---|---|---|---|
-| `membership_negative_closures` | `id`, `client_id`, `source_membership_id`, `closure_type`, `covering_membership_id`, `payment_id`, `first_negative_visit_date`, `visits_count`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `status` | References client, source membership, optional covering membership/payment. | Explicit workflow that prevents payment/new membership from silently hiding negative visits. |
-| `membership_negative_closure_items` | `id`, `negative_closure_id`, `visit_id`, `old_consumption_id`, `new_consumption_id` | References closure, visit and consumptions. | Lists visits covered or reallocated. Recalculation can explain what changed. |
-| `day_reconciliations` | `id`, `business_date`, `status`, `closed_at`, `closed_by_account_id`, `expected_cash_sum`, `actual_cash_sum`, `note` | References account. | Minimal cash day close/reconciliation point. Later corrections are allowed by policy and reported as changed after close. |
+| `membership_negative_closures` | `id`, `client_id`, `closure_type`, `covering_membership_id`, `oldest_open_negative_visit_id`, `visits_count`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `idempotency_key`, `status` | References client and covering Membership when required by type; the exact Payment points back through `payments.negative_closure_id`. | Explicit ADR-018 workflow; one closure may cover oldest open Visits from more than one prior Membership. Payment alone never closes negatives. |
+| `membership_negative_closure_lines` | `id`, `negative_closure_id`, `membership_type_id`, `type_name_snapshot`, `duration_days_snapshot`, `visits_limit_snapshot`, `quantity`, `unit_price_amount_snapshot`, `currency_snapshot`, `line_total`, `sequence` | References closure and selected one_off MembershipType. | One-off choice snapshots. Several lines/types are allowed; line quantities sum to covered item count and totals sum to the exact closure Payment. |
+| `membership_negative_closure_items` | `id`, `negative_closure_id`, `closure_line_id`, `sequence`, `visit_id`, `source_membership_id`, `old_consumption_id`, `covering_membership_id`, `new_consumption_id`, `status` | References closure, optional one-off line, Visit and old/new consumptions. | Exactly one item per covered Visit, ordered oldest-first. one_off uses a line and no new consumption; new-Membership coverage uses covering/new consumption and no one-off line. Old facts remain retained. |
+| `membership_negative_closure_corrections` | `id`, `original_closure_id`, `replacement_closure_id`, `mode`, `reason`, `recorded_at`, `recorded_by_account_id`, `session_id`, `idempotency_key` | References original and optional replacement closure. | Cancel/replace source fact changes closure items and Payment together; no refund/delta field. |
+| `day_reconciliations` (reserved, not yet accepted) | `id`, `business_date`, `status`, `closed_at`, `closed_by_account_id`, `expected_cash_sum`, `actual_cash_sum`, `note` | Would reference account. | Do not add this table or command until a separate day-close/reconciliation decision is accepted. |
 
 ### Backfill and fallback batches
 
 | Table | Key fields | Relationships | Notes |
 |---|---|---|---|
-| `entry_batches` | `id`, `batch_type`, `source_label`, `business_date_start`, `business_date_end`, `recorded_at`, `recorded_by_account_id`, `reconciled_at`, `reconciled_by_account_id`, `note` | Referenced by source fact `entry_batch_id`. | `batch_type`: manual_backfill, paper_fallback, future_import. Groups paper/outage entries and active-client backfill. |
+| `entry_batches` | `id`, `batch_type`, `paper_sheet_number`, `business_date_start`, `business_date_end`, `recorded_at`, `recorded_by_account_id`, `reconciled_at`, `reconciled_by_account_id`, `note` | Parent of entry batch rows. | One paper_fallback batch represents exactly one numbered paper sheet; an outage may have several batches. |
+| `entry_batch_rows` | `id`, `entry_batch_id`, `line_number`, `event_type`, `occurred_at`, `explanation`, `recorded_at`, `recorded_by_account_id`, `session_id` | `entry_batch_id -> entry_batches`; created source facts reference one row. | Stable first-class row metadata. Unique `(entry_batch_id, line_number)` prevents duplicate paper entry across different domain tables. |
+| `entry_batch_row_entities` | `entry_batch_row_id`, `entity_type`, `entity_id` | References one row and every source entity created by its normal command. | Allows one paper sale row to explain both Membership and Payment without hiding either relation in free text. |
 | `import_staging_records` | `id`, `batch_id`, `source_row_ref`, `raw_payload`, `validation_status`, `validation_errors`, `created_domain_entity_type`, `created_domain_entity_id` | Optional future import only. | Not needed for v1 UI, but this is the safe future boundary for full Excel import. |
 
 ### Audit
@@ -188,13 +208,54 @@ Core constraints:
 - `client_card_assignments.card_number_normalized` can be nullable only if the command permits no card; current card rows must have a non-empty normalized number.
 - Unique current card assignment: no two rows with `is_current = true` may share `card_number_normalized`.
 - Unique current card per client: no client may have more than one row with `is_current = true`.
-- `membership_types.duration_days > 0`, `visits_limit >= 0`, `price_amount >= 0`.
+- `membership_types.kind in (ordinary, one_off)`,
+  `duration_days > 0`, `visits_limit >= 0`, `price_amount >= 0`; active
+  ordinary/one_off sale types require `price_amount > 0`, and one_off requires
+  `visits_limit = 1`. `kind` is immutable after insert.
+- `issued_memberships.issuance_mode in (sale, opening_state)` and is immutable.
 - `issued_memberships.duration_days_snapshot > 0`, `visits_limit_snapshot >= 0`, `price_amount_snapshot >= 0`.
 - `issued_memberships.base_end_date = start_date + duration_days_snapshot - 1 day` should be enforced by application/domain tests; DB generated column/check is useful if supported.
 - No hard delete through application workflows for membership types, issued memberships, visits, payments, freezes, non-working periods and audit.
 - Date ranges are inclusive and must satisfy `start_date <= end_date`.
 - `payments.method = cash` in v1; keep enum/check narrow until a later ADR expands payment methods.
 - `payments.amount > 0`.
+- A membership_sale Payment requires a matching Client/Membership composite FK,
+  `issuance_mode = sale`, exact currency/amount equality with the issued
+  snapshot and exactly one active row per active sale-mode Membership.
+  `issuance_mode = opening_state` requires zero membership_sale Payments. Use a
+  partial unique index for the at-most-one rule and a deferred PostgreSQL
+  constraint trigger (plus command validation under lock) for required
+  existence/absence and cross-table price equality; a row-level CHECK alone
+  cannot prove all of them.
+- `CreatePayment` rejects membership_sale and negative_closure contexts.
+  `CorrectPayment` rejects either linked context entirely; their enclosing
+  ADR-018 correction commands own those rows.
+- one_off closure requires at least one line; every line references a one_off
+  type, has positive quantity/unit price, and keeps immutable name/duration/
+  visits/price/currency snapshots. Line totals must equal quantity times unit
+  price and their sum must equal the one active closure Payment. A
+  negative_closure Payment has the same Client as its closure, and a partial
+  unique index plus deferred constraint trigger enforce exactly one active
+  Payment for each active one_off closure.
+- Each active negative-closure item has a unique `visit_id`; a partial unique
+  index prevents repeated or concurrent coverage of the same Visit. one_off
+  items require a line and forbid a new consumption; new-Membership allocations
+  require the covering Membership/new consumption and forbid a one-off line.
+- Closure-item order must equal canonical oldest-open order under locked
+  Membership/Visit rows. Cross-row order is command-validated and covered by
+  PostgreSQL concurrency tests rather than an unsafe report-side formula.
+- New-Membership coverage requires
+  `1 <= active allocation item count <= covering visits_limit_snapshot`;
+  command validation checks this under the same locks, and a deferred
+  constraint trigger rejects an invalid committed allocation set.
+- One active issued-sale correction per original Membership/Payment and one
+  active negative-closure correction per original closure; replacement ids are
+  all-or-none according to mode. Idempotency keys are unique per command scope.
+- `paper_fallback` requires `entry_batch_row_id`; its parent batch has
+  `batch_type = paper_fallback` and non-empty `paper_sheet_number`. A partial
+  unique index protects paper sheet number, and
+  `entry_batch_rows(entry_batch_id, line_number)` is unique with
+  `line_number > 0`. Non-paper source facts may not forge paper row metadata.
 - At most one active opening state per membership.
 - At most one active counted `visit_consumption` per visit.
 - Multiple lifecycle-active issued Memberships per Client are allowed; no uniqueness constraint may silently encode a current Membership.
@@ -276,6 +337,8 @@ Audit entry required for successful commands:
 - `action_type`: stable enum-like string, for example `visit.recorded`, `payment.corrected`, `membership.recalculated`, `card.reassigned`.
 - `entity_type` and `entity_id`: primary target.
 - `related_entity_refs`: structured list/map for client, membership, payment, visit, correction IDs.
+- `entry_batch_row_id` plus resolved paper sheet/line metadata for
+  `paper_fallback`.
 - `account_id`, `account_type`, `role`, `session_id`, `device_label`.
 - `occurred_at`: business event time/date if the action creates or changes a business fact.
 - `recorded_at`: system time of command success.
@@ -341,8 +404,11 @@ Manual backfill:
 Paper fallback:
 
 - During internet outage, business records visits/payments/freezes on paper.
-- After recovery, staff enters records through normal commands with `entry_origin = paper_fallback`, actual `occurred_at`, current `recorded_at`, actor/session and reason/comment.
-- Use `entry_batches` with `batch_type = paper_fallback` to group a paper sheet or outage period.
+- After recovery, Admin/Owner creates one `entry_batches` row per numbered paper
+  sheet and one unique `entry_batch_rows` row per line.
+- Staff enters records through normal commands with
+  `entry_origin = paper_fallback`, required `entry_batch_row_id`, actual
+  `occurred_at`, current `recorded_at`, actor/session and explanation.
 - Recalculation uses `occurred_at`; audit/report explanation uses both `occurred_at` and `recorded_at`.
 - Historical daily reports may change after fallback entry. Drill-down must show entries recorded after the fact.
 
@@ -369,6 +435,15 @@ Migration strategy:
    For version `7`, every issued Membership must finish with current cache state.
    The command commits per Membership, reports processed counts and is rerun from
    canonical facts after interruption/non-zero exit; it creates no business audit.
+9. Before enabling ADR-018 constraints, classify every existing
+   `issued_memberships` row as `sale` or `opening_state`. An opening-state row
+   must have its explicit opening fact and zero sale Payments. A sale row must
+   already have exactly one matching snapshot-price Payment. The migration
+   preflight fails on omitted, mismatched or duplicate historical sale
+   Payments; it never invents cash, silently changes an amount or guesses a
+   mode. Before production use, invalid development/test fixtures may be
+   recreated; real business data would require explicit audited correction
+   before the constraint is enabled.
 
 Backup/restore implications:
 
@@ -426,18 +501,29 @@ Validation scenarios:
 14. Search by exact card number. Verify exact current card match opens the correct client and duplicate current card assignment is blocked.
 15. Search by last four phone digits. Verify non-unique matches produce list, not auto-open.
 16. Enter active membership via manual backfill opening state. Verify no fake visits are generated, state is explainable and audit marks manual backfill.
-17. Enter paper fallback visits/payments next day. Verify `occurred_at` drives reports for the business date while `recorded_at` and audit show late entry.
-18. Close negative visits with a new membership. Verify `membership_negative_closures` and closure items list covered visits; old negative state is not silently hidden.
-19. Restore database to staging. Rebuild membership state, compare caches, verify audit and source rows are transactionally consistent.
+17. Enter paper fallback visits/payments next day. Verify one sheet batch,
+    unique stable line rows, required first-class references and duplicate-line
+    rejection; `occurred_at` drives reports while `recorded_at` and audit show
+    late entry.
+18. Close negative visits partially and fully using active one-off types and new Membership coverage. Verify exact snapshots/Payment, oldest-first items, backdated/possibly-expired start and visible remainder; old facts are not rewritten.
+19. Reject a second/zero/mismatched ordinary-sale Payment, generic
+    CreatePayment/CorrectPayment bypass, and repeated/concurrent coverage of one
+    Visit. Verify rollback leaves no partial source/audit/cache state.
+20. Replace/cancel an issued sale with and without valid dependencies. Verify
+    Admin/Owner permission, unauthorized rejection, idempotent retry after
+    failure, exact Payment links and full rollback on blockers.
+21. Restore database to staging. Rebuild membership state, compare caches, verify audit and source rows are transactionally consistent.
 
-Open validation questions to settle before migrations:
+Open validation question to settle before its migration:
 
-- Whether NonWorkingDay applies only to overlapping active calendar days or full period once any overlap exists.
 - Which denied permission attempts are business-audited versus technical-logged only.
 
 Resolved before Visit migrations:
 
 - ADR-005 accepts inclusive `start_date + duration_days - 1 day` arithmetic.
+- ADR-016 accepts full NonWorkingDay period contribution after any inclusive overlap.
+- ADR-018 accepts exact sale payment, oldest-first partial/full negative
+  coverage, issued-sale correction and first-class paper sheet/line metadata.
 - ADR-014 allows multiple lifecycle-active Memberships and requires explicit `membership_id`; no automatic allocation is permitted.
 - ADR-014 blocks membership Visit during an active Freeze covering the business date.
 - ADR-014 uses explicit one_off/trial Visit kinds without consumption and permits a dedicated technical Client for unidentified visitors.

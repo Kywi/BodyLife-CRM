@@ -22,8 +22,9 @@ BodyLife CRM v1 використовує editable MembershipType catalog плю�
 
 MembershipType:
 
-- поля: `name`, `duration_days`, `visits_limit`, `price`, `is_active`;
+- поля: `name`, `duration_days`, `visits_limit`, `price`, `kind` (`ordinary` або `one_off`), `is_active`;
 - create/edit/deactivate тільки Owner;
+- `kind` незмінний після створення; для іншого kind створюється новий type;
 - hard delete заборонений;
 - inactive типи не доступні для нових звичайних продажів;
 - inactive типи лишаються видимими в history/reports.
@@ -61,3 +62,7 @@ Audit:
 - Заборонити delete на application рівні і, бажано, на persistence policy рівні.
 - Фільтрувати inactive types зі звичайного issue-membership flow.
 - Додати owner-only authorization і audit для змін MembershipType.
+
+ADR-018 уточнює, що active ordinary type має positive sale price, while active
+one-off types have `visits_limit = 1`, positive price, are catalog choices for
+explicit negative closure and keep their own immutable closure snapshots.

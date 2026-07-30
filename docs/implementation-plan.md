@@ -75,12 +75,13 @@ Shared code should stay narrow: IDs, `Money`, `DateRange`, actor/session context
 | 4. MembershipTypes | Owner catalog for future sales. | `membership_types`, Owner-only create/edit/deactivate, active issue selector. | 1, 2. | No hard delete; inactive hidden from ordinary issue; audit for changes. | Command validation/policy/audit tests, PostgreSQL checks. |
 | 5. Memberships | Central membership state owner. | `issued_memberships`, snapshots, opening states, `membership_state_cache`, `membership_extension_days`, recalculation, `GetMembershipState`. | 1-4 plus open domain decisions. | Inclusive base end date; signed remaining visits; negative state; derived cache rebuildable; no formulas outside Memberships. | Domain math tests, rebuild tests, PostgreSQL constraints, architecture checks. |
 | 6. Visits | Visit marking/cancellation. | `visits`, `visit_consumptions`, `visit_cancellations`, `MarkVisit`, `CancelVisit`, warnings/idempotency. | 2, 3, 5. | Visit consumes one membership visit; zero-to-negative works with acknowledgement; cancel preserves history and recalculates. | Command transaction tests, idempotency, row lock/concurrency, Playwright mark/cancel. |
-| 7. Payments | Cash payments/corrections. | `payments`, corrections/cancellations, `CreatePayment`, `CorrectPayment`, issue-with-payment consistency. | 2, 3, 5, 6. | Cash totals come from canonical rows; correction preserves original; duplicate submit blocked. | Payment command tests, report consistency, amount/check constraints, UI payment/correction. |
+| 7. Payments | Standalone cash payments/corrections. | `payments`, standalone corrections/cancellations, `CreatePayment`, `CorrectPayment`, daily-cash source rows. | 2, 3, 5, 6. | Standalone payments remain separate from Membership state and cannot create a sale or close negative visits. | Payment command tests, report consistency, amount/check constraints, UI payment/correction. |
 | 8. Freezes/NonWorkingDays | Extension source workflows. | `freezes`, non-working periods/applications, preview/confirm, union extension days. | 2, 3, 5, 6, ADR-014, ADR-015, ADR-016. | Inclusive ranges; Freeze start is bounded by locked canonical Membership state, end is not clipped, counted Visit overlap is rejected; NonWorkingDay uses an exact Owner-confirmed snapshot and full-period contribution after any overlap; overlaps count union days; recalculation atomic. | Freeze eligibility/Visit-conflict/lock-order tests, NonWorkingDay lifecycle/overlap/full-period/snapshot tests, preview/scope tests, range constraints, UI freeze/non-working. |
 | 9. Reports | Owner/admin operational visibility. | Daily cash/visits, ending soon, low remaining, negative, inactive reports with drill-down. | 3, 5, 6, 7, 8. | Totals equal drill-down rows; reports read Memberships state, not formulas. | Report consistency tests, query/index tests, Playwright report drill-down. |
 | 10. Audit/History UI | Explainable business history. | `business_audit_entries`, `GetClientHistory`, `GetAuditTimeline`, links from profile/report. | 2-9. | Every implemented mutation has append-only audit; history shows original plus correction/fallback labels. | Audit matrix tests, append-only tests, access tests, UI timeline tests. |
-| 11. Backup/Fallback Readiness | Prove recoverability and outage workflow. | Backup config evidence, restore runbook, restore rehearsal, paper fallback batches/template. | 1-10 plus hosting choice. | 30-day retention expectation documented; restore rehearsal passes; fallback reconciliation works through commands. | Restore rehearsal, migration on restore, cache rebuild compare, fallback batch test. |
-| 12. Production Hardening | Go-live gate. | Staging/prod deploy process, secrets/session hardening, observability, full regression, owner UAT. | 1-11. | Full suite passes; no audit/report/recalc blockers; owner signs off restore and workflows. | Full regression, Playwright tablet/phone, security smoke, performance smoke, observability smoke. |
+| 10.5 ADR-018 sales/correction | Complete accepted sale/negative/replacement contracts. | Type kinds, sale/opening modes, exact sale links, closure lines/allocations, `ReplaceIssuedMembership`, `CancelIssuedMembershipSale`, paper sheet/line metadata. | 5-10. | Exact ordinary sale, paymentless opening state, oldest-first explicit coverage bounded by the new Membership limit, no silent dependency transfer. | PostgreSQL lock/constraint, command rollback/idempotency, report/audit and tablet/phone tests. |
+| 11. Backup/Fallback Readiness | Prove recoverability and outage workflow. | Backup config evidence, restore runbook, restore rehearsal, paper fallback template/reconciliation. | 1-10.5 plus hosting choice. | 30-day retention expectation documented; restore rehearsal passes; ADR-018 sheet/line fallback reconciliation works through commands. | Restore rehearsal, migration on restore, cache rebuild compare, fallback batch test. |
+| 12. Production Hardening | Go-live gate. | Staging/prod deploy process, secrets/session hardening, observability, full regression, owner UAT. | 1-11, including 10.5. | Full suite passes; no audit/report/recalc blockers; owner signs off restore and workflows. | Full regression, Playwright tablet/phone, security smoke, performance smoke, observability smoke. |
 
 ## 4. Detailed Task Breakdown
 
@@ -156,15 +157,19 @@ Likely tables:
 - `accounts`, `sessions`
 - `clients`, `client_card_assignments`, `duplicate_warning_acknowledgements`
 - `membership_types`
-- `issued_memberships`, `membership_opening_states`, `membership_adjustments`
+- `issued_memberships`, `membership_opening_states`, `membership_adjustments`,
+  `issued_membership_sale_corrections`,
+  `membership_replacement_dependency_items`
 - `membership_state_cache`, `membership_extension_days`
 - `visits`, `visit_consumptions`, `visit_cancellations`
 - `payments`, `payment_corrections`, `payment_cancellations`
 - `freezes`, `freeze_cancellations`
 - `non_working_periods`, `non_working_period_applications`, `non_working_period_cancellations`
-- `membership_negative_closures`, `membership_negative_closure_items`
+- `membership_negative_closures`, `membership_negative_closure_lines`,
+  `membership_negative_closure_items`,
+  `membership_negative_closure_corrections`
 - `day_reconciliations` if day close is accepted
-- `entry_batches`
+- `entry_batches`, `entry_batch_rows`, `entry_batch_row_entities`
 - `business_audit_entries`
 
 Tasks:
@@ -172,6 +177,8 @@ Tasks:
 1. Add migrations phase-by-phase, not one giant opaque migration.
 2. Add FKs, not-null constraints, positive amount checks, non-negative price/visit checks and inclusive range checks.
 3. Add partial unique index for current card assignment by card number.
+4. Add ADR-018 type-kind, exact sale, one-active-coverage-per-Visit,
+   paper-sheet/line and cross-table deferred constraint/lock tests.
 4. Add partial unique index for one current card per client.
 5. Add one active opening state per membership.
 6. Add one cache row per membership.
@@ -230,8 +237,10 @@ Acceptance criteria:
 
 Risks:
 
-- Multiple active memberships and visit assignment are unresolved.
-- Negative closure behavior can hide old negative visits if not explicit.
+- Multiple active Memberships require the explicit ADR-014 Visit selection
+  contract in every command and screen.
+- Negative coverage can hide old Visits if an implementation omits the
+  ADR-018 oldest-first source and allocation facts.
 
 Definition of done:
 
@@ -254,10 +263,15 @@ Command order:
 9. `CancelVisit`
 10. `CreatePayment`
 11. `CorrectPayment`
-12. `AddFreeze`
-13. `CancelFreeze`
-14. `AddNonWorkingDay`
-15. `CorrectNonWorkingDay`
+12. `CloseNegativeVisitsOneOff`
+13. `CorrectNegativeVisitCoverage`
+14. `ReplaceIssuedMembership`
+15. `CancelIssuedMembershipSale`
+16. `CreatePaperFallbackBatch` / `CreatePaperFallbackBatchRow`
+17. `AddFreeze`
+18. `CancelFreeze`
+19. `AddNonWorkingDay`
+20. `CorrectNonWorkingDay`
 
 Each command must define:
 
@@ -392,7 +406,7 @@ Tasks:
 5. Run restore rehearsal into isolated staging/test.
 6. Run owner restore-check: login, search client, profile state, daily report, audit/history.
 7. Add structured logs, health checks and operational notification path.
-8. Add paper fallback template and entry batch workflow.
+8. Add numbered-sheet paper fallback template plus first-class batch/unique-row workflow.
 9. Reconcile fallback entries through normal commands, daily reports and audit.
 
 Acceptance criteria:
@@ -450,36 +464,22 @@ range eligibility, the inverse counted-Visit conflict and Membership-first
 locking. ADR-016 resolves NonWorkingDay lifecycle/date eligibility,
 full-period contribution, immutable confirmed scope and correction semantics.
 
-1. Specify one-off negative closure behavior.
-2. Define which correction/cancellation actions always require reason/comment.
-3. Define day close/reconciliation command and changed-after-close policy if needed.
-4. Choose default inactive-client threshold while keeping 14/30/60 available.
-5. Decide whether denied permission attempts are business-audited or only technically logged.
-6. Decide how much historical card-assignment history is visible beyond current card number and audit trail.
-7. Choose hosting provider and backup/PITR plan.
+ADR-018 additionally resolves exact ordinary-sale payment, one-off negative
+closure, issued-sale correction/cancel and first-class paper sheet/line
+metadata.
 
-## 7. First Execution Sprint
+1. Define which other correction/cancellation actions always require reason/comment.
+2. Define day close/reconciliation command and changed-after-close policy if needed.
+3. Choose default inactive-client threshold while keeping 14/30/60 available.
+4. Decide whether denied permission attempts are business-audited or only technically logged.
+5. Decide how much historical card-assignment history is visible beyond current card number and audit trail.
+6. Choose hosting provider and backup/PITR plan.
 
-Start with Milestone 1 only. Do not implement business workflows until the foundation is in place.
+## 7. Current Execution Stop Point
 
-Recommended first 10 development tasks:
-
-1. Create a `codex/...` branch and scaffold `BodyLife.sln` with web/application/domain/infrastructure/test projects.
-2. Add .NET 10 SDK pinning, analyzers, formatting, nullable warnings and CI build/test skeleton.
-3. Add local/test PostgreSQL via Docker/Testcontainers and EF Core/Npgsql packages.
-4. Create module folders for `Clients`, `MembershipTypes`, `Memberships`, `Visits`, `Payments`, `Freezes`, `NonWorkingDays`, `Reports`, `Audit`, `Users`.
-5. Add shared primitives: IDs, `Money`, `DateRange`, actor/session context, correlation id, command envelope/result/errors.
-6. Add baseline `DbContext`, first migration, migration apply check and SQL review script target.
-7. Add health check endpoint and structured logging middleware with correlation id.
-8. Add architecture tests for module boundaries and forbidden formula placement.
-9. Add Playwright smoke harness that opens the app and verifies the future reception route placeholder.
-10. Verify with build, analyzers, unit tests, PostgreSQL migration apply, health check smoke and Playwright smoke.
-
-Sprint acceptance:
-
-- The repo has an application scaffold and test harness.
-- The app can start locally.
-- PostgreSQL is used for integration/migration checks.
-- CI/local checks are defined.
-- Module boundaries are visible before business code begins.
-- The next agent can start Milestone 2: Users/Roles, then Milestone 3: Clients/Search.
+Milestones 1 through 10 are complete; exact evidence and the latest commit are
+recorded in `docs/implementation-progress.md`. The next business step is
+Milestone 10.5: implement ADR-018 sale/opening modes, exact sale payments,
+oldest-first bounded negative coverage, issued-sale correction and first-class
+paper sheet rows. Milestone 11 starts only after 10.5 passes its PostgreSQL,
+command, report/audit and tablet/phone checks.
