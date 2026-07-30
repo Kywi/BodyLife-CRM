@@ -13337,3 +13337,79 @@ Stop point:
   Owner-only authorization, exact immutable scope, inclusive ranges,
   stale-preview rejection, idempotency, append-only audit, atomic old/new
   recalculation and canonical rereads.
+
+## Step 206 - Added interactive Client profile action previews
+
+Status: completed as the fourteenth review-only template-lab iteration.
+Production Razor UI, Reception commands, authorization, persistence and
+Memberships calculations remain unchanged.
+
+Completed:
+
+- Replaced technical profile copy with Ukrainian tariff, remaining-visits,
+  effective-end and freeze labels. Explanatory snapshot metadata now lives in
+  a touch-friendly information disclosure instead of competing with the
+  client’s name and current state.
+- Converted the four client actions into one keyboard-operable tab set. Mark
+  visit, issue Membership, add payment and add freeze now open dedicated,
+  compact form panels without duplicating ids across the fifteen client-page
+  fixtures.
+- Added deterministic preview behavior for Membership issue and freeze forms.
+  Unsupported date/range changes invalidate the fixed server-preview fixture
+  and disable submission instead of calculating Membership state in
+  JavaScript.
+- Kept the accepted v1 boundary visible: cash is available and Terminal is
+  shown disabled. The issue-payment amount becomes required only when
+  `Оплата проведена` is selected.
+- Added non-persistent success states that close the submitted form and update
+  the fictional profile/activity rows. Membership visits reduce the displayed
+  fixture remaining count; one-off and trial visits do not. Standalone
+  payments add cash activity without changing Membership KPIs.
+- Shared one action/activity surface between the matching `default` and
+  `exact-card` snapshots. Warning, stale, blocked, search and error fixtures do
+  not simulate unsafe successful commands.
+- Kept the desktop four-column action bar, a tablet two-column form layout and
+  a compact 2-by-2 phone action grid with 44 px controls and no horizontal
+  scrolling. Without JavaScript, the default Mark Visit form remains readable
+  and the remaining panels stay hidden with a clear explanation.
+
+Validation:
+
+- Bundled Chromium passed focused interaction and geometry checks at 1440 px,
+  1024 px and 390 px with no console/page errors or horizontal overflow.
+  Mouse and Arrow/Home/End tab navigation, conditional issue-payment fields,
+  stale-preview gating, all four success states, Membership versus one-off
+  visit behavior, exact-card surface reuse and all fifteen URL states were
+  exercised.
+- Static validation passed JavaScript syntax, `git diff --check`, twenty-three
+  unique ids, resolved ARIA references, labelled controls, local resources and
+  all fifteen declared state panels. A no-JavaScript browser pass retained the
+  default visit form.
+- Independent contract/UI review found no remaining P0 or P1 issue after
+  visit-kind handling, warning-state scoping, issue preview/result parity,
+  stale freeze gating, shared activity updates, tab semantics and conditional
+  payment validation were corrected.
+- The scoped Graphify query was saved as a `dead_end` because it returned only
+  broad Workflow/skill context rather than the concrete client profile,
+  Reception partials and governing cash/freeze contracts. The required
+  code-only `graphify update .` was attempted and stopped with local filesystem
+  error 95. The semantic `graphify . --update --no-viz` detected one code and
+  twenty-four documentation changes plus one deletion, but stopped before
+  extraction because no supported LLM API key is configured. Generated
+  Graphify output remains excluded from commits and no refreshed graph is
+  claimed.
+- Full backend CI, PostgreSQL migrations and the unrelated production test
+  matrix were intentionally not run or awaited for this static-template-only
+  iteration.
+
+Commit:
+
+- `67d3bd0` (`feat(ui): add client profile action previews`).
+
+Stop point:
+
+- Collect feedback on the Client profile copy, action tabs, form density and
+  success states in the published review lab. A later production Razor/htmx
+  migration must preserve server authorization, warning acknowledgements,
+  idempotency, stale-preview rejection, command audit, canonical rereads,
+  cash-only v1 payments and Memberships ownership of all derived state.
