@@ -12978,3 +12978,66 @@ Stop point:
   any later production Razor migration must preserve the real warning,
   authorization, reason/comment, idempotency and canonical-reread contracts and
   pass the existing visual-fidelity approval gates.
+
+## Step 201 - Consolidated the published authenticated account menu
+
+Status: completed and published as the ninth review-only template-lab
+iteration. Production Razor UI, authentication, session storage and the Wave 1
+approval status remain unchanged.
+
+Completed:
+
+- Removed the duplicated account, device, session and logout block from the
+  navigation rail on all thirteen authenticated fixtures. The header now owns
+  one native account disclosure and exactly one `Завершити сеанс` action.
+- Replaced the opaque shell-level demo session identifier with understandable
+  context: Shared Reception/Admin fixtures show `Планшет рецепції 01`, Owner
+  fixtures show `Браузер власника`, and both expose `Активний сеанс`.
+- Kept accountability honest: the shared reception account is explicitly
+  labelled as shared, while the Owner fixture is explicitly personal. Audit
+  event details retain their technical session identifiers because they are
+  evidence for a specific event, not everyday shell navigation.
+- Added responsive account avatars, a right-aligned disclosure surface,
+  centered chevron, 44 px trigger/logout targets and compact phone treatment.
+  Outside click and Escape close the disclosure, Escape restores focus, and
+  opening the mobile navigation closes the account menu. Native
+  `<details>/<summary>` remains usable without JavaScript.
+
+Validation:
+
+- Bundled Chromium passed 52 route/viewport combinations: all thirteen
+  authenticated fixtures at 1440 px, 1024 px, 760 px and 390 px. Every run had
+  one account menu, one logout, no horizontal overflow, no console/page error
+  and an in-viewport disclosure.
+- Focused interactions passed open/close, outside click, Escape focus return,
+  account-menu/mobile-drawer mutual exclusion and JavaScript-disabled native
+  disclosure behavior.
+- Static validation passed JavaScript syntax, `git diff --check`, all sixteen
+  prototype routes, unique ids, resolved ARIA references and local
+  assets/links. All thirteen authenticated routes have no legacy
+  `.nav-footer`/`.header-account` markup or shell-level opaque session id.
+- Independent UI review found no remaining P0/P1/P2 issue after the
+  JavaScript-disabled expanded-state semantics were corrected.
+- GitHub Pages deployment run `30535712779` completed successfully in 16
+  seconds. All thirteen live authenticated routes expose one account menu and
+  one logout; the live Home page also passed Chromium at 1440 px and 390 px.
+- `graphify update .` was attempted after the template change and stopped with
+  local filesystem error 95. The required semantic
+  `graphify . --update --no-viz` then detected the changed corpus and stopped
+  before extraction because no supported LLM API key is configured. The
+  generated Graphify memory/output remains excluded from commits; no refreshed
+  graph is claimed.
+- Full backend CI, PostgreSQL migrations and the unrelated production test
+  matrix were intentionally not run or awaited for this static-template-only
+  iteration.
+
+Commit:
+
+- `2f7f178` (`fix(ui): consolidate authenticated account menu`).
+
+Stop point:
+
+- Collect feedback on the single account disclosure, friendly device labels
+  and compact mobile avatar. Keep this work in the public-safe review lab; a
+  later production Razor migration must preserve honest account attribution,
+  server-owned session metadata, authorization and audit contracts.
