@@ -13413,3 +13413,80 @@ Stop point:
   migration must preserve server authorization, warning acknowledgements,
   idempotency, stale-preview rejection, command audit, canonical rereads,
   cash-only v1 payments and Memberships ownership of all derived state.
+
+## Step 207 - Accepted membership-sale and negative-coverage rules
+
+Status: completed as an architecture/product-decision step. Production
+commands, Razor UI, PostgreSQL schema and Memberships calculations remain
+unchanged; Milestone 10.5 is now the next implementation step before
+Milestone 11.
+
+Completed:
+
+- Accepted ADR-018. An ordinary Membership sale is one atomic action with
+  exactly one full cash Payment equal to the issue-time price; staff never
+  enters the amount and generic payment commands cannot complete the sale.
+- Separated historical `opening_state` creation from `sale`: manual opening
+  state has zero invented sale Payments, while a paper-fallback sale keeps the
+  exact-payment invariant.
+- Added `ordinary` and `one_off` catalog kinds. Multiple active one-off types
+  are allowed, kind is immutable, historical issue/closure rows retain price
+  and type snapshots, and the system never recommends a closure method/type.
+- Defined partial/full oldest-first negative coverage. One-off closure creates
+  exact line-snapshot Payment facts; new-Membership coverage starts on the
+  oldest covered Visit, consumes `1..visits_limit_snapshot`, may already be
+  expired by date and leaves any uncovered remainder visible.
+- Defined Admin/Owner issued-sale replace/cancel. The old Membership and
+  Payment are canceled together; replacement creates a new exact sale. The
+  system neither calculates nor displays refund, surcharge or price
+  difference, and dependency/concurrency failure rolls back the whole action.
+- Made paper fallback first-class: one batch per numbered sheet, unique row
+  number, actual `occurred_at`, server `recorded_at`, actor/session and required
+  explanation. One outage may have multiple numbered sheets.
+- Aligned ADR index/clarifications, architecture baseline, domain/data models,
+  command/query contracts, UI workflows, operations, first-version
+  requirements, vertical slice, implementation plan and roadmap. Added
+  Milestone 10.5 with schema-transition, PostgreSQL, command, report/audit and
+  tablet/phone acceptance coverage before operations readiness.
+- Added a migration preflight requirement for current optional-payment data:
+  every existing issued row must classify as sale or opening state; missing,
+  duplicate, mismatched or ambiguous sale Payments fail instead of inventing
+  or silently rewriting cash history.
+
+Validation:
+
+- Independent `bodylife_reviewer` (`gpt-5.6-terra`, high) found the original
+  generic-payment bypass, missing persistence/coverage constraints and
+  paper-row ambiguity; after correction, two follow-up reviews found no
+  remaining P0/P1/P2 conflict.
+- `bodylife_verifier` (`gpt-5.6-luna`, medium) passed `git diff --check`,
+  checked 23 relative Markdown links, confirmed 18 unique ADR index entries
+  with existing targets and found no remaining current-contract stale wording
+  after follow-up fixes.
+- A bounded `bodylife_worker` (`gpt-5.6-terra`, medium) drafted the owned
+  documentation changes; root retained product decisions, integration,
+  review fixes, validation, staging and commits.
+- Focused stale-contract searches passed for optional ordinary-sale payments,
+  deferred one-off closure, generic payment bypass, free-text paper identity
+  and the old ADR-001..017 traceability range.
+- Full backend, PostgreSQL and browser suites were not run because this step
+  changes documentation only and explicitly does not claim implementation.
+- The scoped Graphify result was saved as useful. Semantic
+  `graphify . --update --no-viz` detected 46 changed knowledge documents but
+  stopped before extraction because no supported LLM API key is configured;
+  pre-existing/generated `graphify-out/` changes remain excluded and no
+  refreshed semantic graph is claimed.
+
+Commit:
+
+- `59f5667` (`docs(memberships): define sale and negative coverage rules`).
+
+Stop point:
+
+- Implement Milestone 10.5 before backup/paper-fallback readiness: migration
+  preflight, type and issuance modes, exact sale links, closure/allocation
+  facts, replacement/cancel commands, first-class paper rows, reception UI,
+  reports/history/audit and the listed PostgreSQL/concurrency tests.
+- Product decisions still intentionally separate from ADR-018 are formal day
+  close/reconciliation, default inactive-client threshold, denied-attempt
+  business audit, extra card-history presentation and hosting/backup provider.
