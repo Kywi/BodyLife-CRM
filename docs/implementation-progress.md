@@ -13041,3 +13041,77 @@ Stop point:
   and compact mobile avatar. Keep this work in the public-safe review lab; a
   later production Razor migration must preserve honest account attribution,
   server-owned session metadata, authorization and audit contracts.
+
+## Step 202 - Rebuilt the published Staff accounts template
+
+Status: completed and published as the tenth review-only template-lab
+iteration. Production Razor UI, staff commands, authorization, persistence and
+the Wave 1 approval status remain unchanged.
+
+Completed:
+
+- Replaced the oversized account cards and always-visible edit forms with a
+  full-width staff workspace. The page header now owns one primary
+  `＋ Додати співробітника` action, while `Поточний персонал` is a compact
+  five-column table for employee/login, account type, active sessions, status
+  and management.
+- Added a centered native create modal and a separate right-edge management
+  slide-over. The management surface uses keyboard-operable tabs for
+  `Профіль`, credential setup/reset and `Небезпечна зона`, and restores focus
+  to the originating action when it closes.
+- Preserved the production Razor Page handler and field contracts in fixture
+  metadata: `Create`, `UpdateDisplayName`, `SetCredentials` and
+  `SetActiveState`. Existing credentials expose an editable login, password and
+  required reset reason; an account without credentials switches both the tab
+  and panel to `Налаштування входу` and does not invent a reset reason.
+- Kept destructive semantics explicit without a solid warning panel.
+  Deactivation requires a reason plus confirmation of the active-session
+  impact, activation remains a distinct state, entered passwords and preview
+  statuses are cleared on close, and shared Reception/Admin attribution stays
+  honest about account/session/device identity.
+- Converted the table into readable, fully rounded staff cards at 760 px and
+  below while preserving every field and action. With JavaScript disabled the
+  staff list remains readable and the review-only management limitation is
+  disclosed; no fixture form writes data.
+
+Validation:
+
+- Bundled Chromium passed 150 focused checks at 1440 px, 1024 px, 760 px and
+  390 px. The create modal stayed centered, the management drawer stayed
+  attached to the right edge, all active/inactive/first-credential/shared
+  states and keyboard tabs worked, focus returned correctly, secrets reset on
+  close, and there were no console/page errors or horizontal overflow.
+- A separate two-width smoke pass covered all sixteen prototype routes with
+  128 successful HTTP, runtime, unique-id and ARIA-target checks. JavaScript
+  syntax, `git diff --check`, exact table/handler fields, local-only assets and
+  the JavaScript-disabled table state also passed.
+- Independent implementation review found no remaining P0, P1 or P2 issue
+  after the create-modal geometry, first-credential semantics, explicit
+  deactivation confirmation, hidden-state CSS and dynamic credential tab label
+  were corrected.
+- GitHub Pages deployment run `30538007180` completed successfully. The live
+  Staff accounts page passed 22 Chromium checks at 1440 px and 390 px,
+  including the published first-login state, modal/drawer geometry, activation
+  state, runtime resources and overflow.
+- The Staff-accounts Graphify query was saved as a `dead_end` because it
+  surfaced only broad Owner/localization nodes. `graphify update .` was
+  attempted after the code change and again stopped with local filesystem
+  error 95. The required semantic `graphify . --update --no-viz` detected one
+  code and eighteen documentation changes, then stopped before extraction
+  because no supported LLM API key is configured; generated Graphify output
+  remains excluded and no refreshed graph is claimed.
+- Full backend CI, PostgreSQL migrations and the unrelated production test
+  matrix were intentionally not run or awaited for this static-template-only
+  iteration.
+
+Commit:
+
+- `3f8a859` (`feat(ui): redesign staff accounts template`).
+
+Stop point:
+
+- Collect feedback on the published staff table, centered create modal and
+  management slide-over. Keep this work in the public-safe review lab; a later
+  production Razor migration must preserve Owner-only authorization,
+  credential/reason validation, active-session termination, audit, secret
+  handling and canonical reread behavior.
