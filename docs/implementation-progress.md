@@ -13188,3 +13188,82 @@ Stop point:
   lab; a later production Razor migration must retain Owner-only authorization,
   immutable confirmed scope, stale preview rejection, idempotency, append-only
   audit and canonical Memberships recalculation.
+
+## Step 204 - Rebuilt the published Membership types template
+
+Status: completed and published as the twelfth review-only template-lab
+iteration. Production Razor UI, MembershipType commands, authorization,
+persistence and issued-Membership snapshots remain unchanged.
+
+Completed:
+
+- Replaced the sparse card rows and always-visible create action with a
+  full-width Owner catalog workspace. The header now owns one primary
+  `＋ Додати тип абонемента` action, while the catalog is a compact
+  six-column table for name, duration, visit limit, price, status and actions.
+- Added centered native dialogs for create, edit and deactivation. The fixtures
+  preserve the real `Create`, `Edit` and `Deactivate` handler names and their
+  `form.*` fields, including idempotency keys, GUID MembershipType ids,
+  expected-update timestamps, editable `UAH` currency suffix, edit reason and
+  deactivation reason.
+- Kept lifecycle semantics honest: zero visits is displayed literally rather
+  than invented as unlimited; inactive rows have no reactivation or
+  deactivation action; full deletion is unavailable; issued Membership terms
+  remain immutable; and inactive catalog entries remain available to history
+  and reports.
+- Removed technical timestamps from the catalog rows and moved friendly
+  created/updated/deactivated values into the edit dialog. The public fixture
+  never mutates its rows or pretends that a command or canonical reread ran.
+- Retained the advertised `validation` and `deactivation` query fixtures,
+  native required/min/max validation, live review-only submit status, backdrop
+  and Escape close, opener-focus restoration and a readable no-JavaScript
+  table.
+- Kept desktop rows at 58 px with both actions on one line. A compact
+  fixed-column profile covers the 960-1199 px shell/rail transition, and
+  narrower viewports use fully rounded cards with every value and action
+  visible without horizontal scrolling.
+
+Validation:
+
+- Bundled Chromium passed 92 focused checks at 1440 px, 1024 px, 760 px and
+  390 px: catalog rows, native validation, exact form prefill, editable
+  currency, localized technical timestamps, create/edit/deactivate previews,
+  no mutation, focus restoration, query fixtures and no-JavaScript behavior.
+- Additional geometry checks kept a 58 px table row with no clipping or
+  horizontal overflow at 960, 1024, 1099, 1100, 1120, 1150, 1199, 1200 and
+  1440 px, with the rounded card transformation at 959 px and below.
+- A separate all-route browser pass completed 96 HTTP/runtime/overflow checks
+  across all sixteen prototype routes at 1440 px and 390 px. Static validation
+  also passed JavaScript syntax, `git diff --check`, unique ids, resolved ARIA
+  references, local links, five GUID fixtures and exact
+  `Create`/`Edit`/`Deactivate` field matrices.
+- Independent review found no remaining P0, P1 or P2 issue after invalid
+  optional-chain assignment, GUID/currency parity, retained query states,
+  typography, compact action layout and the 1100 px rail transition were
+  corrected.
+- GitHub Pages deployment run `30544128656` completed successfully in 17
+  seconds. The live Membership types page passed 26 Chromium checks at
+  1440 px, 1100 px and 390 px plus the published validation query state.
+- The scoped MembershipType Graphify query was saved as a `dead_end` because
+  it exposed only broad Owner/Membership context rather than the governing
+  Razor handlers and ADR-011. The required code-only `graphify update .` was
+  attempted after the template change and again stopped with local filesystem
+  error 95. The semantic `graphify . --update --no-viz` then detected one code
+  and twenty documentation changes but stopped before extraction because no
+  supported LLM API key is configured; generated Graphify output remains
+  excluded from commits and no refreshed graph is claimed.
+- Full backend CI, PostgreSQL migrations and the unrelated production test
+  matrix were intentionally not run or awaited for this static-template-only
+  iteration.
+
+Commit:
+
+- `10cba01` (`feat(ui): redesign membership types template`).
+
+Stop point:
+
+- Collect feedback on the published compact catalog, centered dialogs and
+  tablet/phone card transformation. Keep this work in the public-safe review
+  lab; a later production Razor migration must preserve Owner-only
+  authorization, validation, reasons, idempotency, stale-state handling,
+  audit, canonical rereads and immutable issued-Membership snapshots.
