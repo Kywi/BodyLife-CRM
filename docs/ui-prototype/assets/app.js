@@ -335,4 +335,106 @@
       clearAuditFilters();
     }));
   }
+
+  // Staff accounts is a page-scoped, non-persistent review fixture. It never
+  // submits to a backend or changes the public-safe rows rendered in HTML.
+  const staffCreateDialog = document.querySelector('#staff-create-dialog');
+  const staffManageDialog = document.querySelector('#staff-manage-dialog');
+  if (staffCreateDialog || staffManageDialog) {
+    let staffOpener = null;
+    const staffDialogs = [staffCreateDialog, staffManageDialog].filter(Boolean);
+    const closeStaffDialog = (dialogToClose) => {
+      if (!dialogToClose?.open) return;
+      dialogToClose.close();
+    };
+    const openStaffDialog = (dialogToOpen, openerElement) => {
+      if (!dialogToOpen) return;
+      closeAccountMenus();
+      hideDrawer({ returnFocus: false });
+      staffOpener = openerElement;
+      document.body.classList.add('staff-dialog-open');
+      dialogToOpen.showModal();
+    };
+    const setStaffStatus = (form, handler) => {
+      const status = form.querySelector('[data-staff-status]');
+      if (status) status.textContent = `Preview handler ${handler}: форму не надіслано, команду та canonical reread не виконано.`;
+    };
+    const activateStaffTab = (tab) => {
+      const tablist = tab.closest('[role="tablist"]');
+      if (!tablist) return;
+      [...tablist.querySelectorAll('[role="tab"]')].forEach((candidate) => {
+        const selected = candidate === tab;
+        candidate.setAttribute('aria-selected', String(selected));
+        candidate.tabIndex = selected ? 0 : -1;
+        const panel = document.querySelector(`#${candidate.getAttribute('aria-controls')}`);
+        if (panel) panel.hidden = !selected;
+      });
+      tab.focus();
+    };
+    const populateStaffDialog = (row) => {
+      const data = row.dataset;
+      const active = data.isActive === 'true';
+      const hasCredentials = data.hasCredentials === 'true';
+      staffManageDialog.querySelectorAll('form').forEach((form) => form.reset());
+      staffManageDialog.querySelector('[data-staff-title]').textContent = data.displayName;
+      staffManageDialog.querySelector('[data-staff-summary]').textContent = `${data.accountKind} · ${active ? 'Активний' : 'Деактивований'} · активних сесій: ${data.sessions}`;
+      staffManageDialog.querySelectorAll('[data-staff-account-id]').forEach((input) => { input.value = data.accountId; });
+      staffManageDialog.querySelectorAll('[data-staff-is-active]').forEach((input) => { input.value = String(active); });
+      staffManageDialog.querySelector('#staff-display-name').value = data.displayName;
+      staffManageDialog.querySelector('#staff-login-name').value = data.loginName;
+      staffManageDialog.querySelector('[data-staff-login]').textContent = data.loginName || 'Не налаштовано';
+      staffManageDialog.querySelector('[data-staff-kind]').textContent = data.accountKind;
+      staffManageDialog.querySelector('[data-staff-credentials-tab]').textContent = hasCredentials ? 'Скидання пароля' : 'Налаштування входу';
+      staffManageDialog.querySelector('[data-staff-credentials-title]').textContent = hasCredentials ? 'Скидання пароля' : 'Налаштування входу';
+      staffManageDialog.querySelector('[data-staff-credentials-submit]').textContent = hasCredentials ? 'Скинути облікові дані' : 'Задати облікові дані';
+      staffManageDialog.querySelector('[data-staff-credentials-help]').textContent = hasCredentials
+        ? 'Після скидання активні сесії завершаться. Секрети не показуються й не зберігаються у цьому preview.'
+        : 'Первинне налаштування створить логін і пароль без причини reset. Секрети не зберігаються у цьому preview.';
+      const resetReasonField = staffManageDialog.querySelector('[data-staff-reset-reason-field]');
+      const resetReason = staffManageDialog.querySelector('#staff-reset-reason');
+      resetReasonField.hidden = !hasCredentials;
+      resetReason.required = hasCredentials;
+      staffManageDialog.querySelector('[data-staff-deactivate-confirm-text]').textContent = `Підтверджую деактивацію та завершення ${data.sessions} активних сесій.`;
+      staffManageDialog.querySelector('[data-staff-shared-explanation]').hidden = data.accountKindCode !== 'SharedReceptionAdmin';
+      staffManageDialog.querySelector('.staff-deactivate').hidden = !active;
+      staffManageDialog.querySelector('.staff-activate').hidden = active;
+      staffManageDialog.querySelectorAll('[data-staff-status]').forEach((status) => { status.textContent = ''; });
+      activateStaffTab(staffManageDialog.querySelector('#staff-tab-profile'));
+    };
+
+    document.querySelector('[data-staff-create]')?.addEventListener('click', (event) => {
+      staffCreateDialog.querySelector('[data-staff-status]').textContent = '';
+      staffCreateDialog.querySelector('form').reset();
+      openStaffDialog(staffCreateDialog, event.currentTarget);
+      staffCreateDialog.querySelector('#staff-create-kind').focus();
+    });
+    document.querySelectorAll('[data-staff-manage]').forEach((button) => button.addEventListener('click', (event) => {
+      populateStaffDialog(event.currentTarget.closest('[data-staff-row]'));
+      openStaffDialog(staffManageDialog, event.currentTarget);
+    }));
+    document.querySelectorAll('[data-staff-close]').forEach((button) => button.addEventListener('click', () => closeStaffDialog(button.closest('dialog'))));
+    staffDialogs.forEach((staffDialog) => {
+      staffDialog.addEventListener('click', (event) => { if (event.target === staffDialog) closeStaffDialog(staffDialog); });
+      staffDialog.addEventListener('close', () => {
+        staffDialog.querySelectorAll('form').forEach((form) => form.reset());
+        staffDialog.querySelectorAll('[data-staff-status]').forEach((status) => { status.textContent = ''; });
+        document.body.classList.remove('staff-dialog-open');
+        if (staffOpener instanceof HTMLElement) staffOpener.focus();
+        staffOpener = null;
+      });
+    });
+    staffManageDialog?.querySelectorAll('[role="tab"]').forEach((tab) => tab.addEventListener('click', () => activateStaffTab(tab)));
+    staffManageDialog?.querySelector('[role="tablist"]')?.addEventListener('keydown', (event) => {
+      const tabs = [...event.currentTarget.querySelectorAll('[role="tab"]')];
+      const current = tabs.indexOf(document.activeElement);
+      if (current < 0 || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      activateStaffTab(tabs[next]);
+    });
+    document.querySelectorAll('[data-staff-form]').forEach((form) => form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      setStaffStatus(form, form.dataset.backendHandler);
+    }));
+  }
 })();
