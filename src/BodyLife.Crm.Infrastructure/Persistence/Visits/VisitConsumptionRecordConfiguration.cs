@@ -18,19 +18,26 @@ internal sealed class VisitConsumptionRecordConfiguration
                     "visit_kind = 'membership'");
                 table.HasCheckConstraint(
                     "ck_visit_consumptions_consumption_type",
-                    "consumption_type = 'counted'");
+                    "consumption_type in ('counted', 'negative_coverage')");
                 table.HasCheckConstraint(
                     "ck_visit_consumptions_source_fact_type",
-                    "source_fact_type = 'visit'");
+                    "(consumption_type = 'counted' and source_fact_type = 'visit') or (consumption_type = 'negative_coverage' and source_fact_type = 'negative_closure_item')");
                 table.HasCheckConstraint(
                     "ck_visit_consumptions_source_fact_identity",
-                    "source_fact_id = visit_id");
+                    "consumption_type <> 'counted' or source_fact_id = visit_id");
                 table.HasCheckConstraint(
                     "ck_visit_consumptions_status",
                     "status in ('active', 'canceled')");
             });
 
         builder.HasKey(consumption => consumption.Id);
+
+        builder.HasAlternateKey(consumption => new
+        {
+            consumption.Id,
+            consumption.ClientId,
+        })
+            .HasName("AK_visit_consumptions_id_client_id");
 
         builder.Property(consumption => consumption.Id)
             .HasColumnName("id")
@@ -132,6 +139,11 @@ internal sealed class VisitConsumptionRecordConfiguration
             .IsUnique()
             .HasFilter("status = 'active' and consumption_type = 'counted'")
             .HasDatabaseName("ux_visit_consumptions_active_counted_visit");
+
+        builder.HasIndex(consumption => consumption.SourceFactId)
+            .IsUnique()
+            .HasFilter("status = 'active' and consumption_type = 'negative_coverage'")
+            .HasDatabaseName("ux_visit_consumptions_active_negative_coverage_source");
 
         builder.HasIndex(consumption => new
         {

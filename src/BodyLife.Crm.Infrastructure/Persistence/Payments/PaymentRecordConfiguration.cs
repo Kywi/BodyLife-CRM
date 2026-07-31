@@ -1,3 +1,4 @@
+using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -28,6 +29,9 @@ internal sealed class PaymentRecordConfiguration : IEntityTypeConfiguration<Paym
                     "ck_payments_membership_sale_membership",
                     "payment_context <> 'membership_sale' or membership_id is not null");
                 table.HasCheckConstraint(
+                    "ck_payments_negative_closure_context",
+                    "(payment_context = 'negative_closure' and negative_closure_id is not null and membership_id is null) or (payment_context <> 'negative_closure' and negative_closure_id is null)");
+                table.HasCheckConstraint(
                     "ck_payments_entry_origin",
                     "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
                 table.HasCheckConstraint(
@@ -56,6 +60,9 @@ internal sealed class PaymentRecordConfiguration : IEntityTypeConfiguration<Paym
 
         builder.Property(payment => payment.MembershipId)
             .HasColumnName("membership_id");
+
+        builder.Property(payment => payment.NegativeClosureId)
+            .HasColumnName("negative_closure_id");
 
         builder.Property(payment => payment.Amount)
             .HasColumnName("amount")
@@ -124,6 +131,21 @@ internal sealed class PaymentRecordConfiguration : IEntityTypeConfiguration<Paym
             .HasConstraintName("FK_payments_issued_memberships_membership_client")
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne<MembershipNegativeClosureRecord>()
+            .WithMany()
+            .HasForeignKey(payment => new
+            {
+                payment.NegativeClosureId,
+                payment.ClientId,
+            })
+            .HasPrincipalKey(closure => new
+            {
+                closure.Id,
+                closure.ClientId,
+            })
+            .HasConstraintName("FK_payments_negative_closures_closure_client")
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne<AccountRecord>()
             .WithMany()
             .HasForeignKey(payment => payment.RecordedByAccountId)
@@ -177,6 +199,11 @@ internal sealed class PaymentRecordConfiguration : IEntityTypeConfiguration<Paym
             .IsUnique()
             .HasFilter("payment_context = 'membership_sale'")
             .HasDatabaseName("ux_payments_membership_sale_membership");
+
+        builder.HasIndex(payment => payment.NegativeClosureId)
+            .IsUnique()
+            .HasFilter("payment_context = 'negative_closure' and status = 'active'")
+            .HasDatabaseName("ux_payments_active_negative_closure");
 
         builder.HasIndex(payment => payment.RecordedByAccountId)
             .HasDatabaseName("ix_payments_recorded_by_account_id");

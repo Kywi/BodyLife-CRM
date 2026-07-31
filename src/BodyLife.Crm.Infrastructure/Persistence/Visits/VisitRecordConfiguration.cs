@@ -36,6 +36,13 @@ internal sealed class VisitRecordConfiguration : IEntityTypeConfiguration<VisitR
         })
             .HasName("AK_visits_id_client_id_visit_kind");
 
+        builder.HasAlternateKey(visit => new
+        {
+            visit.Id,
+            visit.ClientId,
+        })
+            .HasName("AK_visits_id_client_id");
+
         builder.Property(visit => visit.Id)
             .HasColumnName("id")
             .ValueGeneratedNever();

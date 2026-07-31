@@ -15,6 +15,8 @@ internal sealed class PaymentRecord
 
     public IssuedMembershipRecord? Membership { get; set; }
 
+    public Guid? NegativeClosureId { get; set; }
+
     public decimal Amount { get; set; }
 
     public required string Currency { get; set; }

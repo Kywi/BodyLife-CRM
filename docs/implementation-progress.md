@@ -13539,3 +13539,53 @@ Stop point:
   Visit coverage, including one-off closure lines, exact closure Payment,
   new-Membership coverage consumptions, Memberships-owned recalculation and
   correction semantics. Do not start Milestone 11.
+
+## Step 209 - Added negative coverage source facts and recalculation foundation
+
+Status: completed as the persistence/domain foundation for the second
+Milestone 10.5 implementation block. Negative coverage commands and production
+UI remain in progress; Milestone 11 has not started.
+
+Completed:
+
+- Added migration `20260731144103_AddNegativeCoverageFoundation` with retained
+  closure, immutable one-off line snapshot, per-Visit item and correction
+  source tables; explicit closure linkage on Payments; and separate
+  `negative_coverage` Visit consumptions for a covering Membership.
+- Added composite Client-consistency foreign keys, active-Visit and coverage
+  uniqueness, exact line-total checks, recalculation indexes and deferred
+  PostgreSQL validation for one exact closure Payment, allocation limits,
+  lifecycle-matched items/consumptions, retained correction facts and
+  new-Membership start date.
+- Kept the original counted Visit consumption. Memberships now resolves the
+  effective sequence as original counted Visits minus active outbound closure
+  items plus active inbound coverage consumptions, then recalculates signed
+  remaining Visits and first-negative metadata from that canonical sequence.
+- Bumped the rebuildable cache contract to recalculation version 8. Existing
+  version-7 caches are safely advanced by the migration because the new source
+  tables are empty at transition time; later commands rebuild every affected
+  Membership synchronously.
+- Removed a pre-existing UTF-8 BOM from the exact-sale migration so the full
+  repository formatter/encoding gate remains clean.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 411/411, including 5 new outbound/inbound coverage
+  resolver tests for partial/full state, first-negative movement, unused new
+  limit, cancellation restoration and duplicate active coverage rejection.
+- Focused PostgreSQL migration, cache rebuild and coverage tests passed: 34/34.
+  The new PostgreSQL tests prove exact one-off Payment totals, multiple line
+  snapshots, catalog-edit immutability, one active closure per Visit,
+  new-Membership allocation limit enforcement and source/covering cache rebuild.
+- `dotnet-ef migrations has-pending-model-changes` reported no model drift.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Implement `CloseNegativeVisitsOneOff`, new-Membership coverage inside
+  `IssueMembership`, and `CorrectNegativeVisitCoverage` with canonical
+  oldest-first locking, authorization, idempotency, rollback, audit and profile
+  rereads. Then add the production Razor/htmx coverage controls. Do not start
+  issued-sale replacement, paper metadata or Milestone 11 before this command
+  block is validated.

@@ -34,7 +34,7 @@ public sealed class MembershipStateCacheRebuilder
         this.extensionSourceProviders = providers;
     }
 
-    public const int CurrentRecalculationVersion = 7;
+    public const int CurrentRecalculationVersion = 8;
 
     public async Task<MembershipStateCacheRebuildResult> RebuildAsync(
         Guid membershipId,
@@ -222,11 +222,12 @@ public sealed class MembershipStateCacheRebuilder
         var adjustmentFacts = adjustmentSources
             .Select(MapAdjustmentSource)
             .ToArray();
-        var visitSourceRows = await (
+        var originalVisitSourceRows = await (
             from consumption in dbContext.Set<VisitConsumptionRecord>().AsNoTracking()
             join visit in dbContext.Set<VisitRecord>().AsNoTracking()
                 on consumption.VisitId equals visit.Id
             where consumption.MembershipId == membershipId
+                && consumption.ConsumptionType == "counted"
             select new MembershipVisitSourceRow(
                 consumption.Id,
                 consumption.VisitId,
@@ -235,7 +236,7 @@ public sealed class MembershipStateCacheRebuilder
                 consumption.RecordedAt,
                 consumption.Status))
             .ToArrayAsync(cancellationToken);
-        var visitFacts = visitSourceRows
+        var originalVisitFacts = originalVisitSourceRows
             .GroupBy(sourceRow => sourceRow.VisitId)
             .Select(sourceRows => MembershipVisitSourceMapper.Map(
                 membershipId,
@@ -243,6 +244,58 @@ public sealed class MembershipStateCacheRebuilder
             .Where(visitFact => openingStateSource is null
                 || visitFact.RecordedAt > openingStateSource.RecordedAt)
             .ToArray();
+        var coverageSourceRows = await (
+            from item in dbContext.Set<MembershipNegativeClosureItemRecord>()
+                .AsNoTracking()
+            join closure in dbContext.Set<MembershipNegativeClosureRecord>()
+                .AsNoTracking()
+                on item.NegativeClosureId equals closure.Id
+            join visit in dbContext.Set<VisitRecord>().AsNoTracking()
+                on item.VisitId equals visit.Id
+            join oldConsumption in dbContext.Set<VisitConsumptionRecord>()
+                .AsNoTracking()
+                on item.OldConsumptionId equals oldConsumption.Id
+            join candidateNewConsumption in dbContext.Set<VisitConsumptionRecord>()
+                .AsNoTracking()
+                on item.NewConsumptionId equals (Guid?)candidateNewConsumption.Id
+                into newConsumptions
+            from newConsumption in newConsumptions.DefaultIfEmpty()
+            where item.SourceMembershipId == membershipId
+                || item.CoveringMembershipId == membershipId
+            select new MembershipNegativeCoverageSourceRow(
+                item.Id,
+                item.ClientId,
+                item.VisitId,
+                item.SourceMembershipId,
+                item.CoveringMembershipId,
+                item.ClosureLineId,
+                item.NewConsumptionId,
+                item.Status,
+                closure.ClosureType,
+                closure.Status,
+                closure.RecordedAt,
+                visit.OccurredAt,
+                oldConsumption.RecordedAt,
+                newConsumption == null ? null : newConsumption.Id,
+                newConsumption == null ? null : newConsumption.ClientId,
+                newConsumption == null ? null : newConsumption.VisitId,
+                newConsumption == null ? null : newConsumption.MembershipId,
+                newConsumption == null ? null : newConsumption.ConsumptionType,
+                newConsumption == null ? null : newConsumption.SourceFactType,
+                newConsumption == null ? null : newConsumption.SourceFactId,
+                newConsumption == null ? null : newConsumption.RecordedAt,
+                newConsumption == null ? null : newConsumption.Status))
+            .ToArrayAsync(cancellationToken);
+        var coverageFacts = coverageSourceRows
+            .Where(coverage => openingStateSource is null
+                || coverage.SourceMembershipId != membershipId
+                || coverage.OldConsumptionRecordedAt > openingStateSource.RecordedAt)
+            .Select(MapCoverageSource)
+            .ToArray();
+        var visitFacts = MembershipVisitCoverageResolver.ResolveEffectiveVisits(
+            membershipId,
+            originalVisitFacts,
+            coverageFacts);
         var sourceBaseline = openingStateSource is null
             ? MembershipStateCalculator.CalculateFromVisitAndAdjustmentFacts(
                 membershipId,
@@ -358,4 +411,96 @@ public sealed class MembershipStateCacheRebuilder
             status);
     }
 
+    private static MembershipNegativeCoverageSourceFact MapCoverageSource(
+        MembershipNegativeCoverageSourceRow source)
+    {
+        var status = MapCoverageStatus(source);
+        var isNewMembership = source.ClosureType == "new_membership";
+
+        if (source.ClosureType is not ("one_off" or "new_membership")
+            || isNewMembership != source.CoveringMembershipId.HasValue
+            || isNewMembership != source.NewConsumptionId.HasValue
+            || isNewMembership == source.ClosureLineId.HasValue)
+        {
+            throw new InvalidOperationException(
+                $"Negative coverage item '{source.ItemId}' has an invalid closure shape.");
+        }
+
+        var recordedAt = source.ClosureRecordedAt;
+        if (isNewMembership)
+        {
+            if (source.LoadedNewConsumptionId != source.NewConsumptionId
+                || source.NewConsumptionClientId != source.ClientId
+                || source.NewConsumptionVisitId != source.VisitId
+                || source.NewConsumptionMembershipId != source.CoveringMembershipId
+                || source.NewConsumptionType != "negative_coverage"
+                || source.NewConsumptionSourceFactType != "negative_closure_item"
+                || source.NewConsumptionSourceFactId != source.ItemId
+                || source.NewConsumptionRecordedAt is null)
+            {
+                throw new InvalidOperationException(
+                    $"Negative coverage item '{source.ItemId}' has an invalid coverage consumption.");
+            }
+
+            var expectedConsumptionStatus = status
+                == MembershipNegativeCoverageSourceStatus.Active
+                    ? "active"
+                    : "canceled";
+            if (source.NewConsumptionStatus != expectedConsumptionStatus)
+            {
+                throw new InvalidOperationException(
+                    $"Negative coverage item '{source.ItemId}' and its consumption statuses do not match.");
+            }
+
+            recordedAt = source.NewConsumptionRecordedAt.Value;
+        }
+
+        return new MembershipNegativeCoverageSourceFact(
+            source.ItemId,
+            source.VisitId,
+            source.SourceMembershipId,
+            source.CoveringMembershipId,
+            BusinessTimeZone.GetBusinessDate(source.VisitOccurredAt),
+            source.VisitOccurredAt,
+            recordedAt,
+            status);
+    }
+
+    private static MembershipNegativeCoverageSourceStatus MapCoverageStatus(
+        MembershipNegativeCoverageSourceRow source)
+    {
+        return (source.ClosureStatus, source.ItemStatus) switch
+        {
+            ("active", "active") => MembershipNegativeCoverageSourceStatus.Active,
+            ("canceled", "canceled") => MembershipNegativeCoverageSourceStatus.Canceled,
+            ("replaced", "replaced") => MembershipNegativeCoverageSourceStatus.Replaced,
+            _ => throw new InvalidOperationException(
+                $"Negative coverage item '{source.ItemId}' and closure statuses do not match."),
+        };
+    }
+
 }
+
+internal sealed record MembershipNegativeCoverageSourceRow(
+    Guid ItemId,
+    Guid ClientId,
+    Guid VisitId,
+    Guid SourceMembershipId,
+    Guid? CoveringMembershipId,
+    Guid? ClosureLineId,
+    Guid? NewConsumptionId,
+    string ItemStatus,
+    string ClosureType,
+    string ClosureStatus,
+    DateTimeOffset ClosureRecordedAt,
+    DateTimeOffset VisitOccurredAt,
+    DateTimeOffset OldConsumptionRecordedAt,
+    Guid? LoadedNewConsumptionId,
+    Guid? NewConsumptionClientId,
+    Guid? NewConsumptionVisitId,
+    Guid? NewConsumptionMembershipId,
+    string? NewConsumptionType,
+    string? NewConsumptionSourceFactType,
+    Guid? NewConsumptionSourceFactId,
+    DateTimeOffset? NewConsumptionRecordedAt,
+    string? NewConsumptionStatus);
