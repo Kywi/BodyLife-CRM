@@ -88,11 +88,19 @@ internal static class MembershipTypeCommandSupport
                 command.DurationDays,
                 command.VisitsLimit,
                 command.Price,
-                command.Comment);
+                command.Comment,
+                command.Kind);
         }
         catch (ArgumentException exception)
         {
             return ValidationError(exception.Message, exception.ParamName);
+        }
+
+        if (command.IsActive && catalogValues.Price.Amount <= 0)
+        {
+            return ValidationError(
+                "Active membership type price must be greater than zero.",
+                "price");
         }
 
         normalizedCreate = new NormalizedMembershipTypeCreate(
@@ -221,6 +229,7 @@ internal static class MembershipTypeCommandSupport
             PriceAmount = normalizedCreate.CatalogValues.Price.Amount,
             PriceCurrency = normalizedCreate.CatalogValues.Price.Currency,
             normalizedCreate.CatalogValues.Comment,
+            Kind = normalizedCreate.CatalogValues.Kind.ToString(),
             normalizedCreate.IsActive,
         });
 

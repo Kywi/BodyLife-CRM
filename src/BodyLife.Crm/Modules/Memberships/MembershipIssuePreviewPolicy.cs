@@ -43,6 +43,7 @@ public static class MembershipIssuePreviewPolicy
         {
             return new MembershipIssuePreview(
                 clientId,
+                membershipType.UpdatedAt,
                 issueTerms,
                 expectedInitialState,
                 existingNegativeState: null,
@@ -68,6 +69,7 @@ public static class MembershipIssuePreviewPolicy
 
         return new MembershipIssuePreview(
             clientId,
+            membershipType.UpdatedAt,
             issueTerms,
             expectedInitialState,
             existingNegativeState,

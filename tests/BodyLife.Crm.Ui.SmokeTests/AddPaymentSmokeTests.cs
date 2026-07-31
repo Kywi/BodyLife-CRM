@@ -39,8 +39,8 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
         768,
         "BL-PAYMENT-TABLET",
         "Payment Tablet",
-        "MembershipSale",
-        "Membership sale",
+        "Other",
+        "Other",
         850)]
     [InlineData(
         "phone",
@@ -106,6 +106,7 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
                 viewportName,
                 "fixed currency");
             var paymentContext = panel.GetByLabel("Payment context", new() { Exact = true });
+            Assert.Equal(0, await paymentContext.Locator("option[value='MembershipSale']").CountAsync());
             Assert.Equal(0, await paymentContext.Locator("option[value='NegativeClosure']").CountAsync());
             await paymentContext.SelectOptionAsync(contextValue);
 
@@ -235,7 +236,7 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
             Assert.Equal(amount, payment.Amount);
             Assert.Equal("UAH", payment.Currency);
             Assert.Equal(
-                contextValue == "MembershipSale" ? "membership_sale" : "one_off",
+                contextValue == "Other" ? "other" : "one_off",
                 payment.PaymentContext);
             Assert.Equal(membershipId, payment.MembershipId);
             Assert.Equal(comment, payment.Comment);

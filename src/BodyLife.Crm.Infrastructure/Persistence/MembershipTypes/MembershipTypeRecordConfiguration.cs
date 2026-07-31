@@ -25,6 +25,15 @@ internal sealed class MembershipTypeRecordConfiguration
                     "ck_membership_types_price_non_negative",
                     "price_amount >= 0");
                 table.HasCheckConstraint(
+                    "ck_membership_types_kind",
+                    "kind in ('ordinary', 'one_off')");
+                table.HasCheckConstraint(
+                    "ck_membership_types_active_sale_terms",
+                    "not is_active or price_amount > 0");
+                table.HasCheckConstraint(
+                    "ck_membership_types_one_off_visits",
+                    "kind <> 'one_off' or visits_limit = 1");
+                table.HasCheckConstraint(
                     "ck_membership_types_currency_canonical",
                     "length(btrim(price_currency)) > 0 and price_currency = upper(btrim(price_currency))");
                 table.HasCheckConstraint(
@@ -71,6 +80,12 @@ internal sealed class MembershipTypeRecordConfiguration
 
         builder.Property(membershipType => membershipType.PriceCurrency)
             .HasColumnName("price_currency")
+            .IsRequired();
+
+        builder.Property(membershipType => membershipType.Kind)
+            .HasColumnName("kind")
+            .HasMaxLength(32)
+            .HasDefaultValue("ordinary")
             .IsRequired();
 
         builder.Property(membershipType => membershipType.IsActive)

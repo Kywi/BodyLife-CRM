@@ -5,11 +5,12 @@ namespace BodyLife.Crm.Modules.Payments;
 
 public interface IMembershipIssuePaymentWriter
 {
-    MembershipIssuePaymentWriteResult Stage(
+    MembershipIssuePaymentWriteResult StageExactSale(
         CommandEnvelope envelope,
         Guid clientId,
         Guid membershipId,
-        MembershipIssuePayment payment,
+        Money amount,
+        Guid? entryBatchId,
         DateTimeOffset recordedAt);
 }
 

@@ -10,7 +10,8 @@ public static class MembershipTypeCatalogRules
         int durationDays,
         int visitsLimit,
         Money price,
-        string? comment)
+        string? comment,
+        MembershipTypeKind kind = MembershipTypeKind.Ordinary)
     {
         if (durationDays <= 0)
         {
@@ -26,6 +27,16 @@ public static class MembershipTypeCatalogRules
                 "Visits limit cannot be negative.");
         }
 
+        if (!Enum.IsDefined(kind))
+        {
+            throw new ArgumentOutOfRangeException(nameof(kind), "Membership type kind is invalid.");
+        }
+
+        if (kind == MembershipTypeKind.OneOff && visitsLimit != 1)
+        {
+            throw new ArgumentException("One-off membership types require exactly one visit.", nameof(visitsLimit));
+        }
+
         var normalizedPrice = new Money(price.Amount, price.Currency);
 
         return new MembershipTypeCatalogValues(
@@ -33,7 +44,8 @@ public static class MembershipTypeCatalogRules
             durationDays,
             visitsLimit,
             normalizedPrice,
-            NormalizeOptional(comment));
+            NormalizeOptional(comment),
+            kind);
     }
 
     public static string NormalizeName(string? name)

@@ -49,7 +49,7 @@ public sealed class PostgreSqlMembershipTypesStorageTests
             Guid.NewGuid(),
             name: "Morning eight",
             visitsLimit: 0,
-            priceAmount: 0m);
+            priceAmount: 1m);
         await InsertMembershipTypeAsync(
             database.ConnectionString,
             Guid.NewGuid(),
@@ -90,7 +90,16 @@ public sealed class PostgreSqlMembershipTypesStorageTests
             () => InsertMembershipTypeAsync(
                 database.ConnectionString,
                 Guid.NewGuid(),
-                priceAmount: -0.01m),
+                priceAmount: 0m),
+            "ck_membership_types_active_sale_terms");
+        await AssertCheckViolationAsync(
+            () => InsertMembershipTypeAsync(
+                database.ConnectionString,
+                Guid.NewGuid(),
+                priceAmount: -0.01m,
+                isActive: false,
+                updatedAt: TestNow.AddMinutes(1),
+                deactivatedAt: TestNow.AddMinutes(1)),
             "ck_membership_types_price_non_negative");
     }
 

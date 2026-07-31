@@ -1192,6 +1192,7 @@ public sealed class PostgreSqlGetClientProfileQueryTests
                     visits_limit_snapshot,
                     price_amount_snapshot,
                     price_currency_snapshot,
+                    issuance_mode,
                     start_date,
                     base_end_date,
                     issued_at,
@@ -1209,14 +1210,30 @@ public sealed class PostgreSqlGetClientProfileQueryTests
                     8,
                     1200,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @issued_at,
                     @issued_by_account_id,
                     @status,
-                    'normal',
+                    'manual_backfill',
                     null,
-                    null)
+                    null);
+
+                insert into bodylife.membership_opening_states (
+                    id, membership_id, opening_as_of_date, declared_remaining_visits,
+                    declared_negative_balance, known_effective_end_date,
+                    known_extension_days, source_reference, reason, recorded_at,
+                    recorded_by_account_id, recorded_session_id, entry_origin,
+                    entry_batch_id, status)
+                values (
+                    gen_random_uuid(), @id, @start_date, @remaining_visits,
+                    @negative_balance, @base_end_date, 0,
+                    'Client profile fixture',
+                    'Historical state required by the profile scenario', @issued_at,
+                    @issued_by_account_id,
+                    (select id from bodylife.sessions where account_id = @issued_by_account_id limit 1),
+                    'manual_backfill', null, 'active')
                 """;
             membershipCommand.Parameters.AddWithValue("id", membershipId);
             membershipCommand.Parameters.AddWithValue("client_id", clientId);
@@ -1226,7 +1243,11 @@ public sealed class PostgreSqlGetClientProfileQueryTests
             membershipCommand.Parameters.AddWithValue("issued_at", issuedAt);
             membershipCommand.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
             membershipCommand.Parameters.AddWithValue("status", status);
-            Assert.Equal(1, await membershipCommand.ExecuteNonQueryAsync());
+            membershipCommand.Parameters.AddWithValue("remaining_visits", remainingVisits);
+            membershipCommand.Parameters.AddWithValue(
+                "negative_balance",
+                Math.Max(0, -remainingVisits));
+            Assert.Equal(2, await membershipCommand.ExecuteNonQueryAsync());
         }
 
         if (!includeCache)

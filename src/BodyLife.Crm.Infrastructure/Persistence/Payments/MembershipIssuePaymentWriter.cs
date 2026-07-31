@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Modules.Payments;
+using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Payments;
 
@@ -9,15 +10,15 @@ public sealed class MembershipIssuePaymentWriter(
     BusinessAuditAppender auditAppender)
     : IMembershipIssuePaymentWriter
 {
-    public MembershipIssuePaymentWriteResult Stage(
+    public MembershipIssuePaymentWriteResult StageExactSale(
         CommandEnvelope envelope,
         Guid clientId,
         Guid membershipId,
-        MembershipIssuePayment payment,
+        Money amount,
+        Guid? entryBatchId,
         DateTimeOffset recordedAt)
     {
         ArgumentNullException.ThrowIfNull(envelope);
-        ArgumentNullException.ThrowIfNull(payment);
 
         if (clientId == Guid.Empty)
         {
@@ -29,18 +30,11 @@ public sealed class MembershipIssuePaymentWriter(
             throw new ArgumentException("Membership id is required.", nameof(membershipId));
         }
 
-        if (payment.PaymentContext != PaymentContext.MembershipSale)
-        {
-            throw new ArgumentException(
-                "IssueMembership accepts only membership-sale Payment context.",
-                nameof(payment));
-        }
-
-        if (payment.Amount.Amount <= 0)
+        if (amount.Amount <= 0)
         {
             throw new ArgumentException(
                 "Payment amount must be greater than zero.",
-                nameof(payment));
+                nameof(amount));
         }
 
         var paymentId = Guid.NewGuid();
@@ -49,17 +43,16 @@ public sealed class MembershipIssuePaymentWriter(
             Id = paymentId,
             ClientId = clientId,
             MembershipId = membershipId,
-            Amount = payment.Amount.Amount,
-            Currency = payment.Amount.Currency,
+            Amount = amount.Amount,
+            Currency = amount.Currency,
             Method = "cash",
-            PaymentContext = PaymentCommandSupport.MapPaymentContext(
-                payment.PaymentContext),
+            PaymentContext = "membership_sale",
             OccurredAt = envelope.OccurredAt?.ToUniversalTime() ?? recordedAt,
             RecordedAt = recordedAt,
             RecordedByAccountId = envelope.Actor.AccountId.Value,
             SessionId = envelope.Actor.SessionId.Value,
             EntryOrigin = PaymentCommandSupport.MapEntryOrigin(envelope.EntryOrigin),
-            EntryBatchId = null,
+            EntryBatchId = entryBatchId,
             Comment = NormalizeOptional(envelope.Comment),
             Status = "active",
         };

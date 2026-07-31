@@ -45,7 +45,7 @@ public sealed class GetMembershipTypesForIssueQueryHandler(
         else
         {
             orderedRecords = records
-                .Where(record => record.IsActive)
+                .Where(record => record.IsActive && record.Kind == "ordinary")
                 .OrderBy(record => record.Name)
                 .ThenBy(record => record.Id);
         }
@@ -62,7 +62,8 @@ public sealed class GetMembershipTypesForIssueQueryHandler(
                 record.Comment,
                 record.CreatedAt,
                 record.UpdatedAt,
-                record.DeactivatedAt))
+                record.DeactivatedAt,
+                record.Kind))
             .ToArrayAsync(cancellationToken);
         var items = rows
             .Select(row => new MembershipTypeCatalogItem(
@@ -75,7 +76,8 @@ public sealed class GetMembershipTypesForIssueQueryHandler(
                 row.Comment,
                 row.CreatedAt,
                 row.UpdatedAt,
-                row.DeactivatedAt))
+                row.DeactivatedAt,
+                MapKind(row.Kind)))
             .ToArray();
 
         return GetMembershipTypesForIssueResult.Succeeded(
@@ -95,5 +97,13 @@ public sealed class GetMembershipTypesForIssueQueryHandler(
         string? Comment,
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt,
-        DateTimeOffset? DeactivatedAt);
+        DateTimeOffset? DeactivatedAt,
+        string Kind);
+
+    private static MembershipTypeKind MapKind(string kind) => kind switch
+    {
+        "ordinary" => MembershipTypeKind.Ordinary,
+        "one_off" => MembershipTypeKind.OneOff,
+        _ => throw new InvalidOperationException("Stored membership type kind is invalid."),
+    };
 }

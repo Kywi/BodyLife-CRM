@@ -13490,3 +13490,52 @@ Stop point:
 - Product decisions still intentionally separate from ADR-018 are formal day
   close/reconciliation, default inactive-client threshold, denied-attempt
   business audit, extra card-history presentation and hosting/backup provider.
+
+## Step 208 - Enforced exact Membership sales and opening-state issuance
+
+Status: completed as the first Milestone 10.5 implementation block. Milestone
+10.5 remains in progress; Milestone 11 has not started.
+
+Completed:
+
+- Added migration `20260731122055_AddMembershipSalesFoundation` with the
+  ADR-018 data preflight, `MembershipType.kind`, immutable
+  `issued_memberships.issuance_mode`, active sale-term checks, one-off shape
+  checks, one sale Payment per Membership and deferred cross-table exact-sale
+  and opening-state invariants.
+- Made `IssueMembership` accept only active ordinary types and create the
+  Membership, exact cash Payment, recalculated state, audit entries and
+  idempotency result in one transaction. Staff no longer supplies a payment
+  amount or optional-payment flag.
+- Made `CreateMembershipOpeningState` create the issued Membership and its
+  opening declaration atomically as `manual_backfill`, with no invented sale
+  Payment. Existing fixtures now classify honestly as sale or opening state.
+- Reserved `membership_sale` and `negative_closure` from generic
+  `CreatePayment` and `CorrectPayment`, removed them from the production
+  payment form, and removed standalone sale-payment correction actions.
+- Updated the production Razor/htmx issue flow to show the canonical catalog
+  price read-only, reject stale catalog previews and reread server state after
+  the atomic sale. Updated tablet and phone smoke fixtures accordingly.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Domain tests passed: 406/406. Web tests passed: 294/294.
+- The full PostgreSQL integration project reached 541/550 on the available
+  PostgreSQL 18.4 server. All nine remaining tests are pre-existing
+  `ON DELETE RESTRICT` SQL-state expectations (`23503` on the project/CI
+  PostgreSQL 17 image versus `23001` locally on PostgreSQL 18); no command,
+  migration, recalculation or data-shape test failed. The focused changed
+  classes similarly reached 83/85 with only those two version-specific delete
+  assertions.
+- Focused Playwright issue/payment flows passed 4/4 across the 1024x768 tablet
+  and 390x844 phone viewports.
+- `git diff --check` passed for product changes. Generated and pre-existing
+  `graphify-out/` changes remain excluded.
+
+Stop point:
+
+- Implement the next Milestone 10.5 block: oldest-first partial/full negative
+  Visit coverage, including one-off closure lines, exact closure Payment,
+  new-Membership coverage consumptions, Memberships-owned recalculation and
+  correction semantics. Do not start Milestone 11.

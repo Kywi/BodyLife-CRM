@@ -39,6 +39,7 @@ public sealed class MembershipExtensionDayWriter(
                     visits_limit_snapshot,
                     price_amount_snapshot,
                     price_currency_snapshot,
+                    issuance_mode,
                     start_date,
                     base_end_date,
                     issued_at,

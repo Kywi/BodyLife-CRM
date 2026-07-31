@@ -120,11 +120,11 @@ public sealed class CorrectPaymentCommandHandler(
                     CorrectPaymentCommandSupport.ConcurrencyConflict());
             }
 
-            if (originalPaymentContext == PaymentContext.NegativeClosure)
+            if (originalPaymentContext is PaymentContext.MembershipSale or PaymentContext.NegativeClosure)
             {
                 return await RollBackAsync(CorrectPaymentCommandSupport.Error(
                     CommandErrorCode.MembershipNotEligible,
-                    "Negative-closure Payment correction requires its explicit Membership workflow.",
+                    "Membership-sale and negative-closure Payment correction requires its explicit Membership workflow.",
                     "originalPaymentId"));
             }
 
@@ -144,6 +144,13 @@ public sealed class CorrectPaymentCommandHandler(
             IReadOnlyList<string> changedFields = [];
             if (correction.Replacement is { } candidateReplacement)
             {
+                if (candidateReplacement.PaymentContext is PaymentContext.MembershipSale or PaymentContext.NegativeClosure)
+                {
+                    return await RollBackAsync(CorrectPaymentCommandSupport.Error(
+                        CommandErrorCode.MembershipNotEligible,
+                        "Membership-sale and negative-closure Payment correction requires its explicit Membership workflow.",
+                        "replacement.paymentContext"));
+                }
                 if (candidateReplacement.MembershipId is { } membershipId
                     && !await LockMembershipAsync(
                         original.ClientId,

@@ -777,6 +777,7 @@ public sealed class PostgreSqlListInactiveClientsQueryTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -794,14 +795,29 @@ public sealed class PostgreSqlListInactiveClientsQueryTests
                 8,
                 1200,
                 'UAH',
+                'opening_state',
                 @start_date,
                 @effective_end_date,
                 @issued_at,
                 @account_id,
                 'active',
-                'normal',
+                'manual_backfill',
                 null,
                 null);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            values (
+                gen_random_uuid(), @membership_id, @start_date, 4, 0,
+                @effective_end_date, 0, 'Inactive clients report fixture',
+                'Historical state required by the report scenario', @issued_at,
+                @account_id,
+                (select id from bodylife.sessions where account_id = @account_id limit 1),
+                'manual_backfill', null, 'active');
 
             insert into bodylife.membership_state_cache (
                 membership_id,

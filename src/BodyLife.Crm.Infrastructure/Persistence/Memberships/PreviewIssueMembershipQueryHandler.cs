@@ -75,6 +75,7 @@ public sealed class PreviewIssueMembershipQueryHandler(
                 record.VisitsLimit,
                 record.PriceAmount,
                 record.PriceCurrency,
+                record.Kind,
                 record.IsActive,
                 record.Comment,
                 record.CreatedAt,
@@ -89,6 +90,13 @@ public sealed class PreviewIssueMembershipQueryHandler(
         if (!membershipType.IsActive)
         {
             return PreviewIssueMembershipResult.InactiveMembershipType();
+        }
+
+        if (!string.Equals(membershipType.Kind, "ordinary", StringComparison.Ordinal))
+        {
+            return PreviewIssueMembershipResult.Invalid(
+                "Only ordinary membership types can be issued as a membership sale.",
+                "membershipTypeId");
         }
 
         var activeMemberships = await dbContext.Set<IssuedMembershipRecord>()
@@ -212,7 +220,8 @@ public sealed class PreviewIssueMembershipQueryHandler(
                 membershipType.Comment,
                 membershipType.CreatedAt,
                 membershipType.UpdatedAt,
-                membershipType.DeactivatedAt);
+                membershipType.DeactivatedAt,
+                MembershipTypeKind.Ordinary);
             preview = MembershipIssuePreviewPolicy.Create(
                 query.ClientId,
                 catalogItem,
@@ -250,6 +259,7 @@ public sealed class PreviewIssueMembershipQueryHandler(
         int VisitsLimit,
         decimal PriceAmount,
         string PriceCurrency,
+        string Kind,
         bool IsActive,
         string? Comment,
         DateTimeOffset CreatedAt,

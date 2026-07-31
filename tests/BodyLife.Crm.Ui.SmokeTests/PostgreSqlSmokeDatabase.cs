@@ -847,7 +847,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
 
         const decimal createdPaymentAmount = 725m;
         const string createdPaymentCurrency = "UAH";
-        const string createdPaymentContext = "membership_sale";
+        const string createdPaymentContext = "other";
         const string createdPaymentComment = "Cash received at reception";
         var paymentCreationAuditEntryId = Guid.NewGuid();
         var createdPaymentId = Guid.NewGuid();
@@ -869,7 +869,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             originalPaymentAmount,
             "UAH",
             "cash",
-            "membership_sale",
+            "other",
             originalPaymentOccurredAt,
             originalPaymentRecordedAt,
             ownerAccountId,
@@ -885,7 +885,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             replacementPaymentAmount,
             "UAH",
             "cash",
-            "membership_sale",
+            "other",
             replacementPaymentOccurredAt,
             paymentCorrectionRecordedAt,
             sharedAdminAccountId,
@@ -2448,15 +2448,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "+380 67 880 00 02",
             cardNumber);
         var membershipIssuedAt = eventBase.AddHours(3).AddMinutes(5);
-        var membershipId = await SeedIssuedMembershipAsync(
-            ownerAccountId,
-            clientId,
-            membershipTypeId,
-            "Client history monthly",
-            visitsLimitSnapshot: 12,
-            startDate: new DateOnly(2026, 7, 1),
-            durationDays: 30,
-            issuedAt: membershipIssuedAt);
+        var membershipId = Guid.NewGuid();
 
         var ownerSessionId = Guid.NewGuid();
         var sharedSessionId = Guid.NewGuid();
@@ -2527,6 +2519,19 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                         @session_expires_at,
                         @session_ended_at,
                         @session_ended_at);
+
+                insert into bodylife.issued_memberships (
+                    id, client_id, membership_type_id, type_name_snapshot,
+                    duration_days_snapshot, visits_limit_snapshot,
+                    price_amount_snapshot, price_currency_snapshot, issuance_mode,
+                    start_date, base_end_date, issued_at, issued_by_account_id,
+                    status, entry_origin, entry_batch_id, comment)
+                values (
+                    @membership_id, @client_id, @membership_type_id,
+                    'Client history monthly', 30, 12, 950, 'UAH', 'opening_state',
+                    date '2026-07-01', date '2026-07-30', @membership_issued_at,
+                    @owner_account_id, 'active', 'manual_backfill', null,
+                    'UI smoke issued snapshot');
 
                 insert into bodylife.membership_opening_states (
                     id,
@@ -2668,7 +2673,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                         @original_payment_amount,
                         'UAH',
                         'cash',
-                        'membership_sale',
+                        'other',
                         @original_payment_occurred_at,
                         @original_payment_recorded_at,
                         @owner_account_id,
@@ -2684,7 +2689,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                         @replacement_payment_amount,
                         'UAH',
                         'cash',
-                        'membership_sale',
+                        'other',
                         @featured_occurred_at,
                         @featured_recorded_at,
                         @shared_account_id,
@@ -2824,6 +2829,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             sourceCommand.Parameters.AddWithValue("session_ended_at", featuredRecordedAt.AddMinutes(30));
             sourceCommand.Parameters.AddWithValue("opening_state_id", openingStateId);
             sourceCommand.Parameters.AddWithValue("membership_id", membershipId);
+            sourceCommand.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+            sourceCommand.Parameters.AddWithValue("membership_issued_at", membershipIssuedAt);
             sourceCommand.Parameters.AddWithValue(
                 "opening_as_of_date",
                 NpgsqlDbType.Date,
@@ -2914,7 +2921,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             sourceCommand.Parameters.AddWithValue(
                 "non_working_previewed_at",
                 nonWorkingRecordedAt.AddMinutes(-30));
-            Assert.Equal(15, await sourceCommand.ExecuteNonQueryAsync());
+            Assert.Equal(16, await sourceCommand.ExecuteNonQueryAsync());
         }
 
         var clientReference = new { clientId, membershipId };
@@ -3263,66 +3270,95 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var canonicalStartDate = startDate
             ?? BusinessTimeZone.GetBusinessDate(now).AddDays(-7);
         var canonicalIssuedAt = issuedAt ?? now.AddDays(-7);
+        var canonicalBaseEndDate = canonicalStartDate.AddDays(durationDays - 1);
+        var openingStateId = Guid.NewGuid();
+        var openingSessionId = Guid.NewGuid();
 
-        await using (var connection = new NpgsqlConnection(ConnectionString))
-        {
-            await connection.OpenAsync();
-            await using var command = connection.CreateCommand();
-            command.CommandText =
-                """
-                insert into bodylife.issued_memberships (
-                    id,
-                    client_id,
-                    membership_type_id,
-                    type_name_snapshot,
-                    duration_days_snapshot,
-                    visits_limit_snapshot,
-                    price_amount_snapshot,
-                    price_currency_snapshot,
-                    start_date,
-                    base_end_date,
-                    issued_at,
-                    issued_by_account_id,
-                    status,
-                    entry_origin,
-                    entry_batch_id,
-                    comment)
-                values (
-                    @id,
-                    @client_id,
-                    @membership_type_id,
-                    @type_name_snapshot,
-                    @duration_days_snapshot,
-                    @visits_limit_snapshot,
-                    950,
-                    'UAH',
-                    @start_date,
-                    @base_end_date,
-                    @issued_at,
-                    @issued_by_account_id,
-                    'active',
-                    'normal',
-                    null,
-                    'UI smoke issued snapshot')
-                """;
-            command.Parameters.AddWithValue("id", membershipId);
-            command.Parameters.AddWithValue("client_id", clientId);
-            command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
-            command.Parameters.AddWithValue("type_name_snapshot", typeNameSnapshot);
-            command.Parameters.AddWithValue("duration_days_snapshot", durationDays);
-            command.Parameters.AddWithValue("visits_limit_snapshot", visitsLimitSnapshot);
-            command.Parameters.AddWithValue(
-                "start_date",
-                NpgsqlDbType.Date,
-                canonicalStartDate);
-            command.Parameters.AddWithValue(
-                "base_end_date",
-                NpgsqlDbType.Date,
-                canonicalStartDate.AddDays(durationDays - 1));
-            command.Parameters.AddWithValue("issued_at", canonicalIssuedAt);
-            command.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
-            Assert.Equal(1, await command.ExecuteNonQueryAsync());
-        }
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id, account_id, device_label, started_at, expires_at, ended_at, last_seen_at)
+            values (
+                @opening_session_id, @issued_by_account_id, 'UI smoke opening-state seed',
+                @session_started_at, @session_expires_at, null, @issued_at);
+
+            insert into bodylife.issued_memberships (
+                id,
+                client_id,
+                membership_type_id,
+                type_name_snapshot,
+                duration_days_snapshot,
+                visits_limit_snapshot,
+                price_amount_snapshot,
+                price_currency_snapshot,
+                issuance_mode,
+                start_date,
+                base_end_date,
+                issued_at,
+                issued_by_account_id,
+                status,
+                entry_origin,
+                entry_batch_id,
+                comment)
+            values (
+                @id,
+                @client_id,
+                @membership_type_id,
+                @type_name_snapshot,
+                @duration_days_snapshot,
+                @visits_limit_snapshot,
+                950,
+                'UAH',
+                'opening_state',
+                @start_date,
+                @base_end_date,
+                @issued_at,
+                @issued_by_account_id,
+                'active',
+                'manual_backfill',
+                null,
+                'UI smoke issued snapshot');
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            values (
+                @opening_state_id, @id, @start_date, @visits_limit_snapshot,
+                0, @base_end_date, 0, 'UI smoke fixture',
+                'Historical state required by the UI smoke scenario', @issued_at,
+                @issued_by_account_id, @opening_session_id, 'manual_backfill',
+                null, 'active')
+            """;
+        command.Parameters.AddWithValue("opening_session_id", openingSessionId);
+        command.Parameters.AddWithValue("opening_state_id", openingStateId);
+        command.Parameters.AddWithValue("id", membershipId);
+        command.Parameters.AddWithValue("client_id", clientId);
+        command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+        command.Parameters.AddWithValue("type_name_snapshot", typeNameSnapshot);
+        command.Parameters.AddWithValue("duration_days_snapshot", durationDays);
+        command.Parameters.AddWithValue("visits_limit_snapshot", visitsLimitSnapshot);
+        command.Parameters.AddWithValue(
+            "start_date",
+            NpgsqlDbType.Date,
+            canonicalStartDate);
+        command.Parameters.AddWithValue(
+            "base_end_date",
+            NpgsqlDbType.Date,
+            canonicalBaseEndDate);
+        command.Parameters.AddWithValue("issued_at", canonicalIssuedAt);
+        command.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
+        command.Parameters.AddWithValue("session_started_at", canonicalIssuedAt.AddMinutes(-5));
+        command.Parameters.AddWithValue("session_expires_at", canonicalIssuedAt.AddDays(30));
+        Assert.Equal(3, await command.ExecuteNonQueryAsync());
+        await transaction.CommitAsync();
 
         await RebuildMembershipAsync(membershipId);
         return membershipId;
@@ -4200,7 +4236,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     1000,
                     'UAH',
                     'cash',
-                    'membership_sale',
+                    'other',
                     @original_occurred_at,
                     @original_recorded_at,
                     @account_id,
@@ -4216,7 +4252,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     900,
                     'UAH',
                     'cash',
-                    'membership_sale',
+                    'other',
                     @replacement_occurred_at,
                     @replacement_recorded_at,
                     @account_id,
@@ -5653,7 +5689,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 start_date,
                 base_end_date,
                 comment,
-                status
+                status,
+                issuance_mode
             from bodylife.issued_memberships
             where client_id = @client_id
             order by issued_at desc, id desc
@@ -5678,7 +5715,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             reader.GetFieldValue<DateOnly>(7),
             reader.GetFieldValue<DateOnly>(8),
             reader.IsDBNull(9) ? null : reader.GetString(9),
-            reader.GetString(10));
+            reader.GetString(10),
+            reader.GetString(11));
     }
 
     public Task<long> CountCreatePaymentAuditEntriesAsync(Guid clientId)
@@ -5714,6 +5752,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.CommandText =
             """
             select
+                id,
                 amount,
                 currency,
                 payment_context,
@@ -5736,13 +5775,14 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         }
 
         return new PaymentSmokeSnapshot(
-            reader.GetDecimal(0),
-            reader.GetString(1),
+            reader.GetGuid(0),
+            reader.GetDecimal(1),
             reader.GetString(2),
-            reader.IsDBNull(3) ? null : reader.GetGuid(3),
-            reader.IsDBNull(4) ? null : reader.GetString(4),
-            reader.GetString(5),
-            reader.GetFieldValue<DateTimeOffset>(6));
+            reader.GetString(3),
+            reader.IsDBNull(4) ? null : reader.GetGuid(4),
+            reader.IsDBNull(5) ? null : reader.GetString(5),
+            reader.GetString(6),
+            reader.GetFieldValue<DateTimeOffset>(7));
     }
 
     public Task<long> CountPaymentCorrectionsAsync(Guid originalPaymentId)
@@ -6411,9 +6451,11 @@ public sealed record IssuedMembershipSmokeSnapshot(
     DateOnly StartDate,
     DateOnly BaseEndDate,
     string? Comment,
-    string Status);
+    string Status,
+    string IssuanceMode);
 
 public sealed record PaymentSmokeSnapshot(
+    Guid PaymentId,
     decimal Amount,
     string Currency,
     string PaymentContext,

@@ -83,6 +83,7 @@ public sealed class CreateMembershipTypeCommandHandler(
                 VisitsLimit = catalog.VisitsLimit,
                 PriceAmount = catalog.Price.Amount,
                 PriceCurrency = catalog.Price.Currency,
+                Kind = MapKind(catalog.Kind),
                 IsActive = create.IsActive,
                 Comment = catalog.Comment,
                 CreatedAt = recordedAt,
@@ -145,4 +146,11 @@ public sealed class CreateMembershipTypeCommandHandler(
             return errorResult;
         }
     }
+
+    private static string MapKind(MembershipTypeKind kind) => kind switch
+    {
+        MembershipTypeKind.Ordinary => "ordinary",
+        MembershipTypeKind.OneOff => "one_off",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+    };
 }

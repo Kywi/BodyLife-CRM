@@ -10,5 +10,6 @@ public sealed record CreateMembershipTypeCommand(
     int VisitsLimit,
     Money Price,
     string? Comment,
-    bool IsActive = true)
+    bool IsActive = true,
+    MembershipTypeKind Kind = MembershipTypeKind.Ordinary)
     : IBodyLifeCommand;

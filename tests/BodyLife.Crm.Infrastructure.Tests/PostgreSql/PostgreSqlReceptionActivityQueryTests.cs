@@ -260,8 +260,12 @@ public sealed class PostgreSqlReceptionActivityQueryTests
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            insert into bodylife.issued_memberships (id, client_id, membership_type_id, type_name_snapshot, duration_days_snapshot, visits_limit_snapshot, price_amount_snapshot, price_currency_snapshot, start_date, base_end_date, issued_at, issued_by_account_id, status, entry_origin, entry_batch_id, comment)
-            values (@id, @client, @type, 'Eight visits', 30, 8, 1000, 'UAH', @start, @end, @now, @account, 'active', 'normal', null, null);
+            insert into bodylife.issued_memberships (id, client_id, membership_type_id, type_name_snapshot, duration_days_snapshot, visits_limit_snapshot, price_amount_snapshot, price_currency_snapshot, issuance_mode, start_date, base_end_date, issued_at, issued_by_account_id, status, entry_origin, entry_batch_id, comment)
+            values (@id, @client, @type, 'Eight visits', 30, 8, 1000, 'UAH', 'opening_state', @start, @end, @now, @account, 'active', 'manual_backfill', null, null);
+            insert into bodylife.membership_opening_states (id, membership_id, opening_as_of_date, declared_remaining_visits, declared_negative_balance, known_effective_end_date, known_extension_days, source_reference, reason, recorded_at, recorded_by_account_id, recorded_session_id, entry_origin, entry_batch_id, status)
+            select gen_random_uuid(), id, start_date, visits_limit_snapshot, 0, base_end_date, 0, 'Reception fixture', 'Historical test state', issued_at, issued_by_account_id, (select id from bodylife.sessions where account_id = issued_by_account_id limit 1), 'manual_backfill', null, 'active'
+            from bodylife.issued_memberships
+            where id = @id;
             insert into bodylife.membership_state_cache (membership_id, counted_visits, remaining_visits, negative_balance, first_negative_visit_id, first_negative_visit_date, extension_days, effective_end_date, last_counted_visit_at, recalculated_at, recalculation_version)
             values (@id, @counted, @remaining, @negative, null, null, 0, @end, null, @now, @version)
             """;
@@ -276,7 +280,7 @@ public sealed class PostgreSqlReceptionActivityQueryTests
         command.Parameters.AddWithValue("remaining", remainingVisits);
         command.Parameters.AddWithValue("negative", Math.Max(0, -remainingVisits));
         command.Parameters.AddWithValue("version", MembershipStateCacheRebuilder.CurrentRecalculationVersion);
-        Assert.Equal(2, await command.ExecuteNonQueryAsync());
+        Assert.Equal(3, await command.ExecuteNonQueryAsync());
     }
 
     private static async Task MarkCacheStaleAsync(PostgreSqlTestDatabase database)

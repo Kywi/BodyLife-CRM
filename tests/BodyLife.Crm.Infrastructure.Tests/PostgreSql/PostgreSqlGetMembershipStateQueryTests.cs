@@ -49,13 +49,13 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
             database,
             ActorRole.Admin,
             AccountKind.SharedReceptionAdmin);
-        var membership = await SeedMembershipAsync(database, owner.AccountId.Value);
-        await InsertOpeningStateAsync(
+        var membership = await SeedMembershipAsync(
             database,
-            membership,
             owner,
             declaredRemainingVisits: -2,
-            declaredNegativeBalance: 2);
+            declaredNegativeBalance: 2,
+            knownEffectiveEndDate: ExtendedEndDate,
+            knownExtensionDays: 4);
         var rebuild = await new MembershipStateCacheRebuilder(
             dbContext,
             new FixedTimeProvider(TestNow)).RebuildAsync(membership.MembershipId);
@@ -129,7 +129,7 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var owner = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
-        var membership = await SeedMembershipAsync(database, owner.AccountId.Value);
+        var membership = await SeedMembershipAsync(database, owner);
         var rebuild = await new MembershipStateCacheRebuilder(
             dbContext,
             new FixedTimeProvider(TestNow)).RebuildAsync(membership.MembershipId);
@@ -255,7 +255,7 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var owner = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
-        var membership = await SeedMembershipAsync(database, owner.AccountId.Value);
+        var membership = await SeedMembershipAsync(database, owner);
         await new MembershipStateCacheRebuilder(
             dbContext,
             new FixedTimeProvider(TestNow)).RebuildAsync(membership.MembershipId);
@@ -299,13 +299,13 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task OpeningStateActionIsProjectedOnlyForEligibleActiveMembership()
+    public async Task OpeningStateActionIsNotProjectedAfterAtomicOpeningCreation()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var owner = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
-        var membership = await SeedMembershipAsync(database, owner.AccountId.Value);
+        var membership = await SeedMembershipAsync(database, owner);
         await new MembershipStateCacheRebuilder(
             dbContext,
             new FixedTimeProvider(TestNow)).RebuildAsync(membership.MembershipId);
@@ -321,10 +321,7 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
 
         AssertSuccessful(active);
         Assert.True(active.State!.IsActiveByDate);
-        var permission = Assert.Single(active.AllowedActions.Items);
-        Assert.Equal(MembershipActionKeys.CreateOpeningState, permission.ActionKey);
-        Assert.Equal(MembershipActionKeys.AdminOrOwnerPolicy, permission.RequiredPolicy);
-        Assert.True(permission.IsAllowed);
+        Assert.Empty(active.AllowedActions.Items);
         AssertSuccessful(canceled);
         Assert.Empty(canceled.AllowedActions.Items);
     }
@@ -336,7 +333,7 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var owner = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
-        var membership = await SeedMembershipAsync(database, owner.AccountId.Value);
+        var membership = await SeedMembershipAsync(database, owner);
         await new MembershipStateCacheRebuilder(
             dbContext,
             new FixedTimeProvider(TestNow)).RebuildAsync(membership.MembershipId);
@@ -421,7 +418,7 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var owner = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
-        var membership = await SeedMembershipAsync(database, owner.AccountId.Value);
+        var membership = await SeedMembershipAsync(database, owner);
         var handler = CreateHandler(dbContext);
 
         var missingCache = await handler.ExecuteAsync(
@@ -604,8 +601,11 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
 
     private static async Task<MembershipFixture> SeedMembershipAsync(
         PostgreSqlTestDatabase database,
-        Guid issuedByAccountId,
-        string membershipStatus = "active")
+        ActorContext issuedByActor,
+        int declaredRemainingVisits = 2,
+        int declaredNegativeBalance = 0,
+        DateOnly? knownEffectiveEndDate = null,
+        int? knownExtensionDays = 0)
     {
         var fixture = new MembershipFixture(
             Guid.NewGuid(),
@@ -679,6 +679,7 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -696,75 +697,40 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
                 2,
                 1000,
                 'UAH',
+                'opening_state',
                 @start_date,
                 @base_end_date,
                 @recorded_at,
                 @issued_by_account_id,
-                @membership_status,
-                'normal',
+                'active',
+                'manual_backfill',
                 null,
-                null)
+                null);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            values (
+                gen_random_uuid(), @membership_id, @opening_as_of_date,
+                @declared_remaining_visits, @declared_negative_balance,
+                @known_effective_end_date, @known_extension_days,
+                'Membership-state query fixture',
+                'Historical state required by the query scenario', @opening_recorded_at,
+                @issued_by_account_id, @recorded_session_id,
+                'manual_backfill', null, 'active')
             """;
         command.Parameters.AddWithValue("client_id", fixture.ClientId);
         command.Parameters.AddWithValue("membership_type_id", fixture.MembershipTypeId);
         command.Parameters.AddWithValue("membership_id", fixture.MembershipId);
         command.Parameters.AddWithValue("recorded_at", TestNow.AddDays(-12));
-        command.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
+        command.Parameters.AddWithValue("opening_recorded_at", TestNow.AddMinutes(-10));
+        command.Parameters.AddWithValue("issued_by_account_id", issuedByActor.AccountId.Value);
+        command.Parameters.AddWithValue("recorded_session_id", issuedByActor.SessionId.Value);
         command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, TestStartDate);
         command.Parameters.AddWithValue("base_end_date", NpgsqlDbType.Date, TestBaseEndDate);
-        command.Parameters.AddWithValue("membership_status", membershipStatus);
-        Assert.Equal(3, await command.ExecuteNonQueryAsync());
-
-        return fixture;
-    }
-
-    private static async Task InsertOpeningStateAsync(
-        PostgreSqlTestDatabase database,
-        MembershipFixture membership,
-        ActorContext actor,
-        int declaredRemainingVisits,
-        int declaredNegativeBalance)
-    {
-        await using var connection = new NpgsqlConnection(database.ConnectionString);
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            """
-            insert into bodylife.membership_opening_states (
-                id,
-                membership_id,
-                opening_as_of_date,
-                declared_remaining_visits,
-                declared_negative_balance,
-                known_effective_end_date,
-                known_extension_days,
-                source_reference,
-                reason,
-                recorded_at,
-                recorded_by_account_id,
-                recorded_session_id,
-                entry_origin,
-                entry_batch_id,
-                status)
-            values (
-                @id,
-                @membership_id,
-                @opening_as_of_date,
-                @declared_remaining_visits,
-                @declared_negative_balance,
-                @known_effective_end_date,
-                4,
-                'Paper register 2026, page 12',
-                'Active membership history before launch is incomplete',
-                @recorded_at,
-                @recorded_by_account_id,
-                @recorded_session_id,
-                'manual_backfill',
-                null,
-                'active')
-            """;
-        command.Parameters.AddWithValue("id", Guid.NewGuid());
-        command.Parameters.AddWithValue("membership_id", membership.MembershipId);
         command.Parameters.AddWithValue(
             "opening_as_of_date",
             NpgsqlDbType.Date,
@@ -774,11 +740,12 @@ public sealed class PostgreSqlGetMembershipStateQueryTests
         command.Parameters.AddWithValue(
             "known_effective_end_date",
             NpgsqlDbType.Date,
-            ExtendedEndDate);
-        command.Parameters.AddWithValue("recorded_at", TestNow.AddMinutes(-10));
-        command.Parameters.AddWithValue("recorded_by_account_id", actor.AccountId.Value);
-        command.Parameters.AddWithValue("recorded_session_id", actor.SessionId.Value);
-        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+            knownEffectiveEndDate ?? TestBaseEndDate);
+        command.Parameters.Add("known_extension_days", NpgsqlDbType.Integer).Value =
+            knownExtensionDays ?? (object)DBNull.Value;
+        Assert.Equal(4, await command.ExecuteNonQueryAsync());
+
+        return fixture;
     }
 
     private static async Task UpdateMembershipStatusAsync(

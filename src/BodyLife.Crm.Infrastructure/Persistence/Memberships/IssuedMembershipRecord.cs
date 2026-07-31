@@ -18,6 +18,8 @@ internal sealed class IssuedMembershipRecord
 
     public required string PriceCurrencySnapshot { get; set; }
 
+    public required string IssuanceMode { get; set; }
+
     public DateOnly StartDate { get; set; }
 
     public DateOnly BaseEndDate { get; set; }

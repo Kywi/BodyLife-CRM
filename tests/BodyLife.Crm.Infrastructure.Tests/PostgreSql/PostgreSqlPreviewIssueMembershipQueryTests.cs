@@ -61,6 +61,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
         var preview = results[0].Preview!;
         Assert.Equal(fixture.ClientId, preview.ClientId);
         Assert.Equal(fixture.MembershipTypeId, preview.MembershipTypeId);
+        Assert.Equal(TestNow.AddDays(-1), preview.MembershipTypeUpdatedAt);
         Assert.Equal("Eight visits / 30 days", preview.Snapshot.TypeName);
         Assert.Equal(30, preview.Snapshot.DurationDays);
         Assert.Equal(8, preview.Snapshot.VisitsLimit);
@@ -303,6 +304,10 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
         var owner = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
         var fixture = await SeedPreviewFixtureAsync(database, owner.AccountId.Value);
         var inactiveTypeId = await InsertMembershipTypeAsync(database, isActive: false);
+        var oneOffTypeId = await InsertMembershipTypeAsync(
+            database,
+            kind: "one_off",
+            visitsLimit: 1);
         var handler = CreateHandler(dbContext);
 
         var emptyClient = await handler.ExecuteAsync(
@@ -355,6 +360,13 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
                 inactiveTypeId,
                 ProposedStartDate),
             CancellationToken.None);
+        var oneOffType = await handler.ExecuteAsync(
+            new PreviewIssueMembershipQuery(
+                owner,
+                fixture.ClientId,
+                oneOffTypeId,
+                ProposedStartDate),
+            CancellationToken.None);
         var unnecessaryDecision = await handler.ExecuteAsync(
             Query(
                 owner,
@@ -377,6 +389,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
             inactiveType.Status);
         Assert.Equal("membership_type_inactive", inactiveType.ErrorCode);
         Assert.Equal("membershipTypeId", inactiveType.ErrorField);
+        AssertValidationFailure(oneOffType, "membershipTypeId");
         AssertValidationFailure(unnecessaryDecision, "negativeHandlingDecision");
         Assert.All(
             new[]
@@ -388,6 +401,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
                 missingClient,
                 missingType,
                 inactiveType,
+                oneOffType,
                 unnecessaryDecision,
             },
             result =>
@@ -697,7 +711,9 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
     private static async Task<Guid> InsertMembershipTypeAsync(
         PostgreSqlTestDatabase database,
         bool isActive = true,
-        int durationDays = 30)
+        int durationDays = 30,
+        string kind = "ordinary",
+        int visitsLimit = 8)
     {
         var membershipTypeId = Guid.NewGuid();
         await using var connection = new NpgsqlConnection(database.ConnectionString);
@@ -708,6 +724,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
             insert into bodylife.membership_types (
                 id,
                 name,
+                kind,
                 duration_days,
                 visits_limit,
                 price_amount,
@@ -720,8 +737,9 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
             values (
                 @membership_type_id,
                 'Eight visits / 30 days',
+                @kind,
                 @duration_days,
-                8,
+                @visits_limit,
                 1200,
                 'UAH',
                 @is_active,
@@ -731,7 +749,9 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
                 @deactivated_at)
             """;
         command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+        command.Parameters.AddWithValue("kind", kind);
         command.Parameters.AddWithValue("duration_days", durationDays);
+        command.Parameters.AddWithValue("visits_limit", visitsLimit);
         command.Parameters.AddWithValue("is_active", isActive);
         command.Parameters.AddWithValue("created_at", TestNow.AddDays(-10));
         command.Parameters.AddWithValue("updated_at", TestNow.AddDays(-1));
@@ -764,6 +784,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -781,14 +802,54 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
                 2,
                 900,
                 'UAH',
+                'opening_state',
                 @start_date,
                 @base_end_date,
                 @issued_at,
                 @issued_by_account_id,
                 @status,
-                'normal',
+                'manual_backfill',
                 null,
-                null)
+                null);
+
+            insert into bodylife.membership_opening_states (
+                id,
+                membership_id,
+                opening_as_of_date,
+                declared_remaining_visits,
+                declared_negative_balance,
+                known_effective_end_date,
+                known_extension_days,
+                source_reference,
+                reason,
+                recorded_at,
+                recorded_by_account_id,
+                recorded_session_id,
+                entry_origin,
+                entry_batch_id,
+                status)
+            values (
+                gen_random_uuid(),
+                @membership_id,
+                @start_date,
+                2,
+                0,
+                @base_end_date,
+                0,
+                'Preview query fixture',
+                'Historical test state',
+                @issued_at,
+                @issued_by_account_id,
+                (
+                    select id
+                    from bodylife.sessions
+                    where account_id = @issued_by_account_id
+                    order by started_at desc
+                    limit 1
+                ),
+                'manual_backfill',
+                null,
+                'active')
             """;
         command.Parameters.AddWithValue("membership_id", membershipId);
         command.Parameters.AddWithValue("client_id", fixture.ClientId);
@@ -798,7 +859,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
         command.Parameters.AddWithValue("issued_at", issuedAt ?? TestNow.AddDays(-3));
         command.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
         command.Parameters.AddWithValue("status", status);
-        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
         return new IssuedMembershipFixture(membershipId, ExistingBaseEndDate);
     }
 

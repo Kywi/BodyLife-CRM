@@ -1,7 +1,6 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
-using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Tests.Modules.Memberships;
@@ -25,7 +24,7 @@ public sealed class IssueMembershipCommandContractsTests
         TimeSpan.Zero);
 
     [Fact]
-    public void CommandCarriesEnvelopeSelectorsDecisionBatchAndOptionalPayment()
+    public void CommandCarriesEnvelopeSelectorsDecisionAndBatchWithoutCallerPayment()
     {
         var envelope = CreateEnvelope(
             EntryOrigin.ManualBackfill,
@@ -43,27 +42,21 @@ public sealed class IssueMembershipCommandContractsTests
             envelope,
             ClientId,
             MembershipTypeId,
+            CatalogTimestamp,
             StartDate,
             MembershipNegativeHandlingDecision.LeaveVisible,
-            EntryBatchId,
-            new MembershipIssuePayment(
-                new Money(1000m, "uah"),
-                PaymentContext.MembershipSale));
+            EntryBatchId);
 
         Assert.IsAssignableFrom<IBodyLifeCommand>(command);
         Assert.Same(envelope, command.Envelope);
         Assert.Equal(ClientId, command.ClientId);
         Assert.Equal(MembershipTypeId, command.MembershipTypeId);
+        Assert.Equal(CatalogTimestamp, command.ExpectedMembershipTypeUpdatedAt);
         Assert.Equal(StartDate, command.StartDate);
         Assert.Equal(
             MembershipNegativeHandlingDecision.LeaveVisible,
             command.NegativeHandlingDecision);
         Assert.Equal(EntryBatchId, command.EntryBatchId);
-        Assert.Equal(
-            new MembershipIssuePayment(
-                new Money(1000m, "UAH"),
-                PaymentContext.MembershipSale),
-            command.Payment);
         Assert.Equal("issue-membership-key", command.Envelope.IdempotencyKey);
         Assert.Equal(EntryOrigin.ManualBackfill, command.Envelope.EntryOrigin);
         Assert.Equal("Reception note", command.Envelope.Comment);
@@ -76,11 +69,11 @@ public sealed class IssueMembershipCommandContractsTests
             CreateEnvelope(),
             ClientId,
             MembershipTypeId,
+            CatalogTimestamp,
             StartDate);
 
         Assert.Null(command.NegativeHandlingDecision);
         Assert.Null(command.EntryBatchId);
-        Assert.Null(command.Payment);
     }
 
     [Fact]
@@ -94,6 +87,8 @@ public sealed class IssueMembershipCommandContractsTests
         Assert.DoesNotContain("Snapshot", propertyNames);
         Assert.DoesNotContain("BaseEndDate", propertyNames);
         Assert.DoesNotContain("ExpectedInitialState", propertyNames);
+        Assert.DoesNotContain("Payment", propertyNames);
+        Assert.DoesNotContain("Amount", propertyNames);
     }
 
     [Fact]
@@ -104,6 +99,7 @@ public sealed class IssueMembershipCommandContractsTests
             CreateEnvelope(),
             ClientId,
             MembershipTypeId,
+            CatalogTimestamp,
             StartDate);
         var result = CommandResult.Success(
             new EntityId(IssueMembershipCommand.PrimaryEntityType, membershipId),

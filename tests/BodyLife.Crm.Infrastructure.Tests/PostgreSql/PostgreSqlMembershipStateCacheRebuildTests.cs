@@ -139,12 +139,10 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
-        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
-        await InsertOpeningStateAsync(
-            database.ConnectionString,
-            seeded,
-            declaredRemainingVisits: 1,
-            declaredNegativeBalance: 0);
+        var seeded = await SeedIssuedMembershipAsync(
+            database,
+            dbContext,
+            openingRemainingVisits: 1);
 
         var result = await CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId);
 
@@ -173,14 +171,13 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
-        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
-        await InsertOpeningStateAsync(
-            database.ConnectionString,
-            seeded,
-            declaredRemainingVisits: -2,
-            declaredNegativeBalance: 2,
-            knownEffectiveEndDate: new DateOnly(2026, 8, 3),
-            knownExtensionDays: 4);
+        var seeded = await SeedIssuedMembershipAsync(
+            database,
+            dbContext,
+            openingRemainingVisits: -2,
+            openingNegativeBalance: 2,
+            openingKnownEffectiveEndDate: new DateOnly(2026, 8, 3),
+            openingKnownExtensionDays: 4);
         await InsertStateCacheAsync(database.ConnectionString, seeded.MembershipId);
 
         var result = await CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId);
@@ -231,13 +228,11 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
-        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
-        await InsertOpeningStateAsync(
-            database.ConnectionString,
-            seeded,
-            declaredRemainingVisits: 1,
-            declaredNegativeBalance: 0,
-            knownEffectiveEndDate: new DateOnly(2026, 7, 20));
+        var seeded = await SeedIssuedMembershipAsync(
+            database,
+            dbContext,
+            openingRemainingVisits: 1,
+            openingKnownEffectiveEndDate: new DateOnly(2026, 7, 20));
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
             CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId));
@@ -247,30 +242,34 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
     }
 
     [PostgreSqlFact]
-    public async Task RetiredOpeningStateRepairsCacheBackToIssuedInitialState()
+    public async Task RetiringOnlyActiveOpeningStateIsRejectedWithoutCacheMutation()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
-        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
-        var openingStateId = await InsertOpeningStateAsync(
-            database.ConnectionString,
-            seeded,
-            declaredRemainingVisits: 1,
-            declaredNegativeBalance: 0);
+        var seeded = await SeedIssuedMembershipAsync(
+            database,
+            dbContext,
+            openingRemainingVisits: 1);
 
         var created = await CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId);
-        await UpdateOpeningStateStatusAsync(
-            database.ConnectionString,
-            openingStateId,
-            "corrected");
-        var repaired = await CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId);
+        var exception = await Assert.ThrowsAsync<PostgresException>(() =>
+            UpdateOpeningStateStatusAsync(
+                database.ConnectionString,
+                seeded.OpeningStateId!.Value,
+                "corrected"));
+        var verified = await CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId);
 
         Assert.Equal(MembershipStateCacheRebuildStatus.Created, created.Status);
-        Assert.Equal(MembershipStateCacheRebuildStatus.Repaired, repaired.Status);
-        AssertInitialState(await ReadStateCacheAsync(
-            database.ConnectionString,
-            seeded.MembershipId));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, exception.SqlState);
+        Assert.Equal("ck_issued_memberships_opening_state_source", exception.ConstraintName);
+        Assert.Equal(MembershipStateCacheRebuildStatus.Verified, verified.Status);
+        AssertOpeningBaseline(
+            await ReadStateCacheAsync(database.ConnectionString, seeded.MembershipId),
+            remainingVisits: 1,
+            negativeBalance: 0,
+            extensionDays: 0,
+            effectiveEndDate: TestBaseEndDate);
     }
 
     [PostgreSqlFact]
@@ -387,18 +386,16 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
-        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        var seeded = await SeedIssuedMembershipAsync(
+            database,
+            dbContext,
+            openingRemainingVisits: 1);
         await InsertAdjustmentAsync(
             database.ConnectionString,
             seeded,
             MembershipAdjustmentTypes.VisitBalance,
             visitsDelta: -1,
             recordedAt: TestNow.AddMinutes(-1));
-        await InsertOpeningStateAsync(
-            database.ConnectionString,
-            seeded,
-            declaredRemainingVisits: 1,
-            declaredNegativeBalance: 0);
         await InsertAdjustmentAsync(
             database.ConnectionString,
             seeded,
@@ -595,18 +592,16 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
-        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
+        var seeded = await SeedIssuedMembershipAsync(
+            database,
+            dbContext,
+            openingRemainingVisits: 1);
         await InsertMembershipVisitAsync(
             database.ConnectionString,
             seeded,
             new DateTimeOffset(2026, 7, 11, 9, 0, 0, TimeSpan.Zero),
             TestNow.AddMinutes(-1),
             visitRecordedAt: TestNow.AddMinutes(-2));
-        await InsertOpeningStateAsync(
-            database.ConnectionString,
-            seeded,
-            declaredRemainingVisits: 1,
-            declaredNegativeBalance: 0);
         var postOpeningOccurredAt = new DateTimeOffset(
             2026,
             7,
@@ -823,10 +818,9 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         Assert.Equal(PostgresErrorCodes.LockNotAvailable, lockException.SqlState);
 
         await transaction.RollbackAsync();
-        await UpdateMembershipStatusAsync(
+        await UpdateMembershipCommentAsync(
             database.ConnectionString,
-            seeded.MembershipId,
-            "canceled");
+            seeded.MembershipId);
     }
 
     [PostgreSqlFact]
@@ -1042,10 +1036,9 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
 
         await transaction.RollbackAsync();
         dbContext.ChangeTracker.Clear();
-        await UpdateMembershipStatusAsync(
+        await UpdateMembershipCommentAsync(
             database.ConnectionString,
-            seeded.MembershipId,
-            "canceled");
+            seeded.MembershipId);
         await UpdateVisitCommentAsync(database.ConnectionString, visitId);
         await UpdateVisitConsumptionRecordedAtAsync(
             database.ConnectionString,
@@ -1110,13 +1103,11 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         await using (var seedContext = database.CreateDbContext())
         {
             await seedContext.Database.MigrateAsync();
-            var seeded = await SeedIssuedMembershipAsync(database, seedContext);
+            var seeded = await SeedIssuedMembershipAsync(
+                database,
+                seedContext,
+                openingRemainingVisits: 1);
             membershipId = seeded.MembershipId;
-            await InsertOpeningStateAsync(
-                database.ConnectionString,
-                seeded,
-                declaredRemainingVisits: 1,
-                declaredNegativeBalance: 0);
         }
 
         await using var firstContext = database.CreateDbContext();
@@ -1148,12 +1139,10 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
-        var seeded = await SeedIssuedMembershipAsync(database, dbContext);
-        await InsertOpeningStateAsync(
-            database.ConnectionString,
-            seeded,
-            declaredRemainingVisits: 1,
-            declaredNegativeBalance: 0);
+        var seeded = await SeedIssuedMembershipAsync(
+            database,
+            dbContext,
+            openingRemainingVisits: 1);
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
         var result = await CreateRebuilder(dbContext).RebuildAsync(seeded.MembershipId);
@@ -1206,7 +1195,11 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
 
     private static async Task<SeededMembership> SeedIssuedMembershipAsync(
         PostgreSqlTestDatabase database,
-        BodyLifeDbContext dbContext)
+        BodyLifeDbContext dbContext,
+        int? openingRemainingVisits = null,
+        int openingNegativeBalance = 0,
+        DateOnly? openingKnownEffectiveEndDate = null,
+        int? openingKnownExtensionDays = null)
     {
         var bootstrap = await new OwnerBootstrapper(dbContext, new FixedTimeProvider(TestNow))
             .BootstrapOwnerAsync("BodyLife Owner");
@@ -1219,6 +1212,8 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         var membershipTypeId = Guid.NewGuid();
         var membershipId = Guid.NewGuid();
         var sessionId = Guid.NewGuid();
+        var openingStateId = Guid.NewGuid();
+        var isOpeningState = openingRemainingVisits.HasValue;
 
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
@@ -1305,6 +1300,7 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -1322,33 +1318,79 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
                 2,
                 1000,
                 'UAH',
+                @issuance_mode,
                 @start_date,
                 @base_end_date,
                 @recorded_at,
                 @actor_account_id,
                 'active',
-                'normal',
+                @membership_entry_origin,
                 null,
-                null)
+                null);
+
+            insert into bodylife.payments (
+                id, client_id, membership_id, amount, currency, method,
+                payment_context, occurred_at, recorded_at, recorded_by_account_id,
+                session_id, entry_origin, entry_batch_id, comment, status)
+            select
+                gen_random_uuid(), @client_id, @membership_id, 1000, 'UAH', 'cash',
+                'membership_sale', @recorded_at, @recorded_at, @actor_account_id,
+                @session_id, 'normal', null, null, 'active'
+            where not @is_opening_state;
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            select
+                @opening_state_id, @membership_id, @opening_as_of_date,
+                @opening_remaining_visits, @opening_negative_balance,
+                @opening_known_effective_end_date, @opening_known_extension_days,
+                'Membership cache rebuild fixture',
+                'Historical state required by the rebuild scenario', @recorded_at,
+                @actor_account_id, @session_id, 'manual_backfill', null, 'active'
+            where @is_opening_state
             """;
         command.Parameters.AddWithValue("client_id", clientId);
         command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
         command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("opening_state_id", openingStateId);
         command.Parameters.AddWithValue("actor_account_id", actorAccountId);
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("session_started_at", TestNow.AddMinutes(-1));
         command.Parameters.AddWithValue("session_expires_at", TestNow.AddHours(12));
         command.Parameters.AddWithValue("recorded_at", TestNow);
+        command.Parameters.AddWithValue("is_opening_state", isOpeningState);
+        command.Parameters.AddWithValue(
+            "issuance_mode",
+            isOpeningState ? "opening_state" : "sale");
+        command.Parameters.AddWithValue(
+            "membership_entry_origin",
+            isOpeningState ? "manual_backfill" : "normal");
+        command.Parameters.AddWithValue(
+            "opening_as_of_date",
+            NpgsqlDbType.Date,
+            new DateOnly(2026, 7, 13));
+        command.Parameters.Add("opening_remaining_visits", NpgsqlDbType.Integer).Value =
+            openingRemainingVisits ?? (object)DBNull.Value;
+        command.Parameters.AddWithValue("opening_negative_balance", openingNegativeBalance);
+        command.Parameters.Add("opening_known_effective_end_date", NpgsqlDbType.Date).Value =
+            openingKnownEffectiveEndDate ?? (object)DBNull.Value;
+        command.Parameters.Add("opening_known_extension_days", NpgsqlDbType.Integer).Value =
+            openingKnownExtensionDays ?? (object)DBNull.Value;
         command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, TestStartDate);
         command.Parameters.AddWithValue("base_end_date", NpgsqlDbType.Date, TestBaseEndDate);
-        Assert.Equal(4, await command.ExecuteNonQueryAsync());
+        Assert.Equal(5, await command.ExecuteNonQueryAsync());
 
         return new SeededMembership(
             membershipId,
             clientId,
             membershipTypeId,
             actorAccountId,
-            sessionId);
+            sessionId,
+            isOpeningState ? openingStateId : null);
     }
 
     private static async Task EditMembershipTypeAsync(
@@ -1481,10 +1523,9 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
             command.ExecuteNonQueryAsync());
     }
 
-    private static async Task UpdateMembershipStatusAsync(
+    private static async Task UpdateMembershipCommentAsync(
         string connectionString,
-        Guid membershipId,
-        string status)
+        Guid membershipId)
     {
         await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
@@ -1492,11 +1533,10 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         command.CommandText =
             """
             update bodylife.issued_memberships
-            set status = @status
+            set comment = 'Lock released after caller transaction'
             where id = @membership_id
             """;
         command.Parameters.AddWithValue("membership_id", membershipId);
-        command.Parameters.AddWithValue("status", status);
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
 
@@ -1977,7 +2017,8 @@ public sealed class PostgreSqlMembershipStateCacheRebuildTests
         Guid ClientId,
         Guid MembershipTypeId,
         Guid ActorAccountId,
-        Guid SessionId);
+        Guid SessionId,
+        Guid? OpeningStateId);
 
     private sealed record PersistedMembershipState(
         int CountedVisits,

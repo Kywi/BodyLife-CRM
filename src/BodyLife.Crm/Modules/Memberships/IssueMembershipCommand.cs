@@ -1,5 +1,4 @@
 using BodyLife.Crm.Application.Commands;
-using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Memberships;
@@ -8,10 +7,10 @@ public sealed record IssueMembershipCommand(
     CommandEnvelope Envelope,
     Guid ClientId,
     Guid MembershipTypeId,
+    DateTimeOffset ExpectedMembershipTypeUpdatedAt,
     DateOnly StartDate,
     MembershipNegativeHandlingDecision? NegativeHandlingDecision = null,
-    Guid? EntryBatchId = null,
-    MembershipIssuePayment? Payment = null)
+    Guid? EntryBatchId = null)
     : IBodyLifeCommand
 {
     public const string PrimaryEntityType = "membership";

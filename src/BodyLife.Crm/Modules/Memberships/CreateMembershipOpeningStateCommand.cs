@@ -5,7 +5,9 @@ namespace BodyLife.Crm.Modules.Memberships;
 
 public sealed record CreateMembershipOpeningStateCommand(
     CommandEnvelope Envelope,
-    Guid MembershipId,
+    Guid ClientId,
+    Guid MembershipTypeId,
+    DateOnly StartDate,
     DateOnly OpeningAsOfDate,
     int DeclaredRemainingVisits,
     DateOnly? KnownEffectiveEndDate,
@@ -14,8 +16,9 @@ public sealed record CreateMembershipOpeningStateCommand(
     Guid? EntryBatchId)
     : IBodyLifeCommand
 {
-    public const string CanonicalRereadEntityType = "membership";
+    public const string PrimaryEntityType = "membership";
+    public const string CanonicalRereadEntityType = "client";
 
     public EntityId CanonicalRereadTargetId =>
-        new(CanonicalRereadEntityType, MembershipId);
+        new(CanonicalRereadEntityType, ClientId);
 }

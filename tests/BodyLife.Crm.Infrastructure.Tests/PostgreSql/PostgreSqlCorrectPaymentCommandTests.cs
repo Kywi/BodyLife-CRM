@@ -101,7 +101,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         Assert.Equal(650m, replacement.Amount);
         Assert.Equal("UAH", replacement.Currency);
         Assert.Equal("cash", replacement.Method);
-        Assert.Equal("membership_sale", replacement.PaymentContext);
+        Assert.Equal("other", replacement.PaymentContext);
         Assert.Equal(ReplacementOccurredAt, replacement.OccurredAt);
         Assert.Equal(TestNow, replacement.RecordedAt);
         Assert.Equal(fixture.Owner.AccountId.Value, replacement.RecordedByAccountId);
@@ -341,6 +341,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             fixture,
             PaymentContext.NegativeClosure,
             amount: 200m);
+        var salePaymentId = await InsertExactSalePaymentAsync(database, fixture);
         var handler = CreateHandler(dbContext);
         var replace = CreateReplaceCommand(fixture, "invalid-base");
 
@@ -371,9 +372,19 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                 Replacement = new PaymentReplacement(
                     fixture.MembershipId,
                     new Money(500m, "UAH"),
-                    PaymentContext.MembershipSale,
+                    PaymentContext.Other,
                     OriginalOccurredAt,
                     "Original receipt"),
+            },
+            CancellationToken.None);
+        var reservedReplacementContext = await handler.ExecuteAsync(
+            replace with
+            {
+                Envelope = WithKey(replace.Envelope, "reserved-sale-context"),
+                Replacement = replace.Replacement! with
+                {
+                    PaymentContext = PaymentContext.MembershipSale,
+                },
             },
             CancellationToken.None);
         var crossClientMembership = await handler.ExecuteAsync(
@@ -392,6 +403,12 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                 OriginalPaymentId = negativeClosurePaymentId,
             },
             CancellationToken.None);
+        var membershipSale = await handler.ExecuteAsync(
+            CreateCancelCommand(fixture, "membership-sale") with
+            {
+                OriginalPaymentId = salePaymentId,
+            },
+            CancellationToken.None);
 
         AssertError(missingReason, CommandErrorCode.ReasonRequired, "reason");
         AssertError(
@@ -404,6 +421,10 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             "replacement");
         AssertError(noChange, CommandErrorCode.ValidationFailed, "replacement");
         AssertError(
+            reservedReplacementContext,
+            CommandErrorCode.MembershipNotEligible,
+            "replacement.paymentContext");
+        AssertError(
             crossClientMembership,
             CommandErrorCode.NotFound,
             "replacement.membershipId");
@@ -411,7 +432,11 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             negativeClosure,
             CommandErrorCode.MembershipNotEligible,
             "originalPaymentId");
-        await AssertCorrectionCountsAsync(database, 2, 0, 0, 0, 0);
+        AssertError(
+            membershipSale,
+            CommandErrorCode.MembershipNotEligible,
+            "originalPaymentId");
+        await AssertCorrectionCountsAsync(database, 3, 0, 0, 0, 0);
 
         Assert.All(
             await ReadPaymentsAsync(database),
@@ -503,7 +528,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             new PaymentReplacement(
                 fixture.MembershipId,
                 new Money(650m, "uah"),
-                PaymentContext.MembershipSale,
+                PaymentContext.Other,
                 ReplacementOccurredAt,
                 "  Corrected receipt  "));
     }
@@ -652,6 +677,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             insert into bodylife.membership_types (
                 id,
                 name,
+                kind,
                 duration_days,
                 visits_limit,
                 price_amount,
@@ -664,6 +690,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             values (
                 @membership_type_id,
                 'Correct Payment fixture',
+                'ordinary',
                 30,
                 8,
                 1000,
@@ -683,6 +710,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -701,12 +729,13 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                     8,
                     1000,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @issued_at,
                     @account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
                     null),
                 (
@@ -718,14 +747,65 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                     8,
                     1000,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @issued_at,
                     @account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
                     null);
+
+            insert into bodylife.membership_opening_states (
+                id,
+                membership_id,
+                opening_as_of_date,
+                declared_remaining_visits,
+                declared_negative_balance,
+                known_effective_end_date,
+                known_extension_days,
+                source_reference,
+                reason,
+                recorded_at,
+                recorded_by_account_id,
+                recorded_session_id,
+                entry_origin,
+                entry_batch_id,
+                status)
+            values
+                (
+                    gen_random_uuid(),
+                    @membership_id,
+                    @start_date,
+                    8,
+                    0,
+                    @base_end_date,
+                    0,
+                    'Correct Payment fixture',
+                    'Historical test state',
+                    @created_at,
+                    @account_id,
+                    @session_id,
+                    'manual_backfill',
+                    null,
+                    'active'),
+                (
+                    gen_random_uuid(),
+                    @other_membership_id,
+                    @start_date,
+                    8,
+                    0,
+                    @base_end_date,
+                    0,
+                    'Correct Payment fixture',
+                    'Historical test state',
+                    @created_at,
+                    @account_id,
+                    @session_id,
+                    'manual_backfill',
+                    null,
+                    'active');
 
             insert into bodylife.payments (
                 id,
@@ -750,7 +830,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                 500,
                 'UAH',
                 'cash',
-                'membership_sale',
+                'other',
                 @original_occurred_at,
                 @original_recorded_at,
                 @account_id,
@@ -783,7 +863,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         command.Parameters.AddWithValue("original_payment_id", originalPaymentId);
         command.Parameters.AddWithValue("original_occurred_at", OriginalOccurredAt);
         command.Parameters.AddWithValue("original_recorded_at", TestNow.AddHours(-2));
-        Assert.Equal(7, await command.ExecuteNonQueryAsync());
+        Assert.Equal(9, await command.ExecuteNonQueryAsync());
 
         return new CorrectPaymentFixture(
             new ActorContext(
@@ -793,6 +873,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                 new SessionId(sessionId),
                 "  Reception tablet  "),
             clientId,
+            membershipTypeId,
             membershipId,
             otherMembershipId,
             originalPaymentId);
@@ -927,6 +1008,109 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         command.Parameters.AddWithValue("account_id", fixture.Owner.AccountId.Value);
         command.Parameters.AddWithValue("session_id", fixture.Owner.SessionId.Value);
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        return paymentId;
+    }
+
+    private static async Task<Guid> InsertExactSalePaymentAsync(
+        PostgreSqlTestDatabase database,
+        CorrectPaymentFixture fixture)
+    {
+        var membershipId = Guid.NewGuid();
+        var paymentId = Guid.NewGuid();
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            insert into bodylife.issued_memberships (
+                id,
+                client_id,
+                membership_type_id,
+                type_name_snapshot,
+                duration_days_snapshot,
+                visits_limit_snapshot,
+                price_amount_snapshot,
+                price_currency_snapshot,
+                issuance_mode,
+                start_date,
+                base_end_date,
+                issued_at,
+                issued_by_account_id,
+                status,
+                entry_origin,
+                entry_batch_id,
+                comment)
+            values (
+                @membership_id,
+                @client_id,
+                @membership_type_id,
+                'Correct Payment sale fixture',
+                30,
+                8,
+                1000,
+                'UAH',
+                'sale',
+                @start_date,
+                @base_end_date,
+                @recorded_at,
+                @account_id,
+                'active',
+                'normal',
+                null,
+                null);
+
+            insert into bodylife.payments (
+                id,
+                client_id,
+                membership_id,
+                amount,
+                currency,
+                method,
+                payment_context,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status)
+            values (
+                @payment_id,
+                @client_id,
+                @membership_id,
+                1000,
+                'UAH',
+                'cash',
+                'membership_sale',
+                @recorded_at,
+                @recorded_at,
+                @account_id,
+                @session_id,
+                'normal',
+                null,
+                null,
+                'active')
+            """;
+        command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("payment_id", paymentId);
+        command.Parameters.AddWithValue("client_id", fixture.ClientId);
+        command.Parameters.AddWithValue("membership_type_id", fixture.MembershipTypeId);
+        command.Parameters.AddWithValue(
+            "start_date",
+            NpgsqlDbType.Date,
+            new DateOnly(2026, 7, 1));
+        command.Parameters.AddWithValue(
+            "base_end_date",
+            NpgsqlDbType.Date,
+            new DateOnly(2026, 7, 30));
+        command.Parameters.AddWithValue("recorded_at", TestNow.AddHours(-1));
+        command.Parameters.AddWithValue("account_id", fixture.Owner.AccountId.Value);
+        command.Parameters.AddWithValue("session_id", fixture.Owner.SessionId.Value);
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
+        await transaction.CommitAsync();
         return paymentId;
     }
 
@@ -1245,6 +1429,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
     private sealed record CorrectPaymentFixture(
         ActorContext Owner,
         Guid ClientId,
+        Guid MembershipTypeId,
         Guid MembershipId,
         Guid OtherMembershipId,
         Guid OriginalPaymentId);

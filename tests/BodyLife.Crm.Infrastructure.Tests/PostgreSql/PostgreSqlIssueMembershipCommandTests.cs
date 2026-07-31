@@ -32,7 +32,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
     private static readonly DateOnly ExistingBaseEndDate = new(2026, 7, 30);
 
     [PostgreSqlFact]
-    public async Task NamedAdminIssuesSnapshotCacheAuditAndIdempotencyAtomically()
+    public async Task NamedAdminIssuesExactSaleSnapshotCacheAuditAndIdempotencyAtomically()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -55,6 +55,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         var membership = await ReadIssuedMembershipAsync(database, membershipId);
         Assert.Equal(fixture.ClientId, membership.ClientId);
         Assert.Equal(fixture.MembershipTypeId, membership.MembershipTypeId);
+        Assert.Equal("sale", membership.IssuanceMode);
         Assert.Equal("Eight visits / 30 days", membership.TypeNameSnapshot);
         Assert.Equal(30, membership.DurationDaysSnapshot);
         Assert.Equal(8, membership.VisitsLimitSnapshot);
@@ -83,6 +84,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
             MembershipStateCacheRebuilder.CurrentRecalculationVersion,
             cache.RecalculationVersion);
 
+        var payment = await ReadPaymentForMembershipAsync(database, membershipId);
         var audit = await ReadAuditAsync(database, result.AuditEntryId!.Value.Value);
         Assert.Equal(MembershipAuditActions.Issued, audit.ActionType);
         Assert.Equal(MembershipAuditActions.MembershipEntityType, audit.EntityType);
@@ -109,14 +111,13 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         Assert.Equal(
             fixture.MembershipTypeId,
             related.RootElement.GetProperty("membershipTypeId").GetGuid());
-        Assert.Equal(
-            JsonValueKind.Null,
-            related.RootElement.GetProperty("paymentId").ValueKind);
+        Assert.Equal(payment.Id, related.RootElement.GetProperty("paymentId").GetGuid());
 
         using var after = JsonDocument.Parse(audit.AfterSummary);
         var summary = after.RootElement;
-        Assert.Equal(12, summary.EnumerateObject().Count());
+        Assert.Equal(13, summary.EnumerateObject().Count());
         Assert.Equal(membershipId, summary.GetProperty("membershipId").GetGuid());
+        Assert.Equal("sale", summary.GetProperty("issuanceMode").GetString());
         Assert.Equal(fixture.ClientId, summary.GetProperty("clientId").GetGuid());
         Assert.Equal(
             fixture.MembershipTypeId,
@@ -127,7 +128,10 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         Assert.Equal("active", summary.GetProperty("status").GetString());
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("negativeHandlingDecision").ValueKind);
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("existingNegativeState").ValueKind);
-        Assert.Equal(JsonValueKind.Null, summary.GetProperty("payment").ValueKind);
+        var paymentSummary = summary.GetProperty("payment");
+        Assert.Equal(payment.Id, paymentSummary.GetProperty("paymentId").GetGuid());
+        Assert.Equal(1200m, paymentSummary.GetProperty("amount").GetDecimal());
+        Assert.Equal("UAH", paymentSummary.GetProperty("currency").GetString());
         var snapshot = summary.GetProperty("snapshot");
         Assert.Equal(5, snapshot.EnumerateObject().Count());
         Assert.Equal("Eight visits / 30 days", snapshot.GetProperty("typeName").GetString());
@@ -166,13 +170,13 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         Assert.Equal(64, idempotency.FingerprintLength);
         Assert.Equal(1L, await CountRowsAsync(database, "issued_memberships"));
         Assert.Equal(1L, await CountRowsAsync(database, "membership_state_cache"));
-        Assert.Equal(0L, await CountRowsAsync(database, "payments"));
-        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
     [PostgreSqlFact]
-    public async Task OptionalCashPaymentCommitsSourceAndBothAuditsAtomically()
+    public async Task ExactCashPaymentCommitsSourceAndBothAuditsAtomically()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -186,8 +190,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         var command = CreateCommand(
             actor,
             fixture,
-            "issue-with-payment",
-            payment: CreateIssuePayment());
+            "issue-with-payment");
 
         var result = await CreateHandler(dbContext).ExecuteAsync(
             command,
@@ -282,8 +285,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         var command = CreateCommand(
             actor,
             fixture,
-            "  issue-offset  ",
-            payment: CreateIssuePayment()) with
+            "  issue-offset  ") with
         {
             Envelope = new CommandEnvelope(
                 actor,
@@ -337,8 +339,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         var command = CreateCommand(
             actor,
             fixture,
-            "issue-near-boundary",
-            payment: CreateIssuePayment()) with
+            "issue-near-boundary") with
         {
             Envelope = CreateCommand(actor, fixture, "issue-near-boundary").Envelope with
             {
@@ -380,7 +381,8 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         AssertSuccessfulResult(receptionResult, receptionFixture.ClientId);
         Assert.Equal(2L, await CountRowsAsync(database, "issued_memberships"));
         Assert.Equal(2L, await CountRowsAsync(database, "membership_state_cache"));
-        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(2L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(4L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(2L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
@@ -455,6 +457,11 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 "membershipTypeId"),
             (
                 await handler.ExecuteAsync(
+                    valid with { ExpectedMembershipTypeUpdatedAt = default },
+                    CancellationToken.None),
+                "expectedMembershipTypeUpdatedAt"),
+            (
+                await handler.ExecuteAsync(
                     valid with { StartDate = default },
                     CancellationToken.None),
                 "startDate"),
@@ -488,31 +495,10 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 await handler.ExecuteAsync(
                     valid with
                     {
-                        Payment = new MembershipIssuePayment(
-                            new Money(0m, "UAH"),
-                            PaymentContext.MembershipSale),
-                    },
-                    CancellationToken.None),
-                "payment.amount"),
-            (
-                await handler.ExecuteAsync(
-                    valid with
-                    {
-                        Payment = new MembershipIssuePayment(
-                            new Money(1200m, "UAH"),
-                            PaymentContext.OneOff),
-                    },
-                    CancellationToken.None),
-                "payment.paymentContext"),
-            (
-                await handler.ExecuteAsync(
-                    valid with
-                    {
                         Envelope = valid.Envelope with
                         {
                             Comment = new string('x', 1001),
                         },
-                        Payment = CreateIssuePayment(),
                     },
                     CancellationToken.None),
                 "envelope.comment"),
@@ -598,6 +584,48 @@ public sealed class PostgreSqlIssueMembershipCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task ChangedCatalogVersionAndOneOffTypeRejectBeforeAnyIssueMutation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        var staleFixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
+        var oneOffFixture = new IssueFixture(
+            await InsertClientAsync(database, actor.AccountId.Value),
+            await InsertMembershipTypeAsync(
+                database,
+                kind: "one_off",
+                visitsLimit: 1));
+        await ExecuteNonQueryAsync(
+            database,
+            $"""
+            update bodylife.membership_types
+            set price_amount = 1300,
+                updated_at = '{TestNow:O}'::timestamptz
+            where id = '{staleFixture.MembershipTypeId}'::uuid
+            """);
+        var handler = CreateHandler(dbContext);
+
+        var staleResult = await handler.ExecuteAsync(
+            CreateCommand(actor, staleFixture, "stale-catalog"),
+            CancellationToken.None);
+        var oneOffResult = await handler.ExecuteAsync(
+            CreateCommand(actor, oneOffFixture, "one-off-type"),
+            CancellationToken.None);
+
+        AssertError(
+            staleResult,
+            CommandErrorCode.StaleState,
+            "expectedMembershipTypeUpdatedAt");
+        AssertError(
+            oneOffResult,
+            CommandErrorCode.MembershipNotEligible,
+            "membershipTypeId");
+        await AssertNoIssueMutationAsync(database);
+    }
+
+    [PostgreSqlFact]
     public async Task ExistingNegativeRequiresDecisionAndLeaveVisiblePreservesWarning()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -671,7 +699,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
             negativeState.GetProperty("firstNegativeVisitDate").GetString());
         Assert.Equal(2L, await CountRowsAsync(database, "issued_memberships"));
         Assert.Equal(2L, await CountRowsAsync(database, "membership_state_cache"));
-        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
@@ -811,18 +839,12 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         var command = CreateCommand(
             actor,
             fixture,
-            "issue-replay",
-            payment: CreateIssuePayment());
+            "issue-replay");
 
         var first = await handler.ExecuteAsync(command, CancellationToken.None);
         var replay = await handler.ExecuteAsync(command, CancellationToken.None);
         var changed = await handler.ExecuteAsync(
-            command with
-            {
-                Payment = new MembershipIssuePayment(
-                    new Money(1300m, "UAH"),
-                    PaymentContext.MembershipSale),
-            },
+            command with { Envelope = command.Envelope with { Comment = "Changed payload" } },
             CancellationToken.None);
 
         AssertSuccessfulResult(first, fixture.ClientId);
@@ -856,8 +878,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         var command = CreateCommand(
             actor,
             fixture,
-            "concurrent-same-key",
-            payment: CreateIssuePayment());
+            "concurrent-same-key");
         await using var firstContext = database.CreateDbContext();
         await using var secondContext = database.CreateDbContext();
 
@@ -905,8 +926,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
             CreateCommand(
                 actor,
                 fixture,
-                "recalculation-failure",
-                payment: CreateIssuePayment()),
+                "recalculation-failure"),
             CancellationToken.None);
 
         AssertError(result, CommandErrorCode.RecalculationFailed);
@@ -944,8 +964,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 CreateCommand(
                     actor,
                     fixture,
-                    "payment-persistence-failure",
-                    payment: CreateIssuePayment()),
+                    "payment-persistence-failure"),
                 CancellationToken.None));
 
         await AssertNoIssueMutationAsync(database);
@@ -972,8 +991,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 CreateCommand(
                     actor,
                     fixture,
-                    "payment-audit-failure",
-                    payment: CreateIssuePayment()),
+                    "payment-audit-failure"),
                 CancellationToken.None));
 
         await AssertNoIssueMutationAsync(database);
@@ -1050,8 +1068,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
         ActorContext actor,
         IssueFixture fixture,
         string idempotencyKey,
-        MembershipNegativeHandlingDecision? decision = null,
-        MembershipIssuePayment? payment = null)
+        MembershipNegativeHandlingDecision? decision = null)
     {
         return new IssueMembershipCommand(
             new CommandEnvelope(
@@ -1064,16 +1081,9 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 Comment: "  Front desk issue  "),
             fixture.ClientId,
             fixture.MembershipTypeId,
+            TestNow.AddDays(-1),
             NewStartDate,
-            decision,
-            Payment: payment);
-    }
-
-    private static MembershipIssuePayment CreateIssuePayment()
-    {
-        return new MembershipIssuePayment(
-            new Money(1200m, "uah"),
-            PaymentContext.MembershipSale);
+            decision);
     }
 
     private static void AssertSuccessfulResult(CommandResult result, Guid clientId)
@@ -1242,7 +1252,9 @@ public sealed class PostgreSqlIssueMembershipCommandTests
     private static async Task<Guid> InsertMembershipTypeAsync(
         PostgreSqlTestDatabase database,
         bool isActive = true,
-        int durationDays = 30)
+        int durationDays = 30,
+        string kind = "ordinary",
+        int visitsLimit = 8)
     {
         var membershipTypeId = Guid.NewGuid();
         await using var connection = new NpgsqlConnection(database.ConnectionString);
@@ -1253,6 +1265,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
             insert into bodylife.membership_types (
                 id,
                 name,
+                kind,
                 duration_days,
                 visits_limit,
                 price_amount,
@@ -1265,8 +1278,9 @@ public sealed class PostgreSqlIssueMembershipCommandTests
             values (
                 @membership_type_id,
                 'Eight visits / 30 days',
+                @kind,
                 @duration_days,
-                8,
+                @visits_limit,
                 1200,
                 'UAH',
                 @is_active,
@@ -1276,7 +1290,9 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 @deactivated_at)
             """;
         command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
+        command.Parameters.AddWithValue("kind", kind);
         command.Parameters.AddWithValue("duration_days", durationDays);
+        command.Parameters.AddWithValue("visits_limit", visitsLimit);
         command.Parameters.AddWithValue("is_active", isActive);
         command.Parameters.AddWithValue("created_at", TestNow.AddDays(-10));
         command.Parameters.AddWithValue("updated_at", TestNow.AddDays(-1));
@@ -1303,6 +1319,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 id,
                 client_id,
                 membership_type_id,
+                issuance_mode,
                 type_name_snapshot,
                 duration_days_snapshot,
                 visits_limit_snapshot,
@@ -1320,6 +1337,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 @membership_id,
                 @client_id,
                 @membership_type_id,
+                'sale',
                 'Historical two visits / 30 days',
                 30,
                 2,
@@ -1332,16 +1350,56 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 'active',
                 'normal',
                 null,
-                null)
+                null);
+
+            insert into bodylife.payments (
+                id,
+                client_id,
+                membership_id,
+                amount,
+                currency,
+                method,
+                payment_context,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status)
+            values (
+                @payment_id,
+                @client_id,
+                @membership_id,
+                900,
+                'UAH',
+                'cash',
+                'membership_sale',
+                @issued_at,
+                @issued_at,
+                @issued_by_account_id,
+                (
+                    select id
+                    from bodylife.sessions
+                    where account_id = @issued_by_account_id
+                    order by started_at desc
+                    limit 1
+                ),
+                'normal',
+                null,
+                null,
+                'active')
             """;
         command.Parameters.AddWithValue("membership_id", membershipId);
         command.Parameters.AddWithValue("client_id", fixture.ClientId);
         command.Parameters.AddWithValue("membership_type_id", fixture.MembershipTypeId);
+        command.Parameters.AddWithValue("payment_id", Guid.NewGuid());
         command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, ExistingStartDate);
         command.Parameters.AddWithValue("base_end_date", NpgsqlDbType.Date, ExistingBaseEndDate);
         command.Parameters.AddWithValue("issued_at", issuedAt ?? TestNow.AddDays(-3));
         command.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
-        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
         return new ExistingMembershipFixture(membershipId, ExistingBaseEndDate);
     }
 
@@ -1435,6 +1493,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
             """
             select client_id,
                    membership_type_id,
+                   issuance_mode,
                    type_name_snapshot,
                    duration_days_snapshot,
                    visits_limit_snapshot,
@@ -1458,18 +1517,19 @@ public sealed class PostgreSqlIssueMembershipCommandTests
             reader.GetGuid(0),
             reader.GetGuid(1),
             reader.GetString(2),
-            reader.GetInt32(3),
+            reader.GetString(3),
             reader.GetInt32(4),
-            reader.GetDecimal(5),
-            reader.GetString(6),
-            reader.GetFieldValue<DateOnly>(7),
+            reader.GetInt32(5),
+            reader.GetDecimal(6),
+            reader.GetString(7),
             reader.GetFieldValue<DateOnly>(8),
-            reader.GetFieldValue<DateTimeOffset>(9),
-            reader.GetGuid(10),
-            reader.GetString(11),
+            reader.GetFieldValue<DateOnly>(9),
+            reader.GetFieldValue<DateTimeOffset>(10),
+            reader.GetGuid(11),
             reader.GetString(12),
-            reader.IsDBNull(13) ? null : reader.GetGuid(13),
-            reader.IsDBNull(14) ? null : reader.GetString(14));
+            reader.GetString(13),
+            reader.IsDBNull(14) ? null : reader.GetGuid(14),
+            reader.IsDBNull(15) ? null : reader.GetString(15));
     }
 
     private static async Task<PaymentRow> ReadPaymentForMembershipAsync(
@@ -1703,6 +1763,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
     private sealed record IssuedMembershipRow(
         Guid ClientId,
         Guid MembershipTypeId,
+        string IssuanceMode,
         string TypeNameSnapshot,
         int DurationDaysSnapshot,
         int VisitsLimitSnapshot,

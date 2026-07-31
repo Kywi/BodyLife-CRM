@@ -410,6 +410,7 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -427,14 +428,27 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                 8,
                 1000,
                 'UAH',
+                'opening_state',
                 @start_date,
                 @base_end_date,
                 @created_at,
                 @account_id,
                 'active',
-                'normal',
+                'manual_backfill',
                 null,
-                null)
+                null);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            values (
+                gen_random_uuid(), @membership_id, @start_date, 8, 0,
+                @base_end_date, 0, 'Visit history fixture',
+                'Historical state required by the query scenario', @created_at,
+                @account_id, @session_id, 'manual_backfill', null, 'active')
             """;
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("account_id", accountId);
@@ -454,7 +468,7 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             "base_end_date",
             NpgsqlDbType.Date,
             new DateOnly(2026, 7, 30));
-        Assert.Equal(5, await command.ExecuteNonQueryAsync());
+        Assert.Equal(6, await command.ExecuteNonQueryAsync());
 
         return new VisitHistoryFixture(
             new ActorContext(

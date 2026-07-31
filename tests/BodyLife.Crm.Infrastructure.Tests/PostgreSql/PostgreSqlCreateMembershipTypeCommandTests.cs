@@ -291,6 +291,39 @@ public sealed class PostgreSqlCreateMembershipTypeCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task ActiveZeroPriceIsRejectedButInactiveHistoricalValueIsAllowed()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
+        var handler = CreateHandler(dbContext);
+
+        var activeResult = await handler.ExecuteAsync(
+            CreateCommand(
+                actor,
+                "active-zero-price",
+                price: new Money(0m, "UAH")),
+            CancellationToken.None);
+        var inactiveResult = await handler.ExecuteAsync(
+            CreateCommand(
+                actor,
+                "inactive-zero-price",
+                price: new Money(0m, "UAH"),
+                isActive: false),
+            CancellationToken.None);
+
+        AssertError(activeResult, CommandErrorCode.ValidationFailed);
+        Assert.Equal("price", Assert.Single(activeResult.Errors).Field);
+        AssertSuccessfulResult(inactiveResult);
+        var membershipType = await ReadMembershipTypeAsync(
+            database,
+            inactiveResult.PrimaryEntityId!.Value.Value);
+        Assert.False(membershipType.IsActive);
+        Assert.Equal(0m, membershipType.PriceAmount);
+    }
+
+    [PostgreSqlFact]
     public async Task IdempotentReplayReturnsOriginalResultAndRejectsChangedPayload()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();

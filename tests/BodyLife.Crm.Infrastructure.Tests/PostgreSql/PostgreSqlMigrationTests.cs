@@ -36,6 +36,9 @@ public sealed class PostgreSqlMigrationTests
         Assert.Contains(
             "20260720173659_AddBusinessAuditRecordedTimelineIndex",
             appliedMigrations);
+        Assert.Contains(
+            "20260731122055_AddMembershipSalesFoundation",
+            appliedMigrations);
         Assert.True(schemaExists);
         Assert.Equal($"bodylife.{BodyLifeDbContextOptions.MigrationsHistoryTable}", historyTableName);
     }

@@ -323,22 +323,15 @@ public sealed class IndexModel(
                 cancellationToken);
         }
 
-        var payment = form.IncludePayment
-            ? new MembershipIssuePayment(
-                new Money(
-                    form.PaymentAmount!.Value,
-                    IssueMembershipFormViewModel.Currency),
-                PaymentContext.MembershipSale)
-            : null;
         var command = new IssueMembershipCommand(
             requestContextResolver.CreateCommandEnvelope(
                 idempotencyKey: form.IdempotencyKey,
                 comment: form.Comment),
             form.ClientId,
             form.MembershipTypeId!.Value,
+            form.ExpectedMembershipTypeUpdatedAt!.Value,
             form.StartDate!.Value,
-            form.NegativeHandlingDecision,
-            Payment: payment);
+            form.NegativeHandlingDecision);
         var result = await issueMembership.ExecuteAsync(command, cancellationToken);
 
         if (result.Status == CommandStatus.Success)
@@ -784,10 +777,7 @@ public sealed class IndexModel(
 
         ApplySearchContext(form);
         ClientId = rereadTarget.Value;
-        var outcomeKey = form.IncludePayment
-            ? "Operation.MembershipIssuedWithPayment"
-            : "Operation.MembershipIssued";
-        var message = LocalizedOperationMessage(outcomeKey, result.AuditEntryId);
+        var message = LocalizedOperationMessage("Operation.MembershipIssuedWithPayment", result.AuditEntryId);
 
         if (!IsHtmxRequest())
         {
@@ -1738,6 +1728,15 @@ public sealed class IndexModel(
                 "startDate"));
         }
 
+        if (!form.ExpectedMembershipTypeUpdatedAt.HasValue
+            || form.ExpectedMembershipTypeUpdatedAt.Value == default)
+        {
+            errors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Membership type preview version is required.",
+                "expectedMembershipTypeUpdatedAt"));
+        }
+
         if (form.NegativeHandlingDecision is { } decision
             && !Enum.IsDefined(decision))
         {
@@ -1745,15 +1744,6 @@ public sealed class IndexModel(
                 CommandErrorCode.ValidationFailed,
                 "Negative handling decision is not supported.",
                 "negativeHandlingDecision"));
-        }
-
-        if (form.IncludePayment
-            && (form.PaymentAmount is null || form.PaymentAmount <= 0))
-        {
-            errors.Add(new CommandError(
-                CommandErrorCode.ValidationFailed,
-                "Payment amount must be greater than zero.",
-                "payment.amount"));
         }
 
         if (form.Comment?.Trim().Length > IssueMembershipFormViewModel.CommentMaxLength)

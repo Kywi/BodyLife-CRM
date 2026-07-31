@@ -486,6 +486,7 @@ public sealed class PostgreSqlFreezesStorageTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -504,6 +505,7 @@ public sealed class PostgreSqlFreezesStorageTests
                     8,
                     1000,
                     'UAH',
+                    'sale',
                     @start_date,
                     @base_end_date,
                     @recorded_at,
@@ -521,6 +523,7 @@ public sealed class PostgreSqlFreezesStorageTests
                     8,
                     1000,
                     'UAH',
+                    'sale',
                     @start_date,
                     @base_end_date,
                     @recorded_at,
@@ -528,7 +531,18 @@ public sealed class PostgreSqlFreezesStorageTests
                     'active',
                     'normal',
                     null,
-                    null)
+                    null);
+
+            insert into bodylife.payments (
+                id, client_id, membership_id, amount, currency, method,
+                payment_context, occurred_at, recorded_at, recorded_by_account_id,
+                session_id, entry_origin, entry_batch_id, comment, status)
+            select gen_random_uuid(), client_id, id, price_amount_snapshot,
+                   price_currency_snapshot, 'cash', 'membership_sale', @recorded_at,
+                   @recorded_at, @actor_account_id, @session_id, 'normal', null, null,
+                   case when status = 'active' then 'active' else 'canceled' end
+            from bodylife.issued_memberships
+            where id in (@membership_id, @other_membership_id)
             """;
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("actor_account_id", actorAccountId);
@@ -548,7 +562,7 @@ public sealed class PostgreSqlFreezesStorageTests
             "base_end_date",
             NpgsqlDbType.Date,
             MembershipBaseEndDate);
-        Assert.Equal(6, await command.ExecuteNonQueryAsync());
+        Assert.Equal(8, await command.ExecuteNonQueryAsync());
 
         return new FreezeFixture(
             actorAccountId,

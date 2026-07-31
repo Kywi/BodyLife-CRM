@@ -41,7 +41,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         var entryBatchId = Guid.NewGuid();
         var command = CreateCommand(
             actor,
-            membership.MembershipId,
+            membership,
             "opening-success",
             declaredRemainingVisits: -2,
             knownEffectiveEndDate: new DateOnly(2026, 8, 3),
@@ -53,10 +53,10 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             command,
             CancellationToken.None);
 
-        AssertSuccessfulResult(result, membership.MembershipId);
-        var openingStateId = result.PrimaryEntityId!.Value.Value;
-        var openingState = await ReadOpeningStateAsync(database, openingStateId);
-        Assert.Equal(membership.MembershipId, openingState.MembershipId);
+        AssertSuccessfulResult(result, membership.ClientId);
+        var membershipId = result.PrimaryEntityId!.Value.Value;
+        var openingState = await ReadOpeningStateAsync(database, membershipId);
+        Assert.Equal(membershipId, openingState.MembershipId);
         Assert.Equal(TestOpeningAsOfDate, openingState.OpeningAsOfDate);
         Assert.Equal(-2, openingState.DeclaredRemainingVisits);
         Assert.Equal(2, openingState.DeclaredNegativeBalance);
@@ -73,7 +73,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         Assert.Equal(entryBatchId, openingState.EntryBatchId);
         Assert.Equal("active", openingState.Status);
 
-        var cache = await ReadCacheAsync(database, membership.MembershipId);
+        var cache = await ReadCacheAsync(database, membershipId);
         Assert.Equal(0, cache.CountedVisits);
         Assert.Equal(-2, cache.RemainingVisits);
         Assert.Equal(2, cache.NegativeBalance);
@@ -88,7 +88,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         var audit = await ReadAuditAsync(database, result.AuditEntryId!.Value.Value);
         Assert.Equal(MembershipAuditActions.OpeningStateCreated, audit.ActionType);
         Assert.Equal(MembershipAuditActions.OpeningStateEntityType, audit.EntityType);
-        Assert.Equal(openingStateId, audit.EntityId);
+        Assert.Equal(openingState.Id, audit.EntityId);
         Assert.Equal(actor.AccountId.Value, audit.ActorAccountId);
         Assert.Equal("named_admin", audit.ActorAccountType);
         Assert.Equal("admin", audit.ActorRole);
@@ -106,22 +106,25 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         Assert.Equal("{}", audit.BeforeSummary);
 
         using var related = JsonDocument.Parse(audit.RelatedEntityRefs);
-        Assert.Equal(2, related.RootElement.EnumerateObject().Count());
+        Assert.Equal(3, related.RootElement.EnumerateObject().Count());
         Assert.Equal(
             membership.ClientId,
             related.RootElement.GetProperty("clientId").GetGuid());
         Assert.Equal(
-            membership.MembershipId,
+            membershipId,
             related.RootElement.GetProperty("membershipId").GetGuid());
+        Assert.Equal(
+            membership.MembershipTypeId,
+            related.RootElement.GetProperty("membershipTypeId").GetGuid());
 
         using var after = JsonDocument.Parse(audit.AfterSummary);
         var summary = after.RootElement;
-        Assert.Equal(12, summary.EnumerateObject().Count());
+        Assert.Equal(17, summary.EnumerateObject().Count());
         Assert.Equal(
-            openingStateId,
+            openingState.Id,
             summary.GetProperty("openingStateId").GetGuid());
         Assert.Equal(
-            membership.MembershipId,
+            membershipId,
             summary.GetProperty("membershipId").GetGuid());
         Assert.Equal(
             membership.ClientId,
@@ -166,8 +169,8 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             "CreateMembershipOpeningState",
             "opening-success");
         Assert.Equal("succeeded", idempotency.Status);
-        Assert.Equal(openingStateId, idempotency.PrimaryEntityId);
-        Assert.Equal(membership.MembershipId, idempotency.RereadTargetId);
+        Assert.Equal(membershipId, idempotency.PrimaryEntityId);
+        Assert.Equal(membership.ClientId, idempotency.RereadTargetId);
         Assert.Equal(result.AuditEntryId.Value.Value, idempotency.AuditEntryId);
         Assert.Equal("manual_backfill", idempotency.EntryOrigin);
         Assert.Equal(64, idempotency.FingerprintLength);
@@ -191,7 +194,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         var membership = await SeedMembershipAsync(database, actor.AccountId.Value);
         var submittedOccurredAt = new DateTimeOffset(2026, 7, 13, 10, 30, 0, TimeSpan.FromHours(3));
         var expectedOccurredAt = submittedOccurredAt.ToUniversalTime();
-        var command = CreateCommand(actor, membership.MembershipId, "opening-offset") with
+        var command = CreateCommand(actor, membership, "opening-offset") with
         {
             Envelope = new CommandEnvelope(
                 actor,
@@ -205,7 +208,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
 
         var result = await CreateHandler(dbContext).ExecuteAsync(command, CancellationToken.None);
 
-        AssertSuccessfulResult(result, membership.MembershipId);
+        AssertSuccessfulResult(result, membership.ClientId);
         var openingState = await ReadOpeningStateAsync(database, result.PrimaryEntityId!.Value.Value);
         Assert.Equal("opening at offset", openingState.Reason);
         Assert.Equal(actor.AccountId.Value, openingState.RecordedByAccountId);
@@ -231,9 +234,9 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         await dbContext.Database.MigrateAsync();
         var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
         var membership = await SeedMembershipAsync(database, actor.AccountId.Value);
-        var command = CreateCommand(actor, membership.MembershipId, "opening-near-boundary") with
+        var command = CreateCommand(actor, membership, "opening-near-boundary") with
         {
-            Envelope = CreateCommand(actor, membership.MembershipId, "opening-near-boundary").Envelope with
+            Envelope = CreateCommand(actor, membership, "opening-near-boundary").Envelope with
             {
                 OccurredAt = DateTimeOffset.MinValue,
             },
@@ -264,17 +267,17 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         var handler = CreateHandler(dbContext);
 
         var ownerResult = await handler.ExecuteAsync(
-            CreateCommand(owner, ownerMembership.MembershipId, "owner-opening"),
+            CreateCommand(owner, ownerMembership, "owner-opening"),
             CancellationToken.None);
         var receptionResult = await handler.ExecuteAsync(
             CreateCommand(
                 sharedReception,
-                receptionMembership.MembershipId,
+                receptionMembership,
                 "reception-opening"),
             CancellationToken.None);
 
-        AssertSuccessfulResult(ownerResult, ownerMembership.MembershipId);
-        AssertSuccessfulResult(receptionResult, receptionMembership.MembershipId);
+        AssertSuccessfulResult(ownerResult, ownerMembership.ClientId);
+        AssertSuccessfulResult(receptionResult, receptionMembership.ClientId);
         Assert.Equal(2L, await CountRowsAsync(database, "membership_opening_states"));
         Assert.Equal(2L, await CountRowsAsync(database, "membership_state_cache"));
         Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
@@ -319,19 +322,19 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         var results = new[]
         {
             await handler.ExecuteAsync(
-                CreateCommand(forgedOwner, membership.MembershipId, "forged-owner"),
+                CreateCommand(forgedOwner, membership, "forged-owner"),
                 CancellationToken.None),
             await handler.ExecuteAsync(
-                CreateCommand(invalidShape, membership.MembershipId, "invalid-shape"),
+                CreateCommand(invalidShape, membership, "invalid-shape"),
                 CancellationToken.None),
             await handler.ExecuteAsync(
-                CreateCommand(expiredOwner, membership.MembershipId, "expired-owner"),
+                CreateCommand(expiredOwner, membership, "expired-owner"),
                 CancellationToken.None),
             await handler.ExecuteAsync(
-                CreateCommand(inactiveAdmin, membership.MembershipId, "inactive-admin"),
+                CreateCommand(inactiveAdmin, membership, "inactive-admin"),
                 CancellationToken.None),
             await handler.ExecuteAsync(
-                CreateCommand(unknownAdmin, membership.MembershipId, "unknown-admin"),
+                CreateCommand(unknownAdmin, membership, "unknown-admin"),
                 CancellationToken.None),
         };
 
@@ -351,7 +354,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             AccountKind.NamedAdmin);
         var membership = await SeedMembershipAsync(database, actor.AccountId.Value);
         var handler = CreateHandler(dbContext);
-        var valid = CreateCommand(actor, membership.MembershipId, "valid-opening");
+        var valid = CreateCommand(actor, membership, "valid-opening");
 
         var results = new[]
         {
@@ -439,46 +442,45 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task MissingNonActiveAndCrossSourceInvalidMembershipsAreRejected()
+    public async Task MissingClientTypeAndInvalidOpeningDatesAreRejected()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var actor = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
         var active = await SeedMembershipAsync(database, actor.AccountId.Value);
-        var canceled = await SeedMembershipAsync(
-            database,
-            actor.AccountId.Value,
-            status: "canceled");
         var handler = CreateHandler(dbContext);
 
         var missing = await handler.ExecuteAsync(
-            CreateCommand(actor, Guid.NewGuid(), "missing-membership"),
+            CreateCommand(actor, active with { ClientId = Guid.NewGuid() }, "missing-membership"),
             CancellationToken.None);
-        var nonActive = await handler.ExecuteAsync(
-            CreateCommand(actor, canceled.MembershipId, "canceled-membership"),
+        var missingType = await handler.ExecuteAsync(
+            CreateCommand(
+                actor,
+                active with { MembershipTypeId = Guid.NewGuid() },
+                "missing-membership-type"),
             CancellationToken.None);
         var beforeStart = await handler.ExecuteAsync(
-            CreateCommand(actor, active.MembershipId, "before-start") with
+            CreateCommand(actor, active, "before-start") with
             {
                 OpeningAsOfDate = TestStartDate.AddDays(-1),
             },
             CancellationToken.None);
         var afterEnd = await handler.ExecuteAsync(
-            CreateCommand(actor, active.MembershipId, "after-end") with
+            CreateCommand(actor, active, "after-end") with
             {
                 OpeningAsOfDate = TestBaseEndDate.AddDays(1),
             },
             CancellationToken.None);
         var shortenedTerm = await handler.ExecuteAsync(
-            CreateCommand(actor, active.MembershipId, "shortened-term") with
+            CreateCommand(actor, active, "shortened-term") with
             {
                 KnownEffectiveEndDate = TestBaseEndDate.AddDays(-1),
             },
             CancellationToken.None);
 
         AssertError(missing, CommandErrorCode.NotFound);
-        AssertError(nonActive, CommandErrorCode.MembershipNotEligible);
+        AssertError(missingType, CommandErrorCode.NotFound);
         AssertError(beforeStart, CommandErrorCode.ValidationFailed);
         AssertError(afterEnd, CommandErrorCode.ValidationFailed);
         AssertError(shortenedTerm, CommandErrorCode.ValidationFailed);
@@ -486,7 +488,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task ExistingActiveOpeningStateReturnsStaleAndPreservesCanonicalState()
+    public async Task DistinctKeysCreateDistinctPaymentlessOpeningMemberships()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -501,27 +503,31 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         var first = await handler.ExecuteAsync(
             CreateCommand(
                 actor,
-                membership.MembershipId,
+                membership,
                 "first-opening",
                 declaredRemainingVisits: -1),
             CancellationToken.None);
-        var stale = await handler.ExecuteAsync(
+        var second = await handler.ExecuteAsync(
             CreateCommand(
                 actor,
-                membership.MembershipId,
+                membership,
                 "second-opening",
                 declaredRemainingVisits: 2),
             CancellationToken.None);
 
-        AssertSuccessfulResult(first, membership.MembershipId);
-        AssertError(stale, CommandErrorCode.StaleState);
-        var cache = await ReadCacheAsync(database, membership.MembershipId);
-        Assert.Equal(-1, cache.RemainingVisits);
-        Assert.Equal(1, cache.NegativeBalance);
-        Assert.Equal(1L, await CountRowsAsync(database, "membership_opening_states"));
-        Assert.Equal(1L, await CountRowsAsync(database, "membership_state_cache"));
-        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
-        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+        AssertSuccessfulResult(first, membership.ClientId);
+        AssertSuccessfulResult(second, membership.ClientId);
+        Assert.NotEqual(first.PrimaryEntityId, second.PrimaryEntityId);
+        var firstCache = await ReadCacheAsync(database, first.PrimaryEntityId!.Value.Value);
+        var secondCache = await ReadCacheAsync(database, second.PrimaryEntityId!.Value.Value);
+        Assert.Equal(-1, firstCache.RemainingVisits);
+        Assert.Equal(2, secondCache.RemainingVisits);
+        Assert.Equal(2L, await CountRowsAsync(database, "issued_memberships"));
+        Assert.Equal(2L, await CountRowsAsync(database, "membership_opening_states"));
+        Assert.Equal(2L, await CountRowsAsync(database, "membership_state_cache"));
+        Assert.Equal(0L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(2L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
     [PostgreSqlFact]
@@ -533,7 +539,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         var actor = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
         var membership = await SeedMembershipAsync(database, actor.AccountId.Value);
         var handler = CreateHandler(dbContext);
-        var command = CreateCommand(actor, membership.MembershipId, "opening-replay");
+        var command = CreateCommand(actor, membership, "opening-replay");
 
         var first = await handler.ExecuteAsync(command, CancellationToken.None);
         var replay = await handler.ExecuteAsync(command, CancellationToken.None);
@@ -541,8 +547,8 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             command with { DeclaredRemainingVisits = -1 },
             CancellationToken.None);
 
-        AssertSuccessfulResult(first, membership.MembershipId);
-        AssertSuccessfulResult(replay, membership.MembershipId);
+        AssertSuccessfulResult(first, membership.ClientId);
+        AssertSuccessfulResult(replay, membership.ClientId);
         Assert.Equal(first.PrimaryEntityId, replay.PrimaryEntityId);
         Assert.Equal(first.RereadTargetId, replay.RereadTargetId);
         Assert.Equal(first.AuditEntryId, replay.AuditEntryId);
@@ -554,7 +560,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task ConcurrentDifferentKeysSerializeAndCommitOneCompleteWorkflow()
+    public async Task ConcurrentDifferentKeysCommitTwoCompleteOpeningWorkflows()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using (var migrationContext = database.CreateDbContext())
@@ -571,12 +577,12 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         await using var secondContext = database.CreateDbContext();
         var firstCommand = CreateCommand(
             actor,
-            membership.MembershipId,
+            membership,
             "concurrent-opening-a",
             declaredRemainingVisits: -1);
         var secondCommand = CreateCommand(
             actor,
-            membership.MembershipId,
+            membership,
             "concurrent-opening-b",
             declaredRemainingVisits: 1);
 
@@ -584,20 +590,24 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             CreateHandler(firstContext).ExecuteAsync(firstCommand, CancellationToken.None),
             CreateHandler(secondContext).ExecuteAsync(secondCommand, CancellationToken.None));
 
-        var success = Assert.Single(results, result => result.Status == CommandStatus.Success);
-        var stale = Assert.Single(results, result => result.Status == CommandStatus.Error);
-        AssertSuccessfulResult(success, membership.MembershipId);
-        AssertError(stale, CommandErrorCode.StaleState);
-        var opening = await ReadOpeningStateAsync(
-            database,
-            success.PrimaryEntityId!.Value.Value);
-        var cache = await ReadCacheAsync(database, membership.MembershipId);
-        Assert.Equal(opening.DeclaredRemainingVisits, cache.RemainingVisits);
-        Assert.Equal(opening.DeclaredNegativeBalance, cache.NegativeBalance);
-        Assert.Equal(1L, await CountRowsAsync(database, "membership_opening_states"));
-        Assert.Equal(1L, await CountRowsAsync(database, "membership_state_cache"));
-        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
-        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+        Assert.All(results, result => AssertSuccessfulResult(result, membership.ClientId));
+        Assert.NotEqual(results[0].PrimaryEntityId, results[1].PrimaryEntityId);
+        foreach (var result in results)
+        {
+            var opening = await ReadOpeningStateAsync(
+                database,
+                result.PrimaryEntityId!.Value.Value);
+            var cache = await ReadCacheAsync(database, result.PrimaryEntityId.Value.Value);
+            Assert.Equal(opening.DeclaredRemainingVisits, cache.RemainingVisits);
+            Assert.Equal(opening.DeclaredNegativeBalance, cache.NegativeBalance);
+        }
+
+        Assert.Equal(2L, await CountRowsAsync(database, "issued_memberships"));
+        Assert.Equal(2L, await CountRowsAsync(database, "membership_opening_states"));
+        Assert.Equal(2L, await CountRowsAsync(database, "membership_state_cache"));
+        Assert.Equal(0L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(2L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
     [PostgreSqlFact]
@@ -618,7 +628,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
 
         await Assert.ThrowsAsync<DbUpdateException>(() =>
             CreateHandler(dbContext).ExecuteAsync(
-                CreateCommand(actor, membership.MembershipId, "audit-failure"),
+                CreateCommand(actor, membership, "audit-failure"),
                 CancellationToken.None));
 
         await AssertNoCommandMutationAsync(database);
@@ -637,7 +647,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
 
     private static CreateMembershipOpeningStateCommand CreateCommand(
         ActorContext actor,
-        Guid membershipId,
+        MembershipFixture membership,
         string idempotencyKey,
         int declaredRemainingVisits = 2,
         DateOnly? knownEffectiveEndDate = null,
@@ -657,7 +667,9 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
                 idempotencyKey,
                 Reason: "  Active membership history before launch is incomplete  ",
                 Comment: "  Launch backfill  "),
-            membershipId,
+            membership.ClientId,
+            membership.MembershipTypeId,
+            TestStartDate,
             TestOpeningAsOfDate,
             declaredRemainingVisits,
             knownEffectiveEndDate,
@@ -747,6 +759,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         Guid issuedByAccountId,
         string status = "active")
     {
+        _ = status;
         var fixture = new MembershipFixture(
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -788,6 +801,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             insert into bodylife.membership_types (
                 id,
                 name,
+                kind,
                 duration_days,
                 visits_limit,
                 price_amount,
@@ -800,6 +814,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             values (
                 @membership_type_id,
                 'Two visits / 30 days',
+                'ordinary',
                 30,
                 2,
                 1000,
@@ -808,66 +823,28 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
                 null,
                 @recorded_at,
                 @recorded_at,
-                null);
-
-            insert into bodylife.issued_memberships (
-                id,
-                client_id,
-                membership_type_id,
-                type_name_snapshot,
-                duration_days_snapshot,
-                visits_limit_snapshot,
-                price_amount_snapshot,
-                price_currency_snapshot,
-                start_date,
-                base_end_date,
-                issued_at,
-                issued_by_account_id,
-                status,
-                entry_origin,
-                entry_batch_id,
-                comment)
-            values (
-                @membership_id,
-                @client_id,
-                @membership_type_id,
-                'Two visits / 30 days',
-                30,
-                2,
-                1000,
-                'UAH',
-                @start_date,
-                @base_end_date,
-                @recorded_at,
-                @issued_by_account_id,
-                @status,
-                'manual_backfill',
-                null,
-                'Opening-state command fixture')
+                null)
             """;
         command.Parameters.AddWithValue("client_id", fixture.ClientId);
         command.Parameters.AddWithValue("membership_type_id", fixture.MembershipTypeId);
-        command.Parameters.AddWithValue("membership_id", fixture.MembershipId);
         command.Parameters.AddWithValue("recorded_at", TestNow.AddHours(-1));
         command.Parameters.AddWithValue("issued_by_account_id", issuedByAccountId);
-        command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, TestStartDate);
-        command.Parameters.AddWithValue("base_end_date", NpgsqlDbType.Date, TestBaseEndDate);
-        command.Parameters.AddWithValue("status", status);
-        Assert.Equal(3, await command.ExecuteNonQueryAsync());
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
 
         return fixture;
     }
 
     private static async Task<OpeningStateRow> ReadOpeningStateAsync(
         PostgreSqlTestDatabase database,
-        Guid openingStateId)
+        Guid membershipId)
     {
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
         command.CommandText =
             """
-            select membership_id,
+            select id,
+                   membership_id,
                    opening_as_of_date,
                    declared_remaining_visits,
                    declared_negative_balance,
@@ -882,26 +859,27 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
                    entry_batch_id,
                    status
             from bodylife.membership_opening_states
-            where id = @id
+            where membership_id = @membership_id
             """;
-        command.Parameters.AddWithValue("id", openingStateId);
+        command.Parameters.AddWithValue("membership_id", membershipId);
         await using var reader = await command.ExecuteReaderAsync();
         Assert.True(await reader.ReadAsync());
         return new OpeningStateRow(
             reader.GetGuid(0),
-            reader.GetFieldValue<DateOnly>(1),
-            reader.GetInt32(2),
+            reader.GetGuid(1),
+            reader.GetFieldValue<DateOnly>(2),
             reader.GetInt32(3),
-            reader.IsDBNull(4) ? null : reader.GetFieldValue<DateOnly>(4),
-            reader.IsDBNull(5) ? null : reader.GetInt32(5),
-            reader.GetString(6),
+            reader.GetInt32(4),
+            reader.IsDBNull(5) ? null : reader.GetFieldValue<DateOnly>(5),
+            reader.IsDBNull(6) ? null : reader.GetInt32(6),
             reader.GetString(7),
-            reader.GetFieldValue<DateTimeOffset>(8),
-            reader.GetGuid(9),
+            reader.GetString(8),
+            reader.GetFieldValue<DateTimeOffset>(9),
             reader.GetGuid(10),
-            reader.GetString(11),
-            reader.IsDBNull(12) ? null : reader.GetGuid(12),
-            reader.GetString(13));
+            reader.GetGuid(11),
+            reader.GetString(12),
+            reader.IsDBNull(13) ? null : reader.GetGuid(13),
+            reader.GetString(14));
     }
 
     private static async Task<CacheRow> ReadCacheAsync(
@@ -1054,18 +1032,18 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
-    private static void AssertSuccessfulResult(CommandResult result, Guid membershipId)
+    private static void AssertSuccessfulResult(CommandResult result, Guid clientId)
     {
         Assert.Equal(CommandStatus.Success, result.Status);
         Assert.NotNull(result.PrimaryEntityId);
         Assert.Equal(
-            MembershipAuditActions.OpeningStateEntityType,
+            CreateMembershipOpeningStateCommand.PrimaryEntityType,
             result.PrimaryEntityId.Value.Type);
         Assert.NotEqual(Guid.Empty, result.PrimaryEntityId.Value.Value);
         Assert.Equal(
             new EntityId(
                 CreateMembershipOpeningStateCommand.CanonicalRereadEntityType,
-                membershipId),
+                clientId),
             result.RereadTargetId);
         Assert.NotNull(result.AuditEntryId);
         Assert.Empty(result.RelatedEntityIds);
@@ -1109,6 +1087,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
         Guid MembershipId);
 
     private sealed record OpeningStateRow(
+        Guid Id,
         Guid MembershipId,
         DateOnly OpeningAsOfDate,
         int DeclaredRemainingVisits,

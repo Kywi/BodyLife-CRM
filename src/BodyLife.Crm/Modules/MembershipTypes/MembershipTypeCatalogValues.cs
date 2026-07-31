@@ -7,4 +7,5 @@ public sealed record MembershipTypeCatalogValues(
     int DurationDays,
     int VisitsLimit,
     Money Price,
-    string? Comment);
+    string? Comment,
+    MembershipTypeKind Kind);

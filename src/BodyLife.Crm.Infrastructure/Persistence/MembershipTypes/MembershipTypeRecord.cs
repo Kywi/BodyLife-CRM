@@ -14,6 +14,8 @@ internal sealed class MembershipTypeRecord
 
     public required string PriceCurrency { get; set; }
 
+    public required string Kind { get; set; }
+
     public bool IsActive { get; set; }
 
     public string? Comment { get; set; }

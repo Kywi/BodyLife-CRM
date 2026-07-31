@@ -440,7 +440,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     "Recorded payment",
                     "Method"));
             Assert.Equal(
-                "Membership sale",
+                "Other",
                 await ExplanationFactAsync(
                     explanation,
                     "Recorded payment",

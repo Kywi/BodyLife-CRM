@@ -3,7 +3,6 @@ using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Modules.Memberships;
-using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
@@ -15,8 +14,7 @@ internal static class IssueMembershipCommandSupport
     private const int CorrelationIdMaxLength = 128;
     private const int DeviceLabelMaxLength = 120;
     private const int AuditReasonMaxLength = 1000;
-    private const int AuditCommentMaxLength = 2000;
-    private const int PaymentCommentMaxLength = 1000;
+    private const int AuditCommentMaxLength = 1000;
     private static readonly TimeSpan IdempotencyRetention = TimeSpan.FromHours(24);
 
     internal static CommandResult? ValidateAndNormalize(
@@ -35,6 +33,13 @@ internal static class IssueMembershipCommandSupport
             return ValidationError("Membership type id is required.", "membershipTypeId");
         }
 
+        if (command.ExpectedMembershipTypeUpdatedAt == default)
+        {
+            return ValidationError(
+                "Expected membership type version is required.",
+                "expectedMembershipTypeUpdatedAt");
+        }
+
         if (command.StartDate == default)
         {
             return ValidationError("Start date is required.", "startDate");
@@ -51,16 +56,8 @@ internal static class IssueMembershipCommandSupport
         if (command.EntryBatchId is not null)
         {
             return ValidationError(
-                "Entry batch is not supported by the ordinary membership issue workflow.",
+                "Normal membership issue cannot carry paper batch metadata.",
                 "entryBatchId");
-        }
-
-        var paymentValidation = ValidateAndNormalizePayment(
-            command.Payment,
-            out var normalizedPayment);
-        if (paymentValidation is not null)
-        {
-            return paymentValidation;
         }
 
         var envelopeValidation = ValidateAndNormalizeEnvelope(
@@ -71,20 +68,13 @@ internal static class IssueMembershipCommandSupport
             return envelopeValidation;
         }
 
-        if (normalizedPayment is not null
-            && normalizedEnvelope!.Comment?.Length > PaymentCommentMaxLength)
-        {
-            return ValidationError(
-                $"Issue comment must be {PaymentCommentMaxLength} characters or fewer when a Payment is included.",
-                "envelope.comment");
-        }
-
         normalizedIssue = new NormalizedMembershipIssue(
             command.ClientId,
             command.MembershipTypeId,
+            command.ExpectedMembershipTypeUpdatedAt.ToUniversalTime(),
             command.StartDate,
             command.NegativeHandlingDecision,
-            normalizedPayment,
+            command.EntryBatchId,
             normalizedEnvelope!);
         return null;
     }
@@ -103,17 +93,11 @@ internal static class IssueMembershipCommandSupport
             EnvelopeComment = issue.Envelope.Comment,
             issue.ClientId,
             issue.MembershipTypeId,
+            issue.ExpectedMembershipTypeUpdatedAt,
             issue.StartDate,
             NegativeHandlingDecision = MapNegativeHandlingDecision(
                 issue.NegativeHandlingDecision),
-            Payment = issue.Payment is null
-                ? null
-                : new
-                {
-                    Amount = issue.Payment.Amount.Amount,
-                    Currency = issue.Payment.Amount.Currency,
-                    PaymentContext = "membership_sale",
-                },
+            issue.EntryBatchId,
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));
@@ -308,48 +292,6 @@ internal static class IssueMembershipCommandSupport
         return null;
     }
 
-    private static CommandResult? ValidateAndNormalizePayment(
-        MembershipIssuePayment? payment,
-        out MembershipIssuePayment? normalizedPayment)
-    {
-        normalizedPayment = null;
-        if (payment is null)
-        {
-            return null;
-        }
-
-        if (!Enum.IsDefined(payment.PaymentContext)
-            || payment.PaymentContext != PaymentContext.MembershipSale)
-        {
-            return ValidationError(
-                "IssueMembership accepts only membership-sale Payment context.",
-                "payment.paymentContext");
-        }
-
-        if (payment.Amount.Amount <= 0)
-        {
-            return ValidationError(
-                "Payment amount must be greater than zero.",
-                "payment.amount");
-        }
-
-        try
-        {
-            normalizedPayment = payment with
-            {
-                Amount = new Money(
-                    payment.Amount.Amount,
-                    payment.Amount.Currency),
-            };
-        }
-        catch (ArgumentException exception)
-        {
-            return ValidationError(exception.Message, "payment.amount");
-        }
-
-        return null;
-    }
-
     private static string? NormalizeOptional(string? value)
     {
         var trimmed = value?.Trim();
@@ -381,9 +323,10 @@ internal static class IssueMembershipCommandSupport
 internal sealed record NormalizedMembershipIssue(
     Guid ClientId,
     Guid MembershipTypeId,
+    DateTimeOffset ExpectedMembershipTypeUpdatedAt,
     DateOnly StartDate,
     MembershipNegativeHandlingDecision? NegativeHandlingDecision,
-    MembershipIssuePayment? Payment,
+    Guid? EntryBatchId,
     CommandEnvelope Envelope)
 {
     public string IdempotencyKey => Envelope.IdempotencyKey!;

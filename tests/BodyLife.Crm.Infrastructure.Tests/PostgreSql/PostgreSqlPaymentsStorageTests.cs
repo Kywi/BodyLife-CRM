@@ -220,7 +220,7 @@ public sealed class PostgreSqlPaymentsStorageTests
         Assert.Equal(1000m, original.Amount);
         Assert.Equal("UAH", original.Currency);
         Assert.Equal("cash", original.Method);
-        Assert.Equal("membership_sale", original.PaymentContext);
+        Assert.Equal("other", original.PaymentContext);
         Assert.Equal(OriginalOccurredAt, original.OccurredAt);
         Assert.Equal("paper_fallback", original.EntryOrigin);
         Assert.Equal(entryBatchId, original.EntryBatchId);
@@ -644,6 +644,7 @@ public sealed class PostgreSqlPaymentsStorageTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -662,12 +663,13 @@ public sealed class PostgreSqlPaymentsStorageTests
                     8,
                     1000,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @recorded_at,
                     @actor_account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
                     null),
                 (
@@ -679,14 +681,29 @@ public sealed class PostgreSqlPaymentsStorageTests
                     8,
                     1000,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @recorded_at,
                     @actor_account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
-                    null)
+                    null);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            select
+                gen_random_uuid(), id, start_date, visits_limit_snapshot, 0,
+                base_end_date, 0, 'Payment storage fixture',
+                'Historical state required by the storage scenario', issued_at,
+                issued_by_account_id, @session_id, 'manual_backfill', null, 'active'
+            from bodylife.issued_memberships
+            where id in (@membership_id, @other_membership_id)
             """;
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("actor_account_id", actorAccountId);
@@ -706,7 +723,7 @@ public sealed class PostgreSqlPaymentsStorageTests
             "base_end_date",
             NpgsqlDbType.Date,
             MembershipBaseEndDate);
-        Assert.Equal(6, await command.ExecuteNonQueryAsync());
+        Assert.Equal(8, await command.ExecuteNonQueryAsync());
 
         return new PaymentFixture(
             actorAccountId,
@@ -725,7 +742,7 @@ public sealed class PostgreSqlPaymentsStorageTests
         decimal amount = 1000m,
         string currency = "UAH",
         string method = "cash",
-        string paymentContext = "membership_sale",
+        string paymentContext = "other",
         DateTimeOffset? occurredAt = null,
         DateTimeOffset? recordedAt = null,
         string entryOrigin = "normal",

@@ -502,6 +502,7 @@ public sealed class PostgreSqlMembershipAdjustmentsStorageTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -519,6 +520,7 @@ public sealed class PostgreSqlMembershipAdjustmentsStorageTests
                 2,
                 1000,
                 'UAH',
+                'opening_state',
                 @start_date,
                 @base_end_date,
                 @recorded_at,
@@ -526,8 +528,26 @@ public sealed class PostgreSqlMembershipAdjustmentsStorageTests
                 'active',
                 'normal',
                 null,
-                'Created for membership-adjustment storage tests')
+                'Created for membership-adjustment storage tests');
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date, known_extension_days,
+                source_reference, reason, recorded_at, recorded_by_account_id,
+                recorded_session_id, entry_origin, entry_batch_id, status)
+            select gen_random_uuid(), id, start_date, visits_limit_snapshot, 0,
+                   base_end_date, 0, 'Legacy fixture', 'Historical test state',
+                   issued_at, issued_by_account_id,
+                   (select id from bodylife.sessions where account_id = issued_by_account_id limit 1),
+                   'manual_backfill', null, 'active'
+            from bodylife.issued_memberships
+            where issuance_mode = 'opening_state'
+              and not exists (
+                  select 1 from bodylife.membership_opening_states opening
+                  where opening.membership_id = bodylife.issued_memberships.id
+                    and opening.status = 'active');
             """;
+
         command.Parameters.AddWithValue("session_id", fixture.SessionId);
         command.Parameters.AddWithValue("actor_account_id", fixture.ActorAccountId);
         command.Parameters.AddWithValue("session_started_at", TestNow.AddHours(-1));
@@ -538,7 +558,7 @@ public sealed class PostgreSqlMembershipAdjustmentsStorageTests
         command.Parameters.AddWithValue("membership_id", fixture.MembershipId);
         command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, TestStartDate);
         command.Parameters.AddWithValue("base_end_date", NpgsqlDbType.Date, TestBaseEndDate);
-        Assert.Equal(4, await command.ExecuteNonQueryAsync());
+        Assert.Equal(5, await command.ExecuteNonQueryAsync());
 
         return fixture;
     }

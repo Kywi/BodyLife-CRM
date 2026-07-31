@@ -111,4 +111,33 @@ public sealed class MembershipTypeCatalogRulesTests
         Assert.Equal("currency", missingCurrency.ParamName);
         Assert.Equal("amount", negativePrice.ParamName);
     }
+
+    [Fact]
+    public void OneOffTypeRequiresExactlyOneVisit()
+    {
+        var exception = Assert.Throws<ArgumentException>(() =>
+            MembershipTypeCatalogRules.NormalizeAndValidate(
+                "Single visit",
+                durationDays: 1,
+                visitsLimit: 2,
+                new Money(250m, "UAH"),
+                comment: null,
+                MembershipTypeKind.OneOff));
+
+        Assert.Equal("visitsLimit", exception.ParamName);
+    }
+
+    [Fact]
+    public void OneOffTypeRetainsItsKind()
+    {
+        var result = MembershipTypeCatalogRules.NormalizeAndValidate(
+            "Single visit",
+            durationDays: 1,
+            visitsLimit: 1,
+            new Money(250m, "UAH"),
+            comment: null,
+            MembershipTypeKind.OneOff);
+
+        Assert.Equal(MembershipTypeKind.OneOff, result.Kind);
+    }
 }

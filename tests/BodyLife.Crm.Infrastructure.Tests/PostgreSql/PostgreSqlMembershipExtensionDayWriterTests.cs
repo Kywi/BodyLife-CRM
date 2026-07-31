@@ -326,6 +326,7 @@ public sealed class PostgreSqlMembershipExtensionDayWriterTests
         var clientId = Guid.NewGuid();
         var membershipTypeId = Guid.NewGuid();
         var membershipId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
@@ -385,6 +386,12 @@ public sealed class PostgreSqlMembershipExtensionDayWriterTests
                 @recorded_at,
                 null);
 
+            insert into bodylife.sessions (
+                id, account_id, device_label, started_at, expires_at, ended_at, last_seen_at)
+            values (
+                @session_id, @actor_account_id, 'Extension writer fixture',
+                @recorded_at, @session_expires_at, null, @recorded_at);
+
             insert into bodylife.issued_memberships (
                 id,
                 client_id,
@@ -394,6 +401,7 @@ public sealed class PostgreSqlMembershipExtensionDayWriterTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -411,23 +419,38 @@ public sealed class PostgreSqlMembershipExtensionDayWriterTests
                 8,
                 1000,
                 'UAH',
+                'opening_state',
                 @start_date,
                 @base_end_date,
                 @recorded_at,
                 @actor_account_id,
                 'active',
-                'normal',
+                'manual_backfill',
                 null,
-                null)
+                null);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            values (
+                gen_random_uuid(), @membership_id, @start_date, 8, 0,
+                @base_end_date, 0, 'Extension writer fixture',
+                'Historical state required by the extension scenario', @recorded_at,
+                @actor_account_id, @session_id, 'manual_backfill', null, 'active')
             """;
         command.Parameters.AddWithValue("client_id", clientId);
         command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
         command.Parameters.AddWithValue("membership_id", membershipId);
+        command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("actor_account_id", actorAccountId);
         command.Parameters.AddWithValue("recorded_at", TestNow);
+        command.Parameters.AddWithValue("session_expires_at", TestNow.AddHours(12));
         command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, TestStartDate);
         command.Parameters.AddWithValue("base_end_date", NpgsqlDbType.Date, TestBaseEndDate);
-        Assert.Equal(3, await command.ExecuteNonQueryAsync());
+        Assert.Equal(5, await command.ExecuteNonQueryAsync());
 
         return membershipId;
     }

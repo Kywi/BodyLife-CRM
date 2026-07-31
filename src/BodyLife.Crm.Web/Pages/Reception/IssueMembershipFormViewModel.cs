@@ -41,8 +41,8 @@ public sealed record IssueMembershipFormViewModel(
             {
                 ClientId = clientId,
                 MembershipTypeId = selectedType?.MembershipTypeId,
+                ExpectedMembershipTypeUpdatedAt = previewResult?.Preview?.MembershipTypeUpdatedAt,
                 StartDate = startDate,
-                PaymentAmount = selectedType?.Price.Amount,
                 IdempotencyKey = Guid.NewGuid().ToString("N"),
                 SearchQuery = searchContext.Query,
                 SearchMode = searchContext.Mode,
@@ -86,10 +86,9 @@ public sealed record IssueMembershipFormViewModel(
             {
                 ClientId = input.ClientId,
                 MembershipTypeId = selectedType?.MembershipTypeId,
+                ExpectedMembershipTypeUpdatedAt = preview?.MembershipTypeUpdatedAt,
                 StartDate = input.StartDate,
                 NegativeHandlingDecision = negativeHandlingDecision,
-                IncludePayment = input.IncludePayment,
-                PaymentAmount = input.PaymentAmount ?? selectedType?.Price.Amount,
                 Comment = input.Comment,
                 IdempotencyKey = idempotencyKey,
                 SearchQuery = input.SearchQuery,
@@ -111,13 +110,11 @@ public sealed class IssueMembershipFormInput
 
     public Guid? MembershipTypeId { get; set; }
 
+    public DateTimeOffset? ExpectedMembershipTypeUpdatedAt { get; set; }
+
     public DateOnly? StartDate { get; set; }
 
     public MembershipNegativeHandlingDecision? NegativeHandlingDecision { get; set; }
-
-    public bool IncludePayment { get; set; }
-
-    public decimal? PaymentAmount { get; set; }
 
     public string? Comment { get; set; }
 

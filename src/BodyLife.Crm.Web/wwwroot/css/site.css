@@ -1580,8 +1580,7 @@ textarea:focus-visible,
   border-top: 1px solid var(--line);
 }
 
-.issue-negative-options input,
-.issue-payment-toggle input {
+.issue-negative-options input {
   width: 20px;
   height: 20px;
   margin: 0;
@@ -1615,24 +1614,11 @@ textarea:focus-visible,
   gap: 10px;
 }
 
-.issue-payment-toggle {
-  display: flex;
-  min-height: 44px;
-  gap: 10px;
-  align-items: center;
-  cursor: pointer;
-  font-weight: 800;
-}
-
 .issue-payment-fields {
   display: grid;
   border-left: 3px solid var(--info);
   padding-left: 12px;
   gap: 12px;
-}
-
-.issue-payment-fields[data-active="false"] {
-  display: none;
 }
 
 .action-form-grid {

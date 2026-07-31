@@ -10,7 +10,6 @@
     var clientKey = input.ClientId.ToString("N");
     var formId = $"issue-membership-form-{clientKey}";
     var startDateValue = input.StartDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-    var paymentAmountValue = input.PaymentAmount?.ToString(CultureInfo.InvariantCulture);
     var previewUrl = Url.Page("/Reception/Index", "IssueMembershipPreview");
 }
 
@@ -65,6 +64,9 @@
                   hx-indicator="#issue-membership-loading"
                   hx-disabled-elt="find button">
                 <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+                <input type="hidden"
+                       name="form.ExpectedMembershipTypeUpdatedAt"
+                       value="@input.ExpectedMembershipTypeUpdatedAt?.ToString("O", CultureInfo.InvariantCulture)" />
                 <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
                 <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
                 <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
@@ -218,17 +220,7 @@
 
                 <fieldset class="issue-payment-choice">
                     <legend>@L["Field.Payment"]</legend>
-                    <label class="issue-payment-toggle" for="issue-payment-toggle-@clientKey">
-                        <input id="issue-payment-toggle-@clientKey"
-                               type="checkbox"
-                               name="form.IncludePayment"
-                               value="true"
-                               checked="@(input.IncludePayment ? "checked" : null)"
-                               data-issue-payment-toggle />
-                        <span>@L["Membership.AddSalePayment"]</span>
-                    </label>
-
-                    <div class="issue-payment-fields" data-issue-payment-fields>
+                    <div class="issue-payment-fields">
                         <dl class="payment-fixed-context">
                             <div>
                                 <dt>@L["Payment.Method"]</dt>
@@ -244,17 +236,8 @@
                             </div>
                         </dl>
                         <div class="form-field">
-                            <label for="issue-payment-amount-@clientKey">@L["Payment.AmountUah"]</label>
-                            <input id="issue-payment-amount-@clientKey"
-                                   type="number"
-                                   name="form.PaymentAmount"
-                                   value="@paymentAmountValue"
-                                   min="0.01"
-                                   step="0.01"
-                                   inputmode="decimal"
-                                   disabled="@(!input.IncludePayment ? "disabled" : null)"
-                                   required="@(input.IncludePayment ? "required" : null)"
-                                   data-issue-payment-input />
+                            <label>@L["Payment.AmountUah"]</label>
+                            <output class="readonly-value" data-issue-sale-price>@(preview is null ? "—" : $"{preview.Snapshot.Price.Amount:N2} {preview.Snapshot.Price.Currency}")</output>
                         </div>
                     </div>
                 </fieldset>

@@ -130,20 +130,6 @@ const syncMarkVisitForms = (root) => {
 };
 
 const syncIssueMembershipForm = (form) => {
-  const paymentToggle = form.querySelector("[data-issue-payment-toggle]");
-  const paymentFields = form.querySelector("[data-issue-payment-fields]");
-  const includePayment = paymentToggle instanceof HTMLInputElement
-    && paymentToggle.checked;
-
-  if (paymentFields instanceof HTMLElement) {
-    paymentFields.dataset.active = includePayment ? "true" : "false";
-  }
-
-  for (const input of form.querySelectorAll("[data-issue-payment-input]")) {
-    input.disabled = !includePayment;
-    input.required = includePayment;
-  }
-
   const canSubmit = form.dataset.canSubmit === "true";
   for (const button of form.querySelectorAll("[data-issue-membership-submit]")) {
     if (!button.hasAttribute("aria-busy")) {
@@ -355,18 +341,6 @@ document.addEventListener("change", (event) => {
   }
 
   syncMarkVisitForm(form);
-});
-
-document.addEventListener("change", (event) => {
-  if (!(event.target instanceof HTMLInputElement)
-    || !event.target.matches("[data-issue-payment-toggle]")) {
-    return;
-  }
-
-  const form = event.target.closest("form[data-issue-membership-form]");
-  if (form instanceof HTMLFormElement) {
-    syncIssueMembershipForm(form);
-  }
 });
 
 document.addEventListener("htmx:load", (event) => {

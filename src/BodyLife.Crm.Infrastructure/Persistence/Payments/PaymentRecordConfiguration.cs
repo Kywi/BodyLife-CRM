@@ -25,6 +25,9 @@ internal sealed class PaymentRecordConfiguration : IEntityTypeConfiguration<Paym
                     "ck_payments_payment_context",
                     "payment_context in ('membership_sale', 'one_off', 'trial', 'negative_closure', 'other')");
                 table.HasCheckConstraint(
+                    "ck_payments_membership_sale_membership",
+                    "payment_context <> 'membership_sale' or membership_id is not null");
+                table.HasCheckConstraint(
                     "ck_payments_entry_origin",
                     "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
                 table.HasCheckConstraint(
@@ -169,6 +172,11 @@ internal sealed class PaymentRecordConfiguration : IEntityTypeConfiguration<Paym
             .IsDescending(false, false, true)
             .HasFilter("membership_id is not null")
             .HasDatabaseName("ix_payments_membership_timeline");
+
+        builder.HasIndex(payment => payment.MembershipId)
+            .IsUnique()
+            .HasFilter("payment_context = 'membership_sale'")
+            .HasDatabaseName("ux_payments_membership_sale_membership");
 
         builder.HasIndex(payment => payment.RecordedByAccountId)
             .HasDatabaseName("ix_payments_recorded_by_account_id");

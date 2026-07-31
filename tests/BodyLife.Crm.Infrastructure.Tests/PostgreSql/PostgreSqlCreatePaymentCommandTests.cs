@@ -37,7 +37,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
     private static readonly DateOnly MembershipBaseEndDate = new(2026, 7, 30);
 
     [PostgreSqlFact]
-    public async Task MembershipPaymentCommitsAuditAndIdempotencyWithoutChangingMembershipState()
+    public async Task MembershipLinkedStandalonePaymentCommitsWithoutChangingMembershipState()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -51,7 +51,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
             CreateCommand(
                 fixture,
                 "membership-payment",
-                PaymentContext.MembershipSale,
+                PaymentContext.Other,
                 fixture.MembershipId,
                 amount: 1250m),
             CancellationToken.None);
@@ -70,7 +70,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         Assert.Equal(1250m, payment.Amount);
         Assert.Equal("UAH", payment.Currency);
         Assert.Equal("cash", payment.Method);
-        Assert.Equal("membership_sale", payment.PaymentContext);
+        Assert.Equal("other", payment.PaymentContext);
         Assert.Equal(PaymentOccurredAt, payment.OccurredAt);
         Assert.Equal(TestNow, payment.RecordedAt);
         Assert.Equal(fixture.Actor.AccountId.Value, payment.RecordedByAccountId);
@@ -123,7 +123,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
             Assert.Equal("UAH", summary.GetProperty("currency").GetString());
             Assert.Equal("cash", summary.GetProperty("method").GetString());
             Assert.Equal(
-                "membership_sale",
+                "other",
                 summary.GetProperty("paymentContext").GetString());
             Assert.Equal(
                 PaymentOccurredAt,
@@ -277,7 +277,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         var command = CreateCommand(
             fixture,
             "payment-replay",
-            PaymentContext.MembershipSale,
+            PaymentContext.Other,
             fixture.MembershipId);
 
         var first = await handler.ExecuteAsync(command, CancellationToken.None);
@@ -312,7 +312,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         var command = CreateCommand(
             fixture,
             "concurrent-payment",
-            PaymentContext.MembershipSale,
+            PaymentContext.Other,
             fixture.MembershipId);
         await using var firstContext = database.CreateDbContext();
         await using var secondContext = database.CreateDbContext();
@@ -330,7 +330,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task InvalidInputsAndReservedNegativeClosureFailWithoutMutation()
+    public async Task InvalidInputsAndReservedWorkflowContextsFailWithoutMutation()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -356,6 +356,9 @@ public sealed class PostgreSqlCreatePaymentCommandTests
             CancellationToken.None);
         var negativeClosure = await handler.ExecuteAsync(
             valid with { PaymentContext = PaymentContext.NegativeClosure },
+            CancellationToken.None);
+        var membershipSale = await handler.ExecuteAsync(
+            valid with { PaymentContext = PaymentContext.MembershipSale },
             CancellationToken.None);
         var missingOccurredAt = await handler.ExecuteAsync(
             valid with
@@ -407,6 +410,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         AssertError(zeroAmount, CommandErrorCode.ValidationFailed, "amount");
         AssertError(unknownContext, CommandErrorCode.ValidationFailed, "paymentContext");
         AssertError(negativeClosure, CommandErrorCode.ValidationFailed, "paymentContext");
+        AssertError(membershipSale, CommandErrorCode.MembershipNotEligible, "paymentContext");
         AssertError(missingOccurredAt, CommandErrorCode.ValidationFailed, "occurredAt");
         AssertError(unsupportedOccurredAt, CommandErrorCode.ValidationFailed, "occurredAt");
         AssertError(
@@ -442,14 +446,14 @@ public sealed class PostgreSqlCreatePaymentCommandTests
             CreateCommand(
                 fixture,
                 "cross-client-membership",
-                PaymentContext.MembershipSale,
+                PaymentContext.Other,
                 fixture.OtherMembershipId),
             CancellationToken.None);
         var missingMembership = await handler.ExecuteAsync(
             CreateCommand(
                 fixture,
                 "missing-membership",
-                PaymentContext.MembershipSale,
+                PaymentContext.Other,
                 Guid.NewGuid()),
             CancellationToken.None);
         await EndSessionAsync(database, fixture.Actor.SessionId.Value);
@@ -492,7 +496,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
             CreateCommand(
                 fixture,
                 "membership-lock-conflict",
-                PaymentContext.MembershipSale,
+                PaymentContext.Other,
                 fixture.MembershipId),
             CancellationToken.None);
 
@@ -521,7 +525,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
                 CreateCommand(
                     fixture,
                     "audit-failure",
-                    PaymentContext.MembershipSale,
+                    PaymentContext.Other,
                     fixture.MembershipId),
                 CancellationToken.None));
 
@@ -674,6 +678,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
             insert into bodylife.membership_types (
                 id,
                 name,
+                kind,
                 duration_days,
                 visits_limit,
                 price_amount,
@@ -686,6 +691,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
             values (
                 @membership_type_id,
                 'Create Payment fixture',
+                'ordinary',
                 30,
                 8,
                 1000,
@@ -705,6 +711,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -723,12 +730,13 @@ public sealed class PostgreSqlCreatePaymentCommandTests
                     8,
                     1000,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @issued_at,
                     @account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
                     null),
                 (
@@ -740,14 +748,65 @@ public sealed class PostgreSqlCreatePaymentCommandTests
                     8,
                     1000,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @issued_at,
                     @account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
                     null);
+
+            insert into bodylife.membership_opening_states (
+                id,
+                membership_id,
+                opening_as_of_date,
+                declared_remaining_visits,
+                declared_negative_balance,
+                known_effective_end_date,
+                known_extension_days,
+                source_reference,
+                reason,
+                recorded_at,
+                recorded_by_account_id,
+                recorded_session_id,
+                entry_origin,
+                entry_batch_id,
+                status)
+            values
+                (
+                    gen_random_uuid(),
+                    @membership_id,
+                    @start_date,
+                    -2,
+                    2,
+                    @base_end_date,
+                    0,
+                    'Create Payment fixture',
+                    'Historical test state',
+                    @created_at,
+                    @account_id,
+                    @session_id,
+                    'manual_backfill',
+                    null,
+                    'active'),
+                (
+                    gen_random_uuid(),
+                    @other_membership_id,
+                    @start_date,
+                    8,
+                    0,
+                    @base_end_date,
+                    0,
+                    'Create Payment fixture',
+                    'Historical test state',
+                    @created_at,
+                    @account_id,
+                    @session_id,
+                    'manual_backfill',
+                    null,
+                    'active');
 
             insert into bodylife.membership_state_cache (
                 membership_id,
@@ -803,7 +862,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
             "last_counted_visit_at",
             TestNow.AddDays(-2));
         command.Parameters.AddWithValue("recalculated_at", TestNow.AddDays(-1));
-        Assert.Equal(7, await command.ExecuteNonQueryAsync());
+        Assert.Equal(9, await command.ExecuteNonQueryAsync());
 
         var actor = new ActorContext(
             new AccountId(accountId),

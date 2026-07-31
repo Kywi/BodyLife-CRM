@@ -1,7 +1,9 @@
 using System.Data;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
+using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
+using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +35,6 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
         var validationResult = MembershipCommandSupport.ValidateAndNormalizeCreateOpeningState(
             command,
             out var normalizedCreate);
-
         if (validationResult is not null)
         {
             return validationResult;
@@ -71,7 +72,6 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                 CommandName,
                 create.IdempotencyKey,
                 cancellationToken);
-
             if (existingIdempotency is not null)
             {
                 return MembershipCommandSupport.ReplayOrRejectDuplicate(
@@ -80,17 +80,12 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                     fingerprint);
             }
 
-            var membership = await LoadMembershipForUpdateAsync(
-                dbContext,
-                create.MembershipId,
-                cancellationToken);
-
-            if (membership is null)
+            if (await LockClientAsync(create.ClientId, cancellationToken) is null)
             {
                 return MembershipCommandSupport.Error(
                     CommandErrorCode.NotFound,
-                    "Issued membership was not found.",
-                    "membershipId");
+                    "Client was not found.",
+                    "clientId");
             }
 
             existingIdempotency = await MembershipCommandSupport.FindIdempotencyAsync(
@@ -98,7 +93,6 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                 CommandName,
                 create.IdempotencyKey,
                 cancellationToken);
-
             if (existingIdempotency is not null)
             {
                 return MembershipCommandSupport.ReplayOrRejectDuplicate(
@@ -107,36 +101,50 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                     fingerprint);
             }
 
-            if (!string.Equals(membership.Status, "active", StringComparison.Ordinal))
+            var membershipType = await LockMembershipTypeAsync(
+                create.MembershipTypeId,
+                cancellationToken);
+            if (membershipType is null)
+            {
+                return MembershipCommandSupport.Error(
+                    CommandErrorCode.NotFound,
+                    "Membership type was not found.",
+                    "membershipTypeId");
+            }
+
+            if (!string.Equals(membershipType.Kind, "ordinary", StringComparison.Ordinal))
             {
                 return MembershipCommandSupport.Error(
                     CommandErrorCode.MembershipNotEligible,
-                    "Opening state can be created only for an active issued membership.",
-                    "membershipId");
+                    "Opening state requires an ordinary membership type.",
+                    "membershipTypeId");
             }
 
-            var activeOpeningStateExists = await dbContext.Set<MembershipOpeningStateRecord>()
-                .AsNoTracking()
-                .AnyAsync(
-                    openingState => openingState.MembershipId == create.MembershipId
-                        && openingState.Status == "active",
-                    cancellationToken);
-
-            if (activeOpeningStateExists)
-            {
-                return MembershipCommandSupport.Error(
-                    CommandErrorCode.StaleState,
-                    "An active opening state already exists. Refresh canonical membership state.",
-                    "membershipId");
-            }
-
-            var issueTerms = CreateIssueTerms(membership);
-
+            MembershipIssueTerms issueTerms;
             try
             {
+                var snapshot = new IssuedMembershipSnapshot(
+                    membershipType.Name,
+                    membershipType.DurationDays,
+                    membershipType.VisitsLimit,
+                    new Money(membershipType.PriceAmount, membershipType.PriceCurrency));
+                issueTerms = MembershipIssueTerms.FromIssuedSnapshot(
+                    membershipType.Id,
+                    snapshot,
+                    create.StartDate,
+                    MembershipDateRules.CalculateBaseEndDate(
+                        create.StartDate,
+                        snapshot.DurationDays));
                 MembershipStateCalculator.CalculateFromOpeningState(
                     issueTerms,
                     create.Declaration);
+            }
+            catch (ArgumentOutOfRangeException exception)
+                when (exception.ParamName is "durationDays" or "startDate")
+            {
+                return MembershipCommandSupport.ValidationError(
+                    "Start date and membership duration exceed the supported calendar range.",
+                    "startDate");
             }
             catch (ArgumentException exception)
             {
@@ -145,11 +153,32 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                     "openingState");
             }
 
+            var membershipId = Guid.NewGuid();
             var openingStateId = Guid.NewGuid();
+            var membership = new IssuedMembershipRecord
+            {
+                Id = membershipId,
+                ClientId = create.ClientId,
+                MembershipTypeId = membershipType.Id,
+                TypeNameSnapshot = issueTerms.Snapshot.TypeName,
+                DurationDaysSnapshot = issueTerms.Snapshot.DurationDays,
+                VisitsLimitSnapshot = issueTerms.Snapshot.VisitsLimit,
+                PriceAmountSnapshot = issueTerms.Snapshot.Price.Amount,
+                PriceCurrencySnapshot = issueTerms.Snapshot.Price.Currency,
+                IssuanceMode = "opening_state",
+                StartDate = issueTerms.StartDate,
+                BaseEndDate = issueTerms.BaseEndDate,
+                IssuedAt = recordedAt,
+                IssuedByAccountId = create.Envelope.Actor.AccountId.Value,
+                Status = MembershipQuerySupport.ActiveMembershipStatus,
+                EntryOrigin = "manual_backfill",
+                EntryBatchId = create.EntryBatchId,
+                Comment = create.Envelope.Comment,
+            };
             var openingState = new MembershipOpeningStateRecord
             {
                 Id = openingStateId,
-                MembershipId = create.MembershipId,
+                MembershipId = membershipId,
                 OpeningAsOfDate = create.Declaration.OpeningAsOfDate,
                 DeclaredRemainingVisits = create.Declaration.DeclaredRemainingVisits,
                 DeclaredNegativeBalance = create.Declaration.DeclaredNegativeBalance,
@@ -160,18 +189,15 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                 RecordedAt = recordedAt,
                 RecordedByAccountId = create.Envelope.Actor.AccountId.Value,
                 RecordedSessionId = create.Envelope.Actor.SessionId.Value,
-                EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
-                    create.Envelope.EntryOrigin),
+                EntryOrigin = "manual_backfill",
                 EntryBatchId = create.EntryBatchId,
                 Status = "active",
             };
+            dbContext.Set<IssuedMembershipRecord>().Add(membership);
             dbContext.Set<MembershipOpeningStateRecord>().Add(openingState);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            var rebuildResult = await stateCacheRebuilder.RebuildAsync(
-                create.MembershipId,
-                cancellationToken);
-
+            var rebuildResult = await stateCacheRebuilder.RebuildAsync(membershipId, cancellationToken);
             if (!rebuildResult.Succeeded || rebuildResult.State is null)
             {
                 await MembershipCommandSupport.RollBackAndClearAsync(dbContext, transaction);
@@ -180,7 +206,6 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                     "Membership state could not be rebuilt from the new opening source.");
             }
 
-            var recalculatedState = rebuildResult.State;
             var auditEntryId = auditAppender.Append(
                 create.Envelope,
                 MembershipAuditActions.OpeningStateCreated,
@@ -189,14 +214,27 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                 recordedAt,
                 relatedEntityRefs: new
                 {
-                    membership.ClientId,
-                    MembershipId = membership.Id,
+                    ClientId = create.ClientId,
+                    MembershipId = membershipId,
+                    MembershipTypeId = membershipType.Id,
                 },
                 afterSummary: new
                 {
                     OpeningStateId = openingStateId,
-                    MembershipId = membership.Id,
-                    membership.ClientId,
+                    MembershipId = membershipId,
+                    ClientId = create.ClientId,
+                    MembershipTypeId = membershipType.Id,
+                    IssuanceMode = membership.IssuanceMode,
+                    Snapshot = new
+                    {
+                        membership.TypeNameSnapshot,
+                        membership.DurationDaysSnapshot,
+                        membership.VisitsLimitSnapshot,
+                        membership.PriceAmountSnapshot,
+                        membership.PriceCurrencySnapshot,
+                    },
+                    membership.StartDate,
+                    membership.BaseEndDate,
                     openingState.OpeningAsOfDate,
                     openingState.DeclaredRemainingVisits,
                     openingState.DeclaredNegativeBalance,
@@ -207,10 +245,10 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                     openingState.Status,
                     RecalculatedState = new
                     {
-                        recalculatedState.RemainingVisits,
-                        recalculatedState.NegativeBalance,
-                        recalculatedState.EffectiveEndDate,
-                        recalculatedState.ExtensionDays,
+                        rebuildResult.State.RemainingVisits,
+                        rebuildResult.State.NegativeBalance,
+                        rebuildResult.State.EffectiveEndDate,
+                        rebuildResult.State.ExtensionDays,
                         rebuildResult.RecalculationVersion,
                     },
                 });
@@ -220,26 +258,19 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
                     CommandName,
                     create,
                     recordedAt,
-                    openingStateId,
+                    membershipId,
                     auditEntryId,
                     fingerprint));
 
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-
-            return MembershipCommandSupport.Success(
-                openingStateId,
-                create.MembershipId,
-                auditEntryId);
+            return MembershipCommandSupport.Success(membershipId, create.ClientId, auditEntryId);
         }
         catch (Exception exception)
         {
             var postgresException = MembershipCommandSupport.FindPostgresException(exception);
-
             if (postgresException is null
-                || !MembershipCommandSupport.TryMapPostgresFailure(
-                    postgresException,
-                    out var errorResult))
+                || !MembershipCommandSupport.TryMapPostgresFailure(postgresException, out var errorResult))
             {
                 throw;
             }
@@ -249,53 +280,23 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
         }
     }
 
-    private static async Task<IssuedMembershipRecord?> LoadMembershipForUpdateAsync(
-        BodyLifeDbContext dbContext,
-        Guid membershipId,
-        CancellationToken cancellationToken)
+    private async Task<ClientRecord?> LockClientAsync(Guid clientId, CancellationToken cancellationToken)
     {
-        var memberships = await dbContext.Set<IssuedMembershipRecord>()
-            .FromSqlInterpolated(
-                $"""
-                select
-                    id,
-                    client_id,
-                    membership_type_id,
-                    type_name_snapshot,
-                    duration_days_snapshot,
-                    visits_limit_snapshot,
-                    price_amount_snapshot,
-                    price_currency_snapshot,
-                    start_date,
-                    base_end_date,
-                    issued_at,
-                    issued_by_account_id,
-                    status,
-                    entry_origin,
-                    entry_batch_id,
-                    comment
-                from bodylife.issued_memberships
-                where id = {membershipId}
-                for update
-                """)
+        var rows = await dbContext.Set<ClientRecord>()
+            .FromSqlInterpolated($"select * from bodylife.clients where id = {clientId} for update")
+            .AsNoTracking()
             .ToArrayAsync(cancellationToken);
-
-        return memberships.SingleOrDefault();
+        return rows.SingleOrDefault();
     }
 
-    private static MembershipIssueTerms CreateIssueTerms(IssuedMembershipRecord membership)
+    private async Task<MembershipTypeRecord?> LockMembershipTypeAsync(
+        Guid membershipTypeId,
+        CancellationToken cancellationToken)
     {
-        var snapshot = new IssuedMembershipSnapshot(
-            membership.TypeNameSnapshot,
-            membership.DurationDaysSnapshot,
-            membership.VisitsLimitSnapshot,
-            new Money(
-                membership.PriceAmountSnapshot,
-                membership.PriceCurrencySnapshot));
-        return MembershipIssueTerms.FromIssuedSnapshot(
-            membership.MembershipTypeId,
-            snapshot,
-            membership.StartDate,
-            membership.BaseEndDate);
+        var rows = await dbContext.Set<MembershipTypeRecord>()
+            .FromSqlInterpolated($"select * from bodylife.membership_types where id = {membershipTypeId} for share")
+            .AsNoTracking()
+            .ToArrayAsync(cancellationToken);
+        return rows.SingleOrDefault();
     }
 }

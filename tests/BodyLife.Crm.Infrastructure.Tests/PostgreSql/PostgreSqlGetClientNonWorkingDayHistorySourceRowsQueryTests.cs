@@ -499,6 +499,7 @@ public sealed class PostgreSqlGetClientNonWorkingDayHistorySourceRowsQueryTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -517,6 +518,7 @@ public sealed class PostgreSqlGetClientNonWorkingDayHistorySourceRowsQueryTests
                     8,
                     1200,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @issued_at,
@@ -534,6 +536,7 @@ public sealed class PostgreSqlGetClientNonWorkingDayHistorySourceRowsQueryTests
                     8,
                     1200,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @issued_at,
@@ -541,8 +544,26 @@ public sealed class PostgreSqlGetClientNonWorkingDayHistorySourceRowsQueryTests
                     'active',
                     'normal',
                     null,
-                    null)
+                    null);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date, known_extension_days,
+                source_reference, reason, recorded_at, recorded_by_account_id,
+                recorded_session_id, entry_origin, entry_batch_id, status)
+            select gen_random_uuid(), id, start_date, visits_limit_snapshot, 0,
+                   base_end_date, 0, 'Legacy fixture', 'Historical test state',
+                   issued_at, issued_by_account_id,
+                   (select id from bodylife.sessions where account_id = issued_by_account_id limit 1),
+                   'manual_backfill', null, 'active'
+            from bodylife.issued_memberships
+            where issuance_mode = 'opening_state'
+              and not exists (
+                  select 1 from bodylife.membership_opening_states opening
+                  where opening.membership_id = bodylife.issued_memberships.id
+                    and opening.status = 'active');
             """;
+
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("account_id", accountId);
         command.Parameters.AddWithValue("started_at", TestNow.AddHours(-2));
@@ -563,7 +584,7 @@ public sealed class PostgreSqlGetClientNonWorkingDayHistorySourceRowsQueryTests
             NpgsqlDbType.Date,
             new DateOnly(2026, 7, 30));
         command.Parameters.AddWithValue("issued_at", TestNow.AddDays(-20));
-        Assert.Equal(6, await command.ExecuteNonQueryAsync());
+        Assert.Equal(8, await command.ExecuteNonQueryAsync());
 
         return new NonWorkingDayHistoryFixture(
             new ActorContext(

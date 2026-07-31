@@ -79,9 +79,19 @@ internal static class MembershipCommandSupport
     {
         normalizedCreate = null;
 
-        if (command.MembershipId == Guid.Empty)
+        if (command.ClientId == Guid.Empty)
         {
-            return ValidationError("Membership id is required.", "membershipId");
+            return ValidationError("Client id is required.", "clientId");
+        }
+
+        if (command.MembershipTypeId == Guid.Empty)
+        {
+            return ValidationError("Membership type id is required.", "membershipTypeId");
+        }
+
+        if (command.StartDate == default)
+        {
+            return ValidationError("Membership start date is required.", "startDate");
         }
 
         if (command.OpeningAsOfDate == default)
@@ -130,7 +140,9 @@ internal static class MembershipCommandSupport
         }
 
         normalizedCreate = new NormalizedMembershipOpeningStateCreate(
-            command.MembershipId,
+            command.ClientId,
+            command.MembershipTypeId,
+            command.StartDate,
             declaration,
             sourceReference,
             command.EntryBatchId,
@@ -151,7 +163,9 @@ internal static class MembershipCommandSupport
             create.Envelope.OccurredAt,
             EnvelopeReason = create.Envelope.Reason,
             EnvelopeComment = create.Envelope.Comment,
-            create.MembershipId,
+            create.ClientId,
+            create.MembershipTypeId,
+            create.StartDate,
             create.Declaration.OpeningAsOfDate,
             create.Declaration.DeclaredRemainingVisits,
             create.Declaration.KnownEffectiveEndDate,
@@ -207,7 +221,7 @@ internal static class MembershipCommandSupport
         string commandName,
         NormalizedMembershipOpeningStateCreate create,
         DateTimeOffset recordedAt,
-        Guid openingStateId,
+        Guid membershipId,
         AuditEntryId auditEntryId,
         string fingerprint)
     {
@@ -227,8 +241,8 @@ internal static class MembershipCommandSupport
             CreatedAt = recordedAt,
             CompletedAt = recordedAt,
             ExpiresAt = recordedAt.Add(IdempotencyRetention),
-            PrimaryEntityId = openingStateId,
-            RereadTargetId = create.MembershipId,
+            PrimaryEntityId = membershipId,
+            RereadTargetId = create.ClientId,
             AuditEntryId = auditEntryId.Value,
             ResultFingerprint = fingerprint,
         };
@@ -293,16 +307,16 @@ internal static class MembershipCommandSupport
     }
 
     internal static CommandResult Success(
-        Guid openingStateId,
         Guid membershipId,
+        Guid clientId,
         AuditEntryId auditEntryId)
     {
         var primaryEntityId = new EntityId(
-            MembershipAuditActions.OpeningStateEntityType,
-            openingStateId);
+            CreateMembershipOpeningStateCommand.PrimaryEntityType,
+            membershipId);
         var rereadTargetId = new EntityId(
             CreateMembershipOpeningStateCommand.CanonicalRereadEntityType,
-            membershipId);
+            clientId);
         return CommandResult.Success(
             primaryEntityId,
             rereadTargetId,
@@ -448,7 +462,9 @@ internal static class MembershipCommandSupport
 }
 
 internal sealed record NormalizedMembershipOpeningStateCreate(
-    Guid MembershipId,
+    Guid ClientId,
+    Guid MembershipTypeId,
+    DateOnly StartDate,
     MembershipOpeningState Declaration,
     string SourceReference,
     Guid? EntryBatchId,

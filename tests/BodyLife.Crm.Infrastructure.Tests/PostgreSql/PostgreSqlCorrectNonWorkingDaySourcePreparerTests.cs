@@ -714,6 +714,7 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -732,12 +733,13 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
                     8,
                     1000,
                     'UAH',
+                    'opening_state',
                     '2026-01-10'::date,
                     '2026-02-08'::date,
                     @recorded_at,
                     @account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
                     null),
                 (
@@ -749,12 +751,13 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
                     8,
                     1000,
                     'UAH',
+                    'opening_state',
                     '2026-01-15'::date,
                     '2026-02-13'::date,
                     @recorded_at,
                     @account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
                     null),
                 (
@@ -766,14 +769,29 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
                     8,
                     1000,
                     'UAH',
+                    'opening_state',
                     '2026-02-03'::date,
                     '2026-03-04'::date,
                     @recorded_at,
                     @account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
                     null);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            select
+                gen_random_uuid(), id, start_date, visits_limit_snapshot, 0,
+                base_end_date, 0, 'Correct non-working day source fixture',
+                'Historical state required by the source scenario', issued_at,
+                issued_by_account_id, @session_id, 'manual_backfill', null, 'active'
+            from bodylife.issued_memberships
+            where id in (@first_membership_id, @second_membership_id, @third_membership_id);
 
             insert into bodylife.non_working_periods (
                 id,
@@ -863,7 +881,7 @@ public sealed class PostgreSqlCorrectNonWorkingDaySourcePreparerTests
         command.Parameters.AddWithValue("previewed_at", TestNow.AddMinutes(-5));
         command.Parameters.AddWithValue("recorded_at", TestNow);
         command.Parameters.AddWithValue("expires_at", TestNow.AddHours(12));
-        Assert.Equal(11 + (includeCancellation ? 1 : 0),
+        Assert.Equal(14 + (includeCancellation ? 1 : 0),
             await command.ExecuteNonQueryAsync());
         dbContext.ChangeTracker.Clear();
 

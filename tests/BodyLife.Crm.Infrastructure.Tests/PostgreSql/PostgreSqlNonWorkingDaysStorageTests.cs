@@ -473,6 +473,7 @@ public sealed class PostgreSqlNonWorkingDaysStorageTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -490,14 +491,27 @@ public sealed class PostgreSqlNonWorkingDaysStorageTests
                 8,
                 1000,
                 'UAH',
+                'opening_state',
                 @membership_start_date,
                 @membership_base_end_date,
                 @recorded_at,
                 @actor_account_id,
                 'active',
-                'normal',
+                'manual_backfill',
                 null,
-                null)
+                null);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            values (
+                gen_random_uuid(), @membership_id, @membership_start_date, 8, 0,
+                @membership_base_end_date, 0, 'Non-working day storage fixture',
+                'Historical state required by the storage scenario', @recorded_at,
+                @actor_account_id, @session_id, 'manual_backfill', null, 'active')
             """;
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("actor_account_id", actorAccountId);
@@ -516,7 +530,7 @@ public sealed class PostgreSqlNonWorkingDaysStorageTests
             "membership_base_end_date",
             NpgsqlDbType.Date,
             MembershipBaseEndDate);
-        Assert.Equal(5, await command.ExecuteNonQueryAsync());
+        Assert.Equal(6, await command.ExecuteNonQueryAsync());
 
         return new NonWorkingDayFixture(
             actorAccountId,

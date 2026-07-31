@@ -1347,6 +1347,7 @@ public sealed class PostgreSqlVisitsStorageTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -1365,12 +1366,13 @@ public sealed class PostgreSqlVisitsStorageTests
                     @visits_limit,
                     1000,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @recorded_at,
                     @actor_account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
                     null),
                 (
@@ -1382,20 +1384,36 @@ public sealed class PostgreSqlVisitsStorageTests
                     @visits_limit,
                     1000,
                     'UAH',
+                    'opening_state',
                     @start_date,
                     @base_end_date,
                     @recorded_at,
                     @actor_account_id,
                     'active',
-                    'normal',
+                    'manual_backfill',
                     null,
-                    null)
+                    null);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            select
+                gen_random_uuid(), id, start_date, visits_limit_snapshot, 0,
+                base_end_date, 0, 'Visits storage fixture',
+                'Historical state required by the storage scenario', @opening_recorded_at,
+                issued_by_account_id, @session_id, 'manual_backfill', null, 'active'
+            from bodylife.issued_memberships
+            where id in (@membership_id, @other_membership_id)
             """;
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("actor_account_id", actorAccountId);
         command.Parameters.AddWithValue("session_started_at", TestNow.AddMinutes(-1));
         command.Parameters.AddWithValue("session_expires_at", TestNow.AddHours(12));
         command.Parameters.AddWithValue("recorded_at", TestNow);
+        command.Parameters.AddWithValue("opening_recorded_at", TestNow.AddMinutes(-1));
         command.Parameters.AddWithValue("client_id", clientId);
         command.Parameters.AddWithValue("other_client_id", otherClientId);
         command.Parameters.AddWithValue("membership_type_id", membershipTypeId);
@@ -1410,7 +1428,7 @@ public sealed class PostgreSqlVisitsStorageTests
             "base_end_date",
             NpgsqlDbType.Date,
             new DateOnly(2026, 7, 30));
-        Assert.Equal(6, await command.ExecuteNonQueryAsync());
+        Assert.Equal(8, await command.ExecuteNonQueryAsync());
 
         var actor = new ActorContext(
             new AccountId(actorAccountId),

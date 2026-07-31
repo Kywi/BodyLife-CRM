@@ -35,15 +35,14 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
     }
 
     [Theory]
-    [InlineData("tablet", 1024, 768, "BL-ISSUE-TABLET", "Issue Tablet", true, false)]
-    [InlineData("phone", 390, 844, "BL-ISSUE-PHONE", "Issue Phone", false, true)]
+    [InlineData("tablet", 1024, 768, "BL-ISSUE-TABLET", "Issue Tablet", false)]
+    [InlineData("phone", 390, 844, "BL-ISSUE-PHONE", "Issue Phone", true)]
     public async Task OwnerIssuesOneCanonicalMembershipOnTargetViewport(
         string viewportName,
         int width,
         int height,
         string cardNumber,
         string clientDisplayName,
-        bool includePayment,
         bool hasExistingNegative)
     {
         var clientId = viewportName == "tablet"
@@ -91,10 +90,12 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
                 0,
                 await panel.GetByText("Legacy 12 visits / 45 days", new() { Exact = true })
                     .CountAsync());
+            var salePrice = panel.Locator("[data-issue-sale-price]");
             await ExpectVisibleAsync(
-                panel.GetByText("950.00 UAH", new() { Exact = true }),
+                salePrice,
                 viewportName,
                 "server snapshot price");
+            Assert.Equal("950.00 UAH", (await salePrice.TextContentAsync())?.Trim());
 
             var today = BusinessTimeZone.GetBusinessDate(DateTimeOffset.UtcNow);
             var probeDate = today.AddDays(1);
@@ -131,37 +132,14 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
                 Assert.Equal(0, await panel.Locator(".issue-negative-decision").CountAsync());
             }
 
-            if (includePayment)
-            {
-                var paymentToggle = panel.GetByLabel(
-                    "Add a cash membership-sale payment",
-                    new() { Exact = true });
-                await paymentToggle.CheckAsync();
-                var paymentAmount = panel.GetByLabel("Amount (UAH)", new() { Exact = true });
-                Assert.False(await paymentAmount.IsDisabledAsync());
-                Assert.Equal("950.00", await paymentAmount.InputValueAsync());
-                await paymentAmount.FillAsync("0");
-                await SubmitHtmxIssueMembershipAsync(page, bypassValidation: true);
-
-                panel = profile.Locator("#issue-membership-action-panel");
-                await ExpectVisibleAsync(
-                    panel.GetByText(
-                        "Enter an amount greater than zero.",
-                        new() { Exact = true }),
-                    viewportName,
-                    "positive issue payment requirement");
-                Assert.Equal(
-                    idempotencyKey,
-                    await panel.Locator("input[name='form.IdempotencyKey']").InputValueAsync());
-                await AssertNoIssueMutationAsync(clientId, membershipCountBefore);
-                await panel.GetByLabel("Amount (UAH)", new() { Exact = true }).FillAsync("950");
-            }
-            else
-            {
-                Assert.True(await panel.GetByLabel(
-                    "Amount (UAH)",
-                    new() { Exact = true }).IsDisabledAsync());
-            }
+            Assert.Equal(0, await form.Locator("input[name='form.IncludePayment']").CountAsync());
+            Assert.Equal(0, await form.Locator("input[name='form.PaymentAmount']").CountAsync());
+            await ExpectVisibleAsync(
+                panel.Locator("[data-issue-sale-price]").GetByText(
+                    "950.00 UAH",
+                    new() { Exact = true }),
+                viewportName,
+                "read-only exact sale price");
 
             var comment = $"{viewportName} reception membership issue.";
             await panel.GetByLabel("Comment (optional)", new() { Exact = true })
@@ -176,11 +154,8 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
 
             await SubmitHtmxIssueMembershipAsync(page, repeatTapWhileBusy: true);
 
-            var successText = includePayment
-                ? "Membership issued with cash payment."
-                : "Membership issued.";
             await ExpectVisibleAsync(
-                profile.GetByText(successText),
+                profile.GetByText("Membership issued with cash payment."),
                 viewportName,
                 "Issue Membership success message");
             Assert.Equal(
@@ -200,27 +175,31 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
             Assert.Equal(today.AddDays(29), membership.BaseEndDate);
             Assert.Equal(comment, membership.Comment);
             Assert.Equal("active", membership.Status);
+            Assert.Equal("sale", membership.IssuanceMode);
             var membershipState = await _app.ReadMembershipStateAsync(membership.MembershipId);
             Assert.Equal(0, membershipState.CountedVisits);
             Assert.Equal(8, membershipState.RemainingVisits);
             Assert.Equal(0, membershipState.NegativeBalance);
             Assert.Equal(today.AddDays(29), membershipState.EffectiveEndDate);
 
-            Assert.Equal(includePayment ? 1L : 0L, await _app.CountActivePaymentsAsync(clientId));
-            Assert.Equal(
-                includePayment ? 1L : 0L,
-                await _app.CountCreatePaymentAuditEntriesAsync(clientId));
+            Assert.Equal(1L, await _app.CountActivePaymentsAsync(clientId));
+            Assert.Equal(1L, await _app.CountCreatePaymentAuditEntriesAsync(clientId));
             Assert.Equal(0L, await _app.CountCreatePaymentIdempotencyKeysAsync(clientId));
-            if (includePayment)
-            {
-                var payment = await _app.ReadLatestActivePaymentAsync(clientId);
-                Assert.Equal(950m, payment.Amount);
-                Assert.Equal("UAH", payment.Currency);
-                Assert.Equal("membership_sale", payment.PaymentContext);
-                Assert.Equal(membership.MembershipId, payment.MembershipId);
-                Assert.Equal(comment, payment.Comment);
-                Assert.Equal("active", payment.Status);
-            }
+            var payment = await _app.ReadLatestActivePaymentAsync(clientId);
+            Assert.Equal(950m, payment.Amount);
+            Assert.Equal("UAH", payment.Currency);
+            Assert.Equal("membership_sale", payment.PaymentContext);
+            Assert.Equal(membership.MembershipId, payment.MembershipId);
+            Assert.Equal(comment, payment.Comment);
+            Assert.Equal("active", payment.Status);
+            var paymentRow = profile.Locator(
+                $"[data-payment-id='{payment.PaymentId}']");
+            await ExpectVisibleAsync(paymentRow, viewportName, "canonical sale Payment row");
+            Assert.Equal(
+                0,
+                await paymentRow.GetByRole(
+                    AriaRole.Button,
+                    new() { Name = "Correct payment", Exact = true }).CountAsync());
 
             if (existingMembershipId is { } unchangedMembershipId)
             {

@@ -44,6 +44,7 @@ public sealed class CancelFreezeSourcePreparer
                     issued.visits_limit_snapshot,
                     issued.price_amount_snapshot,
                     issued.price_currency_snapshot,
+                    issued.issuance_mode,
                     issued.start_date,
                     issued.base_end_date,
                     issued.issued_at,

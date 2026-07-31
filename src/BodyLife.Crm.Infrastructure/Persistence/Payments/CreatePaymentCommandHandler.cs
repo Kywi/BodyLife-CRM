@@ -40,6 +40,13 @@ public sealed class CreatePaymentCommandHandler(
         }
 
         var payment = normalizedPayment!;
+        if (payment.PaymentContext is PaymentContext.MembershipSale or PaymentContext.NegativeClosure)
+        {
+            return PaymentCommandSupport.Error(
+                CommandErrorCode.MembershipNotEligible,
+                "Membership sale and negative-closure Payments must be created by their enclosing Membership workflow.",
+                "paymentContext");
+        }
         var recordedAt = timeProvider.GetUtcNow();
         var fingerprint = PaymentCommandSupport.CreateFingerprint(payment);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(

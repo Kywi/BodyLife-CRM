@@ -34,7 +34,7 @@ internal static class PaymentQuerySupport
         PaymentDayReconciliationStatus dayStatus)
     {
         if (paymentStatus != ClientPaymentRowStatus.Active
-            || paymentContext == PaymentContext.NegativeClosure)
+            || paymentContext is PaymentContext.MembershipSale or PaymentContext.NegativeClosure)
         {
             return QueryPermissionSet.Empty;
         }

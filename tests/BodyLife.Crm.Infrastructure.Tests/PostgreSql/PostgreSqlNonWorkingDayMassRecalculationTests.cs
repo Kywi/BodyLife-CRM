@@ -504,6 +504,7 @@ public sealed class PostgreSqlNonWorkingDayMassRecalculationTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -527,15 +528,30 @@ public sealed class PostgreSqlNonWorkingDayMassRecalculationTests
                 8,
                 1000,
                 'UAH',
+                'opening_state',
                 '2026-01-01'::date,
                 '2026-03-31'::date,
                 @recorded_at,
                 @account_id,
                 'active',
-                'normal',
+                'manual_backfill',
                 null,
                 null
-            from generate_series(1, @affected_count) as sequence
+            from generate_series(1, @affected_count) as sequence;
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            select
+                gen_random_uuid(), id, start_date, visits_limit_snapshot, 0,
+                base_end_date, 0, 'Mass recalculation fixture',
+                'Historical state required by the performance scenario', issued_at,
+                issued_by_account_id, @session_id, 'manual_backfill', null, 'active'
+            from bodylife.issued_memberships
+            where membership_type_id = @membership_type_id
             """;
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("account_id", accountId);
@@ -546,7 +562,7 @@ public sealed class PostgreSqlNonWorkingDayMassRecalculationTests
             "affected_count",
             affectedMembershipCount);
         Assert.Equal(
-            2 + (affectedMembershipCount * 2),
+            2 + (affectedMembershipCount * 3),
             await command.ExecuteNonQueryAsync());
         dbContext.ChangeTracker.Clear();
 

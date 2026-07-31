@@ -12,7 +12,8 @@ public sealed record MembershipTypeCatalogItem(
     string? Comment,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    DateTimeOffset? DeactivatedAt)
+    DateTimeOffset? DeactivatedAt,
+    MembershipTypeKind Kind = MembershipTypeKind.Ordinary)
 {
-    public bool IsAvailableForOrdinaryIssue => IsActive;
+    public bool IsAvailableForOrdinaryIssue => IsActive && Kind == MembershipTypeKind.Ordinary;
 }

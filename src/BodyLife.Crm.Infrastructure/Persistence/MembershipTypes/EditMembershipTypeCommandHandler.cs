@@ -95,6 +95,13 @@ public sealed class EditMembershipTypeCommandHandler(
                     "expectedUpdatedAt");
             }
 
+            if (membershipType.IsActive && edit.CatalogValues.Price.Amount <= 0)
+            {
+                return MembershipTypeCommandSupport.ValidationError(
+                    "Active membership type price must be greater than zero.",
+                    "price");
+            }
+
             var before = MembershipTypeCatalogSnapshot.From(membershipType);
 
             if (before.Matches(edit.CatalogValues))

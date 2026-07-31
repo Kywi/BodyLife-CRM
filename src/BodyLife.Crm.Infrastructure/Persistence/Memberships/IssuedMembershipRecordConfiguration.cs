@@ -31,6 +31,9 @@ internal sealed class IssuedMembershipRecordConfiguration
                     "ck_issued_memberships_currency_snapshot_canonical",
                     "length(btrim(price_currency_snapshot)) > 0 and price_currency_snapshot = upper(btrim(price_currency_snapshot))");
                 table.HasCheckConstraint(
+                    "ck_issued_memberships_issuance_mode",
+                    "issuance_mode in ('sale', 'opening_state')");
+                table.HasCheckConstraint(
                     "ck_issued_memberships_base_end_date",
                     "base_end_date = start_date + (duration_days_snapshot - 1)");
                 table.HasCheckConstraint(
@@ -79,6 +82,11 @@ internal sealed class IssuedMembershipRecordConfiguration
 
         builder.Property(membership => membership.PriceCurrencySnapshot)
             .HasColumnName("price_currency_snapshot")
+            .IsRequired();
+
+        builder.Property(membership => membership.IssuanceMode)
+            .HasColumnName("issuance_mode")
+            .HasMaxLength(32)
             .IsRequired();
 
         builder.Property(membership => membership.StartDate)

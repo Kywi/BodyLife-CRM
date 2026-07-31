@@ -333,6 +333,47 @@ public sealed class PostgreSqlEditMembershipTypeCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task ActiveZeroPriceEditIsRejectedButInactiveHistoricalValueIsAllowed()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
+        var activeTypeId = Guid.NewGuid();
+        var inactiveTypeId = Guid.NewGuid();
+        await InsertMembershipTypeAsync(database, activeTypeId);
+        await InsertMembershipTypeAsync(
+            database,
+            inactiveTypeId,
+            isActive: false,
+            deactivatedAt: SeedUpdatedAt);
+        var handler = CreateHandler(dbContext);
+
+        var activeResult = await handler.ExecuteAsync(
+            EditCommand(
+                actor,
+                "active-zero-price",
+                activeTypeId,
+                SeedUpdatedAt,
+                price: new Money(0m, "UAH")),
+            CancellationToken.None);
+        var inactiveResult = await handler.ExecuteAsync(
+            EditCommand(
+                actor,
+                "inactive-zero-price",
+                inactiveTypeId,
+                SeedUpdatedAt,
+                price: new Money(0m, "UAH")),
+            CancellationToken.None);
+
+        AssertError(activeResult, CommandErrorCode.ValidationFailed);
+        Assert.Equal("price", Assert.Single(activeResult.Errors).Field);
+        AssertSuccessfulResult(inactiveResult);
+        Assert.Equal(1200m, (await ReadMembershipTypeAsync(database, activeTypeId)).PriceAmount);
+        Assert.Equal(0m, (await ReadMembershipTypeAsync(database, inactiveTypeId)).PriceAmount);
+    }
+
+    [PostgreSqlFact]
     public async Task IdempotentReplayReturnsOriginalResultAndRejectsChangedPayload()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -630,6 +671,7 @@ public sealed class PostgreSqlEditMembershipTypeCommandTests
             insert into bodylife.membership_types (
                 id,
                 name,
+                kind,
                 duration_days,
                 visits_limit,
                 price_amount,
@@ -642,6 +684,7 @@ public sealed class PostgreSqlEditMembershipTypeCommandTests
             values (
                 @id,
                 'Eight visits',
+                'ordinary',
                 30,
                 8,
                 1200,

@@ -90,6 +90,7 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
         Assert.Equal(2, persisted.VisitsLimitSnapshot);
         Assert.Equal(1000m, persisted.PriceAmountSnapshot);
         Assert.Equal("UAH", persisted.PriceCurrencySnapshot);
+        Assert.Equal("opening_state", persisted.IssuanceMode);
         Assert.Equal(TestStartDate, persisted.StartDate);
         Assert.Equal(new DateOnly(2026, 7, 30), persisted.BaseEndDate);
         Assert.Equal(TestNow, persisted.IssuedAt);
@@ -390,17 +391,24 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
         DateOnly? baseEndDate = null,
         DateTimeOffset? issuedAt = null,
         string status = "active",
-        string entryOrigin = "normal",
+        string entryOrigin = "manual_backfill",
         Guid? entryBatchId = null,
         string? comment = null)
     {
         var actualStartDate = startDate ?? TestStartDate;
         var actualBaseEndDate = baseEndDate
             ?? actualStartDate.AddDays(durationDaysSnapshot - 1);
+        var sessionId = Guid.NewGuid();
+        var actualIssuedAt = issuedAt ?? TestNow;
+        var openingEntryOrigin = entryOrigin is "paper_fallback" or "future_import"
+            ? entryOrigin
+            : "manual_backfill";
 
         await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             """
             insert into bodylife.issued_memberships (
@@ -412,6 +420,7 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -429,6 +438,7 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
                 @visits_limit_snapshot,
                 @price_amount_snapshot,
                 @price_currency_snapshot,
+                'opening_state',
                 @start_date,
                 @base_end_date,
                 @issued_at,
@@ -436,7 +446,26 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
                 @status,
                 @entry_origin,
                 @entry_batch_id,
-                @comment)
+                @comment);
+
+            insert into bodylife.sessions (
+                id, account_id, device_label, started_at, expires_at, ended_at, last_seen_at)
+            values (
+                @session_id, @issued_by_account_id, 'Issued membership storage fixture',
+                @issued_at, @session_expires_at, null, @issued_at);
+
+            insert into bodylife.membership_opening_states (
+                id, membership_id, opening_as_of_date, declared_remaining_visits,
+                declared_negative_balance, known_effective_end_date,
+                known_extension_days, source_reference, reason, recorded_at,
+                recorded_by_account_id, recorded_session_id, entry_origin,
+                entry_batch_id, status)
+            values (
+                gen_random_uuid(), @id, @start_date, @visits_limit_snapshot, 0,
+                @base_end_date, 0, 'Issued membership storage fixture',
+                'Historical state required by the storage scenario', @issued_at,
+                @issued_by_account_id, @session_id, @opening_entry_origin,
+                @entry_batch_id, 'active')
             """;
         command.Parameters.AddWithValue("id", membershipId);
         command.Parameters.AddWithValue("client_id", clientId);
@@ -448,14 +477,18 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
         command.Parameters.AddWithValue("price_currency_snapshot", priceCurrencySnapshot);
         command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, actualStartDate);
         command.Parameters.AddWithValue("base_end_date", NpgsqlDbType.Date, actualBaseEndDate);
-        command.Parameters.AddWithValue("issued_at", issuedAt ?? TestNow);
+        command.Parameters.AddWithValue("issued_at", actualIssuedAt);
         command.Parameters.AddWithValue("issued_by_account_id", actorAccountId);
+        command.Parameters.AddWithValue("session_id", sessionId);
+        command.Parameters.AddWithValue("session_expires_at", actualIssuedAt.AddHours(12));
         command.Parameters.AddWithValue("status", status);
         command.Parameters.AddWithValue("entry_origin", entryOrigin);
+        command.Parameters.AddWithValue("opening_entry_origin", openingEntryOrigin);
         command.Parameters.Add("entry_batch_id", NpgsqlDbType.Uuid).Value =
             entryBatchId ?? (object)DBNull.Value;
         command.Parameters.Add("comment", NpgsqlDbType.Text).Value = comment ?? (object)DBNull.Value;
         await command.ExecuteNonQueryAsync();
+        await transaction.CommitAsync();
     }
 
     private static async Task<PersistedIssuedMembership> ReadIssuedMembershipAsync(
@@ -475,6 +508,7 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
                 visits_limit_snapshot,
                 price_amount_snapshot,
                 price_currency_snapshot,
+                issuance_mode,
                 start_date,
                 base_end_date,
                 issued_at,
@@ -498,14 +532,15 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
             reader.GetInt32(4),
             reader.GetDecimal(5),
             reader.GetString(6),
-            reader.GetFieldValue<DateOnly>(7),
+            reader.GetString(7),
             reader.GetFieldValue<DateOnly>(8),
-            reader.GetFieldValue<DateTimeOffset>(9),
-            reader.GetGuid(10),
-            reader.GetString(11),
+            reader.GetFieldValue<DateOnly>(9),
+            reader.GetFieldValue<DateTimeOffset>(10),
+            reader.GetGuid(11),
             reader.GetString(12),
-            reader.IsDBNull(13) ? null : reader.GetGuid(13),
-            reader.IsDBNull(14) ? null : reader.GetString(14));
+            reader.GetString(13),
+            reader.IsDBNull(14) ? null : reader.GetGuid(14),
+            reader.IsDBNull(15) ? null : reader.GetString(15));
     }
 
     private static async Task EditMembershipTypeAsync(
@@ -615,6 +650,7 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
         int VisitsLimitSnapshot,
         decimal PriceAmountSnapshot,
         string PriceCurrencySnapshot,
+        string IssuanceMode,
         DateOnly StartDate,
         DateOnly BaseEndDate,
         DateTimeOffset IssuedAt,

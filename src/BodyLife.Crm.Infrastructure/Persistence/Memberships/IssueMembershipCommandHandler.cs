@@ -126,6 +126,22 @@ public sealed class IssueMembershipCommandHandler(
                     "membershipTypeId");
             }
 
+            if (!string.Equals(membershipType.Kind, "ordinary", StringComparison.Ordinal))
+            {
+                return IssueMembershipCommandSupport.Error(
+                    CommandErrorCode.MembershipNotEligible,
+                    "Only ordinary membership types can be issued as a membership sale.",
+                    "membershipTypeId");
+            }
+
+            if (membershipType.UpdatedAt != issue.ExpectedMembershipTypeUpdatedAt)
+            {
+                return IssueMembershipCommandSupport.Error(
+                    CommandErrorCode.StaleState,
+                    "Membership type changed after the issue preview was loaded. Refresh canonical state.",
+                    "expectedMembershipTypeUpdatedAt");
+            }
+
             var activeMemberships = await LockActiveMembershipsAsync(
                 issue.ClientId,
                 cancellationToken);
@@ -153,7 +169,8 @@ public sealed class IssueMembershipCommandHandler(
                     membershipType.Comment,
                     membershipType.CreatedAt,
                     membershipType.UpdatedAt,
-                    membershipType.DeactivatedAt);
+                    membershipType.DeactivatedAt,
+                    MapMembershipTypeKind(membershipType.Kind));
                 preparation = MembershipIssuePreparationPolicy.Prepare(
                     issue.ClientId,
                     catalogItem,
@@ -219,6 +236,7 @@ public sealed class IssueMembershipCommandHandler(
                 VisitsLimitSnapshot = preparation.Snapshot.VisitsLimit,
                 PriceAmountSnapshot = preparation.Snapshot.Price.Amount,
                 PriceCurrencySnapshot = preparation.Snapshot.Price.Currency,
+                IssuanceMode = "sale",
                 StartDate = preparation.StartDate,
                 BaseEndDate = preparation.BaseEndDate,
                 IssuedAt = recordedAt,
@@ -226,7 +244,7 @@ public sealed class IssueMembershipCommandHandler(
                 Status = MembershipQuerySupport.ActiveMembershipStatus,
                 EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
                     issue.Envelope.EntryOrigin),
-                EntryBatchId = null,
+                EntryBatchId = issue.EntryBatchId,
                 Comment = issue.Envelope.Comment,
             };
             dbContext.Set<IssuedMembershipRecord>().Add(membership);
@@ -248,16 +266,13 @@ public sealed class IssueMembershipCommandHandler(
             }
 
             var recalculatedState = rebuildResult.State;
-            MembershipIssuePaymentWriteResult? paymentWrite = null;
-            if (issue.Payment is not null)
-            {
-                paymentWrite = paymentWriter.Stage(
-                    issue.Envelope,
-                    issue.ClientId,
-                    membershipId,
-                    issue.Payment,
-                    recordedAt);
-            }
+            var paymentWrite = paymentWriter.StageExactSale(
+                issue.Envelope,
+                issue.ClientId,
+                membershipId,
+                preparation.Snapshot.Price,
+                issue.EntryBatchId,
+                recordedAt);
 
             var auditEntryId = auditAppender.Append(
                 issue.Envelope,
@@ -269,11 +284,12 @@ public sealed class IssueMembershipCommandHandler(
                 {
                     ClientId = issue.ClientId,
                     MembershipTypeId = issue.MembershipTypeId,
-                    PaymentId = paymentWrite?.PaymentId,
+                    PaymentId = paymentWrite.PaymentId,
                 },
                 afterSummary: new
                 {
                     MembershipId = membershipId,
+                    IssuanceMode = membership.IssuanceMode,
                     ClientId = issue.ClientId,
                     MembershipTypeId = issue.MembershipTypeId,
                     Snapshot = new
@@ -298,18 +314,16 @@ public sealed class IssueMembershipCommandHandler(
                             preparation.ExistingNegativeState.NegativeBalance,
                             preparation.ExistingNegativeState.FirstNegativeVisitDate,
                         },
-                    Payment = paymentWrite is null
-                        ? null
-                        : new
-                        {
-                            paymentWrite.PaymentId,
-                            PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
-                            Amount = issue.Payment!.Amount.Amount,
-                            Currency = issue.Payment.Amount.Currency,
-                            Method = "cash",
-                            PaymentContext = "membership_sale",
-                            OccurredAt = issue.Envelope.OccurredAt ?? recordedAt,
-                        },
+                    Payment = new
+                    {
+                        paymentWrite.PaymentId,
+                        PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
+                        Amount = preparation.Snapshot.Price.Amount,
+                        Currency = preparation.Snapshot.Price.Currency,
+                        Method = "cash",
+                        PaymentContext = "membership_sale",
+                        OccurredAt = issue.Envelope.OccurredAt ?? recordedAt,
+                    },
                     InitialState = new
                     {
                         recalculatedState.CountedVisits,
@@ -509,6 +523,13 @@ public sealed class IssueMembershipCommandHandler(
             && recalculated.EffectiveEndDate == expected.EffectiveEndDate
             && recalculated.LastCountedVisitAt == expected.LastCountedVisitAt;
     }
+
+    private static MembershipTypeKind MapMembershipTypeKind(string kind) => kind switch
+    {
+        "ordinary" => MembershipTypeKind.Ordinary,
+        "one_off" => MembershipTypeKind.OneOff,
+        _ => throw new InvalidOperationException("Stored membership type kind is invalid."),
+    };
 
     private sealed record ExistingNegativeStateLoadResult(
         MembershipIssueNegativeContext? State,

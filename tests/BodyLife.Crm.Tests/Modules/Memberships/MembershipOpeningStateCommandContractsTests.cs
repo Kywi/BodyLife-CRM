@@ -6,8 +6,11 @@ namespace BodyLife.Crm.Tests.Modules.Memberships;
 
 public sealed class MembershipOpeningStateCommandContractsTests
 {
-    private static readonly Guid MembershipId = Guid.Parse(
+    private static readonly Guid ClientId = Guid.Parse(
         "11111111-1111-1111-1111-111111111111");
+    private static readonly Guid MembershipTypeId = Guid.Parse(
+        "33333333-3333-3333-3333-333333333333");
+    private static readonly DateOnly StartDate = new(2026, 7, 1);
     private static readonly DateOnly OpeningAsOfDate = new(2026, 7, 13);
     private static readonly DateTimeOffset OccurredAt = new(
         2026,
@@ -26,7 +29,9 @@ public sealed class MembershipOpeningStateCommandContractsTests
 
         var command = new CreateMembershipOpeningStateCommand(
             envelope,
-            MembershipId,
+            ClientId,
+            MembershipTypeId,
+            StartDate,
             OpeningAsOfDate,
             DeclaredRemainingVisits: -2,
             KnownEffectiveEndDate: new DateOnly(2026, 8, 3),
@@ -54,7 +59,9 @@ public sealed class MembershipOpeningStateCommandContractsTests
             knownEffectiveEndDate: new DateOnly(2026, 8, 3),
             knownExtensionDays: 4);
 
-        Assert.Equal(MembershipId, command.MembershipId);
+        Assert.Equal(ClientId, command.ClientId);
+        Assert.Equal(MembershipTypeId, command.MembershipTypeId);
+        Assert.Equal(StartDate, command.StartDate);
         Assert.Equal(OpeningAsOfDate, command.OpeningAsOfDate);
         Assert.Equal(-2, command.DeclaredRemainingVisits);
         Assert.Equal(new DateOnly(2026, 8, 3), command.KnownEffectiveEndDate);
@@ -88,16 +95,17 @@ public sealed class MembershipOpeningStateCommandContractsTests
     }
 
     [Fact]
-    public void CommandTargetsCanonicalMembershipReread()
+    public void CommandTargetsCanonicalClientReread()
     {
         var command = CreateCommand();
 
         Assert.Equal(
-            new EntityId("membership", MembershipId),
+            new EntityId("client", ClientId),
             command.CanonicalRereadTargetId);
         Assert.Equal(
-            "membership",
+            "client",
             CreateMembershipOpeningStateCommand.CanonicalRereadEntityType);
+        Assert.Equal("membership", CreateMembershipOpeningStateCommand.PrimaryEntityType);
     }
 
     private static CreateMembershipOpeningStateCommand CreateCommand(
@@ -108,7 +116,9 @@ public sealed class MembershipOpeningStateCommandContractsTests
     {
         return new CreateMembershipOpeningStateCommand(
             CreateEnvelope(),
-            MembershipId,
+            ClientId,
+            MembershipTypeId,
+            StartDate,
             OpeningAsOfDate,
             declaredRemainingVisits,
             knownEffectiveEndDate,

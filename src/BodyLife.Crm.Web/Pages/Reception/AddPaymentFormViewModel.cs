@@ -16,7 +16,6 @@ public sealed record AddPaymentFormViewModel(
 
     public static IReadOnlyList<PaymentContext> SupportedContexts { get; } = Array.AsReadOnly(
     [
-        PaymentContext.MembershipSale,
         PaymentContext.OneOff,
         PaymentContext.Trial,
         PaymentContext.Other,

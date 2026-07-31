@@ -216,7 +216,8 @@ public sealed class GetClientPaymentRowsQueryHandler(
 
             var allowedActions = QueryPermissionSet.Empty;
             if (projection.Status == ClientPaymentRowStatus.Active
-                && projection.PaymentContext != PaymentContext.NegativeClosure)
+                && projection.PaymentContext is not (
+                    PaymentContext.MembershipSale or PaymentContext.NegativeClosure))
             {
                 var businessDate = BusinessTimeZone.GetBusinessDate(source.OccurredAt);
                 if (!dayStatuses.TryGetValue(businessDate, out var dayStatus))

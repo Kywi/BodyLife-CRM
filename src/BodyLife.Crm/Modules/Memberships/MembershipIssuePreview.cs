@@ -4,6 +4,7 @@ public sealed class MembershipIssuePreview
 {
     internal MembershipIssuePreview(
         Guid clientId,
+        DateTimeOffset membershipTypeUpdatedAt,
         MembershipIssueTerms issueTerms,
         MembershipCalculatedState expectedInitialState,
         MembershipIssueNegativeContext? existingNegativeState,
@@ -21,6 +22,7 @@ public sealed class MembershipIssuePreview
 
         ClientId = clientId;
         MembershipTypeId = issueTerms.MembershipTypeId;
+        MembershipTypeUpdatedAt = membershipTypeUpdatedAt;
         Snapshot = issueTerms.Snapshot;
         ProposedStartDate = issueTerms.StartDate;
         BaseEndDate = issueTerms.BaseEndDate;
@@ -44,6 +46,8 @@ public sealed class MembershipIssuePreview
     public Guid ClientId { get; }
 
     public Guid MembershipTypeId { get; }
+
+    public DateTimeOffset MembershipTypeUpdatedAt { get; }
 
     public IssuedMembershipSnapshot Snapshot { get; }
 
