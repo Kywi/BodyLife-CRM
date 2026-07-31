@@ -22,6 +22,9 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public const string SmokeAdminLoginName = "named.admin";
     public const string SmokeAdminPassword = "smoke admin password";
     public const string WorkflowCulture = "en-US";
+    public const string NegativeCoverageTabletCard = "BL-NEG-COVER-TABLET";
+    public const string NegativeCoveragePhoneCard = "BL-NEG-COVER-PHONE";
+    public const string NegativeCoverageStaleCard = "BL-NEG-COVER-STALE";
 
     private readonly ConcurrentQueue<string> _output = new();
     private readonly object _receptionHomeSeedLock = new();
@@ -195,6 +198,20 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public Guid IssuePhoneExistingMembershipId { get; private set; }
 
     public Guid IssuePhoneNegativeVisitId { get; private set; }
+
+    public Guid NegativeCoverageOneOffTypeId { get; private set; }
+
+    public Guid NegativeCoverageTabletClientId { get; private set; }
+
+    public Guid NegativeCoverageTabletMembershipId { get; private set; }
+
+    public Guid NegativeCoveragePhoneClientId { get; private set; }
+
+    public Guid NegativeCoveragePhoneMembershipId { get; private set; }
+
+    public Guid NegativeCoverageStaleClientId { get; private set; }
+
+    public Guid NegativeCoverageStaleMembershipId { get; private set; }
 
     public async Task ExpireSessionAsync(string deviceLabel)
     {
@@ -410,6 +427,12 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public Task<MembershipStateSmokeSnapshot> ReadMembershipStateAsync(Guid membershipId)
     {
         return RequireDatabase().ReadMembershipStateAsync(membershipId);
+    }
+
+    public Task<NegativeCoverageMutationSmokeSnapshot>
+        ReadNegativeCoverageMutationSnapshotAsync(Guid clientId)
+    {
+        return RequireDatabase().ReadNegativeCoverageMutationSnapshotAsync(clientId);
     }
 
     public Task<long> CountIssuedMembershipsAsync(Guid clientId)
@@ -878,6 +901,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
         await SeedIssueMembershipFixturesAsync(
+            database,
+            ownerResult.AccountId.Value,
+            activeMembershipTypeId);
+        await SeedNegativeCoverageFixturesAsync(
             database,
             ownerResult.AccountId.Value,
             activeMembershipTypeId);
@@ -1684,6 +1711,81 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         IssuePhoneNegativeVisitId = await database.InsertExternalCountedVisitAsync(
             IssuePhoneClientId,
             IssuePhoneExistingMembershipId);
+    }
+
+    private async Task SeedNegativeCoverageFixturesAsync(
+        PostgreSqlSmokeDatabase database,
+        Guid ownerAccountId,
+        Guid membershipTypeId)
+    {
+        NegativeCoverageOneOffTypeId = await database.SeedMembershipTypeAsync(
+            "Single negative visit",
+            durationDays: 1,
+            visitsLimit: 1,
+            priceAmount: 125.00m,
+            isActive: true,
+            comment: "UI smoke one-off negative coverage.",
+            createdAt: new DateTimeOffset(2026, 7, 30, 9, 0, 0, TimeSpan.Zero),
+            updatedAt: new DateTimeOffset(2026, 7, 30, 9, 30, 0, TimeSpan.Zero),
+            deactivatedAt: null,
+            kind: "one_off");
+
+        NegativeCoverageTabletClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Negative",
+            "Coverage Tablet",
+            "+380 67 810 01 01",
+            NegativeCoverageTabletCard);
+        NegativeCoverageTabletMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            NegativeCoverageTabletClientId,
+            membershipTypeId,
+            "Tablet negative source",
+            visitsLimitSnapshot: 0);
+        for (var index = 0; index < 3; index++)
+        {
+            await database.InsertExternalCountedVisitAsync(
+                NegativeCoverageTabletClientId,
+                NegativeCoverageTabletMembershipId);
+        }
+
+        NegativeCoveragePhoneClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Negative",
+            "Coverage Phone",
+            "+380 67 810 01 02",
+            NegativeCoveragePhoneCard);
+        NegativeCoveragePhoneMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            NegativeCoveragePhoneClientId,
+            membershipTypeId,
+            "Phone negative source",
+            visitsLimitSnapshot: 0);
+        for (var index = 0; index < 2; index++)
+        {
+            await database.InsertExternalCountedVisitAsync(
+                NegativeCoveragePhoneClientId,
+                NegativeCoveragePhoneMembershipId);
+        }
+
+        NegativeCoverageStaleClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Negative",
+            "Coverage Stale",
+            "+380 67 810 01 03",
+            NegativeCoverageStaleCard);
+        NegativeCoverageStaleMembershipId = await database.SeedIssuedMembershipAsync(
+            ownerAccountId,
+            NegativeCoverageStaleClientId,
+            membershipTypeId,
+            "Stale negative source",
+            visitsLimitSnapshot: 0);
+        for (var index = 0; index < 2; index++)
+        {
+            await database.InsertExternalCountedVisitAsync(
+                NegativeCoverageStaleClientId,
+                NegativeCoverageStaleMembershipId);
+        }
     }
 
     private async Task SeedNonWorkingDayPreviewFixturesAsync(

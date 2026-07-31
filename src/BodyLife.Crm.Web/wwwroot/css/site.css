@@ -1661,6 +1661,106 @@ textarea:focus-visible,
   overflow-wrap: anywhere;
 }
 
+.negative-coverage-panel,
+.negative-coverage-preview,
+.negative-coverage-correction,
+.negative-coverage-correction form {
+  display: grid;
+  gap: 12px;
+}
+
+.negative-coverage-panel {
+  margin-top: 16px;
+  min-width: 0;
+}
+
+.negative-coverage-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.negative-coverage-options li {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  border-top: 3px solid var(--info);
+  padding-top: 10px;
+}
+
+.negative-coverage-options span {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.negative-coverage-summary,
+.negative-coverage-closure-summary,
+.negative-coverage-preview-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.negative-coverage-summary div,
+.negative-coverage-closure-summary div,
+.negative-coverage-preview-facts div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.negative-coverage-summary dt,
+.negative-coverage-closure-summary dt,
+.negative-coverage-preview-facts dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.negative-coverage-summary dd,
+.negative-coverage-closure-summary dd,
+.negative-coverage-preview-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.negative-coverage-visits,
+.negative-coverage-history-list,
+.negative-coverage-preview ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 24px;
+}
+
+.negative-coverage-visits li,
+.negative-coverage-history-list li,
+.negative-coverage-preview li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.negative-coverage-correction {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.negative-coverage-correction summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.negative-coverage-preview section,
+.negative-coverage-preview h5 {
+  margin: 0;
+}
+
 .issue-payment-choice {
   display: grid;
   gap: 10px;
@@ -3996,6 +4096,10 @@ textarea:focus-visible,
   .action-form-grid,
   .issue-membership-snapshot,
   .issue-negative-coverage-summary,
+  .negative-coverage-options,
+  .negative-coverage-summary,
+  .negative-coverage-closure-summary,
+  .negative-coverage-preview-facts,
   .visit-business-context,
   .payment-fixed-context,
   .visit-membership-meta,

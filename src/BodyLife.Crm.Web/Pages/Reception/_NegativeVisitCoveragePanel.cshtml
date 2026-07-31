@@ -1,0 +1,303 @@
+@model NegativeVisitCoveragePanelViewModel
+@using System.Globalization
+@using BodyLife.Crm.Modules.Memberships
+@using BodyLife.Crm.Web.Localization
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
+
+<section id="negative-visit-coverage-panel"
+         class="negative-coverage-panel"
+         aria-live="polite"
+         data-negative-coverage-panel>
+    @if (!Model.IsSafe)
+    {
+        <div class="warning-block warning-danger" role="alert">
+            <strong>@L["NegativeCoverage.Unavailable"]</strong>
+            <span>@L["Error.RecalculationFailed"]</span>
+        </div>
+    }
+    else
+    {
+        var coverage = Model.CoverageResult.Coverage!;
+        var canClose = Model.CoverageResult.AllowedActions.IsAllowed(MembershipActionKeys.CloseNegativeVisitsOneOff);
+        var canCorrect = Model.CoverageResult.AllowedActions.IsAllowed(MembershipActionKeys.CorrectNegativeVisitCoverage);
+        string StatusLabel(string status) => status switch
+        {
+            "active" => L["Status.Active"],
+            "canceled" => L["Status.Canceled"],
+            "corrected" => L["Status.Corrected"],
+            "replaced" => L["Status.Replaced"],
+            _ => L["Value.Unknown"],
+        };
+        string PaymentMethodLabel(string method) => method == "cash"
+            ? L["Payment.Cash"]
+            : L["Value.Unknown"];
+        string PaymentContextLabel(string context) => context switch
+        {
+            "negative_closure" => L["Payment.Context.NegativeClosure"],
+            "membership_sale" => L["Payment.Context.MembershipSale"],
+            _ => L["Value.Unknown"],
+        };
+
+        <header class="negative-coverage-header">
+            <p class="eyebrow">@L["NegativeCoverage.Eyebrow"]</p>
+            <h3 class="section-heading">
+                <partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["NegativeCoverage.Title"]
+            </h3>
+        </header>
+
+        @if (Model.HasErrors)
+        {
+            <div class="warning-block warning-danger" role="alert" data-negative-coverage-errors>
+                <strong>@L["Error.Generic"]</strong>
+                <ul>
+                    @foreach (var error in Model.Errors)
+                    {
+                        <li data-field="@error.Field">@ReceptionCommandErrorLocalizer.Display(L, error)</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="warning-block @(coverage.TotalNegativeBalance > 0 ? "warning-danger" : null)">
+            <strong>@L["Warning.NegativeBalance.Title"]</strong>
+            <span>@L["NegativeCoverage.Balance", coverage.TotalNegativeBalance]</span>
+        </div>
+
+        @if (coverage.TotalNegativeBalance > 0)
+        {
+            <ul class="negative-coverage-options" data-negative-coverage-options>
+                <li><strong>@L["NegativeCoverage.Option.LeaveVisible"]</strong><span>@L["NegativeCoverage.Option.LeaveVisibleDetail"]</span></li>
+                <li><strong>@L["NegativeCoverage.Option.OneOff"]</strong><span>@L["NegativeCoverage.Option.OneOffDetail"]</span></li>
+                <li><strong>@L["NegativeCoverage.Option.NewMembership"]</strong><span>@L["NegativeCoverage.Option.NewMembershipDetail"]</span></li>
+            </ul>
+        }
+
+        <dl class="negative-coverage-summary">
+            <div><dt>@L["NegativeCoverage.Unknown"]</dt><dd>@coverage.UnknownNegativeBalance</dd></div>
+            <div><dt>@L["NegativeCoverage.First"]</dt><dd>@(coverage.FirstNegativeVisitDate is { } date ? ReceptionDisplayFormatter.Date(date) : L["Value.Unknown"])</dd></div>
+            <div><dt>@L["NegativeCoverage.OpenVisits"]</dt><dd>@coverage.OpenConcreteVisits.Count</dd></div>
+        </dl>
+
+        <ol class="negative-coverage-visits" data-negative-open-visits>
+            @foreach (var visit in coverage.OpenConcreteVisits)
+            {
+                <li data-negative-visit-id="@visit.VisitId">
+                    @L["NegativeCoverage.OpenVisit", ReceptionDisplayFormatter.DateTime(visit.OccurredAt)]
+                </li>
+            }
+        </ol>
+
+        @if (coverage.ActiveOneOffTypes.Count > 0 && canClose)
+        {
+            var input = Model.CloseInput;
+            var closeLines = input.Lines ?? [];
+            var preview = Model.ClosePreview?.Preview;
+            var canConfirm = Model.ClosePreview?.Status == PreviewCloseNegativeVisitsOneOffStatus.Success;
+
+            <form id="negative-coverage-close-form"
+                  method="post"
+                  asp-page="/Reception/Index"
+                  asp-page-handler="CloseNegativeVisitsOneOff"
+                  data-busy-form
+                  hx-post="@Url.Page("/Reception/Index", "CloseNegativeVisitsOneOff")"
+                  hx-target="#negative-visit-coverage-panel"
+                  hx-swap="outerHTML"
+                  hx-sync="this:drop"
+                  hx-indicator="#negative-coverage-close-loading"
+                  hx-disabled-elt="find button">
+                <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+                <input type="hidden" name="form.ExpectedOldestOpenNegativeVisitId" value="@input.ExpectedOldestOpenNegativeVisitId" />
+                <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+                <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+                <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+                <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive" />
+                <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+                <fieldset>
+                    <legend>@L["NegativeCoverage.CloseTitle"]</legend>
+                    @for (var i = 0; i < closeLines.Count; i++)
+                    {
+                        var line = closeLines[i];
+                        var type = coverage.ActiveOneOffTypes.SingleOrDefault(candidate => candidate.MembershipTypeId == line.MembershipTypeId);
+                        if (type is null) { continue; }
+                        <div class="form-field">
+                            <label for="negative-close-@i">@type.Name (@ReceptionDisplayFormatter.Money(type.Price))</label>
+                            <input id="negative-close-@i" type="number" min="0" inputmode="numeric"
+                                   name="form.Lines[@i].Quantity" value="@(line.Quantity == 0 ? null : line.Quantity)" />
+                            <input type="hidden" name="form.Lines[@i].MembershipTypeId" value="@line.MembershipTypeId" />
+                            <input type="hidden" name="form.Lines[@i].ExpectedMembershipTypeUpdatedAt" value="@line.ExpectedMembershipTypeUpdatedAt" />
+                        </div>
+                    }
+                    <button class="secondary-button" type="button" data-busy-text="@L["Preview.Refreshing"]"
+                            hx-post="@Url.Page("/Reception/Index", "NegativeVisitCoverageClosePreview")"
+                            hx-include="#negative-coverage-close-form"
+                            hx-target="#negative-visit-coverage-panel" hx-swap="outerHTML"
+                            hx-sync="#negative-coverage-close-form:replace"
+                            hx-indicator="#negative-coverage-close-loading"
+                            hx-disabled-elt="#negative-coverage-close-form button">@L["NegativeCoverage.Preview"]</button>
+                    @if (canConfirm)
+                    {
+                        <div class="negative-coverage-preview">
+                            <strong>@L["NegativeCoverage.ExactPayment", ReceptionDisplayFormatter.Money(preview!.ExactPaymentTotal)]</strong>
+                            <ol>
+                                @foreach (var visit in preview.CoveredVisits)
+                                {
+                                    <li>@L["NegativeCoverage.CoveredVisit", ReceptionDisplayFormatter.DateTime(visit.OccurredAt)]</li>
+                                }
+                            </ol>
+                            <span>@L["NegativeCoverage.Remainder", preview.RemainingTotalNegativeBalance, preview.RemainingUnknownNegativeBalance]</span>
+                            <label class="acknowledgement-control"><input type="checkbox" name="form.Confirmed" value="true" required />@L["NegativeCoverage.CloseConfirm"]</label>
+                            <button class="primary-button" type="submit" data-busy-text="@L["Preview.Refreshing"]">@L["NegativeCoverage.Close"]</button>
+                        </div>
+                    }
+                    <span id="negative-coverage-close-loading" class="request-indicator htmx-indicator" role="status">@L["Preview.Refreshing"]</span>
+                </fieldset>
+            </form>
+        }
+
+        @foreach (var closure in coverage.ActiveClosures)
+        {
+            var input = Model.CorrectionInputs.SingleOrDefault(candidate => candidate.OriginalNegativeClosureId == closure.ClosureId);
+            var replacementLines = input?.ReplacementOneOffLines ?? [];
+            Model.CorrectionPreviews.TryGetValue(closure.ClosureId, out var previewResult);
+            var preview = previewResult?.Preview;
+            var correctionOccurredAtValue = input?.OccurredAtLocal?.ToString(
+                "yyyy-MM-ddTHH:mm",
+                CultureInfo.InvariantCulture);
+            var methodLabel = closure.ClosureType switch
+            {
+                "one_off" => L["NegativeCoverage.Method.OneOff"],
+                "new_membership" => L["NegativeCoverage.Method.NewMembership"],
+                _ => L["Value.Unknown"],
+            };
+            <details class="negative-coverage-correction"
+                     data-negative-closure-id="@closure.ClosureId"
+                     open="@((preview is not null || input?.Mode is not null) ? "open" : null)">
+                <summary>@L["NegativeCoverage.Correct"]</summary>
+                <dl class="negative-coverage-closure-summary">
+                    <div><dt>@L["NegativeCoverage.Method"]</dt><dd>@methodLabel</dd></div>
+                    <div><dt>@L["NegativeCoverage.OpenVisits"]</dt><dd>@closure.VisitsCount</dd></div>
+                    <div><dt>@L["Field.Payment"]</dt><dd>@(closure.Payment is { } payment ? ReceptionDisplayFormatter.Money(payment.Amount) : L["Value.Unknown"])</dd></div>
+                </dl>
+                <h4 class="compact-heading">@L["NegativeCoverage.OriginalCoverage"]</h4>
+                <ol class="negative-coverage-history-list">
+                    @foreach (var line in closure.Lines)
+                    {
+                        <li>@line.TypeName × @line.Quantity — @ReceptionDisplayFormatter.Money(line.LineTotal)</li>
+                    }
+                    @foreach (var item in closure.Items)
+                    {
+                        <li>@L["NegativeCoverage.OriginallyCoveredVisit", ReceptionDisplayFormatter.DateTime(item.VisitOccurredAt)]</li>
+                    }
+                </ol>
+                @if (closure.Payment is { } closurePayment)
+                {
+                    <p>@L["NegativeCoverage.OriginalPaymentSummary", ReceptionDisplayFormatter.Money(closurePayment.Amount), StatusLabel(closurePayment.Status)]</p>
+                }
+                @if (closure.CoveringMembershipSnapshot is { } membership)
+                {
+                    <p>@L["NegativeCoverage.CoveringMembershipSummary", membership.TypeName, membership.VisitsLimit, StatusLabel(membership.Status)]</p>
+                }
+
+                @if (canCorrect && input is not null)
+                {
+                    <form id="negative-correction-@closure.ClosureId" method="post"
+                          asp-page="/Reception/Index" asp-page-handler="CorrectNegativeVisitCoverage"
+                          data-busy-form hx-post="@Url.Page("/Reception/Index", "CorrectNegativeVisitCoverage")"
+                          hx-target="#negative-visit-coverage-panel" hx-swap="outerHTML" hx-sync="this:drop"
+                          hx-indicator="#negative-correction-loading-@closure.ClosureId" hx-disabled-elt="find button">
+                        <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+                        <input type="hidden" name="form.OriginalNegativeClosureId" value="@input.OriginalNegativeClosureId" />
+                        <input type="hidden" name="form.ExpectedOldestOpenNegativeVisitId" value="@input.ExpectedOldestOpenNegativeVisitId" />
+                        <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+                        <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+                        <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+                        <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive" />
+                        <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+                        <fieldset>
+                            <legend>@L["NegativeCoverage.Correct"]</legend>
+                            <label><input type="radio" name="form.Mode" value="Cancel" checked="@(input.Mode == NegativeVisitCoverageCorrectionMode.Cancel ? "checked" : null)" />@L["NegativeCoverage.Cancel"]</label>
+                            <label><input type="radio" name="form.Mode" value="Replace" checked="@(input.Mode == NegativeVisitCoverageCorrectionMode.Replace ? "checked" : null)" />@L["NegativeCoverage.Replace"]</label>
+                            <div class="form-field"><label>@L["Field.Reason"]</label><textarea name="form.Reason" required>@input.Reason</textarea></div>
+                            <div class="form-field">
+                                <label for="negative-correction-occurred-@closure.ClosureId">@L["Field.Occurred"]</label>
+                                <input id="negative-correction-occurred-@closure.ClosureId"
+                                       type="datetime-local"
+                                       name="form.OccurredAtLocal"
+                                       value="@correctionOccurredAtValue"
+                                       required />
+                            </div>
+                            @if (closure.ClosureType == "one_off")
+                            {
+                                for (var i = 0; i < replacementLines.Count; i++)
+                                {
+                                    var line = replacementLines[i];
+                                    var type = coverage.ActiveOneOffTypes.SingleOrDefault(candidate => candidate.MembershipTypeId == line.MembershipTypeId);
+                                    if (type is null) { continue; }
+                                    <div class="form-field">
+                                        <label>@type.Name (@ReceptionDisplayFormatter.Money(type.Price))</label>
+                                        <input type="number" min="0" inputmode="numeric" name="form.ReplacementOneOffLines[@i].Quantity" value="@(line.Quantity == 0 ? null : line.Quantity)" />
+                                        <input type="hidden" name="form.ReplacementOneOffLines[@i].MembershipTypeId" value="@line.MembershipTypeId" />
+                                        <input type="hidden" name="form.ReplacementOneOffLines[@i].ExpectedMembershipTypeUpdatedAt" value="@line.ExpectedMembershipTypeUpdatedAt" />
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="form-field"><label>@L["NegativeCoverage.ReplacementCount"]</label><input type="number" min="1" inputmode="numeric" name="form.ReplacementNewMembershipCoverageCount" value="@input.ReplacementNewMembershipCoverageCount" /></div>
+                            }
+                            <button class="secondary-button" type="button" data-busy-text="@L["Preview.Refreshing"]"
+                                    hx-post="@Url.Page("/Reception/Index", "NegativeVisitCoverageCorrectionPreview")"
+                                    hx-include="#negative-correction-@closure.ClosureId"
+                                    hx-target="#negative-visit-coverage-panel" hx-swap="outerHTML"
+                                    hx-sync="#negative-correction-@closure.ClosureId:replace"
+                                    hx-indicator="#negative-correction-loading-@closure.ClosureId"
+                                    hx-disabled-elt="#negative-correction-@closure.ClosureId button">@L["NegativeCoverage.Preview"]</button>
+                            @if (preview is not null)
+                            {
+                                <div class="negative-coverage-preview">
+                                    <span>@L["NegativeCoverage.Restored", preview.RestoredTotalNegativeBalance, preview.ResultingRemainingNegativeBalance]</span>
+                                    <section>
+                                        <h5>@L["NegativeCoverage.RestoredVisits"]</h5>
+                                        <ol data-negative-restored-visits>
+                                            @foreach (var visit in preview.RestoredVisits) { <li>@L["NegativeCoverage.RestoredVisit", ReceptionDisplayFormatter.DateTime(visit.OccurredAt)]</li> }
+                                        </ol>
+                                    </section>
+                                    @if (preview.Mode == NegativeVisitCoverageCorrectionMode.Replace)
+                                    {
+                                        <section>
+                                            <h5>@L["NegativeCoverage.ReplacementVisits"]</h5>
+                                            <ol data-negative-replacement-visits>
+                                                @foreach (var visit in preview.ReplacementCoveredVisits) { <li>@L["NegativeCoverage.ReplacementVisit", ReceptionDisplayFormatter.DateTime(visit.OccurredAt)]</li> }
+                                            </ol>
+                                        </section>
+                                    }
+                                    <dl class="negative-coverage-preview-facts">
+                                        @if (preview.OriginalPayment is { } originalPayment)
+                                        {
+                                            <div><dt>@L["NegativeCoverage.OriginalPayment"]</dt><dd>@ReceptionDisplayFormatter.Money(originalPayment.Amount) · @PaymentMethodLabel(originalPayment.Method) · @PaymentContextLabel(originalPayment.PaymentContext) · @StatusLabel(originalPayment.Status)</dd></div>
+                                        }
+                                        @if (preview.ReplacementPayment is { } replacementPayment)
+                                        {
+                                            <div><dt>@L["NegativeCoverage.ReplacementPayment"]</dt><dd>@ReceptionDisplayFormatter.Money(replacementPayment.Amount) · @PaymentMethodLabel(replacementPayment.Method) · @PaymentContextLabel(replacementPayment.PaymentContext) · @StatusLabel(replacementPayment.Status)</dd></div>
+                                        }
+                                        @if (preview.CoveringMembership is { } capacity)
+                                        {
+                                            <div><dt>@L["NegativeCoverage.CoveringMembership"]</dt><dd>@capacity.Membership.TypeName</dd></div>
+                                            <div><dt>@L["NegativeCoverage.CurrentCapacity"]</dt><dd>@capacity.CurrentRemainingVisits</dd></div>
+                                            <div><dt>@L["NegativeCoverage.RestoredCapacity"]</dt><dd>@capacity.RestoredRemainingVisits</dd></div>
+                                            <div><dt>@L["NegativeCoverage.ReplacementCapacity"]</dt><dd>@(capacity.ReplacementRemainingVisits?.ToString() ?? L["NegativeCoverage.NotApplicable"])</dd></div>
+                                        }
+                                    </dl>
+                                    <p class="form-hint">@L["NegativeCoverage.NoRefundDelta"]</p>
+                                    <label class="acknowledgement-control"><input type="checkbox" name="form.Confirmed" value="true" required />@L["NegativeCoverage.CorrectionConfirm"]</label>
+                                    <button class="danger-button" type="submit" data-busy-text="@L["Preview.Refreshing"]">@L["NegativeCoverage.Apply"]</button>
+                                </div>
+                            }
+                            <span id="negative-correction-loading-@closure.ClosureId" class="request-indicator htmx-indicator" role="status">@L["Preview.Refreshing"]</span>
+                        </fieldset>
+                    </form>
+                }
+            </details>
+        }
+    }
+</section>

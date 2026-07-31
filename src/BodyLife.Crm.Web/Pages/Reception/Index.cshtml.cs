@@ -20,6 +20,9 @@ public sealed class IndexModel(
     IQueryPermissionResolver queryPermissionResolver,
     IBodyLifeQueryHandler<SearchClientsQuery, SearchClientsResult> searchClients,
     IBodyLifeQueryHandler<GetClientProfileQuery, GetClientProfileResult> getClientProfile,
+    IBodyLifeQueryHandler<GetClientNegativeVisitCoverageQuery, GetClientNegativeVisitCoverageResult> getClientNegativeVisitCoverage,
+    IBodyLifeQueryHandler<PreviewCloseNegativeVisitsOneOffQuery, PreviewCloseNegativeVisitsOneOffResult> previewCloseNegativeVisitsOneOff,
+    IBodyLifeQueryHandler<PreviewCorrectNegativeVisitCoverageQuery, PreviewCorrectNegativeVisitCoverageResult> previewCorrectNegativeVisitCoverage,
     IBodyLifeQueryHandler<
         GetMembershipTypesForIssueQuery,
         GetMembershipTypesForIssueResult> getMembershipTypesForIssue,
@@ -42,6 +45,8 @@ public sealed class IndexModel(
     IBodyLifeCommandHandler<CreatePaymentCommand> createPayment,
     IBodyLifeCommandHandler<CorrectPaymentCommand> correctPayment,
     IBodyLifeCommandHandler<CancelVisitCommand> cancelVisit,
+    IBodyLifeCommandHandler<CloseNegativeVisitsOneOffCommand> closeNegativeVisitsOneOff,
+    IBodyLifeCommandHandler<CorrectNegativeVisitCoverageCommand> correctNegativeVisitCoverage,
     TimeProvider timeProvider,
     IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> receptionLocalizer)
     : PageModel
@@ -140,6 +145,105 @@ public sealed class IndexModel(
             errors: [],
             cancellationToken);
         return Partial("_IssueMembershipForm", issueForm);
+    }
+
+    public async Task<IActionResult> OnPostNegativeVisitCoverageClosePreviewAsync(
+        NegativeVisitCoverageFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        if (!IsHtmxRequest()) return RedirectToCanonicalPage(form.ClientId);
+        var panel = await BuildNegativeVisitCoveragePanelAsync(form.ClientId, cancellationToken);
+        if (!panel.IsSafe || form.ExpectedOldestOpenNegativeVisitId is not { } oldest)
+            return Partial("_NegativeVisitCoveragePanel", panel);
+        var preview = await previewCloseNegativeVisitsOneOff.ExecuteAsync(new(
+            requestContextResolver.Require().Actor, form.ClientId, oldest, ToLines(form.Lines)), cancellationToken);
+        var previewErrors = ToPreviewErrors(preview.Status, preview.ErrorMessage, preview.ErrorField);
+        if (RequiresCanonicalNegativeCoverageRefresh(previewErrors))
+        {
+            panel = await BuildNegativeVisitCoveragePanelAsync(form.ClientId, cancellationToken);
+        }
+
+        return Partial("_NegativeVisitCoveragePanel", panel with
+        {
+            CloseInput = previewErrors.Count == 0
+                ? NormalizeCloseInput(form, panel, preview.CurrentSelectors)
+                : panel.CloseInput,
+            ClosePreview = previewErrors.Count == 0 ? preview : null,
+            Errors = previewErrors,
+        });
+    }
+
+    public async Task<IActionResult> OnPostNegativeVisitCoverageCorrectionPreviewAsync(
+        NegativeVisitCoverageCorrectionFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        if (!IsHtmxRequest()) return RedirectToCanonicalPage(form.ClientId);
+        var panel = await BuildNegativeVisitCoveragePanelAsync(form.ClientId, cancellationToken);
+        if (!panel.IsSafe) return Partial("_NegativeVisitCoveragePanel", panel);
+        var mode = form.Mode ?? (NegativeVisitCoverageCorrectionMode)0;
+        var isReplace = mode == NegativeVisitCoverageCorrectionMode.Replace;
+        var preview = await previewCorrectNegativeVisitCoverage.ExecuteAsync(new(
+            requestContextResolver.Require().Actor, form.OriginalNegativeClosureId,
+            mode, form.Reason,
+            isReplace ? ToLines(form.ReplacementOneOffLines) : null,
+            isReplace ? form.ReplacementNewMembershipCoverageCount : null,
+            isReplace ? form.ExpectedOldestOpenNegativeVisitId : null), cancellationToken);
+        var previewErrors = ToPreviewErrors(preview.Status, preview.ErrorMessage, preview.ErrorField);
+        if (RequiresCanonicalNegativeCoverageRefresh(previewErrors))
+        {
+            panel = await BuildNegativeVisitCoveragePanelAsync(form.ClientId, cancellationToken);
+        }
+
+        var normalized = NormalizeCorrectionInput(form, panel, preview.CurrentSelectors);
+        return Partial("_NegativeVisitCoveragePanel", panel with
+        {
+            CorrectionInputs = previewErrors.Count == 0
+                ? panel.CorrectionInputs.Select(input => input.OriginalNegativeClosureId == form.OriginalNegativeClosureId ? normalized : input).ToArray()
+                : panel.CorrectionInputs,
+            CorrectionPreviews = previewErrors.Count == 0
+                ? new Dictionary<Guid, PreviewCorrectNegativeVisitCoverageResult> { [form.OriginalNegativeClosureId] = preview }
+                : new Dictionary<Guid, PreviewCorrectNegativeVisitCoverageResult>(),
+            Errors = previewErrors,
+        });
+    }
+
+    public async Task<IActionResult> OnPostCloseNegativeVisitsOneOffAsync(NegativeVisitCoverageFormInput form, CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        if (!form.Confirmed || form.ExpectedOldestOpenNegativeVisitId is not { } oldest)
+            return await RenderNegativeCoverageErrorAsync(form.ClientId, form, null, cancellationToken);
+        var result = await closeNegativeVisitsOneOff.ExecuteAsync(new(
+            requestContextResolver.CreateCommandEnvelope(idempotencyKey: form.IdempotencyKey), form.ClientId, oldest, ToLines(form.Lines)), cancellationToken);
+        return result.Status == CommandStatus.Success
+            ? await RenderSuccessfulNegativeCoverageAsync(form.ClientId, form, result, false, cancellationToken)
+            : await RenderNegativeCoverageErrorAsync(form.ClientId, form, null, cancellationToken, result.Errors);
+    }
+
+    public async Task<IActionResult> OnPostCorrectNegativeVisitCoverageAsync(NegativeVisitCoverageCorrectionFormInput form, CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        if (!form.Confirmed
+            || form.Mode is null
+            || string.IsNullOrWhiteSpace(form.Reason)
+            || !TryResolveNegativeCoverageCorrectionOccurredAt(
+                form.OccurredAtLocal,
+                out var occurredAt))
+            return await RenderNegativeCoverageErrorAsync(form.ClientId, null, form, cancellationToken);
+        var isReplace = form.Mode == NegativeVisitCoverageCorrectionMode.Replace;
+        var result = await correctNegativeVisitCoverage.ExecuteAsync(new(
+            requestContextResolver.CreateCommandEnvelope(
+                occurredAt: occurredAt,
+                idempotencyKey: form.IdempotencyKey,
+                reason: form.Reason),
+            form.OriginalNegativeClosureId, form.Mode.Value,
+            isReplace ? ToLines(form.ReplacementOneOffLines) : null,
+            isReplace ? form.ReplacementNewMembershipCoverageCount : null,
+            isReplace ? form.ExpectedOldestOpenNegativeVisitId : null), cancellationToken);
+        return result.Status == CommandStatus.Success
+            ? await RenderSuccessfulNegativeCoverageAsync(form.ClientId, null, result, true, cancellationToken)
+            : await RenderNegativeCoverageErrorAsync(form.ClientId, null, form, cancellationToken, result.Errors);
     }
 
     public async Task<IActionResult> OnPostCreateClientAsync(
@@ -2410,6 +2514,7 @@ public sealed class IndexModel(
         IReadOnlyList<CancelFreezeFormViewModel> cancelFreezeForms = [];
         IReadOnlyList<CancelVisitFormViewModel> cancelVisitForms = [];
         IReadOnlyList<CorrectPaymentFormViewModel> correctPaymentForms = [];
+        NegativeVisitCoveragePanelViewModel? negativeVisitCoveragePanel = null;
 
         if (profileResult is
             {
@@ -2485,6 +2590,9 @@ public sealed class IndexModel(
                     IsOpen = payment.PaymentId == CorrectPaymentId,
                 })
                 .ToArray() ?? [];
+            negativeVisitCoveragePanel = await BuildNegativeVisitCoveragePanelAsync(
+                profile.ClientId,
+                cancellationToken);
         }
 
         return ClientProfileViewModel.FromResult(
@@ -2498,7 +2606,235 @@ public sealed class IndexModel(
             addFreezeForm: addFreezeForm,
             cancelFreezeForms: cancelFreezeForms,
             cancelVisitForms: cancelVisitForms,
-            correctPaymentForms: correctPaymentForms);
+            correctPaymentForms: correctPaymentForms,
+            negativeVisitCoveragePanel: negativeVisitCoveragePanel);
+    }
+
+    private async Task<NegativeVisitCoveragePanelViewModel> BuildNegativeVisitCoveragePanelAsync(
+        Guid clientId,
+        CancellationToken cancellationToken)
+    {
+        var result = await getClientNegativeVisitCoverage.ExecuteAsync(new(
+            requestContextResolver.Require().Actor, clientId), cancellationToken);
+        return NegativeVisitCoveragePanelViewModel.FromCanonical(
+            result,
+            CurrentSearchContext(),
+            BusinessTimeZone.ConvertInstantToLocal(timeProvider.GetUtcNow()));
+    }
+
+    private static IReadOnlyList<NegativeVisitClosureLineSelection> ToLines(
+        IEnumerable<NegativeVisitCoverageLineInput>? inputs)
+    {
+        var lines = inputs?.Where(line => line.Quantity > 0)
+            .Select(line => new NegativeVisitClosureLineSelection(
+                line.MembershipTypeId, line.ExpectedMembershipTypeUpdatedAt, line.Quantity))
+            .ToArray() ?? [];
+        return lines;
+    }
+
+    private static NegativeVisitCoverageFormInput NormalizeCloseInput(
+        NegativeVisitCoverageFormInput input,
+        NegativeVisitCoveragePanelViewModel panel,
+        NegativeVisitCoverageStaleSelectors? selectors = null) => new()
+        {
+            ClientId = panel.CoverageResult.Coverage?.ClientId ?? input.ClientId,
+            ExpectedOldestOpenNegativeVisitId = selectors?.CurrentOldestOpenNegativeVisitId
+            ?? panel.CoverageResult.Coverage?.OpenConcreteVisits.FirstOrDefault()?.VisitId,
+            Lines = panel.CoverageResult.Coverage?.ActiveOneOffTypes.Select(type => new NegativeVisitCoverageLineInput
+            {
+                MembershipTypeId = type.MembershipTypeId,
+                ExpectedMembershipTypeUpdatedAt = selectors?.ActiveOneOffTypes
+                    .SingleOrDefault(selector => selector.MembershipTypeId == type.MembershipTypeId)
+                    ?.CurrentUpdatedAt ?? type.UpdatedAt,
+                Quantity = input.Lines?.SingleOrDefault(line => line.MembershipTypeId == type.MembershipTypeId)?.Quantity ?? 0,
+            }).ToList() ?? [],
+            IdempotencyKey = input.IdempotencyKey,
+            SearchQuery = input.SearchQuery,
+            SearchMode = input.SearchMode,
+            SearchIncludeInactive = input.SearchIncludeInactive,
+            SearchPageCursor = input.SearchPageCursor,
+        };
+
+    private static NegativeVisitCoverageCorrectionFormInput NormalizeCorrectionInput(
+        NegativeVisitCoverageCorrectionFormInput input,
+        NegativeVisitCoveragePanelViewModel panel,
+        NegativeVisitCoverageStaleSelectors? selectors = null) => new()
+        {
+            ClientId = panel.CoverageResult.Coverage?.ClientId ?? input.ClientId,
+            OriginalNegativeClosureId = input.OriginalNegativeClosureId,
+            Mode = input.Mode,
+            Reason = input.Reason,
+            OccurredAtLocal = input.OccurredAtLocal,
+            ExpectedOldestOpenNegativeVisitId = selectors?.CurrentOldestOpenNegativeVisitId
+            ?? panel.CoverageResult.Coverage?.ActiveClosures
+                .SingleOrDefault(closure => closure.ClosureId == input.OriginalNegativeClosureId)
+                ?.OldestOpenNegativeVisitId,
+            ReplacementNewMembershipCoverageCount = input.ReplacementNewMembershipCoverageCount,
+            ReplacementOneOffLines = panel.CoverageResult.Coverage?.ActiveOneOffTypes.Select(type => new NegativeVisitCoverageLineInput
+            {
+                MembershipTypeId = type.MembershipTypeId,
+                ExpectedMembershipTypeUpdatedAt = selectors?.ActiveOneOffTypes
+                    .SingleOrDefault(selector => selector.MembershipTypeId == type.MembershipTypeId)
+                    ?.CurrentUpdatedAt ?? type.UpdatedAt,
+                Quantity = input.ReplacementOneOffLines?.SingleOrDefault(line => line.MembershipTypeId == type.MembershipTypeId)?.Quantity ?? 0,
+            }).ToList() ?? [],
+            IdempotencyKey = input.IdempotencyKey,
+            SearchQuery = input.SearchQuery,
+            SearchMode = input.SearchMode,
+            SearchIncludeInactive = input.SearchIncludeInactive,
+            SearchPageCursor = input.SearchPageCursor,
+        };
+
+    private async Task<IActionResult> RenderNegativeCoverageErrorAsync(
+        Guid clientId, NegativeVisitCoverageFormInput? closeForm, NegativeVisitCoverageCorrectionFormInput? correctionForm,
+        CancellationToken cancellationToken, IReadOnlyList<CommandError>? errors = null)
+    {
+        var currentErrors = errors ?? ValidateNegativeCoverageForm(closeForm, correctionForm);
+        var requiresRefresh = currentErrors.Any(error => error.Code is
+            CommandErrorCode.PermissionDenied
+            or CommandErrorCode.NotFound
+            or CommandErrorCode.MembershipTypeInactive
+            or CommandErrorCode.RecalculationFailed
+            or CommandErrorCode.ConcurrencyConflict
+            or CommandErrorCode.StaleState);
+        ClientId = clientId;
+        ClientOperationMessage = LocalizedCommandError(currentErrors);
+        ClientOperationTone = "error";
+
+        if (IsHtmxRequest() && !requiresRefresh)
+        {
+            var panel = await BuildNegativeVisitCoveragePanelAsync(clientId, cancellationToken);
+            if (panel.IsSafe)
+            {
+                panel = panel with
+                {
+                    CloseInput = closeForm is null ? panel.CloseInput : NormalizeCloseInput(closeForm, panel),
+                    CorrectionInputs = correctionForm is null
+                        ? panel.CorrectionInputs
+                        : panel.CorrectionInputs.Select(input => input.OriginalNegativeClosureId == correctionForm.OriginalNegativeClosureId
+                            ? NormalizeCorrectionInput(correctionForm, panel)
+                            : input).ToArray(),
+                    Errors = currentErrors,
+                };
+            }
+
+            return Partial("_NegativeVisitCoveragePanel", panel);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with
+            {
+                OperationMessage = LocalizedCommandError(currentErrors),
+                OperationSucceeded = false,
+                NegativeVisitCoveragePanel = Workspace.Profile.NegativeVisitCoveragePanel is { } refreshedPanel
+                    ? refreshedPanel with { Errors = currentErrors }
+                    : null,
+            },
+        };
+        if (!IsHtmxRequest()) return Page();
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(clientId);
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
+    private static IReadOnlyList<CommandError> ValidateNegativeCoverageForm(
+        NegativeVisitCoverageFormInput? closeForm,
+        NegativeVisitCoverageCorrectionFormInput? correctionForm)
+    {
+        if (closeForm is not null && !closeForm.Confirmed)
+        {
+            return [new(CommandErrorCode.ValidationFailed, "Confirmation is required.", "confirmed")];
+        }
+
+        if (correctionForm is not null)
+        {
+            if (!correctionForm.Confirmed)
+                return [new(CommandErrorCode.ValidationFailed, "Confirmation is required.", "confirmed")];
+            if (correctionForm.Mode is null)
+                return [new(CommandErrorCode.ValidationFailed, "Choose a correction mode.", "mode")];
+            if (string.IsNullOrWhiteSpace(correctionForm.Reason))
+                return [new(CommandErrorCode.ValidationFailed, "Reason is required.", "reason")];
+            if (!TryResolveNegativeCoverageCorrectionOccurredAt(
+                    correctionForm.OccurredAtLocal,
+                    out _))
+                return [new(CommandErrorCode.ValidationFailed, "A valid occurred time is required.", "occurredAt")];
+        }
+
+        return [new(CommandErrorCode.ValidationFailed, "The submitted negative coverage selection is incomplete.", "expectedOldestOpenNegativeVisitId")];
+    }
+
+    private static bool TryResolveNegativeCoverageCorrectionOccurredAt(
+        DateTime? occurredAtLocal,
+        out DateTimeOffset occurredAt)
+    {
+        occurredAt = default;
+        if (occurredAtLocal is not { } localTime)
+        {
+            return false;
+        }
+
+        try
+        {
+            occurredAt = BusinessTimeZone.ConvertLocalToUtc(
+                DateTime.SpecifyKind(localTime, DateTimeKind.Unspecified));
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    private static IReadOnlyList<CommandError> ToPreviewErrors<TStatus>(
+        TStatus status,
+        string? message,
+        string? field)
+        where TStatus : struct, Enum
+    {
+        if (status.ToString() == "Success") return [];
+
+        var code = status.ToString() switch
+        {
+            "PermissionDenied" => CommandErrorCode.PermissionDenied,
+            "NotFound" => CommandErrorCode.NotFound,
+            "MembershipTypeInactive" => CommandErrorCode.MembershipTypeInactive,
+            "MembershipNotEligible" => CommandErrorCode.MembershipNotEligible,
+            "StaleState" => CommandErrorCode.StaleState,
+            "AlreadyCanceled" => CommandErrorCode.AlreadyCanceled,
+            "ReasonRequired" => CommandErrorCode.ReasonRequired,
+            "RecalculationFailed" or "CanonicalStateInvalid" => CommandErrorCode.RecalculationFailed,
+            _ => CommandErrorCode.ValidationFailed,
+        };
+
+        return [new(code, message ?? "Preview could not be prepared.", field)];
+    }
+
+    private static bool RequiresCanonicalNegativeCoverageRefresh(
+        IReadOnlyList<CommandError> errors) => errors.Any(error => error.Code is
+            CommandErrorCode.PermissionDenied
+            or CommandErrorCode.NotFound
+            or CommandErrorCode.MembershipTypeInactive
+            or CommandErrorCode.RecalculationFailed
+            or CommandErrorCode.ConcurrencyConflict
+            or CommandErrorCode.StaleState);
+
+    private async Task<IActionResult> RenderSuccessfulNegativeCoverageAsync(
+        Guid clientId, NegativeVisitCoverageFormInput? form, CommandResult result, bool isCorrection, CancellationToken cancellationToken)
+    {
+        var expectedPrimary = isCorrection ? CorrectNegativeVisitCoverageCommand.PrimaryEntityType : CloseNegativeVisitsOneOffCommand.PrimaryEntityType;
+        if (result.PrimaryEntityId is not { } primary || primary.Type != expectedPrimary || primary.Value == Guid.Empty
+            || result.RereadTargetId is not { } target || target.Type != CloseNegativeVisitsOneOffCommand.CanonicalRereadEntityType || target.Value != clientId)
+            throw new InvalidOperationException("Negative coverage command did not return its expected canonical client reread target.");
+        ClientId = target.Value;
+        var message = LocalizedOperationMessage(isCorrection ? "Operation.NegativeCoverageCorrected" : "Operation.NegativeCoverageClosed", result.AuditEntryId);
+        if (!IsHtmxRequest()) { ClientOperationMessage = message; ClientOperationTone = "success"; return RedirectToCanonicalPage(ClientId); }
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with { Profile = Workspace.Profile with { OperationMessage = message, OperationSucceeded = true } };
+        Response.Headers["HX-Retarget"] = "#reception-workspace"; Response.Headers["HX-Reswap"] = "outerHTML"; SetHtmxPushUrl(ClientId);
+        return Partial("_ReceptionWorkspace", Workspace);
     }
 
     private ReceptionSearchContext CurrentSearchContext()
@@ -2583,6 +2919,22 @@ public sealed class IndexModel(
     }
 
     private void ApplySearchContext(CorrectPaymentFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
+    }
+
+    private void ApplySearchContext(NegativeVisitCoverageFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
+    }
+
+    private void ApplySearchContext(NegativeVisitCoverageCorrectionFormInput form)
     {
         Query = form.SearchQuery;
         Mode = form.SearchMode;

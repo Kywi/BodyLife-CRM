@@ -342,4 +342,55 @@
   <data name="Error.Validation.Surname" xml:space="preserve"><value>Enter the client surname.</value></data>
   <data name="Error.Validation.Name" xml:space="preserve"><value>Enter the client name.</value></data>
   <data name="Error.Validation.CardNumber" xml:space="preserve"><value>Enter a valid card number.</value></data>
+  <data name="NegativeCoverage.Unavailable" xml:space="preserve"><value>Negative-visit coverage is unavailable</value></data>
+  <data name="NegativeCoverage.Eyebrow" xml:space="preserve"><value>Negative visits</value></data>
+  <data name="NegativeCoverage.Title" xml:space="preserve"><value>Negative-visit coverage</value></data>
+  <data name="NegativeCoverage.Balance" xml:space="preserve"><value>Current negative balance: {0}</value></data>
+  <data name="NegativeCoverage.Unknown" xml:space="preserve"><value>Unknown negative balance</value></data>
+  <data name="NegativeCoverage.First" xml:space="preserve"><value>First negative visit</value></data>
+  <data name="NegativeCoverage.OpenVisits" xml:space="preserve"><value>Concrete visits</value></data>
+  <data name="NegativeCoverage.Visit" xml:space="preserve"><value>Oldest uncovered visit: {0}</value></data>
+  <data name="NegativeCoverage.OpenVisit" xml:space="preserve"><value>Uncovered visit: {0}</value></data>
+  <data name="NegativeCoverage.CoveredVisit" xml:space="preserve"><value>Covered visit: {0}</value></data>
+  <data name="NegativeCoverage.Option.LeaveVisible" xml:space="preserve"><value>Leave the negative balance visible</value></data>
+  <data name="NegativeCoverage.Option.LeaveVisibleDetail" xml:space="preserve"><value>No action is required now; the balance remains on the client profile.</value></data>
+  <data name="NegativeCoverage.Option.OneOff" xml:space="preserve"><value>Cover with one-off types</value></data>
+  <data name="NegativeCoverage.Option.OneOffDetail" xml:space="preserve"><value>Select exact quantities below and review the exact cash payment.</value></data>
+  <data name="NegativeCoverage.Option.NewMembership" xml:space="preserve"><value>Cover with a new ordinary membership</value></data>
+  <data name="NegativeCoverage.Option.NewMembershipDetail" xml:space="preserve"><value>Use Issue membership above and choose the number of oldest visits to cover.</value></data>
+  <data name="NegativeCoverage.CloseTitle" xml:space="preserve"><value>Close with one-off types</value></data>
+  <data name="NegativeCoverage.Preview" xml:space="preserve"><value>Preview coverage</value></data>
+  <data name="NegativeCoverage.ExactPayment" xml:space="preserve"><value>Exact cash payment: {0}</value></data>
+  <data name="NegativeCoverage.Remainder" xml:space="preserve"><value>Remaining negative balance: {0}; unknown: {1}</value></data>
+  <data name="NegativeCoverage.CloseConfirm" xml:space="preserve"><value>I confirm the previewed visits and exact payment.</value></data>
+  <data name="NegativeCoverage.Close" xml:space="preserve"><value>Close negative visits</value></data>
+  <data name="NegativeCoverage.Correct" xml:space="preserve"><value>Correct this coverage</value></data>
+  <data name="NegativeCoverage.Method" xml:space="preserve"><value>Coverage method</value></data>
+  <data name="NegativeCoverage.Method.OneOff" xml:space="preserve"><value>One-off types</value></data>
+  <data name="NegativeCoverage.Method.NewMembership" xml:space="preserve"><value>New ordinary membership</value></data>
+  <data name="NegativeCoverage.OriginalCoverage" xml:space="preserve"><value>Original coverage facts</value></data>
+  <data name="NegativeCoverage.OriginallyCoveredVisit" xml:space="preserve"><value>Originally covered visit: {0}</value></data>
+  <data name="NegativeCoverage.OriginalPaymentSummary" xml:space="preserve"><value>Original exact payment: {0}; status: {1}</value></data>
+  <data name="NegativeCoverage.CoveringMembershipSummary" xml:space="preserve"><value>Covering membership: {0}; visit limit: {1}; status: {2}</value></data>
+  <data name="NegativeCoverage.Cancel" xml:space="preserve"><value>Cancel coverage</value></data>
+  <data name="NegativeCoverage.Replace" xml:space="preserve"><value>Replace with the same method</value></data>
+  <data name="NegativeCoverage.ReplacementCount" xml:space="preserve"><value>Replacement visits to cover</value></data>
+  <data name="NegativeCoverage.Restored" xml:space="preserve"><value>Restored negative balance: {0}; resulting balance: {1}</value></data>
+  <data name="NegativeCoverage.RestoredVisits" xml:space="preserve"><value>Visits restored to the negative balance</value></data>
+  <data name="NegativeCoverage.RestoredVisit" xml:space="preserve"><value>Restored visit: {0}</value></data>
+  <data name="NegativeCoverage.ReplacementVisits" xml:space="preserve"><value>Visits covered by the replacement</value></data>
+  <data name="NegativeCoverage.ReplacementVisit" xml:space="preserve"><value>Replacement covered visit: {0}</value></data>
+  <data name="NegativeCoverage.OriginalPayment" xml:space="preserve"><value>Original payment</value></data>
+  <data name="NegativeCoverage.ReplacementPayment" xml:space="preserve"><value>Replacement exact payment</value></data>
+  <data name="NegativeCoverage.CoveringMembership" xml:space="preserve"><value>Covering membership</value></data>
+  <data name="NegativeCoverage.CurrentCapacity" xml:space="preserve"><value>Current remaining visits</value></data>
+  <data name="NegativeCoverage.RestoredCapacity" xml:space="preserve"><value>Remaining visits after restoring the original coverage</value></data>
+  <data name="NegativeCoverage.ReplacementCapacity" xml:space="preserve"><value>Remaining visits after replacement</value></data>
+  <data name="NegativeCoverage.NotApplicable" xml:space="preserve"><value>Not applicable</value></data>
+  <data name="NegativeCoverage.NoRefundDelta" xml:space="preserve"><value>This correction records exact source facts only. It does not calculate a refund, surcharge, or price difference.</value></data>
+  <data name="NegativeCoverage.CorrectionConfirm" xml:space="preserve"><value>I confirm this correction and its previewed source facts.</value></data>
+  <data name="NegativeCoverage.Apply" xml:space="preserve"><value>Apply correction</value></data>
+  <data name="Operation.NegativeCoverageClosed" xml:space="preserve"><value>Negative visits closed with one-off coverage</value></data>
+  <data name="Operation.NegativeCoverageCorrected" xml:space="preserve"><value>Negative-visit coverage corrected</value></data>
+  <data name="Field.NegativeCoverage" xml:space="preserve"><value>Negative-visit coverage</value></data>
 </root>

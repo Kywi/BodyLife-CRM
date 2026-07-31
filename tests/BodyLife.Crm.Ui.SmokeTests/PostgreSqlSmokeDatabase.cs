@@ -68,7 +68,8 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         string? comment,
         DateTimeOffset createdAt,
         DateTimeOffset updatedAt,
-        DateTimeOffset? deactivatedAt)
+        DateTimeOffset? deactivatedAt,
+        string kind = "ordinary")
     {
         var membershipTypeId = Guid.NewGuid();
 
@@ -84,6 +85,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 visits_limit,
                 price_amount,
                 price_currency,
+                kind,
                 is_active,
                 comment,
                 created_at,
@@ -96,6 +98,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 @visits_limit,
                 @price_amount,
                 'UAH',
+                @kind,
                 @is_active,
                 @comment,
                 @created_at,
@@ -107,6 +110,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue("duration_days", durationDays);
         command.Parameters.AddWithValue("visits_limit", visitsLimit);
         command.Parameters.AddWithValue("price_amount", priceAmount);
+        command.Parameters.AddWithValue("kind", kind);
         command.Parameters.AddWithValue("is_active", isActive);
         command.Parameters.Add("comment", NpgsqlDbType.Text).Value =
             comment ?? (object)DBNull.Value;
@@ -5834,6 +5838,119 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             clientId);
     }
 
+    public async Task<NegativeCoverageMutationSmokeSnapshot>
+        ReadNegativeCoverageMutationSnapshotAsync(Guid clientId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            with closures as (
+                select id, status, recorded_at
+                from bodylife.membership_negative_closures
+                where client_id = @client_id
+            ),
+            closure_payments as (
+                select payment.id, payment.amount, payment.status
+                from bodylife.payments payment
+                inner join closures closure on closure.id = payment.negative_closure_id
+                where payment.payment_context = 'negative_closure'
+            ),
+            corrections as (
+                select correction.id
+                from bodylife.membership_negative_closure_corrections correction
+                inner join closures closure on closure.id = correction.original_closure_id
+            )
+            select
+                (select count(*) from closures),
+                (select count(*) from closures where status = 'active'),
+                (select count(*) from closures where status = 'replaced'),
+                (select count(*) from closures where status = 'canceled'),
+                (select count(*) from corrections),
+                (select count(*) from closure_payments),
+                (select count(*) from closure_payments where status = 'active'),
+                (select coalesce(sum(amount), 0) from closure_payments),
+                (select coalesce(sum(amount), 0) from closure_payments where status = 'active'),
+                (
+                    select count(*)
+                    from bodylife.membership_negative_closure_items item
+                    inner join closures closure on closure.id = item.negative_closure_id
+                    where item.status = 'active'
+                ),
+                (
+                    select count(*)
+                    from bodylife.business_audit_entries audit
+                    inner join closures closure on closure.id = audit.entity_id
+                    where audit.action_type = 'membership_negative_closure.created'
+                ),
+                (
+                    select count(*)
+                    from bodylife.business_audit_entries audit
+                    inner join closures closure on closure.id = audit.entity_id
+                    where audit.action_type = 'membership_negative_closure.replaced'
+                ),
+                (
+                    select count(*)
+                    from bodylife.business_audit_entries audit
+                    inner join closures closure on closure.id = audit.entity_id
+                    where audit.action_type = 'membership_negative_closure.canceled'
+                ),
+                (
+                    select count(*)
+                    from bodylife.business_audit_entries audit
+                    inner join closure_payments payment on payment.id = audit.entity_id
+                    where audit.action_type = 'payment.created'
+                ),
+                (
+                    select count(*)
+                    from bodylife.command_idempotency_keys
+                    where command_name = 'CloseNegativeVisitsOneOff'
+                      and reread_target_id = @client_id
+                ),
+                (
+                    select count(*)
+                    from bodylife.command_idempotency_keys
+                    where command_name = 'CorrectNegativeVisitCoverage'
+                      and reread_target_id = @client_id
+                ),
+                (
+                    select id
+                    from closures
+                    where status = 'active'
+                    order by recorded_at desc, id desc
+                    limit 1
+                )
+            """;
+        command.Parameters.AddWithValue("client_id", clientId);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException(
+                "The negative-coverage mutation snapshot query returned no row.");
+        }
+
+        return new NegativeCoverageMutationSmokeSnapshot(
+            reader.GetInt64(0),
+            reader.GetInt64(1),
+            reader.GetInt64(2),
+            reader.GetInt64(3),
+            reader.GetInt64(4),
+            reader.GetInt64(5),
+            reader.GetInt64(6),
+            reader.GetDecimal(7),
+            reader.GetDecimal(8),
+            reader.GetInt64(9),
+            reader.GetInt64(10),
+            reader.GetInt64(11),
+            reader.GetInt64(12),
+            reader.GetInt64(13),
+            reader.GetInt64(14),
+            reader.GetInt64(15),
+            reader.IsDBNull(16) ? null : reader.GetGuid(16));
+    }
+
     public async Task<MembershipStateSmokeSnapshot> ReadMembershipStateAsync(
         Guid membershipId)
     {
@@ -6439,6 +6556,25 @@ public sealed record MembershipStateSmokeSnapshot(
     int NegativeBalance,
     DateOnly? FirstNegativeVisitDate,
     DateOnly EffectiveEndDate);
+
+public sealed record NegativeCoverageMutationSmokeSnapshot(
+    long ClosureCount,
+    long ActiveClosureCount,
+    long ReplacedClosureCount,
+    long CanceledClosureCount,
+    long CorrectionCount,
+    long PaymentCount,
+    long ActivePaymentCount,
+    decimal TotalPaymentAmount,
+    decimal ActivePaymentAmount,
+    long ActiveItemCount,
+    long CreatedClosureAuditCount,
+    long ReplacedClosureAuditCount,
+    long CanceledClosureAuditCount,
+    long PaymentCreatedAuditCount,
+    long CloseIdempotencyCount,
+    long CorrectionIdempotencyCount,
+    Guid? ActiveClosureId);
 
 public sealed record IssuedMembershipSmokeSnapshot(
     Guid MembershipId,

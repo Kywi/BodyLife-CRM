@@ -228,6 +228,11 @@
             <partial name="_AddPaymentForm" model="Model.AddPaymentForm" />
         }
 
+        @if (Model.NegativeVisitCoveragePanel is not null)
+        {
+            <partial name="_NegativeVisitCoveragePanel" model="Model.NegativeVisitCoveragePanel" />
+        }
+
         @if (profile.RecentVisits is { } recentVisits)
         {
             <section class="recent-visits" aria-labelledby="recent-visits-title">
@@ -692,6 +697,7 @@
             "occurred_at" => L["Field.OccurredTime"],
             "payment_context" => L["Field.Context"],
             "membership_id" => L["Field.Membership"],
+            "negative_coverage" => L["Field.NegativeCoverage"],
             "comment" => L["Field.Comment"],
             _ => L["Value.Unknown"],
         };
