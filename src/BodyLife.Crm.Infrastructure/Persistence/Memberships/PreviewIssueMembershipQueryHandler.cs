@@ -10,6 +10,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 
 public sealed class PreviewIssueMembershipQueryHandler(
     BodyLifeDbContext dbContext,
+    MembershipNegativeVisitSelector negativeVisitSelector,
     TimeProvider timeProvider)
     : IBodyLifeQueryHandler<PreviewIssueMembershipQuery, PreviewIssueMembershipResult>
 {
@@ -19,10 +20,11 @@ public sealed class PreviewIssueMembershipQueryHandler(
     {
         ArgumentNullException.ThrowIfNull(query);
 
+        var now = timeProvider.GetUtcNow();
         if (!await MembershipQuerySupport.IsActorAuthorizedAsync(
                 dbContext,
                 query.Actor,
-                timeProvider.GetUtcNow(),
+                now,
                 cancellationToken))
         {
             return PreviewIssueMembershipResult.Denied();
@@ -55,6 +57,22 @@ public sealed class PreviewIssueMembershipQueryHandler(
             return PreviewIssueMembershipResult.Invalid(
                 "Negative handling decision is not supported.",
                 "negativeHandlingDecision");
+        }
+
+        if (query.NegativeCoverageCount is <= 0)
+        {
+            return PreviewIssueMembershipResult.Invalid(
+                "Negative coverage count must be positive.",
+                "negativeCoverageCount");
+        }
+
+        if (query.NegativeCoverageCount is not null
+            && query.NegativeHandlingDecision
+                != MembershipNegativeHandlingDecision.CoverWithNewMembership)
+        {
+            return PreviewIssueMembershipResult.Invalid(
+                "Negative coverage count requires new-Membership coverage.",
+                "negativeCoverageCount");
         }
 
         var clientExists = await dbContext.Set<ClientRecord>()
@@ -99,106 +117,22 @@ public sealed class PreviewIssueMembershipQueryHandler(
                 "membershipTypeId");
         }
 
-        var activeMemberships = await dbContext.Set<IssuedMembershipRecord>()
-            .AsNoTracking()
-            .Where(membership =>
-                membership.ClientId == query.ClientId
-                && membership.Status == MembershipQuerySupport.ActiveMembershipStatus)
-            .OrderByDescending(membership => membership.StartDate)
-            .ThenByDescending(membership => membership.IssuedAt)
-            .ThenBy(membership => membership.Id)
-            .Select(membership => new ExistingMembershipRow(
-                membership.Id,
-                membership.MembershipTypeId,
-                membership.TypeNameSnapshot,
-                membership.DurationDaysSnapshot,
-                membership.VisitsLimitSnapshot,
-                membership.PriceAmountSnapshot,
-                membership.PriceCurrencySnapshot,
-                membership.StartDate,
-                membership.BaseEndDate))
-            .ToArrayAsync(cancellationToken);
-        var activeMembershipIds = activeMemberships
-            .Select(membership => membership.MembershipId)
-            .ToArray();
-        ExistingStateCacheRow[] cacheRows = activeMembershipIds.Length == 0
-            ? []
-            : await dbContext.Set<MembershipStateCacheRecord>()
-                .AsNoTracking()
-                .Where(cache => activeMembershipIds.Contains(cache.MembershipId))
-                .Select(cache => new ExistingStateCacheRow(
-                    cache.MembershipId,
-                    cache.CountedVisits,
-                    cache.RemainingVisits,
-                    cache.NegativeBalance,
-                    cache.FirstNegativeVisitId,
-                    cache.FirstNegativeVisitDate,
-                    cache.ExtensionDays,
-                    cache.EffectiveEndDate,
-                    cache.LastCountedVisitAt,
-                    cache.RecalculationVersion))
-                .ToArrayAsync(cancellationToken);
-        var cachesByMembershipId = cacheRows.ToDictionary(
-            cache => cache.MembershipId);
-        var negativeStates = new List<MembershipIssueNegativeContext>(1);
-
-        foreach (var membership in activeMemberships)
+        var selectionResult = await negativeVisitSelector.SelectAsync(
+            query.ClientId,
+            cancellationToken);
+        if (selectionResult.Status
+            != MembershipNegativeVisitSelectionStatus.Succeeded)
         {
-            if (!cachesByMembershipId.TryGetValue(membership.MembershipId, out var cache)
-                || cache.RecalculationVersion
-                    != MembershipStateCacheRebuilder.CurrentRecalculationVersion)
-            {
-                return PreviewIssueMembershipResult.RecalculationFailed();
-            }
-
-            MembershipCalculatedState calculatedState;
-
-            try
-            {
-                var snapshot = new IssuedMembershipSnapshot(
-                    membership.TypeNameSnapshot,
-                    membership.DurationDaysSnapshot,
-                    membership.VisitsLimitSnapshot,
-                    new Money(
-                        membership.PriceAmountSnapshot,
-                        membership.PriceCurrencySnapshot));
-                var issueTerms = MembershipIssueTerms.FromIssuedSnapshot(
-                    membership.MembershipTypeId,
-                    snapshot,
-                    membership.StartDate,
-                    membership.BaseEndDate);
-                calculatedState = MembershipCalculatedState.FromStoredCache(
-                    issueTerms,
-                    cache.CountedVisits,
-                    cache.RemainingVisits,
-                    cache.NegativeBalance,
-                    cache.FirstNegativeVisitId,
-                    cache.FirstNegativeVisitDate,
-                    cache.ExtensionDays,
-                    cache.EffectiveEndDate,
-                    cache.LastCountedVisitAt);
-            }
-            catch (ArgumentException)
-            {
-                return PreviewIssueMembershipResult.RecalculationFailed();
-            }
-
-            if (calculatedState.NegativeBalance > 0)
-            {
-                negativeStates.Add(new MembershipIssueNegativeContext(
-                    calculatedState.NegativeBalance,
-                    calculatedState.FirstNegativeVisitDate));
-            }
+            return PreviewIssueMembershipResult.RecalculationFailed();
         }
 
-        if (negativeStates.Count > 1)
-        {
-            return PreviewIssueMembershipResult.Invalid(
-                "Multiple active memberships have negative balances. Explicit membership selection is required.",
-                "clientId");
-        }
-
-        var existingNegativeState = negativeStates.SingleOrDefault();
+        var selection = selectionResult.Selection!;
+        var existingNegativeState = selection.TotalNegativeBalance > 0
+            ? new MembershipIssueNegativeContext(
+                selection.TotalNegativeBalance,
+                selection.FirstNegativeVisitDate,
+                selection.OpenConcreteVisits)
+            : null;
         if (existingNegativeState is null && query.NegativeHandlingDecision is not null)
         {
             return PreviewIssueMembershipResult.Invalid(
@@ -227,7 +161,9 @@ public sealed class PreviewIssueMembershipQueryHandler(
                 catalogItem,
                 query.ProposedStartDate,
                 existingNegativeState,
-                query.NegativeHandlingDecision);
+                query.NegativeHandlingDecision,
+                query.NegativeCoverageCount,
+                BusinessTimeZone.GetBusinessDate(now));
         }
         catch (ArgumentOutOfRangeException exception)
             when (exception.ParamName == "durationDays")
@@ -266,26 +202,4 @@ public sealed class PreviewIssueMembershipQueryHandler(
         DateTimeOffset UpdatedAt,
         DateTimeOffset? DeactivatedAt);
 
-    private sealed record ExistingMembershipRow(
-        Guid MembershipId,
-        Guid MembershipTypeId,
-        string TypeNameSnapshot,
-        int DurationDaysSnapshot,
-        int VisitsLimitSnapshot,
-        decimal PriceAmountSnapshot,
-        string PriceCurrencySnapshot,
-        DateOnly StartDate,
-        DateOnly BaseEndDate);
-
-    private sealed record ExistingStateCacheRow(
-        Guid MembershipId,
-        int CountedVisits,
-        int RemainingVisits,
-        int NegativeBalance,
-        Guid? FirstNegativeVisitId,
-        DateOnly? FirstNegativeVisitDate,
-        int ExtensionDays,
-        DateOnly EffectiveEndDate,
-        DateTimeOffset? LastCountedVisitAt,
-        int RecalculationVersion);
 }

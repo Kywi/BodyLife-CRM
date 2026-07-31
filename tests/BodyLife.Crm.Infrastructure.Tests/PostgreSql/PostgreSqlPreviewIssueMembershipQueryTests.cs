@@ -183,7 +183,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task MultipleNegativeCandidatesFailUntilOnlyOneActiveCandidateRemains()
+    public async Task MultipleNegativeMembershipsReturnOneClientAggregateContext()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -212,16 +212,17 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
             firstNegativeVisitDate: new DateOnly(2026, 7, 22));
         var handler = CreateHandler(dbContext);
 
-        var ambiguous = await handler.ExecuteAsync(
+        var aggregate = await handler.ExecuteAsync(
             Query(owner, fixture),
             CancellationToken.None);
 
-        Assert.Equal(PreviewIssueMembershipStatus.ValidationFailed, ambiguous.Status);
-        Assert.Equal("validation_failed", ambiguous.ErrorCode);
-        Assert.Equal("clientId", ambiguous.ErrorField);
-        Assert.Contains("Multiple active memberships", ambiguous.ErrorMessage);
-        Assert.Null(ambiguous.Preview);
-        Assert.Empty(ambiguous.AllowedActions.Items);
+        AssertSuccessful(aggregate);
+        Assert.Equal(3, aggregate.Preview!.ExistingNegativeState!.NegativeBalance);
+        Assert.Equal(
+            new DateOnly(2026, 7, 18),
+            aggregate.Preview.ExistingNegativeState.FirstNegativeVisitDate);
+        Assert.True(aggregate.Preview.RequiresNegativeHandlingDecision);
+        Assert.False(aggregate.Preview.CanProceedToIssue);
 
         await UpdateMembershipStatusAsync(
             database,
@@ -530,6 +531,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
     {
         return new PreviewIssueMembershipQueryHandler(
             dbContext,
+            new MembershipNegativeVisitSelector(dbContext),
             new FixedTimeProvider(TestNow));
     }
 

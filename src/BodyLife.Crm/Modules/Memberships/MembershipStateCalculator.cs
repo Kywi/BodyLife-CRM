@@ -17,6 +17,34 @@ public static class MembershipStateCalculator
             lastCountedVisitAt: null);
     }
 
+    public static MembershipCalculatedState CalculateInitialWithCoveredVisits(
+        MembershipIssueTerms? issueTerms,
+        IEnumerable<MembershipNegativeVisitCoverageCandidate>? coveredVisits)
+    {
+        ArgumentNullException.ThrowIfNull(issueTerms);
+        ArgumentNullException.ThrowIfNull(coveredVisits);
+        var visits = coveredVisits.ToArray();
+        if (visits.Length == 0
+            || visits.Length > issueTerms.Snapshot.VisitsLimit
+            || visits.Any(visit => visit is null || visit.VisitId == Guid.Empty)
+            || visits.Select(visit => visit.VisitId).Distinct().Count() != visits.Length)
+        {
+            throw new ArgumentException(
+                "Covered Visits must be unique and fit the issued Membership limit.",
+                nameof(coveredVisits));
+        }
+
+        return new MembershipCalculatedState(
+            countedVisits: visits.Length,
+            remainingVisits: issueTerms.Snapshot.VisitsLimit - visits.Length,
+            negativeBalance: 0,
+            firstNegativeVisitId: null,
+            firstNegativeVisitDate: null,
+            extensionDays: 0,
+            effectiveEndDate: issueTerms.BaseEndDate,
+            lastCountedVisitAt: visits.Max(visit => visit.OccurredAt));
+    }
+
     public static MembershipCalculatedState CalculateFromOpeningState(
         MembershipIssueTerms? issueTerms,
         MembershipOpeningState? openingState)

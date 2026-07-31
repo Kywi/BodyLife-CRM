@@ -46,6 +46,7 @@ public sealed class MembershipIssuePreviewContractsTests
         Assert.Equal(
             MembershipNegativeHandlingDecision.LeaveVisible,
             query.NegativeHandlingDecision);
+        Assert.Null(query.NegativeCoverageCount);
         Assert.Null(queryWithoutDecision.NegativeHandlingDecision);
     }
 
@@ -223,6 +224,88 @@ public sealed class MembershipIssuePreviewContractsTests
         Assert.False(selectedOption.IsAvailable);
         Assert.Equal(1, preview.ExistingNegativeState!.NegativeBalance);
         Assert.Single(preview.Warnings);
+    }
+
+    [Theory]
+    [InlineData(0, false, 0, 8, 9)]
+    [InlineData(1, true, 1, 7, 8)]
+    [InlineData(8, true, 8, 0, 1)]
+    [InlineData(9, false, 0, 8, 9)]
+    public void NewMembershipCoverageEnforcesBoundsAndConsumesOldestVisits(
+        int coverageCount,
+        bool canProceed,
+        int expectedCovered,
+        int expectedNewRemaining,
+        int expectedExistingRemaining)
+    {
+        var visits = Enumerable.Range(0, 9)
+            .Select(index => CreateCoverageCandidate(
+                index,
+                new DateOnly(2026, 5, index + 1)))
+            .ToArray();
+        var negativeState = new MembershipIssueNegativeContext(
+            negativeBalance: visits.Length,
+            firstNegativeVisitDate: visits[0].BusinessDate,
+            visits);
+
+        var preview = MembershipIssuePreviewPolicy.Create(
+            ClientId,
+            CreateMembershipType(),
+            ProposedStartDate,
+            negativeState,
+            MembershipNegativeHandlingDecision.CoverWithNewMembership,
+            coverageCount,
+            previewBusinessDate: new DateOnly(2026, 5, 20));
+
+        Assert.Equal(canProceed, preview.CanProceedToIssue);
+        Assert.Equal(visits[0].BusinessDate, preview.ProposedStartDate);
+        Assert.Equal(visits[0].VisitId, preview.ExpectedOldestOpenNegativeVisitId);
+        Assert.Equal(expectedCovered, preview.CoveredNegativeVisitCount);
+        Assert.Equal(expectedNewRemaining, preview.ExpectedInitialState.RemainingVisits);
+        Assert.Equal(expectedExistingRemaining, preview.RemainingExistingNegativeBalance);
+        Assert.Equal(expectedCovered, preview.ExpectedInitialState.CountedVisits);
+        if (canProceed)
+        {
+            var preparation = MembershipIssuePreparationPolicy.Prepare(
+                ClientId,
+                CreateMembershipType(),
+                ProposedStartDate,
+                negativeState,
+                MembershipNegativeHandlingDecision.CoverWithNewMembership,
+                coverageCount,
+                previewBusinessDate: new DateOnly(2026, 5, 20));
+            Assert.Equal(
+                visits.Take(coverageCount).Select(visit => visit.VisitId),
+                preparation.CoveredNegativeVisits.Select(visit => visit.VisitId));
+        }
+    }
+
+    [Fact]
+    public void BackdatedCoverageShowsAlreadyExpiredWarningBeforeConfirmation()
+    {
+        var oldestVisit = CreateCoverageCandidate(
+            index: 0,
+            businessDate: new DateOnly(2026, 5, 1));
+        var preview = MembershipIssuePreviewPolicy.Create(
+            ClientId,
+            CreateMembershipType(durationDays: 30),
+            ProposedStartDate,
+            new MembershipIssueNegativeContext(
+                negativeBalance: 1,
+                firstNegativeVisitDate: oldestVisit.BusinessDate,
+                [oldestVisit]),
+            MembershipNegativeHandlingDecision.CoverWithNewMembership,
+            negativeCoverageCount: 1,
+            previewBusinessDate: new DateOnly(2026, 7, 31));
+
+        Assert.True(preview.CanProceedToIssue);
+        Assert.True(preview.UsesForcedCoverageStartDate);
+        Assert.True(preview.IsAlreadyExpiredAtPreview);
+        Assert.Equal(new DateOnly(2026, 5, 1), preview.ProposedStartDate);
+        Assert.Equal(new DateOnly(2026, 5, 30), preview.ExpectedInitialEffectiveEndDate);
+        Assert.Contains(
+            preview.Warnings,
+            warning => warning.Code == MembershipWarningCodes.ExpiredByDate);
     }
 
     [Fact]
@@ -420,5 +503,26 @@ public sealed class MembershipIssuePreviewContractsTests
             AccountKind.NamedAdmin,
             SessionId.New(),
             "reception tablet");
+    }
+
+    private static MembershipNegativeVisitCoverageCandidate CreateCoverageCandidate(
+        int index,
+        DateOnly businessDate)
+    {
+        var occurredAt = new DateTimeOffset(
+            businessDate.Year,
+            businessDate.Month,
+            businessDate.Day,
+            10,
+            0,
+            0,
+            TimeSpan.Zero);
+        return new MembershipNegativeVisitCoverageCandidate(
+            Guid.Parse($"30000000-0000-0000-0000-{index + 1:D12}"),
+            Guid.Parse("40000000-0000-0000-0000-000000000001"),
+            Guid.Parse($"50000000-0000-0000-0000-{index + 1:D12}"),
+            occurredAt,
+            occurredAt.AddMinutes(index + 1),
+            businessDate);
     }
 }

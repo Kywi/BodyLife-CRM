@@ -9,14 +9,18 @@ public static class MembershipIssuePreparationPolicy
         MembershipTypeCatalogItem? membershipType,
         DateOnly startDate,
         MembershipIssueNegativeContext? existingNegativeState = null,
-        MembershipNegativeHandlingDecision? negativeHandlingDecision = null)
+        MembershipNegativeHandlingDecision? negativeHandlingDecision = null,
+        int? negativeCoverageCount = null,
+        DateOnly? previewBusinessDate = null)
     {
         var preview = MembershipIssuePreviewPolicy.Create(
             clientId,
             membershipType,
             startDate,
             existingNegativeState,
-            negativeHandlingDecision);
+            negativeHandlingDecision,
+            negativeCoverageCount,
+            previewBusinessDate);
 
         if (preview.RequiresNegativeHandlingDecision)
         {

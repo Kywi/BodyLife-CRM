@@ -672,8 +672,8 @@ public sealed class PostgreSqlIssueMembershipCommandTests
             "negativeHandlingDecision");
         AssertError(
             deferredDecision,
-            CommandErrorCode.MembershipNotEligible,
-            "negativeHandlingDecision");
+            CommandErrorCode.ValidationFailed,
+            "negativeCoverageCount");
         AssertSuccessfulResult(leaveVisible, fixture.ClientId);
         Assert.Equal([MembershipWarningCodes.NegativeBalance], leaveVisible.Warnings);
         Assert.Equal(
@@ -760,7 +760,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task MultipleNegativeMembershipsRequireExplicitSelectionPolicy()
+    public async Task MultipleNegativeMembershipsCanRemainVisibleAsClientAggregate()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -796,11 +796,13 @@ public sealed class PostgreSqlIssueMembershipCommandTests
                 MembershipNegativeHandlingDecision.LeaveVisible),
             CancellationToken.None);
 
-        AssertError(result, CommandErrorCode.ValidationFailed, "clientId");
-        Assert.Equal(2L, await CountRowsAsync(database, "issued_memberships"));
-        Assert.Equal(2L, await CountRowsAsync(database, "membership_state_cache"));
-        Assert.Equal(0L, await CountRowsAsync(database, "business_audit_entries"));
-        Assert.Equal(0L, await CountRowsAsync(database, "command_idempotency_keys"));
+        AssertSuccessfulResult(result, fixture.ClientId);
+        Assert.Equal([MembershipWarningCodes.NegativeBalance], result.Warnings);
+        Assert.Equal(3L, await CountRowsAsync(database, "issued_memberships"));
+        Assert.Equal(3L, await CountRowsAsync(database, "membership_state_cache"));
+        Assert.Equal(3L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
     [PostgreSqlFact]
@@ -1060,6 +1062,7 @@ public sealed class PostgreSqlIssueMembershipCommandTests
             dbContext,
             auditAppender,
             new MembershipIssuePaymentWriter(dbContext, auditAppender),
+            new MembershipNegativeVisitSelector(dbContext),
             new MembershipStateCacheRebuilder(dbContext, timeProvider),
             timeProvider);
     }

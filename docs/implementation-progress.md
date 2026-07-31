@@ -13632,3 +13632,57 @@ Stop point:
   partial remainder and expired-preview warning. Then implement
   `CorrectNegativeVisitCoverage` and production Razor/htmx controls before
   moving to issued-sale replacement or paper metadata.
+
+## Step 211 - Covered oldest negative Visits with a new Membership
+
+Status: completed as the second command slice over the Step 209 negative-
+coverage source foundation. Milestone 10.5 remains in progress; Milestone 11
+has not started.
+
+Completed:
+
+- Extended issue preview and `IssueMembership` with an explicit coverage count
+  and expected oldest open negative Visit selector. Coverage is available only
+  for concrete source Visits, accepts `1..visits_limit_snapshot`, never chooses
+  a method automatically and rejects stale or over-limit submissions before
+  business writes.
+- Reused the Memberships-owned selector for both read-only preview and locked
+  execution. It aggregates negative state across the Client's active
+  Memberships, validates current cache shape, and orders concrete candidates by
+  Visit occurrence, consumption recording time and stable ids.
+- Forced the new Membership start date to the oldest covered Visit business
+  date. Covered Visits immediately consume the new Membership limit through
+  explicit `new_membership` closure items and separate active
+  `negative_coverage` consumptions; original Visits and counted consumptions
+  remain unchanged.
+- Created the issued Membership, exact-price sale Payment, coverage source
+  facts, source and covering cache rebuilds, Payment/closure/issue audit events
+  and idempotency result in one transaction. Partial coverage preserves the
+  remaining negative warning; a backdated Membership that is already expired
+  returns the explicit expired warning.
+- Preserved ordinary no-coverage audit payloads and controlled recalculation
+  failures while updating old multiple-negative tests to the ADR-018 client-
+  aggregate contract.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 416/416. New policy tests cover coverage counts 0,
+  1, limit and limit + 1, oldest-first selection, forced start, partial
+  remainder and already-expired preview.
+- Full Web tests passed: 294/294.
+- Focused PostgreSQL issue, preview and coverage tests passed: 33/33. The four
+  new command scenarios prove `-3`, cover 2, retain `-1`; full one-Visit
+  coverage with unused new limit; exact sale Payment and no closure Payment;
+  retained original Visit facts; stale/over-limit rejection; expired warning;
+  and serialized concurrent attempts that cannot cover the same oldest Visit
+  twice.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Implement `CorrectNegativeVisitCoverage` to cancel or replace one-off and
+  new-Membership coverage as one reason-required lifecycle command, including
+  Payment lifecycle where applicable, source/covering recalculation, audit,
+  idempotency, rollback and canonical Client reread. Then add production
+  Razor/htmx controls before issued-sale replacement or paper metadata.

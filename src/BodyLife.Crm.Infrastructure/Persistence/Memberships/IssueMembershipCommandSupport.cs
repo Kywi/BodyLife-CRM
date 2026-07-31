@@ -53,6 +53,34 @@ internal static class IssueMembershipCommandSupport
                 "negativeHandlingDecision");
         }
 
+        var usesNewMembershipCoverage = command.NegativeHandlingDecision
+            == MembershipNegativeHandlingDecision.CoverWithNewMembership;
+        if (usesNewMembershipCoverage
+            && command.NegativeCoverageCount is not > 0)
+        {
+            return ValidationError(
+                "A positive negative coverage count is required.",
+                "negativeCoverageCount");
+        }
+
+        if (usesNewMembershipCoverage
+            && (!command.ExpectedOldestOpenNegativeVisitId.HasValue
+                || command.ExpectedOldestOpenNegativeVisitId.Value == Guid.Empty))
+        {
+            return ValidationError(
+                "Expected oldest open negative Visit id is required for coverage.",
+                "expectedOldestOpenNegativeVisitId");
+        }
+
+        if (!usesNewMembershipCoverage
+            && (command.NegativeCoverageCount is not null
+                || command.ExpectedOldestOpenNegativeVisitId is not null))
+        {
+            return ValidationError(
+                "Coverage count and oldest Visit selector require new-Membership coverage.",
+                "negativeCoverageCount");
+        }
+
         if (command.EntryBatchId is not null)
         {
             return ValidationError(
@@ -75,6 +103,8 @@ internal static class IssueMembershipCommandSupport
             command.StartDate,
             command.NegativeHandlingDecision,
             command.EntryBatchId,
+            command.NegativeCoverageCount,
+            command.ExpectedOldestOpenNegativeVisitId,
             normalizedEnvelope!);
         return null;
     }
@@ -98,6 +128,8 @@ internal static class IssueMembershipCommandSupport
             NegativeHandlingDecision = MapNegativeHandlingDecision(
                 issue.NegativeHandlingDecision),
             issue.EntryBatchId,
+            issue.NegativeCoverageCount,
+            issue.ExpectedOldestOpenNegativeVisitId,
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));
@@ -327,6 +359,8 @@ internal sealed record NormalizedMembershipIssue(
     DateOnly StartDate,
     MembershipNegativeHandlingDecision? NegativeHandlingDecision,
     Guid? EntryBatchId,
+    int? NegativeCoverageCount,
+    Guid? ExpectedOldestOpenNegativeVisitId,
     CommandEnvelope Envelope)
 {
     public string IdempotencyKey => Envelope.IdempotencyKey!;

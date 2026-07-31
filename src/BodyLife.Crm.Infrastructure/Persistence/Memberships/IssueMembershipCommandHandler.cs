@@ -4,6 +4,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
+using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
 using BodyLife.Crm.Modules.Payments;
@@ -16,6 +17,7 @@ public sealed class IssueMembershipCommandHandler(
     BodyLifeDbContext dbContext,
     BusinessAuditAppender auditAppender,
     IMembershipIssuePaymentWriter paymentWriter,
+    MembershipNegativeVisitSelector negativeVisitSelector,
     MembershipStateCacheRebuilder stateCacheRebuilder,
     TimeProvider timeProvider)
     : IBodyLifeCommandHandler<IssueMembershipCommand>
@@ -142,15 +144,55 @@ public sealed class IssueMembershipCommandHandler(
                     "expectedMembershipTypeUpdatedAt");
             }
 
-            var activeMemberships = await LockActiveMembershipsAsync(
-                issue.ClientId,
-                cancellationToken);
-            var negativeStateResult = await LoadExistingNegativeStateAsync(
-                activeMemberships,
-                cancellationToken);
-            if (negativeStateResult.Error is not null)
+            var negativeSelectionResult = await negativeVisitSelector
+                .SelectForUpdateAfterClientLockAsync(
+                    issue.ClientId,
+                    cancellationToken);
+            if (negativeSelectionResult.Status
+                != MembershipNegativeVisitSelectionStatus.Succeeded)
             {
-                return negativeStateResult.Error;
+                return IssueMembershipCommandSupport.Error(
+                    CommandErrorCode.RecalculationFailed,
+                    negativeSelectionResult.Status
+                        == MembershipNegativeVisitSelectionStatus.MissingCanonicalState
+                        ? "Canonical membership state is missing or stale."
+                        : "Canonical membership Visit state is inconsistent.");
+            }
+
+            var negativeSelection = negativeSelectionResult.Selection!;
+            var existingNegativeState = negativeSelection.TotalNegativeBalance > 0
+                ? new MembershipIssueNegativeContext(
+                    negativeSelection.TotalNegativeBalance,
+                    negativeSelection.FirstNegativeVisitDate,
+                    negativeSelection.OpenConcreteVisits)
+                : null;
+            var usesNewMembershipCoverage = issue.NegativeHandlingDecision
+                == MembershipNegativeHandlingDecision.CoverWithNewMembership;
+            if (usesNewMembershipCoverage
+                && negativeSelection.OldestOpenConcreteVisitId
+                    != issue.ExpectedOldestOpenNegativeVisitId)
+            {
+                return IssueMembershipCommandSupport.Error(
+                    CommandErrorCode.StaleState,
+                    "The oldest open negative Visit changed after preview. Refresh canonical state.",
+                    "expectedOldestOpenNegativeVisitId");
+            }
+
+            if (usesNewMembershipCoverage
+                && issue.NegativeCoverageCount > membershipType.VisitsLimit)
+            {
+                return IssueMembershipCommandSupport.ValidationError(
+                    "Negative coverage count cannot exceed the issued Membership visit limit.",
+                    "negativeCoverageCount");
+            }
+
+            if (usesNewMembershipCoverage
+                && issue.NegativeCoverageCount
+                    > negativeSelection.OpenConcreteVisits.Count)
+            {
+                return IssueMembershipCommandSupport.ValidationError(
+                    "Negative coverage count cannot exceed the current open concrete negative Visit count.",
+                    "negativeCoverageCount");
             }
 
             MembershipIssuePreparation preparation;
@@ -175,8 +217,10 @@ public sealed class IssueMembershipCommandHandler(
                     issue.ClientId,
                     catalogItem,
                     issue.StartDate,
-                    negativeStateResult.State,
-                    issue.NegativeHandlingDecision);
+                    existingNegativeState,
+                    issue.NegativeHandlingDecision,
+                    issue.NegativeCoverageCount,
+                    BusinessTimeZone.GetBusinessDate(recordedAt));
             }
             catch (ArgumentOutOfRangeException exception)
                 when (exception.ParamName == "durationDays")
@@ -186,7 +230,7 @@ public sealed class IssueMembershipCommandHandler(
                     "startDate");
             }
             catch (ArgumentException)
-                when (negativeStateResult.State is not null
+                when (existingNegativeState is not null
                     && issue.NegativeHandlingDecision is null)
             {
                 return IssueMembershipCommandSupport.Error(
@@ -195,7 +239,7 @@ public sealed class IssueMembershipCommandHandler(
                     "negativeHandlingDecision");
             }
             catch (ArgumentException)
-                when (negativeStateResult.State is not null
+                when (existingNegativeState is not null
                     && issue.NegativeHandlingDecision is not null)
             {
                 return IssueMembershipCommandSupport.Error(
@@ -204,7 +248,7 @@ public sealed class IssueMembershipCommandHandler(
                     "negativeHandlingDecision");
             }
             catch (ArgumentException)
-                when (negativeStateResult.State is null
+                when (existingNegativeState is null
                     && issue.NegativeHandlingDecision is not null)
             {
                 return IssueMembershipCommandSupport.ValidationError(
@@ -249,6 +293,114 @@ public sealed class IssueMembershipCommandHandler(
             };
             dbContext.Set<IssuedMembershipRecord>().Add(membership);
             await dbContext.SaveChangesAsync(cancellationToken);
+            if (!await dbContext.Set<IssuedMembershipRecord>()
+                    .AsNoTracking()
+                    .AnyAsync(
+                        candidate => candidate.Id == membershipId,
+                        cancellationToken))
+            {
+                await MembershipCommandSupport.RollBackAndClearAsync(
+                    dbContext,
+                    transaction);
+                return IssueMembershipCommandSupport.Error(
+                    CommandErrorCode.RecalculationFailed,
+                    "New membership source could not be persisted for recalculation.");
+            }
+
+            Guid? negativeClosureId = null;
+            var sourceMembershipIds = new HashSet<Guid>();
+            var coveredVisitIds = new List<Guid>();
+            if (usesNewMembershipCoverage)
+            {
+                negativeClosureId = Guid.NewGuid();
+                var coveredVisits = preparation.CoveredNegativeVisits;
+                var closureRecord = new MembershipNegativeClosureRecord
+                {
+                    Id = negativeClosureId.Value,
+                    ClientId = issue.ClientId,
+                    ClosureType = "new_membership",
+                    CoveringMembershipId = membershipId,
+                    OldestOpenNegativeVisitId = coveredVisits[0].VisitId,
+                    VisitsCount = coveredVisits.Count,
+                    Comment = issue.Envelope.Comment,
+                    OccurredAt = issue.Envelope.OccurredAt ?? recordedAt,
+                    RecordedAt = recordedAt,
+                    RecordedByAccountId = issue.Envelope.Actor.AccountId.Value,
+                    SessionId = issue.Envelope.Actor.SessionId.Value,
+                    EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
+                        issue.Envelope.EntryOrigin),
+                    EntryBatchId = issue.EntryBatchId,
+                    IdempotencyKey = issue.IdempotencyKey,
+                    Status = "active",
+                };
+                dbContext.Set<MembershipNegativeClosureRecord>().Add(closureRecord);
+
+                var sequence = 0;
+                foreach (var coveredVisit in coveredVisits)
+                {
+                    sequence++;
+                    var itemId = Guid.NewGuid();
+                    var newConsumptionId = Guid.NewGuid();
+                    sourceMembershipIds.Add(coveredVisit.SourceMembershipId);
+                    coveredVisitIds.Add(coveredVisit.VisitId);
+                    dbContext.Set<VisitConsumptionRecord>().Add(
+                        new VisitConsumptionRecord
+                        {
+                            Id = newConsumptionId,
+                            VisitId = coveredVisit.VisitId,
+                            ClientId = issue.ClientId,
+                            VisitKind = "membership",
+                            MembershipId = membershipId,
+                            ConsumptionType = "negative_coverage",
+                            SourceFactType = "negative_closure_item",
+                            SourceFactId = itemId,
+                            RecordedAt = recordedAt,
+                            RecordedByAccountId = issue.Envelope.Actor.AccountId.Value,
+                            RecordedSessionId = issue.Envelope.Actor.SessionId.Value,
+                            Status = "active",
+                        });
+                    dbContext.Set<MembershipNegativeClosureItemRecord>().Add(
+                        new MembershipNegativeClosureItemRecord
+                        {
+                            Id = itemId,
+                            NegativeClosureId = negativeClosureId.Value,
+                            ClientId = issue.ClientId,
+                            ClosureLineId = null,
+                            Sequence = sequence,
+                            VisitId = coveredVisit.VisitId,
+                            SourceMembershipId = coveredVisit.SourceMembershipId,
+                            OldConsumptionId = coveredVisit.OldConsumptionId,
+                            CoveringMembershipId = membershipId,
+                            NewConsumptionId = newConsumptionId,
+                            Status = "active",
+                        });
+                }
+            }
+
+            var paymentWrite = paymentWriter.StageExactSale(
+                issue.Envelope,
+                issue.ClientId,
+                membershipId,
+                preparation.Snapshot.Price,
+                issue.EntryBatchId,
+                recordedAt);
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            foreach (var sourceMembershipId in sourceMembershipIds.Order())
+            {
+                var sourceRebuild = await stateCacheRebuilder.RebuildAsync(
+                    sourceMembershipId,
+                    cancellationToken);
+                if (!sourceRebuild.Succeeded || sourceRebuild.State is null)
+                {
+                    await MembershipCommandSupport.RollBackAndClearAsync(
+                        dbContext,
+                        transaction);
+                    return IssueMembershipCommandSupport.Error(
+                        CommandErrorCode.RecalculationFailed,
+                        "Source membership state could not be rebuilt from coverage facts.");
+                }
+            }
 
             var rebuildResult = await stateCacheRebuilder.RebuildAsync(
                 membershipId,
@@ -262,17 +414,164 @@ public sealed class IssueMembershipCommandHandler(
                 await MembershipCommandSupport.RollBackAndClearAsync(dbContext, transaction);
                 return IssueMembershipCommandSupport.Error(
                     CommandErrorCode.RecalculationFailed,
-                    "New membership state could not be rebuilt from canonical issue terms.");
+                    "New membership state could not be rebuilt from canonical issue terms and coverage facts.");
             }
 
             var recalculatedState = rebuildResult.State;
-            var paymentWrite = paymentWriter.StageExactSale(
-                issue.Envelope,
-                issue.ClientId,
-                membershipId,
-                preparation.Snapshot.Price,
-                issue.EntryBatchId,
-                recordedAt);
+            var remainingNegativeBalance = negativeSelection.TotalNegativeBalance;
+            if (usesNewMembershipCoverage)
+            {
+                var activeMembershipIds = negativeSelection.ActiveMemberships
+                    .Select(activeMembership => activeMembership.Id)
+                    .ToArray();
+                remainingNegativeBalance = await dbContext
+                    .Set<MembershipStateCacheRecord>()
+                    .Where(cache => activeMembershipIds.Contains(cache.MembershipId))
+                    .SumAsync(cache => cache.NegativeBalance, cancellationToken);
+                if (remainingNegativeBalance
+                    != negativeSelection.TotalNegativeBalance
+                        - preparation.CoveredNegativeVisits.Count)
+                {
+                    await MembershipCommandSupport.RollBackAndClearAsync(
+                        dbContext,
+                        transaction);
+                    return IssueMembershipCommandSupport.Error(
+                        CommandErrorCode.RecalculationFailed,
+                        "Coverage facts did not produce the expected canonical negative balance.");
+                }
+            }
+
+            AuditEntryId? negativeClosureAuditEntryId = null;
+            if (negativeClosureId is { } closureId)
+            {
+                negativeClosureAuditEntryId = auditAppender.Append(
+                    issue.Envelope,
+                    MembershipNegativeClosureAuditActions.Created,
+                    MembershipNegativeClosureAuditActions.EntityType,
+                    closureId,
+                    recordedAt,
+                    relatedEntityRefs: new
+                    {
+                        ClientId = issue.ClientId,
+                        CoveringMembershipId = membershipId,
+                        SalePaymentId = paymentWrite.PaymentId,
+                        SalePaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
+                        SourceMembershipIds = sourceMembershipIds.Order().ToArray(),
+                        VisitIds = coveredVisitIds,
+                    },
+                    beforeSummary: new
+                    {
+                        negativeSelection.TotalNegativeBalance,
+                        OpenConcreteVisitCount =
+                            negativeSelection.OpenConcreteVisits.Count,
+                        negativeSelection.UnknownNegativeBalance,
+                        OldestOpenNegativeVisitId =
+                            negativeSelection.OldestOpenConcreteVisitId,
+                    },
+                    afterSummary: new
+                    {
+                        NegativeClosureId = closureId,
+                        ClosureType = "new_membership",
+                        CoveringMembershipId = membershipId,
+                        CoveredVisitIds = coveredVisitIds,
+                        CoveredVisitCount = coveredVisitIds.Count,
+                        RemainingNegativeBalance = remainingNegativeBalance,
+                        ForcedStartDate = preparation.StartDate,
+                        CoveringMembershipState = new
+                        {
+                            recalculatedState.CountedVisits,
+                            recalculatedState.RemainingVisits,
+                            recalculatedState.EffectiveEndDate,
+                            recalculatedState.LastCountedVisitAt,
+                        },
+                        OccurredAt = issue.Envelope.OccurredAt ?? recordedAt,
+                        RecordedAt = recordedAt,
+                        EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
+                            issue.Envelope.EntryOrigin),
+                        Status = "active",
+                    });
+            }
+
+            var membershipRelatedEntityRefs = new Dictionary<string, object?>
+            {
+                ["clientId"] = issue.ClientId,
+                ["membershipTypeId"] = issue.MembershipTypeId,
+                ["paymentId"] = paymentWrite.PaymentId,
+            };
+            if (negativeClosureId is not null)
+            {
+                membershipRelatedEntityRefs["negativeClosureId"] = negativeClosureId;
+                membershipRelatedEntityRefs["negativeClosureAuditEntryId"] =
+                    negativeClosureAuditEntryId?.Value;
+                membershipRelatedEntityRefs["sourceMembershipIds"] =
+                    sourceMembershipIds.Order().ToArray();
+                membershipRelatedEntityRefs["coveredVisitIds"] = coveredVisitIds;
+            }
+
+            var membershipAfterSummary = new Dictionary<string, object?>
+            {
+                ["membershipId"] = membershipId,
+                ["issuanceMode"] = membership.IssuanceMode,
+                ["clientId"] = issue.ClientId,
+                ["membershipTypeId"] = issue.MembershipTypeId,
+                ["snapshot"] = new
+                {
+                    preparation.Snapshot.TypeName,
+                    preparation.Snapshot.DurationDays,
+                    preparation.Snapshot.VisitsLimit,
+                    PriceAmount = preparation.Snapshot.Price.Amount,
+                    PriceCurrency = preparation.Snapshot.Price.Currency,
+                },
+                ["startDate"] = preparation.StartDate,
+                ["baseEndDate"] = preparation.BaseEndDate,
+                ["issuedAt"] = membership.IssuedAt,
+                ["status"] = membership.Status,
+                ["negativeHandlingDecision"] =
+                    IssueMembershipCommandSupport.MapNegativeHandlingDecision(
+                        preparation.NegativeHandlingDecision),
+                ["existingNegativeState"] = preparation.ExistingNegativeState is null
+                    ? null
+                    : new
+                    {
+                        preparation.ExistingNegativeState.NegativeBalance,
+                        preparation.ExistingNegativeState.FirstNegativeVisitDate,
+                        preparation.ExistingNegativeState.OpenConcreteVisitCount,
+                        preparation.ExistingNegativeState.UnknownNegativeBalance,
+                    },
+                ["payment"] = new
+                {
+                    paymentWrite.PaymentId,
+                    PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
+                    Amount = preparation.Snapshot.Price.Amount,
+                    Currency = preparation.Snapshot.Price.Currency,
+                    Method = "cash",
+                    PaymentContext = "membership_sale",
+                    OccurredAt = issue.Envelope.OccurredAt ?? recordedAt,
+                },
+                ["initialState"] = new
+                {
+                    recalculatedState.CountedVisits,
+                    recalculatedState.RemainingVisits,
+                    recalculatedState.NegativeBalance,
+                    recalculatedState.FirstNegativeVisitDate,
+                    recalculatedState.ExtensionDays,
+                    recalculatedState.EffectiveEndDate,
+                    recalculatedState.LastCountedVisitAt,
+                    rebuildResult.RecalculationVersion,
+                },
+            };
+            if (negativeClosureId is not null)
+            {
+                membershipAfterSummary["negativeCoverage"] = new
+                {
+                    NegativeClosureId = negativeClosureId.Value,
+                    Count = preparation.CoveredNegativeVisits.Count,
+                    CoveredVisitIds = coveredVisitIds,
+                    RemainingExistingNegativeBalance = remainingNegativeBalance,
+                    ForcedStartDate = preparation.StartDate,
+                    preparation.IsAlreadyExpiredAtIssue,
+                };
+            }
 
             var auditEntryId = auditAppender.Append(
                 issue.Envelope,
@@ -280,62 +579,8 @@ public sealed class IssueMembershipCommandHandler(
                 MembershipAuditActions.MembershipEntityType,
                 membershipId,
                 recordedAt,
-                relatedEntityRefs: new
-                {
-                    ClientId = issue.ClientId,
-                    MembershipTypeId = issue.MembershipTypeId,
-                    PaymentId = paymentWrite.PaymentId,
-                },
-                afterSummary: new
-                {
-                    MembershipId = membershipId,
-                    IssuanceMode = membership.IssuanceMode,
-                    ClientId = issue.ClientId,
-                    MembershipTypeId = issue.MembershipTypeId,
-                    Snapshot = new
-                    {
-                        preparation.Snapshot.TypeName,
-                        preparation.Snapshot.DurationDays,
-                        preparation.Snapshot.VisitsLimit,
-                        PriceAmount = preparation.Snapshot.Price.Amount,
-                        PriceCurrency = preparation.Snapshot.Price.Currency,
-                    },
-                    preparation.StartDate,
-                    preparation.BaseEndDate,
-                    membership.IssuedAt,
-                    membership.Status,
-                    NegativeHandlingDecision =
-                        IssueMembershipCommandSupport.MapNegativeHandlingDecision(
-                            preparation.NegativeHandlingDecision),
-                    ExistingNegativeState = preparation.ExistingNegativeState is null
-                        ? null
-                        : new
-                        {
-                            preparation.ExistingNegativeState.NegativeBalance,
-                            preparation.ExistingNegativeState.FirstNegativeVisitDate,
-                        },
-                    Payment = new
-                    {
-                        paymentWrite.PaymentId,
-                        PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
-                        Amount = preparation.Snapshot.Price.Amount,
-                        Currency = preparation.Snapshot.Price.Currency,
-                        Method = "cash",
-                        PaymentContext = "membership_sale",
-                        OccurredAt = issue.Envelope.OccurredAt ?? recordedAt,
-                    },
-                    InitialState = new
-                    {
-                        recalculatedState.CountedVisits,
-                        recalculatedState.RemainingVisits,
-                        recalculatedState.NegativeBalance,
-                        recalculatedState.FirstNegativeVisitDate,
-                        recalculatedState.ExtensionDays,
-                        recalculatedState.EffectiveEndDate,
-                        recalculatedState.LastCountedVisitAt,
-                        rebuildResult.RecalculationVersion,
-                    },
-                });
+                relatedEntityRefs: membershipRelatedEntityRefs,
+                afterSummary: membershipAfterSummary);
 
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 IssueMembershipCommandSupport.CreateSucceededIdempotencyRecord(
@@ -349,11 +594,24 @@ public sealed class IssueMembershipCommandHandler(
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
+            var warningCodes = new List<string>();
+            if (issue.NegativeHandlingDecision
+                    == MembershipNegativeHandlingDecision.LeaveVisible
+                || usesNewMembershipCoverage && remainingNegativeBalance > 0)
+            {
+                warningCodes.Add(MembershipWarningCodes.NegativeBalance);
+            }
+
+            if (preparation.IsAlreadyExpiredAtIssue)
+            {
+                warningCodes.Add(MembershipWarningCodes.ExpiredByDate);
+            }
+
             return IssueMembershipCommandSupport.Success(
                 membershipId,
                 issue.ClientId,
                 auditEntryId,
-                preparation.Warnings.Select(warning => warning.Code).ToArray());
+                warningCodes);
         }
         catch (Exception exception)
         {
@@ -406,110 +664,6 @@ public sealed class IssueMembershipCommandHandler(
         return membershipTypes.SingleOrDefault();
     }
 
-    private Task<IssuedMembershipRecord[]> LockActiveMembershipsAsync(
-        Guid clientId,
-        CancellationToken cancellationToken)
-    {
-        return dbContext.Set<IssuedMembershipRecord>()
-            .FromSqlInterpolated(
-                $"""
-                select *
-                from bodylife.issued_memberships
-                where client_id = {clientId}
-                  and status = 'active'
-                order by id
-                for update
-                """)
-            .AsNoTracking()
-            .ToArrayAsync(cancellationToken);
-    }
-
-    private async Task<ExistingNegativeStateLoadResult> LoadExistingNegativeStateAsync(
-        IReadOnlyCollection<IssuedMembershipRecord> activeMemberships,
-        CancellationToken cancellationToken)
-    {
-        if (activeMemberships.Count == 0)
-        {
-            return ExistingNegativeStateLoadResult.Completed(state: null);
-        }
-
-        var activeMembershipIds = activeMemberships
-            .Select(membership => membership.Id)
-            .ToArray();
-        var cacheRows = await dbContext.Set<MembershipStateCacheRecord>()
-            .AsNoTracking()
-            .Where(cache => activeMembershipIds.Contains(cache.MembershipId))
-            .ToArrayAsync(cancellationToken);
-        var cachesByMembershipId = cacheRows.ToDictionary(cache => cache.MembershipId);
-        var negativeStates = new List<MembershipIssueNegativeContext>(2);
-
-        foreach (var membership in activeMemberships)
-        {
-            if (!cachesByMembershipId.TryGetValue(membership.Id, out var cache)
-                || cache.RecalculationVersion
-                    != MembershipStateCacheRebuilder.CurrentRecalculationVersion)
-            {
-                return ExistingNegativeStateLoadResult.Failed(
-                    IssueMembershipCommandSupport.Error(
-                        CommandErrorCode.RecalculationFailed,
-                        "Existing membership state is missing or stale."));
-            }
-
-            MembershipCalculatedState calculatedState;
-
-            try
-            {
-                var snapshot = new IssuedMembershipSnapshot(
-                    membership.TypeNameSnapshot,
-                    membership.DurationDaysSnapshot,
-                    membership.VisitsLimitSnapshot,
-                    new Money(
-                        membership.PriceAmountSnapshot,
-                        membership.PriceCurrencySnapshot));
-                var issueTerms = MembershipIssueTerms.FromIssuedSnapshot(
-                    membership.MembershipTypeId,
-                    snapshot,
-                    membership.StartDate,
-                    membership.BaseEndDate);
-                calculatedState = MembershipCalculatedState.FromStoredCache(
-                    issueTerms,
-                    cache.CountedVisits,
-                    cache.RemainingVisits,
-                    cache.NegativeBalance,
-                    cache.FirstNegativeVisitId,
-                    cache.FirstNegativeVisitDate,
-                    cache.ExtensionDays,
-                    cache.EffectiveEndDate,
-                    cache.LastCountedVisitAt);
-            }
-            catch (ArgumentException)
-            {
-                return ExistingNegativeStateLoadResult.Failed(
-                    IssueMembershipCommandSupport.Error(
-                        CommandErrorCode.RecalculationFailed,
-                        "Existing membership state is inconsistent with canonical issue terms."));
-            }
-
-            if (calculatedState.NegativeBalance > 0)
-            {
-                negativeStates.Add(new MembershipIssueNegativeContext(
-                    calculatedState.NegativeBalance,
-                    calculatedState.FirstNegativeVisitDate));
-            }
-        }
-
-        if (negativeStates.Count > 1)
-        {
-            return ExistingNegativeStateLoadResult.Failed(
-                IssueMembershipCommandSupport.ValidationError(
-                    "Multiple active memberships have negative balances. Explicit membership selection is required.",
-                    "clientId"));
-        }
-
-        return ExistingNegativeStateLoadResult.Completed(
-            negativeStates.SingleOrDefault());
-    }
-
     private static bool MatchesExpectedInitialState(
         MembershipCalculatedState recalculated,
         MembershipCalculatedState expected)
@@ -531,19 +685,4 @@ public sealed class IssueMembershipCommandHandler(
         _ => throw new InvalidOperationException("Stored membership type kind is invalid."),
     };
 
-    private sealed record ExistingNegativeStateLoadResult(
-        MembershipIssueNegativeContext? State,
-        CommandResult? Error)
-    {
-        internal static ExistingNegativeStateLoadResult Completed(
-            MembershipIssueNegativeContext? state)
-        {
-            return new ExistingNegativeStateLoadResult(state, Error: null);
-        }
-
-        internal static ExistingNegativeStateLoadResult Failed(CommandResult error)
-        {
-            return new ExistingNegativeStateLoadResult(State: null, error);
-        }
-    }
 }

@@ -23,6 +23,14 @@ public sealed class MembershipIssuePreparation
         ExpectedInitialState = preview.ExpectedInitialState;
         ExistingNegativeState = preview.ExistingNegativeState;
         NegativeHandlingDecision = preview.SelectedNegativeHandlingDecision;
+        NegativeCoverageCount = preview.SelectedNegativeCoverageCount;
+        CoveredNegativeVisits = Array.AsReadOnly(
+            preview.ExistingNegativeState?.OpenConcreteVisits
+                .Take(preview.CoveredNegativeVisitCount)
+                .ToArray()
+            ?? []);
+        RemainingExistingNegativeBalance = preview.RemainingExistingNegativeBalance;
+        IsAlreadyExpiredAtIssue = preview.IsAlreadyExpiredAtPreview;
         Warnings = Array.AsReadOnly(warningItems);
     }
 
@@ -41,6 +49,14 @@ public sealed class MembershipIssuePreparation
     public MembershipIssueNegativeContext? ExistingNegativeState { get; }
 
     public MembershipNegativeHandlingDecision? NegativeHandlingDecision { get; }
+
+    public int? NegativeCoverageCount { get; }
+
+    public IReadOnlyList<MembershipNegativeVisitCoverageCandidate> CoveredNegativeVisits { get; }
+
+    public int RemainingExistingNegativeBalance { get; }
+
+    public bool IsAlreadyExpiredAtIssue { get; }
 
     public IReadOnlyList<MembershipWarning> Warnings { get; }
 }

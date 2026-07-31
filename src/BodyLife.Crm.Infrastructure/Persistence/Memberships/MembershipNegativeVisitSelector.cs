@@ -1,4 +1,5 @@
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +7,13 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 
 public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
 {
+    internal Task<MembershipNegativeVisitSelectionResult> SelectAsync(
+        Guid clientId,
+        CancellationToken cancellationToken)
+    {
+        return SelectCoreAsync(clientId, forUpdate: false, cancellationToken);
+    }
+
     internal async Task<MembershipNegativeVisitSelectionResult>
         SelectForUpdateAfterClientLockAsync(
             Guid clientId,
@@ -22,22 +30,44 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
                 "Negative Visit selection requires a caller-owned transaction and a locked Client.");
         }
 
-        var memberships = await dbContext.Set<IssuedMembershipRecord>()
-            .FromSqlInterpolated(
-                $"""
-                select *
-                from bodylife.issued_memberships
-                where client_id = {clientId}
-                  and status = 'active'
-                order by id
-                for update
-                """)
-            .AsNoTracking()
-            .ToArrayAsync(cancellationToken);
+        return await SelectCoreAsync(clientId, forUpdate: true, cancellationToken);
+    }
+
+    private async Task<MembershipNegativeVisitSelectionResult> SelectCoreAsync(
+        Guid clientId,
+        bool forUpdate,
+        CancellationToken cancellationToken)
+    {
+        IssuedMembershipRecord[] memberships;
+        if (forUpdate)
+        {
+            memberships = await dbContext.Set<IssuedMembershipRecord>()
+                .FromSqlInterpolated(
+                    $"""
+                    select *
+                    from bodylife.issued_memberships
+                    where client_id = {clientId}
+                      and status = 'active'
+                    order by id
+                    for update
+                    """)
+                .AsNoTracking()
+                .ToArrayAsync(cancellationToken);
+        }
+        else
+        {
+            memberships = await dbContext.Set<IssuedMembershipRecord>()
+                .AsNoTracking()
+                .Where(membership => membership.ClientId == clientId
+                    && membership.Status == "active")
+                .OrderBy(membership => membership.Id)
+                .ToArrayAsync(cancellationToken);
+        }
+
         if (memberships.Length == 0)
         {
             return MembershipNegativeVisitSelectionResult.Succeeded(
-                new MembershipNegativeVisitSelection([], [], 0, 0));
+                new MembershipNegativeVisitSelection([], [], 0, 0, null));
         }
 
         var membershipIds = memberships.Select(membership => membership.Id).ToArray();
@@ -52,38 +82,79 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
             return MembershipNegativeVisitSelectionResult.MissingCanonicalState();
         }
 
-        var lockedVisits = await dbContext.Set<VisitRecord>()
-            .FromSqlInterpolated(
-                $"""
-                select visit.*
-                from bodylife.visits visit
-                join bodylife.visit_consumptions consumption
-                  on consumption.visit_id = visit.id
-                 and consumption.client_id = visit.client_id
-                where consumption.membership_id = any ({membershipIds})
-                  and consumption.consumption_type = 'counted'
-                  and consumption.status = 'active'
-                  and visit.status = 'active'
-                order by visit.occurred_at, visit.recorded_at, visit.id
-                for update of visit
-                """)
-            .AsNoTracking()
-            .ToArrayAsync(cancellationToken);
+        VisitRecord[] lockedVisits;
+        if (forUpdate)
+        {
+            lockedVisits = await dbContext.Set<VisitRecord>()
+                .FromSqlInterpolated(
+                    $"""
+                    select visit.*
+                    from bodylife.visits visit
+                    join bodylife.visit_consumptions consumption
+                      on consumption.visit_id = visit.id
+                     and consumption.client_id = visit.client_id
+                    where consumption.membership_id = any ({membershipIds})
+                      and consumption.consumption_type = 'counted'
+                      and consumption.status = 'active'
+                      and visit.status = 'active'
+                    order by visit.occurred_at, visit.recorded_at, visit.id
+                    for update of visit
+                    """)
+                .AsNoTracking()
+                .ToArrayAsync(cancellationToken);
+        }
+        else
+        {
+            lockedVisits = await (
+                from visit in dbContext.Set<VisitRecord>().AsNoTracking()
+                join consumption in dbContext.Set<VisitConsumptionRecord>()
+                        .AsNoTracking()
+                    on new { visit.Id, visit.ClientId }
+                    equals new
+                    {
+                        Id = consumption.VisitId,
+                        consumption.ClientId,
+                    }
+                where membershipIds.Contains(consumption.MembershipId)
+                    && consumption.ConsumptionType == "counted"
+                    && consumption.Status == "active"
+                    && visit.Status == "active"
+                orderby visit.OccurredAt, visit.RecordedAt, visit.Id
+                select visit)
+                .ToArrayAsync(cancellationToken);
+        }
+
         var visitsById = lockedVisits.ToDictionary(visit => visit.Id);
 
-        var originalConsumptions = await dbContext.Set<VisitConsumptionRecord>()
-            .FromSqlInterpolated(
-                $"""
-                select consumption.*
-                from bodylife.visit_consumptions consumption
-                where consumption.membership_id = any ({membershipIds})
-                  and consumption.consumption_type = 'counted'
-                  and consumption.status = 'active'
-                order by consumption.membership_id, consumption.visit_id, consumption.id
-                for update
-                """)
-            .AsNoTracking()
-            .ToArrayAsync(cancellationToken);
+        VisitConsumptionRecord[] originalConsumptions;
+        if (forUpdate)
+        {
+            originalConsumptions = await dbContext.Set<VisitConsumptionRecord>()
+                .FromSqlInterpolated(
+                    $"""
+                    select consumption.*
+                    from bodylife.visit_consumptions consumption
+                    where consumption.membership_id = any ({membershipIds})
+                      and consumption.consumption_type = 'counted'
+                      and consumption.status = 'active'
+                    order by consumption.membership_id, consumption.visit_id, consumption.id
+                    for update
+                    """)
+                .AsNoTracking()
+                .ToArrayAsync(cancellationToken);
+        }
+        else
+        {
+            originalConsumptions = await dbContext.Set<VisitConsumptionRecord>()
+                .AsNoTracking()
+                .Where(consumption => membershipIds.Contains(consumption.MembershipId)
+                    && consumption.ConsumptionType == "counted"
+                    && consumption.Status == "active")
+                .OrderBy(consumption => consumption.MembershipId)
+                .ThenBy(consumption => consumption.VisitId)
+                .ThenBy(consumption => consumption.Id)
+                .ToArrayAsync(cancellationToken);
+        }
         if (originalConsumptions.Any(consumption =>
                 !visitsById.ContainsKey(consumption.VisitId)))
         {
@@ -123,7 +194,42 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
             .Select(row => row.OldConsumptionId)
             .ToHashSet();
         var cachesByMembershipId = caches.ToDictionary(cache => cache.MembershipId);
-        var candidates = new List<MembershipNegativeVisitCandidate>();
+        foreach (var membership in memberships)
+        {
+            var cache = cachesByMembershipId[membership.Id];
+            try
+            {
+                var snapshot = new IssuedMembershipSnapshot(
+                    membership.TypeNameSnapshot,
+                    membership.DurationDaysSnapshot,
+                    membership.VisitsLimitSnapshot,
+                    new Money(
+                        membership.PriceAmountSnapshot,
+                        membership.PriceCurrencySnapshot));
+                var issueTerms = MembershipIssueTerms.FromIssuedSnapshot(
+                    membership.MembershipTypeId,
+                    snapshot,
+                    membership.StartDate,
+                    membership.BaseEndDate);
+                _ = MembershipCalculatedState.FromStoredCache(
+                    issueTerms,
+                    cache.CountedVisits,
+                    cache.RemainingVisits,
+                    cache.NegativeBalance,
+                    cache.FirstNegativeVisitId,
+                    cache.FirstNegativeVisitDate,
+                    cache.ExtensionDays,
+                    cache.EffectiveEndDate,
+                    cache.LastCountedVisitAt);
+            }
+            catch (ArgumentException)
+            {
+                return MembershipNegativeVisitSelectionResult
+                    .InconsistentCanonicalState();
+            }
+        }
+
+        var candidates = new List<MembershipNegativeVisitCoverageCandidate>();
         long totalNegativeBalance = 0;
 
         foreach (var membership in memberships)
@@ -150,9 +256,8 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
                     visit.Id,
                     visit.OccurredAt,
                     consumption.RecordedAt,
-                    new MembershipNegativeVisitCandidate(
+                    new MembershipNegativeVisitCoverageCandidate(
                         visit.Id,
-                        clientId,
                         membership.Id,
                         consumption.Id,
                         visit.OccurredAt,
@@ -211,12 +316,20 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
             .ThenBy(candidate => candidate.SourceMembershipId)
             .ToArray();
         var total = (int)totalNegativeBalance;
+        var firstNegativeVisitDate = caches
+            .Where(cache => cache.NegativeBalance > 0
+                && cache.FirstNegativeVisitDate.HasValue)
+            .Select(cache => cache.FirstNegativeVisitDate!.Value)
+            .Order()
+            .Cast<DateOnly?>()
+            .FirstOrDefault();
         return MembershipNegativeVisitSelectionResult.Succeeded(
             new MembershipNegativeVisitSelection(
                 memberships,
                 orderedCandidates,
                 total,
-                total - orderedCandidates.Length));
+                total - orderedCandidates.Length,
+                firstNegativeVisitDate));
     }
 
     private sealed record ActiveCoverageRow(
@@ -231,23 +344,15 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
         Guid VisitId,
         DateTimeOffset OccurredAt,
         DateTimeOffset RecordedAt,
-        MembershipNegativeVisitCandidate? Candidate);
+        MembershipNegativeVisitCoverageCandidate? Candidate);
 }
-
-internal sealed record MembershipNegativeVisitCandidate(
-    Guid VisitId,
-    Guid ClientId,
-    Guid SourceMembershipId,
-    Guid OldConsumptionId,
-    DateTimeOffset OccurredAt,
-    DateTimeOffset ConsumptionRecordedAt,
-    DateOnly BusinessDate);
 
 internal sealed record MembershipNegativeVisitSelection(
     IReadOnlyList<IssuedMembershipRecord> ActiveMemberships,
-    IReadOnlyList<MembershipNegativeVisitCandidate> OpenConcreteVisits,
+    IReadOnlyList<MembershipNegativeVisitCoverageCandidate> OpenConcreteVisits,
     int TotalNegativeBalance,
-    int UnknownNegativeBalance)
+    int UnknownNegativeBalance,
+    DateOnly? FirstNegativeVisitDate)
 {
     public Guid? OldestOpenConcreteVisitId => OpenConcreteVisits.Count == 0
         ? null
