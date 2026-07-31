@@ -13900,3 +13900,61 @@ Stop point:
   duplicate-submit protection and canonical profile rereads on tablet and
   phone. Do not begin issued-sale replacement, paper fallback metadata or
   Milestone 11 until this UI slice is validated and committed.
+
+## Step 216 - Completed production negative-coverage controls
+
+Status: completed as the production Razor/htmx slice over the Step 209-215
+negative-coverage source facts, commands and previews. Milestone 10.5 remains
+in progress; Milestone 11 has not started.
+
+Completed:
+
+- Added a Memberships-owned Client profile panel with the exact negative
+  balance, concrete oldest-open Visits, explicit leave-visible/one-off/new-
+  Membership choices and no recommendation or automatic selection.
+- Integrated one-off closure preview and command submission plus reason-
+  required cancellation or same-method replacement for active one-off and
+  new-Membership coverage. Every mutation preserves htmx busy/disabled state,
+  duplicate-submit protection and a forced canonical profile reread.
+- Added exact correction explanations that distinguish restored and replacement
+  Visits, original and replacement Payments and covering-Membership capacity.
+  The UI does not calculate or display refunds, surcharges or price deltas.
+- Added stale-command handling that refreshes the canonical balance, open
+  Visits and selectors while retaining the user-visible error. Tablet and phone
+  flows now exercise close, replace and cancel, and a concurrent stale-preview
+  scenario proves that only the competing mutation commits.
+- Preserved correction occurrence time, entry origin and entry-batch identity
+  in the negative-coverage correction source record, with the corresponding
+  PostgreSQL constraint and active-replacement uniqueness rule.
+- Centralized canonical Payment lifecycle projection for Client profile, daily
+  cash report and Client history. Negative-coverage cancellation/replacement is
+  now explained consistently, and malformed or incomplete correction source
+  facts fail closed in all three readers.
+- Accepted the user's greenfield database decision: there is no deployed or
+  historical data to classify or backfill. The current in-progress migration
+  was amended to describe the current schema, the local Docker database may be
+  recreated, and all migrations will be squashed into one clean baseline only
+  after the Milestone 10.5 schema is final.
+- An independent read-only review reported no P0 issue. Its applicable P2
+  findings for corrupt-source and stale-UI coverage were fixed. Its migration-
+  upgrade concern does not apply to the explicitly accepted greenfield state;
+  local database recreation and the final baseline squash remain required.
+
+Validation:
+
+- Solution formatter/analyzer verification and `git diff --check` passed.
+- Release solution build passed with 0 warnings and 0 errors.
+- Focused PostgreSQL negative-coverage command, schema, profile, daily-report
+  and history tests passed: 32/32.
+- Full Web tests passed: 300/300.
+- Focused Playwright negative-coverage flows passed: 3/3 across tablet and phone,
+  including a concurrent stale-preview refresh.
+
+Stop point:
+
+- Implement `ReplaceIssuedMembership` and `CancelIssuedMembershipSale` with
+  dependency preview, atomic Membership/Payment lifecycle, canonical rereads,
+  report/history/audit explanation and tablet/phone production controls. Keep
+  the greenfield schema strategy; do not begin paper-fallback metadata or
+  Milestone 11 until the issued-sale replacement slice is validated and
+  committed.
