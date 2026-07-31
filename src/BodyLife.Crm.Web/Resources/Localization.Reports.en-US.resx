@@ -138,4 +138,5 @@
   <data name="Warning.EndingSoon"><value>This membership ends within seven days.</value></data>
   <data name="Warning.LowRemaining"><value>This membership has only one or two visits remaining.</value></data>
   <data name="Warning.Generic"><value>Review this membership's current state.</value></data>
+  <data name="Field.NegativeCoverage"><value>Negative-visit coverage</value></data>
 </root>

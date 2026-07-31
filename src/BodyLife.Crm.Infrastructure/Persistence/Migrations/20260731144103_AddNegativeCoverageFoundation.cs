@@ -123,15 +123,19 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                     replacement_closure_id = table.Column<Guid>(type: "uuid", nullable: true),
                     mode = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     reason = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    occurred_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     recorded_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     recorded_by_account_id = table.Column<Guid>(type: "uuid", nullable: false),
                     session_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    entry_origin = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    entry_batch_id = table.Column<Guid>(type: "uuid", nullable: true),
                     idempotency_key = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_membership_negative_closure_corrections", x => x.id);
                     table.CheckConstraint("ck_negative_closure_corrections_mode", "mode in ('cancel', 'replace')");
+                    table.CheckConstraint("ck_negative_closure_corrections_origin", "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
                     table.CheckConstraint("ck_negative_closure_corrections_reason", "length(btrim(reason)) > 0");
                     table.CheckConstraint("ck_negative_closure_corrections_shape", "(mode = 'cancel' and replacement_closure_id is null) or (mode = 'replace' and replacement_closure_id is not null and replacement_closure_id <> original_closure_id)");
                     table.ForeignKey(
@@ -354,6 +358,14 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                 table: "membership_negative_closure_corrections",
                 column: "original_closure_id",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ux_negative_closure_corrections_replacement",
+                schema: "bodylife",
+                table: "membership_negative_closure_corrections",
+                column: "replacement_closure_id",
+                unique: true,
+                filter: "replacement_closure_id is not null");
 
             migrationBuilder.CreateIndex(
                 name: "IX_membership_negative_closure_items_closure_line_id_negative_~",

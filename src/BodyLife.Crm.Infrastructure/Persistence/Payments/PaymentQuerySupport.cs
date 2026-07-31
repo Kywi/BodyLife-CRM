@@ -1,8 +1,10 @@
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
+using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
+using Microsoft.EntityFrameworkCore;
 
 namespace BodyLife.Crm.Infrastructure.Persistence.Payments;
 
@@ -10,6 +12,8 @@ internal static class PaymentQuerySupport
 {
     private const string ActiveStatus = "active";
     private const string CanceledStatus = "canceled";
+    private const string NegativeCoverageChangedFieldsJson =
+        "[\"negative_coverage\"]";
     private const string ReplacedStatus = "replaced";
 
     internal static Task<bool> IsActorAuthorizedAsync(
@@ -25,6 +29,218 @@ internal static class PaymentQuerySupport
                 now,
                 cancellationToken)
             : Task.FromResult(false);
+    }
+
+    internal static async Task<CanonicalPaymentRelations?>
+        ReadCanonicalRelationsAsync(
+            BodyLifeDbContext dbContext,
+            IReadOnlyCollection<Guid> seedPaymentIds,
+            CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(dbContext);
+        ArgumentNullException.ThrowIfNull(seedPaymentIds);
+
+        if (seedPaymentIds.Any(id => id == Guid.Empty))
+        {
+            return null;
+        }
+
+        var relevantPaymentIds = seedPaymentIds.ToHashSet();
+        if (relevantPaymentIds.Count == 0)
+        {
+            return CanonicalPaymentRelations.Empty;
+        }
+
+        var genericCorrections = new Dictionary<Guid, CanonicalPaymentCorrectionSourceRow>();
+        var negativeCorrections = new Dictionary<Guid, CanonicalPaymentCorrectionSourceRow>();
+        var negativeCancellations = new Dictionary<Guid, CanonicalPaymentCancellationSourceRow>();
+        var previousPaymentCount = -1;
+
+        while (previousPaymentCount != relevantPaymentIds.Count)
+        {
+            previousPaymentCount = relevantPaymentIds.Count;
+            var lookupPaymentIds = relevantPaymentIds.ToArray();
+            var genericRows = await dbContext.Set<PaymentCorrectionRecord>()
+                .AsNoTracking()
+                .Where(correction =>
+                    lookupPaymentIds.Contains(correction.OriginalPaymentId)
+                    || lookupPaymentIds.Contains(correction.ReplacementPaymentId))
+                .Select(correction => new CanonicalPaymentCorrectionSourceRow(
+                    correction.Id,
+                    correction.ClientId,
+                    correction.OriginalPaymentId,
+                    correction.ReplacementPaymentId,
+                    correction.ChangedFieldsJson,
+                    correction.Reason,
+                    correction.OccurredAt,
+                    correction.RecordedAt,
+                    correction.RecordedByAccountId,
+                    correction.SessionId,
+                    correction.EntryOrigin,
+                    correction.EntryBatchId))
+                .ToArrayAsync(cancellationToken);
+            foreach (var row in genericRows)
+            {
+                genericCorrections[row.CorrectionId] = row;
+                relevantPaymentIds.Add(row.OriginalPaymentId);
+                relevantPaymentIds.Add(row.ReplacementPaymentId);
+            }
+
+            var negativeClosureIds = await dbContext.Set<PaymentRecord>()
+                .AsNoTracking()
+                .Where(payment =>
+                    lookupPaymentIds.Contains(payment.Id)
+                    && payment.NegativeClosureId != null)
+                .Select(payment => payment.NegativeClosureId!.Value)
+                .Distinct()
+                .ToArrayAsync(cancellationToken);
+            if (negativeClosureIds.Length == 0)
+            {
+                continue;
+            }
+
+            var closureCorrections = await dbContext
+                .Set<MembershipNegativeClosureCorrectionRecord>()
+                .AsNoTracking()
+                .Where(correction =>
+                    negativeClosureIds.Contains(correction.OriginalClosureId)
+                    || (correction.ReplacementClosureId != null
+                        && negativeClosureIds.Contains(
+                            correction.ReplacementClosureId.Value)))
+                .ToArrayAsync(cancellationToken);
+            var relatedClosureIds = closureCorrections
+                .SelectMany(correction => correction.ReplacementClosureId is { } replacementId
+                    ? new[] { correction.OriginalClosureId, replacementId }
+                    : [correction.OriginalClosureId])
+                .Distinct()
+                .ToArray();
+            if (relatedClosureIds.Length == 0)
+            {
+                continue;
+            }
+
+            var closurePayments = await dbContext.Set<PaymentRecord>()
+                .AsNoTracking()
+                .Where(payment =>
+                    payment.NegativeClosureId != null
+                    && relatedClosureIds.Contains(payment.NegativeClosureId.Value))
+                .Select(payment => new NegativeClosurePaymentRelationRow(
+                    payment.Id,
+                    payment.ClientId,
+                    payment.NegativeClosureId!.Value,
+                    payment.PaymentContext))
+                .ToArrayAsync(cancellationToken);
+            if (closurePayments
+                .GroupBy(payment => payment.NegativeClosureId)
+                .Any(group => group.Count() > 1))
+            {
+                return null;
+            }
+
+            var paymentByClosureId = closurePayments.ToDictionary(
+                payment => payment.NegativeClosureId);
+            foreach (var correction in closureCorrections)
+            {
+                if (!paymentByClosureId.TryGetValue(
+                        correction.OriginalClosureId,
+                        out var originalPayment)
+                    || originalPayment.PaymentContext != "negative_closure")
+                {
+                    return null;
+                }
+
+                if (correction.Mode == "cancel")
+                {
+                    if (correction.ReplacementClosureId is not null)
+                    {
+                        return null;
+                    }
+
+                    negativeCancellations[correction.Id] =
+                        new CanonicalPaymentCancellationSourceRow(
+                            correction.Id,
+                            originalPayment.PaymentId,
+                            correction.Reason,
+                            correction.OccurredAt,
+                            correction.RecordedAt,
+                            correction.RecordedByAccountId,
+                            correction.SessionId,
+                            correction.EntryOrigin,
+                            correction.EntryBatchId);
+                    relevantPaymentIds.Add(originalPayment.PaymentId);
+                    continue;
+                }
+
+                if (correction.Mode != "replace"
+                    || correction.ReplacementClosureId is not { } replacementClosureId
+                    || !paymentByClosureId.TryGetValue(
+                        replacementClosureId,
+                        out var replacementPayment)
+                    || replacementPayment.PaymentContext != "negative_closure"
+                    || replacementPayment.ClientId != originalPayment.ClientId)
+                {
+                    return null;
+                }
+
+                negativeCorrections[correction.Id] =
+                    new CanonicalPaymentCorrectionSourceRow(
+                        correction.Id,
+                        originalPayment.ClientId,
+                        originalPayment.PaymentId,
+                        replacementPayment.PaymentId,
+                        NegativeCoverageChangedFieldsJson,
+                        correction.Reason,
+                        correction.OccurredAt,
+                        correction.RecordedAt,
+                        correction.RecordedByAccountId,
+                        correction.SessionId,
+                        correction.EntryOrigin,
+                        correction.EntryBatchId);
+                relevantPaymentIds.Add(originalPayment.PaymentId);
+                relevantPaymentIds.Add(replacementPayment.PaymentId);
+            }
+        }
+
+        var allPaymentIds = relevantPaymentIds.ToArray();
+        var genericCancellations = await dbContext.Set<PaymentCancellationRecord>()
+            .AsNoTracking()
+            .Where(cancellation => allPaymentIds.Contains(cancellation.PaymentId))
+            .Select(cancellation => new CanonicalPaymentCancellationSourceRow(
+                cancellation.Id,
+                cancellation.PaymentId,
+                cancellation.Reason,
+                cancellation.OccurredAt,
+                cancellation.RecordedAt,
+                cancellation.RecordedByAccountId,
+                cancellation.SessionId,
+                cancellation.EntryOrigin,
+                cancellation.EntryBatchId))
+            .ToArrayAsync(cancellationToken);
+        var cancellationRows = genericCancellations
+            .Concat(negativeCancellations.Values)
+            .ToArray();
+        var correctionRows = genericCorrections.Values
+            .Concat(negativeCorrections.Values)
+            .ToArray();
+
+        if (cancellationRows
+                .GroupBy(row => row.PaymentId)
+                .Any(group => group.Count() > 1)
+            || correctionRows
+                .GroupBy(row => row.OriginalPaymentId)
+                .Any(group => group.Count() > 1)
+            || correctionRows
+                .GroupBy(row => row.ReplacementPaymentId)
+                .Any(group => group.Count() > 1))
+        {
+            return null;
+        }
+
+        return new CanonicalPaymentRelations(
+            relevantPaymentIds.ToArray(),
+            cancellationRows.ToDictionary(row => row.PaymentId),
+            correctionRows.ToDictionary(row => row.ReplacementPaymentId),
+            correctionRows.ToDictionary(row => row.OriginalPaymentId));
     }
 
     internal static QueryPermissionSet BuildCorrectionPermissions(
@@ -217,6 +433,9 @@ internal static class PaymentQuerySupport
         }
 
         if (cancellationSource.PaymentId != source.PaymentId
+            || cancellationSource.CancellationId == Guid.Empty
+            || cancellationSource.RecordedByAccountId == Guid.Empty
+            || cancellationSource.SessionId == Guid.Empty
             || string.IsNullOrWhiteSpace(cancellationSource.Reason)
             || !TryMapEntryOrigin(
                 cancellationSource.EntryOrigin,
@@ -253,11 +472,14 @@ internal static class PaymentQuerySupport
             ? correctionSource.ReplacementPaymentId == source.PaymentId
             : correctionSource.OriginalPaymentId == source.PaymentId;
         if (!referencesSource
+            || correctionSource.CorrectionId == Guid.Empty
             || correctionSource.ClientId != source.ClientId
             || correctionSource.OriginalPaymentId == Guid.Empty
             || correctionSource.ReplacementPaymentId == Guid.Empty
             || correctionSource.OriginalPaymentId
                 == correctionSource.ReplacementPaymentId
+            || correctionSource.RecordedByAccountId == Guid.Empty
+            || correctionSource.SessionId == Guid.Empty
             || string.IsNullOrWhiteSpace(correctionSource.Reason)
             || !TryParseChangedFields(
                 correctionSource.ChangedFieldsJson,
@@ -385,4 +607,26 @@ internal static class PaymentQuerySupport
         ClientPaymentCancellation? Cancellation,
         ClientPaymentCorrection? CorrectionFromOriginal,
         ClientPaymentCorrection? CorrectionToReplacement);
+
+    internal sealed record CanonicalPaymentRelations(
+        IReadOnlyCollection<Guid> PaymentIds,
+        IReadOnlyDictionary<Guid, CanonicalPaymentCancellationSourceRow>
+            CancellationsByPaymentId,
+        IReadOnlyDictionary<Guid, CanonicalPaymentCorrectionSourceRow>
+            CorrectionsFromOriginalByPaymentId,
+        IReadOnlyDictionary<Guid, CanonicalPaymentCorrectionSourceRow>
+            CorrectionsToReplacementByPaymentId)
+    {
+        internal static CanonicalPaymentRelations Empty { get; } = new(
+            [],
+            new Dictionary<Guid, CanonicalPaymentCancellationSourceRow>(),
+            new Dictionary<Guid, CanonicalPaymentCorrectionSourceRow>(),
+            new Dictionary<Guid, CanonicalPaymentCorrectionSourceRow>());
+    }
+
+    private sealed record NegativeClosurePaymentRelationRow(
+        Guid PaymentId,
+        Guid ClientId,
+        Guid NegativeClosureId,
+        string PaymentContext);
 }

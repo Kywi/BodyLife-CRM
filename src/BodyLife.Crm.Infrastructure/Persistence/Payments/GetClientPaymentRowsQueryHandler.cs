@@ -130,77 +130,27 @@ public sealed class GetClientPaymentRowsQueryHandler(
         }
 
         var paymentIds = visibleRows.Select(row => row.PaymentId).ToArray();
-        var cancellationRows = await dbContext.Set<PaymentCancellationRecord>()
-            .AsNoTracking()
-            .Where(cancellation => paymentIds.Contains(cancellation.PaymentId))
-            .Select(cancellation =>
-                new PaymentQuerySupport.CanonicalPaymentCancellationSourceRow(
-                    cancellation.Id,
-                    cancellation.PaymentId,
-                    cancellation.Reason,
-                    cancellation.OccurredAt,
-                    cancellation.RecordedAt,
-                    cancellation.RecordedByAccountId,
-                    cancellation.SessionId,
-                    cancellation.EntryOrigin,
-                    cancellation.EntryBatchId))
-            .ToListAsync(cancellationToken);
-        var correctionRows = await dbContext.Set<PaymentCorrectionRecord>()
-            .AsNoTracking()
-            .Where(correction =>
-                paymentIds.Contains(correction.OriginalPaymentId)
-                || paymentIds.Contains(correction.ReplacementPaymentId))
-            .Select(correction =>
-                new PaymentQuerySupport.CanonicalPaymentCorrectionSourceRow(
-                    correction.Id,
-                    correction.ClientId,
-                    correction.OriginalPaymentId,
-                    correction.ReplacementPaymentId,
-                    correction.ChangedFieldsJson,
-                    correction.Reason,
-                    correction.OccurredAt,
-                    correction.RecordedAt,
-                    correction.RecordedByAccountId,
-                    correction.SessionId,
-                    correction.EntryOrigin,
-                    correction.EntryBatchId))
-            .ToListAsync(cancellationToken);
-
-        if (cancellationRows
-                .GroupBy(row => row.PaymentId)
-                .Any(group => group.Count() > 1)
-            || correctionRows
-                .Where(row => paymentIds.Contains(row.OriginalPaymentId))
-                .GroupBy(row => row.OriginalPaymentId)
-                .Any(group => group.Count() > 1)
-            || correctionRows
-                .Where(row => paymentIds.Contains(row.ReplacementPaymentId))
-                .GroupBy(row => row.ReplacementPaymentId)
-                .Any(group => group.Count() > 1))
+        var relations = await PaymentQuerySupport.ReadCanonicalRelationsAsync(
+            dbContext,
+            paymentIds,
+            cancellationToken);
+        if (relations is null)
         {
             return GetClientPaymentRowsResult.InconsistentSource();
         }
 
-        var cancellationByPaymentId = cancellationRows.ToDictionary(
-            row => row.PaymentId);
-        var correctionFromOriginalByPaymentId = correctionRows
-            .Where(row => paymentIds.Contains(row.ReplacementPaymentId))
-            .ToDictionary(row => row.ReplacementPaymentId);
-        var correctionToReplacementByPaymentId = correctionRows
-            .Where(row => paymentIds.Contains(row.OriginalPaymentId))
-            .ToDictionary(row => row.OriginalPaymentId);
         var dayStatuses = new Dictionary<DateOnly, PaymentDayReconciliationStatus>();
         var resultRows = new List<ClientPaymentRow>(visibleRows.Length);
 
         foreach (var source in visibleRows)
         {
-            cancellationByPaymentId.TryGetValue(
+            relations.CancellationsByPaymentId.TryGetValue(
                 source.PaymentId,
                 out var cancellationSource);
-            correctionFromOriginalByPaymentId.TryGetValue(
+            relations.CorrectionsFromOriginalByPaymentId.TryGetValue(
                 source.PaymentId,
                 out var correctionFromOriginalSource);
-            correctionToReplacementByPaymentId.TryGetValue(
+            relations.CorrectionsToReplacementByPaymentId.TryGetValue(
                 source.PaymentId,
                 out var correctionToReplacementSource);
             if (!PaymentQuerySupport.TryMapSourceRow(

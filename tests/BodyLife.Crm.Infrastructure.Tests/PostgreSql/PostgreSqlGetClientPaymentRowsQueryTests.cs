@@ -274,7 +274,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task ReconciledDayAllowsOwnerDeniesAdminAndReservesNegativeClosure()
+    public async Task ReconciledDayAllowsOwnerDeniesAdminAndReservesMembershipSale()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -289,13 +289,12 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
             "one_off",
             FirstPaymentOccurredAt,
             TestNow.AddMinutes(-2));
-        var negativeClosurePaymentId = await InsertPaymentAsync(
+        var membershipSalePaymentId = await PostgreSqlPaymentTestData
+            .InsertMembershipSalePaymentAsync(
             database,
-            fixture,
-            fixture.ClientId,
             fixture.MembershipId,
-            200m,
-            "negative_closure",
+            fixture.Actor.AccountId.Value,
+            fixture.Actor.SessionId.Value,
             FirstPaymentOccurredAt.AddMinutes(1),
             TestNow.AddMinutes(-1));
         var reconciledProvider = new RecordingPaymentDayStatusProvider(
@@ -316,7 +315,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Assert.Equal(PaymentActionKeys.OwnerPolicy, ownerPermission.RequiredPolicy);
         Assert.Empty(Assert.Single(
             ownerRows,
-            row => row.PaymentId == negativeClosurePaymentId).AllowedActions.Items);
+            row => row.PaymentId == membershipSalePaymentId).AllowedActions.Items);
 
         await UpdateActorIdentityAsync(
             database,
@@ -343,7 +342,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Assert.Equal("day_closed_requires_owner", deniedPermission.DeniedReasonCode);
         Assert.Empty(Assert.Single(
             adminRows,
-            row => row.PaymentId == negativeClosurePaymentId).AllowedActions.Items);
+            row => row.PaymentId == membershipSalePaymentId).AllowedActions.Items);
         Assert.Equal(2, reconciledProvider.RequestedDates.Count);
     }
 

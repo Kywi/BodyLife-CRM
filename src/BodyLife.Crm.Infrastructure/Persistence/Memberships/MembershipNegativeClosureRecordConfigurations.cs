@@ -172,6 +172,7 @@ internal sealed class MembershipNegativeClosureCorrectionRecordConfiguration
             table.HasCheckConstraint("ck_negative_closure_corrections_mode", "mode in ('cancel', 'replace')");
             table.HasCheckConstraint("ck_negative_closure_corrections_shape", "(mode = 'cancel' and replacement_closure_id is null) or (mode = 'replace' and replacement_closure_id is not null and replacement_closure_id <> original_closure_id)");
             table.HasCheckConstraint("ck_negative_closure_corrections_reason", "length(btrim(reason)) > 0");
+            table.HasCheckConstraint("ck_negative_closure_corrections_origin", "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
         });
         builder.HasKey(correction => correction.Id);
         builder.Property(correction => correction.Id).ValueGeneratedNever().HasColumnName("id");
@@ -179,15 +180,19 @@ internal sealed class MembershipNegativeClosureCorrectionRecordConfiguration
         builder.Property(correction => correction.ReplacementClosureId).HasColumnName("replacement_closure_id");
         builder.Property(correction => correction.Mode).HasColumnName("mode").HasMaxLength(32).IsRequired();
         builder.Property(correction => correction.Reason).HasColumnName("reason").HasMaxLength(1000).IsRequired();
+        builder.Property(correction => correction.OccurredAt).HasColumnName("occurred_at");
         builder.Property(correction => correction.RecordedAt).HasColumnName("recorded_at");
         builder.Property(correction => correction.RecordedByAccountId).HasColumnName("recorded_by_account_id");
         builder.Property(correction => correction.SessionId).HasColumnName("session_id");
+        builder.Property(correction => correction.EntryOrigin).HasColumnName("entry_origin").HasMaxLength(32).IsRequired();
+        builder.Property(correction => correction.EntryBatchId).HasColumnName("entry_batch_id");
         builder.Property(correction => correction.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(200).IsRequired();
         builder.HasOne<MembershipNegativeClosureRecord>().WithMany().HasForeignKey(correction => correction.OriginalClosureId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<MembershipNegativeClosureRecord>().WithMany().HasForeignKey(correction => correction.ReplacementClosureId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<AccountRecord>().WithMany().HasForeignKey(correction => correction.RecordedByAccountId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<SessionRecord>().WithMany().HasForeignKey(correction => correction.SessionId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(correction => correction.OriginalClosureId).IsUnique().HasDatabaseName("ux_negative_closure_corrections_original");
+        builder.HasIndex(correction => correction.ReplacementClosureId).IsUnique().HasFilter("replacement_closure_id is not null").HasDatabaseName("ux_negative_closure_corrections_replacement");
         builder.HasIndex(correction => correction.IdempotencyKey).IsUnique().HasDatabaseName("ux_negative_closure_corrections_idempotency_key");
     }
 }

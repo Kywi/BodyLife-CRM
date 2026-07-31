@@ -85,23 +85,16 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
                     auditPage.HasMore));
         }
 
-        var outgoingCorrections = await dbContext.Set<PaymentCorrectionRecord>()
-            .AsNoTracking()
-            .Where(correction =>
-                auditPaymentIds.Contains(correction.OriginalPaymentId))
-            .ToArrayAsync(cancellationToken);
-        if (outgoingCorrections
-            .GroupBy(correction => correction.OriginalPaymentId)
-            .Any(group => group.Count() > 1))
+        var relations = await PaymentQuerySupport.ReadCanonicalRelationsAsync(
+            dbContext,
+            auditPaymentIds,
+            cancellationToken);
+        if (relations is null)
         {
             return GetClientPaymentHistorySourceRowsResult.InconsistentSource();
         }
 
-        var relevantPaymentIds = auditPaymentIds
-            .Concat(outgoingCorrections.Select(correction =>
-                correction.ReplacementPaymentId))
-            .Distinct()
-            .ToArray();
+        var relevantPaymentIds = relations.PaymentIds.ToArray();
         var paymentRows = await (
             from payment in dbContext.Set<PaymentRecord>().AsNoTracking()
             join membership in dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
@@ -120,58 +113,21 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             return GetClientPaymentHistorySourceRowsResult.InconsistentSource();
         }
 
-        var correctionRows = await dbContext.Set<PaymentCorrectionRecord>()
-            .AsNoTracking()
-            .Where(correction =>
-                relevantPaymentIds.Contains(correction.OriginalPaymentId)
-                || relevantPaymentIds.Contains(correction.ReplacementPaymentId))
-            .ToArrayAsync(cancellationToken);
-        var cancellationRows = await dbContext.Set<PaymentCancellationRecord>()
-            .AsNoTracking()
-            .Where(cancellation =>
-                relevantPaymentIds.Contains(cancellation.PaymentId))
-            .ToArrayAsync(cancellationToken);
-        if (!HaveCanonicalRelationKeys(correctionRows, cancellationRows)
-            || correctionRows
-                .Where(correction =>
-                    relevantPaymentIds.Contains(correction.OriginalPaymentId))
-                .GroupBy(correction => correction.OriginalPaymentId)
-                .Any(group => group.Count() > 1)
-            || correctionRows
-                .Where(correction =>
-                    relevantPaymentIds.Contains(correction.ReplacementPaymentId))
-                .GroupBy(correction => correction.ReplacementPaymentId)
-                .Any(group => group.Count() > 1)
-            || cancellationRows
-                .GroupBy(cancellation => cancellation.PaymentId)
-                .Any(group => group.Count() > 1))
-        {
-            return GetClientPaymentHistorySourceRowsResult.InconsistentSource();
-        }
-
-        var correctionsFromOriginal = correctionRows
-            .Where(correction =>
-                relevantPaymentIds.Contains(correction.ReplacementPaymentId))
-            .ToDictionary(correction => correction.ReplacementPaymentId);
-        var correctionsToReplacement = correctionRows
-            .Where(correction =>
-                relevantPaymentIds.Contains(correction.OriginalPaymentId))
-            .ToDictionary(correction => correction.OriginalPaymentId);
-        var cancellationsByPaymentId = cancellationRows.ToDictionary(
-            cancellation => cancellation.PaymentId);
         var sourcesByPaymentId = new Dictionary<Guid, CanonicalPaymentHistorySource>(
             paymentRows.Length);
 
         foreach (var storageRow in paymentRows)
         {
             var paymentId = storageRow.Payment.Id;
-            correctionsFromOriginal.TryGetValue(
+            relations.CorrectionsFromOriginalByPaymentId.TryGetValue(
                 paymentId,
                 out var correctionFromOriginal);
-            correctionsToReplacement.TryGetValue(
+            relations.CorrectionsToReplacementByPaymentId.TryGetValue(
                 paymentId,
                 out var correctionToReplacement);
-            cancellationsByPaymentId.TryGetValue(paymentId, out var cancellation);
+            relations.CancellationsByPaymentId.TryGetValue(
+                paymentId,
+                out var cancellation);
             if (!TryMapCanonicalSource(
                     storageRow,
                     cancellation,
@@ -239,29 +195,13 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
         }
     }
 
-    private static bool HaveCanonicalRelationKeys(
-        IReadOnlyCollection<PaymentCorrectionRecord> corrections,
-        IReadOnlyCollection<PaymentCancellationRecord> cancellations)
-    {
-        return corrections.All(correction =>
-                correction.Id != Guid.Empty
-                && correction.ClientId != Guid.Empty
-                && correction.OriginalPaymentId != Guid.Empty
-                && correction.ReplacementPaymentId != Guid.Empty
-                && correction.RecordedByAccountId != Guid.Empty
-                && correction.SessionId != Guid.Empty)
-            && cancellations.All(cancellation =>
-                cancellation.Id != Guid.Empty
-                && cancellation.PaymentId != Guid.Empty
-                && cancellation.RecordedByAccountId != Guid.Empty
-                && cancellation.SessionId != Guid.Empty);
-    }
-
     private static bool TryMapCanonicalSource(
         PaymentStorageRow storageRow,
-        PaymentCancellationRecord? cancellation,
-        PaymentCorrectionRecord? correctionFromOriginal,
-        PaymentCorrectionRecord? correctionToReplacement,
+        PaymentQuerySupport.CanonicalPaymentCancellationSourceRow? cancellation,
+        PaymentQuerySupport.CanonicalPaymentCorrectionSourceRow?
+            correctionFromOriginal,
+        PaymentQuerySupport.CanonicalPaymentCorrectionSourceRow?
+            correctionToReplacement,
         out CanonicalPaymentHistorySource? source)
     {
         source = null;
@@ -292,20 +232,11 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             payment.EntryBatchId,
             payment.Comment,
             payment.Status);
-        var canonicalCancellation = cancellation is null
-            ? null
-            : MapCancellation(cancellation);
-        var canonicalCorrectionFromOriginal = correctionFromOriginal is null
-            ? null
-            : MapCorrection(correctionFromOriginal);
-        var canonicalCorrectionToReplacement = correctionToReplacement is null
-            ? null
-            : MapCorrection(correctionToReplacement);
         if (!PaymentQuerySupport.TryMapSourceRow(
                 canonicalPayment,
-                canonicalCancellation,
-                canonicalCorrectionFromOriginal,
-                canonicalCorrectionToReplacement,
+                cancellation,
+                correctionFromOriginal,
+                correctionToReplacement,
                 out var projection)
             || projection is null)
         {
@@ -336,39 +267,6 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             paymentSource,
             projection);
         return true;
-    }
-
-    private static PaymentQuerySupport.CanonicalPaymentCancellationSourceRow
-        MapCancellation(PaymentCancellationRecord cancellation)
-    {
-        return new PaymentQuerySupport.CanonicalPaymentCancellationSourceRow(
-            cancellation.Id,
-            cancellation.PaymentId,
-            cancellation.Reason,
-            cancellation.OccurredAt,
-            cancellation.RecordedAt,
-            cancellation.RecordedByAccountId,
-            cancellation.SessionId,
-            cancellation.EntryOrigin,
-            cancellation.EntryBatchId);
-    }
-
-    private static PaymentQuerySupport.CanonicalPaymentCorrectionSourceRow
-        MapCorrection(PaymentCorrectionRecord correction)
-    {
-        return new PaymentQuerySupport.CanonicalPaymentCorrectionSourceRow(
-            correction.Id,
-            correction.ClientId,
-            correction.OriginalPaymentId,
-            correction.ReplacementPaymentId,
-            correction.ChangedFieldsJson,
-            correction.Reason,
-            correction.OccurredAt,
-            correction.RecordedAt,
-            correction.RecordedByAccountId,
-            correction.SessionId,
-            correction.EntryOrigin,
-            correction.EntryBatchId);
     }
 
     private static ClientPaymentHistorySourceRow? MapCreatedPayment(

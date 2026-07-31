@@ -392,9 +392,13 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                     ? "cancel"
                     : "replace",
                 Reason = correction.Envelope.Reason!,
+                OccurredAt = correction.Envelope.OccurredAt!.Value,
                 RecordedAt = recordedAt,
                 RecordedByAccountId = correction.Envelope.Actor.AccountId.Value,
                 SessionId = correction.Envelope.Actor.SessionId.Value,
+                EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
+                    correction.Envelope.EntryOrigin),
+                EntryBatchId = correction.EntryBatchId,
                 IdempotencyKey = correction.IdempotencyKey,
             };
             dbContext.Set<MembershipNegativeClosureCorrectionRecord>()

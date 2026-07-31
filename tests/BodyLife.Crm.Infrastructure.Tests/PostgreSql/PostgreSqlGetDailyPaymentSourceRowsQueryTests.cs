@@ -436,7 +436,7 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task ReconciledDayReturnsOwnerAndAdminPermissionsAndReservesNegativeClosure()
+    public async Task ReconciledDayReturnsOwnerAndAdminPermissionsAndReservesMembershipSale()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -451,13 +451,12 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             "one_off",
             AtBusinessTime(10),
             TestNow);
-        var negativeClosurePaymentId = await InsertPaymentAsync(
+        var membershipSalePaymentId = await PostgreSqlPaymentTestData
+            .InsertMembershipSalePaymentAsync(
             database,
-            fixture,
-            fixture.ClientId,
             fixture.MembershipId,
-            100m,
-            "negative_closure",
+            fixture.Actor.AccountId.Value,
+            fixture.Actor.SessionId.Value,
             AtBusinessTime(11),
             TestNow);
         var dayProvider = new RecordingPaymentDayStatusProvider(
@@ -469,14 +468,14 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             CancellationToken.None);
 
         var ownerSnapshot = AssertSuccess(ownerResult, BusinessDate);
-        Assert.Equal(new Money(400m, "UAH"), ownerSnapshot.DailyCashSum);
+        Assert.Equal(new Money(1300m, "UAH"), ownerSnapshot.DailyCashSum);
         var ownerOrdinary = Assert.Single(ownerSnapshot.Rows, row =>
             row.Payment.PaymentId == ordinaryPaymentId).Payment;
         var ownerPermission = Assert.Single(ownerOrdinary.AllowedActions.Items);
         Assert.True(ownerPermission.IsAllowed);
         Assert.Equal(PaymentActionKeys.OwnerPolicy, ownerPermission.RequiredPolicy);
         Assert.Empty(Assert.Single(ownerSnapshot.Rows, row =>
-            row.Payment.PaymentId == negativeClosurePaymentId)
+            row.Payment.PaymentId == membershipSalePaymentId)
             .Payment.AllowedActions.Items);
 
         await UpdateActorIdentityAsync(
@@ -502,7 +501,7 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         Assert.Equal(PaymentActionKeys.OwnerPolicy, adminPermission.RequiredPolicy);
         Assert.Equal("day_closed_requires_owner", adminPermission.DeniedReasonCode);
         Assert.Empty(Assert.Single(adminSnapshot.Rows, row =>
-            row.Payment.PaymentId == negativeClosurePaymentId)
+            row.Payment.PaymentId == membershipSalePaymentId)
             .Payment.AllowedActions.Items);
         Assert.Equal([BusinessDate, BusinessDate], dayProvider.RequestedDates);
     }

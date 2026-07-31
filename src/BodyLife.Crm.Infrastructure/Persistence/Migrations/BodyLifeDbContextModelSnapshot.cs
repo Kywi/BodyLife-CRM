@@ -1030,6 +1030,16 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("BodyLife.Crm.Infrastructure.Persistence.Memberships.MembershipNegativeClosureCorrectionRecord", b =>
                 {
+                    b.Property<Guid?>("EntryBatchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_batch_id");
+
+                    b.Property<string>("EntryOrigin")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("entry_origin");
+
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
@@ -1049,6 +1059,10 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("OriginalClosureId")
                         .HasColumnType("uuid")
                         .HasColumnName("original_closure_id");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
 
                     b.Property<string>("Reason")
                         .IsRequired()
@@ -1084,13 +1098,18 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RecordedByAccountId");
 
-                    b.HasIndex("ReplacementClosureId");
+                    b.HasIndex("ReplacementClosureId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_negative_closure_corrections_replacement")
+                        .HasFilter("replacement_closure_id is not null");
 
                     b.HasIndex("SessionId");
 
                     b.ToTable("membership_negative_closure_corrections", "bodylife", t =>
                         {
                             t.HasCheckConstraint("ck_negative_closure_corrections_mode", "mode in ('cancel', 'replace')");
+
+                            t.HasCheckConstraint("ck_negative_closure_corrections_origin", "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
 
                             t.HasCheckConstraint("ck_negative_closure_corrections_reason", "length(btrim(reason)) > 0");
 

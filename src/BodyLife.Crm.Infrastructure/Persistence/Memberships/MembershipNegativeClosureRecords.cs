@@ -56,8 +56,11 @@ internal sealed class MembershipNegativeClosureCorrectionRecord
     public Guid? ReplacementClosureId { get; set; }
     public string Mode { get; set; } = null!;
     public string Reason { get; set; } = null!;
+    public DateTimeOffset OccurredAt { get; set; }
     public DateTimeOffset RecordedAt { get; set; }
     public Guid RecordedByAccountId { get; set; }
     public Guid SessionId { get; set; }
+    public string EntryOrigin { get; set; } = null!;
+    public Guid? EntryBatchId { get; set; }
     public string IdempotencyKey { get; set; } = null!;
 }

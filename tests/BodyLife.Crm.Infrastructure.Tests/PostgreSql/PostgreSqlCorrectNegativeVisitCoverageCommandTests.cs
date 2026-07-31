@@ -85,6 +85,30 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             1L,
             await database.ExecuteScalarAsync<long>(
                 $"select count(*) from bodylife.business_audit_entries audit join bodylife.payments payment on payment.id = audit.entity_id where payment.negative_closure_id = '{originalClosureId}' and audit.action_type = 'payment.canceled'"));
+        var correctionId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.membership_negative_closure_corrections where original_closure_id = '{originalClosureId}'");
+        Assert.Equal(
+            CorrectionNow.UtcDateTime,
+            await database.ExecuteScalarAsync<DateTime>(
+                $"select occurred_at from bodylife.membership_negative_closure_corrections where id = '{correctionId}'"));
+        Assert.Equal(
+            "normal",
+            await database.ExecuteScalarAsync<string>(
+                $"select entry_origin from bodylife.membership_negative_closure_corrections where id = '{correctionId}'"));
+
+        var paymentRows = await CreatePaymentRowsHandler(dbContext).ExecuteAsync(
+            new GetClientPaymentRowsQuery(fixture.Actor, fixture.ClientId),
+            CancellationToken.None);
+        Assert.Equal(GetClientPaymentRowsStatus.Success, paymentRows.Status);
+        var canceledPayment = Assert.Single(
+            paymentRows.Page!.Items,
+            payment => payment.PaymentContext == PaymentContext.NegativeClosure);
+        Assert.Equal(ClientPaymentRowStatus.Canceled, canceledPayment.Status);
+        var cancellation = Assert.IsType<ClientPaymentCancellation>(
+            canceledPayment.Cancellation);
+        Assert.Equal(correctionId, cancellation.CancellationId);
+        Assert.Equal(CorrectionNow, cancellation.OccurredAt);
+        Assert.Equal("Coverage was recorded incorrectly", cancellation.Reason);
 
         var secondCorrection = await CreateCorrectionHandler(dbContext).ExecuteAsync(
             CreateCancelCommand(fixture, originalClosureId, "cancel-again"),
@@ -159,6 +183,139 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             1L,
             await database.ExecuteScalarAsync<long>(
                 $"select count(*) from bodylife.business_audit_entries where entity_id = '{replacementClosureId}' and action_type = 'membership_negative_closure.created'"));
+        var correctionId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.membership_negative_closure_corrections where original_closure_id = '{originalClosureId}'");
+        var originalPaymentId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.payments where negative_closure_id = '{originalClosureId}'");
+        var replacementPaymentId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.payments where negative_closure_id = '{replacementClosureId}'");
+
+        var paymentRows = await CreatePaymentRowsHandler(dbContext).ExecuteAsync(
+            new GetClientPaymentRowsQuery(fixture.Actor, fixture.ClientId),
+            CancellationToken.None);
+        Assert.Equal(GetClientPaymentRowsStatus.Success, paymentRows.Status);
+        var originalPayment = Assert.Single(
+            paymentRows.Page!.Items,
+            payment => payment.PaymentId == originalPaymentId);
+        var replacementPayment = Assert.Single(
+            paymentRows.Page.Items,
+            payment => payment.PaymentId == replacementPaymentId);
+        Assert.Equal(ClientPaymentRowStatus.Replaced, originalPayment.Status);
+        Assert.Equal(ClientPaymentRowStatus.Active, replacementPayment.Status);
+        var outgoing = Assert.IsType<ClientPaymentCorrection>(
+            originalPayment.CorrectionToReplacement);
+        var incoming = Assert.IsType<ClientPaymentCorrection>(
+            replacementPayment.CorrectionFromOriginal);
+        Assert.Equal(correctionId, outgoing.CorrectionId);
+        Assert.Equal(correctionId, incoming.CorrectionId);
+        Assert.Equal(originalPaymentId, outgoing.OriginalPaymentId);
+        Assert.Equal(replacementPaymentId, outgoing.ReplacementPaymentId);
+        Assert.Equal(["negative_coverage"], outgoing.ChangedFields);
+        Assert.Equal(CorrectionNow, outgoing.OccurredAt);
+        Assert.Equal("Wrong one-off selection", outgoing.Reason);
+
+        var dailyRows = await CreateDailyPaymentRowsHandler(dbContext).ExecuteAsync(
+            new GetDailyPaymentSourceRowsQuery(
+                fixture.Actor,
+                BusinessTimeZone.GetBusinessDate(CorrectionNow)),
+            CancellationToken.None);
+        Assert.Equal(GetDailyPaymentSourceRowsStatus.Success, dailyRows.Status);
+        Assert.Equal(1, dailyRows.Snapshot!.ActivePaymentCount);
+        Assert.Equal(75m, dailyRows.Snapshot.DailyCashSum.Amount);
+        Assert.Contains(
+            dailyRows.Snapshot.Rows,
+            row => row.Payment.PaymentId == originalPaymentId
+                && row.Payment.Status == ClientPaymentRowStatus.Replaced);
+
+        var history = await new GetClientPaymentHistorySourceRowsQueryHandler(
+                dbContext,
+                new GetClientAuditEntriesQueryHandler(
+                    dbContext,
+                    new FixedTimeProvider(CorrectionNow)))
+            .ExecuteAsync(
+                new GetClientPaymentHistorySourceRowsQuery(
+                    fixture.Actor,
+                    fixture.ClientId),
+                CancellationToken.None);
+        Assert.Equal(GetClientPaymentHistorySourceRowsStatus.Success, history.Status);
+        var correctedHistory = Assert.Single(
+            history.Page!.Items,
+            row => row.Kind == ClientPaymentHistorySourceKind.CorrectedPayment);
+        Assert.Equal(correctionId, correctedHistory.Correction!.CorrectionId);
+        Assert.Equal(originalPaymentId, correctedHistory.Correction.OriginalPaymentId);
+        Assert.Equal(
+            replacementPaymentId,
+            correctedHistory.Correction.ReplacementPaymentId);
+    }
+
+    [Theory]
+    [InlineData("missing_correction")]
+    [InlineData("invalid_origin")]
+    public async Task CorruptedOneOffCorrectionFailsProfileReportAndHistoryClosed(
+        string corruption)
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(
+            database,
+            ActorRole.Owner,
+            AccountKind.Owner);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, 3);
+        var originalClosureId = await CloseOneOffAsync(
+            dbContext,
+            fixture,
+            $"corrupt-{corruption}",
+            quantity: 2,
+            fixture.OneOffTypeAId);
+        var result = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            CreateReplaceOneOffCommand(
+                fixture,
+                originalClosureId,
+                $"replace-{corruption}",
+                fixture.VisitIds[2],
+                fixture.OneOffTypeBId,
+                quantity: 1),
+            CancellationToken.None);
+        AssertSuccessful(result, fixture.ClientId);
+
+        if (corruption == "missing_correction")
+        {
+            await database.ExecuteScalarAsync<int>(
+                $"alter table bodylife.membership_negative_closure_corrections disable trigger user; delete from bodylife.membership_negative_closure_corrections where original_closure_id = '{originalClosureId}'; alter table bodylife.membership_negative_closure_corrections enable trigger user; select 1;");
+        }
+        else
+        {
+            Assert.Equal("invalid_origin", corruption);
+            await database.ExecuteScalarAsync<int>(
+                $"alter table bodylife.membership_negative_closure_corrections disable trigger user; alter table bodylife.membership_negative_closure_corrections drop constraint ck_negative_closure_corrections_origin; update bodylife.membership_negative_closure_corrections set entry_origin = 'invalid' where original_closure_id = '{originalClosureId}'; alter table bodylife.membership_negative_closure_corrections enable trigger user; select 1;");
+        }
+
+        var paymentRows = await CreatePaymentRowsHandler(dbContext).ExecuteAsync(
+            new GetClientPaymentRowsQuery(fixture.Actor, fixture.ClientId),
+            CancellationToken.None);
+        var dailyRows = await CreateDailyPaymentRowsHandler(dbContext).ExecuteAsync(
+            new GetDailyPaymentSourceRowsQuery(
+                fixture.Actor,
+                BusinessTimeZone.GetBusinessDate(CorrectionNow)),
+            CancellationToken.None);
+        var history = await new GetClientPaymentHistorySourceRowsQueryHandler(
+                dbContext,
+                new GetClientAuditEntriesQueryHandler(
+                    dbContext,
+                    new FixedTimeProvider(CorrectionNow)))
+            .ExecuteAsync(
+                new GetClientPaymentHistorySourceRowsQuery(
+                    fixture.Actor,
+                    fixture.ClientId),
+                CancellationToken.None);
+
+        Assert.Equal(GetClientPaymentRowsStatus.SourceInconsistent, paymentRows.Status);
+        Assert.Equal(
+            GetDailyPaymentSourceRowsStatus.SourceInconsistent,
+            dailyRows.Status);
+        Assert.Equal(
+            GetClientPaymentHistorySourceRowsStatus.SourceInconsistent,
+            history.Status);
     }
 
     [PostgreSqlFact]
@@ -734,6 +891,24 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             time);
     }
 
+    private static GetClientPaymentRowsQueryHandler CreatePaymentRowsHandler(
+        BodyLifeDbContext dbContext)
+    {
+        return new GetClientPaymentRowsQueryHandler(
+            dbContext,
+            new OpenPaymentDayStatusProvider(),
+            new FixedTimeProvider(CorrectionNow));
+    }
+
+    private static GetDailyPaymentSourceRowsQueryHandler
+        CreateDailyPaymentRowsHandler(BodyLifeDbContext dbContext)
+    {
+        return new GetDailyPaymentSourceRowsQueryHandler(
+            dbContext,
+            new OpenPaymentDayStatusProvider(),
+            new FixedTimeProvider(CorrectionNow));
+    }
+
     private static async Task RebuildSourceAsync(
         BodyLifeDbContext dbContext,
         Guid membershipId,
@@ -851,6 +1026,17 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
         Guid[] ConsumptionIds);
 
     private sealed record IssuedCoverage(Guid MembershipId, Guid ClosureId);
+
+    private sealed class OpenPaymentDayStatusProvider
+        : IPaymentDayReconciliationStatusProvider
+    {
+        public Task<PaymentDayReconciliationStatus> GetStatusAsync(
+            DateOnly businessDate,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentDayReconciliationStatus.Open);
+        }
+    }
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
