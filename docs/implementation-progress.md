@@ -13686,3 +13686,58 @@ Stop point:
   Payment lifecycle where applicable, source/covering recalculation, audit,
   idempotency, rollback and canonical Client reread. Then add production
   Razor/htmx controls before issued-sale replacement or paper metadata.
+
+## Step 212 - Corrected negative Visit coverage atomically
+
+Status: completed as the third command slice over the Step 209 negative-
+coverage source foundation. Milestone 10.5 remains in progress; Milestone 11
+has not started.
+
+Completed:
+
+- Added reason-required `CorrectNegativeVisitCoverage` for active Owner, named
+  Admin and shared Reception/Admin accounts. It supports cancel or same-method
+  replacement of both one-off and new-Membership coverage, rejects replacement
+  shape changes, stale oldest-Visit state, inactive catalog rows and invalid
+  actor/session shapes, and returns a canonical Client reread.
+- Serialized the workflow through the Client lock, then locked the original
+  closure, items, linked coverage consumptions and one-off Payment. Cancellation
+  restores the original negative Visits; replacement then allocates the restored
+  oldest Visits, with no arbitrary skipping.
+- One-off replacement snapshots the selected catalog rows and creates one new
+  exact cash Payment while retaining the original as replaced. New-Membership
+  replacement reuses the already-issued covering Membership only when its
+  locked canonical cache has enough capacity and preserves its exact sale
+  Payment.
+- Rebuilt every source and covering Membership after removing and, when
+  requested, reapplying coverage. The correction fact, closure and Payment
+  lifecycle audit entries, idempotency result and all source/cache changes
+  commit or roll back together.
+- Extracted the shared one-off line preparer so create and replacement use the
+  same catalog locking and snapshot rules. Replacement validation now returns
+  the exact `replacementOneOffLines[...]` field path expected by production UI.
+- Reconstructed idempotent replay from canonical rows, including the covering
+  Membership and exact original/replacement Payment identities. An independent
+  read-only review found no P0/P1 issue; both P2 replay and validation-field
+  findings were fixed before commit.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Focused PostgreSQL correction, one-off closure and new-Membership coverage
+  tests passed: 15/15. They cover cancel/replace for both methods, restored
+  oldest-first state, exact replacement Payment, unchanged sale Payment,
+  partial remainder, reason and stale rejection, inactive catalog feedback,
+  invalid actor shape, idempotent replay equivalence, audit-failure rollback,
+  DI wiring and serialized concurrent correction.
+- Full domain tests passed: 416/416. Full Web tests passed: 294/294.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Add production Razor/htmx controls for choosing no action, one-off closure or
+  new-Membership coverage and for canceling/replacing an existing coverage.
+  Preserve tablet/phone warnings, explicit non-recommended choices, stale
+  previews, duplicate-submit protection and canonical rereads. Do not start
+  issued-sale replacement, paper metadata or Milestone 11 before this UI slice
+  is validated.

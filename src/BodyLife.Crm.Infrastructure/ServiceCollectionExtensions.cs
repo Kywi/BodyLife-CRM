@@ -217,6 +217,9 @@ public static class ServiceCollectionExtensions
             IBodyLifeCommandHandler<CloseNegativeVisitsOneOffCommand>,
             CloseNegativeVisitsOneOffCommandHandler>();
         services.AddScoped<
+            IBodyLifeCommandHandler<CorrectNegativeVisitCoverageCommand>,
+            CorrectNegativeVisitCoverageCommandHandler>();
+        services.AddScoped<
             IBodyLifeCommandHandler<MarkVisitCommand>,
             MarkVisitCommandHandler>();
         services.AddScoped<

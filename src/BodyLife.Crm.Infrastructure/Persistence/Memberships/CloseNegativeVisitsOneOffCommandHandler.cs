@@ -98,14 +98,14 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                     fingerprint);
             }
 
-            var typeRows = await LockMembershipTypesAsync(closure, cancellationToken);
-            var preparedLinesResult = PrepareLines(closure, typeRows);
+            var preparedLinesResult = await OneOffNegativeClosureLinePreparer
+                .PrepareAsync(dbContext, closure.Lines, "lines", cancellationToken);
             if (preparedLinesResult.Error is not null)
             {
                 return preparedLinesResult.Error;
             }
 
-            var preparedLines = preparedLinesResult.Lines!;
+            var preparedLines = preparedLinesResult.Preparation!.Lines;
             var selectionResult = await negativeVisitSelector
                 .SelectForUpdateAfterClientLockAsync(
                     closure.ClientId,
@@ -374,121 +374,4 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
         return rows.SingleOrDefault();
     }
 
-    private Task<MembershipTypeRecord[]> LockMembershipTypesAsync(
-        NormalizedOneOffNegativeClosure closure,
-        CancellationToken cancellationToken)
-    {
-        var typeIds = closure.Lines
-            .Select(line => line.MembershipTypeId)
-            .Order()
-            .ToArray();
-        return dbContext.Set<MembershipTypeRecord>()
-            .FromSqlInterpolated(
-                $"""
-                select *
-                from bodylife.membership_types
-                where id = any ({typeIds})
-                order by id
-                for share
-                """)
-            .AsNoTracking()
-            .ToArrayAsync(cancellationToken);
-    }
-
-    private static PreparedLinesResult PrepareLines(
-        NormalizedOneOffNegativeClosure closure,
-        IReadOnlyCollection<MembershipTypeRecord> typeRows)
-    {
-        if (typeRows.Count != closure.Lines.Count)
-        {
-            return PreparedLinesResult.Failed(
-                NegativeCoverageCommandSupport.Error(
-                    CommandErrorCode.NotFound,
-                    "One or more one-off membership types were not found.",
-                    "lines"));
-        }
-
-        var recordsById = typeRows.ToDictionary(record => record.Id);
-        var prepared = new List<PreparedClosureLine>(closure.Lines.Count);
-        string? currency = null;
-        try
-        {
-            foreach (var selection in closure.Lines)
-            {
-                var record = recordsById[selection.MembershipTypeId];
-                if (!record.IsActive)
-                {
-                    return PreparedLinesResult.Failed(
-                        NegativeCoverageCommandSupport.Error(
-                            CommandErrorCode.MembershipTypeInactive,
-                            "Inactive one-off membership type cannot close negative Visits.",
-                            $"lines[{selection.Sequence - 1}].membershipTypeId"));
-                }
-
-                if (!string.Equals(record.Kind, "one_off", StringComparison.Ordinal)
-                    || record.VisitsLimit != 1
-                    || record.PriceAmount <= 0)
-                {
-                    return PreparedLinesResult.Failed(
-                        NegativeCoverageCommandSupport.Error(
-                            CommandErrorCode.MembershipNotEligible,
-                            "Selected membership type is not an eligible one-off type.",
-                            $"lines[{selection.Sequence - 1}].membershipTypeId"));
-                }
-
-                if (record.UpdatedAt != selection.ExpectedMembershipTypeUpdatedAt)
-                {
-                    return PreparedLinesResult.Failed(
-                        NegativeCoverageCommandSupport.Error(
-                            CommandErrorCode.StaleState,
-                            "One-off membership type changed after preview. Refresh canonical state.",
-                            $"lines[{selection.Sequence - 1}].expectedMembershipTypeUpdatedAt"));
-                }
-
-                currency ??= record.PriceCurrency;
-                if (!string.Equals(currency, record.PriceCurrency, StringComparison.Ordinal))
-                {
-                    return PreparedLinesResult.Failed(
-                        NegativeCoverageCommandSupport.ValidationError(
-                            "All one-off closure lines must use the same currency.",
-                            "lines"));
-                }
-
-                prepared.Add(new PreparedClosureLine(
-                    selection,
-                    record,
-                    checked(record.PriceAmount * selection.Quantity)));
-            }
-        }
-        catch (OverflowException)
-        {
-            return PreparedLinesResult.Failed(
-                NegativeCoverageCommandSupport.ValidationError(
-                    "One-off closure total exceeds the supported amount range.",
-                    "lines"));
-        }
-
-        return PreparedLinesResult.Completed(prepared.AsReadOnly());
-    }
-
-    private sealed record PreparedClosureLine(
-        NormalizedOneOffNegativeClosureLine Selection,
-        MembershipTypeRecord Record,
-        decimal LineTotal);
-
-    private sealed record PreparedLinesResult(
-        IReadOnlyList<PreparedClosureLine>? Lines,
-        CommandResult? Error)
-    {
-        internal static PreparedLinesResult Completed(
-            IReadOnlyList<PreparedClosureLine> lines)
-        {
-            return new PreparedLinesResult(lines, Error: null);
-        }
-
-        internal static PreparedLinesResult Failed(CommandResult error)
-        {
-            return new PreparedLinesResult(Lines: null, error);
-        }
-    }
 }
