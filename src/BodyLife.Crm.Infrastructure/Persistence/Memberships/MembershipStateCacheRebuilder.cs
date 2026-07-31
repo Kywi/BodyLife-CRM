@@ -150,6 +150,7 @@ public sealed class MembershipStateCacheRebuilder
         return CalculateCanonicalStateAfterMembershipLockCoreAsync(
             source,
             excludedNonWorkingDayApplicationIds: null,
+            excludedNegativeClosureId: null,
             cancellationToken);
     }
 
@@ -170,6 +171,27 @@ public sealed class MembershipStateCacheRebuilder
         return CalculateCanonicalStateAfterMembershipLockCoreAsync(
             source,
             excludedApplicationIds,
+            excludedNegativeClosureId: null,
+            cancellationToken);
+    }
+
+    internal Task<MembershipCanonicalStateCalculation>
+        CalculateCanonicalStateForNegativeCoveragePreviewAsync(
+            IssuedMembershipRecord source,
+            Guid excludedNegativeClosureId,
+            CancellationToken cancellationToken = default)
+    {
+        if (excludedNegativeClosureId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Excluded negative closure id is required.",
+                nameof(excludedNegativeClosureId));
+        }
+
+        return CalculateCanonicalStateAfterMembershipLockCoreAsync(
+            source,
+            excludedNonWorkingDayApplicationIds: null,
+            excludedNegativeClosureId,
             cancellationToken);
     }
 
@@ -177,6 +199,7 @@ public sealed class MembershipStateCacheRebuilder
         CalculateCanonicalStateAfterMembershipLockCoreAsync(
             IssuedMembershipRecord source,
             IReadOnlySet<Guid>? excludedNonWorkingDayApplicationIds,
+            Guid? excludedNegativeClosureId,
             CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -260,8 +283,10 @@ public sealed class MembershipStateCacheRebuilder
                 on item.NewConsumptionId equals (Guid?)candidateNewConsumption.Id
                 into newConsumptions
             from newConsumption in newConsumptions.DefaultIfEmpty()
-            where item.SourceMembershipId == membershipId
-                || item.CoveringMembershipId == membershipId
+            where (item.SourceMembershipId == membershipId
+                    || item.CoveringMembershipId == membershipId)
+                && (!excludedNegativeClosureId.HasValue
+                    || closure.Id != excludedNegativeClosureId.Value)
             select new MembershipNegativeCoverageSourceRow(
                 item.Id,
                 item.ClientId,

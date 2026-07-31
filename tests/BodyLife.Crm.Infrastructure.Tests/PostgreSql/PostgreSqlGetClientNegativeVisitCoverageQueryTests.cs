@@ -13,7 +13,7 @@ using Npgsql;
 
 namespace BodyLife.Crm.Infrastructure.Tests.PostgreSql;
 
-public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
+public sealed partial class PostgreSqlGetClientNegativeVisitCoverageQueryTests
 {
     private static readonly DateTimeOffset Now = new(2026, 7, 31, 12, 0, 0, TimeSpan.Zero);
 
@@ -121,10 +121,20 @@ public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
                     newMembership.CoveringMembershipSnapshot);
                 Assert.Equal("Coverage membership", snapshot.TypeName);
                 Assert.Equal(new Money(300m, "UAH"), snapshot.Price);
-                var item = Assert.Single(newMembership.Items);
-                Assert.Equal(fixture.VisitIds[2], item.VisitId);
-                Assert.Equal(fixture.NewConsumptionId, item.NewConsumptionId);
-                Assert.Equal(fixture.CoveringMembershipId, item.CoveringMembershipId);
+                Assert.Collection(
+                    newMembership.Items,
+                    item =>
+                    {
+                        Assert.Equal(fixture.VisitIds[2], item.VisitId);
+                        Assert.Equal(fixture.NewConsumptionIds[0], item.NewConsumptionId);
+                        Assert.Equal(fixture.CoveringMembershipId, item.CoveringMembershipId);
+                    },
+                    item =>
+                    {
+                        Assert.Equal(fixture.VisitIds[3], item.VisitId);
+                        Assert.Equal(fixture.NewConsumptionIds[1], item.NewConsumptionId);
+                        Assert.Equal(fixture.CoveringMembershipId, item.CoveringMembershipId);
+                    });
             });
         Assert.Empty(dbContext.ChangeTracker.Entries());
     }
@@ -328,14 +338,18 @@ public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
             CoveringTypeId: Guid.NewGuid(),
             SourceMembershipId: Guid.NewGuid(),
             CoveringMembershipId: Guid.NewGuid(),
-            VisitIds: Enumerable.Range(0, 3).Select(_ => Guid.NewGuid()).ToArray(),
-            ConsumptionIds: Enumerable.Range(0, 3).Select(_ => Guid.NewGuid()).ToArray(),
+            VisitIds: Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray(),
+            ConsumptionIds: Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray(),
             OneOffClosureId: Guid.NewGuid(),
             NewMembershipClosureId: Guid.NewGuid(),
             OneOffLineId: Guid.NewGuid(),
             OneOffItemId: Guid.NewGuid(),
-            NewMembershipItemId: Guid.NewGuid(),
-            NewConsumptionId: Guid.NewGuid(),
+            NewMembershipItemIds: Enumerable.Range(0, 2)
+                .Select(_ => Guid.NewGuid())
+                .ToArray(),
+            NewConsumptionIds: Enumerable.Range(0, 2)
+                .Select(_ => Guid.NewGuid())
+                .ToArray(),
             OneOffPaymentId: Guid.NewGuid());
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
@@ -396,7 +410,8 @@ public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
             values
                 (@visit_1, @client, @now - interval '3 days', @now - interval '3 days', @account, @session, 'membership', 'normal', 'active'),
                 (@visit_2, @client, @now - interval '2 days', @now - interval '2 days', @account, @session, 'membership', 'normal', 'active'),
-                (@visit_3, @client, @now - interval '1 day', @now - interval '1 day', @account, @session, 'membership', 'normal', 'active');
+                (@visit_3, @client, @now - interval '1 day', @now - interval '1 day', @account, @session, 'membership', 'normal', 'active'),
+                (@visit_4, @client, @now - interval '12 hours', @now - interval '12 hours', @account, @session, 'membership', 'normal', 'active');
 
             insert into bodylife.visit_consumptions (
                 id, visit_id, client_id, visit_kind, membership_id, consumption_type,
@@ -405,7 +420,8 @@ public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
             values
                 (@consumption_1, @visit_1, @client, 'membership', @source_membership, 'counted', 'visit', @visit_1, @now - interval '3 days', @account, @session, 'active'),
                 (@consumption_2, @visit_2, @client, 'membership', @source_membership, 'counted', 'visit', @visit_2, @now - interval '2 days', @account, @session, 'active'),
-                (@consumption_3, @visit_3, @client, 'membership', @source_membership, 'counted', 'visit', @visit_3, @now - interval '1 day', @account, @session, 'active');
+                (@consumption_3, @visit_3, @client, 'membership', @source_membership, 'counted', 'visit', @visit_3, @now - interval '1 day', @account, @session, 'active'),
+                (@consumption_4, @visit_4, @client, 'membership', @source_membership, 'counted', 'visit', @visit_4, @now - interval '12 hours', @account, @session, 'active');
 
             insert into bodylife.membership_negative_closures (
                 id, client_id, closure_type, covering_membership_id,
@@ -415,7 +431,7 @@ public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
                 (@one_off_closure, @client, 'one_off', null, @visit_2, 1,
                  @now - interval '20 minutes', @now - interval '20 minutes', @account, @session,
                  'normal', 'query-one-off', 'active'),
-                (@new_membership_closure, @client, 'new_membership', @covering_membership, @visit_3, 1,
+                (@new_membership_closure, @client, 'new_membership', @covering_membership, @visit_3, 2,
                  @now - interval '10 minutes', @now - interval '10 minutes', @account, @session,
                  'normal', 'query-new-membership', 'active');
 
@@ -431,10 +447,13 @@ public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
                 id, visit_id, client_id, visit_kind, membership_id, consumption_type,
                 source_fact_type, source_fact_id, recorded_at, recorded_by_account_id,
                 recorded_session_id, status)
-            values (
-                @new_consumption, @visit_3, @client, 'membership', @covering_membership,
-                'negative_coverage', 'negative_closure_item', @new_membership_item,
-                @now - interval '10 minutes', @account, @session, 'active');
+            values
+                (@new_consumption_1, @visit_3, @client, 'membership', @covering_membership,
+                 'negative_coverage', 'negative_closure_item', @new_membership_item_1,
+                 @now - interval '10 minutes', @account, @session, 'active'),
+                (@new_consumption_2, @visit_4, @client, 'membership', @covering_membership,
+                 'negative_coverage', 'negative_closure_item', @new_membership_item_2,
+                 @now - interval '10 minutes', @account, @session, 'active');
 
             insert into bodylife.membership_negative_closure_items (
                 id, negative_closure_id, client_id, closure_line_id, sequence, visit_id,
@@ -443,8 +462,10 @@ public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
             values
                 (@one_off_item, @one_off_closure, @client, @one_off_line, 1, @visit_2,
                  @source_membership, @consumption_2, null, null, 'active'),
-                (@new_membership_item, @new_membership_closure, @client, null, 1, @visit_3,
-                 @source_membership, @consumption_3, @covering_membership, @new_consumption, 'active');
+                (@new_membership_item_1, @new_membership_closure, @client, null, 1, @visit_3,
+                 @source_membership, @consumption_3, @covering_membership, @new_consumption_1, 'active'),
+                (@new_membership_item_2, @new_membership_closure, @client, null, 2, @visit_4,
+                 @source_membership, @consumption_4, @covering_membership, @new_consumption_2, 'active');
 
             insert into bodylife.payments (
                 id, client_id, negative_closure_id, amount, currency, method, payment_context,
@@ -468,15 +489,19 @@ public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
         command.Parameters.AddWithValue("visit_1", fixture.VisitIds[0]);
         command.Parameters.AddWithValue("visit_2", fixture.VisitIds[1]);
         command.Parameters.AddWithValue("visit_3", fixture.VisitIds[2]);
+        command.Parameters.AddWithValue("visit_4", fixture.VisitIds[3]);
         command.Parameters.AddWithValue("consumption_1", fixture.ConsumptionIds[0]);
         command.Parameters.AddWithValue("consumption_2", fixture.ConsumptionIds[1]);
         command.Parameters.AddWithValue("consumption_3", fixture.ConsumptionIds[2]);
+        command.Parameters.AddWithValue("consumption_4", fixture.ConsumptionIds[3]);
         command.Parameters.AddWithValue("one_off_closure", fixture.OneOffClosureId);
         command.Parameters.AddWithValue("new_membership_closure", fixture.NewMembershipClosureId);
         command.Parameters.AddWithValue("one_off_line", fixture.OneOffLineId);
         command.Parameters.AddWithValue("one_off_item", fixture.OneOffItemId);
-        command.Parameters.AddWithValue("new_membership_item", fixture.NewMembershipItemId);
-        command.Parameters.AddWithValue("new_consumption", fixture.NewConsumptionId);
+        command.Parameters.AddWithValue("new_membership_item_1", fixture.NewMembershipItemIds[0]);
+        command.Parameters.AddWithValue("new_membership_item_2", fixture.NewMembershipItemIds[1]);
+        command.Parameters.AddWithValue("new_consumption_1", fixture.NewConsumptionIds[0]);
+        command.Parameters.AddWithValue("new_consumption_2", fixture.NewConsumptionIds[1]);
         command.Parameters.AddWithValue("one_off_payment", fixture.OneOffPaymentId);
         command.Parameters.AddWithValue("now", Now);
         command.Parameters.AddWithValue("expires", Now.AddHours(1));
@@ -529,8 +554,8 @@ public sealed class PostgreSqlGetClientNegativeVisitCoverageQueryTests
         Guid NewMembershipClosureId,
         Guid OneOffLineId,
         Guid OneOffItemId,
-        Guid NewMembershipItemId,
-        Guid NewConsumptionId,
+        Guid[] NewMembershipItemIds,
+        Guid[] NewConsumptionIds,
         Guid OneOffPaymentId);
 
     private sealed class PauseBeforeClosureProjectionInterceptor : DbCommandInterceptor

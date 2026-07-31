@@ -12,21 +12,62 @@ internal static class OneOffNegativeClosureLinePreparer
         string fieldPrefix,
         CancellationToken cancellationToken)
     {
+        return await PrepareCoreAsync(
+            dbContext,
+            selections,
+            fieldPrefix,
+            lockRows: true,
+            cancellationToken);
+    }
+
+    internal static async Task<PreparedOneOffClosureLinesResult> PrepareReadOnlyAsync(
+        BodyLifeDbContext dbContext,
+        IReadOnlyList<NormalizedOneOffNegativeClosureLine> selections,
+        string fieldPrefix,
+        CancellationToken cancellationToken)
+    {
+        return await PrepareCoreAsync(
+            dbContext,
+            selections,
+            fieldPrefix,
+            lockRows: false,
+            cancellationToken);
+    }
+
+    private static async Task<PreparedOneOffClosureLinesResult> PrepareCoreAsync(
+        BodyLifeDbContext dbContext,
+        IReadOnlyList<NormalizedOneOffNegativeClosureLine> selections,
+        string fieldPrefix,
+        bool lockRows,
+        CancellationToken cancellationToken)
+    {
         var typeIds = selections
             .Select(line => line.MembershipTypeId)
             .Order()
             .ToArray();
-        var typeRows = await dbContext.Set<MembershipTypeRecord>()
-            .FromSqlInterpolated(
-                $"""
-                select *
-                from bodylife.membership_types
-                where id = any ({typeIds})
-                order by id
-                for share
-                """)
-            .AsNoTracking()
-            .ToArrayAsync(cancellationToken);
+        MembershipTypeRecord[] typeRows;
+        if (lockRows)
+        {
+            typeRows = await dbContext.Set<MembershipTypeRecord>()
+                .FromSqlInterpolated(
+                    $"""
+                    select *
+                    from bodylife.membership_types
+                    where id = any ({typeIds})
+                    order by id
+                    for share
+                    """)
+                .AsNoTracking()
+                .ToArrayAsync(cancellationToken);
+        }
+        else
+        {
+            typeRows = await dbContext.Set<MembershipTypeRecord>()
+                .AsNoTracking()
+                .Where(record => typeIds.Contains(record.Id))
+                .OrderBy(record => record.Id)
+                .ToArrayAsync(cancellationToken);
+        }
         if (typeRows.Length != selections.Count)
         {
             return PreparedOneOffClosureLinesResult.Failed(

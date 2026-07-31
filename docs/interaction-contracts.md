@@ -481,6 +481,37 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 ## ADR-018 sale, coverage and replacement contract
 
+### PreviewCloseNegativeVisitsOneOff
+
+- Purpose: provide an advisory, Memberships-owned preview for an explicit
+  one-off selection without creating closure, Payment, Audit or cache facts.
+- Permission and consistency: authorization is checked before detailed input
+  validation. The handler reads canonical negative Visits, active one-off
+  catalog selectors and exact prices in one read-only PostgreSQL
+  `REPEATABLE READ` transaction.
+- Output: exact line and cash Payment totals, concrete oldest-first Visits,
+  remaining known/unknown negative balance and current stale selectors. No
+  option is selected or recommended by the server.
+- The preview is not an authorization token. `CloseNegativeVisitsOneOff`
+  revalidates permissions, catalog versions, oldest-open Visit state, amounts
+  and allocation constraints while holding its command locks.
+
+### PreviewCorrectNegativeVisitCoverage
+
+- Purpose: explain cancel or same-method replacement before changing an active
+  one-off or new-Membership closure. Reason and an explicit replacement shape
+  are required exactly as for the command.
+- Permission and consistency: authorization is checked before detailed input
+  validation. Historical closure/items/Payment facts, hypothetical restored
+  Membership state, active catalog selectors and replacement amounts are read
+  fail-closed in one read-only PostgreSQL `REPEATABLE READ` transaction.
+- Output: original and restored concrete Visits, original/replacement exact
+  Payment context, covering-Membership restored/replacement capacity,
+  resulting known/unknown negative balance and current stale selectors.
+- The preview never computes a refund or cash delta and cannot reserve state.
+  `CorrectNegativeVisitCoverage` repeats all authorization, lifecycle,
+  oldest-first, capacity, price and concurrency checks under command locks.
+
 ### CloseNegativeVisitsOneOff
 
 - Purpose: partially or fully close a Client's oldest open negative Visits with

@@ -11,7 +11,37 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
         Guid clientId,
         CancellationToken cancellationToken)
     {
-        return SelectCoreAsync(clientId, forUpdate: false, cancellationToken);
+        return SelectCoreAsync(
+            clientId,
+            forUpdate: false,
+            excludedNegativeClosureId: null,
+            cancellationToken);
+    }
+
+    internal Task<MembershipNegativeVisitSelectionResult>
+        SelectHypotheticallyWithoutClosureAsync(
+            Guid clientId,
+            Guid excludedNegativeClosureId,
+            CancellationToken cancellationToken)
+    {
+        if (excludedNegativeClosureId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Excluded negative closure id is required.",
+                nameof(excludedNegativeClosureId));
+        }
+
+        if (dbContext.Database.CurrentTransaction is null)
+        {
+            throw new InvalidOperationException(
+                "Hypothetical negative Visit selection requires a caller-owned transaction.");
+        }
+
+        return SelectCoreAsync(
+            clientId,
+            forUpdate: false,
+            excludedNegativeClosureId,
+            cancellationToken);
     }
 
     internal async Task<MembershipNegativeVisitSelectionResult>
@@ -30,12 +60,17 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
                 "Negative Visit selection requires a caller-owned transaction and a locked Client.");
         }
 
-        return await SelectCoreAsync(clientId, forUpdate: true, cancellationToken);
+        return await SelectCoreAsync(
+            clientId,
+            forUpdate: true,
+            excludedNegativeClosureId: null,
+            cancellationToken);
     }
 
     private async Task<MembershipNegativeVisitSelectionResult> SelectCoreAsync(
         Guid clientId,
         bool forUpdate,
+        Guid? excludedNegativeClosureId,
         CancellationToken cancellationToken)
     {
         IssuedMembershipRecord[] memberships;
@@ -170,6 +205,8 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
             where item.ClientId == clientId
                 && item.Status == "active"
                 && closure.Status == "active"
+                && (!excludedNegativeClosureId.HasValue
+                    || closure.Id != excludedNegativeClosureId.Value)
             select new ActiveCoverageRow(
                 item.Id,
                 item.VisitId,
@@ -194,6 +231,11 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
             .Select(row => row.OldConsumptionId)
             .ToHashSet();
         var cachesByMembershipId = caches.ToDictionary(cache => cache.MembershipId);
+        var statesByMembershipId = new Dictionary<Guid, MembershipCalculatedState>(
+            memberships.Length);
+        var hypotheticalCalculator = excludedNegativeClosureId.HasValue
+            ? new MembershipStateCacheRebuilder(dbContext, TimeProvider.System)
+            : null;
         foreach (var membership in memberships)
         {
             var cache = cachesByMembershipId[membership.Id];
@@ -211,7 +253,7 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
                     snapshot,
                     membership.StartDate,
                     membership.BaseEndDate);
-                _ = MembershipCalculatedState.FromStoredCache(
+                var storedState = MembershipCalculatedState.FromStoredCache(
                     issueTerms,
                     cache.CountedVisits,
                     cache.RemainingVisits,
@@ -221,8 +263,17 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
                     cache.ExtensionDays,
                     cache.EffectiveEndDate,
                     cache.LastCountedVisitAt);
+                var selectedState = hypotheticalCalculator is null
+                    ? storedState
+                    : (await hypotheticalCalculator
+                        .CalculateCanonicalStateForNegativeCoveragePreviewAsync(
+                            membership,
+                            excludedNegativeClosureId!.Value,
+                            cancellationToken)).State;
+                statesByMembershipId.Add(membership.Id, selectedState);
             }
-            catch (ArgumentException)
+            catch (Exception exception)
+                when (exception is ArgumentException or InvalidOperationException)
             {
                 return MembershipNegativeVisitSelectionResult
                     .InconsistentCanonicalState();
@@ -234,14 +285,14 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
 
         foreach (var membership in memberships)
         {
-            var cache = cachesByMembershipId[membership.Id];
-            totalNegativeBalance += cache.NegativeBalance;
+            var state = statesByMembershipId[membership.Id];
+            totalNegativeBalance += state.NegativeBalance;
             if (totalNegativeBalance > int.MaxValue)
             {
                 return MembershipNegativeVisitSelectionResult.InconsistentCanonicalState();
             }
 
-            if (cache.NegativeBalance == 0)
+            if (state.NegativeBalance == 0)
             {
                 continue;
             }
@@ -295,9 +346,9 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
                 .ThenBy(item => item.RecordedAt)
                 .ThenBy(item => item.VisitId)
                 .ToArray();
-            var negativeTailCount = Math.Min(cache.NegativeBalance, orderedEvents.Length);
+            var negativeTailCount = Math.Min(state.NegativeBalance, orderedEvents.Length);
             var negativeEvents = orderedEvents[^negativeTailCount..];
-            if (cache.FirstNegativeVisitId is { } firstNegativeVisitId
+            if (state.FirstNegativeVisitId is { } firstNegativeVisitId
                 && !negativeEvents.Any(item => item.VisitId == firstNegativeVisitId))
             {
                 return MembershipNegativeVisitSelectionResult
@@ -316,10 +367,10 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
             .ThenBy(candidate => candidate.SourceMembershipId)
             .ToArray();
         var total = (int)totalNegativeBalance;
-        var firstNegativeVisitDate = caches
-            .Where(cache => cache.NegativeBalance > 0
-                && cache.FirstNegativeVisitDate.HasValue)
-            .Select(cache => cache.FirstNegativeVisitDate!.Value)
+        var firstNegativeVisitDate = statesByMembershipId.Values
+            .Where(state => state.NegativeBalance > 0
+                && state.FirstNegativeVisitDate.HasValue)
+            .Select(state => state.FirstNegativeVisitDate!.Value)
             .Order()
             .Cast<DateOnly?>()
             .FirstOrDefault();

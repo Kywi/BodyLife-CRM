@@ -13848,3 +13848,55 @@ Stop point:
   phone warnings, duplicate-submit protection and canonical rereads. Do not
   start issued-sale replacement, paper metadata or Milestone 11 before that UI
   slice is validated.
+
+## Step 215 - Added negative-coverage mutation previews
+
+Status: completed as the final application-query foundation before the
+remaining production UI work. Milestone 10.5 remains in progress; Milestone 11
+has not started.
+
+Completed:
+
+- Added Memberships-owned, permission-first previews for explicit one-off
+  closure and reason-required cancel or same-method replacement of active
+  one-off/new-Membership coverage. Both run in one read-only PostgreSQL
+  `REPEATABLE READ` transaction and return current stale selectors.
+- One-off preview derives immutable line snapshots, exact cash Payment total,
+  concrete oldest-first covered Visits and known/unknown negative remainder.
+  Correction preview returns original/restored Visits, exact original and
+  replacement Payment context, covering-Membership restored/replacement
+  capacity and resulting negative state without calculating a refund or delta.
+- Added hypothetical Memberships-owned recalculation that removes one closure
+  only inside the preview snapshot. No formula moved into Web, Reports or test
+  helpers, and commands still reauthorize and revalidate all state under locks.
+- Hardened historical source reads to require contiguous item/line sequences,
+  exact per-line allocations and Payment lifecycle identity matching the
+  original closure. Corrupted source facts now fail closed instead of yielding
+  a correction preview.
+- Registered both scoped query handlers and documented their advisory,
+  permission-first, snapshot and command-revalidation contracts in the
+  canonical interaction contract.
+- An independent read-only review found no P0/P1 issue. Its P2 findings for
+  historical invariant coverage, new-Membership `2 -> 1` parity and correction
+  snapshot coverage were fixed before commit.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Focused PostgreSQL negative-coverage read/preview tests passed: 20/20. They
+  include exact one-off totals, partial remainder, cancel/replace parity,
+  preview-to-command new-Membership `2 -> 1`, missing cache, deliberately
+  malformed Payment/line/item history, permission-first failures, capacity and
+  stale selectors, plus repeatable-read concurrency for both close and
+  correction previews.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Integrate the canonical read/preview/command contracts into production
+  Razor/htmx Client profile controls. Provide explicit no-action, one-off and
+  new-Membership choices with no preselection, reason-required cancel/replace,
+  exact Payments and concrete Visit explanations, stale refresh, busy/disabled
+  duplicate-submit protection and canonical profile rereads on tablet and
+  phone. Do not begin issued-sale replacement, paper fallback metadata or
+  Milestone 11 until this UI slice is validated and committed.
