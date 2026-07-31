@@ -1609,6 +1609,58 @@ textarea:focus-visible,
   cursor: not-allowed !important;
 }
 
+.issue-negative-coverage {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--danger);
+  border-radius: 6px;
+  padding: 12px;
+  background: var(--surface);
+}
+
+.issue-negative-coverage h5 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.issue-negative-coverage-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.issue-negative-coverage-summary div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.issue-negative-coverage-summary dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.issue-negative-coverage-summary dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.issue-negative-covered-visits {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 24px;
+}
+
+.issue-negative-covered-visits li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .issue-payment-choice {
   display: grid;
   gap: 10px;
@@ -3943,6 +3995,7 @@ textarea:focus-visible,
   .payment-correction-context,
   .action-form-grid,
   .issue-membership-snapshot,
+  .issue-negative-coverage-summary,
   .visit-business-context,
   .payment-fixed-context,
   .visit-membership-meta,

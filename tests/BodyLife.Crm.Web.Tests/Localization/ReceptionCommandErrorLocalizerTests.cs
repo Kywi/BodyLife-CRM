@@ -30,6 +30,40 @@ public sealed class ReceptionCommandErrorLocalizerTests
     }
 
     [Theory]
+    [InlineData(
+        "en-US",
+        "negativeCoverageCount",
+        "Choose how many oldest negative visits to cover.")]
+    [InlineData(
+        "uk-UA",
+        "negativeCoverageCount",
+        "Виберіть кількість найдавніших від’ємних відвідувань для покриття.")]
+    [InlineData(
+        "en-US",
+        "expectedOldestOpenNegativeVisitId",
+        "Refresh the coverage preview and confirm the current oldest negative visit.")]
+    [InlineData(
+        "uk-UA",
+        "expectedOldestOpenNegativeVisitId",
+        "Оновіть попередній перегляд і підтвердьте поточне найдавніше від’ємне відвідування.")]
+    public void NegativeCoverageFieldMappingsUseTheActiveCulture(
+        string culture,
+        string field,
+        string expected)
+    {
+        using var cultureScope = new CultureScope(culture);
+        var error = new CommandError(
+            CommandErrorCode.ValidationFailed,
+            "RAW APPLICATION ERROR MUST NOT RENDER",
+            field);
+
+        var actual = ReceptionCommandErrorLocalizer.Display(CreateLocalizer(), error);
+
+        Assert.Equal(expected, actual);
+        Assert.DoesNotContain("RAW APPLICATION ERROR", actual, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("en-US")]
     [InlineData("uk-UA")]
     public void EveryStableCommandErrorCodeMapsToSafeResourceText(string culture)

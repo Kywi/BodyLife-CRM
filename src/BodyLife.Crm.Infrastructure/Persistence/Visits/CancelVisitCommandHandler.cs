@@ -398,6 +398,11 @@ public sealed class CancelVisitCommandHandler(
                     CommandErrorCode.AlreadyCanceled,
                     "Visit has already been canceled.",
                     "visitId"),
+            CancelVisitSourcePreparationStatus.VisitHasActiveNegativeCoverage =>
+                VisitCommandSupport.Error(
+                    CommandErrorCode.VisitHasActiveNegativeCoverage,
+                    "Correct the active negative Visit coverage before canceling this Visit.",
+                    "visitId"),
             CancelVisitSourcePreparationStatus.InconsistentSource =>
                 SourceChangedConcurrently(),
             _ => SourceChangedConcurrently(),

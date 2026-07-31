@@ -194,6 +194,8 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid IssuePhoneExistingMembershipId { get; private set; }
 
+    public Guid IssuePhoneNegativeVisitId { get; private set; }
+
     public async Task ExpireSessionAsync(string deviceLabel)
     {
         var database = _database
@@ -655,6 +657,11 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         return RequireDatabase().ReadAuditByCorrelationAsync(
             actionType,
             requestCorrelationId);
+    }
+
+    public string ReadCapturedOutputForDiagnostics()
+    {
+        return CapturedOutput();
     }
 
     public async Task<RequestOutcomeLogSmokeSnapshot> WaitForRequestOutcomeLogAsync(
@@ -1674,7 +1681,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             membershipTypeId,
             "Existing negative snapshot",
             visitsLimitSnapshot: 0);
-        await database.InsertExternalCountedVisitAsync(
+        IssuePhoneNegativeVisitId = await database.InsertExternalCountedVisitAsync(
             IssuePhoneClientId,
             IssuePhoneExistingMembershipId);
     }

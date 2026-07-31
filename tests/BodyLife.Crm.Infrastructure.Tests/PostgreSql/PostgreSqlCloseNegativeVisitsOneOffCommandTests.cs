@@ -1,11 +1,14 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
+using BodyLife.Crm.Infrastructure.Persistence.Visits;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Payments;
+using BodyLife.Crm.Modules.Visits;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -118,6 +121,130 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
             50m,
             await database.ExecuteScalarAsync<decimal>(
                 $"select unit_price_amount_snapshot from bodylife.membership_negative_closure_lines where negative_closure_id = '{closureId}' and sequence = 1"));
+    }
+
+    [PostgreSqlFact]
+    public async Task ActiveOneOffClosureBlocksVisitCancellationAndKeepsCanonicalReads()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(
+            database,
+            ActorRole.Owner,
+            AccountKind.Owner);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId);
+        var coveredVisitId = fixture.VisitIds[2];
+        var closureResult = await CreateHandler(dbContext).ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "closure-before-cancel",
+                coveredVisitId,
+                [
+                    new NegativeVisitClosureLineSelection(
+                        fixture.OneOffTypeAId,
+                        TestNow,
+                        1),
+                ]),
+            CancellationToken.None);
+        Assert.Equal(CommandStatus.Success, closureResult.Status);
+        var closureId = closureResult.PrimaryEntityId!.Value.Value;
+        var auditCountBeforeCancel = await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.business_audit_entries");
+        var idempotencyCountBeforeCancel = await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.command_idempotency_keys");
+        var dayStatusProvider = new OpenVisitDayStatusProvider();
+
+        var clientRowsResult = await new GetClientVisitRowsQueryHandler(
+                dbContext,
+                dayStatusProvider,
+                new FixedTimeProvider(TestNow.AddMinutes(31)))
+            .ExecuteAsync(
+                new GetClientVisitRowsQuery(fixture.Actor, fixture.ClientId),
+                CancellationToken.None);
+        Assert.Equal(GetClientVisitRowsStatus.Success, clientRowsResult.Status);
+        var coveredClientRow = Assert.Single(
+            clientRowsResult.Page!.Items,
+            row => row.VisitId == coveredVisitId);
+        Assert.True(coveredClientRow.AllowedActions.TryGet(
+            VisitActionKeys.Cancel,
+            out var clientCancellationPermission));
+        Assert.False(clientCancellationPermission!.IsAllowed);
+        Assert.Equal(
+            "negative_coverage_dependency",
+            clientCancellationPermission.DeniedReasonCode);
+
+        var dailyRowsResult = await new GetDailyVisitSourceRowsQueryHandler(
+                dbContext,
+                dayStatusProvider,
+                new FixedTimeProvider(TestNow.AddMinutes(31)))
+            .ExecuteAsync(
+                new GetDailyVisitSourceRowsQuery(
+                    fixture.Actor,
+                    new DateOnly(2026, 7, 3)),
+                CancellationToken.None);
+        Assert.Equal(GetDailyVisitSourceRowsStatus.Success, dailyRowsResult.Status);
+        var coveredDailyRow = Assert.Single(dailyRowsResult.Snapshot!.Rows).Visit;
+        Assert.Equal(coveredVisitId, coveredDailyRow.VisitId);
+        Assert.True(coveredDailyRow.AllowedActions.TryGet(
+            VisitActionKeys.Cancel,
+            out var dailyCancellationPermission));
+        Assert.False(dailyCancellationPermission!.IsAllowed);
+        Assert.Equal(
+            "negative_coverage_dependency",
+            dailyCancellationPermission.DeniedReasonCode);
+
+        var cancelResult = await CreateCancelVisitHandler(dbContext).ExecuteAsync(
+            CreateCancelVisitCommand(fixture, coveredVisitId),
+            CancellationToken.None);
+
+        AssertError(
+            cancelResult,
+            CommandErrorCode.VisitHasActiveNegativeCoverage,
+            "visitId");
+        Assert.Equal(
+            "active",
+            await database.ExecuteScalarAsync<string>(
+                $"select status from bodylife.visits where id = '{coveredVisitId}'"));
+        Assert.Equal(
+            "active",
+            await database.ExecuteScalarAsync<string>(
+                $"select status from bodylife.visit_consumptions where id = '{fixture.ConsumptionIds[2]}'"));
+        Assert.Equal(
+            "active",
+            await database.ExecuteScalarAsync<string>(
+                $"select status from bodylife.membership_negative_closures where id = '{closureId}'"));
+        Assert.Equal(
+            0L,
+            await database.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.visit_cancellations where visit_id = '{coveredVisitId}'"));
+        Assert.Equal(
+            1L,
+            await database.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.payments where negative_closure_id = '{closureId}' and status = 'active'"));
+        Assert.Equal(
+            auditCountBeforeCancel,
+            await database.ExecuteScalarAsync<long>(
+                "select count(*) from bodylife.business_audit_entries"));
+        Assert.Equal(
+            idempotencyCountBeforeCancel,
+            await database.ExecuteScalarAsync<long>(
+                "select count(*) from bodylife.command_idempotency_keys"));
+
+        await using var lockContext = database.CreateDbContext();
+        await using var lockTransaction = await lockContext.Database
+            .BeginTransactionAsync();
+        var preparation = await new CancelVisitSourcePreparer(lockContext)
+            .PrepareAsync(coveredVisitId);
+        Assert.Equal(
+            CancelVisitSourcePreparationStatus.VisitHasActiveNegativeCoverage,
+            preparation.Status);
+        var closureItemId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.membership_negative_closure_items where negative_closure_id = '{closureId}'");
+        var lockFailure = await AssertCoverageItemUpdateBlockedAsync(
+            database.ConnectionString,
+            closureItemId);
+        Assert.Equal(PostgresErrorCodes.LockNotAvailable, lockFailure.SqlState);
+        await lockTransaction.RollbackAsync();
     }
 
     [PostgreSqlFact]
@@ -474,6 +601,60 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
             timeProvider);
     }
 
+    private static CancelVisitCommandHandler CreateCancelVisitHandler(
+        BodyLifeDbContext dbContext)
+    {
+        var timeProvider = new FixedTimeProvider(TestNow.AddMinutes(31));
+        return new CancelVisitCommandHandler(
+            dbContext,
+            new BusinessAuditAppender(dbContext),
+            new CancelVisitSourcePreparer(dbContext),
+            new MembershipStateRecalculator(
+                new MembershipStateCacheRebuilder(dbContext, timeProvider)),
+            new GetMembershipStateQueryHandler(dbContext, timeProvider),
+            new OpenVisitDayStatusProvider(),
+            timeProvider);
+    }
+
+    private static CancelVisitCommand CreateCancelVisitCommand(
+        ClosureFixture fixture,
+        Guid visitId)
+    {
+        return new CancelVisitCommand(
+            new CommandEnvelope(
+                fixture.Actor,
+                new RequestCorrelationId("correlation-cancel-covered-visit"),
+                EntryOrigin.Normal,
+                TestNow.AddMinutes(31),
+                "cancel-covered-visit",
+                Reason: "Mistaken covered Visit",
+                Comment: "Direct cancellation must be rejected."),
+            visitId);
+    }
+
+    private static async Task<PostgresException> AssertCoverageItemUpdateBlockedAsync(
+        string connectionString,
+        Guid closureItemId)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            """
+            set local lock_timeout = '100ms';
+            update bodylife.membership_negative_closure_items
+            set status = status
+            where id = @closure_item_id;
+            """;
+        command.Parameters.AddWithValue("closure_item_id", closureItemId);
+        var exception = await Assert.ThrowsAsync<PostgresException>(
+            () => command.ExecuteNonQueryAsync());
+        await transaction.RollbackAsync();
+        return exception;
+    }
+
     private static async Task RebuildSourceAsync(
         BodyLifeDbContext dbContext,
         Guid membershipId)
@@ -569,6 +750,17 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
         Guid SourceMembershipId,
         Guid[] VisitIds,
         Guid[] ConsumptionIds);
+
+    private sealed class OpenVisitDayStatusProvider
+        : IVisitDayReconciliationStatusProvider
+    {
+        public Task<VisitDayReconciliationStatus> GetStatusAsync(
+            DateOnly businessDate,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(VisitDayReconciliationStatus.Open);
+        }
+    }
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {

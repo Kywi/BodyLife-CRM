@@ -241,12 +241,16 @@
   <data name="Error.VisitDuringFreeze" xml:space="preserve"><value>Дата відвідування припадає на активне замороження.</value></data>
   <data name="Error.PreviewExpired" xml:space="preserve"><value>Попередній перегляд застарів. Оновіть його та перевірте поточні значення.</value></data>
   <data name="Error.AffectedScopeChanged" xml:space="preserve"><value>Перелік зачеплених записів змінився. Оновіть і підтвердьте поточний канонічний перелік.</value></data>
+  <data name="Error.VisitHasActiveNegativeCoverage" xml:space="preserve"><value>Це відвідування має активне покриття мінуса. Спочатку виправте покриття, а потім скасовуйте відвідування.</value></data>
+  <data name="Error.Validation.NegativeCoverageCount" xml:space="preserve"><value>Виберіть кількість найдавніших від’ємних відвідувань для покриття.</value></data>
+  <data name="Error.Validation.ExpectedOldestNegativeVisit" xml:space="preserve"><value>Оновіть попередній перегляд і підтвердьте поточне найдавніше від’ємне відвідування.</value></data>
 <data name="Membership.Issue" xml:space="preserve"><value>Видати абонемент</value></data>
   <data name="Membership.NotIssued" xml:space="preserve"><value>Абонемент не видано</value></data>
   <data name="Membership.IssueUnavailable" xml:space="preserve"><value>Видача абонемента недоступна</value></data>
   <data name="Membership.NoActiveTypes" xml:space="preserve"><value>Немає активних типів абонементів</value></data>
   <data name="Membership.NoActiveTypesHint" xml:space="preserve"><value>У каталозі немає доступного типу для звичайної видачі.</value></data>
   <data name="Membership.Type" xml:space="preserve"><value>Тип абонемента</value></data>
+  <data name="Membership.Type.Placeholder" xml:space="preserve"><value>Виберіть тип абонемента</value></data>
   <data name="Field.StartDate" xml:space="preserve"><value>Дата початку</value></data>
   <data name="Preview.Unavailable" xml:space="preserve"><value>Попередній перегляд недоступний</value></data>
   <data name="Membership.IssuePreview" xml:space="preserve"><value>Попередній перегляд видачі</value></data>
@@ -268,6 +272,18 @@
   <data name="Membership.NegativeDecision.LeaveVisible" xml:space="preserve"><value>Залишити від’ємний залишок видимим</value></data>
   <data name="Membership.NegativeDecision.Cover" xml:space="preserve"><value>Покрити новим абонементом</value></data>
   <data name="Membership.NegativeDecision.Closure" xml:space="preserve"><value>Записати явне закриття</value></data>
+  <data name="Membership.NegativeDecision.ClosureUnavailable" xml:space="preserve"><value>Скористайтеся окремим процесом закриття від’ємних відвідувань; видача абонемента не закриває разові відвідування.</value></data>
+  <data name="Membership.NegativeCoverage.Title" xml:space="preserve"><value>Покрити найдавніші від’ємні відвідування цим абонементом</value></data>
+  <data name="Membership.NegativeCoverage.Count" xml:space="preserve"><value>Кількість відвідувань для покриття</value></data>
+  <data name="Membership.NegativeCoverage.CountHint" xml:space="preserve"><value>Виберіть від 1 до {0}; кількість не вибирається автоматично.</value></data>
+  <data name="Membership.NegativeCoverage.CoveredCount" xml:space="preserve"><value>Покрито відвідувань</value></data>
+  <data name="Membership.NegativeCoverage.RemainingExisting" xml:space="preserve"><value>Залишок наявного від’ємного балансу</value></data>
+  <data name="Membership.NegativeCoverage.ForcedStart" xml:space="preserve"><value>Примусова дата початку абонемента</value></data>
+  <data name="Membership.NegativeCoverage.ResultingRemaining" xml:space="preserve"><value>Залишок відвідувань після покриття</value></data>
+  <data name="Membership.NegativeCoverage.ResultingEffectiveEnd" xml:space="preserve"><value>Кінцева дата після покриття</value></data>
+  <data name="Membership.NegativeCoverage.CoveredVisits" xml:space="preserve"><value>Конкретні покриті відвідування</value></data>
+  <data name="Membership.NegativeCoverage.ExpiredTitle" xml:space="preserve"><value>Абонемент для покриття вже прострочений</value></data>
+  <data name="Membership.NegativeCoverage.ExpiredMessage" xml:space="preserve"><value>Примусова дата початку робить цей абонемент простроченим сьогодні. Перевірте дати перед видачею.</value></data>
 <data name="Visit.Mark" xml:space="preserve"><value>Позначити відвідування</value></data>
   <data name="Visit.NotMarked" xml:space="preserve"><value>Відвідування не позначено</value></data>
   <data name="Visit.ActionUnavailable" xml:space="preserve"><value>Позначення відвідування недоступне</value></data>

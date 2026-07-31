@@ -87,6 +87,10 @@ public sealed class GetDailyVisitSourceRowsQueryHandler(
             join membership in dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
                 on consumption.MembershipId equals membership.Id
             where visitIds.Contains(consumption.VisitId)
+                && consumption.ConsumptionType
+                    == VisitQuerySupport.CountedConsumptionType
+                && consumption.SourceFactType
+                    == VisitQuerySupport.VisitSourceFactType
             select new VisitQuerySupport.CanonicalVisitConsumptionSourceRow(
                 consumption.Id,
                 consumption.VisitId,
@@ -115,15 +119,26 @@ public sealed class GetDailyVisitSourceRowsQueryHandler(
                     cancellation.EntryOrigin,
                     cancellation.EntryBatchId))
             .ToListAsync(cancellationToken);
+        var activeNegativeCoverageVisitIds = await dbContext
+            .Set<MembershipNegativeClosureItemRecord>()
+            .AsNoTracking()
+            .Where(item => visitIds.Contains(item.VisitId)
+                && item.Status == VisitQuerySupport.ActiveStatus)
+            .Select(item => item.VisitId)
+            .ToArrayAsync(cancellationToken);
 
         if (consumptionRows.GroupBy(row => row.VisitId).Any(group => group.Count() > 1)
-            || cancellationRows.GroupBy(row => row.VisitId).Any(group => group.Count() > 1))
+            || cancellationRows.GroupBy(row => row.VisitId).Any(group => group.Count() > 1)
+            || activeNegativeCoverageVisitIds.Distinct().Count()
+                != activeNegativeCoverageVisitIds.Length)
         {
             return GetDailyVisitSourceRowsResult.InconsistentSource();
         }
 
         var consumptionByVisitId = consumptionRows.ToDictionary(row => row.VisitId);
         var cancellationByVisitId = cancellationRows.ToDictionary(row => row.VisitId);
+        var activeNegativeCoverageVisitIdSet = activeNegativeCoverageVisitIds
+            .ToHashSet();
         var resultRows = new List<DailyVisitSourceRow>(sourceRows.Count);
 
         foreach (var source in sourceRows)
@@ -149,7 +164,8 @@ public sealed class GetDailyVisitSourceRowsQueryHandler(
                 ? VisitQuerySupport.BuildCancellationPermissions(
                     query.Actor,
                     projection.Status,
-                    dayStatus)
+                    dayStatus,
+                    activeNegativeCoverageVisitIdSet.Contains(source.VisitId))
                 : QueryPermissionSet.Empty;
             var visit = new ClientVisitRow(
                 canonicalSource.VisitId,

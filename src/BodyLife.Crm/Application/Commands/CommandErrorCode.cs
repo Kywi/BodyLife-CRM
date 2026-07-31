@@ -22,5 +22,6 @@ public enum CommandErrorCode
     ReasonRequired,
     FreezeConflictsWithVisit,
     PreviewExpired,
-    AffectedScopeChanged
+    AffectedScopeChanged,
+    VisitHasActiveNegativeCoverage
 }

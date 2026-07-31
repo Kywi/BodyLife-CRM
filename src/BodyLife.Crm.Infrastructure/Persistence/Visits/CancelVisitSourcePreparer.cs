@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Visits;
 using Microsoft.EntityFrameworkCore;
 
@@ -76,6 +77,33 @@ public sealed class CancelVisitSourcePreparer
                 from bodylife.visit_consumptions
                 where visit_id = {visitId}
                     and status = 'active'
+                    and consumption_type = 'counted'
+                    and source_fact_type = 'visit'
+                order by id
+                for update
+                """)
+            .AsNoTracking()
+            .ToArrayAsync(cancellationToken);
+
+        var activeNegativeCoverageItems = await dbContext
+            .Set<MembershipNegativeClosureItemRecord>()
+            .FromSqlInterpolated(
+                $"""
+                select
+                    id,
+                    negative_closure_id,
+                    client_id,
+                    closure_line_id,
+                    sequence,
+                    visit_id,
+                    source_membership_id,
+                    old_consumption_id,
+                    covering_membership_id,
+                    new_consumption_id,
+                    status
+                from bodylife.membership_negative_closure_items
+                where visit_id = {visitId}
+                    and status = 'active'
                 order by id
                 for update
                 """)
@@ -127,7 +155,14 @@ public sealed class CancelVisitSourcePreparer
             return CancelVisitSourcePreparationResult.AlreadyCanceled(source);
         }
 
+        if (activeNegativeCoverageItems.Length == 1)
+        {
+            return CancelVisitSourcePreparationResult
+                .VisitHasActiveNegativeCoverage(source);
+        }
+
         if (activeConsumptions.Length > 1
+            || activeNegativeCoverageItems.Length > 1
             || cancellations.Length > 1
             || !HasConsistentActiveConsumption(source, activeConsumption))
         {

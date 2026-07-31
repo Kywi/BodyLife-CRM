@@ -149,6 +149,48 @@ public sealed class PostgreSqlGetClientVisitRowsQueryTests
     }
 
     [PostgreSqlFact]
+    public async Task QueryKeepsDirectConsumptionWhenCoverageConsumptionAlsoExists()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var visitId = await InsertVisitAsync(
+            database,
+            fixture,
+            fixture.ClientId,
+            "membership",
+            FirstVisitOccurredAt,
+            TestNow.AddMinutes(-20));
+        var directConsumptionId = await InsertConsumptionAsync(
+            database,
+            fixture,
+            visitId,
+            status: "active");
+        await InsertConsumptionAsync(
+            database,
+            fixture,
+            visitId,
+            status: "active",
+            consumptionType: "negative_coverage");
+
+        var result = await CreateHandler(
+                dbContext,
+                new RecordingVisitDayStatusProvider(
+                    VisitDayReconciliationStatus.Open))
+            .ExecuteAsync(
+                new GetClientVisitRowsQuery(fixture.Actor, fixture.ClientId),
+                CancellationToken.None);
+
+        var row = Assert.Single(AssertSuccess(result, fixture.ClientId).Items);
+        var directConsumption = Assert.IsType<ClientVisitConsumption>(
+            row.Consumption);
+        Assert.Equal(directConsumptionId, directConsumption.ConsumptionId);
+        Assert.Equal(fixture.MembershipId, directConsumption.MembershipId);
+        Assert.Equal(ClientVisitConsumptionStatus.Active, directConsumption.Status);
+    }
+
+    [PostgreSqlFact]
     public async Task QueryUsesDeterministicLimitAndReportsMoreRows()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -659,9 +701,16 @@ public sealed class PostgreSqlGetClientVisitRowsQueryTests
         PostgreSqlTestDatabase database,
         ClientVisitRowsFixture fixture,
         Guid visitId,
-        string status)
+        string status,
+        string consumptionType = "counted")
     {
         var consumptionId = Guid.NewGuid();
+        var sourceFactType = consumptionType == "counted"
+            ? "visit"
+            : "negative_closure_item";
+        var sourceFactId = consumptionType == "counted"
+            ? visitId
+            : Guid.NewGuid();
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
@@ -686,9 +735,9 @@ public sealed class PostgreSqlGetClientVisitRowsQueryTests
                 @client_id,
                 'membership',
                 @membership_id,
-                'counted',
-                'visit',
-                @visit_id,
+                @consumption_type,
+                @source_fact_type,
+                @source_fact_id,
                 @recorded_at,
                 @account_id,
                 @session_id,
@@ -698,6 +747,9 @@ public sealed class PostgreSqlGetClientVisitRowsQueryTests
         command.Parameters.AddWithValue("visit_id", visitId);
         command.Parameters.AddWithValue("client_id", fixture.ClientId);
         command.Parameters.AddWithValue("membership_id", fixture.MembershipId);
+        command.Parameters.AddWithValue("consumption_type", consumptionType);
+        command.Parameters.AddWithValue("source_fact_type", sourceFactType);
+        command.Parameters.AddWithValue("source_fact_id", sourceFactId);
         command.Parameters.AddWithValue("recorded_at", TestNow.AddMinutes(-20));
         command.Parameters.AddWithValue("account_id", fixture.Actor.AccountId.Value);
         command.Parameters.AddWithValue("session_id", fixture.Actor.SessionId.Value);

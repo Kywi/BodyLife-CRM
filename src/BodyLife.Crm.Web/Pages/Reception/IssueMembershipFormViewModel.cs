@@ -20,6 +20,16 @@ public sealed record IssueMembershipFormViewModel(
 
     public MembershipIssuePreview? Preview => PreviewResult?.Preview;
 
+    public int? MaxNegativeCoverageCount => Preview?.ExistingNegativeState is { } negativeState
+        ? Math.Min(negativeState.OpenConcreteVisitCount, Preview.Snapshot.VisitsLimit)
+        : null;
+
+    public IReadOnlyList<MembershipNegativeVisitCoverageCandidate> CoveredNegativeVisits =>
+        Preview?.ExistingNegativeState?.OpenConcreteVisits
+            .Take(Preview.CoveredNegativeVisitCount)
+            .ToArray()
+        ?? [];
+
     public bool CanSubmit => PreviewResult is
     {
         Status: PreviewIssueMembershipStatus.Success,
@@ -35,13 +45,10 @@ public sealed record IssueMembershipFormViewModel(
     {
         ArgumentNullException.ThrowIfNull(membershipTypesResult);
 
-        var selectedType = membershipTypesResult.Items.FirstOrDefault();
         return new IssueMembershipFormViewModel(
             new IssueMembershipFormInput
             {
                 ClientId = clientId,
-                MembershipTypeId = selectedType?.MembershipTypeId,
-                ExpectedMembershipTypeUpdatedAt = previewResult?.Preview?.MembershipTypeUpdatedAt,
                 StartDate = startDate,
                 IdempotencyKey = Guid.NewGuid().ToString("N"),
                 SearchQuery = searchContext.Query,
@@ -89,6 +96,14 @@ public sealed record IssueMembershipFormViewModel(
                 ExpectedMembershipTypeUpdatedAt = preview?.MembershipTypeUpdatedAt,
                 StartDate = input.StartDate,
                 NegativeHandlingDecision = negativeHandlingDecision,
+                NegativeCoverageCount = negativeHandlingDecision
+                    == MembershipNegativeHandlingDecision.CoverWithNewMembership
+                    ? input.NegativeCoverageCount
+                    : null,
+                ExpectedOldestOpenNegativeVisitId = negativeHandlingDecision
+                    == MembershipNegativeHandlingDecision.CoverWithNewMembership
+                    ? preview?.ExpectedOldestOpenNegativeVisitId
+                    : null,
                 Comment = input.Comment,
                 IdempotencyKey = idempotencyKey,
                 SearchQuery = input.SearchQuery,
@@ -115,6 +130,10 @@ public sealed class IssueMembershipFormInput
     public DateOnly? StartDate { get; set; }
 
     public MembershipNegativeHandlingDecision? NegativeHandlingDecision { get; set; }
+
+    public int? NegativeCoverageCount { get; set; }
+
+    public Guid? ExpectedOldestOpenNegativeVisitId { get; set; }
 
     public string? Comment { get; set; }
 

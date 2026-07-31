@@ -5,5 +5,6 @@ public enum CancelVisitSourcePreparationStatus
     Prepared = 1,
     NotFound,
     AlreadyCanceled,
+    VisitHasActiveNegativeCoverage,
     InconsistentSource,
 }

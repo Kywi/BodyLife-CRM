@@ -98,6 +98,10 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
             join membership in dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
                 on consumption.MembershipId equals membership.Id
             where visitIds.Contains(consumption.VisitId)
+                && consumption.ConsumptionType
+                    == VisitQuerySupport.CountedConsumptionType
+                && consumption.SourceFactType
+                    == VisitQuerySupport.VisitSourceFactType
             select new ConsumptionStorageRow(
                 consumption,
                 membership.ClientId,

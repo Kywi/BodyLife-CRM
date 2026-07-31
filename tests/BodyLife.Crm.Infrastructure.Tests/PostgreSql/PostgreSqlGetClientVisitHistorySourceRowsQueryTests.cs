@@ -488,6 +488,8 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
     {
         var membershipVisitId = Guid.NewGuid();
         var consumptionId = Guid.NewGuid();
+        var coverageConsumptionId = Guid.NewGuid();
+        var coverageSourceFactId = Guid.NewGuid();
         var cancellationId = Guid.NewGuid();
         var cancellationBatchId = Guid.NewGuid();
         var oneOffVisitId = Guid.NewGuid();
@@ -546,6 +548,33 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                     'visit',
                     @membership_visit_id,
                     @membership_recorded_at,
+                    @account_id,
+                    @session_id,
+                    'canceled');
+
+                insert into bodylife.visit_consumptions (
+                    id,
+                    visit_id,
+                    client_id,
+                    visit_kind,
+                    membership_id,
+                    consumption_type,
+                    source_fact_type,
+                    source_fact_id,
+                    recorded_at,
+                    recorded_by_account_id,
+                    recorded_session_id,
+                    status)
+                values (
+                    @coverage_consumption_id,
+                    @membership_visit_id,
+                    @client_id,
+                    'membership',
+                    @membership_id,
+                    'negative_coverage',
+                    'negative_closure_item',
+                    @coverage_source_fact_id,
+                    @coverage_recorded_at,
                     @account_id,
                     @session_id,
                     'canceled');
@@ -613,6 +642,15 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                 "session_id",
                 fixture.Actor.SessionId.Value);
             command.Parameters.AddWithValue("consumption_id", consumptionId);
+            command.Parameters.AddWithValue(
+                "coverage_consumption_id",
+                coverageConsumptionId);
+            command.Parameters.AddWithValue(
+                "coverage_source_fact_id",
+                coverageSourceFactId);
+            command.Parameters.AddWithValue(
+                "coverage_recorded_at",
+                TestNow.AddDays(-2));
             command.Parameters.AddWithValue("membership_id", fixture.MembershipId);
             command.Parameters.AddWithValue("cancellation_id", cancellationId);
             command.Parameters.AddWithValue(
@@ -632,7 +670,7 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                 "one_off_recorded_at",
                 TestNow.AddDays(-1).AddHours(-12));
             command.Parameters.AddWithValue("one_off_batch_id", oneOffBatchId);
-            Assert.Equal(4, await command.ExecuteNonQueryAsync());
+            Assert.Equal(5, await command.ExecuteNonQueryAsync());
         }
 
         await InsertAuditAsync(

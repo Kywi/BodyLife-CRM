@@ -48,6 +48,15 @@ public sealed class CancelVisitSourcePreparationResult
             source);
     }
 
+    internal static CancelVisitSourcePreparationResult VisitHasActiveNegativeCoverage(
+        VisitCancellationSource source)
+    {
+        return new CancelVisitSourcePreparationResult(
+            CancelVisitSourcePreparationStatus.VisitHasActiveNegativeCoverage,
+            source.VisitId,
+            source);
+    }
+
     internal static CancelVisitSourcePreparationResult InconsistentSource(
         VisitCancellationSource source)
     {

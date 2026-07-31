@@ -46,6 +46,12 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
             fixture,
             membershipVisitId,
             status: "active");
+        await InsertConsumptionAsync(
+            database,
+            fixture,
+            membershipVisitId,
+            status: "active",
+            consumptionType: "negative_coverage");
         var fallbackBatchId = Guid.NewGuid();
         var oneOffVisitId = await InsertVisitAsync(
             database,
@@ -731,9 +737,16 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
         PostgreSqlTestDatabase database,
         DailyVisitSourceFixture fixture,
         Guid visitId,
-        string status)
+        string status,
+        string consumptionType = "counted")
     {
         var consumptionId = Guid.NewGuid();
+        var sourceFactType = consumptionType == "counted"
+            ? "visit"
+            : "negative_closure_item";
+        var sourceFactId = consumptionType == "counted"
+            ? visitId
+            : Guid.NewGuid();
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
@@ -758,9 +771,9 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
                 @client_id,
                 'membership',
                 @membership_id,
-                'counted',
-                'visit',
-                @visit_id,
+                @consumption_type,
+                @source_fact_type,
+                @source_fact_id,
                 @recorded_at,
                 @account_id,
                 @session_id,
@@ -770,6 +783,9 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
         command.Parameters.AddWithValue("visit_id", visitId);
         command.Parameters.AddWithValue("client_id", fixture.ClientId);
         command.Parameters.AddWithValue("membership_id", fixture.MembershipId);
+        command.Parameters.AddWithValue("consumption_type", consumptionType);
+        command.Parameters.AddWithValue("source_fact_type", sourceFactType);
+        command.Parameters.AddWithValue("source_fact_id", sourceFactId);
         command.Parameters.AddWithValue("recorded_at", TestNow);
         command.Parameters.AddWithValue("account_id", fixture.Actor.AccountId.Value);
         command.Parameters.AddWithValue("session_id", fixture.Actor.SessionId.Value);

@@ -19,6 +19,10 @@ public static class ReceptionCommandErrorLocalizer
         (CommandErrorCode.ValidationFailed, "confirmed") => "Error.Validation.Confirmation",
         (CommandErrorCode.ValidationFailed, "startDate") => "Error.Validation.StartDate",
         (CommandErrorCode.ValidationFailed, "negativeHandlingDecision") => "Error.Validation.NegativeDecision",
+        (CommandErrorCode.ValidationFailed, "negativeCoverageCount") =>
+            "Error.Validation.NegativeCoverageCount",
+        (CommandErrorCode.ValidationFailed, "expectedOldestOpenNegativeVisitId") =>
+            "Error.Validation.ExpectedOldestNegativeVisit",
         (CommandErrorCode.ValidationFailed, "mode") => "Error.Validation.CorrectionMode",
         (CommandErrorCode.ValidationFailed, "paymentContext") or
             (CommandErrorCode.ValidationFailed, "replacement.paymentContext") => "Error.Validation.PaymentContext",
@@ -62,6 +66,8 @@ public static class ReceptionCommandErrorLocalizer
         (CommandErrorCode.VisitDuringFreeze, _) => "Error.VisitDuringFreeze",
         (CommandErrorCode.PreviewExpired, _) => "Error.PreviewExpired",
         (CommandErrorCode.AffectedScopeChanged, _) => "Error.AffectedScopeChanged",
+        (CommandErrorCode.VisitHasActiveNegativeCoverage, _) =>
+            "Error.VisitHasActiveNegativeCoverage",
         (CommandErrorCode.RecalculationFailed, _) => "Error.RecalculationFailed",
         _ => "Error.Generic",
     };

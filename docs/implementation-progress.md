@@ -13741,3 +13741,60 @@ Stop point:
   previews, duplicate-submit protection and canonical rereads. Do not start
   issued-sale replacement, paper metadata or Milestone 11 before this UI slice
   is validated.
+
+## Step 213 - Exposed new-Membership negative coverage in production UI
+
+Status: completed as the first production UI slice over the Step 209-212
+negative-coverage commands. Milestone 10.5 remains in progress; Milestone 11
+has not started.
+
+Completed:
+
+- Changed the production Issue Membership form to start with a neutral catalog
+  placeholder and no preview, so neither a Membership type nor a negative-
+  handling method is selected or recommended automatically. The exact catalog
+  price remains read-only and no payment amount is accepted from staff.
+- Added the explicit new-Membership coverage count and canonical oldest-open-
+  Visit token to the Razor/htmx preview and command submission. The preview
+  lists the concrete oldest covered Visits, remaining old negative balance,
+  forced start date, resulting remaining visits/effective end and the already-
+  expired warning. Switching away clears both coverage inputs before the next
+  preview.
+- Preserved htmx busy/disabled and duplicate-submit behavior and canonical
+  Client profile rereads. Tablet and phone flows now prove a real negative
+  Visit is covered by the new sale, consumes the new Membership limit, clears
+  the source negative state and cannot be canceled directly while coverage is
+  active.
+- Fixed Visit profile, daily-report and history readers to select the original
+  `counted`/`visit` consumption rather than treating the additional
+  `negative_coverage` consumption as duplicate Visit source state.
+- Added an application-command guard for direct `CancelVisit`: it locks active
+  negative-closure items, returns a stable localized dependency error and
+  leaves Visit, consumption, coverage, Payment, audit and idempotency facts
+  unchanged. Client and daily read models expose the same denied action.
+- Added safe English and Ukrainian field-specific messages for invalid
+  coverage count/token input. An independent read-only review found no
+  P0/P1/P2 issue; its localization finding was fixed before commit.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain/application tests passed: 416/416. Full Web tests passed:
+  298/298.
+- Focused PostgreSQL one-off closure and changed Visit read-model tests passed:
+  25/25. They include a real active closure, direct cancel rejection, complete
+  rollback assertions and closure-item row-lock contention. A broader focused
+  run reached 44/45 with only the already documented PostgreSQL 18
+  `ON DELETE RESTRICT` SQLSTATE difference; all current-slice tests passed.
+- Focused Playwright Issue Membership flows passed 2/2 across the 1024x768
+  tablet and 390x844 phone viewports.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Add a Memberships-owned production query and Razor/htmx forms for explicit
+  one-off negative closure and for canceling/replacing an existing one-off or
+  new-Membership coverage. Show canonical lines, Payments, concrete Visits,
+  remaining negative state and stale tokens; preserve duplicate-submit
+  protection and canonical rereads. Do not start issued-sale replacement,
+  paper metadata or Milestone 11 before that slice is validated.

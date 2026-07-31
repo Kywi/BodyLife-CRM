@@ -241,12 +241,16 @@
   <data name="Error.VisitDuringFreeze" xml:space="preserve"><value>This visit date falls within an active freeze.</value></data>
   <data name="Error.PreviewExpired" xml:space="preserve"><value>The preview expired. Refresh it and review the current values.</value></data>
   <data name="Error.AffectedScopeChanged" xml:space="preserve"><value>The affected scope changed. Refresh and confirm the current canonical scope.</value></data>
+  <data name="Error.VisitHasActiveNegativeCoverage" xml:space="preserve"><value>This visit has active negative-visit coverage. Correct that coverage before canceling the visit.</value></data>
+  <data name="Error.Validation.NegativeCoverageCount" xml:space="preserve"><value>Choose how many oldest negative visits to cover.</value></data>
+  <data name="Error.Validation.ExpectedOldestNegativeVisit" xml:space="preserve"><value>Refresh the coverage preview and confirm the current oldest negative visit.</value></data>
 <data name="Membership.Issue" xml:space="preserve"><value>Issue membership</value></data>
   <data name="Membership.NotIssued" xml:space="preserve"><value>Membership not issued</value></data>
   <data name="Membership.IssueUnavailable" xml:space="preserve"><value>Issue action unavailable</value></data>
   <data name="Membership.NoActiveTypes" xml:space="preserve"><value>No active membership types</value></data>
   <data name="Membership.NoActiveTypesHint" xml:space="preserve"><value>No catalog item is available for ordinary issue.</value></data>
   <data name="Membership.Type" xml:space="preserve"><value>Membership type</value></data>
+  <data name="Membership.Type.Placeholder" xml:space="preserve"><value>Choose a membership type</value></data>
   <data name="Field.StartDate" xml:space="preserve"><value>Start date</value></data>
   <data name="Preview.Unavailable" xml:space="preserve"><value>Preview unavailable</value></data>
   <data name="Membership.IssuePreview" xml:space="preserve"><value>Issue preview</value></data>
@@ -268,6 +272,18 @@
   <data name="Membership.NegativeDecision.LeaveVisible" xml:space="preserve"><value>Leave the negative balance visible</value></data>
   <data name="Membership.NegativeDecision.Cover" xml:space="preserve"><value>Cover with the new membership</value></data>
   <data name="Membership.NegativeDecision.Closure" xml:space="preserve"><value>Record an explicit closure</value></data>
+  <data name="Membership.NegativeDecision.ClosureUnavailable" xml:space="preserve"><value>Use the separate negative-visit closure workflow; issuing a membership does not close one-off visits.</value></data>
+  <data name="Membership.NegativeCoverage.Title" xml:space="preserve"><value>Cover oldest negative visits with this membership</value></data>
+  <data name="Membership.NegativeCoverage.Count" xml:space="preserve"><value>Visits to cover</value></data>
+  <data name="Membership.NegativeCoverage.CountHint" xml:space="preserve"><value>Choose from 1 to {0}; no quantity is selected automatically.</value></data>
+  <data name="Membership.NegativeCoverage.CoveredCount" xml:space="preserve"><value>Covered visits</value></data>
+  <data name="Membership.NegativeCoverage.RemainingExisting" xml:space="preserve"><value>Remaining existing negative balance</value></data>
+  <data name="Membership.NegativeCoverage.ForcedStart" xml:space="preserve"><value>Forced membership start date</value></data>
+  <data name="Membership.NegativeCoverage.ResultingRemaining" xml:space="preserve"><value>Resulting remaining visits</value></data>
+  <data name="Membership.NegativeCoverage.ResultingEffectiveEnd" xml:space="preserve"><value>Resulting effective end</value></data>
+  <data name="Membership.NegativeCoverage.CoveredVisits" xml:space="preserve"><value>Concrete covered visits</value></data>
+  <data name="Membership.NegativeCoverage.ExpiredTitle" xml:space="preserve"><value>The covering membership is already expired</value></data>
+  <data name="Membership.NegativeCoverage.ExpiredMessage" xml:space="preserve"><value>The forced start date makes this membership expired today. Review the dates before issuing.</value></data>
 <data name="Visit.Mark" xml:space="preserve"><value>Mark visit</value></data>
   <data name="Visit.NotMarked" xml:space="preserve"><value>Visit not marked</value></data>
   <data name="Visit.ActionUnavailable" xml:space="preserve"><value>Visit action unavailable</value></data>

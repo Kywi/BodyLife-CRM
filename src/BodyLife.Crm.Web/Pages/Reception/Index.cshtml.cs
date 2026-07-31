@@ -331,7 +331,10 @@ public sealed class IndexModel(
             form.MembershipTypeId!.Value,
             form.ExpectedMembershipTypeUpdatedAt!.Value,
             form.StartDate!.Value,
-            form.NegativeHandlingDecision);
+            form.NegativeHandlingDecision,
+            EntryBatchId: null,
+            NegativeCoverageCount: form.NegativeCoverageCount,
+            ExpectedOldestOpenNegativeVisitId: form.ExpectedOldestOpenNegativeVisitId);
         var result = await issueMembership.ExecuteAsync(command, cancellationToken);
 
         if (result.Status == CommandStatus.Success)
@@ -1578,22 +1581,11 @@ public sealed class IndexModel(
         var membershipTypesResult = await getMembershipTypesForIssue.ExecuteAsync(
             new GetMembershipTypesForIssueQuery(actor),
             cancellationToken);
-        var selectedType = membershipTypesResult.Items.FirstOrDefault();
-        var previewResult = selectedType is null
-            ? null
-            : await previewIssueMembership.ExecuteAsync(
-                new PreviewIssueMembershipQuery(
-                    actor,
-                    clientId,
-                    selectedType.MembershipTypeId,
-                    startDate),
-                cancellationToken);
-
         return IssueMembershipFormViewModel.FromInitialQueries(
             clientId,
             startDate,
             membershipTypesResult,
-            previewResult,
+            previewResult: null,
             searchContext);
     }
 
@@ -1608,6 +1600,13 @@ public sealed class IndexModel(
             cancellationToken);
         PreviewIssueMembershipResult? previewResult = null;
 
+        if (form.NegativeHandlingDecision
+            != MembershipNegativeHandlingDecision.CoverWithNewMembership)
+        {
+            form.NegativeCoverageCount = null;
+            form.ExpectedOldestOpenNegativeVisitId = null;
+        }
+
         if (form.MembershipTypeId is { } membershipTypeId
             && membershipTypeId != Guid.Empty
             && form.StartDate is { } startDate
@@ -1619,7 +1618,8 @@ public sealed class IndexModel(
                     form.ClientId,
                     membershipTypeId,
                     startDate,
-                    form.NegativeHandlingDecision),
+                    form.NegativeHandlingDecision,
+                    form.NegativeCoverageCount),
                 cancellationToken);
 
             if (form.NegativeHandlingDecision is not null
@@ -1630,6 +1630,8 @@ public sealed class IndexModel(
                 })
             {
                 form.NegativeHandlingDecision = null;
+                form.NegativeCoverageCount = null;
+                form.ExpectedOldestOpenNegativeVisitId = null;
                 previewResult = await previewIssueMembership.ExecuteAsync(
                     new PreviewIssueMembershipQuery(
                         actor,
@@ -1744,6 +1746,46 @@ public sealed class IndexModel(
                 CommandErrorCode.ValidationFailed,
                 "Negative handling decision is not supported.",
                 "negativeHandlingDecision"));
+        }
+
+        if (form.NegativeHandlingDecision
+            != MembershipNegativeHandlingDecision.CoverWithNewMembership)
+        {
+            if (form.NegativeCoverageCount is not null)
+            {
+                errors.Add(new CommandError(
+                    CommandErrorCode.ValidationFailed,
+                    "Negative coverage count requires new-Membership coverage.",
+                    "negativeCoverageCount"));
+            }
+
+            if (form.ExpectedOldestOpenNegativeVisitId is not null)
+            {
+                errors.Add(new CommandError(
+                    CommandErrorCode.ValidationFailed,
+                    "Expected oldest negative Visit requires new-Membership coverage.",
+                    "expectedOldestOpenNegativeVisitId"));
+            }
+        }
+        else
+        {
+            if (form.NegativeCoverageCount is not { } coverageCount
+                || coverageCount < 1)
+            {
+                errors.Add(new CommandError(
+                    CommandErrorCode.ValidationFailed,
+                    "Choose a positive negative coverage count.",
+                    "negativeCoverageCount"));
+            }
+
+            if (form.ExpectedOldestOpenNegativeVisitId is not { } oldestVisitId
+                || oldestVisitId == Guid.Empty)
+            {
+                errors.Add(new CommandError(
+                    CommandErrorCode.ValidationFailed,
+                    "The previewed oldest negative Visit is required.",
+                    "expectedOldestOpenNegativeVisitId"));
+            }
         }
 
         if (form.Comment?.Trim().Length > IssueMembershipFormViewModel.CommentMaxLength)

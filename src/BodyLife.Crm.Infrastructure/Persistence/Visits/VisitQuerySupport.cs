@@ -30,11 +30,24 @@ internal static class VisitQuerySupport
     internal static QueryPermissionSet BuildCancellationPermissions(
         ActorContext actor,
         ClientVisitRowStatus visitStatus,
-        VisitDayReconciliationStatus dayStatus)
+        VisitDayReconciliationStatus dayStatus,
+        bool hasActiveNegativeCoverage)
     {
         if (visitStatus == ClientVisitRowStatus.Canceled)
         {
             return QueryPermissionSet.Empty;
+        }
+
+        if (hasActiveNegativeCoverage)
+        {
+            return new QueryPermissionSet(
+            [
+                QueryPermissionResult.Denied(
+                    VisitActionKeys.Cancel,
+                    VisitActionKeys.AdminOrOwnerPolicy,
+                    "negative_coverage_dependency",
+                    "Correct the active negative Visit coverage before canceling this Visit."),
+            ]);
         }
 
         return dayStatus switch

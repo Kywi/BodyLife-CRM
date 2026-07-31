@@ -11,6 +11,7 @@
     var formId = $"issue-membership-form-{clientKey}";
     var startDateValue = input.StartDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     var previewUrl = Url.Page("/Reception/Index", "IssueMembershipPreview");
+    var maxNegativeCoverageCount = Model.MaxNegativeCoverageCount ?? 1;
 }
 
 <details id="issue-membership-action-panel"
@@ -86,6 +87,9 @@
                                 hx-swap="outerHTML"
                                 hx-sync="#@formId:replace"
                                 hx-indicator="#issue-membership-preview-loading">
+                            <option value="" selected="@(input.MembershipTypeId is null ? "selected" : null)" disabled>
+                                @L["Membership.Type.Placeholder"]
+                            </option>
                             @foreach (var membershipType in Model.MembershipTypes)
                             {
                                 <option value="@membershipType.MembershipTypeId"
@@ -208,12 +212,87 @@
                                                 @if (!option.IsAvailable)
                                                 {
                                                     <small>@L["Status.Unavailable"]</small>
+                                                    @if (option.Decision == MembershipNegativeHandlingDecision.RecordExplicitClosure)
+                                                    {
+                                                        <small>@L["Membership.NegativeDecision.ClosureUnavailable"]</small>
+                                                    }
                                                 }
                                             </span>
                                         </label>
                                     }
                                 </div>
                             </fieldset>
+
+                            @if (input.NegativeHandlingDecision == MembershipNegativeHandlingDecision.CoverWithNewMembership)
+                            {
+                                <section class="issue-negative-coverage" aria-labelledby="issue-negative-coverage-title-@clientKey">
+                                    <h5 id="issue-negative-coverage-title-@clientKey">@L["Membership.NegativeCoverage.Title"]</h5>
+                                    <input type="hidden"
+                                           name="form.ExpectedOldestOpenNegativeVisitId"
+                                           value="@input.ExpectedOldestOpenNegativeVisitId" />
+                                    <div class="form-field">
+                                        <label for="negative-coverage-count-@clientKey">@L["Membership.NegativeCoverage.Count"]</label>
+                                        <input id="negative-coverage-count-@clientKey"
+                                               type="number"
+                                               name="form.NegativeCoverageCount"
+                                               value="@input.NegativeCoverageCount"
+                                               min="1"
+                                               max="@maxNegativeCoverageCount"
+                                               required
+                                               inputmode="numeric"
+                                               hx-get="@previewUrl"
+                                               hx-trigger="change"
+                                               hx-include="#@formId [name^='form.']"
+                                               hx-target="#issue-membership-action-panel"
+                                               hx-swap="outerHTML"
+                                               hx-sync="#@formId:replace"
+                                               hx-indicator="#issue-membership-preview-loading" />
+                                        <small>@L["Membership.NegativeCoverage.CountHint", maxNegativeCoverageCount]</small>
+                                    </div>
+
+                                    @if (preview.CoveredNegativeVisitCount > 0)
+                                    {
+                                        <dl class="issue-negative-coverage-summary">
+                                            <div>
+                                                <dt>@L["Membership.NegativeCoverage.CoveredCount"]</dt>
+                                                <dd>@preview.CoveredNegativeVisitCount</dd>
+                                            </div>
+                                            <div>
+                                                <dt>@L["Membership.NegativeCoverage.RemainingExisting"]</dt>
+                                                <dd>@preview.RemainingExistingNegativeBalance</dd>
+                                            </div>
+                                            <div>
+                                                <dt>@L["Membership.NegativeCoverage.ForcedStart"]</dt>
+                                                <dd>@ReceptionDisplayFormatter.Date(preview.ProposedStartDate)</dd>
+                                            </div>
+                                            <div>
+                                                <dt>@L["Membership.NegativeCoverage.ResultingRemaining"]</dt>
+                                                <dd>@preview.ExpectedInitialRemainingVisits</dd>
+                                            </div>
+                                            <div>
+                                                <dt>@L["Membership.NegativeCoverage.ResultingEffectiveEnd"]</dt>
+                                                <dd>@ReceptionDisplayFormatter.Date(preview.ExpectedInitialEffectiveEndDate)</dd>
+                                            </div>
+                                        </dl>
+                                        <ol class="issue-negative-covered-visits" aria-label="@L["Membership.NegativeCoverage.CoveredVisits"]">
+                                            @foreach (var visit in Model.CoveredNegativeVisits)
+                                            {
+                                                <li data-negative-visit-id="@visit.VisitId">
+                                                    <time datetime="@visit.OccurredAt.ToString("O", CultureInfo.InvariantCulture)">@ReceptionDisplayFormatter.DateTime(visit.OccurredAt)</time>
+                                                </li>
+                                            }
+                                        </ol>
+                                    }
+
+                                    @if (preview.IsAlreadyExpiredAtPreview)
+                                    {
+                                        <div class="warning-block warning-danger" role="alert">
+                                            <strong>@L["Membership.NegativeCoverage.ExpiredTitle"]</strong>
+                                            <span>@L["Membership.NegativeCoverage.ExpiredMessage"]</span>
+                                        </div>
+                                    }
+                                </section>
+                            }
                         }
                     </section>
                 }
