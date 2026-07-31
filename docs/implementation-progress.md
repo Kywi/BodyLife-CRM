@@ -13798,3 +13798,53 @@ Stop point:
   remaining negative state and stale tokens; preserve duplicate-submit
   protection and canonical rereads. Do not start issued-sale replacement,
   paper metadata or Milestone 11 before that slice is validated.
+
+## Step 214 - Added the canonical negative-coverage read foundation
+
+Status: completed as the second production-UI foundation slice over the Step
+209-212 negative-coverage source facts and commands. Milestone 10.5 remains in
+progress; Milestone 11 has not started.
+
+Completed:
+
+- Added the Memberships-owned `GetClientNegativeVisitCoverageQuery` and
+  immutable read models for the Client aggregate negative balance, concrete
+  oldest-open Visits, active one-off catalog rows and active one-off/new-
+  Membership closures.
+- Projected exact closure lines, source and replacement consumptions, concrete
+  Visits, one-off closure Payments and covering Membership sale snapshots.
+  Historical one-off lines read their immutable snapshots and do not depend on
+  the catalog row still being active or retaining its current display values.
+- Kept negative-state derivation in `MembershipNegativeVisitSelector` and made
+  the selector, closure facts, Payments and catalog projection use one read-
+  only PostgreSQL `REPEATABLE READ` snapshot. A concurrent correction can no
+  longer combine pre-command balance state with post-command closure rows.
+- Added explicit close-one-off and correct-coverage action permissions. Missing
+  canonical caches or malformed closure linkage fail closed with no partial
+  read model or actions.
+- Registered the scoped query handler for production use without adding Razor
+  controls or beginning issued-sale replacement, paper metadata or Milestone
+  11.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Focused PostgreSQL query tests passed: 7/7. They cover empty and active
+  catalogs, Owner/named Admin/shared Reception authorization, immutable one-
+  off and new-Membership closure projection, exact Payment and Visit links,
+  action gates, missing-cache failure, deliberately injected malformed state
+  and a controlled concurrent correction across the repeatable-read snapshot.
+- An independent read-only review found two P2 gaps: cross-query snapshot
+  inconsistency and missing substantive PostgreSQL coverage. Both were fixed
+  before commit; no P0 or P1 finding was reported.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Add Memberships-owned preview queries and production Razor/htmx forms for
+  explicit one-off closure plus reason-required cancel/replace of an active
+  one-off or new-Membership coverage. Show exact totals, concrete covered or
+  restored Visits, remaining negative state and stale tokens; preserve tablet/
+  phone warnings, duplicate-submit protection and canonical rereads. Do not
+  start issued-sale replacement, paper metadata or Milestone 11 before that UI
+  slice is validated.

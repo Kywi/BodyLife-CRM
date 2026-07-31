@@ -83,6 +83,11 @@ public static class ServiceCollectionExtensions
             GetClientMembershipStatesQueryHandler>();
         services.AddScoped<
             IBodyLifeQueryHandler<
+                GetClientNegativeVisitCoverageQuery,
+                GetClientNegativeVisitCoverageResult>,
+            GetClientNegativeVisitCoverageQueryHandler>();
+        services.AddScoped<
+            IBodyLifeQueryHandler<
                 GetEndingSoonMembershipStateRowsQuery,
                 GetEndingSoonMembershipStateRowsResult>,
             GetEndingSoonMembershipStateRowsQueryHandler>();
