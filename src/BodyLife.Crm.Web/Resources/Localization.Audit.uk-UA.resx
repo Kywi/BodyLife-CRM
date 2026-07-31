@@ -87,6 +87,7 @@
   <data name="Entity.MembershipType"><value>Тип абонемента</value></data>
   <data name="Entity.Membership"><value>Абонемент</value></data>
   <data name="Entity.MembershipOpeningState"><value>Початковий стан</value></data>
+  <data name="Entity.MembershipNegativeClosure"><value>Погашення мінусових відвідувань</value></data>
   <data name="Entity.Visit"><value>Відвідування</value></data>
   <data name="Entity.Payment"><value>Платіж</value></data>
   <data name="Entity.Freeze"><value>Замороження</value></data>
@@ -117,6 +118,9 @@
   <data name="Action.membership_type.deactivated"><value>Тип абонемента деактивовано</value></data>
   <data name="Action.membership.issued"><value>Абонемент оформлено</value></data>
   <data name="Action.membership_opening_state.created"><value>Початковий стан створено</value></data>
+  <data name="Action.membership_negative_closure.created"><value>Мінусові відвідування погашено</value></data>
+  <data name="Action.membership_negative_closure.canceled"><value>Погашення мінусових відвідувань скасовано</value></data>
+  <data name="Action.membership_negative_closure.replaced"><value>Погашення мінусових відвідувань замінено</value></data>
   <data name="Action.visit.marked"><value>Відвідування відмічено</value></data>
   <data name="Action.visit.canceled"><value>Відвідування скасовано</value></data>
   <data name="Action.payment.created"><value>Платіж створено</value></data>

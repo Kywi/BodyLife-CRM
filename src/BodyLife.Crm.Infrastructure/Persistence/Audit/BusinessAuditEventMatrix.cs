@@ -60,6 +60,17 @@ internal static class BusinessAuditEventMatrix
                 RequiredPayloadFields.RelatedEntityRefs
                 | CreatesCommandFact
                 | RequiredPayloadFields.Explanation),
+            [MembershipNegativeClosureAuditActions.Created] = new(
+                MembershipNegativeClosureAuditActions.EntityType,
+                RequiredPayloadFields.RelatedEntityRefs
+                | RequiredPayloadFields.BeforeSummary
+                | CreatesCommandFact),
+            [MembershipNegativeClosureAuditActions.Canceled] = new(
+                MembershipNegativeClosureAuditActions.EntityType,
+                CorrectsRelatedCommandFact),
+            [MembershipNegativeClosureAuditActions.Replaced] = new(
+                MembershipNegativeClosureAuditActions.EntityType,
+                CorrectsRelatedCommandFact),
             [VisitAuditActions.Marked] = new(
                 VisitAuditActions.VisitEntityType,
                 RequiredPayloadFields.RelatedEntityRefs | CreatesCommandFact),

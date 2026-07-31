@@ -13589,3 +13589,46 @@ Stop point:
   rereads. Then add the production Razor/htmx coverage controls. Do not start
   issued-sale replacement, paper metadata or Milestone 11 before this command
   block is validated.
+
+## Step 210 - Implemented oldest-first one-off negative Visit closure
+
+Status: completed as the first command slice over the Step 209 negative-
+coverage source foundation. Milestone 10.5 remains in progress; Milestone 11
+has not started.
+
+Completed:
+
+- Added `CloseNegativeVisitsOneOff` for active Owner, named Admin and shared
+  Reception/Admin accounts, with normalized envelopes, idempotent replay,
+  stale catalog/preview rejection and canonical Client reread.
+- Added a Memberships-owned selector that locks Client-owned active
+  Memberships and concrete Visits in deterministic order, derives each
+  Membership's still-open negative tail from version-8 canonical state and
+  forbids skipping the oldest available negative Visit.
+- The command snapshots one or more selected active `one_off` catalog lines,
+  creates one item per oldest Visit and one exact cash Payment, rebuilds every
+  affected Membership, appends Payment and closure audit entries, and commits
+  idempotency in one transaction. Partial closure leaves the remaining
+  negative warning visible.
+- Registered create/cancel/replace closure lifecycle actions in the canonical
+  audit matrix and Owner timeline filters, including both supported UI
+  cultures. Cancel/replace command behavior remains the next command slice.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Focused one-off command and audit matrix tests passed after registering the
+  new audit lifecycle: 10/10. They cover `-3`, close the two oldest Visits with
+  two one-off types, retain `-1`, exact Payment and immutable snapshots, stale
+  and over-limit rejection, idempotent replay, permission denial, DI wiring and
+  full rollback on audit failure.
+- Full domain tests passed: 411/411. Full Web tests passed: 294/294.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Extend `IssueMembership` with explicit oldest-first new-Membership coverage,
+  forced oldest Visit business-date start, immediate limit consumption,
+  partial remainder and expired-preview warning. Then implement
+  `CorrectNegativeVisitCoverage` and production Razor/htmx controls before
+  moving to issued-sale replacement or paper metadata.

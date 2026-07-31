@@ -207,8 +207,15 @@ public static class ServiceCollectionExtensions
             IMembershipIssuePaymentWriter,
             MembershipIssuePaymentWriter>();
         services.AddScoped<
+            INegativeClosurePaymentWriter,
+            NegativeClosurePaymentWriter>();
+        services.AddScoped<MembershipNegativeVisitSelector>();
+        services.AddScoped<
             IBodyLifeCommandHandler<IssueMembershipCommand>,
             IssueMembershipCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<CloseNegativeVisitsOneOffCommand>,
+            CloseNegativeVisitsOneOffCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<MarkVisitCommand>,
             MarkVisitCommandHandler>();

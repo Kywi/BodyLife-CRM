@@ -222,7 +222,7 @@ public sealed class LocalizationContractsTests
         var presentation = scope.ServiceProvider.GetRequiredService<AuditPresentation>();
         var actions = AuditEntryExplanationPresenter.ReadableActionTypes.ToArray();
 
-        Assert.Equal(26, actions.Length);
+        Assert.Equal(29, actions.Length);
         Assert.All(
             actions,
             action =>

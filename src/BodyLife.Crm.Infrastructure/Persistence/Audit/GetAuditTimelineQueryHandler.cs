@@ -263,6 +263,8 @@ public sealed class GetAuditTimelineQueryHandler(
                 AuditTimelineEntityType.Membership => "membership",
                 AuditTimelineEntityType.MembershipOpeningState
                     => "membership_opening_state",
+                AuditTimelineEntityType.MembershipNegativeClosure
+                    => "membership_negative_closure",
                 AuditTimelineEntityType.Visit => "visit",
                 AuditTimelineEntityType.Payment => "payment",
                 AuditTimelineEntityType.Freeze => "freeze",
@@ -285,6 +287,8 @@ public sealed class GetAuditTimelineQueryHandler(
                 "membership" => AuditTimelineEntityType.Membership,
                 "membership_opening_state"
                     => AuditTimelineEntityType.MembershipOpeningState,
+                "membership_negative_closure"
+                    => AuditTimelineEntityType.MembershipNegativeClosure,
                 "visit" => AuditTimelineEntityType.Visit,
                 "payment" => AuditTimelineEntityType.Payment,
                 "freeze" => AuditTimelineEntityType.Freeze,

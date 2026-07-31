@@ -6,6 +6,7 @@ public enum AuditTimelineEntityType
     MembershipType,
     Membership,
     MembershipOpeningState,
+    MembershipNegativeClosure,
     Visit,
     Payment,
     Freeze,

@@ -87,6 +87,7 @@
   <data name="Entity.MembershipType"><value>Membership type</value></data>
   <data name="Entity.Membership"><value>Membership</value></data>
   <data name="Entity.MembershipOpeningState"><value>Opening state</value></data>
+  <data name="Entity.MembershipNegativeClosure"><value>Negative Visit closure</value></data>
   <data name="Entity.Visit"><value>Visit</value></data>
   <data name="Entity.Payment"><value>Payment</value></data>
   <data name="Entity.Freeze"><value>Freeze</value></data>
@@ -117,6 +118,9 @@
   <data name="Action.membership_type.deactivated"><value>Membership type deactivated</value></data>
   <data name="Action.membership.issued"><value>Membership issued</value></data>
   <data name="Action.membership_opening_state.created"><value>Opening state created</value></data>
+  <data name="Action.membership_negative_closure.created"><value>Negative visits closed</value></data>
+  <data name="Action.membership_negative_closure.canceled"><value>Negative-visit closure canceled</value></data>
+  <data name="Action.membership_negative_closure.replaced"><value>Negative-visit closure replaced</value></data>
   <data name="Action.visit.marked"><value>Visit marked</value></data>
   <data name="Action.visit.canceled"><value>Visit canceled</value></data>
   <data name="Action.payment.created"><value>Payment created</value></data>

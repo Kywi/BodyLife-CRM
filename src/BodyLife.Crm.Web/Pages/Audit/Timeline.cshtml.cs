@@ -28,6 +28,7 @@ public sealed class TimelineModel(
         new(AuditTimelineEntityType.MembershipType, "Entity.MembershipType"),
         new(AuditTimelineEntityType.Membership, "Entity.Membership"),
         new(AuditTimelineEntityType.MembershipOpeningState, "Entity.MembershipOpeningState"),
+        new(AuditTimelineEntityType.MembershipNegativeClosure, "Entity.MembershipNegativeClosure"),
         new(AuditTimelineEntityType.Visit, "Entity.Visit"),
         new(AuditTimelineEntityType.Payment, "Entity.Payment"),
         new(AuditTimelineEntityType.Freeze, "Entity.Freeze"),
@@ -38,7 +39,7 @@ public sealed class TimelineModel(
     public static IReadOnlyList<AuditTimelineActionOption> ActionOptions { get; } =
     [
         new("client.created", "Action.client.created"), new("client.updated", "Action.client.updated"), new("card.assigned", "Action.card.assigned"), new("card.changed", "Action.card.changed"), new("card.cleared", "Action.card.cleared"),
-        new("membership_type.created", "Action.membership_type.created"), new("membership_type.edited", "Action.membership_type.edited"), new("membership_type.deactivated", "Action.membership_type.deactivated"), new("membership.issued", "Action.membership.issued"), new("membership_opening_state.created", "Action.membership_opening_state.created"),
+        new("membership_type.created", "Action.membership_type.created"), new("membership_type.edited", "Action.membership_type.edited"), new("membership_type.deactivated", "Action.membership_type.deactivated"), new("membership.issued", "Action.membership.issued"), new("membership_opening_state.created", "Action.membership_opening_state.created"), new("membership_negative_closure.created", "Action.membership_negative_closure.created"), new("membership_negative_closure.canceled", "Action.membership_negative_closure.canceled"), new("membership_negative_closure.replaced", "Action.membership_negative_closure.replaced"),
         new("visit.marked", "Action.visit.marked"), new("visit.canceled", "Action.visit.canceled"), new("payment.created", "Action.payment.created"), new("payment.corrected", "Action.payment.corrected"), new("payment.canceled", "Action.payment.canceled"), new("freeze.added", "Action.freeze.added"), new("freeze.canceled", "Action.freeze.canceled"),
         new("non_working_day.added", "Action.non_working_day.added"), new("non_working_day.corrected", "Action.non_working_day.corrected"), new("non_working_day.canceled", "Action.non_working_day.canceled"),
         new("staff_account.created", "Action.staff_account.created"), new("staff_account.display_name_updated", "Action.staff_account.display_name_updated"), new("staff_account.activated", "Action.staff_account.activated"), new("staff_account.deactivated", "Action.staff_account.deactivated"), new("staff_credentials.configured", "Action.staff_credentials.configured"), new("staff_credentials.reset", "Action.staff_credentials.reset"),
