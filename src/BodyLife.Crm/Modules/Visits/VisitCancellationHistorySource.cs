@@ -1,3 +1,4 @@
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Visits;
@@ -11,4 +12,5 @@ public sealed record VisitCancellationHistorySource(
     DateTimeOffset RecordedAt,
     AccountId RecordedByAccountId,
     SessionId RecordedSessionId,
-    Guid? EntryBatchId);
+    Guid? EntryBatchId,
+    PaperFallbackEntryRowReference? PaperReference = null);

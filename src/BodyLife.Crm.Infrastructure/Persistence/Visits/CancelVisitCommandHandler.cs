@@ -2,7 +2,9 @@ using System.Data;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
+using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Visits;
 using BodyLife.Crm.SharedKernel;
@@ -13,6 +15,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Visits;
 public sealed class CancelVisitCommandHandler(
     BodyLifeDbContext dbContext,
     BusinessAuditAppender auditAppender,
+    PaperFallbackEntryRowBinder paperFallbackEntryRowBinder,
     CancelVisitSourcePreparer sourcePreparer,
     IMembershipStateRecalculator membershipStateRecalculator,
     IBodyLifeQueryHandler<GetMembershipStateQuery, GetMembershipStateResult>
@@ -80,6 +83,65 @@ public sealed class CancelVisitCommandHandler(
                     cancellationToken));
             }
 
+            var visitClientId = await FindVisitClientIdAsync(
+                cancellation.VisitId,
+                cancellationToken);
+            if (visitClientId is null)
+            {
+                return await RollBackAsync(VisitCommandSupport.Error(
+                    CommandErrorCode.NotFound,
+                    "Visit was not found.",
+                    "visitId"));
+            }
+
+            var client = await LockClientAsync(
+                visitClientId.Value,
+                cancellationToken);
+            if (client is null)
+            {
+                return await RollBackAsync(SourceChangedConcurrently());
+            }
+
+            existingIdempotency = await VisitCommandSupport.FindIdempotencyAsync(
+                dbContext,
+                CommandName,
+                cancellation.Envelope.IdempotencyKey!,
+                cancellationToken);
+            if (existingIdempotency is not null)
+            {
+                return await RollBackAsync(await ReplayOrRejectDuplicateAsync(
+                    existingIdempotency,
+                    cancellation,
+                    fingerprint,
+                    cancellationToken));
+            }
+
+            var paperBinding = await paperFallbackEntryRowBinder.PrepareAsync(
+                cancellation.Envelope,
+                PaperFallbackEventType.CorrectionOrCancellation,
+                cancellationToken);
+            if (paperBinding.RowAlreadyLinked)
+            {
+                existingIdempotency = await VisitCommandSupport.FindIdempotencyAsync(
+                    dbContext,
+                    CommandName,
+                    cancellation.Envelope.IdempotencyKey!,
+                    cancellationToken);
+                if (existingIdempotency is not null)
+                {
+                    return await RollBackAsync(await ReplayOrRejectDuplicateAsync(
+                        existingIdempotency,
+                        cancellation,
+                        fingerprint,
+                        cancellationToken));
+                }
+            }
+
+            if (paperBinding.Error is not null)
+            {
+                return await RollBackAsync(paperBinding.Error);
+            }
+
             var sourceResult = await sourcePreparer.PrepareAsync(
                 cancellation.VisitId,
                 cancellationToken);
@@ -104,6 +166,11 @@ public sealed class CancelVisitCommandHandler(
             }
 
             var source = sourceResult.Source;
+            if (source.ClientId != client.Id)
+            {
+                return await RollBackAsync(SourceChangedConcurrently());
+            }
+
             var businessDate = BusinessTimeZone.GetBusinessDate(source.OccurredAt);
             var dayStatus = await dayReconciliationStatusProvider.GetStatusAsync(
                 businessDate,
@@ -132,7 +199,8 @@ public sealed class CancelVisitCommandHandler(
                     new CancelVisitCommand(
                         cancellation.Envelope,
                         cancellation.VisitId,
-                        cancellation.EntryBatchId),
+                        paperBinding.Reference?.EntryBatchId
+                            ?? cancellation.EntryBatchId),
                     source,
                     changedAfterClose);
             }
@@ -203,6 +271,14 @@ public sealed class CancelVisitCommandHandler(
             }
 
             var cancellationId = Guid.NewGuid();
+            if (paperBinding.Reference is { } paperReference)
+            {
+                paperFallbackEntryRowBinder.LinkEntity(
+                    paperReference,
+                    VisitAuditActions.VisitCancellationEntityType,
+                    cancellationId);
+            }
+
             var cancellationRecord = new VisitCancellationRecord
             {
                 Id = cancellationId,
@@ -243,19 +319,40 @@ public sealed class CancelVisitCommandHandler(
                 afterMembershipState = afterStateResult.State;
             }
 
+            object relatedEntityRefs;
+            if (paperBinding.Reference is { } auditPaperReference)
+            {
+                relatedEntityRefs = new
+                {
+                    source.ClientId,
+                    source.MembershipId,
+                    source.ActiveConsumptionId,
+                    CancellationId = cancellationId,
+                    auditPaperReference.EntryBatchId,
+                    auditPaperReference.EntryBatchRowId,
+                    auditPaperReference.PaperSheetNumber,
+                    auditPaperReference.LineNumber,
+                    PaperExplanation = auditPaperReference.Explanation,
+                };
+            }
+            else
+            {
+                relatedEntityRefs = new
+                {
+                    source.ClientId,
+                    source.MembershipId,
+                    source.ActiveConsumptionId,
+                    CancellationId = cancellationId,
+                };
+            }
+
             var auditEntryId = auditAppender.Append(
                 preparation.Envelope,
                 VisitAuditActions.Canceled,
                 VisitAuditActions.VisitEntityType,
                 source.VisitId,
                 recordedAt,
-                relatedEntityRefs: new
-                {
-                    source.ClientId,
-                    source.MembershipId,
-                    source.ActiveConsumptionId,
-                    CancellationId = cancellationId,
-                },
+                relatedEntityRefs,
                 beforeSummary: new
                 {
                     Visit = SummarizeSource(source),
@@ -333,6 +430,34 @@ public sealed class CancelVisitCommandHandler(
                 transaction,
                 result);
         }
+    }
+
+    private Task<Guid?> FindVisitClientIdAsync(
+        Guid visitId,
+        CancellationToken cancellationToken)
+    {
+        return dbContext.Set<VisitRecord>()
+            .AsNoTracking()
+            .Where(visit => visit.Id == visitId)
+            .Select(visit => (Guid?)visit.ClientId)
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
+    private async Task<ClientRecord?> LockClientAsync(
+        Guid clientId,
+        CancellationToken cancellationToken)
+    {
+        var clients = await dbContext.Set<ClientRecord>()
+            .FromSqlInterpolated(
+                $"""
+                select *
+                from bodylife.clients
+                where id = {clientId}
+                for update
+                """)
+            .AsNoTracking()
+            .ToArrayAsync(cancellationToken);
+        return clients.SingleOrDefault();
     }
 
     private Task<GetMembershipStateResult> ReadMembershipStateAsync(

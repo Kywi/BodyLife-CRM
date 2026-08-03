@@ -429,6 +429,7 @@ public sealed class AuditEntryExplanationViewModelTests
         var membershipId = Guid.NewGuid();
         var consumptionId = Guid.NewGuid();
         var cancellationId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
         var before = new
         {
             Visit = Visit(
@@ -436,7 +437,8 @@ public sealed class AuditEntryExplanationViewModelTests
                 membershipId,
                 consumptionId,
                 status: "active",
-                consumptionStatus: "active"),
+                consumptionStatus: "active",
+                clientId: clientId),
             MembershipState = MembershipState(membershipId, -1, 1),
         };
         var after = new
@@ -445,6 +447,12 @@ public sealed class AuditEntryExplanationViewModelTests
             {
                 CancellationId = cancellationId,
                 VisitId = visitId,
+                Reason = "Correction reason",
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "normal",
+                EntryBatchId = (Guid?)null,
+                ChangedAfterClose = false,
             },
             Visit = new
             {
@@ -463,7 +471,14 @@ public sealed class AuditEntryExplanationViewModelTests
                     AuditTimelineEntityType.Visit,
                     visitId,
                     before,
-                    after)));
+                    after,
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)membershipId,
+                        ActiveConsumptionId = (Guid?)consumptionId,
+                        CancellationId = cancellationId,
+                    })));
 
         Assert.True(explanation.IsAvailable);
         Assert.Equal("visit-canceled", explanation.Kind);
@@ -481,6 +496,8 @@ public sealed class AuditEntryExplanationViewModelTests
     public void OneOffVisitCancellationDoesNotInventMembershipState()
     {
         var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var cancellationId = Guid.NewGuid();
         var before = new
         {
             Visit = Visit(
@@ -489,15 +506,22 @@ public sealed class AuditEntryExplanationViewModelTests
                 consumptionId: null,
                 status: "active",
                 consumptionStatus: null,
-                visitKind: "one_off"),
+                visitKind: "one_off",
+                clientId: clientId),
             MembershipState = (object?)null,
         };
         var after = new
         {
             Cancellation = new
             {
-                CancellationId = Guid.NewGuid(),
+                CancellationId = cancellationId,
                 VisitId = visitId,
+                Reason = "Correction reason",
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "normal",
+                EntryBatchId = (Guid?)null,
+                ChangedAfterClose = false,
             },
             Visit = new
             {
@@ -516,7 +540,14 @@ public sealed class AuditEntryExplanationViewModelTests
                     AuditTimelineEntityType.Visit,
                     visitId,
                     before,
-                    after)));
+                    after,
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)null,
+                        ActiveConsumptionId = (Guid?)null,
+                        CancellationId = cancellationId,
+                    })));
 
         Assert.True(explanation.IsAvailable);
         Assert.Equal("One-off visit", FactValue(explanation.BeforeFacts, "Visit type"));
@@ -526,6 +557,172 @@ public sealed class AuditEntryExplanationViewModelTests
             explanation.AfterFacts,
             fact => fact.Label == "Remaining visits");
         Assert.Contains("No Membership consumption", explanation.Narrative);
+    }
+
+    [Fact]
+    public void PaperVisitCancellationShowsLocalizedSheetLineEventAndExplanation()
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var cancellationId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        const string sheetNumber = "VISIT-CANCEL-031";
+        const string paperExplanation = "Recovered cancellation from line 31";
+        var before = new
+        {
+            Visit = Visit(
+                visitId,
+                membershipId: null,
+                consumptionId: null,
+                status: "active",
+                consumptionStatus: null,
+                visitKind: "one_off",
+                clientId: clientId),
+            MembershipState = (object?)null,
+        };
+        var after = new
+        {
+            Cancellation = new
+            {
+                CancellationId = cancellationId,
+                VisitId = visitId,
+                Reason = "Correction reason",
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "paper_fallback",
+                EntryBatchId = (Guid?)batchId,
+                ChangedAfterClose = false,
+            },
+            Visit = new
+            {
+                VisitId = visitId,
+                Status = "canceled",
+                ConsumptionId = (Guid?)null,
+                ConsumptionStatus = (string?)null,
+            },
+            MembershipState = (object?)null,
+        };
+        var related = new
+        {
+            ClientId = clientId,
+            MembershipId = (Guid?)null,
+            ActiveConsumptionId = (Guid?)null,
+            CancellationId = cancellationId,
+            EntryBatchId = batchId,
+            EntryBatchRowId = rowId,
+            PaperSheetNumber = sheetNumber,
+            LineNumber = 31,
+            PaperExplanation = paperExplanation,
+        };
+        var entry = Entry(
+            "visit.canceled",
+            AuditTimelineEntityType.Visit,
+            visitId,
+            before,
+            after,
+            related: related,
+            entryOrigin: EntryOrigin.PaperFallback);
+
+        var english = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry, WebCultures.English));
+        var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry, WebCultures.Ukrainian));
+
+        Assert.True(english.IsAvailable);
+        Assert.Equal(sheetNumber, FactValue(english.AfterFacts, "Paper sheet"));
+        Assert.Equal("31", FactValue(english.AfterFacts, "Line number"));
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(english.AfterFacts, "Event type"));
+        Assert.Equal(
+            paperExplanation,
+            FactValue(english.AfterFacts, "Explanation"));
+        Assert.Equal(
+            rowId.ToString("N")[..8],
+            FactValue(english.AfterFacts, "Paper row"));
+
+        Assert.True(ukrainian.IsAvailable);
+        Assert.Equal(
+            sheetNumber,
+            FactValue(ukrainian.AfterFacts, "Паперовий аркуш"));
+        Assert.Equal(
+            "31",
+            FactValue(ukrainian.AfterFacts, "Номер рядка"));
+        Assert.Equal(
+            "Виправлення або скасування",
+            FactValue(ukrainian.AfterFacts, "Тип події"));
+        Assert.Equal(
+            paperExplanation,
+            FactValue(ukrainian.AfterFacts, "Пояснення"));
+    }
+
+    [Fact]
+    public void PaperVisitCancellationWithoutRowIdentityFailsClosed()
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var cancellationId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var before = new
+        {
+            Visit = Visit(
+                visitId,
+                membershipId: null,
+                consumptionId: null,
+                status: "active",
+                consumptionStatus: null,
+                visitKind: "one_off",
+                clientId: clientId),
+            MembershipState = (object?)null,
+        };
+        var after = new
+        {
+            Cancellation = new
+            {
+                CancellationId = cancellationId,
+                VisitId = visitId,
+                Reason = "Correction reason",
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "paper_fallback",
+                EntryBatchId = (Guid?)batchId,
+                ChangedAfterClose = false,
+            },
+            Visit = new
+            {
+                VisitId = visitId,
+                Status = "canceled",
+                ConsumptionId = (Guid?)null,
+                ConsumptionStatus = (string?)null,
+            },
+            MembershipState = (object?)null,
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "visit.canceled",
+                    AuditTimelineEntityType.Visit,
+                    visitId,
+                    before,
+                    after,
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)null,
+                        ActiveConsumptionId = (Guid?)null,
+                        CancellationId = cancellationId,
+                        EntryBatchId = batchId,
+                        EntryBatchRowId = (Guid?)null,
+                        PaperSheetNumber = "VISIT-CANCEL-032",
+                        LineNumber = 32,
+                        PaperExplanation = "Missing row identity",
+                    },
+                    entryOrigin: EntryOrigin.PaperFallback)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
     }
 
     [Fact]
@@ -4205,12 +4402,13 @@ public sealed class AuditEntryExplanationViewModelTests
         Guid? consumptionId,
         string status,
         string? consumptionStatus,
-        string visitKind = "membership")
+        string visitKind = "membership",
+        Guid? clientId = null)
     {
         return new
         {
             VisitId = visitId,
-            ClientId = Guid.NewGuid(),
+            ClientId = clientId ?? Guid.NewGuid(),
             VisitKind = visitKind,
             MembershipId = membershipId,
             ConsumptionId = consumptionId,

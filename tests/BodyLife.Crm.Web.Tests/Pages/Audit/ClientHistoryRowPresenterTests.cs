@@ -308,6 +308,66 @@ public sealed class ClientHistoryRowPresenterTests
     }
 
     [Fact]
+    public void PaperVisitCancellationShowsLocalizedRowProvenance()
+    {
+        var source = CreateVisitCanceledRow();
+
+        var english = Present(source, WebCultures.English);
+        var ukrainian = Present(source, WebCultures.Ukrainian);
+
+        Assert.Equal(
+            "VISIT-CANCEL-001",
+            FactValue(english.Facts, "Paper sheet"));
+        Assert.Equal("22", FactValue(english.Facts, "Line number"));
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(english.Facts, "Event type"));
+        Assert.Equal(
+            "Recovered paper Visit cancellation",
+            FactValue(english.Facts, "Explanation"));
+        Assert.Equal(
+            Id(122).ToString(),
+            FactValue(english.Identifiers, "Entry batch row ID"));
+
+        Assert.Equal(
+            "VISIT-CANCEL-001",
+            FactValue(ukrainian.Facts, "Паперовий аркуш"));
+        Assert.Equal("22", FactValue(ukrainian.Facts, "Номер рядка"));
+        Assert.Equal(
+            "Виправлення або скасування",
+            FactValue(ukrainian.Facts, "Тип події"));
+        Assert.Equal(
+            "Recovered paper Visit cancellation",
+            FactValue(ukrainian.Facts, "Пояснення"));
+        Assert.Equal(
+            Id(122).ToString(),
+            FactValue(ukrainian.Identifiers, "ID рядка пакета внесення"));
+    }
+
+    [Fact]
+    public void PaperVisitCancellationWithoutCanonicalRowReferenceFailsClosed()
+    {
+        var row = CreateVisitCanceledRow();
+        row = row with
+        {
+            VisitSourceRow = row.VisitSourceRow! with
+            {
+                Cancellation = row.VisitSourceRow.Cancellation! with
+                {
+                    PaperReference = null,
+                },
+            },
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => Present(row, WebCultures.English));
+
+        Assert.Equal(
+            "Paper Visit cancellation history provenance is inconsistent.",
+            exception.Message);
+    }
+
+    [Fact]
     public void CorrectedMembershipAndOpeningStateUseWarningStyling()
     {
         var membership = CreateMembershipIssuedRow();
@@ -678,7 +738,15 @@ public sealed class ClientHistoryRowPresenterTests
             RecordedAt,
             ActorAccountId,
             SessionId,
-            BatchId);
+            BatchId,
+            new PaperFallbackEntryRowReference(
+                BatchId,
+                Id(122),
+                "VISIT-CANCEL-001",
+                22,
+                PaperFallbackEventType.CorrectionOrCancellation,
+                OccurredAt,
+                "Recovered paper Visit cancellation"));
         var audit = Audit(cancellation.CancellationId);
         var source = new ClientVisitHistorySourceRow(
             ClientVisitHistorySourceKind.CanceledVisit,

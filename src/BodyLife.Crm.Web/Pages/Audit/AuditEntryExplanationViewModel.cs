@@ -252,7 +252,11 @@ public sealed class AuditEntryExplanationPresenter(
                         before.RootElement,
                         after.RootElement),
                 "visit.canceled" when entry.EntityType == AuditTimelineEntityType.Visit
-                    => CreateVisitCancellation(entry, before.RootElement, after.RootElement),
+                    => CreateVisitCancellation(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
                 "payment.created" when entry.EntityType == AuditTimelineEntityType.Payment
                     => CreatePaymentCreation(
                         entry,
@@ -629,10 +633,11 @@ public sealed class AuditEntryExplanationPresenter(
         var relatedConsumptionId = RequireNullableGuid(related, "consumptionId");
         var visit = ReadMarkedVisit(RequireObject(after, "visit"));
         var afterStateElement = RequireNullableObject(after, "membershipState");
-        var paperReference = ReadVisitPaperReference(
+        var paperReference = ReadPaperReference(
             related,
             entry.EntryOrigin,
-            visit);
+            visit.EntryBatchId,
+            "Visit");
 
         ValidateEntryBatch(visit.EntryOrigin, visit.EntryBatchId);
         if (visit.VisitId != entry.EntityId
@@ -753,10 +758,11 @@ public sealed class AuditEntryExplanationPresenter(
             IsAvailable: true);
     }
 
-    private static VisitPaperReferenceSnapshot? ReadVisitPaperReference(
+    private static PaperReferenceSnapshot? ReadPaperReference(
         JsonElement related,
         EntryOrigin entryOrigin,
-        VisitMarkedSnapshot visit)
+        Guid? sourceEntryBatchId,
+        string sourceName)
     {
         var entryBatchId = ReadOptionalGuid(related, "entryBatchId");
         var entryBatchRowId = ReadOptionalGuid(related, "entryBatchRowId");
@@ -773,7 +779,7 @@ public sealed class AuditEntryExplanationPresenter(
                 || explanation is not null)
             {
                 throw new JsonException(
-                    "A non-paper Visit cannot include paper row provenance.");
+                    $"A non-paper {sourceName} cannot include paper row provenance.");
             }
 
             return null;
@@ -783,17 +789,18 @@ public sealed class AuditEntryExplanationPresenter(
             || entryBatchRowId is null
             || entryBatchId == Guid.Empty
             || entryBatchRowId == Guid.Empty
-            || visit.EntryBatchId != entryBatchId
+            || sourceEntryBatchId != entryBatchId
             || string.IsNullOrWhiteSpace(paperSheetNumber)
             || paperSheetNumber != paperSheetNumber.Trim().ToUpperInvariant()
             || lineNumber is null or <= 0
             || string.IsNullOrWhiteSpace(explanation)
             || explanation != explanation.Trim())
         {
-            throw new JsonException("Paper Visit row provenance is inconsistent.");
+            throw new JsonException(
+                $"Paper {sourceName} row provenance is inconsistent.");
         }
 
-        return new VisitPaperReferenceSnapshot(
+        return new PaperReferenceSnapshot(
             entryBatchId.Value,
             entryBatchRowId.Value,
             paperSheetNumber,
@@ -844,6 +851,7 @@ public sealed class AuditEntryExplanationPresenter(
 
     private AuditEntryExplanationViewModel CreateVisitCancellation(
         AuditTimelineEntry entry,
+        JsonElement related,
         JsonElement before,
         JsonElement after)
     {
@@ -852,10 +860,36 @@ public sealed class AuditEntryExplanationPresenter(
         var cancellation = RequireObject(after, "cancellation");
 
         var visitId = RequireGuid(originalVisit, "visitId");
+        var clientId = RequireGuid(originalVisit, "clientId");
+        var cancellationId = RequireGuid(cancellation, "cancellationId");
+        var cancellationReason = RequireString(cancellation, "reason");
+        var cancellationOccurredAt = RequireTimestamp(cancellation, "occurredAt");
+        var cancellationRecordedAt = RequireTimestamp(cancellation, "recordedAt");
+        var cancellationEntryOrigin = RequireString(cancellation, "entryOrigin");
+        var cancellationEntryBatchId = RequireNullableGuid(
+            cancellation,
+            "entryBatchId");
+        var paperReference = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            cancellationEntryBatchId,
+            "Visit cancellation");
+
+        ValidateEntryBatch(cancellationEntryOrigin, cancellationEntryBatchId);
         if (visitId != entry.EntityId
             || RequireGuid(canceledVisit, "visitId") != visitId
             || RequireGuid(cancellation, "visitId") != visitId
-            || RequireGuid(cancellation, "cancellationId") == Guid.Empty
+            || cancellationId == Guid.Empty
+            || RequireGuid(related, "clientId") != clientId
+            || RequireGuid(related, "cancellationId") != cancellationId
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                cancellationOccurredAt,
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                cancellationRecordedAt,
+                entry.RecordedAt)
+            || cancellationEntryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || cancellationReason != entry.Reason
             || RequireString(originalVisit, "status") != "active"
             || RequireString(canceledVisit, "status") != "canceled")
         {
@@ -863,12 +897,26 @@ public sealed class AuditEntryExplanationPresenter(
         }
 
         var membershipId = RequireNullableGuid(originalVisit, "membershipId");
+        if (RequireNullableGuid(related, "membershipId") != membershipId)
+        {
+            throw new JsonException(
+                "Visit cancellation Membership reference is inconsistent.");
+        }
+
         var originalConsumptionStatus = RequireNullableString(
             originalVisit,
             "consumptionStatus");
         var canceledConsumptionStatus = RequireNullableString(
             canceledVisit,
             "consumptionStatus");
+        var consumptionId = RequireNullableGuid(originalVisit, "consumptionId");
+        if (RequireNullableGuid(canceledVisit, "consumptionId") != consumptionId
+            || RequireNullableGuid(related, "activeConsumptionId") != consumptionId)
+        {
+            throw new JsonException(
+                "Visit cancellation consumption reference is inconsistent.");
+        }
+
         var beforeMembership = ReadMembershipState(before, membershipId);
         var afterMembership = ReadMembershipState(after, membershipId);
 
@@ -890,6 +938,24 @@ public sealed class AuditEntryExplanationPresenter(
             Fact("Membership", OptionalIdLabel(membershipId)),
             Fact("Consumption", ConsumptionStatusLabel(canceledConsumptionStatus)),
         };
+        if (paperReference is not null)
+        {
+            afterFacts.Add(Fact(
+                "Paper fallback batch",
+                TimelineModel.ShortId(paperReference.EntryBatchId)));
+            afterFacts.Add(Fact("Paper sheet", paperReference.PaperSheetNumber));
+            afterFacts.Add(Fact(
+                "Paper row",
+                TimelineModel.ShortId(paperReference.EntryBatchRowId)));
+            afterFacts.Add(Fact(
+                "Line number",
+                Presentation.Number(paperReference.LineNumber)));
+            afterFacts.Add(Fact(
+                "Event type",
+                Presentation.Text(
+                    "PaperFallback.EventType.correction_or_cancellation")));
+            afterFacts.Add(Fact("Explanation", paperReference.Explanation));
+        }
         AddMembershipFacts(afterFacts, afterMembership);
 
         return CreateExplanation(membershipId is null ? "VisitCanceled.WithoutMembership" : "VisitCanceled.WithMembership",
@@ -2825,7 +2891,7 @@ public sealed class AuditEntryExplanationPresenter(
         IReadOnlyList<string> Acknowledgements,
         string Selection);
 
-    private sealed record VisitPaperReferenceSnapshot(
+    private sealed record PaperReferenceSnapshot(
         Guid EntryBatchId,
         Guid EntryBatchRowId,
         string PaperSheetNumber,

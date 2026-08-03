@@ -77,7 +77,7 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         Assert.Equal(
             TestNow.AddDays(-1).AddMinutes(10),
             canceledRow.RecordedAt);
-        Assert.Equal(EntryOrigin.ManualBackfill, canceledRow.EntryOrigin);
+        Assert.Equal(EntryOrigin.PaperFallback, canceledRow.EntryOrigin);
         Assert.Null(canceledRow.MarkedVisit);
         var cancellation = Assert.IsType<VisitCancellationHistorySource>(
             canceledRow.Cancellation);
@@ -86,6 +86,23 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         Assert.Equal(fixture.Actor.AccountId, cancellation.RecordedByAccountId);
         Assert.Equal(fixture.Actor.SessionId, cancellation.RecordedSessionId);
         Assert.Equal(source.CancellationBatchId, cancellation.EntryBatchId);
+        var cancellationPaper = Assert.IsType<PaperFallbackEntryRowReference>(
+            cancellation.PaperReference);
+        Assert.Equal(source.CancellationBatchId, cancellationPaper.EntryBatchId);
+        Assert.Equal(
+            source.CancellationBatchRowId,
+            cancellationPaper.EntryBatchRowId);
+        Assert.Equal(
+            source.CancellationPaperSheetNumber,
+            cancellationPaper.PaperSheetNumber);
+        Assert.Equal(source.CancellationLineNumber, cancellationPaper.LineNumber);
+        Assert.Equal(
+            PaperFallbackEventType.CorrectionOrCancellation,
+            cancellationPaper.EventType);
+        Assert.Equal(TestNow.AddDays(-1), cancellationPaper.OccurredAt);
+        Assert.Equal(
+            source.CancellationExplanation,
+            cancellationPaper.Explanation);
         Assert.Equal(VisitAuditActions.Canceled, canceledRow.AuditEntry.ActionType);
         Assert.Equal("Duplicate check-in", canceledRow.AuditEntry.Reason);
         Assert.True(canceledRow.AuditEntry.ChangedAfterClose);
@@ -173,6 +190,32 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
     }
 
     [PostgreSqlFact]
+    public async Task QueryFailsClosedWhenPaperCancellationLinkIsMissing()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var source = await SeedHistoryAsync(database, fixture);
+
+        await ExecuteNonQueryAsync(
+            database,
+            $"""
+            delete from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = '{source.CancellationBatchRowId}'::uuid
+            """);
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientVisitHistorySourceRowsQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+
+        AssertFailure(
+            result,
+            GetClientVisitHistorySourceRowsStatus.SourceInconsistent);
+    }
+
+    [PostgreSqlFact]
     public async Task QueryFailsClosedWhenPaperAuditProvenanceDoesNotMatchRow()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -188,6 +231,29 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             CancellationToken.None);
         AssertFailure(
             mismatchedAudit,
+            GetClientVisitHistorySourceRowsStatus.SourceInconsistent);
+    }
+
+    [PostgreSqlFact]
+    public async Task QueryFailsClosedWhenPaperCancellationAuditDoesNotMatchRow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        await SeedHistoryAsync(
+            database,
+            fixture,
+            cancellationAuditLineNumber: 999);
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientVisitHistorySourceRowsQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+
+        AssertFailure(
+            result,
             GetClientVisitHistorySourceRowsStatus.SourceInconsistent);
     }
 
@@ -539,7 +605,8 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
     private static async Task<VisitHistorySourceIds> SeedHistoryAsync(
         PostgreSqlTestDatabase database,
         VisitHistoryFixture fixture,
-        int? paperAuditLineNumber = null)
+        int? paperAuditLineNumber = null,
+        int? cancellationAuditLineNumber = null)
     {
         var membershipVisitId = Guid.NewGuid();
         var consumptionId = Guid.NewGuid();
@@ -547,6 +614,7 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         var coverageSourceFactId = Guid.NewGuid();
         var cancellationId = Guid.NewGuid();
         var cancellationBatchId = Guid.NewGuid();
+        var cancellationBatchRowId = Guid.NewGuid();
         var oneOffVisitId = Guid.NewGuid();
         var oneOffBatchId = Guid.NewGuid();
         var oneOffBatchRowId = Guid.NewGuid();
@@ -554,6 +622,10 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         const string oneOffPaperSheetNumber = "VISIT-HISTORY-001";
         const int oneOffLineNumber = 7;
         const string oneOffExplanation = "Recovered one-off Visit from paper";
+        const string cancellationPaperSheetNumber = "VISIT-CANCEL-001";
+        const int cancellationLineNumber = 9;
+        const string cancellationExplanation =
+            "Recovered Visit cancellation from paper";
         await using (var connection = new NpgsqlConnection(database.ConnectionString))
         {
             await connection.OpenAsync();
@@ -571,17 +643,29 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                     reconciled_at,
                     reconciled_by_account_id,
                     note)
-                values (
-                    @one_off_batch_id,
-                    'paper_fallback',
-                    @one_off_paper_sheet_number,
-                    @one_off_business_date,
-                    @one_off_business_date,
-                    @one_off_recorded_at,
-                    @account_id,
-                    null,
-                    null,
-                    'Visit history fixture');
+                values
+                    (
+                        @one_off_batch_id,
+                        'paper_fallback',
+                        @one_off_paper_sheet_number,
+                        @one_off_business_date,
+                        @one_off_business_date,
+                        @one_off_recorded_at,
+                        @account_id,
+                        null,
+                        null,
+                        'Visit history fixture'),
+                    (
+                        @cancellation_batch_id,
+                        'paper_fallback',
+                        @cancellation_paper_sheet_number,
+                        @cancellation_business_date,
+                        @cancellation_business_date,
+                        @cancellation_recorded_at,
+                        @account_id,
+                        null,
+                        null,
+                        'Visit cancellation history fixture');
 
                 insert into bodylife.entry_batch_rows (
                     id,
@@ -593,16 +677,27 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                     recorded_at,
                     recorded_by_account_id,
                     session_id)
-                values (
-                    @one_off_batch_row_id,
-                    @one_off_batch_id,
-                    @one_off_line_number,
-                    'visit',
-                    @one_off_occurred_at,
-                    @one_off_explanation,
-                    @one_off_recorded_at,
-                    @account_id,
-                    @session_id);
+                values
+                    (
+                        @one_off_batch_row_id,
+                        @one_off_batch_id,
+                        @one_off_line_number,
+                        'visit',
+                        @one_off_occurred_at,
+                        @one_off_explanation,
+                        @one_off_recorded_at,
+                        @account_id,
+                        @session_id),
+                    (
+                        @cancellation_batch_row_id,
+                        @cancellation_batch_id,
+                        @cancellation_line_number,
+                        'correction_or_cancellation',
+                        @cancellation_occurred_at,
+                        @cancellation_explanation,
+                        @cancellation_recorded_at,
+                        @account_id,
+                        @session_id);
 
                 insert into bodylife.visits (
                     id,
@@ -701,7 +796,7 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                     @cancellation_recorded_at,
                     @account_id,
                     @session_id,
-                    'manual_backfill',
+                    'paper_fallback',
                     @cancellation_batch_id);
 
                 insert into bodylife.visits (
@@ -733,10 +828,15 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                     entry_batch_row_id,
                     entity_type,
                     entity_id)
-                values (
-                    @one_off_batch_row_id,
-                    'visit',
-                    @one_off_visit_id)
+                values
+                    (
+                        @one_off_batch_row_id,
+                        'visit',
+                        @one_off_visit_id),
+                    (
+                        @cancellation_batch_row_id,
+                        'visit_cancellation',
+                        @cancellation_id)
                 """;
             command.Parameters.AddWithValue(
                 "membership_visit_id",
@@ -775,6 +875,22 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             command.Parameters.AddWithValue(
                 "cancellation_batch_id",
                 cancellationBatchId);
+            command.Parameters.AddWithValue(
+                "cancellation_batch_row_id",
+                cancellationBatchRowId);
+            command.Parameters.AddWithValue(
+                "cancellation_paper_sheet_number",
+                cancellationPaperSheetNumber);
+            command.Parameters.AddWithValue(
+                "cancellation_business_date",
+                NpgsqlDbType.Date,
+                BusinessTimeZone.GetBusinessDate(TestNow.AddDays(-1)));
+            command.Parameters.AddWithValue(
+                "cancellation_line_number",
+                cancellationLineNumber);
+            command.Parameters.AddWithValue(
+                "cancellation_explanation",
+                cancellationExplanation);
             command.Parameters.AddWithValue("one_off_visit_id", oneOffVisitId);
             command.Parameters.AddWithValue(
                 "one_off_occurred_at",
@@ -799,7 +915,7 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             command.Parameters.AddWithValue(
                 "one_off_explanation",
                 oneOffExplanation);
-            Assert.Equal(8, await command.ExecuteNonQueryAsync());
+            Assert.Equal(11, await command.ExecuteNonQueryAsync());
         }
 
         await InsertAuditAsync(
@@ -822,9 +938,17 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             fixture.ClientId,
             TestNow.AddDays(-1),
             TestNow.AddDays(-1).AddMinutes(10),
-            "manual_backfill",
+            "paper_fallback",
             reason: "Duplicate check-in",
-            changedAfterClose: true);
+            changedAfterClose: true,
+            entryBatchId: cancellationBatchId,
+            entryBatchRowId: cancellationBatchRowId,
+            paperSheetNumber: cancellationPaperSheetNumber,
+            lineNumber: cancellationAuditLineNumber ?? cancellationLineNumber,
+            paperExplanation: cancellationExplanation,
+            cancellationId: cancellationId,
+            membershipId: fixture.MembershipId,
+            activeConsumptionId: consumptionId);
         await InsertAuditAsync(
             database,
             fixture,
@@ -868,6 +992,10 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             consumptionId,
             cancellationId,
             cancellationBatchId,
+            cancellationBatchRowId,
+            cancellationPaperSheetNumber,
+            cancellationLineNumber,
+            cancellationExplanation,
             oneOffVisitId,
             oneOffBatchId,
             oneOffBatchRowId,
@@ -975,7 +1103,10 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         Guid? entryBatchRowId = null,
         string? paperSheetNumber = null,
         int? lineNumber = null,
-        string? paperExplanation = null)
+        string? paperExplanation = null,
+        Guid? cancellationId = null,
+        Guid? membershipId = null,
+        Guid? activeConsumptionId = null)
     {
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
@@ -1028,9 +1159,29 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         command.Parameters.AddWithValue("id", auditId);
         command.Parameters.AddWithValue("action_type", actionType);
         command.Parameters.AddWithValue("visit_id", visitId);
-        object relatedEntityRefs = entryBatchRowId is null
-            ? new { ClientId = clientId }
-            : new
+        object relatedEntityRefs;
+        if (entryBatchRowId is null)
+        {
+            relatedEntityRefs = new { ClientId = clientId };
+        }
+        else if (actionType == VisitAuditActions.Canceled)
+        {
+            relatedEntityRefs = new
+            {
+                ClientId = clientId,
+                MembershipId = membershipId,
+                ActiveConsumptionId = activeConsumptionId,
+                CancellationId = cancellationId,
+                EntryBatchId = entryBatchId,
+                EntryBatchRowId = entryBatchRowId,
+                PaperSheetNumber = paperSheetNumber,
+                LineNumber = lineNumber,
+                PaperExplanation = paperExplanation,
+            };
+        }
+        else
+        {
+            relatedEntityRefs = new
             {
                 ClientId = clientId,
                 MembershipId = (Guid?)null,
@@ -1041,6 +1192,7 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                 LineNumber = lineNumber,
                 PaperExplanation = paperExplanation,
             };
+        }
         command.Parameters.Add(
             "related_entity_refs",
             NpgsqlDbType.Jsonb).Value = JsonSerializer.Serialize(
@@ -1131,6 +1283,10 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         Guid ConsumptionId,
         Guid CancellationId,
         Guid CancellationBatchId,
+        Guid CancellationBatchRowId,
+        string CancellationPaperSheetNumber,
+        int CancellationLineNumber,
+        string CancellationExplanation,
         Guid OneOffVisitId,
         Guid OneOffBatchId,
         Guid OneOffBatchRowId,

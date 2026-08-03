@@ -608,6 +608,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
         return new CancelVisitCommandHandler(
             dbContext,
             new BusinessAuditAppender(dbContext),
+            new PaperFallbackEntryRowBinder(dbContext),
             new CancelVisitSourcePreparer(dbContext),
             new MembershipStateRecalculator(
                 new MembershipStateCacheRebuilder(dbContext, timeProvider)),

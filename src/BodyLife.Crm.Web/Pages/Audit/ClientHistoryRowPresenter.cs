@@ -246,13 +246,63 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
 
     private ClientHistoryRowViewModel CanceledVisit(
         ClientHistorySourceRow row,
-        VisitCancellationHistorySource source) => Row(
+        VisitCancellationHistorySource source)
+    {
+        var paperReference = source.PaperReference;
+        if (row.EntryOrigin == EntryOrigin.PaperFallback)
+        {
+            if (paperReference is null
+                || paperReference.EventType
+                    != PaperFallbackEventType.CorrectionOrCancellation
+                || paperReference.EntryBatchId != source.EntryBatchId
+                || paperReference.EntryBatchRowId == Guid.Empty
+                || string.IsNullOrWhiteSpace(paperReference.PaperSheetNumber)
+                || paperReference.PaperSheetNumber
+                    != paperReference.PaperSheetNumber.Trim().ToUpperInvariant()
+                || paperReference.LineNumber <= 0
+                || string.IsNullOrWhiteSpace(paperReference.Explanation)
+                || paperReference.Explanation != paperReference.Explanation.Trim()
+                || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                    paperReference.OccurredAt,
+                    source.OccurredAt))
+            {
+                throw new InvalidOperationException(
+                    "Paper Visit cancellation history provenance is inconsistent.");
+            }
+        }
+        else if (paperReference is not null)
+        {
+            throw new InvalidOperationException(
+                "A non-paper Visit cancellation cannot include paper row provenance.");
+        }
+
+        var facts = Facts(
+            ("OriginalVisit", presentation.Value("PreservedSeparateSourceFact")))
+            .ToList();
+        if (paperReference is not null)
+        {
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("PaperSheet"),
+                paperReference.PaperSheetNumber));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("LineNumber"),
+                presentation.Number(paperReference.LineNumber)));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("EventType"),
+                presentation.Text(
+                    "PaperFallback.EventType.correction_or_cancellation")));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("Explanation"),
+                paperReference.Explanation));
+        }
+
+        return Row(
             row,
             "Visit",
             "history-group-visit",
             "VisitCanceled",
             new PresentedStatus(presentation.Status("Canceled"), "status-canceled"),
-            Facts(("OriginalVisit", presentation.Value("PreservedSeparateSourceFact"))),
+            facts.AsReadOnly(),
             new ClientHistoryChangeViewModel(
                 presentation.HistoryChange("Cancellation"),
                 source.Reason,
@@ -264,7 +314,9 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
             Ids(
                 ("Visit", source.VisitId),
                 ("Cancellation", source.CancellationId),
-                ("EntryBatch", source.EntryBatchId)));
+                ("EntryBatch", source.EntryBatchId),
+                ("EntryBatchRow", paperReference?.EntryBatchRowId)));
+    }
 
     private ClientHistoryRowViewModel Payment(
         ClientHistorySourceRow row,

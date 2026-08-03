@@ -95,14 +95,6 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
             return GetClientVisitHistorySourceRowsResult.InconsistentSource();
         }
 
-        var paperReferences = await LoadPaperReferencesAsync(
-            visitRows,
-            cancellationToken);
-        if (paperReferences is null)
-        {
-            return GetClientVisitHistorySourceRowsResult.InconsistentSource();
-        }
-
         var consumptionRows = await (
             from consumption in dbContext.Set<VisitConsumptionRecord>().AsNoTracking()
             join membership in dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
@@ -129,6 +121,33 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
             return GetClientVisitHistorySourceRowsResult.InconsistentSource();
         }
 
+        var visitPaperReferences = await LoadPaperReferencesAsync(
+            visitRows.Select(visit => new PaperReferenceSource(
+                visit.Id,
+                visit.EntryOrigin,
+                visit.EntryBatchId,
+                visit.OccurredAt,
+                visit.RecordedByAccountId,
+                visit.SessionId)).ToArray(),
+            VisitAuditActions.VisitEntityType,
+            PaperFallbackEventType.Visit,
+            cancellationToken);
+        var cancellationPaperReferences = await LoadPaperReferencesAsync(
+            cancellationRows.Select(cancellation => new PaperReferenceSource(
+                cancellation.Id,
+                cancellation.EntryOrigin,
+                cancellation.EntryBatchId,
+                cancellation.OccurredAt,
+                cancellation.RecordedByAccountId,
+                cancellation.SessionId)).ToArray(),
+            VisitAuditActions.VisitCancellationEntityType,
+            PaperFallbackEventType.CorrectionOrCancellation,
+            cancellationToken);
+        if (visitPaperReferences is null || cancellationPaperReferences is null)
+        {
+            return GetClientVisitHistorySourceRowsResult.InconsistentSource();
+        }
+
         var consumptionByVisitId = consumptionRows.ToDictionary(
             row => row.Consumption.VisitId);
         var cancellationByVisitId = cancellationRows.ToDictionary(
@@ -144,7 +163,10 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
                     visit,
                     consumption,
                     cancellation,
-                    paperReferences.GetValueOrDefault(visit.Id),
+                    visitPaperReferences.GetValueOrDefault(visit.Id),
+                    cancellation is null
+                        ? null
+                        : cancellationPaperReferences.GetValueOrDefault(cancellation.Id),
                     out var source)
                 || source is null)
             {
@@ -201,7 +223,8 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
         VisitRecord visit,
         ConsumptionStorageRow? consumption,
         VisitCancellationRecord? cancellation,
-        PaperFallbackEntryRowReference? paperReference,
+        PaperFallbackEntryRowReference? visitPaperReference,
+        PaperFallbackEntryRowReference? cancellationPaperReference,
         out CanonicalVisitHistorySource? source)
     {
         source = null;
@@ -216,8 +239,14 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
                         != visit.RecordedByAccountId
                     || consumption.Consumption.RecordedSessionId != visit.SessionId)
             || cancellation is not null && cancellation.VisitId != visit.Id
-            || visit.EntryOrigin == "paper_fallback" && paperReference is null
-            || visit.EntryOrigin != "paper_fallback" && paperReference is not null)
+            || visit.EntryOrigin == "paper_fallback" && visitPaperReference is null
+            || visit.EntryOrigin != "paper_fallback" && visitPaperReference is not null
+            || cancellation is not null
+                && cancellation.EntryOrigin == "paper_fallback"
+                && cancellationPaperReference is null
+            || cancellation is not null
+                && cancellation.EntryOrigin != "paper_fallback"
+                && cancellationPaperReference is not null)
         {
             return false;
         }
@@ -274,7 +303,8 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
             visit,
             cancellation,
             projection,
-            paperReference);
+            visitPaperReference,
+            cancellationPaperReference);
         return true;
     }
 
@@ -310,8 +340,11 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
             projection.Status,
             projection.Consumption,
             source.Cancellation?.Id,
-            source.PaperReference);
-        if (!HasMatchingPaperAuditReference(auditEntry, visit, source.PaperReference))
+            source.VisitPaperReference);
+        if (!HasMatchingPaperAuditReference(
+                auditEntry,
+                visit.EntryBatchId,
+                source.VisitPaperReference))
         {
             return null;
         }
@@ -360,7 +393,16 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
             cancellation.RecordedAt,
             new AccountId(cancellation.RecordedByAccountId),
             new SessionId(cancellation.SessionId),
-            cancellation.EntryBatchId);
+            cancellation.EntryBatchId,
+            source.CancellationPaperReference);
+        if (!HasMatchingPaperAuditReference(
+                auditEntry,
+                cancellation.EntryBatchId,
+                source.CancellationPaperReference))
+        {
+            return null;
+        }
+
         return new ClientVisitHistorySourceRow(
             ClientVisitHistorySourceKind.CanceledVisit,
             visit.ClientId,
@@ -399,33 +441,49 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
         VisitRecord Visit,
         VisitCancellationRecord? Cancellation,
         VisitQuerySupport.CanonicalVisitProjection Projection,
-        PaperFallbackEntryRowReference? PaperReference);
+        PaperFallbackEntryRowReference? VisitPaperReference,
+        PaperFallbackEntryRowReference? CancellationPaperReference);
+
+    private sealed record PaperReferenceSource(
+        Guid EntityId,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        DateTimeOffset OccurredAt,
+        Guid RecordedByAccountId,
+        Guid SessionId);
 
     private async Task<Dictionary<Guid, PaperFallbackEntryRowReference>?>
         LoadPaperReferencesAsync(
-        IReadOnlyList<VisitRecord> visits,
+        IReadOnlyList<PaperReferenceSource> sources,
+        string entityType,
+        PaperFallbackEventType expectedEventType,
         CancellationToken cancellationToken)
     {
-        var paperVisits = visits
-            .Where(visit => visit.EntryOrigin == "paper_fallback")
-            .ToArray();
-        if (paperVisits.Length == 0)
+        if (sources.Count == 0)
         {
             return new Dictionary<Guid, PaperFallbackEntryRowReference>();
         }
 
-        var visitIds = visits.Select(visit => visit.Id).ToArray();
+        var paperSources = sources
+            .Where(source => source.EntryOrigin == "paper_fallback")
+            .ToArray();
+        var sourceIds = sources.Select(source => source.EntityId).ToArray();
         var links = await dbContext.Set<EntryBatchRowEntityRecord>()
             .AsNoTracking()
             .Where(link =>
-                link.EntityType == VisitAuditActions.VisitEntityType
-                && visitIds.Contains(link.EntityId))
+                link.EntityType == entityType
+                && sourceIds.Contains(link.EntityId))
             .ToArrayAsync(cancellationToken);
         if (links.GroupBy(link => link.EntityId).Any(group => group.Count() != 1)
             || !links.Select(link => link.EntityId).Order()
-                .SequenceEqual(paperVisits.Select(visit => visit.Id).Order()))
+                .SequenceEqual(paperSources.Select(source => source.EntityId).Order()))
         {
             return null;
+        }
+
+        if (links.Length == 0)
+        {
+            return new Dictionary<Guid, PaperFallbackEntryRowReference>();
         }
 
         var rowIds = links.Select(link => link.EntryBatchRowId).ToArray();
@@ -441,36 +499,42 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
 
         var batchesById = batches.ToDictionary(batch => batch.Id);
         var rowsById = rows.ToDictionary(row => row.Id);
+        var sourcesById = paperSources.ToDictionary(source => source.EntityId);
         var result = new Dictionary<Guid, PaperFallbackEntryRowReference>();
         foreach (var link in links)
         {
             var row = rowsById[link.EntryBatchRowId];
             var batch = batchesById[row.EntryBatchId];
-            var visit = paperVisits.Single(candidate => candidate.Id == link.EntityId);
+            var source = sourcesById[link.EntityId];
             if (batch.BatchType != "paper_fallback"
-                || row.EventType != "visit"
+                || row.EventType
+                    != PaperFallbackCommandSupport.MapEventType(expectedEventType)
                 || string.IsNullOrWhiteSpace(batch.PaperSheetNumber)
                 || batch.PaperSheetNumber
                     != batch.PaperSheetNumber.Trim().ToUpperInvariant()
                 || row.LineNumber <= 0
                 || string.IsNullOrWhiteSpace(row.Explanation)
                 || row.Explanation != row.Explanation.Trim()
-                || row.RecordedByAccountId != visit.RecordedByAccountId
-                || row.SessionId != visit.SessionId
-                || visit.EntryBatchId != batch.Id
-                || !SamePostgreSqlInstant(row.OccurredAt, visit.OccurredAt))
+                || row.RecordedByAccountId != source.RecordedByAccountId
+                || row.SessionId != source.SessionId
+                || source.EntryBatchId != batch.Id
+                || BusinessTimeZone.GetBusinessDate(row.OccurredAt)
+                    < batch.BusinessDateStart
+                || BusinessTimeZone.GetBusinessDate(row.OccurredAt)
+                    > batch.BusinessDateEnd
+                || !SamePostgreSqlInstant(row.OccurredAt, source.OccurredAt))
             {
                 return null;
             }
 
             result.Add(
-                visit.Id,
+                source.EntityId,
                 new PaperFallbackEntryRowReference(
                     batch.Id,
                     row.Id,
                     batch.PaperSheetNumber,
                     row.LineNumber,
-                    PaperFallbackEventType.Visit,
+                    expectedEventType,
                     row.OccurredAt,
                     row.Explanation));
         }
@@ -480,7 +544,7 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
 
     private static bool HasMatchingPaperAuditReference(
         ClientAuditEntry audit,
-        VisitRecord visit,
+        Guid? sourceEntryBatchId,
         PaperFallbackEntryRowReference? paper)
     {
         try
@@ -501,7 +565,7 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
                 && root.GetProperty("paperSheetNumber").GetString() == paper.PaperSheetNumber
                 && root.GetProperty("lineNumber").GetInt32() == paper.LineNumber
                 && root.GetProperty("paperExplanation").GetString() == paper.Explanation
-                && visit.EntryBatchId == paper.EntryBatchId;
+                && sourceEntryBatchId == paper.EntryBatchId;
         }
         catch (JsonException)
         {
