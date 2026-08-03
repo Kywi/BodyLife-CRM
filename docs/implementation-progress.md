@@ -14187,3 +14187,58 @@ Stop point:
   `correction_or_cancellation` and links the explicit Freeze cancellation fact.
   Preserve Client -> batch -> row -> domain lock order, canonical history/audit
   provenance and rollback/replay behavior. Do not begin Milestone 11.
+
+## Step 221 - Bound paper fallback rows to AddFreeze
+
+Status: completed as the addition half of the Freeze lifecycle. Milestone 10.5
+remains in progress; Milestone 11 has not started.
+
+Completed:
+
+- Made `paper_fallback` Freeze addition require a registered row with event
+  type `freeze`, reject caller-supplied legacy batch ids and derive the
+  canonical batch from the row. Non-paper additions reject row ids, and row
+  identity participates in the idempotency fingerprint.
+- Added deterministic Client -> batch -> row -> Membership locking and bound
+  the row atomically to the created Freeze source fact. Same-key replay returns
+  the original result, different commands cannot reuse one row, transaction
+  failure leaves the row reusable and concurrent attempts commit one Freeze.
+- Extracted the already-proven Visit paper provenance loader into a shared
+  internal reader and used it for canonical Freeze history. Freeze history now
+  verifies source/link/batch/row/audit agreement and fails closed on missing or
+  mismatched provenance without changing the Visit behavior.
+- Added paper sheet, line, row, event type and explanation to the
+  `freeze.added` audit explanation and canonical Client history in English and
+  Ukrainian.
+- Closed the remaining legacy auditability bypass while `CancelFreeze` is not
+  yet integrated: every `paper_fallback` Freeze cancellation is temporarily
+  rejected with no mutation. The next step replaces that guard with the full
+  row binding contract.
+- Kept the accepted greenfield schema strategy and added no interim migration.
+  The final clean baseline still needs the deferred cross-table invariant that
+  requires every paper Freeze row to link to the correct canonical source fact.
+- Independent read-only review initially found the legacy `CancelFreeze`
+  paper path above. After the rejection guard and no-mutation test were added,
+  re-review found no remaining P0-P3 issue.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 416/416; full Web tests passed: 330/330.
+- Focused PostgreSQL Add/Cancel Freeze and canonical Freeze/Visit history tests
+  passed: 43/43, including validation, replay, row reuse, audit rollback reuse,
+  concurrency, localized provenance inputs and fail-closed source mismatches.
+- Focused audit explanation and Client-history presenter tests passed: 211/211.
+- AddFreeze, Audit timeline and Client-history Playwright smoke tests passed:
+  45/45 across the existing tablet/phone matrix.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Integrate the first-class paper row into `CancelFreeze`: require event type
+  `correction_or_cancellation`, derive the batch, link the explicit
+  `freeze_cancellation` source fact and remove the temporary rejection guard.
+  Preserve Client -> batch -> row -> Freeze/Membership lock order, replay,
+  rollback and concurrent row-reuse behavior, and expose verified provenance
+  through audit explanation and canonical Client history. Do not begin
+  Milestone 11.
