@@ -270,6 +270,8 @@ public sealed class GetAuditTimelineQueryHandler(
                 AuditTimelineEntityType.Freeze => "freeze",
                 AuditTimelineEntityType.NonWorkingPeriod => "non_working_period",
                 AuditTimelineEntityType.StaffAccount => "staff_account",
+                AuditTimelineEntityType.EntryBatch => "entry_batch",
+                AuditTimelineEntityType.EntryBatchRow => "entry_batch_row",
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(entityType),
                     entityType,
@@ -294,6 +296,8 @@ public sealed class GetAuditTimelineQueryHandler(
                 "freeze" => AuditTimelineEntityType.Freeze,
                 "non_working_period" => AuditTimelineEntityType.NonWorkingPeriod,
                 "staff_account" => AuditTimelineEntityType.StaffAccount,
+                "entry_batch" => AuditTimelineEntityType.EntryBatch,
+                "entry_batch_row" => AuditTimelineEntityType.EntryBatchRow,
                 _ => throw new InvalidOperationException(
                     $"Unsupported audit timeline entity type '{entityType}'."),
             };

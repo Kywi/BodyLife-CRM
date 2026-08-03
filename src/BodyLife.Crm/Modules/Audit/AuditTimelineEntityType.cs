@@ -12,4 +12,6 @@ public enum AuditTimelineEntityType
     Freeze,
     NonWorkingPeriod,
     StaffAccount,
+    EntryBatch,
+    EntryBatchRow,
 }

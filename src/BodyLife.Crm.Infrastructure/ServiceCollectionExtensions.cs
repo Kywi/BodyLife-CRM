@@ -56,6 +56,12 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<PasswordHashingService>();
         services.AddScoped<BusinessAuditAppender>();
         services.AddScoped<
+            IBodyLifeCommandHandler<CreatePaperFallbackBatchCommand>,
+            CreatePaperFallbackBatchCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<CreatePaperFallbackBatchRowCommand>,
+            CreatePaperFallbackBatchRowCommandHandler>();
+        services.AddScoped<
             IBodyLifeQueryHandler<
                 GetClientAuditEntriesQuery,
                 GetClientAuditEntriesResult>,

@@ -107,6 +107,14 @@ internal static class BusinessAuditEventMatrix
             [NonWorkingDayAuditActions.Canceled] = new(
                 NonWorkingDayAuditActions.PeriodEntityType,
                 CorrectsRelatedCommandFact),
+            [PaperFallbackAuditActions.BatchCreated] = new(
+                PaperFallbackAuditActions.BatchEntityType,
+                CreatesCommandFact | RequiredPayloadFields.Explanation),
+            [PaperFallbackAuditActions.RowCreated] = new(
+                PaperFallbackAuditActions.RowEntityType,
+                RequiredPayloadFields.RelatedEntityRefs
+                | CreatesCommandFact
+                | RequiredPayloadFields.Explanation),
             [StaffAccountAuditActions.Created] = new(
                 StaffAccountAuditActions.EntityType,
                 RequiredPayloadFields.AfterSummary),

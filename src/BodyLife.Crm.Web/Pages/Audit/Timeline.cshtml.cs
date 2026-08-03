@@ -34,6 +34,8 @@ public sealed class TimelineModel(
         new(AuditTimelineEntityType.Freeze, "Entity.Freeze"),
         new(AuditTimelineEntityType.NonWorkingPeriod, "Entity.NonWorkingPeriod"),
         new(AuditTimelineEntityType.StaffAccount, "Entity.StaffAccount"),
+        new(AuditTimelineEntityType.EntryBatch, "Entity.EntryBatch"),
+        new(AuditTimelineEntityType.EntryBatchRow, "Entity.EntryBatchRow"),
     ];
 
     public static IReadOnlyList<AuditTimelineActionOption> ActionOptions { get; } =
@@ -42,6 +44,7 @@ public sealed class TimelineModel(
         new("membership_type.created", "Action.membership_type.created"), new("membership_type.edited", "Action.membership_type.edited"), new("membership_type.deactivated", "Action.membership_type.deactivated"), new("membership.issued", "Action.membership.issued"), new("membership.replaced", "Action.membership.replaced"), new("membership.sale_canceled", "Action.membership.sale_canceled"), new("membership_opening_state.created", "Action.membership_opening_state.created"), new("membership_negative_closure.created", "Action.membership_negative_closure.created"), new("membership_negative_closure.canceled", "Action.membership_negative_closure.canceled"), new("membership_negative_closure.replaced", "Action.membership_negative_closure.replaced"),
         new("visit.marked", "Action.visit.marked"), new("visit.canceled", "Action.visit.canceled"), new("payment.created", "Action.payment.created"), new("payment.corrected", "Action.payment.corrected"), new("payment.canceled", "Action.payment.canceled"), new("freeze.added", "Action.freeze.added"), new("freeze.canceled", "Action.freeze.canceled"),
         new("non_working_day.added", "Action.non_working_day.added"), new("non_working_day.corrected", "Action.non_working_day.corrected"), new("non_working_day.canceled", "Action.non_working_day.canceled"),
+        new("paper_fallback.batch_created", "Action.paper_fallback.batch_created"), new("paper_fallback.row_created", "Action.paper_fallback.row_created"),
         new("staff_account.created", "Action.staff_account.created"), new("staff_account.display_name_updated", "Action.staff_account.display_name_updated"), new("staff_account.activated", "Action.staff_account.activated"), new("staff_account.deactivated", "Action.staff_account.deactivated"), new("staff_credentials.configured", "Action.staff_credentials.configured"), new("staff_credentials.reset", "Action.staff_credentials.reset"),
     ];
 

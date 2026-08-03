@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Modules.Audit;
+using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Web.Pages.Audit;
 
@@ -59,6 +60,8 @@ public sealed class AuditEntryExplanationPresenter(
             ["payment.created"] = "payment-created",
             ["payment.corrected"] = "payment-corrected",
             ["payment.canceled"] = "payment-canceled",
+            ["paper_fallback.batch_created"] = "paper-fallback-batch-created",
+            ["paper_fallback.row_created"] = "paper-fallback-row-created",
         };
 
     public static IEnumerable<string> ReadableActionTypes => KindsByAction.Keys;
@@ -87,6 +90,20 @@ public sealed class AuditEntryExplanationPresenter(
 
             return entry.ActionType switch
             {
+                "paper_fallback.batch_created"
+                    when entry.EntityType == AuditTimelineEntityType.EntryBatch
+                    => CreatePaperFallbackBatchCreation(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
+                "paper_fallback.row_created"
+                    when entry.EntityType == AuditTimelineEntityType.EntryBatchRow
+                    => CreatePaperFallbackRowCreation(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
                 "membership_type.created"
                     when entry.EntityType == AuditTimelineEntityType.MembershipType
                     => CreateMembershipTypeCreation(
@@ -299,6 +316,157 @@ public sealed class AuditEntryExplanationPresenter(
             [Fact("Membership type", Presentation.Value("NotPresent"))],
             createdFacts,
             ChangedFields: Presentation.Changed("MembershipTypeCatalog"),
+            IsAvailable: true);
+    }
+
+    private AuditEntryExplanationViewModel CreatePaperFallbackBatchCreation(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        if (entry.EntryOrigin != EntryOrigin.PaperFallback
+            || entry.EntityId == Guid.Empty
+            || before.EnumerateObject().Any()
+            || related.EnumerateObject().Any()
+            || string.IsNullOrWhiteSpace(entry.Reason)
+                && string.IsNullOrWhiteSpace(entry.Comment))
+        {
+            throw new JsonException("Paper fallback batch audit envelope is inconsistent.");
+        }
+
+        var batch = RequireObject(after, "entryBatch");
+        var batchId = RequireGuid(batch, "id");
+        var batchType = RequireString(batch, "batchType");
+        var paperSheetNumber = RequireString(batch, "paperSheetNumber");
+        var businessDateStart = RequireDateOnly(batch, "businessDateStart");
+        var businessDateEnd = RequireDateOnly(batch, "businessDateEnd");
+        var recordedAt = RequireTimestamp(batch, "recordedAt");
+        var recordedBy = RequireGuid(batch, "recordedByAccountId");
+        var reconciledAt = RequireNullableTimestamp(batch, "reconciledAt");
+        var reconciledBy = RequireNullableGuid(batch, "reconciledByAccountId");
+        var note = RequireNullableString(batch, "note");
+        var occurredBusinessDate = BusinessTimeZone.GetBusinessDate(entry.OccurredAt);
+
+        if (batchId != entry.EntityId
+            || batchType != "paper_fallback"
+            || paperSheetNumber != paperSheetNumber.Trim().ToUpperInvariant()
+            || businessDateStart > businessDateEnd
+            || occurredBusinessDate < businessDateStart
+            || occurredBusinessDate > businessDateEnd
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                recordedAt,
+                entry.RecordedAt)
+            || recordedBy != entry.ActorAccountId.Value
+            || reconciledAt is not null
+            || reconciledBy is not null)
+        {
+            throw new JsonException("Paper fallback batch audit summary is inconsistent.");
+        }
+
+        return CreateExplanation(
+            "PaperFallbackBatchCreated",
+            "paper-fallback-batch-created",
+            [Fact("Paper fallback batch", Presentation.Value("NotPresent"))],
+            [
+                Fact("Paper fallback batch", TimelineModel.ShortId(batchId)),
+                Fact("Paper sheet", paperSheetNumber),
+                Fact(
+                    "Business dates",
+                    Presentation.DateRange(businessDateStart, businessDateEnd)),
+                Fact("Recorded", TimelineModel.TimestampLabel(recordedAt)),
+                Fact("Recorded by", TimelineModel.ShortId(recordedBy)),
+                Fact("Batch note", note ?? Presentation.Value("None")),
+            ],
+            Presentation.Changed("PaperFallbackBatch"),
+            IsAvailable: true);
+    }
+
+    private AuditEntryExplanationViewModel CreatePaperFallbackRowCreation(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        if (entry.EntryOrigin != EntryOrigin.PaperFallback
+            || entry.EntityId == Guid.Empty
+            || before.EnumerateObject().Any()
+            || string.IsNullOrWhiteSpace(entry.Reason)
+                && string.IsNullOrWhiteSpace(entry.Comment))
+        {
+            throw new JsonException("Paper fallback row audit envelope is inconsistent.");
+        }
+
+        var relatedBatchId = RequireGuid(related, "entryBatchId");
+        var batch = RequireObject(after, "entryBatch");
+        var row = RequireObject(after, "entryBatchRow");
+        var batchId = RequireGuid(batch, "id");
+        var paperSheetNumber = RequireString(batch, "paperSheetNumber");
+        var businessDateStart = RequireDateOnly(batch, "businessDateStart");
+        var businessDateEnd = RequireDateOnly(batch, "businessDateEnd");
+        var rowId = RequireGuid(row, "id");
+        var rowBatchId = RequireGuid(row, "entryBatchId");
+        var lineNumber = RequirePositiveInt32(row, "lineNumber");
+        var eventType = RequireString(row, "eventType");
+        var occurredAt = RequireTimestamp(row, "occurredAt");
+        var explanation = RequireString(row, "explanation");
+        var recordedAt = RequireTimestamp(row, "recordedAt");
+        var recordedBy = RequireGuid(row, "recordedByAccountId");
+        var sessionId = RequireGuid(row, "sessionId");
+        var supportedEventTypes = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "visit",
+            "payment",
+            "freeze",
+            "membership_sale",
+            "negative_coverage",
+            "correction_or_cancellation",
+        };
+        var occurredBusinessDate = BusinessTimeZone.GetBusinessDate(occurredAt);
+
+        if (batchId != relatedBatchId
+            || rowId != entry.EntityId
+            || rowBatchId != batchId
+            || paperSheetNumber != paperSheetNumber.Trim().ToUpperInvariant()
+            || businessDateStart > businessDateEnd
+            || occurredBusinessDate < businessDateStart
+            || occurredBusinessDate > businessDateEnd
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                occurredAt,
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                recordedAt,
+                entry.RecordedAt)
+            || recordedBy != entry.ActorAccountId.Value
+            || sessionId != entry.SessionId.Value
+            || !supportedEventTypes.Contains(eventType)
+            || string.IsNullOrWhiteSpace(explanation))
+        {
+            throw new JsonException("Paper fallback row audit summary is inconsistent.");
+        }
+
+        return CreateExplanation(
+            "PaperFallbackRowCreated",
+            "paper-fallback-row-created",
+            [
+                Fact("Paper fallback batch", TimelineModel.ShortId(batchId)),
+                Fact("Paper row", Presentation.Value("NotPresent")),
+            ],
+            [
+                Fact("Paper fallback batch", TimelineModel.ShortId(batchId)),
+                Fact("Paper sheet", paperSheetNumber),
+                Fact("Paper row", TimelineModel.ShortId(rowId)),
+                Fact("Line number", Presentation.Number(lineNumber)),
+                Fact(
+                    "Event type",
+                    Presentation.Text($"PaperFallback.EventType.{eventType}")),
+                Fact("Occurred", TimelineModel.TimestampLabel(occurredAt)),
+                Fact("Recorded", TimelineModel.TimestampLabel(recordedAt)),
+                Fact("Recorded by", TimelineModel.ShortId(recordedBy)),
+                Fact("Session", TimelineModel.ShortId(sessionId)),
+                Fact("Explanation", explanation),
+            ],
+            Presentation.Changed("PaperFallbackRow"),
             IsAvailable: true);
     }
 
@@ -1818,6 +1986,17 @@ public sealed class AuditEntryExplanationPresenter(
             "Initial effective end date" => "InitialEffectiveEndDate",
             "Initial first negative visit date" => "InitialFirstNegativeVisitDate",
             "Payment record" => "PaymentRecord",
+            "Paper fallback batch" => "PaperFallbackBatch",
+            "Paper sheet" => "PaperSheet",
+            "Business dates" => "BusinessDates",
+            "Batch note" => "BatchNote",
+            "Paper row" => "PaperRow",
+            "Line number" => "LineNumber",
+            "Event type" => "EventType",
+            "Explanation" => "Explanation",
+            "Recorded" => "Recorded",
+            "Recorded by" => "RecordedBy",
+            "Session" => "Session",
             _ => throw new InvalidOperationException(
                 $"Unsupported Audit explanation fact label '{key}'."),
         };

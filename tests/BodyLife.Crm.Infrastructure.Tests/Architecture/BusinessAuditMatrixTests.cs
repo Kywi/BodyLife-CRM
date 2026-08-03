@@ -73,7 +73,7 @@ public sealed class BusinessAuditMatrixTests
 
         Assert.Equal(canonicalActions, filterableActions);
         Assert.Equal(canonicalActions, readableActions);
-        Assert.Equal(31, canonicalActions.Length);
+        Assert.Equal(33, canonicalActions.Length);
     }
 
     [Fact]
@@ -268,6 +268,7 @@ internal static class BusinessAuditMatrixTestCases
         typeof(PaymentAuditActions),
         typeof(FreezeAuditActions),
         typeof(NonWorkingDayAuditActions),
+        typeof(PaperFallbackAuditActions),
         typeof(StaffAccountAuditActions),
     ];
 
@@ -306,6 +307,8 @@ internal static class BusinessAuditMatrixTestCases
         new(NonWorkingDayAuditActions.Added, NonWorkingDayAuditActions.PeriodEntityType),
         new(NonWorkingDayAuditActions.Corrected, NonWorkingDayAuditActions.PeriodEntityType),
         new(NonWorkingDayAuditActions.Canceled, NonWorkingDayAuditActions.PeriodEntityType),
+        new(PaperFallbackAuditActions.BatchCreated, PaperFallbackAuditActions.BatchEntityType),
+        new(PaperFallbackAuditActions.RowCreated, PaperFallbackAuditActions.RowEntityType),
         new(StaffAccountAuditActions.Created, StaffAccountAuditActions.EntityType),
         new(StaffAccountAuditActions.DisplayNameUpdated, StaffAccountAuditActions.EntityType),
         new(StaffAccountAuditActions.Activated, StaffAccountAuditActions.EntityType),

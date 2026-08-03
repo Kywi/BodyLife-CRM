@@ -3580,6 +3580,159 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("Читабельний підсумок зміни недоступний", explanation.Title);
     }
 
+    [Fact]
+    public void PaperFallbackBatchShowsNumberedSheetAndBusinessRange()
+    {
+        var batchId = Guid.NewGuid();
+        var recordedAt = OriginalOccurredAt.AddMinutes(5).AddTicks(7);
+        var entry = Entry(
+            "paper_fallback.batch_created",
+            AuditTimelineEntityType.EntryBatch,
+            batchId,
+            new { },
+            new { },
+            entryOrigin: EntryOrigin.PaperFallback,
+            occurredAt: OriginalOccurredAt,
+            recordedAt: recordedAt);
+        entry = entry with
+        {
+            AfterSummaryJson = Serialize(new
+            {
+                EntryBatch = new
+                {
+                    Id = batchId,
+                    BatchType = "paper_fallback",
+                    PaperSheetNumber = "PF-2026-0042",
+                    BusinessDateStart = new DateOnly(2026, 7, 18),
+                    BusinessDateEnd = new DateOnly(2026, 7, 19),
+                    RecordedAt = recordedAt.AddTicks(-7),
+                    RecordedByAccountId = entry.ActorAccountId.Value,
+                    ReconciledAt = (DateTimeOffset?)null,
+                    ReconciledByAccountId = (Guid?)null,
+                    Note = "Front desk outage",
+                },
+            }),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("paper-fallback-batch-created", explanation.Kind);
+        Assert.Equal("Numbered paper sheet registered", explanation.Title);
+        Assert.Equal(
+            "PF-2026-0042",
+            FactValue(explanation.AfterFacts, "Paper sheet"));
+        Assert.Equal(
+            "7/18/2026 to 7/19/2026",
+            FactValue(explanation.AfterFacts, "Business dates"));
+        Assert.Equal(
+            "Front desk outage",
+            FactValue(explanation.AfterFacts, "Batch note"));
+        Assert.Equal("Paper fallback batch", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void PaperFallbackRowShowsStableLineProvenance()
+    {
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var recordedAt = OriginalOccurredAt.AddMinutes(5).AddTicks(7);
+        var entry = Entry(
+            "paper_fallback.row_created",
+            AuditTimelineEntityType.EntryBatchRow,
+            rowId,
+            new { },
+            new { },
+            related: new { EntryBatchId = batchId },
+            entryOrigin: EntryOrigin.PaperFallback,
+            occurredAt: OriginalOccurredAt.AddTicks(7),
+            recordedAt: recordedAt);
+        entry = entry with
+        {
+            AfterSummaryJson = Serialize(new
+            {
+                EntryBatch = new
+                {
+                    Id = batchId,
+                    PaperSheetNumber = "PF-2026-0042",
+                    BusinessDateStart = new DateOnly(2026, 7, 18),
+                    BusinessDateEnd = new DateOnly(2026, 7, 18),
+                },
+                EntryBatchRow = new
+                {
+                    Id = rowId,
+                    EntryBatchId = batchId,
+                    LineNumber = 7,
+                    EventType = "visit",
+                    OccurredAt = OriginalOccurredAt,
+                    Explanation = "Visit written on paper during outage",
+                    RecordedAt = recordedAt.AddTicks(-7),
+                    RecordedByAccountId = entry.ActorAccountId.Value,
+                    SessionId = entry.SessionId.Value,
+                },
+            }),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("paper-fallback-row-created", explanation.Kind);
+        Assert.Equal("Stable paper line registered", explanation.Title);
+        Assert.Equal("7", FactValue(explanation.AfterFacts, "Line number"));
+        Assert.Equal("Visit", FactValue(explanation.AfterFacts, "Event type"));
+        Assert.Equal(
+            "Visit written on paper during outage",
+            FactValue(explanation.AfterFacts, "Explanation"));
+        Assert.Equal("Paper fallback row", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void PaperFallbackRowWithMismatchedBatchFailsClosed()
+    {
+        var rowId = Guid.NewGuid();
+        var entry = Entry(
+            "paper_fallback.row_created",
+            AuditTimelineEntityType.EntryBatchRow,
+            rowId,
+            new { },
+            new { },
+            related: new { EntryBatchId = Guid.NewGuid() },
+            entryOrigin: EntryOrigin.PaperFallback);
+        entry = entry with
+        {
+            AfterSummaryJson = Serialize(new
+            {
+                EntryBatch = new
+                {
+                    Id = Guid.NewGuid(),
+                    PaperSheetNumber = "PF-2026-0042",
+                    BusinessDateStart = new DateOnly(2026, 7, 18),
+                    BusinessDateEnd = new DateOnly(2026, 7, 18),
+                },
+                EntryBatchRow = new
+                {
+                    Id = rowId,
+                    EntryBatchId = Guid.NewGuid(),
+                    LineNumber = 7,
+                    EventType = "visit",
+                    OccurredAt = entry.OccurredAt,
+                    Explanation = "Paper visit",
+                    RecordedAt = entry.RecordedAt,
+                    RecordedByAccountId = entry.ActorAccountId.Value,
+                    SessionId = entry.SessionId.Value,
+                },
+            }),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
     [Theory]
     [InlineData("freeze.added", AuditTimelineEntityType.Payment)]
     [InlineData("non_working_day.added", AuditTimelineEntityType.Payment)]
@@ -3611,6 +3764,8 @@ public sealed class AuditEntryExplanationViewModelTests
     [InlineData("payment.created", AuditTimelineEntityType.Visit)]
     [InlineData("payment.corrected", AuditTimelineEntityType.Visit)]
     [InlineData("payment.canceled", AuditTimelineEntityType.Visit)]
+    [InlineData("paper_fallback.batch_created", AuditTimelineEntityType.Client)]
+    [InlineData("paper_fallback.row_created", AuditTimelineEntityType.Client)]
     public void SupportedActionWithWrongEntityFailsClosed(
         string actionType,
         AuditTimelineEntityType entityType)
