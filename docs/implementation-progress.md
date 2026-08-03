@@ -14075,3 +14075,65 @@ Stop point:
   identity through audit/history. Validate permissions, origin/date mismatch,
   idempotency, rollback and concurrent row reuse before expanding the same
   contract to the remaining Milestone 10.5 commands. Do not begin Milestone 11.
+
+## Step 219 - Bound paper fallback rows to MarkVisit
+
+Status: completed as the first business-command integration over the Step 218
+paper batch/row foundation. Milestone 10.5 remains in progress; Milestone 11
+has not started.
+
+Completed:
+
+- Extended the common command envelope with an optional first-class paper row
+  id and made `MarkVisit` require it only for `paper_fallback`. Caller-supplied
+  legacy batch ids are rejected; the canonical parent batch is derived from
+  the registered row.
+- Added a reusable paper-row binder with deterministic Client -> batch -> row
+  -> Membership/Freeze lock ordering. It validates event type, PostgreSQL-
+  precision occurrence time, actor/session, sheet/date identity and required
+  explanation, rejects reconciled batches, blocks row reuse and supports one
+  row linking every canonical entity created by a future multi-fact command.
+- Bound the row and canonical Visit atomically, preserved same-key idempotent
+  replay, and left the row reusable after a failed transaction. Concurrent
+  different-key attempts commit exactly one Visit; concurrent same-key attempts
+  converge on the original success.
+- Added sheet number, line number, row identity and row explanation to the
+  `visit.marked` audit explanation and canonical Client history in English and
+  Ukrainian. Visit history now verifies source/link/batch/row/audit agreement
+  and fails closed on missing or mismatched provenance.
+- Explicitly rejected `EntryBatchRowId` in the not-yet-integrated `CancelVisit`
+  path so the shared envelope field cannot be silently discarded. Full
+  cancellation integration is the next Visit lifecycle increment.
+- Kept the accepted greenfield schema strategy: no new interim migration was
+  added. The deferred cross-table constraints that enforce each final
+  event-type link shape will be added to the one clean baseline after all
+  Milestone 10.5 paper commands and their multi-entity links are complete.
+- Independent read-only review found no P0. Its P1 reconciled-batch race and P2
+  lock-order/CancelVisit findings were fixed and covered. Its generic
+  PostgreSQL link-invariant finding is intentionally retained for the final
+  greenfield baseline, when every event type has a complete canonical link set.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 416/416; focused `MarkVisit` contract tests passed:
+  17/17.
+- PostgreSQL `MarkVisit` command tests passed: 19/19, including reconciled-batch
+  rejection/race, rollback reuse, same-row concurrency and same-key replay.
+- PostgreSQL canonical Visit history tests passed: 7/7; the focused
+  `CancelVisit` unsupported-row guard passed: 1/1.
+- Full Web tests passed: 322/322, including localized audit and Client-history
+  explanations and malformed-provenance failure paths.
+- Audit timeline Playwright smoke tests passed: 36/36 across the existing
+  tablet and phone coverage.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Integrate the same first-class paper row contract into the remaining Visit,
+  Freeze and standalone Payment lifecycle commands, beginning with
+  `CancelVisit`, then `AddFreeze`/`CancelFreeze` and valid standalone
+  `CreatePayment`/`CorrectPayment`. Preserve Client -> batch -> row -> domain
+  lock order, link correction/cancellation facts explicitly, update
+  report/history/audit provenance and reject row ids in every command that is
+  not yet integrated. Do not begin Milestone 11.
