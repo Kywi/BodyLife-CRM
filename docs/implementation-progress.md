@@ -13958,3 +13958,62 @@ Stop point:
   the greenfield schema strategy; do not begin paper-fallback metadata or
   Milestone 11 until the issued-sale replacement slice is validated and
   committed.
+
+## Step 217 - Completed issued Membership sale correction
+
+Status: completed as the issued-sale correction slice required by Milestone
+10.5. Milestone 10.5 remains in progress; Milestone 11 has not started.
+
+Completed:
+
+- Added a permission-first dependency preview plus explicit Admin/Owner
+  replacement and cancellation commands for an ordinary issued Membership
+  sale. The preview shows the immutable original Membership snapshot, exact
+  cash Payment and replacement terms without calculating a refund, surcharge
+  or price delta.
+- Made replacement and cancellation atomic across Membership and Payment
+  lifecycle facts. Commands reauthorize and revalidate under locks, reject
+  stale dependency tokens, preserve idempotency, rebuild canonical Membership
+  state and return a Client-profile reread target.
+- Blocked correction when the original Membership participates in a counted
+  Visit, active Freeze, active NonWorkingDay application or negative-coverage
+  source/covering relationship. PostgreSQL fixtures rebuild and assert the
+  canonical cache for every affected Membership before exercising the blocker.
+- Added append-only Membership and Payment audit, synthesized canonical Payment
+  correction history, Client Membership history, unified Client history, daily
+  cash/profile projection and reception activity. Malformed lifecycle or
+  correction linkage fails closed in canonical readers.
+- Added localized audit explanations for `membership.replaced`,
+  `membership.sale_canceled`, the paired `payment.corrected` event and the
+  replacement `payment.created` event, including exact linked Membership and
+  Payment identities.
+- Added production Razor/htmx controls to the Client profile with no replacement
+  preselection, exact source/replacement terms, required reason and occurrence
+  time, explicit confirmation, rotating idempotency keys, duplicate-submit
+  protection, stale-state refresh and canonical reread after success.
+- Added tablet replacement, phone stale-cancellation and tablet/phone dependency
+  blocker Playwright coverage. The blocker remains visible and no confirmation
+  or submit control is exposed when a counted Visit exists.
+- Kept the accepted greenfield schema strategy: the issued-sale correction
+  schema is an interim migration, with one clean baseline squash deferred until
+  the remaining Milestone 10.5 paper-fallback schema is complete.
+- Independent read-only review found no P0/P1 issue. Its P2 findings for browser
+  blocker coverage and noncanonical dependency fixtures were fixed before
+  commit.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Focused dependency matrix passed: 5/5 PostgreSQL tests.
+- Broad issued-sale PostgreSQL gate passed: 67/67 tests, including fresh
+  migration application, commands, constraints, profile/history/report/audit
+  projections and malformed-source failure paths.
+- Full Web tests passed: 313/313.
+- Focused Playwright issued-sale flows passed: 4/4 across tablet and phone.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Implement first-class paper-fallback metadata and its batch/row ingestion
+  workflow inside Milestone 10.5, then squash the still-greenfield migration
+  history to one clean baseline. Do not begin Milestone 11.
