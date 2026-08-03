@@ -14137,3 +14137,53 @@ Stop point:
   lock order, link correction/cancellation facts explicitly, update
   report/history/audit provenance and reject row ids in every command that is
   not yet integrated. Do not begin Milestone 11.
+
+## Step 220 - Bound paper fallback rows to CancelVisit
+
+Status: completed as the correction/cancellation half of the Visit lifecycle.
+Milestone 10.5 remains in progress; Milestone 11 has not started.
+
+Completed:
+
+- Made `paper_fallback` Visit cancellation require a registered row with event
+  type `correction_or_cancellation`, reject caller-supplied legacy batch ids and
+  derive the canonical batch from the row. Non-paper cancellations reject row
+  ids and the row identity participates in the idempotency fingerprint.
+- Added deterministic Client -> batch -> row -> Visit locking and bound the row
+  atomically to the newly created `visit_cancellation` fact, not to the original
+  Visit. Same-key replay returns the original cancellation, different commands
+  cannot reuse one row and transaction failure leaves the row reusable.
+- Added paper sheet, line, row, event type and explanation to the
+  `visit.canceled` audit explanation and canonical Client history in English
+  and Ukrainian. Visit history independently validates Visit-creation and
+  Visit-cancellation provenance and fails closed on missing or mismatched links
+  or audit references.
+- Kept the accepted greenfield schema strategy and added no interim migration.
+  The final clean baseline still needs the deferred cross-table invariant that
+  requires every paper cancellation to have exactly one correctly typed link
+  to a real `visit_cancellation` source fact.
+- Independent read-only review found no P0-P3 issue and identified no additional
+  test gap. The deferred polymorphic-link database invariant remains explicit
+  final-baseline work rather than an incremental migration.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 416/416; full Web tests passed: 326/326.
+- PostgreSQL Visit storage tests passed: 23/23, including paper cancellation,
+  wrong event rejection, same-key replay, row reuse, audit rollback reuse and
+  concurrent different-key row binding.
+- PostgreSQL canonical Visit history tests passed: 9/9, including paper
+  cancellation source/link/audit agreement and fail-closed mismatch cases.
+- Focused audit explanation and Client-history presenter tests passed: 207/207.
+- Audit timeline and Client-history Playwright smoke tests passed: 43/43 across
+  the existing tablet/phone and Owner/Admin matrix.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Integrate first-class paper rows into the Freeze lifecycle next: `AddFreeze`
+  uses event type `freeze` and links the created Freeze; `CancelFreeze` uses
+  `correction_or_cancellation` and links the explicit Freeze cancellation fact.
+  Preserve Client -> batch -> row -> domain lock order, canonical history/audit
+  provenance and rollback/replay behavior. Do not begin Milestone 11.
