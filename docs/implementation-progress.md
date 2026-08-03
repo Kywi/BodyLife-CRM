@@ -14017,3 +14017,61 @@ Stop point:
 - Implement first-class paper-fallback metadata and its batch/row ingestion
   workflow inside Milestone 10.5, then squash the still-greenfield migration
   history to one clean baseline. Do not begin Milestone 11.
+
+## Step 218 - Added first-class paper fallback entry batches
+
+Status: completed as the metadata and command foundation for paper-fallback
+reconciliation. Milestone 10.5 remains in progress; Milestone 11 has not
+started.
+
+Completed:
+
+- Added append-only `entry_batches` and `entry_batch_rows` source records for
+  one numbered paper sheet and its stable line numbers. Paper batches preserve
+  outage identity, Kyiv business date, actor/session, required explanation and
+  server recorded time as first-class fields rather than free text.
+- Added Admin/Owner commands to create a paper-fallback batch and reserve its
+  rows with authorization, validation, idempotency, transaction boundaries and
+  business audit. Concurrent duplicate sheet/line attempts converge on the
+  canonical result instead of creating ambiguous records.
+- Added PostgreSQL constraints, partial uniqueness and triggers that bind every
+  row to the parent sheet identity and date, prevent a paper row from being
+  attached to manual-backfill metadata, and keep parent source identity
+  immutable after rows exist.
+- Extended the audit event matrix, timeline entity mapping, localized raw-data
+  explanations and explanation tests for batch and row creation. Owner-facing
+  audit now identifies the paper sheet and line without treating technical logs
+  as business history.
+- Aligned older PostgreSQL and Playwright fixtures with the current exact
+  Payment, negative-coverage and opening-state invariants exposed by the full
+  regression gate. Client Membership history continues to fail closed for
+  source/audit origin mismatches.
+- Kept the accepted greenfield schema strategy. The paper metadata is still an
+  interim migration; the full migration history will be replaced by one clean
+  baseline only after every Milestone 10.5 paper command integration is final.
+- Independent read-only review found no P0/P1 issue. Its concurrency,
+  idempotency and immutable-parent findings were fixed before completion.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Focused PostgreSQL paper-fallback command and constraint tests passed: 10/10.
+- Audit matrix tests passed: 5/5; audit explanation tests passed: 164/164.
+- Full domain tests passed: 416/416; full Web tests passed: 318/318.
+- All PostgreSQL integration runtime cases passed in deterministic shards:
+  620/620. The monolithic infrastructure invocation produced no test failure
+  but exceeded the local timeout because of runner parallelism; the shards are
+  the recorded deterministic gate for this step.
+- Focused Client-history Playwright tests passed: 7/7; full Playwright smoke
+  suite passed: 139/139 across the existing tablet and phone coverage.
+- EF migration discovery includes `AddPaperFallbackEntryBatches`; solution
+  formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Integrate the first-class paper row into `MarkVisit` as the smallest domain
+  vertical slice: `paper_fallback` must require an unused matching batch-row id,
+  atomically bind that row to the canonical Visit source and expose sheet/line
+  identity through audit/history. Validate permissions, origin/date mismatch,
+  idempotency, rollback and concurrent row reuse before expanding the same
+  contract to the remaining Milestone 10.5 commands. Do not begin Milestone 11.
