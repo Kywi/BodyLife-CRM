@@ -81,13 +81,15 @@ public sealed class PostgreSqlGetClientProfileQueryTests
         Assert.Null(profile.RecentVisits);
         Assert.Null(profile.RecentPayments);
         Assert.Empty(profile.Warnings);
-        Assert.Equal(6, profile.AllowedActions.Items.Count);
+        Assert.Equal(8, profile.AllowedActions.Items.Count);
         Assert.True(profile.AllowedActions.IsAllowed(ClientProfileActionKeys.UpdateClient));
         Assert.True(profile.AllowedActions.IsAllowed(ClientProfileActionKeys.AssignOrChangeCard));
         Assert.True(profile.AllowedActions.IsAllowed(MembershipActionKeys.Issue));
         Assert.True(profile.AllowedActions.IsAllowed(PaymentActionKeys.Create));
         Assert.True(profile.AllowedActions.IsAllowed(FreezeActionKeys.Add));
         Assert.True(profile.AllowedActions.IsAllowed(FreezeActionKeys.Cancel));
+        Assert.True(profile.AllowedActions.IsAllowed(MembershipActionKeys.ReplaceIssuedSale));
+        Assert.True(profile.AllowedActions.IsAllowed(MembershipActionKeys.CancelIssuedSale));
         Assert.All(
             profile.AllowedActions.Items,
             permission => Assert.Equal(

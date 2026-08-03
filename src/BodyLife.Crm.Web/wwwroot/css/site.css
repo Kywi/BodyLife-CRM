@@ -4938,3 +4938,124 @@ textarea:focus-visible,
 
   .activity-open { justify-self: start; }
 }
+.issued-sale-correction {
+  min-width: 0;
+  margin-top: 16px;
+  border-block: 1px solid var(--line);
+  padding-block: 14px;
+}
+
+.issued-sale-correction details,
+.issued-sale-correction-content,
+.issued-sale-correction form,
+.issued-sale-correction-preview {
+  display: grid;
+  min-width: 0;
+  gap: 12px;
+}
+
+.issued-sale-correction summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.issued-sale-correction-content {
+  padding-top: 12px;
+}
+
+.issued-sale-correction-terms {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+
+.issued-sale-correction-terms div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.issued-sale-correction-terms dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.issued-sale-correction-terms dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.issued-sale-correction-terms code {
+  font-weight: 600;
+}
+
+.issued-sale-correction-modes {
+  display: grid;
+  gap: 8px;
+}
+
+.issued-sale-correction-modes > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.issued-sale-correction-modes label {
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 700;
+}
+
+.issued-sale-correction-modes label + label {
+  border-left: 1px solid var(--line);
+}
+
+.issued-sale-correction-modes label:has(input:checked) {
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+
+.issued-sale-correction-preview {
+  border-left: 3px solid var(--info);
+  padding-left: 12px;
+}
+
+.issued-sale-correction-preview h4,
+.issued-sale-correction-preview p {
+  margin-block: 0;
+}
+
+.issued-sale-correction [data-issued-sale-dependencies] ul {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 0;
+  padding-left: 22px;
+}
+
+@media (max-width: 640px) {
+  .issued-sale-correction-terms,
+  .issued-sale-correction-modes > div {
+    grid-template-columns: 1fr;
+  }
+
+  .issued-sale-correction-modes label + label {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+}

@@ -393,4 +393,34 @@
   <data name="Operation.NegativeCoverageClosed" xml:space="preserve"><value>Від’ємні відвідування закрито разовим покриттям</value></data>
   <data name="Operation.NegativeCoverageCorrected" xml:space="preserve"><value>Покриття від’ємних відвідувань виправлено</value></data>
   <data name="Field.NegativeCoverage" xml:space="preserve"><value>Покриття від’ємних відвідувань</value></data>
+  <data name="Field.MembershipSale" xml:space="preserve"><value>Продаж абонемента</value></data>
+  <data name="IssuedSaleCorrection.Summary" xml:space="preserve"><value>Виправити продаж: {0}</value></data>
+  <data name="IssuedSaleCorrection.Unavailable" xml:space="preserve"><value>Виправлення продажу недоступне через неузгоджені канонічні вихідні факти.</value></data>
+  <data name="IssuedSaleCorrection.OriginalSale" xml:space="preserve"><value>Початковий продаж</value></data>
+  <data name="IssuedSaleCorrection.IssuedAt" xml:space="preserve"><value>Видано</value></data>
+  <data name="IssuedSaleCorrection.ExactPayment" xml:space="preserve"><value>Точна готівкова оплата</value></data>
+  <data name="IssuedSaleCorrection.Mode" xml:space="preserve"><value>Дія з продажем</value></data>
+  <data name="IssuedSaleCorrection.Cancel" xml:space="preserve"><value>Скасувати продаж</value></data>
+  <data name="IssuedSaleCorrection.Replace" xml:space="preserve"><value>Замінити продаж</value></data>
+  <data name="IssuedSaleCorrection.ReplacementType" xml:space="preserve"><value>Тип абонемента для заміни</value></data>
+  <data name="IssuedSaleCorrection.ChooseType" xml:space="preserve"><value>Оберіть активний звичайний тип</value></data>
+  <data name="IssuedSaleCorrection.Preview" xml:space="preserve"><value>Оновити перевірку виправлення</value></data>
+  <data name="IssuedSaleCorrection.Dependencies" xml:space="preserve"><value>Залежні факти блокують це виправлення</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Visit" xml:space="preserve"><value>Зарахований візит</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Freeze" xml:space="preserve"><value>Активне замороження</value></data>
+  <data name="IssuedSaleCorrection.Dependency.NonWorkingDay" xml:space="preserve"><value>Застосований неробочий період</value></data>
+  <data name="IssuedSaleCorrection.Dependency.NegativeSource" xml:space="preserve"><value>Негативне покриття з цього абонемента</value></data>
+  <data name="IssuedSaleCorrection.Dependency.NegativeCovering" xml:space="preserve"><value>Негативне покриття, призначене цьому абонементу</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Range" xml:space="preserve"><value>З {0} до {1}</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Row" xml:space="preserve"><value>{0} · {1} · посилання {2}</value></data>
+  <data name="IssuedSaleCorrection.PreviewTitle" xml:space="preserve"><value>Перевірений результат</value></data>
+  <data name="IssuedSaleCorrection.CancelPreview" xml:space="preserve"><value>Початковий абонемент і точну оплату буде скасовано без створення заміни.</value></data>
+  <data name="IssuedSaleCorrection.NoRefundDelta" xml:space="preserve"><value>Це виправлення фіксує лише точні вихідні факти. Воно не розраховує повернення, доплату чи різницю в ціні.</value></data>
+  <data name="IssuedSaleCorrection.ReplacementRequired" xml:space="preserve"><value>Оберіть тип і дату початку, щоб підготувати точну перевірку заміни.</value></data>
+  <data name="IssuedSaleCorrection.Confirm" xml:space="preserve"><value>Підтверджую перевірену зміну абонемента й точної оплати.</value></data>
+  <data name="IssuedSaleCorrection.ApplyReplace" xml:space="preserve"><value>Замінити продаж</value></data>
+  <data name="IssuedSaleCorrection.ApplyCancel" xml:space="preserve"><value>Скасувати продаж</value></data>
+  <data name="IssuedSaleCorrection.Applying" xml:space="preserve"><value>Застосування…</value></data>
+  <data name="Operation.IssuedMembershipSaleReplaced" xml:space="preserve"><value>Продаж виданого абонемента замінено</value></data>
+  <data name="Operation.IssuedMembershipSaleCanceled" xml:space="preserve"><value>Продаж виданого абонемента скасовано</value></data>
 </root>

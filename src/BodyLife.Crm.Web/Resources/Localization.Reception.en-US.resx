@@ -393,4 +393,34 @@
   <data name="Operation.NegativeCoverageClosed" xml:space="preserve"><value>Negative visits closed with one-off coverage</value></data>
   <data name="Operation.NegativeCoverageCorrected" xml:space="preserve"><value>Negative-visit coverage corrected</value></data>
   <data name="Field.NegativeCoverage" xml:space="preserve"><value>Negative-visit coverage</value></data>
+  <data name="Field.MembershipSale" xml:space="preserve"><value>Membership sale</value></data>
+  <data name="IssuedSaleCorrection.Summary" xml:space="preserve"><value>Correct sale: {0}</value></data>
+  <data name="IssuedSaleCorrection.Unavailable" xml:space="preserve"><value>Sale correction is unavailable because its canonical source facts are inconsistent.</value></data>
+  <data name="IssuedSaleCorrection.OriginalSale" xml:space="preserve"><value>Original sale</value></data>
+  <data name="IssuedSaleCorrection.IssuedAt" xml:space="preserve"><value>Issued</value></data>
+  <data name="IssuedSaleCorrection.ExactPayment" xml:space="preserve"><value>Exact cash payment</value></data>
+  <data name="IssuedSaleCorrection.Mode" xml:space="preserve"><value>Sale action</value></data>
+  <data name="IssuedSaleCorrection.Cancel" xml:space="preserve"><value>Cancel sale</value></data>
+  <data name="IssuedSaleCorrection.Replace" xml:space="preserve"><value>Replace sale</value></data>
+  <data name="IssuedSaleCorrection.ReplacementType" xml:space="preserve"><value>Replacement membership type</value></data>
+  <data name="IssuedSaleCorrection.ChooseType" xml:space="preserve"><value>Choose an active ordinary type</value></data>
+  <data name="IssuedSaleCorrection.Preview" xml:space="preserve"><value>Refresh correction preview</value></data>
+  <data name="IssuedSaleCorrection.Dependencies" xml:space="preserve"><value>Dependent facts block this correction</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Visit" xml:space="preserve"><value>Counted visit</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Freeze" xml:space="preserve"><value>Active freeze</value></data>
+  <data name="IssuedSaleCorrection.Dependency.NonWorkingDay" xml:space="preserve"><value>Non-working-day application</value></data>
+  <data name="IssuedSaleCorrection.Dependency.NegativeSource" xml:space="preserve"><value>Negative coverage sourced from this membership</value></data>
+  <data name="IssuedSaleCorrection.Dependency.NegativeCovering" xml:space="preserve"><value>Negative coverage assigned to this membership</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Range" xml:space="preserve"><value>{0} to {1}</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Row" xml:space="preserve"><value>{0} · {1} · ref {2}</value></data>
+  <data name="IssuedSaleCorrection.PreviewTitle" xml:space="preserve"><value>Previewed result</value></data>
+  <data name="IssuedSaleCorrection.CancelPreview" xml:space="preserve"><value>The original membership and its exact payment will be canceled without a replacement.</value></data>
+  <data name="IssuedSaleCorrection.NoRefundDelta" xml:space="preserve"><value>This correction records exact source facts only. It does not calculate a refund, surcharge, or price difference.</value></data>
+  <data name="IssuedSaleCorrection.ReplacementRequired" xml:space="preserve"><value>Select both a replacement type and start date to prepare the exact replacement preview.</value></data>
+  <data name="IssuedSaleCorrection.Confirm" xml:space="preserve"><value>I confirm the previewed membership and exact payment change.</value></data>
+  <data name="IssuedSaleCorrection.ApplyReplace" xml:space="preserve"><value>Replace sale</value></data>
+  <data name="IssuedSaleCorrection.ApplyCancel" xml:space="preserve"><value>Cancel sale</value></data>
+  <data name="IssuedSaleCorrection.Applying" xml:space="preserve"><value>Applying…</value></data>
+  <data name="Operation.IssuedMembershipSaleReplaced" xml:space="preserve"><value>Issued membership sale replaced</value></data>
+  <data name="Operation.IssuedMembershipSaleCanceled" xml:space="preserve"><value>Issued membership sale canceled</value></data>
 </root>

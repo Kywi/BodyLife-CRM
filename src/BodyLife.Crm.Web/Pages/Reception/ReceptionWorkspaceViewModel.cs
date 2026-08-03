@@ -39,6 +39,7 @@ public sealed record ClientProfileViewModel(
     IReadOnlyList<CancelVisitFormViewModel> CancelVisitForms,
     IReadOnlyList<CorrectPaymentFormViewModel> CorrectPaymentForms,
     NegativeVisitCoveragePanelViewModel? NegativeVisitCoveragePanel,
+    IReadOnlyList<IssuedMembershipSaleCorrectionFormViewModel> IssuedMembershipSaleCorrectionForms,
     string? OperationMessage,
     bool OperationSucceeded)
 {
@@ -54,6 +55,7 @@ public sealed record ClientProfileViewModel(
         CancelVisitForms: [],
         CorrectPaymentForms: [],
         NegativeVisitCoveragePanel: null,
+        IssuedMembershipSaleCorrectionForms: [],
         OperationMessage: null,
         OperationSucceeded: false);
 
@@ -71,7 +73,8 @@ public sealed record ClientProfileViewModel(
         IReadOnlyList<CancelFreezeFormViewModel>? cancelFreezeForms = null,
         IReadOnlyList<CancelVisitFormViewModel>? cancelVisitForms = null,
         IReadOnlyList<CorrectPaymentFormViewModel>? correctPaymentForms = null,
-        NegativeVisitCoveragePanelViewModel? negativeVisitCoveragePanel = null)
+        NegativeVisitCoveragePanelViewModel? negativeVisitCoveragePanel = null,
+        IReadOnlyList<IssuedMembershipSaleCorrectionFormViewModel>? issuedMembershipSaleCorrectionForms = null)
     {
         if (updateClientForm is null
             && result?.Profile is { } profile
@@ -101,6 +104,7 @@ public sealed record ClientProfileViewModel(
             cancelVisitForms ?? [],
             correctPaymentForms ?? [],
             negativeVisitCoveragePanel,
+            issuedMembershipSaleCorrectionForms ?? [],
             operationMessage,
             operationSucceeded);
     }

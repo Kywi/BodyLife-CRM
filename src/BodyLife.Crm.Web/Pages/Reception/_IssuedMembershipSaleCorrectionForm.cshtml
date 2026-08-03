@@ -1,0 +1,407 @@
+@using System.Globalization
+@using BodyLife.Crm.Modules.Memberships
+@using BodyLife.Crm.Web.Localization
+@model IssuedMembershipSaleCorrectionFormViewModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
+@inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Shared> S
+@{
+    var input = Model.Input;
+    var preview = Model.Preview;
+    var membershipKey = input.OriginalMembershipId.ToString("N");
+    var sectionId = $"issued-sale-correction-{membershipKey}";
+    var formId = $"issued-sale-correction-form-{membershipKey}";
+    var loadingId = $"issued-sale-correction-loading-{membershipKey}";
+    var previewUrl = Url.Page("/Reception/Index", "IssuedMembershipSaleCorrectionPreview");
+    var replacementDate = input.ReplacementStartDate?.ToString(
+        "yyyy-MM-dd",
+        CultureInfo.InvariantCulture);
+    var occurredAt = input.OccurredAtLocal?.ToString(
+        "yyyy-MM-ddTHH:mm",
+        CultureInfo.InvariantCulture);
+    var isOpen = input.Mode is not null || Model.Errors.Count > 0 || Model.IsUnavailable;
+
+    string DependencyTypeLabel(IssuedMembershipSaleDependency dependency)
+    {
+        return dependency.DependencyType switch
+        {
+            "visit" => L["IssuedSaleCorrection.Dependency.Visit"],
+            "freeze" => L["IssuedSaleCorrection.Dependency.Freeze"],
+            "non_working_day_application" => L["IssuedSaleCorrection.Dependency.NonWorkingDay"],
+            "negative_coverage" when dependency.Context.StartsWith(
+                "source:",
+                StringComparison.Ordinal) => L["IssuedSaleCorrection.Dependency.NegativeSource"],
+            "negative_coverage" => L["IssuedSaleCorrection.Dependency.NegativeCovering"],
+            _ => L["Value.Unknown"],
+        };
+    }
+
+    string DependencyDateLabel(IssuedMembershipSaleDependency dependency)
+    {
+        if (dependency.DependencyType is "freeze" or "non_working_day_application")
+        {
+            var parts = dependency.Context.Split('/', StringSplitOptions.TrimEntries);
+            if (parts.Length == 2
+                && DateOnly.TryParseExact(
+                    parts[0],
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var startDate)
+                && DateOnly.TryParseExact(
+                    parts[1],
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var endDate))
+            {
+                return L[
+                    "IssuedSaleCorrection.Dependency.Range",
+                    ReceptionDisplayFormatter.Date(startDate),
+                    ReceptionDisplayFormatter.Date(endDate)];
+            }
+        }
+
+        return dependency.RelevantDate is { } date
+            ? ReceptionDisplayFormatter.Date(date)
+            : L["Value.Unknown"];
+    }
+}
+
+<section id="@sectionId"
+         class="issued-sale-correction"
+         aria-live="polite"
+         data-issued-sale-correction
+         data-issued-membership-id="@input.OriginalMembershipId">
+    @if (Model.IsUnavailable || preview is null)
+    {
+        <div class="warning-block warning-danger" role="alert">
+            <strong>@L["IssuedSaleCorrection.Unavailable"]</strong>
+            @foreach (var message in Model.Errors
+                .Select(error => ReceptionCommandErrorLocalizer.Display(L, error))
+                .Distinct(StringComparer.Ordinal))
+            {
+                <span>@message</span>
+            }
+        </div>
+    }
+    else
+    {
+        <details open="@(isOpen ? "open" : null)">
+            <summary>
+                <partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />
+                @L["IssuedSaleCorrection.Summary", preview.OriginalSale.TypeNameSnapshot]
+            </summary>
+            <div class="issued-sale-correction-content">
+                <section aria-labelledby="issued-sale-original-title-@membershipKey">
+                    <h4 id="issued-sale-original-title-@membershipKey" class="compact-heading">
+                        @L["IssuedSaleCorrection.OriginalSale"]
+                    </h4>
+                    <dl class="issued-sale-correction-terms">
+                        <div>
+                            <dt>@L["Membership.SnapshotName"]</dt>
+                            <dd>@preview.OriginalSale.TypeNameSnapshot</dd>
+                        </div>
+                        <div>
+                            <dt>@L["Membership.Duration"]</dt>
+                            <dd>@WebPluralizer.Days(S, preview.OriginalSale.DurationDaysSnapshot)</dd>
+                        </div>
+                        <div>
+                            <dt>@L["Membership.VisitLimit"]</dt>
+                            <dd>@preview.OriginalSale.VisitsLimitSnapshot</dd>
+                        </div>
+                        <div>
+                            <dt>@L["Membership.SnapshotPrice"]</dt>
+                            <dd>@ReceptionDisplayFormatter.Money(preview.OriginalSale.PriceSnapshot)</dd>
+                        </div>
+                        <div>
+                            <dt>@L["Field.StartDate"]</dt>
+                            <dd>@ReceptionDisplayFormatter.Date(preview.OriginalSale.StartDate)</dd>
+                        </div>
+                        <div>
+                            <dt>@L["Membership.BaseEnd"]</dt>
+                            <dd>@ReceptionDisplayFormatter.Date(preview.OriginalSale.BaseEndDate)</dd>
+                        </div>
+                        <div>
+                            <dt>@L["IssuedSaleCorrection.IssuedAt"]</dt>
+                            <dd>@ReceptionDisplayFormatter.DateTime(preview.OriginalSale.IssuedAt)</dd>
+                        </div>
+                        <div>
+                            <dt>@L["IssuedSaleCorrection.ExactPayment"]</dt>
+                            <dd>
+                                @ReceptionDisplayFormatter.Money(preview.OriginalSale.PriceSnapshot)
+                                · @L["Payment.Cash"]
+                                <code data-issued-sale-payment-id="@preview.OriginalSale.PaymentId">
+                                    @preview.OriginalSale.PaymentId.ToString("N")[..8]
+                                </code>
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <form id="@formId"
+                      method="post"
+                      asp-page="/Reception/Index"
+                      asp-page-handler="IssuedMembershipSaleCorrection"
+                      data-busy-form
+                      data-issued-sale-correction-form
+                      data-has-confirmed-preview="@Model.HasConfirmedPreview.ToString().ToLowerInvariant()"
+                      hx-post="@Url.Page("/Reception/Index", "IssuedMembershipSaleCorrection")"
+                      hx-target="#@sectionId"
+                      hx-swap="outerHTML"
+                      hx-sync="this:drop"
+                      hx-indicator="#@loadingId"
+                      hx-disabled-elt="find button">
+                    <input type="hidden" name="form.ClientId" value="@input.ClientId" />
+                    <input type="hidden" name="form.OriginalMembershipId" value="@input.OriginalMembershipId" />
+                    <input type="hidden" name="form.ExpectedDependencyToken" value="@input.ExpectedDependencyToken" />
+                    <input type="hidden"
+                           name="form.ExpectedMembershipTypeUpdatedAt"
+                           value="@input.ExpectedMembershipTypeUpdatedAt?.ToString("O", CultureInfo.InvariantCulture)" />
+                    <input type="hidden" name="form.IdempotencyKey" value="@input.IdempotencyKey" />
+                    <input type="hidden" name="form.SearchQuery" value="@input.SearchQuery" />
+                    <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
+                    <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive" />
+                    <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+
+                    @if (Model.Errors.Count > 0)
+                    {
+                        <div class="command-error-summary" role="alert" data-issued-sale-errors>
+                            <strong>@L["Error.Generic"]</strong>
+                            <ul>
+                                @foreach (var error in Model.Errors)
+                                {
+                                    <li data-field="@error.Field">
+                                        @ReceptionCommandErrorLocalizer.Display(L, error)
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <fieldset class="issued-sale-correction-modes">
+                        <legend>@L["IssuedSaleCorrection.Mode"]</legend>
+                        <div>
+                            <label>
+                                <input type="radio"
+                                       name="form.Mode"
+                                       value="Cancel"
+                                       checked="@(input.Mode == IssuedMembershipSaleCorrectionMode.Cancel ? "checked" : null)"
+                                       hx-post="@previewUrl"
+                                       hx-trigger="change"
+                                       hx-include="#@formId [name^='form.']"
+                                       hx-target="#@sectionId"
+                                       hx-swap="outerHTML"
+                                       hx-sync="#@formId:replace"
+                                       hx-indicator="#@loadingId" />
+                                <span>@L["IssuedSaleCorrection.Cancel"]</span>
+                            </label>
+                            <label>
+                                <input type="radio"
+                                       name="form.Mode"
+                                       value="Replace"
+                                       checked="@(input.Mode == IssuedMembershipSaleCorrectionMode.Replace ? "checked" : null)"
+                                       hx-post="@previewUrl"
+                                       hx-trigger="change"
+                                       hx-include="#@formId [name^='form.']"
+                                       hx-target="#@sectionId"
+                                       hx-swap="outerHTML"
+                                       hx-sync="#@formId:replace"
+                                       hx-indicator="#@loadingId" />
+                                <span>@L["IssuedSaleCorrection.Replace"]</span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    @if (input.Mode == IssuedMembershipSaleCorrectionMode.Replace)
+                    {
+                        if (Model.ActiveOrdinaryTypes.Count == 0)
+                        {
+                            <div class="warning-block warning-caution" role="status">
+                                <strong>@L["Membership.NoActiveTypes"]</strong>
+                                <span>@L["Membership.NoActiveTypesHint"]</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="action-form-grid">
+                                <div class="form-field">
+                                    <label for="issued-sale-type-@membershipKey">
+                                        @L["IssuedSaleCorrection.ReplacementType"]
+                                    </label>
+                                    <select id="issued-sale-type-@membershipKey"
+                                            name="form.ReplacementMembershipTypeId"
+                                            required
+                                            hx-post="@previewUrl"
+                                            hx-trigger="change"
+                                            hx-include="#@formId [name^='form.']"
+                                            hx-target="#@sectionId"
+                                            hx-swap="outerHTML"
+                                            hx-sync="#@formId:replace"
+                                            hx-indicator="#@loadingId">
+                                        <option value="" selected="@(input.ReplacementMembershipTypeId is null ? "selected" : null)">
+                                            @L["IssuedSaleCorrection.ChooseType"]
+                                        </option>
+                                        @foreach (var membershipType in Model.ActiveOrdinaryTypes)
+                                        {
+                                            <option value="@membershipType.MembershipTypeId"
+                                                    selected="@(input.ReplacementMembershipTypeId == membershipType.MembershipTypeId ? "selected" : null)">
+                                                @membershipType.Name
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="issued-sale-start-@membershipKey">@L["Field.StartDate"]</label>
+                                    <input id="issued-sale-start-@membershipKey"
+                                           type="date"
+                                           name="form.ReplacementStartDate"
+                                           value="@replacementDate"
+                                           required
+                                           hx-post="@previewUrl"
+                                           hx-trigger="change"
+                                           hx-include="#@formId [name^='form.']"
+                                           hx-target="#@sectionId"
+                                           hx-swap="outerHTML"
+                                           hx-sync="#@formId:replace"
+                                           hx-indicator="#@loadingId" />
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    <div class="action-form-grid">
+                        <div class="form-field form-field-wide">
+                            <label for="issued-sale-reason-@membershipKey">@L["Field.Reason"]</label>
+                            <textarea id="issued-sale-reason-@membershipKey"
+                                      name="form.Reason"
+                                      maxlength="1000"
+                                      required>@input.Reason</textarea>
+                        </div>
+                        <div class="form-field">
+                            <label for="issued-sale-occurred-@membershipKey">@L["Field.Occurred"]</label>
+                            <input id="issued-sale-occurred-@membershipKey"
+                                   type="datetime-local"
+                                   name="form.OccurredAtLocal"
+                                   value="@occurredAt"
+                                   required />
+                        </div>
+                        <div class="form-field">
+                            <label for="issued-sale-comment-@membershipKey">@L["Field.CommentOptional"]</label>
+                            <textarea id="issued-sale-comment-@membershipKey"
+                                      name="form.Comment"
+                                      maxlength="2000">@input.Comment</textarea>
+                        </div>
+                    </div>
+
+                    <button type="button"
+                            class="secondary-button"
+                            data-busy-text="@L["Preview.Refreshing"]"
+                            hx-post="@previewUrl"
+                            hx-include="#@formId [name^='form.']"
+                            hx-target="#@sectionId"
+                            hx-swap="outerHTML"
+                            hx-sync="#@formId:replace"
+                            hx-indicator="#@loadingId"
+                            hx-disabled-elt="#@formId button">
+                        @L["IssuedSaleCorrection.Preview"]
+                    </button>
+
+                    @if (preview.Dependencies.Count > 0)
+                    {
+                        <div class="warning-block warning-danger" role="alert" data-issued-sale-dependencies>
+                            <strong>@L["IssuedSaleCorrection.Dependencies"]</strong>
+                            <ul>
+                                @foreach (var dependency in preview.Dependencies)
+                                {
+                                    <li data-dependency-type="@dependency.DependencyType"
+                                        data-dependency-id="@dependency.DependencyId">
+                                        @L[
+                                            "IssuedSaleCorrection.Dependency.Row",
+                                            DependencyTypeLabel(dependency),
+                                            DependencyDateLabel(dependency),
+                                            dependency.DependencyId.ToString("N")[..8]]
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    else if (Model.HasConfirmedPreview)
+                    {
+                        <section class="issued-sale-correction-preview"
+                                 aria-labelledby="issued-sale-preview-title-@membershipKey"
+                                 data-issued-sale-preview>
+                            <h4 id="issued-sale-preview-title-@membershipKey" class="compact-heading">
+                                @L["IssuedSaleCorrection.PreviewTitle"]
+                            </h4>
+                            @if (preview.Replacement is { } replacement)
+                            {
+                                <dl class="issued-sale-correction-terms">
+                                    <div>
+                                        <dt>@L["Membership.SnapshotName"]</dt>
+                                        <dd>@replacement.TypeNameSnapshot</dd>
+                                    </div>
+                                    <div>
+                                        <dt>@L["Membership.Duration"]</dt>
+                                        <dd>@WebPluralizer.Days(S, replacement.DurationDaysSnapshot)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>@L["Membership.VisitLimit"]</dt>
+                                        <dd>@replacement.VisitsLimitSnapshot</dd>
+                                    </div>
+                                    <div>
+                                        <dt>@L["IssuedSaleCorrection.ExactPayment"]</dt>
+                                        <dd data-issued-sale-replacement-price>
+                                            @ReceptionDisplayFormatter.Money(replacement.PriceSnapshot)
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt>@L["Field.StartDate"]</dt>
+                                        <dd>@ReceptionDisplayFormatter.Date(replacement.StartDate)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>@L["Membership.BaseEnd"]</dt>
+                                        <dd>@ReceptionDisplayFormatter.Date(replacement.BaseEndDate)</dd>
+                                    </div>
+                                </dl>
+                            }
+                            else
+                            {
+                                <div class="warning-block warning-caution">
+                                    <strong>@L["IssuedSaleCorrection.CancelPreview"]</strong>
+                                </div>
+                            }
+
+                            <p class="form-hint">@L["IssuedSaleCorrection.NoRefundDelta"]</p>
+                            <label class="acknowledgement-control">
+                                <input type="checkbox"
+                                       name="form.Confirmed"
+                                       value="true"
+                                       checked="@(input.Confirmed ? "checked" : null)"
+                                       required />
+                                @L["IssuedSaleCorrection.Confirm"]
+                            </label>
+                            <button class="danger-button"
+                                    type="submit"
+                                    data-busy-text="@L["IssuedSaleCorrection.Applying"]">
+                                @(input.Mode == IssuedMembershipSaleCorrectionMode.Replace
+                                    ? L["IssuedSaleCorrection.ApplyReplace"]
+                                    : L["IssuedSaleCorrection.ApplyCancel"])
+                            </button>
+                        </section>
+                    }
+                    else if (input.Mode == IssuedMembershipSaleCorrectionMode.Replace)
+                    {
+                        <p class="form-hint">@L["IssuedSaleCorrection.ReplacementRequired"]</p>
+                    }
+
+                    <span id="@loadingId"
+                          class="request-indicator htmx-indicator"
+                          role="status"
+                          aria-live="polite">
+                        @L["Preview.Refreshing"]
+                    </span>
+                </form>
+            </div>
+        </details>
+    }
+</section>

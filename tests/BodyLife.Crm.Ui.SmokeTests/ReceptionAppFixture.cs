@@ -25,6 +25,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public const string NegativeCoverageTabletCard = "BL-NEG-COVER-TABLET";
     public const string NegativeCoveragePhoneCard = "BL-NEG-COVER-PHONE";
     public const string NegativeCoverageStaleCard = "BL-NEG-COVER-STALE";
+    public const string IssuedSaleReplaceCard = "BL-SALE-REPLACE";
+    public const string IssuedSaleStaleCard = "BL-SALE-STALE";
+    public const string IssuedSaleDependencyTabletCard = "BL-SALE-DEP-TABLET";
+    public const string IssuedSaleDependencyPhoneCard = "BL-SALE-DEP-PHONE";
 
     private readonly ConcurrentQueue<string> _output = new();
     private readonly object _receptionHomeSeedLock = new();
@@ -212,6 +216,14 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public Guid NegativeCoverageStaleClientId { get; private set; }
 
     public Guid NegativeCoverageStaleMembershipId { get; private set; }
+
+    public Guid IssuedSaleReplaceClientId { get; private set; }
+
+    public Guid IssuedSaleStaleClientId { get; private set; }
+
+    public Guid IssuedSaleDependencyTabletClientId { get; private set; }
+
+    public Guid IssuedSaleDependencyPhoneClientId { get; private set; }
 
     public async Task ExpireSessionAsync(string deviceLabel)
     {
@@ -433,6 +445,12 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         ReadNegativeCoverageMutationSnapshotAsync(Guid clientId)
     {
         return RequireDatabase().ReadNegativeCoverageMutationSnapshotAsync(clientId);
+    }
+
+    public Task<IssuedSaleCorrectionSmokeSnapshot>
+        ReadIssuedSaleCorrectionSnapshotAsync(Guid clientId)
+    {
+        return RequireDatabase().ReadIssuedSaleCorrectionSnapshotAsync(clientId);
     }
 
     public Task<long> CountIssuedMembershipsAsync(Guid clientId)
@@ -1711,6 +1729,31 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         IssuePhoneNegativeVisitId = await database.InsertExternalCountedVisitAsync(
             IssuePhoneClientId,
             IssuePhoneExistingMembershipId);
+
+        IssuedSaleReplaceClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Sale",
+            "Replace",
+            "+380 67 800 01 03",
+            IssuedSaleReplaceCard);
+        IssuedSaleStaleClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Sale",
+            "Stale",
+            "+380 67 800 01 04",
+            IssuedSaleStaleCard);
+        IssuedSaleDependencyTabletClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Sale",
+            "Dependency Tablet",
+            "+380 67 800 01 05",
+            IssuedSaleDependencyTabletCard);
+        IssuedSaleDependencyPhoneClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Sale",
+            "Dependency Phone",
+            "+380 67 800 01 06",
+            IssuedSaleDependencyPhoneCard);
     }
 
     private async Task SeedNegativeCoverageFixturesAsync(

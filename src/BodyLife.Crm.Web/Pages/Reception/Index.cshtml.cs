@@ -23,6 +23,7 @@ public sealed class IndexModel(
     IBodyLifeQueryHandler<GetClientNegativeVisitCoverageQuery, GetClientNegativeVisitCoverageResult> getClientNegativeVisitCoverage,
     IBodyLifeQueryHandler<PreviewCloseNegativeVisitsOneOffQuery, PreviewCloseNegativeVisitsOneOffResult> previewCloseNegativeVisitsOneOff,
     IBodyLifeQueryHandler<PreviewCorrectNegativeVisitCoverageQuery, PreviewCorrectNegativeVisitCoverageResult> previewCorrectNegativeVisitCoverage,
+    IBodyLifeQueryHandler<PreviewIssuedMembershipSaleCorrectionQuery, PreviewIssuedMembershipSaleCorrectionResult> previewIssuedMembershipSaleCorrection,
     IBodyLifeQueryHandler<
         GetMembershipTypesForIssueQuery,
         GetMembershipTypesForIssueResult> getMembershipTypesForIssue,
@@ -47,6 +48,8 @@ public sealed class IndexModel(
     IBodyLifeCommandHandler<CancelVisitCommand> cancelVisit,
     IBodyLifeCommandHandler<CloseNegativeVisitsOneOffCommand> closeNegativeVisitsOneOff,
     IBodyLifeCommandHandler<CorrectNegativeVisitCoverageCommand> correctNegativeVisitCoverage,
+    IBodyLifeCommandHandler<ReplaceIssuedMembershipCommand> replaceIssuedMembership,
+    IBodyLifeCommandHandler<CancelIssuedMembershipSaleCommand> cancelIssuedMembershipSale,
     TimeProvider timeProvider,
     IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> receptionLocalizer)
     : PageModel
@@ -244,6 +247,41 @@ public sealed class IndexModel(
         return result.Status == CommandStatus.Success
             ? await RenderSuccessfulNegativeCoverageAsync(form.ClientId, null, result, true, cancellationToken)
             : await RenderNegativeCoverageErrorAsync(form.ClientId, null, form, cancellationToken, result.Errors);
+    }
+
+    public async Task<IActionResult> OnPostIssuedMembershipSaleCorrectionPreviewAsync(
+        IssuedMembershipSaleCorrectionFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        if (!IsHtmxRequest()) return RedirectToCanonicalPage(form.ClientId);
+        var correctionForm = await BuildIssuedMembershipSaleCorrectionFormFromInputAsync(form, [], cancellationToken);
+        return Partial("_IssuedMembershipSaleCorrectionForm", correctionForm);
+    }
+
+    public async Task<IActionResult> OnPostIssuedMembershipSaleCorrectionAsync(
+        IssuedMembershipSaleCorrectionFormInput form,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        var errors = ValidateIssuedMembershipSaleCorrectionForm(form, out var occurredAt);
+        if (errors.Count > 0)
+            return await RenderIssuedMembershipSaleCorrectionErrorAsync(form, errors, false, cancellationToken);
+
+        CommandResult result = form.Mode == IssuedMembershipSaleCorrectionMode.Replace
+            ? await replaceIssuedMembership.ExecuteAsync(new ReplaceIssuedMembershipCommand(
+                requestContextResolver.CreateCommandEnvelope(occurredAt: occurredAt, idempotencyKey: form.IdempotencyKey, reason: form.Reason, comment: form.Comment),
+                form.OriginalMembershipId, form.ReplacementMembershipTypeId!.Value,
+                form.ExpectedMembershipTypeUpdatedAt!.Value, form.ReplacementStartDate!.Value,
+                form.ExpectedDependencyToken!), cancellationToken)
+            : await cancelIssuedMembershipSale.ExecuteAsync(new CancelIssuedMembershipSaleCommand(
+                requestContextResolver.CreateCommandEnvelope(occurredAt: occurredAt, idempotencyKey: form.IdempotencyKey, reason: form.Reason, comment: form.Comment),
+                form.OriginalMembershipId, form.ExpectedDependencyToken!), cancellationToken);
+
+        return result.Status == CommandStatus.Success
+            ? await RenderSuccessfulIssuedMembershipSaleCorrectionAsync(form, result, cancellationToken)
+            : await RenderIssuedMembershipSaleCorrectionErrorAsync(
+                form, result.Errors, RequiresCanonicalIssuedMembershipSaleRefresh(result.Errors), cancellationToken);
     }
 
     public async Task<IActionResult> OnPostCreateClientAsync(
@@ -2515,6 +2553,7 @@ public sealed class IndexModel(
         IReadOnlyList<CancelVisitFormViewModel> cancelVisitForms = [];
         IReadOnlyList<CorrectPaymentFormViewModel> correctPaymentForms = [];
         NegativeVisitCoveragePanelViewModel? negativeVisitCoveragePanel = null;
+        IReadOnlyList<IssuedMembershipSaleCorrectionFormViewModel> issuedMembershipSaleCorrectionForms = [];
 
         if (profileResult is
             {
@@ -2593,6 +2632,14 @@ public sealed class IndexModel(
             negativeVisitCoveragePanel = await BuildNegativeVisitCoveragePanelAsync(
                 profile.ClientId,
                 cancellationToken);
+            if (profile.AllowedActions.IsAllowed(MembershipActionKeys.ReplaceIssuedSale)
+                && profile.AllowedActions.IsAllowed(MembershipActionKeys.CancelIssuedSale))
+            {
+                issuedMembershipSaleCorrectionForms = await BuildInitialIssuedMembershipSaleCorrectionFormsAsync(
+                    profile,
+                    searchContext,
+                    cancellationToken);
+            }
         }
 
         return ClientProfileViewModel.FromResult(
@@ -2607,7 +2654,103 @@ public sealed class IndexModel(
             cancelFreezeForms: cancelFreezeForms,
             cancelVisitForms: cancelVisitForms,
             correctPaymentForms: correctPaymentForms,
-            negativeVisitCoveragePanel: negativeVisitCoveragePanel);
+            negativeVisitCoveragePanel: negativeVisitCoveragePanel,
+            issuedMembershipSaleCorrectionForms: issuedMembershipSaleCorrectionForms);
+    }
+
+    private async Task<IReadOnlyList<IssuedMembershipSaleCorrectionFormViewModel>> BuildInitialIssuedMembershipSaleCorrectionFormsAsync(
+        ClientProfile profile,
+        ReceptionSearchContext searchContext,
+        CancellationToken cancellationToken)
+    {
+        var actor = requestContextResolver.Require().Actor;
+        var types = await getMembershipTypesForIssue.ExecuteAsync(new GetMembershipTypesForIssueQuery(actor), cancellationToken);
+        var activeOrdinaryTypes = types.Items.Where(type => type.IsAvailableForOrdinaryIssue).ToArray();
+        var occurredAtLocal = BusinessTimeZone.ConvertInstantToLocal(timeProvider.GetUtcNow());
+        var forms = new List<IssuedMembershipSaleCorrectionFormViewModel>();
+        foreach (var membership in profile.Membership.Timeline.Where(item => item.Status is "active" or "expired"))
+        {
+            var preview = await previewIssuedMembershipSaleCorrection.ExecuteAsync(
+                new PreviewIssuedMembershipSaleCorrectionQuery(actor, membership.MembershipId), cancellationToken);
+            if (preview.Status is PreviewIssuedMembershipSaleCorrectionStatus.Success
+                or PreviewIssuedMembershipSaleCorrectionStatus.CanonicalStateInvalid)
+            {
+                forms.Add(IssuedMembershipSaleCorrectionFormViewModel.Initial(
+                    profile.ClientId, membership.MembershipId, activeOrdinaryTypes, preview, searchContext, occurredAtLocal));
+            }
+        }
+
+        return forms;
+    }
+
+    private async Task<IssuedMembershipSaleCorrectionFormViewModel> BuildIssuedMembershipSaleCorrectionFormFromInputAsync(
+        IssuedMembershipSaleCorrectionFormInput form,
+        IReadOnlyList<CommandError> errors,
+        CancellationToken cancellationToken)
+    {
+        var actor = requestContextResolver.Require().Actor;
+        var types = await getMembershipTypesForIssue.ExecuteAsync(new GetMembershipTypesForIssueQuery(actor), cancellationToken);
+        var activeOrdinaryTypes = types.Items.Where(type => type.IsAvailableForOrdinaryIssue).ToArray();
+        var preview = await previewIssuedMembershipSaleCorrection.ExecuteAsync(
+            new PreviewIssuedMembershipSaleCorrectionQuery(
+                actor,
+                form.OriginalMembershipId),
+            cancellationToken);
+        var currentErrors = errors.ToList();
+        currentErrors.AddRange(ToIssuedSalePreviewErrors(preview));
+
+        if (preview.Status == PreviewIssuedMembershipSaleCorrectionStatus.Success
+            && form.Mode == IssuedMembershipSaleCorrectionMode.Replace)
+        {
+            var hasType = form.ReplacementMembershipTypeId is { } membershipTypeId
+                && membershipTypeId != Guid.Empty;
+            var hasStart = form.ReplacementStartDate is { } startDate
+                && startDate != default;
+
+            if (hasType && hasStart)
+            {
+                var replacementPreview = await previewIssuedMembershipSaleCorrection
+                    .ExecuteAsync(
+                        new PreviewIssuedMembershipSaleCorrectionQuery(
+                            actor,
+                            form.OriginalMembershipId,
+                            form.ReplacementMembershipTypeId,
+                            form.ReplacementStartDate),
+                        cancellationToken);
+                currentErrors.AddRange(ToIssuedSalePreviewErrors(replacementPreview));
+
+                var sourceBecameUnavailable = replacementPreview.Status
+                        == PreviewIssuedMembershipSaleCorrectionStatus.CanonicalStateInvalid
+                    || replacementPreview.ErrorField == "originalMembershipId";
+                preview = replacementPreview.Status
+                        == PreviewIssuedMembershipSaleCorrectionStatus.Success
+                    || sourceBecameUnavailable
+                        ? replacementPreview
+                        : preview;
+            }
+        }
+
+        if (form.Mode is not null
+            and not IssuedMembershipSaleCorrectionMode.Cancel
+            and not IssuedMembershipSaleCorrectionMode.Replace)
+        {
+            currentErrors.Add(new CommandError(
+                CommandErrorCode.ValidationFailed,
+                "Choose a supported correction mode.",
+                "mode"));
+        }
+
+        var distinctErrors = currentErrors
+            .GroupBy(
+                error => (error.Code, error.Field, error.Message),
+                EqualityComparer<(CommandErrorCode, string?, string)>.Default)
+            .Select(group => group.First())
+            .ToArray();
+        return IssuedMembershipSaleCorrectionFormViewModel.FromSubmission(
+            form,
+            activeOrdinaryTypes,
+            preview,
+            distinctErrors);
     }
 
     private async Task<NegativeVisitCoveragePanelViewModel> BuildNegativeVisitCoveragePanelAsync(
@@ -2766,7 +2909,7 @@ public sealed class IndexModel(
         return [new(CommandErrorCode.ValidationFailed, "The submitted negative coverage selection is incomplete.", "expectedOldestOpenNegativeVisitId")];
     }
 
-    private static bool TryResolveNegativeCoverageCorrectionOccurredAt(
+    private static bool TryResolveCorrectionOccurredAt(
         DateTime? occurredAtLocal,
         out DateTimeOffset occurredAt)
     {
@@ -2787,6 +2930,10 @@ public sealed class IndexModel(
             return false;
         }
     }
+
+    private static bool TryResolveNegativeCoverageCorrectionOccurredAt(
+        DateTime? occurredAtLocal,
+        out DateTimeOffset occurredAt) => TryResolveCorrectionOccurredAt(occurredAtLocal, out occurredAt);
 
     private static IReadOnlyList<CommandError> ToPreviewErrors<TStatus>(
         TStatus status,
@@ -2812,6 +2959,32 @@ public sealed class IndexModel(
         return [new(code, message ?? "Preview could not be prepared.", field)];
     }
 
+    private static IReadOnlyList<CommandError> ToIssuedSalePreviewErrors(
+        PreviewIssuedMembershipSaleCorrectionResult result)
+    {
+        if (result.Status == PreviewIssuedMembershipSaleCorrectionStatus.Success)
+        {
+            return [];
+        }
+
+        var code = result.ErrorCode switch
+        {
+            "permission_denied" => CommandErrorCode.PermissionDenied,
+            "not_found" => CommandErrorCode.NotFound,
+            "membership_type_inactive" => CommandErrorCode.MembershipTypeInactive,
+            "membership_not_eligible" => CommandErrorCode.MembershipNotEligible,
+            "canonical_state_invalid" => CommandErrorCode.RecalculationFailed,
+            _ => CommandErrorCode.ValidationFailed,
+        };
+        return
+        [
+            new CommandError(
+                code,
+                result.ErrorMessage ?? "Issued Membership sale preview could not be prepared.",
+                result.ErrorField),
+        ];
+    }
+
     private static bool RequiresCanonicalNegativeCoverageRefresh(
         IReadOnlyList<CommandError> errors) => errors.Any(error => error.Code is
             CommandErrorCode.PermissionDenied
@@ -2834,6 +3007,148 @@ public sealed class IndexModel(
         Workspace = await BuildWorkspaceAsync(cancellationToken);
         Workspace = Workspace with { Profile = Workspace.Profile with { OperationMessage = message, OperationSucceeded = true } };
         Response.Headers["HX-Retarget"] = "#reception-workspace"; Response.Headers["HX-Reswap"] = "outerHTML"; SetHtmxPushUrl(ClientId);
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
+    private async Task<IActionResult> RenderIssuedMembershipSaleCorrectionErrorAsync(
+        IssuedMembershipSaleCorrectionFormInput form,
+        IReadOnlyList<CommandError> errors,
+        bool forceCanonicalRefresh,
+        CancellationToken cancellationToken)
+    {
+        ApplySearchContext(form);
+        ClientId = form.ClientId;
+
+        IssuedMembershipSaleCorrectionFormViewModel? correctionForm = null;
+        if (!forceCanonicalRefresh)
+        {
+            correctionForm = await BuildIssuedMembershipSaleCorrectionFormFromInputAsync(
+                form,
+                errors,
+                cancellationToken);
+            if (IsHtmxRequest())
+            {
+                return Partial("_IssuedMembershipSaleCorrectionForm", correctionForm);
+            }
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        if (Workspace.Profile.Result?.Profile?.ClientId == form.ClientId)
+        {
+            Workspace = Workspace with
+            {
+                Profile = Workspace.Profile with
+                {
+                    IssuedMembershipSaleCorrectionForms = Workspace.Profile
+                        .IssuedMembershipSaleCorrectionForms
+                        .Select(candidate => candidate.Input.OriginalMembershipId
+                            == form.OriginalMembershipId
+                                ? forceCanonicalRefresh
+                                    ? candidate with { Errors = errors }
+                                    : correctionForm!
+                                : candidate)
+                        .ToArray(),
+                    OperationMessage = LocalizedCommandError(errors),
+                    OperationSucceeded = false,
+                },
+            };
+        }
+
+        if (!IsHtmxRequest())
+        {
+            return Page();
+        }
+
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
+        return Partial("_ReceptionWorkspace", Workspace);
+    }
+
+    private static IReadOnlyList<CommandError> ValidateIssuedMembershipSaleCorrectionForm(
+        IssuedMembershipSaleCorrectionFormInput form,
+        out DateTimeOffset occurredAt)
+    {
+        var errors = new List<CommandError>();
+        if (form.ClientId == Guid.Empty)
+            errors.Add(new(CommandErrorCode.ValidationFailed, "Client id is required.", "clientId"));
+        if (form.OriginalMembershipId == Guid.Empty)
+            errors.Add(new(CommandErrorCode.ValidationFailed, "Original membership id is required.", "originalMembershipId"));
+        if (form.Mode is not IssuedMembershipSaleCorrectionMode.Cancel
+            and not IssuedMembershipSaleCorrectionMode.Replace)
+            errors.Add(new(CommandErrorCode.ValidationFailed, "Choose a correction mode.", "mode"));
+        if (string.IsNullOrWhiteSpace(form.Reason))
+            errors.Add(new(CommandErrorCode.ReasonRequired, "Reason is required.", "reason"));
+        if (!TryResolveCorrectionOccurredAt(form.OccurredAtLocal, out occurredAt))
+            errors.Add(new(CommandErrorCode.ValidationFailed, "A valid occurred time is required.", "occurredAt"));
+        if (!form.Confirmed)
+            errors.Add(new(CommandErrorCode.ValidationFailed, "Confirmation is required.", "confirmed"));
+        if (string.IsNullOrWhiteSpace(form.ExpectedDependencyToken))
+            errors.Add(new(CommandErrorCode.ValidationFailed, "A current dependency preview is required.", "expectedDependencyToken"));
+        if (form.Mode == IssuedMembershipSaleCorrectionMode.Replace)
+        {
+            if (form.ReplacementMembershipTypeId is not { } typeId || typeId == Guid.Empty)
+                errors.Add(new(CommandErrorCode.ValidationFailed, "Choose an active membership type.", "replacementMembershipTypeId"));
+            if (form.ExpectedMembershipTypeUpdatedAt is not { } version || version == default)
+                errors.Add(new(CommandErrorCode.ValidationFailed, "Membership type preview version is required.", "expectedMembershipTypeUpdatedAt"));
+            if (form.ReplacementStartDate is not { } startDate || startDate == default)
+                errors.Add(new(CommandErrorCode.ValidationFailed, "Start date is required.", "replacementStartDate"));
+        }
+        return errors;
+    }
+
+    private static bool RequiresCanonicalIssuedMembershipSaleRefresh(
+        IReadOnlyList<CommandError> errors) => errors.Any(error => error.Code is
+            CommandErrorCode.PermissionDenied
+            or CommandErrorCode.NotFound
+            or CommandErrorCode.RecalculationFailed
+            or CommandErrorCode.ConcurrencyConflict
+            or CommandErrorCode.StaleState
+            or CommandErrorCode.MembershipTypeInactive
+            or CommandErrorCode.MembershipNotEligible
+            or CommandErrorCode.AlreadyCanceled);
+
+    private async Task<IActionResult> RenderSuccessfulIssuedMembershipSaleCorrectionAsync(
+        IssuedMembershipSaleCorrectionFormInput form,
+        CommandResult result,
+        CancellationToken cancellationToken)
+    {
+        if (result.PrimaryEntityId is not { } primary
+            || primary.Type != ReplaceIssuedMembershipCommand.PrimaryEntityType
+            || primary.Value == Guid.Empty
+            || result.RereadTargetId is not { } target
+            || target.Type != ReplaceIssuedMembershipCommand.CanonicalRereadEntityType
+            || target.Value != form.ClientId)
+        {
+            throw new InvalidOperationException(
+                "Issued membership sale correction did not return its expected canonical client reread target.");
+        }
+
+        ClientId = target.Value;
+        var message = LocalizedOperationMessage(
+            form.Mode == IssuedMembershipSaleCorrectionMode.Replace
+                ? "Operation.IssuedMembershipSaleReplaced"
+                : "Operation.IssuedMembershipSaleCanceled",
+            result.AuditEntryId);
+        if (!IsHtmxRequest())
+        {
+            ClientOperationMessage = message;
+            ClientOperationTone = "success";
+            return RedirectToCanonicalPage(ClientId);
+        }
+
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        Workspace = Workspace with
+        {
+            Profile = Workspace.Profile with
+            {
+                OperationMessage = message,
+                OperationSucceeded = true,
+            },
+        };
+        Response.Headers["HX-Retarget"] = "#reception-workspace";
+        Response.Headers["HX-Reswap"] = "outerHTML";
+        SetHtmxPushUrl(ClientId);
         return Partial("_ReceptionWorkspace", Workspace);
     }
 
@@ -2935,6 +3250,14 @@ public sealed class IndexModel(
     }
 
     private void ApplySearchContext(NegativeVisitCoverageCorrectionFormInput form)
+    {
+        Query = form.SearchQuery;
+        Mode = form.SearchMode;
+        IncludeInactive = form.SearchIncludeInactive;
+        PageCursor = form.SearchPageCursor;
+    }
+
+    private void ApplySearchContext(IssuedMembershipSaleCorrectionFormInput form)
     {
         Query = form.SearchQuery;
         Mode = form.SearchMode;

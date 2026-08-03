@@ -233,6 +233,11 @@
             <partial name="_NegativeVisitCoveragePanel" model="Model.NegativeVisitCoveragePanel" />
         }
 
+        @foreach (var issuedSaleCorrectionForm in Model.IssuedMembershipSaleCorrectionForms)
+        {
+            <partial name="_IssuedMembershipSaleCorrectionForm" model="issuedSaleCorrectionForm" />
+        }
+
         @if (profile.RecentVisits is { } recentVisits)
         {
             <section class="recent-visits" aria-labelledby="recent-visits-title">
@@ -698,6 +703,7 @@
             "payment_context" => L["Field.Context"],
             "membership_id" => L["Field.Membership"],
             "negative_coverage" => L["Field.NegativeCoverage"],
+            "membership_sale" => L["Field.MembershipSale"],
             "comment" => L["Field.Comment"],
             _ => L["Value.Unknown"],
         };

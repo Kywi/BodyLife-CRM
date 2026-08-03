@@ -5951,6 +5951,105 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             reader.IsDBNull(16) ? null : reader.GetGuid(16));
     }
 
+    public async Task<IssuedSaleCorrectionSmokeSnapshot>
+        ReadIssuedSaleCorrectionSnapshotAsync(Guid clientId)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            with corrections as (
+                select *
+                from bodylife.issued_membership_sale_corrections
+                where client_id = @client_id
+            ),
+            latest as (
+                select *
+                from corrections
+                order by recorded_at desc, id desc
+                limit 1
+            )
+            select
+                (select count(*) from corrections),
+                (select correction_mode from latest),
+                (select original_membership_id from latest),
+                (
+                    select membership.status
+                    from bodylife.issued_memberships membership
+                    where membership.id = (select original_membership_id from latest)
+                ),
+                (select original_payment_id from latest),
+                (
+                    select payment.status
+                    from bodylife.payments payment
+                    where payment.id = (select original_payment_id from latest)
+                ),
+                (select replacement_membership_id from latest),
+                (
+                    select membership.status
+                    from bodylife.issued_memberships membership
+                    where membership.id = (select replacement_membership_id from latest)
+                ),
+                (select replacement_payment_id from latest),
+                (
+                    select payment.status
+                    from bodylife.payments payment
+                    where payment.id = (select replacement_payment_id from latest)
+                ),
+                (
+                    select count(*)
+                    from bodylife.business_audit_entries audit
+                    where audit.action_type = 'membership.replaced'
+                      and audit.entity_id = (select original_membership_id from latest)
+                ),
+                (
+                    select count(*)
+                    from bodylife.business_audit_entries audit
+                    where audit.action_type = 'membership.sale_canceled'
+                      and audit.entity_id = (select original_membership_id from latest)
+                ),
+                (
+                    select count(*)
+                    from bodylife.business_audit_entries audit
+                    where audit.action_type = 'payment.created'
+                      and audit.entity_id = (select replacement_payment_id from latest)
+                ),
+                (
+                    select count(*)
+                    from bodylife.command_idempotency_keys
+                    where command_name in (
+                        'ReplaceIssuedMembership',
+                        'CancelIssuedMembershipSale')
+                      and reread_target_id = @client_id
+                )
+            """;
+        command.Parameters.AddWithValue("client_id", clientId);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new InvalidOperationException(
+                "The issued-sale correction snapshot query returned no row.");
+        }
+
+        return new IssuedSaleCorrectionSmokeSnapshot(
+            reader.GetInt64(0),
+            reader.IsDBNull(1) ? null : reader.GetString(1),
+            reader.IsDBNull(2) ? null : reader.GetGuid(2),
+            reader.IsDBNull(3) ? null : reader.GetString(3),
+            reader.IsDBNull(4) ? null : reader.GetGuid(4),
+            reader.IsDBNull(5) ? null : reader.GetString(5),
+            reader.IsDBNull(6) ? null : reader.GetGuid(6),
+            reader.IsDBNull(7) ? null : reader.GetString(7),
+            reader.IsDBNull(8) ? null : reader.GetGuid(8),
+            reader.IsDBNull(9) ? null : reader.GetString(9),
+            reader.GetInt64(10),
+            reader.GetInt64(11),
+            reader.GetInt64(12),
+            reader.GetInt64(13));
+    }
+
     public async Task<MembershipStateSmokeSnapshot> ReadMembershipStateAsync(
         Guid membershipId)
     {
@@ -6575,6 +6674,22 @@ public sealed record NegativeCoverageMutationSmokeSnapshot(
     long CloseIdempotencyCount,
     long CorrectionIdempotencyCount,
     Guid? ActiveClosureId);
+
+public sealed record IssuedSaleCorrectionSmokeSnapshot(
+    long CorrectionCount,
+    string? CorrectionMode,
+    Guid? OriginalMembershipId,
+    string? OriginalMembershipStatus,
+    Guid? OriginalPaymentId,
+    string? OriginalPaymentStatus,
+    Guid? ReplacementMembershipId,
+    string? ReplacementMembershipStatus,
+    Guid? ReplacementPaymentId,
+    string? ReplacementPaymentStatus,
+    long ReplacedAuditCount,
+    long SaleCanceledAuditCount,
+    long ReplacementPaymentCreatedAuditCount,
+    long IdempotencyCount);
 
 public sealed record IssuedMembershipSmokeSnapshot(
     Guid MembershipId,

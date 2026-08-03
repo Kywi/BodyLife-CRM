@@ -41,6 +41,12 @@ public sealed class GetClientProfileQueryHandler(
         QueryPermissionResult.Allowed(
             FreezeActionKeys.Cancel,
             FreezeActionKeys.AdminOrOwnerPolicy),
+        QueryPermissionResult.Allowed(
+            MembershipActionKeys.ReplaceIssuedSale,
+            MembershipActionKeys.AdminOrOwnerPolicy),
+        QueryPermissionResult.Allowed(
+            MembershipActionKeys.CancelIssuedSale,
+            MembershipActionKeys.AdminOrOwnerPolicy),
     ]);
 
     public async Task<GetClientProfileResult> ExecuteAsync(
