@@ -2,8 +2,10 @@ using System.Data;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
+using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.SharedKernel;
@@ -14,6 +16,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Freezes;
 public sealed class AddFreezeCommandHandler(
     BodyLifeDbContext dbContext,
     BusinessAuditAppender auditAppender,
+    PaperFallbackEntryRowBinder paperFallbackEntryRowBinder,
     MembershipFreezeEligibilityPreparer eligibilityPreparer,
     IMembershipStateRecalculator membershipStateRecalculator,
     IBodyLifeQueryHandler<GetMembershipStateQuery, GetMembershipStateResult>
@@ -77,6 +80,53 @@ public sealed class AddFreezeCommandHandler(
                     existingIdempotency,
                     freeze,
                     fingerprint));
+            }
+
+            var client = await LockClientAsync(freeze.ClientId, cancellationToken);
+            if (client is null)
+            {
+                return await RollBackAsync(FreezeCommandSupport.Error(
+                    CommandErrorCode.NotFound,
+                    "Client was not found.",
+                    "clientId"));
+            }
+
+            existingIdempotency = await FreezeCommandSupport.FindIdempotencyAsync(
+                dbContext,
+                CommandName,
+                freeze.Envelope.IdempotencyKey!,
+                cancellationToken);
+            if (existingIdempotency is not null)
+            {
+                return await RollBackAsync(ReplayOrRejectDuplicate(
+                    existingIdempotency,
+                    freeze,
+                    fingerprint));
+            }
+
+            var paperBinding = await paperFallbackEntryRowBinder.PrepareAsync(
+                freeze.Envelope,
+                PaperFallbackEventType.Freeze,
+                cancellationToken);
+            if (paperBinding.RowAlreadyLinked)
+            {
+                existingIdempotency = await FreezeCommandSupport.FindIdempotencyAsync(
+                    dbContext,
+                    CommandName,
+                    freeze.Envelope.IdempotencyKey!,
+                    cancellationToken);
+                if (existingIdempotency is not null)
+                {
+                    return await RollBackAsync(ReplayOrRejectDuplicate(
+                        existingIdempotency,
+                        freeze,
+                        fingerprint));
+                }
+            }
+
+            if (paperBinding.Error is not null)
+            {
+                return await RollBackAsync(paperBinding.Error);
             }
 
             MembershipFreezeEligibilityPreparationResult eligibilityPreparation;
@@ -148,6 +198,14 @@ public sealed class AddFreezeCommandHandler(
 
             var beforeState = beforeStateResult.State;
             var freezeId = Guid.NewGuid();
+            if (paperBinding.Reference is { } paperReference)
+            {
+                paperFallbackEntryRowBinder.LinkEntity(
+                    paperReference,
+                    FreezeAuditActions.FreezeEntityType,
+                    freezeId);
+            }
+
             var freezeRecord = new FreezeRecord
             {
                 Id = freezeId,
@@ -162,7 +220,8 @@ public sealed class AddFreezeCommandHandler(
                 SessionId = freeze.Envelope.Actor.SessionId.Value,
                 EntryOrigin = FreezeCommandSupport.MapEntryOrigin(
                     freeze.Envelope.EntryOrigin),
-                EntryBatchId = freeze.EntryBatchId,
+                EntryBatchId = paperBinding.Reference?.EntryBatchId
+                    ?? freeze.EntryBatchId,
                 Status = "active",
             };
             dbContext.Set<FreezeRecord>().Add(freezeRecord);
@@ -186,17 +245,36 @@ public sealed class AddFreezeCommandHandler(
             }
 
             var afterState = afterStateResult.State;
+            object relatedEntityRefs;
+            if (paperBinding.Reference is { } auditPaperReference)
+            {
+                relatedEntityRefs = new
+                {
+                    freeze.ClientId,
+                    freeze.MembershipId,
+                    auditPaperReference.EntryBatchId,
+                    auditPaperReference.EntryBatchRowId,
+                    auditPaperReference.PaperSheetNumber,
+                    auditPaperReference.LineNumber,
+                    PaperExplanation = auditPaperReference.Explanation,
+                };
+            }
+            else
+            {
+                relatedEntityRefs = new
+                {
+                    freeze.ClientId,
+                    freeze.MembershipId,
+                };
+            }
+
             var auditEntryId = auditAppender.Append(
                 freeze.Envelope,
                 FreezeAuditActions.Added,
                 FreezeAuditActions.FreezeEntityType,
                 freezeId,
                 recordedAt,
-                relatedEntityRefs: new
-                {
-                    freeze.ClientId,
-                    freeze.MembershipId,
-                },
+                relatedEntityRefs,
                 beforeSummary: new
                 {
                     MembershipState = Summarize(beforeState),
@@ -260,6 +338,23 @@ public sealed class AddFreezeCommandHandler(
                 transaction,
                 result);
         }
+    }
+
+    private async Task<ClientRecord?> LockClientAsync(
+        Guid clientId,
+        CancellationToken cancellationToken)
+    {
+        var clients = await dbContext.Set<ClientRecord>()
+            .FromSqlInterpolated(
+                $"""
+                select *
+                from bodylife.clients
+                where id = {clientId}
+                for update
+                """)
+            .AsNoTracking()
+            .ToArrayAsync(cancellationToken);
+        return clients.SingleOrDefault();
     }
 
     private Task<GetMembershipStateResult> ReadMembershipStateAsync(

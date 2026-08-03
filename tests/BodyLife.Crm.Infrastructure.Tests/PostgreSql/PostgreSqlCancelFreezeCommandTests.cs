@@ -212,7 +212,7 @@ public sealed class PostgreSqlCancelFreezeCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task SharedAdminPaperFallbackPreservesCancellationMetadata()
+    public async Task PaperFallbackIsRejectedUntilFirstClassRowIntegration()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -236,21 +236,11 @@ public sealed class PostgreSqlCancelFreezeCommandTests
                 entryBatchId: entryBatchId),
             CancellationToken.None);
 
-        AssertSuccessfulResult(result, fixture);
-        var cancellation = await ReadCancellationAsync(
+        AssertError(result, CommandErrorCode.ValidationFailed, "entryOrigin");
+        await AssertNoCancellationMutationAsync(
             database,
-            result.PrimaryEntityId!.Value.Value);
-        Assert.Equal("Recovered cancellation", cancellation.Reason);
-        Assert.Equal(occurredAt, cancellation.OccurredAt);
-        Assert.Equal("paper_fallback", cancellation.EntryOrigin);
-        Assert.Equal(entryBatchId, cancellation.EntryBatchId);
-        Assert.Equal(sharedAdmin.AccountId.Value, cancellation.RecordedByAccountId);
-        Assert.Equal(sharedAdmin.SessionId.Value, cancellation.SessionId);
-        var audit = await ReadAuditAsync(database, result.AuditEntryId!.Value.Value);
-        Assert.Equal("shared_reception_admin", audit.ActorAccountType);
-        Assert.Equal("admin", audit.ActorRole);
-        Assert.Equal("paper_fallback", audit.EntryOrigin);
-        Assert.Equal("Recovered cancellation", audit.Reason);
+            fixture,
+            expectedExtensionDays: 3);
     }
 
     [PostgreSqlFact]
@@ -320,6 +310,15 @@ public sealed class PostgreSqlCancelFreezeCommandTests
         var normalWithBatch = await handler.ExecuteAsync(
             valid with { EntryBatchId = Guid.NewGuid() },
             CancellationToken.None);
+        var unsupportedPaperRow = await handler.ExecuteAsync(
+            valid with
+            {
+                Envelope = valid.Envelope with
+                {
+                    EntryBatchRowId = Guid.NewGuid(),
+                },
+            },
+            CancellationToken.None);
         var invalidActorShape = await handler.ExecuteAsync(
             valid with
             {
@@ -337,6 +336,10 @@ public sealed class PostgreSqlCancelFreezeCommandTests
         AssertError(missingKey, CommandErrorCode.ValidationFailed, "idempotencyKey");
         AssertError(missingReason, CommandErrorCode.ReasonRequired, "reason");
         AssertError(normalWithBatch, CommandErrorCode.ValidationFailed, "entryBatchId");
+        AssertError(
+            unsupportedPaperRow,
+            CommandErrorCode.ValidationFailed,
+            "entryBatchRowId");
         AssertError(invalidActorShape, CommandErrorCode.PermissionDenied);
         AssertError(endedSession, CommandErrorCode.PermissionDenied);
         await AssertNoCancellationMutationAsync(database, fixture, expectedExtensionDays: 3);

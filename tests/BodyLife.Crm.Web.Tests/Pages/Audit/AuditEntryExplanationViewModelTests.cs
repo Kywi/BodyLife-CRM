@@ -2399,6 +2399,78 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void PaperFreezeAdditionShowsLocalizedRowProvenance()
+    {
+        var fixture = FreezeAdditionAudit(
+            membershipStateChanges: true,
+            paperFallback: true);
+        var entry = Entry(
+            "freeze.added",
+            AuditTimelineEntityType.Freeze,
+            fixture.FreezeId,
+            fixture.Before,
+            fixture.After,
+            related: fixture.Related,
+            entryOrigin: EntryOrigin.PaperFallback);
+        var rowId = fixture.EntryBatchRowId.GetValueOrDefault();
+        Assert.NotEqual(Guid.Empty, rowId);
+
+        var english = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.English));
+        var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.Ukrainian));
+
+        Assert.True(english.IsAvailable);
+        Assert.Equal(
+            "FREEZE-SHEET-001",
+            FactValue(english.AfterFacts, "Paper sheet"));
+        Assert.Equal(
+            rowId.ToString("N")[..8],
+            FactValue(english.AfterFacts, "Paper row"));
+        Assert.Equal("23", FactValue(english.AfterFacts, "Line number"));
+        Assert.Equal("Freeze", FactValue(english.AfterFacts, "Event type"));
+        Assert.Equal(
+            "Recovered paper Freeze",
+            FactValue(english.AfterFacts, "Explanation"));
+
+        Assert.True(ukrainian.IsAvailable);
+        Assert.Equal(
+            "FREEZE-SHEET-001",
+            FactValue(ukrainian.AfterFacts, "Паперовий аркуш"));
+        Assert.Equal(
+            rowId.ToString("N")[..8],
+            FactValue(ukrainian.AfterFacts, "Рядок паперового запису"));
+        Assert.Equal("23", FactValue(ukrainian.AfterFacts, "Номер рядка"));
+        Assert.Equal("Заморозка", FactValue(ukrainian.AfterFacts, "Тип події"));
+        Assert.Equal(
+            "Recovered paper Freeze",
+            FactValue(ukrainian.AfterFacts, "Пояснення"));
+    }
+
+    [Fact]
+    public void PaperFreezeAdditionWithoutRowIdentityFailsClosed()
+    {
+        var fixture = FreezeAdditionAudit(
+            membershipStateChanges: true,
+            paperFallback: true,
+            omitPaperRowIdentity: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "freeze.added",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related,
+                    entryOrigin: EntryOrigin.PaperFallback)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void FreezeAdditionAllowsSubMicrosecondTimestampPrecisionLostByPostgreSql()
     {
         var entryOccurredAt = OriginalOccurredAt;
@@ -4912,11 +4984,17 @@ public sealed class AuditEntryExplanationViewModelTests
         int inclusiveDays = 3,
         string sourceReason = "Correction reason",
         DateTimeOffset? occurredAt = null,
-        DateTimeOffset? recordedAt = null)
+        DateTimeOffset? recordedAt = null,
+        bool paperFallback = false,
+        bool omitPaperRowIdentity = false)
     {
         var freezeId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
         var membershipId = Guid.NewGuid();
+        var entryBatchId = paperFallback ? Guid.NewGuid() : (Guid?)null;
+        var entryBatchRowId = paperFallback && !omitPaperRowIdentity
+            ? Guid.NewGuid()
+            : (Guid?)null;
         var startDate = new DateOnly(2026, 2, 10);
         var endDate = new DateOnly(2026, 2, 12);
         var beforeMembership = new FreezeMembershipStateAuditFixture(
@@ -4953,20 +5031,40 @@ public sealed class AuditEntryExplanationViewModelTests
                 sourceReason,
                 occurredAt ?? OriginalOccurredAt,
                 recordedAt ?? OriginalOccurredAt.AddMinutes(5),
-                "normal",
-                EntryBatchId: null,
+                paperFallback ? "paper_fallback" : "normal",
+                entryBatchId,
                 "active"),
             MembershipState = afterMembership,
         };
-        var related = new
+        object related;
+        if (paperFallback)
         {
-            ClientId = clientId,
-            MembershipId = membershipId,
-        };
+            related = new
+            {
+                ClientId = clientId,
+                MembershipId = membershipId,
+                EntryBatchId = entryBatchId,
+                EntryBatchRowId = entryBatchRowId,
+                PaperSheetNumber = "FREEZE-SHEET-001",
+                LineNumber = 23,
+                PaperExplanation = "Recovered paper Freeze",
+            };
+        }
+        else
+        {
+            related = new
+            {
+                ClientId = clientId,
+                MembershipId = membershipId,
+            };
+        }
+
         return new FreezeAdditionAuditFixture(
             freezeId,
             clientId,
             membershipId,
+            entryBatchId,
+            entryBatchRowId,
             related,
             before,
             after);
@@ -5138,6 +5236,8 @@ public sealed class AuditEntryExplanationViewModelTests
         Guid FreezeId,
         Guid ClientId,
         Guid MembershipId,
+        Guid? EntryBatchId,
+        Guid? EntryBatchRowId,
         object Related,
         object Before,
         object After);

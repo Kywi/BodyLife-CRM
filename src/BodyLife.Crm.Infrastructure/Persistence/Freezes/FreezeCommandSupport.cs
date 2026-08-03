@@ -117,6 +117,37 @@ internal static class FreezeCommandSupport
                 "entryBatchId");
         }
 
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback
+            && command.EntryBatchId is not null)
+        {
+            return ValidationError(
+                "Paper fallback Freeze derives its entry batch from the paper row.",
+                "entryBatchId");
+        }
+
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback
+            && canonicalEnvelope.EntryBatchRowId is null)
+        {
+            return ValidationError(
+                "Paper fallback Freeze requires an entry batch row id.",
+                "entryBatchRowId");
+        }
+
+        if (canonicalEnvelope.EntryBatchRowId == Guid.Empty)
+        {
+            return ValidationError(
+                "Entry batch row id must be a non-empty identifier when supplied.",
+                "entryBatchRowId");
+        }
+
+        if (canonicalEnvelope.EntryOrigin != EntryOrigin.PaperFallback
+            && canonicalEnvelope.EntryBatchRowId is not null)
+        {
+            return ValidationError(
+                "Entry batch row id is only valid for a paper fallback Freeze.",
+                "entryBatchRowId");
+        }
+
         normalizedFreeze = new NormalizedAddFreeze(
             command.ClientId,
             command.MembershipId,
@@ -160,6 +191,20 @@ internal static class FreezeCommandSupport
                 "entryBatchId");
         }
 
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback)
+        {
+            return ValidationError(
+                "Paper fallback Freeze cancellation requires first-class row integration.",
+                "entryOrigin");
+        }
+
+        if (canonicalEnvelope.EntryBatchRowId is not null)
+        {
+            return ValidationError(
+                "CancelFreeze does not accept a paper row until its first-class row integration is enabled.",
+                "entryBatchRowId");
+        }
+
         normalizedCancellation = new NormalizedCancelFreeze(
             command.FreezeId,
             command.EntryBatchId,
@@ -185,6 +230,7 @@ internal static class FreezeCommandSupport
             freeze.Range.StartDate,
             freeze.Range.EndDate,
             freeze.EntryBatchId,
+            envelope.EntryBatchRowId,
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));
@@ -608,7 +654,8 @@ internal static class FreezeCommandSupport
             occurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 
@@ -697,7 +744,8 @@ internal static class FreezeCommandSupport
             occurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 

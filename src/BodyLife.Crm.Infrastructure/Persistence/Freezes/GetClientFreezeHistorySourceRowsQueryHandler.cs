@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Freezes;
@@ -112,6 +113,25 @@ public sealed class GetClientFreezeHistorySourceRowsQueryHandler(
             return GetClientFreezeHistorySourceRowsResult.InconsistentSource();
         }
 
+        var paperReferenceReader = new PaperFallbackEntryRowReferenceReader(
+            dbContext);
+        var freezePaperReferences = await paperReferenceReader.LoadAsync(
+            freezeRows.Select(storageRow =>
+                new PaperFallbackEntryRowReferenceSource(
+                    storageRow.Freeze.Id,
+                    storageRow.Freeze.EntryOrigin,
+                    storageRow.Freeze.EntryBatchId,
+                    storageRow.Freeze.OccurredAt,
+                    storageRow.Freeze.RecordedByAccountId,
+                    storageRow.Freeze.SessionId)).ToArray(),
+            FreezeAuditActions.FreezeEntityType,
+            PaperFallbackEventType.Freeze,
+            cancellationToken);
+        if (freezePaperReferences is null)
+        {
+            return GetClientFreezeHistorySourceRowsResult.InconsistentSource();
+        }
+
         var cancellationsByFreezeId = cancellationRows.ToDictionary(
             cancellation => cancellation.FreezeId);
         var sourcesByFreezeId = new Dictionary<Guid, CanonicalFreezeHistorySource>(
@@ -124,6 +144,7 @@ public sealed class GetClientFreezeHistorySourceRowsQueryHandler(
             if (!TryMapCanonicalSource(
                     storageRow,
                     cancellation,
+                    freezePaperReferences.GetValueOrDefault(storageRow.Freeze.Id),
                     out var source)
                 || source is null)
             {
@@ -177,6 +198,7 @@ public sealed class GetClientFreezeHistorySourceRowsQueryHandler(
     private static bool TryMapCanonicalSource(
         FreezeStorageRow storageRow,
         FreezeCancellationRecord? cancellation,
+        PaperFallbackEntryRowReference? paperReference,
         out CanonicalFreezeHistorySource? source)
     {
         source = null;
@@ -193,7 +215,9 @@ public sealed class GetClientFreezeHistorySourceRowsQueryHandler(
             || string.IsNullOrWhiteSpace(freeze.Reason)
             || freeze.Reason != freeze.Reason.Trim()
             || !TryMapEntryOrigin(freeze.EntryOrigin, out var freezeEntryOrigin)
-            || !TryMapStatus(freeze.Status, out var status))
+            || !TryMapStatus(freeze.Status, out var status)
+            || freeze.EntryOrigin == "paper_fallback" && paperReference is null
+            || freeze.EntryOrigin != "paper_fallback" && paperReference is not null)
         {
             return false;
         }
@@ -255,7 +279,8 @@ public sealed class GetClientFreezeHistorySourceRowsQueryHandler(
                 canonicalSource.EntryOrigin,
                 canonicalSource.EntryBatchId,
                 canonicalSource.Status,
-                canonicalSource.ExistingCancellationId);
+                canonicalSource.ExistingCancellationId,
+                paperReference);
             var cancellationSource = cancellation is null
                 ? null
                 : new FreezeCancellationHistorySource(
@@ -295,7 +320,11 @@ public sealed class GetClientFreezeHistorySourceRowsQueryHandler(
             || auditEntry.ActorAccountId != freeze.RecordedByAccountId
             || auditEntry.SessionId != freeze.RecordedSessionId
             || auditEntry.EntryOrigin != freeze.EntryOrigin
-            || auditEntry.Reason != freeze.Reason)
+            || auditEntry.Reason != freeze.Reason
+            || !PaperFallbackEntryRowReferenceReader.HasMatchingAuditReference(
+                auditEntry,
+                freeze.EntryBatchId,
+                freeze.PaperReference))
         {
             return null;
         }

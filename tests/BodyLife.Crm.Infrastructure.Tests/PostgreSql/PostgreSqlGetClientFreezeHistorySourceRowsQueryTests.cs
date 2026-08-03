@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Freezes;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -116,6 +117,17 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
             FreezeCancellationSourceStatus.Active,
             activeFreeze.CurrentStatus);
         Assert.Null(activeFreeze.CurrentCancellationId);
+        var paper = Assert.IsType<PaperFallbackEntryRowReference>(
+            activeFreeze.PaperReference);
+        Assert.Equal(source.ActiveFreezeBatchId, paper.EntryBatchId);
+        Assert.Equal(source.ActiveFreezeBatchRowId, paper.EntryBatchRowId);
+        Assert.Equal(
+            source.ActiveFreezePaperSheetNumber,
+            paper.PaperSheetNumber);
+        Assert.Equal(source.ActiveFreezeLineNumber, paper.LineNumber);
+        Assert.Equal(PaperFallbackEventType.Freeze, paper.EventType);
+        Assert.Equal(TestNow.AddDays(-2), paper.OccurredAt);
+        Assert.Equal(source.ActiveFreezeExplanation, paper.Explanation);
         Assert.Equal(FreezeAuditActions.Added, activeRow.AuditEntry.ActionType);
 
         var secondPage = AssertSuccess(secondResult, fixture.ClientId);
@@ -141,6 +153,50 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
                 ClientFreezeHistorySourceKind.AddedFreeze,
             ],
             rangedPage.Items.Select(row => row.Kind));
+    }
+
+    [PostgreSqlFact]
+    public async Task QueryFailsClosedWhenPaperFreezeLinkIsMissing()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var source = await SeedHistoryAsync(database, fixture);
+        await DeletePaperLinkAsync(database, source.ActiveFreezeBatchRowId);
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientFreezeHistorySourceRowsQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+
+        AssertFailure(
+            result,
+            GetClientFreezeHistorySourceRowsStatus.SourceInconsistent);
+    }
+
+    [PostgreSqlFact]
+    public async Task QueryFailsClosedWhenPaperFreezeAuditDoesNotMatchRow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        await SeedHistoryAsync(
+            database,
+            fixture,
+            activeFreezeAuditLineNumber: 999);
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientFreezeHistorySourceRowsQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+
+        AssertFailure(
+            result,
+            GetClientFreezeHistorySourceRowsStatus.SourceInconsistent);
     }
 
     [PostgreSqlFact]
@@ -521,13 +577,19 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
 
     private static async Task<FreezeHistorySourceIds> SeedHistoryAsync(
         PostgreSqlTestDatabase database,
-        FreezeHistoryFixture fixture)
+        FreezeHistoryFixture fixture,
+        int? activeFreezeAuditLineNumber = null)
     {
         var canceledFreezeId = Guid.NewGuid();
         var activeFreezeId = Guid.NewGuid();
         var activeFreezeBatchId = Guid.NewGuid();
+        var activeFreezeBatchRowId = Guid.NewGuid();
         var cancellationId = Guid.NewGuid();
         var cancellationBatchId = Guid.NewGuid();
+        const string activeFreezePaperSheetNumber = "FREEZE-HISTORY-001";
+        const int activeFreezeLineNumber = 11;
+        const string activeFreezeExplanation =
+            "Recovered active Freeze from paper";
 
         await using (var connection = new NpgsqlConnection(database.ConnectionString))
         {
@@ -535,6 +597,26 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
             await using var command = connection.CreateCommand();
             command.CommandText =
                 """
+                insert into bodylife.entry_batches (
+                    id, batch_type, paper_sheet_number, business_date_start,
+                    business_date_end, recorded_at, recorded_by_account_id,
+                    reconciled_at, reconciled_by_account_id, note)
+                values (
+                    @active_freeze_batch_id, 'paper_fallback',
+                    @active_freeze_paper_sheet_number,
+                    @active_freeze_business_date, @active_freeze_business_date,
+                    @active_recorded_at, @account_id, null, null,
+                    'Freeze history fixture');
+
+                insert into bodylife.entry_batch_rows (
+                    id, entry_batch_id, line_number, event_type, occurred_at,
+                    explanation, recorded_at, recorded_by_account_id, session_id)
+                values (
+                    @active_freeze_batch_row_id, @active_freeze_batch_id,
+                    @active_freeze_line_number, 'freeze', @active_occurred_at,
+                    @active_freeze_explanation, @active_recorded_at,
+                    @account_id, @session_id);
+
                 insert into bodylife.freezes (
                     id,
                     client_id,
@@ -598,7 +680,16 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
                     @account_id,
                     @session_id,
                     'manual_backfill',
-                    @cancellation_batch_id)
+                    @cancellation_batch_id);
+
+                insert into bodylife.entry_batch_row_entities (
+                    entry_batch_row_id,
+                    entity_type,
+                    entity_id)
+                values (
+                    @active_freeze_batch_row_id,
+                    'freeze',
+                    @active_freeze_id)
                 """;
             command.Parameters.AddWithValue("canceled_freeze_id", canceledFreezeId);
             command.Parameters.AddWithValue("active_freeze_id", activeFreezeId);
@@ -637,6 +728,22 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
             command.Parameters.AddWithValue(
                 "active_freeze_batch_id",
                 activeFreezeBatchId);
+            command.Parameters.AddWithValue(
+                "active_freeze_batch_row_id",
+                activeFreezeBatchRowId);
+            command.Parameters.AddWithValue(
+                "active_freeze_paper_sheet_number",
+                activeFreezePaperSheetNumber);
+            command.Parameters.AddWithValue(
+                "active_freeze_business_date",
+                NpgsqlDbType.Date,
+                BusinessTimeZone.GetBusinessDate(TestNow.AddDays(-2)));
+            command.Parameters.AddWithValue(
+                "active_freeze_line_number",
+                activeFreezeLineNumber);
+            command.Parameters.AddWithValue(
+                "active_freeze_explanation",
+                activeFreezeExplanation);
             command.Parameters.AddWithValue("cancellation_id", cancellationId);
             command.Parameters.AddWithValue(
                 "cancellation_occurred_at",
@@ -647,7 +754,7 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
             command.Parameters.AddWithValue(
                 "cancellation_batch_id",
                 cancellationBatchId);
-            Assert.Equal(3, await command.ExecuteNonQueryAsync());
+            Assert.Equal(6, await command.ExecuteNonQueryAsync());
         }
 
         await InsertAuditAsync(
@@ -671,7 +778,12 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
             TestNow.AddDays(-2),
             TestNow.AddDays(-1).AddHours(-12),
             "paper_fallback",
-            "Travel pause");
+            "Travel pause",
+            entryBatchId: activeFreezeBatchId,
+            entryBatchRowId: activeFreezeBatchRowId,
+            paperSheetNumber: activeFreezePaperSheetNumber,
+            lineNumber: activeFreezeAuditLineNumber ?? activeFreezeLineNumber,
+            paperExplanation: activeFreezeExplanation);
         await InsertAuditAsync(
             database,
             fixture,
@@ -711,6 +823,10 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
             canceledFreezeId,
             activeFreezeId,
             activeFreezeBatchId,
+            activeFreezeBatchRowId,
+            activeFreezePaperSheetNumber,
+            activeFreezeLineNumber,
+            activeFreezeExplanation,
             cancellationId,
             cancellationBatchId);
     }
@@ -726,7 +842,12 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
         DateTimeOffset recordedAt,
         string entryOrigin,
         string reason,
-        bool changedAfterClose = false)
+        bool changedAfterClose = false,
+        Guid? entryBatchId = null,
+        Guid? entryBatchRowId = null,
+        string? paperSheetNumber = null,
+        int? lineNumber = null,
+        string? paperExplanation = null)
     {
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
@@ -779,10 +900,22 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
         command.Parameters.AddWithValue("id", auditId);
         command.Parameters.AddWithValue("action_type", actionType);
         command.Parameters.AddWithValue("freeze_id", freezeId);
+        object relatedEntityRefs = entryBatchRowId is null
+            ? new { ClientId = clientId, fixture.MembershipId }
+            : new
+            {
+                ClientId = clientId,
+                fixture.MembershipId,
+                EntryBatchId = entryBatchId,
+                EntryBatchRowId = entryBatchRowId,
+                PaperSheetNumber = paperSheetNumber,
+                LineNumber = lineNumber,
+                PaperExplanation = paperExplanation,
+            };
         command.Parameters.Add(
             "related_entity_refs",
             NpgsqlDbType.Jsonb).Value = JsonSerializer.Serialize(
-                new { ClientId = clientId, fixture.MembershipId },
+                relatedEntityRefs,
                 AuditJsonOptions);
         command.Parameters.AddWithValue(
             "actor_account_id",
@@ -812,6 +945,22 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
         command.CommandText =
             "delete from bodylife.freeze_cancellations where id = @id";
         command.Parameters.AddWithValue("id", cancellationId);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task DeletePaperLinkAsync(
+        PostgreSqlTestDatabase database,
+        Guid rowId)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            delete from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = @row_id
+            """;
+        command.Parameters.AddWithValue("row_id", rowId);
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
 
@@ -887,6 +1036,10 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
         Guid CanceledFreezeId,
         Guid ActiveFreezeId,
         Guid ActiveFreezeBatchId,
+        Guid ActiveFreezeBatchRowId,
+        string ActiveFreezePaperSheetNumber,
+        int ActiveFreezeLineNumber,
+        string ActiveFreezeExplanation,
         Guid CancellationId,
         Guid CancellationBatchId);
 

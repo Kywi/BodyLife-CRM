@@ -255,6 +255,62 @@ public sealed class ClientHistoryRowPresenterTests
     }
 
     [Fact]
+    public void PaperFreezeShowsLocalizedSheetLineExplanationAndRowIdentifier()
+    {
+        var source = CreateFreezeAddedRow();
+
+        var english = Present(source, WebCultures.English);
+        var ukrainian = Present(source, WebCultures.Ukrainian);
+
+        Assert.Equal(
+            "FREEZE-SHEET-001",
+            FactValue(english.Facts, "Paper sheet"));
+        Assert.Equal("23", FactValue(english.Facts, "Line number"));
+        Assert.Equal("Freeze", FactValue(english.Facts, "Event type"));
+        Assert.Equal(
+            "Recovered paper Freeze",
+            FactValue(english.Facts, "Explanation"));
+        Assert.Equal(
+            Id(140).ToString(),
+            FactValue(english.Identifiers, "Entry batch row ID"));
+
+        Assert.Equal(
+            "FREEZE-SHEET-001",
+            FactValue(ukrainian.Facts, "Паперовий аркуш"));
+        Assert.Equal("23", FactValue(ukrainian.Facts, "Номер рядка"));
+        Assert.Equal("Заморозка", FactValue(ukrainian.Facts, "Тип події"));
+        Assert.Equal(
+            "Recovered paper Freeze",
+            FactValue(ukrainian.Facts, "Пояснення"));
+        Assert.Equal(
+            Id(140).ToString(),
+            FactValue(ukrainian.Identifiers, "ID рядка пакета внесення"));
+    }
+
+    [Fact]
+    public void PaperFreezeWithoutCanonicalRowReferenceFailsClosed()
+    {
+        var row = CreateFreezeAddedRow();
+        row = row with
+        {
+            FreezeSourceRow = row.FreezeSourceRow! with
+            {
+                AddedFreeze = row.FreezeSourceRow.AddedFreeze! with
+                {
+                    PaperReference = null,
+                },
+            },
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => Present(row, WebCultures.English));
+
+        Assert.Equal(
+            "Paper Freeze history provenance is inconsistent.",
+            exception.Message);
+    }
+
+    [Fact]
     public void PaperVisitShowsLocalizedSheetLineExplanationAndRowIdentifier()
     {
         var source = CreateVisitMarkedRow();
@@ -891,7 +947,15 @@ public sealed class ClientHistoryRowPresenterTests
         var freeze = Freeze(
             Id(40),
             FreezeCancellationSourceStatus.Active,
-            currentCancellationId: null);
+            currentCancellationId: null,
+            paperReference: new PaperFallbackEntryRowReference(
+                BatchId,
+                Id(140),
+                "FREEZE-SHEET-001",
+                23,
+                PaperFallbackEventType.Freeze,
+                OccurredAt,
+                "Recovered paper Freeze"));
         var audit = Audit(freeze.FreezeId);
         var source = new ClientFreezeHistorySourceRow(
             ClientFreezeHistorySourceKind.AddedFreeze,
@@ -943,7 +1007,8 @@ public sealed class ClientHistoryRowPresenterTests
     private static FreezeHistorySource Freeze(
         Guid freezeId,
         FreezeCancellationSourceStatus status,
-        Guid? currentCancellationId) => new(
+        Guid? currentCancellationId,
+        PaperFallbackEntryRowReference? paperReference = null) => new(
             freezeId,
             ClientId,
             MembershipId,
@@ -957,7 +1022,8 @@ public sealed class ClientHistoryRowPresenterTests
             EntryOrigin.PaperFallback,
             BatchId,
             status,
-            currentCancellationId);
+            currentCancellationId,
+            paperReference);
 
     private static ClientHistorySourceRow CreateNonWorkingDayAddedRow()
     {

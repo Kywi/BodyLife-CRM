@@ -383,16 +383,68 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
 
     private ClientHistoryRowViewModel Freeze(
         ClientHistorySourceRow row,
-        FreezeHistorySource source) => Row(
+        FreezeHistorySource source)
+    {
+        var paperReference = source.PaperReference;
+        if (row.EntryOrigin == EntryOrigin.PaperFallback)
+        {
+            if (paperReference is null
+                || paperReference.EventType != PaperFallbackEventType.Freeze
+                || paperReference.EntryBatchId != source.EntryBatchId
+                || paperReference.EntryBatchRowId == Guid.Empty
+                || string.IsNullOrWhiteSpace(paperReference.PaperSheetNumber)
+                || paperReference.PaperSheetNumber
+                    != paperReference.PaperSheetNumber.Trim().ToUpperInvariant()
+                || paperReference.LineNumber <= 0
+                || string.IsNullOrWhiteSpace(paperReference.Explanation)
+                || paperReference.Explanation != paperReference.Explanation.Trim()
+                || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                    paperReference.OccurredAt,
+                    source.OccurredAt))
+            {
+                throw new InvalidOperationException(
+                    "Paper Freeze history provenance is inconsistent.");
+            }
+        }
+        else if (paperReference is not null)
+        {
+            throw new InvalidOperationException(
+                "A non-paper Freeze cannot include paper row provenance.");
+        }
+
+        var facts = FreezeFacts(source).ToList();
+        if (paperReference is not null)
+        {
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("PaperSheet"),
+                paperReference.PaperSheetNumber));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("LineNumber"),
+                presentation.Number(paperReference.LineNumber)));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("EventType"),
+                presentation.Text("PaperFallback.EventType.freeze")));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("Explanation"),
+                paperReference.Explanation));
+        }
+
+        return Row(
             row,
             "Freeze",
             "history-group-freeze",
             "FreezeAdded",
             FreezeStatus(source.CurrentStatus),
-            FreezeFacts(source),
+            facts.AsReadOnly(),
             change: null,
             source.Reason,
-            FreezeIds(source));
+            Ids(
+                ("Freeze", source.FreezeId),
+                ("Membership", source.MembershipId),
+                ("Cancellation", source.CurrentCancellationId),
+                ("EntryBatch", source.EntryBatchId),
+                ("EntryBatchRow", paperReference?.EntryBatchRowId)));
+    }
 
     private ClientHistoryRowViewModel CanceledFreeze(
         ClientHistorySourceRow row,

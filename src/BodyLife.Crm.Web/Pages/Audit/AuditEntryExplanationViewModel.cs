@@ -1070,6 +1070,11 @@ public sealed class AuditEntryExplanationPresenter(
         var recordedAt = RequireTimestamp(freezeElement, "recordedAt");
         var entryOrigin = RequireString(freezeElement, "entryOrigin");
         var entryBatchId = RequireNullableGuid(freezeElement, "entryBatchId");
+        var paperReference = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            entryBatchId,
+            "Freeze");
         ValidateEntryBatch(entryOrigin, entryBatchId);
 
         if (freeze.FreezeId != entry.EntityId
@@ -1100,6 +1105,47 @@ public sealed class AuditEntryExplanationPresenter(
             beforeMembership.ExtensionDays != afterMembership.ExtensionDays
             || beforeMembership.EffectiveEndDate != afterMembership.EffectiveEndDate;
 
+        List<AuditEntryExplanationFactViewModel> afterFacts =
+        [
+            Fact("Freeze", TimelineModel.ShortId(freeze.FreezeId)),
+            Fact("Client", TimelineModel.ShortId(freeze.ClientId)),
+            Fact("Membership", TimelineModel.ShortId(freeze.MembershipId)),
+            Fact("Period", FreezeRangeLabel(freeze)),
+            Fact(
+                "Inclusive days",
+                Presentation.Days(freeze.InclusiveDays)),
+            Fact("Freeze reason", freeze.Reason),
+            Fact("Occurred", TimelineModel.TimestampLabel(occurredAt)),
+            Fact("Entry origin", StoredEntryOriginLabel(entryOrigin)),
+            Fact(
+                "Entry batch",
+                entryBatchId is { } batchId
+                    ? TimelineModel.ShortId(batchId)
+                    : Presentation.Value("None")),
+            Fact("Source status", StatusLabel(freeze.Status)),
+        ];
+        if (paperReference is not null)
+        {
+            afterFacts.Add(Fact("Paper sheet", paperReference.PaperSheetNumber));
+            afterFacts.Add(Fact(
+                "Paper row",
+                TimelineModel.ShortId(paperReference.EntryBatchRowId)));
+            afterFacts.Add(Fact(
+                "Line number",
+                Presentation.Number(paperReference.LineNumber)));
+            afterFacts.Add(Fact(
+                "Event type",
+                Presentation.Text("PaperFallback.EventType.freeze")));
+            afterFacts.Add(Fact("Explanation", paperReference.Explanation));
+        }
+
+        afterFacts.Add(Fact(
+            "Extension days",
+            Presentation.Days(afterMembership.ExtensionDays)));
+        afterFacts.Add(Fact(
+            "Effective end",
+            DateLabel(afterMembership.EffectiveEndDate)));
+
         return CreateExplanation("FreezeAdded",
             "freeze-added",
             [
@@ -1110,28 +1156,7 @@ public sealed class AuditEntryExplanationPresenter(
                     Presentation.Days(beforeMembership.ExtensionDays)),
                 Fact("Effective end", DateLabel(beforeMembership.EffectiveEndDate)),
             ],
-            [
-                Fact("Freeze", TimelineModel.ShortId(freeze.FreezeId)),
-                Fact("Client", TimelineModel.ShortId(freeze.ClientId)),
-                Fact("Membership", TimelineModel.ShortId(freeze.MembershipId)),
-                Fact("Period", FreezeRangeLabel(freeze)),
-                Fact(
-                    "Inclusive days",
-                    Presentation.Days(freeze.InclusiveDays)),
-                Fact("Freeze reason", freeze.Reason),
-                Fact("Occurred", TimelineModel.TimestampLabel(occurredAt)),
-                Fact("Entry origin", StoredEntryOriginLabel(entryOrigin)),
-                Fact(
-                    "Entry batch",
-                    entryBatchId is { } batchId
-                        ? TimelineModel.ShortId(batchId)
-                        : Presentation.Value("None")),
-                Fact("Source status", StatusLabel(freeze.Status)),
-                Fact(
-                    "Extension days",
-                    Presentation.Days(afterMembership.ExtensionDays)),
-                Fact("Effective end", DateLabel(afterMembership.EffectiveEndDate)),
-            ],
+            afterFacts,
             ChangedFields: membershipStateChanged
                 ? JoinChanged("FreezeSource", "MembershipExtensionState")
                 : Presentation.Changed("FreezeSource"),

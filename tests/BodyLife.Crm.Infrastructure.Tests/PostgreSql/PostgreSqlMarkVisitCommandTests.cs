@@ -1086,6 +1086,7 @@ public sealed class PostgreSqlMarkVisitCommandTests
         return new AddFreezeCommandHandler(
             dbContext,
             new BusinessAuditAppender(dbContext),
+            new PaperFallbackEntryRowBinder(dbContext),
             new MembershipFreezeEligibilityPreparer(dbContext, cacheRebuilder),
             new MembershipStateRecalculator(cacheRebuilder),
             new GetMembershipStateQueryHandler(dbContext, timeProvider),
