@@ -61,6 +61,7 @@ public sealed class PostgreSqlPaymentsStorageTests
                 "entry_batch_id",
                 "comment",
                 "status",
+                "negative_closure_id",
             ],
             await ReadColumnNamesAsync(database, "payments"));
         Assert.Equal(
@@ -110,6 +111,7 @@ public sealed class PostgreSqlPaymentsStorageTests
             "ck_payments_currency_canonical",
             "ck_payments_entry_origin",
             "ck_payments_method",
+            "ck_payments_negative_closure_context",
             "ck_payments_payment_context",
             "ck_payments_status",
         ];

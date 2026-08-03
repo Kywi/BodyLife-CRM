@@ -2944,7 +2944,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 ownerDeviceLabel,
                 eventBase.AddHours(3),
                 membershipIssuedAt,
-                "normal",
+                "manual_backfill",
                 Reason: null,
                 "UI smoke issued snapshot",
                 new { },
@@ -3259,7 +3259,10 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         int visitsLimitSnapshot,
         DateOnly? startDate = null,
         int durationDays = 30,
-        DateTimeOffset? issuedAt = null)
+        DateTimeOffset? issuedAt = null,
+        DateOnly? openingAsOfDate = null,
+        int? openingDeclaredRemainingVisits = null,
+        int openingDeclaredNegativeBalance = 0)
     {
         if (durationDays <= 0)
         {
@@ -3275,6 +3278,18 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             ?? BusinessTimeZone.GetBusinessDate(now).AddDays(-7);
         var canonicalIssuedAt = issuedAt ?? now.AddDays(-7);
         var canonicalBaseEndDate = canonicalStartDate.AddDays(durationDays - 1);
+        var canonicalOpeningAsOfDate = openingAsOfDate ?? canonicalStartDate;
+        var canonicalOpeningRemainingVisits = openingDeclaredRemainingVisits
+            ?? visitsLimitSnapshot;
+        if (openingDeclaredNegativeBalance != Math.Max(
+                0,
+                -canonicalOpeningRemainingVisits))
+        {
+            throw new ArgumentException(
+                "Opening remaining visits and negative balance must describe the same state.",
+                nameof(openingDeclaredNegativeBalance));
+        }
+
         var openingStateId = Guid.NewGuid();
         var openingSessionId = Guid.NewGuid();
 
@@ -3335,8 +3350,10 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 recorded_by_account_id, recorded_session_id, entry_origin,
                 entry_batch_id, status)
             values (
-                @opening_state_id, @id, @start_date, @visits_limit_snapshot,
-                0, @base_end_date, 0, 'UI smoke fixture',
+                @opening_state_id, @id, @opening_as_of_date,
+                @opening_declared_remaining_visits,
+                @opening_declared_negative_balance, @base_end_date, 0,
+                'UI smoke fixture',
                 'Historical state required by the UI smoke scenario', @issued_at,
                 @issued_by_account_id, @opening_session_id, 'manual_backfill',
                 null, 'active')
@@ -3349,6 +3366,16 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue("type_name_snapshot", typeNameSnapshot);
         command.Parameters.AddWithValue("duration_days_snapshot", durationDays);
         command.Parameters.AddWithValue("visits_limit_snapshot", visitsLimitSnapshot);
+        command.Parameters.AddWithValue(
+            "opening_as_of_date",
+            NpgsqlDbType.Date,
+            canonicalOpeningAsOfDate);
+        command.Parameters.AddWithValue(
+            "opening_declared_remaining_visits",
+            canonicalOpeningRemainingVisits);
+        command.Parameters.AddWithValue(
+            "opening_declared_negative_balance",
+            openingDeclaredNegativeBalance);
         command.Parameters.AddWithValue(
             "start_date",
             NpgsqlDbType.Date,
@@ -4171,11 +4198,19 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             update bodylife.issued_memberships
             set start_date = @start_date,
                 base_end_date = @start_date + (duration_days_snapshot - 1)
-            where id = @membership_id
+            where id = @membership_id;
+
+            update bodylife.membership_opening_states opening_state
+            set opening_as_of_date = @start_date,
+                known_effective_end_date = membership.base_end_date
+            from bodylife.issued_memberships membership
+            where membership.id = @membership_id
+              and opening_state.membership_id = membership.id
+              and opening_state.status = 'active'
             """;
         command.Parameters.AddWithValue("membership_id", membershipId);
         command.Parameters.AddWithValue("start_date", NpgsqlDbType.Date, startDate);
-        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
         await RebuildMembershipAsync(membershipId);
     }
 

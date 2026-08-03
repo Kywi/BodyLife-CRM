@@ -182,7 +182,7 @@ public sealed class MembershipTypeEditingSmokeTests : IClassFixture<ReceptionApp
                 page.Locator(EditFormSelector(membershipTypeId)));
             Assert.NotEqual(successfulIdempotencyKey, freshIdempotencyKey);
             Assert.Equal(
-                1,
+                2,
                 await page.Locator(
                     ".membership-type-deactivate-panel button[type='submit']")
                     .CountAsync());

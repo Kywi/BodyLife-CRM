@@ -1442,13 +1442,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "Negative opening plan",
             visitsLimitSnapshot: 8,
             startDate: asOfDate.AddDays(-30),
-            durationDays: 90);
-        await database.SeedNegativeMembershipOpeningStateAsync(
-            _ownerAccountId,
-            openingMembershipId,
-            asOfDate.AddDays(-1),
-            declaredRemainingVisits: -1,
-            declaredNegativeBalance: 1);
+            durationDays: 90,
+            openingAsOfDate: asOfDate.AddDays(-1),
+            openingDeclaredRemainingVisits: -1,
+            openingDeclaredNegativeBalance: 1);
 
         return new NegativeClientsReportSmokeScenario(
             asOfDate,

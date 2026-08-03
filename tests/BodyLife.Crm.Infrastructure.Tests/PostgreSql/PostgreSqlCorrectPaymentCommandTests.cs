@@ -957,18 +957,189 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         decimal amount)
     {
         var paymentId = Guid.NewGuid();
+        var negativeClosureId = Guid.NewGuid();
+        var oldestNegativeVisitId = Guid.NewGuid();
+        var oldConsumptionId = Guid.NewGuid();
+        var oneOffTypeId = Guid.NewGuid();
+        var closureLineId = Guid.NewGuid();
+        var closureItemId = Guid.NewGuid();
         var storedContext = paymentContext == PaymentContext.NegativeClosure
             ? "negative_closure"
             : throw new ArgumentOutOfRangeException(nameof(paymentContext));
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             """
+            insert into bodylife.membership_types (
+                id,
+                name,
+                kind,
+                duration_days,
+                visits_limit,
+                price_amount,
+                price_currency,
+                is_active,
+                comment,
+                created_at,
+                updated_at,
+                deactivated_at)
+            values (
+                @one_off_type_id,
+                'Negative closure fixture',
+                'one_off',
+                1,
+                1,
+                @amount,
+                'UAH',
+                true,
+                null,
+                @recorded_at,
+                @recorded_at,
+                null);
+
+            insert into bodylife.visits (
+                id,
+                client_id,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                visit_kind,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status)
+            values (
+                @oldest_negative_visit_id,
+                @client_id,
+                @occurred_at,
+                @recorded_at,
+                @account_id,
+                @session_id,
+                'membership',
+                'normal',
+                null,
+                'Negative closure source',
+                'active');
+
+            insert into bodylife.visit_consumptions (
+                id,
+                visit_id,
+                client_id,
+                visit_kind,
+                membership_id,
+                consumption_type,
+                source_fact_type,
+                source_fact_id,
+                recorded_at,
+                recorded_by_account_id,
+                recorded_session_id,
+                status)
+            values (
+                @old_consumption_id,
+                @oldest_negative_visit_id,
+                @client_id,
+                'membership',
+                @source_membership_id,
+                'counted',
+                'visit',
+                @oldest_negative_visit_id,
+                @recorded_at,
+                @account_id,
+                @session_id,
+                'active');
+
+            insert into bodylife.membership_negative_closures (
+                id,
+                client_id,
+                closure_type,
+                covering_membership_id,
+                oldest_open_negative_visit_id,
+                visits_count,
+                comment,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                entry_origin,
+                entry_batch_id,
+                idempotency_key,
+                status)
+            values (
+                @negative_closure_id,
+                @client_id,
+                'one_off',
+                null,
+                @oldest_negative_visit_id,
+                1,
+                'Negative closure source',
+                @occurred_at,
+                @recorded_at,
+                @account_id,
+                @session_id,
+                'normal',
+                null,
+                @closure_idempotency_key,
+                'active');
+
+            insert into bodylife.membership_negative_closure_lines (
+                id,
+                negative_closure_id,
+                membership_type_id,
+                type_name_snapshot,
+                duration_days_snapshot,
+                visits_limit_snapshot,
+                quantity,
+                unit_price_amount_snapshot,
+                currency_snapshot,
+                line_total,
+                sequence)
+            values (
+                @closure_line_id,
+                @negative_closure_id,
+                @one_off_type_id,
+                'Negative closure fixture',
+                1,
+                1,
+                1,
+                @amount,
+                'UAH',
+                @amount,
+                1);
+
+            insert into bodylife.membership_negative_closure_items (
+                id,
+                negative_closure_id,
+                client_id,
+                closure_line_id,
+                sequence,
+                visit_id,
+                source_membership_id,
+                old_consumption_id,
+                covering_membership_id,
+                new_consumption_id,
+                status)
+            values (
+                @closure_item_id,
+                @negative_closure_id,
+                @client_id,
+                @closure_line_id,
+                1,
+                @oldest_negative_visit_id,
+                @source_membership_id,
+                @old_consumption_id,
+                null,
+                null,
+                'active');
+
             insert into bodylife.payments (
                 id,
                 client_id,
                 membership_id,
+                negative_closure_id,
                 amount,
                 currency,
                 method,
@@ -984,7 +1155,8 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             values (
                 @id,
                 @client_id,
-                @membership_id,
+                null,
+                @negative_closure_id,
                 @amount,
                 'UAH',
                 'cash',
@@ -999,15 +1171,25 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                 'active')
             """;
         command.Parameters.AddWithValue("id", paymentId);
+        command.Parameters.AddWithValue("negative_closure_id", negativeClosureId);
+        command.Parameters.AddWithValue("oldest_negative_visit_id", oldestNegativeVisitId);
+        command.Parameters.AddWithValue("old_consumption_id", oldConsumptionId);
+        command.Parameters.AddWithValue("one_off_type_id", oneOffTypeId);
+        command.Parameters.AddWithValue("closure_line_id", closureLineId);
+        command.Parameters.AddWithValue("closure_item_id", closureItemId);
         command.Parameters.AddWithValue("client_id", fixture.ClientId);
-        command.Parameters.AddWithValue("membership_id", fixture.MembershipId);
+        command.Parameters.AddWithValue("source_membership_id", fixture.MembershipId);
         command.Parameters.AddWithValue("amount", amount);
         command.Parameters.AddWithValue("payment_context", storedContext);
         command.Parameters.AddWithValue("occurred_at", OriginalOccurredAt.AddMinutes(30));
         command.Parameters.AddWithValue("recorded_at", TestNow.AddHours(-1));
         command.Parameters.AddWithValue("account_id", fixture.Owner.AccountId.Value);
         command.Parameters.AddWithValue("session_id", fixture.Owner.SessionId.Value);
-        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        command.Parameters.AddWithValue(
+            "closure_idempotency_key",
+            $"correct-payment-fixture-{negativeClosureId:N}");
+        Assert.Equal(7, await command.ExecuteNonQueryAsync());
+        await transaction.CommitAsync();
         return paymentId;
     }
 

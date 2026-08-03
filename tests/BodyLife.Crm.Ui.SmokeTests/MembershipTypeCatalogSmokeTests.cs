@@ -61,7 +61,7 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
                 viewportName,
                 "owner permission state");
             await ExpectVisibleAsync(
-                page.GetByText("1 active", new() { Exact = true }),
+                page.GetByText("2 active", new() { Exact = true }),
                 viewportName,
                 "active count");
             await ExpectVisibleAsync(
@@ -70,7 +70,7 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
                 "inactive count");
 
             var rows = page.Locator(".membership-type-row");
-            Assert.Equal(2, await rows.CountAsync());
+            Assert.Equal(3, await rows.CountAsync());
             Assert.Equal("active", await rows.First.GetAttributeAsync("data-membership-type-status"));
             Assert.Equal("inactive", await rows.Last.GetAttributeAsync("data-membership-type-status"));
 
@@ -107,19 +107,27 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
                     System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture));
             Assert.Contains(inactiveTimestamp, await inactiveRow.InnerTextAsync(), StringComparison.Ordinal);
 
-            Assert.Equal(4, await page.Locator("main form").CountAsync());
+            var oneOffRow = FindCatalogRow(page, "Single negative visit");
+            await ExpectVisibleAsync(
+                oneOffRow.GetByText("Active", new() { Exact = true }),
+                viewportName,
+                "one-off lifecycle state");
+            Assert.Contains("1 day", await oneOffRow.InnerTextAsync(), StringComparison.Ordinal);
+            Assert.Contains("125.00 UAH", await oneOffRow.InnerTextAsync(), StringComparison.Ordinal);
+
+            Assert.Equal(6, await page.Locator("main form").CountAsync());
             await ExpectVisibleAsync(
                 page.Locator("#create-membership-type-form"),
                 viewportName,
                 "owner create form");
             Assert.Equal(
-                2,
+                3,
                 await page.Locator(".membership-type-edit-panel").CountAsync());
             Assert.Equal(
-                1,
+                2,
                 await page.Locator(".membership-type-deactivate-panel").CountAsync());
             Assert.Equal(
-                1,
+                2,
                 await page.Locator(
                     ".membership-type-deactivate-panel button[type='submit']")
                     .CountAsync());

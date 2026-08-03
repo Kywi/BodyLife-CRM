@@ -219,11 +219,13 @@ public sealed partial class PostgreSqlGetClientNegativeVisitCoverageQueryTests
 
                 insert into bodylife.membership_negative_closure_corrections (
                     id, original_closure_id, replacement_closure_id, mode, reason,
-                    recorded_at, recorded_by_account_id, session_id, idempotency_key)
+                    occurred_at, recorded_at, recorded_by_account_id, session_id,
+                    entry_origin, entry_batch_id, idempotency_key)
                 values (
                     {Guid.NewGuid()}, {fixture.OneOffClosureId}, null, 'cancel',
-                    'Concurrent snapshot test', {Now}, {fixture.Owner.AccountId.Value},
-                    {fixture.Owner.SessionId.Value}, 'query-concurrent-cancel');
+                    'Concurrent snapshot test', {Now}, {Now},
+                    {fixture.Owner.AccountId.Value}, {fixture.Owner.SessionId.Value},
+                    'normal', null, 'query-concurrent-cancel');
                 """);
             var rebuild = await new MembershipStateCacheRebuilder(
                     correctionContext,

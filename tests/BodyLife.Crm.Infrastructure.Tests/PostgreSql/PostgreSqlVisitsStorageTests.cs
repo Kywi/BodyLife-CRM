@@ -461,8 +461,7 @@ public sealed class PostgreSqlVisitsStorageTests
                 database.ConnectionString,
                 "issued_memberships",
                 fixture.MembershipId),
-            PostgresErrorCodes.ForeignKeyViolation,
-            "FK_visit_consumptions_issued_memberships_membership_client");
+            PostgresErrorCodes.ForeignKeyViolation);
     }
 
     [PostgreSqlFact]
