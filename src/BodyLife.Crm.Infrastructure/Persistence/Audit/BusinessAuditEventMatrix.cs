@@ -55,6 +55,12 @@ internal static class BusinessAuditEventMatrix
             [MembershipAuditActions.Issued] = new(
                 MembershipAuditActions.MembershipEntityType,
                 RequiredPayloadFields.RelatedEntityRefs | CreatesCommandFact),
+            [MembershipAuditActions.Replaced] = new(
+                MembershipAuditActions.MembershipEntityType,
+                CorrectsRelatedCommandFact),
+            [MembershipAuditActions.SaleCanceled] = new(
+                MembershipAuditActions.MembershipEntityType,
+                CorrectsRelatedCommandFact),
             [MembershipAuditActions.OpeningStateCreated] = new(
                 MembershipAuditActions.OpeningStateEntityType,
                 RequiredPayloadFields.RelatedEntityRefs

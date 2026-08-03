@@ -68,6 +68,44 @@ public sealed class PostgreSqlReceptionActivityQueryTests
         Assert.Equal(2L, await database.ExecuteScalarAsync<long>("select count(*) from bodylife.business_audit_entries"));
     }
 
+    [PostgreSqlFact]
+    public async Task IssuedSaleReplacementActivityRequiresCompleteCanonicalRelations()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedAsync(database);
+        var originalMembershipId = Guid.NewGuid();
+        await InsertAuditAsync(
+            database,
+            fixture,
+            Guid.NewGuid(),
+            "membership.replaced",
+            "membership",
+            originalMembershipId,
+            new
+            {
+                ClientId = fixture.ClientId,
+                SaleCorrectionId = Guid.NewGuid(),
+                OriginalMembershipId = originalMembershipId,
+                OriginalPaymentId = Guid.NewGuid(),
+                ReplacementMembershipId = Guid.NewGuid(),
+                ReplacementPaymentId = Guid.NewGuid(),
+                PaymentLifecycleAuditEntryId = Guid.NewGuid(),
+            },
+            TestNow);
+
+        var result = await CreateHandler(
+                dbContext,
+                new StatesStub(EmptyStates(fixture.ClientId)))
+            .ExecuteAsync(
+                new GetReceptionActivityQuery(fixture.Actor, BusinessDate),
+                CancellationToken.None);
+
+        Assert.Equal(GetReceptionActivityStatus.SourceInconsistent, result.Status);
+        Assert.Null(result.Page);
+    }
+
     [Fact]
     public void HmacCursorRejectsTamperingAndBusinessDateMismatch()
     {

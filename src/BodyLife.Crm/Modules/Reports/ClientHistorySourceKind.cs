@@ -14,4 +14,6 @@ public enum ClientHistorySourceKind
     NonWorkingDayAdded,
     NonWorkingDayCorrected,
     NonWorkingDayCanceled,
+    MembershipSaleReplaced,
+    MembershipSaleCanceled,
 }

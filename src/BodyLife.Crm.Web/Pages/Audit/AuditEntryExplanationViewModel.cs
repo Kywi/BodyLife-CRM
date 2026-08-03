@@ -31,6 +31,8 @@ public sealed class AuditEntryExplanationPresenter(
             ["membership_type.edited"] = "membership-type-edited",
             ["membership_type.deactivated"] = "membership-type-deactivated",
             ["membership.issued"] = "membership-issued",
+            ["membership.replaced"] = "membership-sale-replaced",
+            ["membership.sale_canceled"] = "membership-sale-canceled",
             ["membership_opening_state.created"] = "membership-opening-state-created",
             ["membership_negative_closure.created"] = "membership-negative-closure-created",
             ["membership_negative_closure.canceled"] = "membership-negative-closure-canceled",
@@ -171,6 +173,22 @@ public sealed class AuditEntryExplanationPresenter(
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
+                "membership.replaced"
+                    when entry.EntityType == AuditTimelineEntityType.Membership
+                    => CreateMembershipSaleCorrection(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement,
+                        isCancellation: false),
+                "membership.sale_canceled"
+                    when entry.EntityType == AuditTimelineEntityType.Membership
+                    => CreateMembershipSaleCorrection(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement,
+                        isCancellation: true),
                 "membership_opening_state.created"
                     when entry.EntityType == AuditTimelineEntityType.MembershipOpeningState
                     => CreateMembershipOpeningState(
@@ -1018,6 +1036,170 @@ public sealed class AuditEntryExplanationPresenter(
             IsAvailable: true);
     }
 
+    private AuditEntryExplanationViewModel CreateMembershipSaleCorrection(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after,
+        bool isCancellation)
+    {
+        var clientId = RequireGuid(related, "clientId");
+        var saleCorrectionId = RequireGuid(related, "saleCorrectionId");
+        var originalMembershipId = RequireGuid(related, "originalMembershipId");
+        var originalPaymentId = RequireGuid(related, "originalPaymentId");
+        var replacementMembershipId = RequireNullableGuid(
+            related,
+            "replacementMembershipId");
+        var replacementPaymentId = RequireNullableGuid(
+            related,
+            "replacementPaymentId");
+        _ = RequireGuid(related, "paymentLifecycleAuditEntryId");
+        var replacementPaymentCreatedAuditEntryId = RequireNullableGuid(
+            related,
+            "replacementPaymentCreatedAuditEntryId");
+
+        var originalMembership = ReadIssuedSaleMembership(
+            RequireObject(before, "originalMembership"));
+        var originalPayment = ReadIssuedSalePayment(
+            RequireObject(before, "originalPayment"));
+        _ = RequireObject(before, "dependencies");
+
+        var correction = RequireObject(after, "correction");
+        var afterOriginalMembership = ReadIssuedSaleMembership(
+            RequireObject(after, "originalMembership"));
+        var afterOriginalPayment = ReadIssuedSalePayment(
+            RequireObject(after, "originalPayment"));
+        var replacementMembershipElement = RequireNullableObject(
+            after,
+            "replacementMembership");
+        var replacementMembership = replacementMembershipElement is null
+            ? null
+            : ReadIssuedSaleMembership(replacementMembershipElement.Value);
+        var afterReplacementPaymentId = RequireNullableGuid(
+            after,
+            "replacementPaymentId");
+
+        var expectedMode = isCancellation ? "cancel" : "replace";
+        var expectedMembershipStatus = isCancellation ? "canceled" : "corrected";
+        var expectedPaymentStatus = isCancellation ? "canceled" : "replaced";
+        var correctionOccurredAt = RequireTimestamp(correction, "occurredAt");
+        var correctionRecordedAt = RequireTimestamp(correction, "recordedAt");
+        var correctionEntryOrigin = RequireString(correction, "entryOrigin");
+        var correctionReason = RequireString(correction, "reason");
+
+        ValidateIssuedSale(
+            originalMembership,
+            originalPayment,
+            expectedMembershipStatus: "active",
+            expectedPaymentStatus: "active");
+
+        if (entry.EntityId == Guid.Empty
+            || entry.EntityId != originalMembershipId
+            || originalMembership.MembershipId != originalMembershipId
+            || originalPayment.PaymentId != originalPaymentId
+            || originalMembership.ClientId != clientId
+            || RequireGuid(correction, "saleCorrectionId") != saleCorrectionId
+            || RequireString(correction, "mode") != expectedMode
+            || correctionReason != entry.Reason
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                correctionOccurredAt,
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                correctionRecordedAt,
+                entry.RecordedAt)
+            || correctionEntryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || RequireString(correction, "status") != "active"
+            || afterOriginalMembership.Status != expectedMembershipStatus
+            || afterOriginalPayment.Status != expectedPaymentStatus
+            || (afterOriginalMembership with { Status = "active" })
+                != originalMembership
+            || (afterOriginalPayment with { Status = "active" })
+                != originalPayment
+            || afterReplacementPaymentId != replacementPaymentId)
+        {
+            throw new JsonException(
+                "Issued Membership sale correction summary is inconsistent.");
+        }
+
+        if (isCancellation)
+        {
+            if (replacementMembershipId is not null
+                || replacementPaymentId is not null
+                || replacementPaymentCreatedAuditEntryId is not null
+                || replacementMembership is not null)
+            {
+                throw new JsonException(
+                    "Canceled Membership sale cannot contain a replacement.");
+            }
+        }
+        else
+        {
+            if (replacementMembershipId is null
+                || replacementPaymentId is null
+                || replacementPaymentCreatedAuditEntryId is null
+                || replacementMembership is null
+                || replacementMembership.MembershipId != replacementMembershipId
+                || replacementMembership.MembershipId == originalMembershipId
+                || replacementMembership.ClientId != clientId
+                || replacementPaymentId == originalPaymentId
+                || replacementMembership.Status != "active"
+                || replacementMembership.EntryOrigin != correctionEntryOrigin
+                || replacementMembership.EntryBatchId is not null
+                || replacementMembership.Comment != entry.Comment
+                || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                    replacementMembership.IssuedAt,
+                    correctionRecordedAt))
+            {
+                throw new JsonException(
+                    "Replacement Membership sale summary is inconsistent.");
+            }
+
+            ValidateIssuedMembership(replacementMembership);
+        }
+
+        List<AuditEntryExplanationFactViewModel> beforeFacts =
+        [
+            .. IssuedSaleMembershipFacts(originalMembership),
+            Fact("Payment record", TimelineModel.ShortId(originalPayment.PaymentId)),
+            Fact("Amount", MoneyLabel(originalPayment.Amount, originalPayment.Currency)),
+            Fact("Occurred", TimelineModel.TimestampLabel(originalPayment.OccurredAt)),
+            Fact("Source status", StatusLabel(originalPayment.Status)),
+        ];
+        List<AuditEntryExplanationFactViewModel> afterFacts =
+        [
+            Fact("Membership", TimelineModel.ShortId(afterOriginalMembership.MembershipId)),
+            Fact("Status", StatusLabel(afterOriginalMembership.Status)),
+            Fact("Payment record", TimelineModel.ShortId(afterOriginalPayment.PaymentId)),
+            Fact("Source status", StatusLabel(afterOriginalPayment.Status)),
+            Fact("Reason comment", correctionReason),
+            Fact("Occurred", TimelineModel.TimestampLabel(correctionOccurredAt)),
+            Fact("Entry origin", StoredEntryOriginLabel(correctionEntryOrigin)),
+        ];
+
+        if (replacementMembership is not null && replacementPaymentId is not null)
+        {
+            afterFacts.AddRange(IssuedSaleMembershipFacts(replacementMembership));
+            afterFacts.Add(Fact(
+                "Payment record",
+                TimelineModel.ShortId(replacementPaymentId.Value)));
+            afterFacts.Add(Fact(
+                "Amount",
+                MoneyLabel(
+                    replacementMembership.PriceAmount,
+                    replacementMembership.PriceCurrency)));
+        }
+
+        return CreateExplanation(
+            isCancellation ? "MembershipSaleCanceled" : "MembershipSaleReplaced",
+            isCancellation
+                ? "membership-sale-canceled"
+                : "membership-sale-replaced",
+            beforeFacts,
+            afterFacts,
+            ChangedFields: JoinChanged("Membership", "PaymentStatus"),
+            IsAvailable: true);
+    }
+
     private AuditEntryExplanationViewModel Unavailable(string kind)
     {
         return CreateExplanation("Unavailable",
@@ -1270,6 +1452,122 @@ public sealed class AuditEntryExplanationPresenter(
             RequireString(payment, "status"));
     }
 
+    private static IssuedSaleMembershipSnapshot ReadIssuedSaleMembership(
+        JsonElement membership)
+    {
+        return new IssuedSaleMembershipSnapshot(
+            RequireGuid(membership, "membershipId"),
+            RequireGuid(membership, "clientId"),
+            RequireGuid(membership, "membershipTypeId"),
+            RequireString(membership, "typeNameSnapshot"),
+            RequirePositiveInt32(membership, "durationDaysSnapshot"),
+            RequireNonNegativeInt32(membership, "visitsLimitSnapshot"),
+            RequireDecimal(membership, "priceAmountSnapshot"),
+            RequireString(membership, "priceCurrencySnapshot"),
+            RequireString(membership, "issuanceMode"),
+            RequireDateOnly(membership, "startDate"),
+            RequireDateOnly(membership, "baseEndDate"),
+            RequireTimestamp(membership, "issuedAt"),
+            RequireString(membership, "status"),
+            RequireString(membership, "entryOrigin"),
+            RequireNullableGuid(membership, "entryBatchId"),
+            RequireNullableString(membership, "comment"));
+    }
+
+    private static IssuedSalePaymentSnapshot ReadIssuedSalePayment(
+        JsonElement payment)
+    {
+        return new IssuedSalePaymentSnapshot(
+            RequireGuid(payment, "paymentId"),
+            RequireGuid(payment, "clientId"),
+            RequireGuid(payment, "membershipId"),
+            RequireDecimal(payment, "amount"),
+            RequireString(payment, "currency"),
+            RequireString(payment, "method"),
+            RequireString(payment, "paymentContext"),
+            RequireTimestamp(payment, "occurredAt"),
+            RequireTimestamp(payment, "recordedAt"),
+            RequireString(payment, "status"),
+            RequireString(payment, "entryOrigin"),
+            RequireNullableGuid(payment, "entryBatchId"),
+            RequireNullableString(payment, "comment"));
+    }
+
+    private void ValidateIssuedSale(
+        IssuedSaleMembershipSnapshot membership,
+        IssuedSalePaymentSnapshot payment,
+        string expectedMembershipStatus,
+        string expectedPaymentStatus)
+    {
+        ValidateIssuedMembership(membership);
+        ValidateEntryBatch(payment.EntryOrigin, payment.EntryBatchId);
+
+        if (membership.Status != expectedMembershipStatus
+            || payment.Status != expectedPaymentStatus
+            || payment.ClientId != membership.ClientId
+            || payment.MembershipId != membership.MembershipId
+            || payment.Amount != membership.PriceAmount
+            || payment.Currency != membership.PriceCurrency
+            || payment.Method != "cash"
+            || payment.PaymentContext != "membership_sale"
+            || payment.EntryOrigin != membership.EntryOrigin
+            || payment.EntryBatchId != membership.EntryBatchId
+            || payment.Comment != membership.Comment
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                payment.RecordedAt,
+                membership.IssuedAt))
+        {
+            throw new JsonException(
+                "Issued Membership and exact sale Payment are inconsistent.");
+        }
+    }
+
+    private void ValidateIssuedMembership(IssuedSaleMembershipSnapshot membership)
+    {
+        ValidateEntryBatch(membership.EntryOrigin, membership.EntryBatchId);
+
+        DateOnly expectedBaseEndDate;
+        try
+        {
+            expectedBaseEndDate = membership.StartDate.AddDays(
+                membership.DurationDays - 1);
+        }
+        catch (ArgumentOutOfRangeException exception)
+        {
+            throw new JsonException(
+                "Issued Membership dates are outside the supported range.",
+                exception);
+        }
+
+        if (membership.IssuanceMode != "sale"
+            || membership.StartDate > membership.BaseEndDate
+            || membership.BaseEndDate != expectedBaseEndDate
+            || membership.PriceCurrency
+                != membership.PriceCurrency.Trim().ToUpperInvariant())
+        {
+            throw new JsonException("Issued Membership sale terms are inconsistent.");
+        }
+    }
+
+    private IReadOnlyList<AuditEntryExplanationFactViewModel>
+        IssuedSaleMembershipFacts(IssuedSaleMembershipSnapshot membership)
+    {
+        return
+        [
+            Fact("Membership", TimelineModel.ShortId(membership.MembershipId)),
+            Fact("Client", TimelineModel.ShortId(membership.ClientId)),
+            Fact("Type snapshot", membership.TypeName),
+            Fact("Duration", Presentation.Days(membership.DurationDays)),
+            Fact("Visit limit", Presentation.Number(membership.VisitsLimit)),
+            Fact(
+                "Snapshot price",
+                MoneyLabel(membership.PriceAmount, membership.PriceCurrency)),
+            Fact("Start date", DateLabel(membership.StartDate)),
+            Fact("Base end date", DateLabel(membership.BaseEndDate)),
+            Fact("Status", StatusLabel(membership.Status)),
+        ];
+    }
+
     private static CreatedPaymentSnapshot ReadCreatedPayment(JsonElement payment)
     {
         var amount = RequireDecimal(payment, "amount");
@@ -1474,6 +1772,7 @@ public sealed class AuditEntryExplanationPresenter(
             "Status" => "Status",
             "Source status" => "SourceStatus",
             "Original status" => "OriginalStatus",
+            "Reason comment" => "ReasonComment",
             "Original fact" => "OriginalFact",
             "Occurred" => "Occurred",
             "Created" => "Created",
@@ -2024,6 +2323,7 @@ public sealed class AuditEntryExplanationPresenter(
         return value switch
         {
             "active" => Presentation.Status("Active"),
+            "corrected" => Presentation.Status("Corrected"),
             "replaced" => Presentation.Status("Replaced"),
             "canceled" => Presentation.Status("Canceled"),
             _ => throw new JsonException("Payment status is not supported."),
@@ -2053,6 +2353,39 @@ public sealed class AuditEntryExplanationPresenter(
         string PaymentContext,
         DateTimeOffset OccurredAt,
         string Status);
+
+    private sealed record IssuedSaleMembershipSnapshot(
+        Guid MembershipId,
+        Guid ClientId,
+        Guid MembershipTypeId,
+        string TypeName,
+        int DurationDays,
+        int VisitsLimit,
+        decimal PriceAmount,
+        string PriceCurrency,
+        string IssuanceMode,
+        DateOnly StartDate,
+        DateOnly BaseEndDate,
+        DateTimeOffset IssuedAt,
+        string Status,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment);
+
+    private sealed record IssuedSalePaymentSnapshot(
+        Guid PaymentId,
+        Guid ClientId,
+        Guid MembershipId,
+        decimal Amount,
+        string Currency,
+        string Method,
+        string PaymentContext,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        string Status,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment);
 
     private sealed record CreatedPaymentSnapshot(
         Guid PaymentId,

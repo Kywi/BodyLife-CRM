@@ -117,6 +117,8 @@
   <data name="Action.membership_type.edited"><value>Тип абонемента змінено</value></data>
   <data name="Action.membership_type.deactivated"><value>Тип абонемента деактивовано</value></data>
   <data name="Action.membership.issued"><value>Абонемент оформлено</value></data>
+  <data name="Action.membership.replaced"><value>Продаж абонемента замінено</value></data>
+  <data name="Action.membership.sale_canceled"><value>Продаж абонемента скасовано</value></data>
   <data name="Action.membership_opening_state.created"><value>Початковий стан створено</value></data>
   <data name="Action.membership_negative_closure.created"><value>Мінусові відвідування погашено</value></data>
   <data name="Action.membership_negative_closure.canceled"><value>Погашення мінусових відвідувань скасовано</value></data>
@@ -144,6 +146,8 @@
   <data name="History.Group.Freeze"><value>Замороження</value></data>
   <data name="History.Group.NonWorkingDay"><value>Неробочий день</value></data>
   <data name="History.MembershipIssued.Title"><value>Абонемент оформлено</value></data>
+  <data name="History.MembershipSaleReplaced.Title"><value>Продаж абонемента замінено</value></data>
+  <data name="History.MembershipSaleCanceled.Title"><value>Продаж абонемента скасовано</value></data>
   <data name="History.OpeningStateRecorded.Title"><value>Початковий стан зафіксовано</value></data>
   <data name="History.VisitMarked.Title"><value>Відвідування зафіксовано</value></data>
   <data name="History.VisitCanceled.Title"><value>Відвідування скасовано</value></data>
@@ -275,6 +279,14 @@
   <data name="Explanation.MembershipIssued.Narrative"><value>Показано умови на момент оформлення та збережений початковий стан абонемента. Пізніші зміни каталогу не переписують цей знімок.</value></data>
   <data name="Explanation.MembershipIssued.Before"><value>До оформлення</value></data>
   <data name="Explanation.MembershipIssued.After"><value>Оформлений абонемент</value></data>
+<data name="Explanation.MembershipSaleReplaced.Title"><value>Початковий продаж збережено, заміну додано</value></data>
+  <data name="Explanation.MembershipSaleReplaced.Narrative"><value>Помилковий абонемент і точний платіж за продаж лишаються в історії зі статусом заміни. Новий точний продаж пов’язано явно; повернення чи різниця ціни не обчислюються.</value></data>
+  <data name="Explanation.MembershipSaleReplaced.Before"><value>Початковий продаж</value></data>
+  <data name="Explanation.MembershipSaleReplaced.After"><value>Продаж-замінник</value></data>
+<data name="Explanation.MembershipSaleCanceled.Title"><value>Продаж абонемента скасовано зі збереженням історії</value></data>
+  <data name="Explanation.MembershipSaleCanceled.Narrative"><value>Початковий абонемент і точний платіж лишаються видимими як скасовані. Причина та дані відповідальності пояснюють зміну; повернення коштів не обчислюється.</value></data>
+  <data name="Explanation.MembershipSaleCanceled.Before"><value>Початковий продаж</value></data>
+  <data name="Explanation.MembershipSaleCanceled.After"><value>Скасування</value></data>
 <data name="Explanation.VisitMarked.Membership.Title"><value>Відвідування за абонементом і списання зафіксовано</value></data>
   <data name="Explanation.VisitMarked.Membership.Narrative"><value>Абонемент вибрано явно. Зараховане списання та збережені значення абонемента до і після надійшли з успішної команди; цей перегляд їх не перераховує.</value></data>
   <data name="Explanation.VisitMarked.Membership.Before"><value>До відвідування</value></data>

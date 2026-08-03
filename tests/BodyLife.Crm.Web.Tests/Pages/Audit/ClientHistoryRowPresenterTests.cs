@@ -50,6 +50,26 @@ public sealed class ClientHistoryRowPresenterTests
             "Абонемент оформлено",
             "Активний факт-джерело");
         yield return RowExpectation(
+            ClientHistorySourceKind.MembershipSaleReplaced,
+            "history-group-membership",
+            "status-warning",
+            "Membership",
+            "Membership sale replaced",
+            "Corrected",
+            "Абонемент",
+            "Продаж абонемента замінено",
+            "Виправлено");
+        yield return RowExpectation(
+            ClientHistorySourceKind.MembershipSaleCanceled,
+            "history-group-membership",
+            "status-canceled",
+            "Membership",
+            "Membership sale canceled",
+            "Canceled",
+            "Абонемент",
+            "Продаж абонемента скасовано",
+            "Скасовано");
+        yield return RowExpectation(
             ClientHistorySourceKind.MembershipOpeningStateCreated,
             "history-group-opening",
             "status-warning",
@@ -437,6 +457,10 @@ public sealed class ClientHistoryRowPresenterTests
     private static ClientHistorySourceRow CreateRow(ClientHistorySourceKind kind) => kind switch
     {
         ClientHistorySourceKind.MembershipIssued => CreateMembershipIssuedRow(),
+        ClientHistorySourceKind.MembershipSaleReplaced =>
+            CreateMembershipSaleLifecycleRow(isCancellation: false),
+        ClientHistorySourceKind.MembershipSaleCanceled =>
+            CreateMembershipSaleLifecycleRow(isCancellation: true),
         ClientHistorySourceKind.MembershipOpeningStateCreated => CreateMembershipOpeningRow(),
         ClientHistorySourceKind.VisitMarked => CreateVisitMarkedRow(),
         ClientHistorySourceKind.VisitCanceled => CreateVisitCanceledRow(),
@@ -521,6 +545,28 @@ public sealed class ClientHistoryRowPresenterTests
             ClientHistorySourceKind.MembershipOpeningStateCreated,
             audit,
             membership: source);
+    }
+
+    private static ClientHistorySourceRow CreateMembershipSaleLifecycleRow(
+        bool isCancellation)
+    {
+        var issued = CreateMembershipIssuedRow();
+        var membershipSource = issued.MembershipSourceRow!;
+        return issued with
+        {
+            Kind = isCancellation
+                ? ClientHistorySourceKind.MembershipSaleCanceled
+                : ClientHistorySourceKind.MembershipSaleReplaced,
+            MembershipSourceRow = membershipSource with
+            {
+                IssuedMembership = membershipSource.IssuedMembership! with
+                {
+                    Status = isCancellation
+                        ? IssuedMembershipLifecycleStatus.Canceled
+                        : IssuedMembershipLifecycleStatus.Corrected,
+                },
+            },
+        };
     }
 
     private static ClientHistorySourceRow CreateVisitMarkedRow()

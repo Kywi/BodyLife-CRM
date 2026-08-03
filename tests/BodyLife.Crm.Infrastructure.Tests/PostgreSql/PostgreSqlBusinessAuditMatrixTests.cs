@@ -39,12 +39,15 @@ public sealed class PostgreSqlBusinessAuditMatrixTests
                 changedAfterClose: true);
         }
 
-        await dbContext.SaveChangesAsync();
-
         var expectedActions = BusinessAuditMatrixTestCases.All
             .Select(item => $"{item.ActionType}|{item.EntityType}")
             .Order(StringComparer.Ordinal)
             .ToArray();
+        Assert.Equal(
+            expectedActions.Length,
+            dbContext.ChangeTracker.Entries().Count());
+        Assert.Equal(expectedActions.Length, await dbContext.SaveChangesAsync());
+
         Assert.Equal(expectedActions, await ReadActionEntitiesAsync(database.ConnectionString));
         Assert.Equal(
             0L,
@@ -70,7 +73,7 @@ public sealed class PostgreSqlBusinessAuditMatrixTests
             rows.Add($"{reader.GetString(0)}|{reader.GetString(1)}");
         }
 
-        return [.. rows];
+        return [.. rows.Order(StringComparer.Ordinal)];
     }
 
     private static async Task<long> CountContractViolationsAsync(

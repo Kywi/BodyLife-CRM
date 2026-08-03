@@ -1001,6 +1001,93 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void MembershipSaleReplacementExplainsPreservedOriginalAndExactReplacement()
+    {
+        var audit = IssuedMembershipSaleAudit(isCancellation: false);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "membership.replaced",
+                    AuditTimelineEntityType.Membership,
+                    audit.OriginalMembershipId,
+                    audit.Before,
+                    audit.After,
+                    related: audit.Related,
+                    occurredAt: audit.CorrectionOccurredAt,
+                    recordedAt: audit.CorrectionRecordedAt)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-sale-replaced", explanation.Kind);
+        Assert.Equal("1,200.00 UAH", FactValue(explanation.BeforeFacts, "Amount"));
+        Assert.Equal(
+            "Correction reason",
+            FactValue(explanation.AfterFacts, "Reason comment"));
+        Assert.Contains(
+            audit.ReplacementMembershipId.ToString("N")[..8],
+            explanation.AfterFacts
+                .Where(fact => fact.Label == "Membership")
+                .Select(fact => fact.Value));
+        Assert.Contains(
+            "Corrected",
+            explanation.AfterFacts
+                .Where(fact => fact.Label == "Status")
+                .Select(fact => fact.Value));
+        Assert.Contains("no refund", explanation.Narrative, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("Membership, Payment status", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void MembershipSaleCancellationExplainsPreservedCanceledFacts()
+    {
+        var audit = IssuedMembershipSaleAudit(isCancellation: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "membership.sale_canceled",
+                    AuditTimelineEntityType.Membership,
+                    audit.OriginalMembershipId,
+                    audit.Before,
+                    audit.After,
+                    related: audit.Related,
+                    occurredAt: audit.CorrectionOccurredAt,
+                    recordedAt: audit.CorrectionRecordedAt)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-sale-canceled", explanation.Kind);
+        Assert.Equal("Canceled", FactValue(explanation.AfterFacts, "Status"));
+        Assert.Equal("Canceled", FactValue(explanation.AfterFacts, "Source status"));
+        Assert.Equal(
+            "Correction reason",
+            FactValue(explanation.AfterFacts, "Reason comment"));
+        Assert.Contains("no refund", explanation.Narrative, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void MembershipSaleReplacementWithMismatchedRelatedPaymentFailsClosed()
+    {
+        var audit = IssuedMembershipSaleAudit(
+            isCancellation: false,
+            mismatchReplacementPayment: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "membership.replaced",
+                    AuditTimelineEntityType.Membership,
+                    audit.OriginalMembershipId,
+                    audit.Before,
+                    audit.After,
+                    related: audit.Related,
+                    occurredAt: audit.CorrectionOccurredAt,
+                    recordedAt: audit.CorrectionRecordedAt)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void MembershipOpeningStateCreationShowsDeclarationAndRecalculatedState()
     {
         var openingStateId = Guid.NewGuid();
@@ -3514,6 +3601,8 @@ public sealed class AuditEntryExplanationViewModelTests
     [InlineData("membership_type.edited", AuditTimelineEntityType.Client)]
     [InlineData("membership_type.deactivated", AuditTimelineEntityType.Client)]
     [InlineData("membership.issued", AuditTimelineEntityType.Client)]
+    [InlineData("membership.replaced", AuditTimelineEntityType.Client)]
+    [InlineData("membership.sale_canceled", AuditTimelineEntityType.Client)]
     [InlineData("non_working_day.corrected", AuditTimelineEntityType.Payment)]
     [InlineData("non_working_day.canceled", AuditTimelineEntityType.Payment)]
     [InlineData("freeze.canceled", AuditTimelineEntityType.Payment)]
@@ -3648,6 +3737,131 @@ public sealed class AuditEntryExplanationViewModelTests
                 RecalculationVersion = 1,
             },
         };
+    }
+
+    private static IssuedMembershipSaleAuditFixture IssuedMembershipSaleAudit(
+        bool isCancellation,
+        bool mismatchReplacementPayment = false)
+    {
+        var originalMembershipId = Guid.NewGuid();
+        var originalPaymentId = Guid.NewGuid();
+        var replacementMembershipId = Guid.NewGuid();
+        var replacementPaymentId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var correctionId = Guid.NewGuid();
+        var issuedAt = OriginalOccurredAt.AddDays(-30);
+        var correctionOccurredAt = OriginalOccurredAt;
+        var correctionRecordedAt = OriginalOccurredAt.AddMinutes(5);
+        var originalMembership = new IssuedSaleMembershipAuditFixture(
+            originalMembershipId,
+            clientId,
+            Guid.NewGuid(),
+            "Eight visits / 30 days",
+            30,
+            8,
+            1200m,
+            "UAH",
+            "sale",
+            new DateOnly(2026, 7, 1),
+            new DateOnly(2026, 7, 30),
+            issuedAt,
+            "active",
+            "normal",
+            EntryBatchId: null,
+            "Original sale");
+        var originalPayment = new PaymentAuditFixture(
+            originalPaymentId,
+            clientId,
+            originalMembershipId,
+            1200m,
+            "UAH",
+            "cash",
+            "membership_sale",
+            issuedAt.AddMinutes(-5),
+            issuedAt,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "normal",
+            EntryBatchId: null,
+            "Original sale",
+            "active");
+        var replacementMembership = new IssuedSaleMembershipAuditFixture(
+            replacementMembershipId,
+            clientId,
+            Guid.NewGuid(),
+            "Twelve visits / 45 days",
+            45,
+            12,
+            1700m,
+            "UAH",
+            "sale",
+            new DateOnly(2026, 8, 1),
+            new DateOnly(2026, 9, 14),
+            correctionRecordedAt,
+            "active",
+            "normal",
+            EntryBatchId: null,
+            "Correction comment");
+        var relatedReplacementPaymentId = mismatchReplacementPayment
+            ? Guid.NewGuid()
+            : replacementPaymentId;
+        var related = new
+        {
+            ClientId = clientId,
+            SaleCorrectionId = correctionId,
+            OriginalMembershipId = originalMembershipId,
+            OriginalPaymentId = originalPaymentId,
+            ReplacementMembershipId = isCancellation
+                ? (Guid?)null
+                : replacementMembershipId,
+            ReplacementPaymentId = isCancellation
+                ? (Guid?)null
+                : relatedReplacementPaymentId,
+            PaymentLifecycleAuditEntryId = Guid.NewGuid(),
+            ReplacementPaymentCreatedAuditEntryId = isCancellation
+                ? (Guid?)null
+                : Guid.NewGuid(),
+        };
+        var before = new
+        {
+            OriginalMembership = originalMembership,
+            OriginalPayment = originalPayment,
+            Dependencies = new { HasDependencies = false },
+        };
+        var after = new
+        {
+            Correction = new
+            {
+                SaleCorrectionId = correctionId,
+                Mode = isCancellation ? "cancel" : "replace",
+                Reason = "Correction reason",
+                OccurredAt = correctionOccurredAt,
+                RecordedAt = correctionRecordedAt,
+                EntryOrigin = "normal",
+                Status = "active",
+            },
+            OriginalMembership = originalMembership with
+            {
+                Status = isCancellation ? "canceled" : "corrected",
+            },
+            OriginalPayment = originalPayment with
+            {
+                Status = isCancellation ? "canceled" : "replaced",
+            },
+            ReplacementMembership = isCancellation ? null : replacementMembership,
+            ReplacementPaymentId = isCancellation
+                ? (Guid?)null
+                : replacementPaymentId,
+        };
+
+        return new IssuedMembershipSaleAuditFixture(
+            originalMembershipId,
+            replacementMembershipId,
+            correctionOccurredAt,
+            correctionRecordedAt,
+            related,
+            before,
+            after);
     }
 
     private static object MembershipOpeningStateCreationSummary(
@@ -4363,6 +4577,33 @@ public sealed class AuditEntryExplanationViewModelTests
         Guid? EntryBatchId,
         string? Comment,
         string Status);
+
+    private sealed record IssuedSaleMembershipAuditFixture(
+        Guid MembershipId,
+        Guid ClientId,
+        Guid MembershipTypeId,
+        string TypeNameSnapshot,
+        int DurationDaysSnapshot,
+        int VisitsLimitSnapshot,
+        decimal PriceAmountSnapshot,
+        string PriceCurrencySnapshot,
+        string IssuanceMode,
+        DateOnly StartDate,
+        DateOnly BaseEndDate,
+        DateTimeOffset IssuedAt,
+        string Status,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment);
+
+    private sealed record IssuedMembershipSaleAuditFixture(
+        Guid OriginalMembershipId,
+        Guid ReplacementMembershipId,
+        DateTimeOffset CorrectionOccurredAt,
+        DateTimeOffset CorrectionRecordedAt,
+        object Related,
+        object Before,
+        object After);
 
     private sealed record MembershipTypeAuditFixture(
         string Name,

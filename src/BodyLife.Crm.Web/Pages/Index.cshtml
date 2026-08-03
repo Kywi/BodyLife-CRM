@@ -124,6 +124,6 @@
     }
     private static string FormatMoney(decimal amount, CultureInfo culture) => decimal.Truncate(amount) == amount ? amount.ToString("N0", culture) : amount.ToString("N2", culture);
     private static string MembershipTone(ReceptionActivityMembershipCandidate state) => state.Warnings.Any(warning => warning.Severity == MembershipWarningSeverity.Danger) ? "activity-danger" : state.Warnings.Count > 0 ? "activity-warning" : "activity-success";
-    private static bool IsCancellation(ReceptionActivityEventType type) => type is ReceptionActivityEventType.VisitCanceled or ReceptionActivityEventType.PaymentCanceled or ReceptionActivityEventType.FreezeCanceled;
+    private static bool IsCancellation(ReceptionActivityEventType type) => type is ReceptionActivityEventType.VisitCanceled or ReceptionActivityEventType.PaymentCanceled or ReceptionActivityEventType.FreezeCanceled or ReceptionActivityEventType.MembershipSaleCanceled;
     private static string ActivityTone(ReceptionActivityItem item) => IsCancellation(item.EventType) ? "activity-tone-danger" : item.MembershipState.SelectionStatus == ReceptionActivityMembershipSelectionStatus.Ambiguous || item.IsCorrectionOrCancellation ? "activity-tone-warning" : item.MembershipState.TimelineState?.Warnings.Any(warning => warning.Severity == MembershipWarningSeverity.Danger) == true ? "activity-tone-danger" : item.MembershipState.TimelineState?.Warnings.Any() == true ? "activity-tone-warning" : item.EntryOrigin != EntryOrigin.Normal || item.ChangedAfterClose ? "activity-tone-info" : "activity-tone-success";
 }

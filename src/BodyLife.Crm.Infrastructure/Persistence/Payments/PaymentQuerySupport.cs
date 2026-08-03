@@ -12,6 +12,8 @@ internal static class PaymentQuerySupport
 {
     private const string ActiveStatus = "active";
     private const string CanceledStatus = "canceled";
+    private const string MembershipSaleChangedFieldsJson =
+        "[\"membership_sale\"]";
     private const string NegativeCoverageChangedFieldsJson =
         "[\"negative_coverage\"]";
     private const string ReplacedStatus = "replaced";
@@ -52,6 +54,8 @@ internal static class PaymentQuerySupport
         }
 
         var genericCorrections = new Dictionary<Guid, CanonicalPaymentCorrectionSourceRow>();
+        var saleCorrections = new Dictionary<Guid, CanonicalPaymentCorrectionSourceRow>();
+        var saleCancellations = new Dictionary<Guid, CanonicalPaymentCancellationSourceRow>();
         var negativeCorrections = new Dictionary<Guid, CanonicalPaymentCorrectionSourceRow>();
         var negativeCancellations = new Dictionary<Guid, CanonicalPaymentCancellationSourceRow>();
         var previousPaymentCount = -1;
@@ -84,6 +88,71 @@ internal static class PaymentQuerySupport
                 genericCorrections[row.CorrectionId] = row;
                 relevantPaymentIds.Add(row.OriginalPaymentId);
                 relevantPaymentIds.Add(row.ReplacementPaymentId);
+            }
+
+            var issuedSaleRows = await dbContext
+                .Set<IssuedMembershipSaleCorrectionRecord>()
+                .AsNoTracking()
+                .Where(correction =>
+                    lookupPaymentIds.Contains(correction.OriginalPaymentId)
+                    || correction.ReplacementPaymentId != null
+                        && lookupPaymentIds.Contains(
+                            correction.ReplacementPaymentId.Value))
+                .ToArrayAsync(cancellationToken);
+            foreach (var correction in issuedSaleRows)
+            {
+                if (correction.Status != ActiveStatus
+                    || string.IsNullOrWhiteSpace(correction.Reason))
+                {
+                    return null;
+                }
+
+                if (correction.CorrectionMode == "cancel")
+                {
+                    if (correction.ReplacementMembershipId is not null
+                        || correction.ReplacementPaymentId is not null)
+                    {
+                        return null;
+                    }
+
+                    saleCancellations[correction.Id] =
+                        new CanonicalPaymentCancellationSourceRow(
+                            correction.Id,
+                            correction.OriginalPaymentId,
+                            correction.Reason,
+                            correction.OccurredAt,
+                            correction.RecordedAt,
+                            correction.RecordedByAccountId,
+                            correction.SessionId,
+                            correction.EntryOrigin,
+                            EntryBatchId: null);
+                    relevantPaymentIds.Add(correction.OriginalPaymentId);
+                    continue;
+                }
+
+                if (correction.CorrectionMode != "replace"
+                    || correction.ReplacementMembershipId is null
+                    || correction.ReplacementPaymentId is not { } replacementPaymentId)
+                {
+                    return null;
+                }
+
+                saleCorrections[correction.Id] =
+                    new CanonicalPaymentCorrectionSourceRow(
+                        correction.Id,
+                        correction.ClientId,
+                        correction.OriginalPaymentId,
+                        replacementPaymentId,
+                        MembershipSaleChangedFieldsJson,
+                        correction.Reason,
+                        correction.OccurredAt,
+                        correction.RecordedAt,
+                        correction.RecordedByAccountId,
+                        correction.SessionId,
+                        correction.EntryOrigin,
+                        EntryBatchId: null);
+                relevantPaymentIds.Add(correction.OriginalPaymentId);
+                relevantPaymentIds.Add(replacementPaymentId);
             }
 
             var negativeClosureIds = await dbContext.Set<PaymentRecord>()
@@ -217,9 +286,11 @@ internal static class PaymentQuerySupport
                 cancellation.EntryBatchId))
             .ToArrayAsync(cancellationToken);
         var cancellationRows = genericCancellations
+            .Concat(saleCancellations.Values)
             .Concat(negativeCancellations.Values)
             .ToArray();
         var correctionRows = genericCorrections.Values
+            .Concat(saleCorrections.Values)
             .Concat(negativeCorrections.Values)
             .ToArray();
 

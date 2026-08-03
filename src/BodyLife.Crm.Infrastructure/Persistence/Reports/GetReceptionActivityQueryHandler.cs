@@ -26,6 +26,7 @@ public sealed class GetReceptionActivityQueryHandler(
     {
         ClientAuditActions.Created, ClientAuditActions.Updated, ClientAuditActions.CardAssigned,
         ClientAuditActions.CardChanged, ClientAuditActions.CardCleared, MembershipAuditActions.Issued,
+        MembershipAuditActions.Replaced, MembershipAuditActions.SaleCanceled,
         MembershipAuditActions.OpeningStateCreated, VisitAuditActions.Marked, VisitAuditActions.Canceled,
         PaymentAuditActions.Created, PaymentAuditActions.Corrected, PaymentAuditActions.Canceled,
         FreezeAuditActions.Added, FreezeAuditActions.Canceled,
@@ -152,6 +153,18 @@ public sealed class GetReceptionActivityQueryHandler(
                         && TryAddOptional(json, "previousCardAssignmentId", ReceptionActivityRelatedEntityType.CardAssignment, related),
                 var action when action == MembershipAuditActions.Issued
                     => TryAddOptional(json, "paymentId", ReceptionActivityRelatedEntityType.Payment, related),
+                var action when action == MembershipAuditActions.Replaced
+                    => TryReadIssuedSaleCorrectionRelated(
+                        entry,
+                        json,
+                        isCancellation: false,
+                        related),
+                var action when action == MembershipAuditActions.SaleCanceled
+                    => TryReadIssuedSaleCorrectionRelated(
+                        entry,
+                        json,
+                        isCancellation: true,
+                        related),
                 var action when action == MembershipAuditActions.OpeningStateCreated
                     => TryAddRequired(json, "membershipId", ReceptionActivityRelatedEntityType.Membership, related),
                 var action when action is VisitAuditActions.Marked or VisitAuditActions.Canceled
@@ -171,6 +184,72 @@ public sealed class GetReceptionActivityQueryHandler(
         if (!TryReadGuid(json, property, required: true, out var id)) return false;
         related.Add(new ReceptionActivityRelatedEntity(type, id));
         return true;
+    }
+
+    private static bool TryReadIssuedSaleCorrectionRelated(
+        BusinessAuditEntryRecord entry,
+        JsonElement json,
+        bool isCancellation,
+        List<ReceptionActivityRelatedEntity> related)
+    {
+        if (!TryReadGuid(json, "saleCorrectionId", required: true, out _)
+            || !TryReadGuid(json, "originalMembershipId", required: true, out var originalMembershipId)
+            || originalMembershipId != entry.EntityId
+            || !TryReadGuid(json, "paymentLifecycleAuditEntryId", required: true, out _)
+            || !TryReadGuid(
+                json,
+                "originalPaymentId",
+                required: true,
+                out var originalPaymentId))
+        {
+            return false;
+        }
+
+        related.Add(new ReceptionActivityRelatedEntity(
+            ReceptionActivityRelatedEntityType.Payment,
+            originalPaymentId));
+
+        if (isCancellation)
+        {
+            return IsExplicitNull(json, "replacementMembershipId")
+                && IsExplicitNull(json, "replacementPaymentId")
+                && IsExplicitNull(json, "replacementPaymentCreatedAuditEntryId");
+        }
+
+        if (!TryReadGuid(
+                json,
+                "replacementMembershipId",
+                required: true,
+                out var replacementMembershipId)
+            || replacementMembershipId == originalMembershipId
+            || !TryReadGuid(
+                json,
+                "replacementPaymentId",
+                required: true,
+                out var replacementPaymentId)
+            || replacementPaymentId == originalPaymentId
+            || !TryReadGuid(
+                json,
+                "replacementPaymentCreatedAuditEntryId",
+                required: true,
+                out _))
+        {
+            return false;
+        }
+
+        related.Add(new ReceptionActivityRelatedEntity(
+            ReceptionActivityRelatedEntityType.Membership,
+            replacementMembershipId));
+        related.Add(new ReceptionActivityRelatedEntity(
+            ReceptionActivityRelatedEntityType.Payment,
+            replacementPaymentId));
+        return true;
+    }
+
+    private static bool IsExplicitNull(JsonElement json, string property)
+    {
+        return json.TryGetProperty(property, out var value)
+            && value.ValueKind == JsonValueKind.Null;
     }
 
     private static bool TryAddOptional(JsonElement json, string property, ReceptionActivityRelatedEntityType type, List<ReceptionActivityRelatedEntity> related)
@@ -199,6 +278,8 @@ public sealed class GetReceptionActivityQueryHandler(
             "card.changed" when entity == "client" => ReceptionActivityEventType.CardChanged,
             "card.cleared" when entity == "client" => ReceptionActivityEventType.CardCleared,
             "membership.issued" when entity == "membership" => ReceptionActivityEventType.MembershipIssued,
+            "membership.replaced" when entity == "membership" => ReceptionActivityEventType.MembershipReplaced,
+            "membership.sale_canceled" when entity == "membership" => ReceptionActivityEventType.MembershipSaleCanceled,
             "membership_opening_state.created" when entity == "membership_opening_state" => ReceptionActivityEventType.MembershipOpeningStateCreated,
             "visit.marked" when entity == "visit" => ReceptionActivityEventType.VisitMarked,
             "visit.canceled" when entity == "visit" => ReceptionActivityEventType.VisitCanceled,
@@ -211,7 +292,9 @@ public sealed class GetReceptionActivityQueryHandler(
         };
         correction = type is ReceptionActivityEventType.CardChanged or ReceptionActivityEventType.CardCleared
             or ReceptionActivityEventType.VisitCanceled or ReceptionActivityEventType.PaymentCorrected
-            or ReceptionActivityEventType.PaymentCanceled or ReceptionActivityEventType.FreezeCanceled;
+            or ReceptionActivityEventType.PaymentCanceled or ReceptionActivityEventType.FreezeCanceled
+            or ReceptionActivityEventType.MembershipReplaced
+            or ReceptionActivityEventType.MembershipSaleCanceled;
         return Enum.IsDefined(type);
     }
 

@@ -16,7 +16,7 @@ using NpgsqlTypes;
 
 namespace BodyLife.Crm.Infrastructure.Tests.PostgreSql;
 
-public sealed class PostgreSqlIssueMembershipCommandTests
+public sealed partial class PostgreSqlIssueMembershipCommandTests
 {
     private static readonly DateTimeOffset TestNow = new(
         2026,

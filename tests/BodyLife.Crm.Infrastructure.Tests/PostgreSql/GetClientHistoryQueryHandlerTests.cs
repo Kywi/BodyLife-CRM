@@ -160,6 +160,66 @@ public sealed class GetClientHistoryQueryHandlerTests
             auditEntries[0].AuditEntryId);
     }
 
+    [Theory]
+    [InlineData(
+        MembershipAuditActions.Replaced,
+        ClientHistorySourceKind.MembershipSaleReplaced)]
+    [InlineData(
+        MembershipAuditActions.SaleCanceled,
+        ClientHistorySourceKind.MembershipSaleCanceled)]
+    public async Task MembershipSaleLifecycleMapsToDistinctUnifiedHistoryKind(
+        string actionType,
+        ClientHistorySourceKind expectedKind)
+    {
+        var actor = CreateActor();
+        var clientId = Guid.NewGuid();
+        var auditEntry = CreateAuditEntry(
+            actor,
+            clientId,
+            actionType,
+            ClientAuditEntityFilter.Membership,
+            TestNow);
+        var auditHandler = new StubQueryHandler<
+            GetClientAuditEntriesQuery,
+            GetClientAuditEntriesResult>(query =>
+                GetClientAuditEntriesResult.Succeeded(
+                    ClientAuditEntriesPage.Create(
+                        query.ClientId,
+                        query.OccurredFromInclusive,
+                        query.OccurredBeforeExclusive,
+                        query.EntityFilters ?? [],
+                        query.ActionTypes ?? [],
+                        query.Offset,
+                        [auditEntry],
+                        hasMore: false)));
+        var membershipHandler = CreateMembershipHandler(
+            [CreateMembershipRow(auditEntry, clientId)]);
+        var handler = new GetClientHistoryQueryHandler(
+            auditHandler,
+            membershipHandler,
+            CreateVisitHandler([]),
+            CreatePaymentHandler([]),
+            CreateFreezeHandler([]),
+            CreateNonWorkingDayHandler([]));
+
+        var result = await handler.ExecuteAsync(
+            new GetClientHistoryQuery(
+                actor,
+                clientId,
+                EntityFilters: [ClientHistoryEntityFilter.Membership]),
+            CancellationToken.None);
+
+        Assert.Equal(GetClientHistoryStatus.Success, result.Status);
+        Assert.Equal(expectedKind, Assert.Single(result.Page!.Items).Kind);
+        Assert.Equal(
+            actionType,
+            Assert.Single(auditHandler.Queries).ActionTypes!.Single(
+                selected => selected == actionType));
+        AssertExactSelection(
+            Assert.Single(membershipHandler.Queries),
+            auditEntry.AuditEntryId);
+    }
+
     [Fact]
     public async Task InvalidFiltersAndSourceFailuresReturnNoPartialHistory()
     {

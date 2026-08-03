@@ -128,6 +128,16 @@ public sealed class ClientHistoryPage
                     row,
                     row.MembershipSourceRow,
                     ClientMembershipHistorySourceKind.OpeningState),
+            ClientHistorySourceKind.MembershipSaleReplaced
+                => MatchesSource(
+                    row,
+                    row.MembershipSourceRow,
+                    ClientMembershipHistorySourceKind.IssuedMembership),
+            ClientHistorySourceKind.MembershipSaleCanceled
+                => MatchesSource(
+                    row,
+                    row.MembershipSourceRow,
+                    ClientMembershipHistorySourceKind.IssuedMembership),
             ClientHistorySourceKind.VisitMarked
                 => MatchesSource(
                     row,

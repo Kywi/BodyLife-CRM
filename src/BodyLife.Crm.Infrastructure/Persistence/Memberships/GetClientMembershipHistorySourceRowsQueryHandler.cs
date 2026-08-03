@@ -24,6 +24,8 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
     private static readonly string[] ActionTypes =
     [
         MembershipAuditActions.Issued,
+        MembershipAuditActions.Replaced,
+        MembershipAuditActions.SaleCanceled,
         MembershipAuditActions.OpeningStateCreated,
     ];
 
@@ -60,7 +62,7 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
             || auditPage.Items.Select(item => item.AuditEntryId).Distinct().Count()
                 != auditPage.Items.Count
             || auditPage.Items
-                .GroupBy(item => (item.EntityType, item.EntityId))
+                .GroupBy(item => (item.EntityType, item.EntityId, item.ActionType))
                 .Any(group => group.Count() > 1))
         {
             return GetClientMembershipHistorySourceRowsResult.InconsistentSource();
@@ -69,11 +71,19 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
         var membershipIds = auditPage.Items
             .Where(item => item.EntityType == ClientAuditEntityFilter.Membership)
             .Select(item => item.EntityId)
+            .Distinct()
             .ToArray();
         var openingStateIds = auditPage.Items
             .Where(item =>
                 item.EntityType == ClientAuditEntityFilter.MembershipOpeningState)
             .Select(item => item.EntityId)
+            .ToArray();
+        var correctionMembershipIds = auditPage.Items
+            .Where(item => item.EntityType == ClientAuditEntityFilter.Membership
+                && item.ActionType is MembershipAuditActions.Replaced
+                    or MembershipAuditActions.SaleCanceled)
+            .Select(item => item.EntityId)
+            .Distinct()
             .ToArray();
 
         var membershipRows = membershipIds.Length == 0
@@ -83,6 +93,15 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
                 .Where(membership =>
                     membershipIds.Contains(membership.Id)
                     && membership.ClientId == query.ClientId)
+                .ToArrayAsync(cancellationToken);
+        var correctionRows = correctionMembershipIds.Length == 0
+            ? []
+            : await dbContext.Set<IssuedMembershipSaleCorrectionRecord>()
+                .AsNoTracking()
+                .Where(correction =>
+                    correctionMembershipIds.Contains(
+                        correction.OriginalMembershipId)
+                    && correction.ClientId == query.ClientId)
                 .ToArrayAsync(cancellationToken);
         var openingStateRows = openingStateIds.Length == 0
             ? []
@@ -97,12 +116,15 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
                 .ToArrayAsync(cancellationToken);
 
         if (membershipRows.Length != membershipIds.Length
+            || correctionRows.Length != correctionMembershipIds.Length
             || openingStateRows.Length != openingStateIds.Length)
         {
             return GetClientMembershipHistorySourceRowsResult.InconsistentSource();
         }
 
         var membershipsById = membershipRows.ToDictionary(membership => membership.Id);
+        var correctionsByMembershipId = correctionRows.ToDictionary(
+            correction => correction.OriginalMembershipId);
         var openingStatesById = openingStateRows.ToDictionary(row => row.OpeningState.Id);
         var rows = new List<ClientMembershipHistorySourceRow>(auditPage.Items.Count);
 
@@ -116,7 +138,13 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
                         when membershipsById.TryGetValue(
                             auditEntry.EntityId,
                             out var membership)
-                        => MapIssuedMembership(membership, auditEntry),
+                        => MapIssuedMembership(
+                            membership,
+                            auditEntry,
+                            auditEntry.ActionType == MembershipAuditActions.Issued
+                                ? null
+                                : correctionsByMembershipId.GetValueOrDefault(
+                                    auditEntry.EntityId)),
                     ClientAuditEntityFilter.MembershipOpeningState
                         when openingStatesById.TryGetValue(
                             auditEntry.EntityId,
@@ -154,7 +182,8 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
 
     private static ClientMembershipHistorySourceRow? MapIssuedMembership(
         IssuedMembershipRecord membership,
-        ClientAuditEntry auditEntry)
+        ClientAuditEntry auditEntry,
+        IssuedMembershipSaleCorrectionRecord? correction)
     {
         if (membership.Id == Guid.Empty
             || membership.ClientId == Guid.Empty
@@ -167,14 +196,54 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
             || MembershipDateRules.CalculateBaseEndDate(
                 membership.StartDate,
                 membership.DurationDaysSnapshot) != membership.BaseEndDate
-            || auditEntry.ActionType != MembershipAuditActions.Issued
             || auditEntry.EntityType != ClientAuditEntityFilter.Membership
-            || auditEntry.EntityId != membership.Id
-            || auditEntry.RecordedAt != membership.IssuedAt
-            || auditEntry.ActorAccountId.Value != membership.IssuedByAccountId
-            || auditEntry.EntryOrigin != entryOrigin)
+            || auditEntry.EntityId != membership.Id)
         {
             return null;
+        }
+
+        var eventRecordedAt = membership.IssuedAt;
+        var eventEntryOrigin = entryOrigin;
+        if (auditEntry.ActionType == MembershipAuditActions.Issued)
+        {
+            if (correction is not null
+                || auditEntry.RecordedAt != membership.IssuedAt
+                || auditEntry.ActorAccountId.Value != membership.IssuedByAccountId
+                || auditEntry.EntryOrigin != entryOrigin)
+            {
+                return null;
+            }
+        }
+        else
+        {
+            if (correction is null
+                || correction.Id == Guid.Empty
+                || correction.ClientId != membership.ClientId
+                || correction.OriginalMembershipId != membership.Id
+                || correction.OriginalPaymentId == Guid.Empty
+                || correction.RecordedByAccountId == Guid.Empty
+                || correction.SessionId == Guid.Empty
+                || correction.Status != "active"
+                || string.IsNullOrWhiteSpace(correction.Reason)
+                || !TryMapEntryOrigin(
+                    correction.EntryOrigin,
+                    out eventEntryOrigin)
+                || auditEntry.RecordedAt != correction.RecordedAt
+                || auditEntry.OccurredAt != correction.OccurredAt
+                || auditEntry.ActorAccountId.Value
+                    != correction.RecordedByAccountId
+                || auditEntry.SessionId.Value != correction.SessionId
+                || auditEntry.EntryOrigin != eventEntryOrigin
+                || auditEntry.Reason != correction.Reason
+                || !IsMatchingSaleCorrectionLifecycle(
+                    membership,
+                    correction,
+                    auditEntry.ActionType))
+            {
+                return null;
+            }
+
+            eventRecordedAt = correction.RecordedAt;
         }
 
         var source = new IssuedMembershipHistorySource(
@@ -200,11 +269,36 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
             membership.ClientId,
             membership.Id,
             auditEntry.OccurredAt,
-            membership.IssuedAt,
-            entryOrigin,
+            eventRecordedAt,
+            eventEntryOrigin,
             source,
             OpeningState: null,
             auditEntry);
+    }
+
+    private static bool IsMatchingSaleCorrectionLifecycle(
+        IssuedMembershipRecord membership,
+        IssuedMembershipSaleCorrectionRecord correction,
+        string actionType)
+    {
+        return actionType switch
+        {
+            MembershipAuditActions.Replaced =>
+                correction.CorrectionMode == "replace"
+                && membership.Status == "corrected"
+                && correction.ReplacementMembershipId is { } replacementMembershipId
+                && replacementMembershipId != Guid.Empty
+                && replacementMembershipId != membership.Id
+                && correction.ReplacementPaymentId is { } replacementPaymentId
+                && replacementPaymentId != Guid.Empty
+                && replacementPaymentId != correction.OriginalPaymentId,
+            MembershipAuditActions.SaleCanceled =>
+                correction.CorrectionMode == "cancel"
+                && membership.Status == "canceled"
+                && correction.ReplacementMembershipId is null
+                && correction.ReplacementPaymentId is null,
+            _ => false,
+        };
     }
 
     private static ClientMembershipHistorySourceRow? MapOpeningState(

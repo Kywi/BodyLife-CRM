@@ -130,6 +130,11 @@ public static class ServiceCollectionExtensions
             IBodyLifeQueryHandler<PreviewIssueMembershipQuery, PreviewIssueMembershipResult>,
             PreviewIssueMembershipQueryHandler>();
         services.AddScoped<
+            IBodyLifeQueryHandler<
+                PreviewIssuedMembershipSaleCorrectionQuery,
+                PreviewIssuedMembershipSaleCorrectionResult>,
+            PreviewIssuedMembershipSaleCorrectionQueryHandler>();
+        services.AddScoped<
             IBodyLifeQueryHandler<GetMarkVisitOptionsQuery, GetMarkVisitOptionsResult>,
             GetMarkVisitOptionsQueryHandler>();
         services.AddScoped<
@@ -234,6 +239,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<
             IBodyLifeCommandHandler<CorrectNegativeVisitCoverageCommand>,
             CorrectNegativeVisitCoverageCommandHandler>();
+        services.AddScoped<IssuedMembershipSaleCorrectionCommandExecutor>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<ReplaceIssuedMembershipCommand>,
+            ReplaceIssuedMembershipCommandHandler>();
+        services.AddScoped<
+            IBodyLifeCommandHandler<CancelIssuedMembershipSaleCommand>,
+            CancelIssuedMembershipSaleCommandHandler>();
         services.AddScoped<
             IBodyLifeCommandHandler<MarkVisitCommand>,
             MarkVisitCommandHandler>();

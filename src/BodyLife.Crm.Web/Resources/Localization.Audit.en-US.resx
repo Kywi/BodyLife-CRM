@@ -117,6 +117,8 @@
   <data name="Action.membership_type.edited"><value>Membership type edited</value></data>
   <data name="Action.membership_type.deactivated"><value>Membership type deactivated</value></data>
   <data name="Action.membership.issued"><value>Membership issued</value></data>
+  <data name="Action.membership.replaced"><value>Membership sale replaced</value></data>
+  <data name="Action.membership.sale_canceled"><value>Membership sale canceled</value></data>
   <data name="Action.membership_opening_state.created"><value>Opening state created</value></data>
   <data name="Action.membership_negative_closure.created"><value>Negative visits closed</value></data>
   <data name="Action.membership_negative_closure.canceled"><value>Negative-visit closure canceled</value></data>
@@ -144,6 +146,8 @@
   <data name="History.Group.Freeze"><value>Freeze</value></data>
   <data name="History.Group.NonWorkingDay"><value>Non-working day</value></data>
   <data name="History.MembershipIssued.Title"><value>Membership issued</value></data>
+  <data name="History.MembershipSaleReplaced.Title"><value>Membership sale replaced</value></data>
+  <data name="History.MembershipSaleCanceled.Title"><value>Membership sale canceled</value></data>
   <data name="History.OpeningStateRecorded.Title"><value>Opening state recorded</value></data>
   <data name="History.VisitMarked.Title"><value>Visit marked</value></data>
   <data name="History.VisitCanceled.Title"><value>Visit canceled</value></data>
@@ -275,6 +279,14 @@
   <data name="Explanation.MembershipIssued.Narrative"><value>The issue-time terms and stored initial Membership state are shown. Later MembershipType catalog edits do not rewrite this snapshot.</value></data>
   <data name="Explanation.MembershipIssued.Before"><value>Before issue</value></data>
   <data name="Explanation.MembershipIssued.After"><value>Issued Membership</value></data>
+<data name="Explanation.MembershipSaleReplaced.Title"><value>Original Membership sale preserved; replacement added</value></data>
+  <data name="Explanation.MembershipSaleReplaced.Narrative"><value>The mistaken Membership and exact sale Payment remain in history as replaced. A new exact Membership sale is linked explicitly; no refund or price delta is calculated.</value></data>
+  <data name="Explanation.MembershipSaleReplaced.Before"><value>Original sale</value></data>
+  <data name="Explanation.MembershipSaleReplaced.After"><value>Replacement sale</value></data>
+<data name="Explanation.MembershipSaleCanceled.Title"><value>Membership sale canceled with history preserved</value></data>
+  <data name="Explanation.MembershipSaleCanceled.Narrative"><value>The original Membership and exact sale Payment remain visible as canceled. The reason and accountability metadata explain the change; no refund is calculated.</value></data>
+  <data name="Explanation.MembershipSaleCanceled.Before"><value>Original sale</value></data>
+  <data name="Explanation.MembershipSaleCanceled.After"><value>Cancellation</value></data>
 <data name="Explanation.VisitMarked.Membership.Title"><value>Membership visit and consumption recorded</value></data>
   <data name="Explanation.VisitMarked.Membership.Narrative"><value>The Membership was selected explicitly. The counted consumption and stored before/after Membership values come from the successful command; this view does not recalculate them.</value></data>
   <data name="Explanation.VisitMarked.Membership.Before"><value>Before visit</value></data>

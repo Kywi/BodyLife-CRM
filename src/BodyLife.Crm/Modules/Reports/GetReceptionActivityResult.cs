@@ -28,6 +28,8 @@ public enum ReceptionActivityEventType
     PaymentCanceled,
     FreezeAdded,
     FreezeCanceled,
+    MembershipReplaced,
+    MembershipSaleCanceled,
 }
 
 public enum ReceptionActivityMembershipSelectionStatus

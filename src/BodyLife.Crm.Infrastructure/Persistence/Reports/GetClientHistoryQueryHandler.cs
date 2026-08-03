@@ -361,6 +361,8 @@ public sealed class GetClientHistoryQueryHandler(
                 case ClientHistoryEntityFilter.Membership:
                     entities.Add(ClientAuditEntityFilter.Membership);
                     actions.Add(MembershipAuditActions.Issued);
+                    actions.Add(MembershipAuditActions.Replaced);
+                    actions.Add(MembershipAuditActions.SaleCanceled);
                     break;
                 case ClientHistoryEntityFilter.MembershipOpeningState:
                     entities.Add(ClientAuditEntityFilter.MembershipOpeningState);
@@ -412,6 +414,10 @@ public sealed class GetClientHistoryQueryHandler(
         return (entry.EntityType, entry.ActionType) switch
         {
             (ClientAuditEntityFilter.Membership, MembershipAuditActions.Issued)
+                => ClientHistorySourceGroup.Membership,
+            (ClientAuditEntityFilter.Membership, MembershipAuditActions.Replaced)
+                => ClientHistorySourceGroup.Membership,
+            (ClientAuditEntityFilter.Membership, MembershipAuditActions.SaleCanceled)
                 => ClientHistorySourceGroup.Membership,
             (ClientAuditEntityFilter.MembershipOpeningState,
                 MembershipAuditActions.OpeningStateCreated)
@@ -492,11 +498,18 @@ public sealed class GetClientHistoryQueryHandler(
     private static ClientHistorySourceRow MapMembershipRow(
         ClientMembershipHistorySourceRow row)
     {
-        var kind = row.Kind switch
+        var kind = (row.Kind, row.AuditEntry.ActionType) switch
         {
-            ClientMembershipHistorySourceKind.IssuedMembership
+            (ClientMembershipHistorySourceKind.IssuedMembership,
+                MembershipAuditActions.Issued)
                 => ClientHistorySourceKind.MembershipIssued,
-            ClientMembershipHistorySourceKind.OpeningState
+            (ClientMembershipHistorySourceKind.IssuedMembership,
+                MembershipAuditActions.Replaced)
+                => ClientHistorySourceKind.MembershipSaleReplaced,
+            (ClientMembershipHistorySourceKind.IssuedMembership,
+                MembershipAuditActions.SaleCanceled)
+                => ClientHistorySourceKind.MembershipSaleCanceled,
+            (ClientMembershipHistorySourceKind.OpeningState, _)
                 => ClientHistorySourceKind.MembershipOpeningStateCreated,
             _ => throw new InvalidOperationException(
                 "Unsupported Membership history source kind."),

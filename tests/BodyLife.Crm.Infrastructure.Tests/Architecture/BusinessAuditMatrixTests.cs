@@ -73,7 +73,7 @@ public sealed class BusinessAuditMatrixTests
 
         Assert.Equal(canonicalActions, filterableActions);
         Assert.Equal(canonicalActions, readableActions);
-        Assert.Equal(29, canonicalActions.Length);
+        Assert.Equal(31, canonicalActions.Length);
     }
 
     [Fact]
@@ -282,6 +282,8 @@ internal static class BusinessAuditMatrixTestCases
         new(MembershipTypeAuditActions.Edited, MembershipTypeAuditActions.EntityType),
         new(MembershipTypeAuditActions.Deactivated, MembershipTypeAuditActions.EntityType),
         new(MembershipAuditActions.Issued, MembershipAuditActions.MembershipEntityType),
+        new(MembershipAuditActions.Replaced, MembershipAuditActions.MembershipEntityType),
+        new(MembershipAuditActions.SaleCanceled, MembershipAuditActions.MembershipEntityType),
         new(
             MembershipAuditActions.OpeningStateCreated,
             MembershipAuditActions.OpeningStateEntityType),

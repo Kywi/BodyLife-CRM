@@ -25,6 +25,14 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
             ClientHistorySourceKind.MembershipOpeningStateCreated => Opening(
                 row,
                 Require(row.MembershipSourceRow?.OpeningState)),
+            ClientHistorySourceKind.MembershipSaleReplaced => SaleCorrection(
+                row,
+                Require(row.MembershipSourceRow?.IssuedMembership),
+                isCancellation: false),
+            ClientHistorySourceKind.MembershipSaleCanceled => SaleCorrection(
+                row,
+                Require(row.MembershipSourceRow?.IssuedMembership),
+                isCancellation: true),
             ClientHistorySourceKind.VisitMarked => MarkedVisit(
                 row,
                 Require(row.VisitSourceRow?.MarkedVisit)),
@@ -119,6 +127,46 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
                 ("OpeningState", source.OpeningStateId),
                 ("Membership", source.MembershipId),
                 ("EntryBatch", source.EntryBatchId)));
+    }
+
+    private ClientHistoryRowViewModel SaleCorrection(
+        ClientHistorySourceRow row,
+        IssuedMembershipHistorySource source,
+        bool isCancellation)
+    {
+        var expectedStatus = isCancellation
+            ? IssuedMembershipLifecycleStatus.Canceled
+            : IssuedMembershipLifecycleStatus.Corrected;
+        if (source.Status != expectedStatus
+            || string.IsNullOrWhiteSpace(row.AuditEntry.Reason))
+        {
+            throw new InvalidOperationException(
+                "Issued Membership sale correction history is inconsistent.");
+        }
+
+        return Row(
+            row,
+            "Membership",
+            "history-group-membership",
+            isCancellation
+                ? "MembershipSaleCanceled"
+                : "MembershipSaleReplaced",
+            MembershipStatus(source.Status),
+            Facts(
+                ("MembershipType", source.Snapshot.TypeName),
+                ("StartDate", presentation.Date(source.StartDate)),
+                ("BaseEndDate", presentation.Date(source.BaseEndDate)),
+                ("PriceSnapshot", presentation.Money(source.Snapshot.Price))),
+            new ClientHistoryChangeViewModel(
+                presentation.HistoryChange(
+                    isCancellation ? "Cancellation" : "Correction"),
+                row.AuditEntry.Reason,
+                row.AuditEntry.Comment,
+                []),
+            narrative: null,
+            Ids(
+                ("Membership", source.MembershipId),
+                ("MembershipType", source.MembershipTypeId)));
     }
 
     private ClientHistoryRowViewModel MarkedVisit(

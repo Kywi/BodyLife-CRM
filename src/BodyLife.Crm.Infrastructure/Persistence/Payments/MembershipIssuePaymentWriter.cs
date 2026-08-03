@@ -16,7 +16,8 @@ public sealed class MembershipIssuePaymentWriter(
         Guid membershipId,
         Money amount,
         Guid? entryBatchId,
-        DateTimeOffset recordedAt)
+        DateTimeOffset recordedAt,
+        bool changedAfterClose = false)
     {
         ArgumentNullException.ThrowIfNull(envelope);
 
@@ -87,7 +88,8 @@ public sealed class MembershipIssuePaymentWriter(
                     paymentRecord.Comment,
                     paymentRecord.Status,
                 },
-            });
+            },
+            changedAfterClose: changedAfterClose);
 
         return new MembershipIssuePaymentWriteResult(paymentId, auditEntryId);
     }
