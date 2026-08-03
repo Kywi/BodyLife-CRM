@@ -231,6 +231,7 @@
   <data name="Identifier.IncomingCorrection"><value>Incoming correction ID</value></data>
   <data name="Identifier.OutgoingCorrection"><value>Outgoing correction ID</value></data>
   <data name="Identifier.EntryBatch"><value>Entry batch ID</value></data>
+  <data name="Identifier.EntryBatchRow"><value>Entry batch row ID</value></data>
   <data name="Identifier.ApplicationMembership"><value>Application / membership</value></data>
   <data name="HistoryChange.BackfilledDeclaration"><value>Backfilled declaration</value></data>
   <data name="HistoryChange.Cancellation"><value>Cancellation</value></data>

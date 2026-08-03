@@ -255,6 +255,59 @@ public sealed class ClientHistoryRowPresenterTests
     }
 
     [Fact]
+    public void PaperVisitShowsLocalizedSheetLineExplanationAndRowIdentifier()
+    {
+        var source = CreateVisitMarkedRow();
+
+        var english = Present(source, WebCultures.English);
+        var ukrainian = Present(source, WebCultures.Ukrainian);
+
+        Assert.Equal(
+            "VISIT-SHEET-001",
+            FactValue(english.Facts, "Paper sheet"));
+        Assert.Equal("17", FactValue(english.Facts, "Line number"));
+        Assert.Equal(
+            "Recovered paper Visit",
+            FactValue(english.Facts, "Explanation"));
+        Assert.Equal(
+            Id(120).ToString(),
+            FactValue(english.Identifiers, "Entry batch row ID"));
+        Assert.Equal(
+            "VISIT-SHEET-001",
+            FactValue(ukrainian.Facts, "Паперовий аркуш"));
+        Assert.Equal("17", FactValue(ukrainian.Facts, "Номер рядка"));
+        Assert.Equal(
+            "Recovered paper Visit",
+            FactValue(ukrainian.Facts, "Пояснення"));
+        Assert.Equal(
+            Id(120).ToString(),
+            FactValue(ukrainian.Identifiers, "ID рядка пакета внесення"));
+    }
+
+    [Fact]
+    public void PaperVisitWithoutCanonicalRowReferenceFailsClosed()
+    {
+        var row = CreateVisitMarkedRow();
+        row = row with
+        {
+            VisitSourceRow = row.VisitSourceRow! with
+            {
+                MarkedVisit = row.VisitSourceRow.MarkedVisit! with
+                {
+                    PaperReference = null,
+                },
+            },
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => Present(row, WebCultures.English));
+
+        Assert.Equal(
+            "Paper Visit history provenance is inconsistent.",
+            exception.Message);
+    }
+
+    [Fact]
     public void CorrectedMembershipAndOpeningStateUseWarningStyling()
     {
         var membership = CreateMembershipIssuedRow();
@@ -454,6 +507,10 @@ public sealed class ClientHistoryRowPresenterTests
         Assert.NotEmpty(row.Identifiers);
     }
 
+    private static string FactValue(
+        IReadOnlyList<ClientHistoryFactViewModel> facts,
+        string label) => Assert.Single(facts, fact => fact.Label == label).Value;
+
     private static ClientHistorySourceRow CreateRow(ClientHistorySourceKind kind) => kind switch
     {
         ClientHistorySourceKind.MembershipIssued => CreateMembershipIssuedRow(),
@@ -587,7 +644,15 @@ public sealed class ClientHistoryRowPresenterTests
                 MembershipId,
                 "Standard",
                 ClientVisitConsumptionStatus.Active),
-            CurrentCancellationId: null);
+            CurrentCancellationId: null,
+            new PaperFallbackEntryRowReference(
+                BatchId,
+                Id(120),
+                "VISIT-SHEET-001",
+                17,
+                PaperFallbackEventType.Visit,
+                OccurredAt,
+                "Recovered paper Visit"));
         var audit = Audit(visit.VisitId);
         var source = new ClientVisitHistorySourceRow(
             ClientVisitHistorySourceKind.MarkedVisit,

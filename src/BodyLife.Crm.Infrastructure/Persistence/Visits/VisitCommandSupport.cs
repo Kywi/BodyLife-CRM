@@ -161,6 +161,37 @@ internal static class VisitCommandSupport
                 "entryBatchId");
         }
 
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback
+            && command.EntryBatchId is not null)
+        {
+            return ValidationError(
+                "Paper fallback Visit derives its entry batch from the paper row.",
+                "entryBatchId");
+        }
+
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback
+            && canonicalEnvelope.EntryBatchRowId is null)
+        {
+            return ValidationError(
+                "Paper fallback Visit requires an entry batch row id.",
+                "entryBatchRowId");
+        }
+
+        if (canonicalEnvelope.EntryBatchRowId == Guid.Empty)
+        {
+            return ValidationError(
+                "Entry batch row id must be a non-empty identifier when supplied.",
+                "entryBatchRowId");
+        }
+
+        if (canonicalEnvelope.EntryOrigin != EntryOrigin.PaperFallback
+            && canonicalEnvelope.EntryBatchRowId is not null)
+        {
+            return ValidationError(
+                "Entry batch row id is only valid for a paper fallback Visit.",
+                "entryBatchRowId");
+        }
+
         normalizedVisit = new NormalizedMarkVisit(
             command.ClientId,
             command.VisitKind,
@@ -197,7 +228,14 @@ internal static class VisitCommandSupport
             return envelopeValidation;
         }
 
-        if (canonicalEnvelope!.EntryOrigin == EntryOrigin.Normal
+        if (canonicalEnvelope!.EntryBatchRowId is not null)
+        {
+            return ValidationError(
+                "CancelVisit does not accept a paper row until its first-class row integration is enabled.",
+                "entryBatchRowId");
+        }
+
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.Normal
             && command.EntryBatchId is not null)
         {
             return ValidationError(
@@ -230,6 +268,7 @@ internal static class VisitCommandSupport
             visit.MembershipId,
             Acknowledgements = visit.Acknowledgements.Select(MapAcknowledgement),
             visit.EntryBatchId,
+            envelope.EntryBatchRowId,
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));
@@ -671,7 +710,8 @@ internal static class VisitCommandSupport
             occurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 
@@ -760,7 +800,8 @@ internal static class VisitCommandSupport
             occurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 

@@ -651,12 +651,26 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 : $"audit-ui-{index:D2}";
             var visitKind = index % 2 == 0 ? "one_off" : "trial";
             var entryBatchId = isFeatured ? Guid.NewGuid() : (Guid?)null;
-            var relatedEntityRefs = JsonSerializer.Serialize(new
-            {
-                clientId,
-                membershipId = (Guid?)null,
-                consumptionId = (Guid?)null,
-            });
+            var entryBatchRowId = isFeatured ? Guid.NewGuid() : (Guid?)null;
+            object relatedRefs = isFeatured
+                ? new
+                {
+                    clientId,
+                    membershipId = (Guid?)null,
+                    consumptionId = (Guid?)null,
+                    entryBatchId,
+                    entryBatchRowId,
+                    paperSheetNumber = "AUDIT-SHEET-001",
+                    lineNumber = 24,
+                    paperExplanation = "Recovered Visit from paper line 24",
+                }
+                : new
+                {
+                    clientId,
+                    membershipId = (Guid?)null,
+                    consumptionId = (Guid?)null,
+                };
+            var relatedEntityRefs = JsonSerializer.Serialize(relatedRefs);
             var beforeSummary = JsonSerializer.Serialize(new { });
             var afterSummary = JsonSerializer.Serialize(new
             {

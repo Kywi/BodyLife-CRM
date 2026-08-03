@@ -11,18 +11,19 @@ public sealed class MarkVisitCommandContractsTests
         "11111111-1111-1111-1111-111111111111");
     private static readonly Guid MembershipId = Guid.Parse(
         "22222222-2222-2222-2222-222222222222");
-    private static readonly Guid EntryBatchId = Guid.Parse(
+    private static readonly Guid EntryBatchRowId = Guid.Parse(
         "33333333-3333-3333-3333-333333333333");
     private static readonly Guid FreezeId = Guid.Parse(
         "44444444-4444-4444-4444-444444444444");
 
     [Fact]
-    public void CommandCarriesEnvelopeExplicitContextAcknowledgementsAndBatchReference()
+    public void CommandCarriesEnvelopeExplicitContextAcknowledgementsAndPaperRowReference()
     {
         var envelope = CreateEnvelope(
             EntryOrigin.PaperFallback,
             occurredAt: new DateTimeOffset(2026, 7, 14, 9, 30, 0, TimeSpan.Zero),
-            reason: "Reception paper register reconciliation");
+            reason: "Reception paper register reconciliation",
+            entryBatchRowId: EntryBatchRowId);
         MembershipVisitAcknowledgement[] acknowledgements =
         [
             MembershipVisitAcknowledgement.Expired,
@@ -34,8 +35,7 @@ public sealed class MarkVisitCommandContractsTests
             ClientId,
             VisitKind.Membership,
             MembershipId,
-            acknowledgements,
-            EntryBatchId);
+            acknowledgements);
 
         Assert.IsAssignableFrom<IBodyLifeCommand>(command);
         Assert.Same(envelope, command.Envelope);
@@ -43,7 +43,8 @@ public sealed class MarkVisitCommandContractsTests
         Assert.Equal(VisitKind.Membership, command.VisitKind);
         Assert.Equal(MembershipId, command.MembershipId);
         Assert.Same(acknowledgements, command.Acknowledgements);
-        Assert.Equal(EntryBatchId, command.EntryBatchId);
+        Assert.Null(command.EntryBatchId);
+        Assert.Equal(EntryBatchRowId, command.Envelope.EntryBatchRowId);
         Assert.Equal("mark-visit-key", command.Envelope.IdempotencyKey);
         Assert.Equal(EntryOrigin.PaperFallback, command.Envelope.EntryOrigin);
         Assert.Equal("Reception note", command.Envelope.Comment);
@@ -401,7 +402,8 @@ public sealed class MarkVisitCommandContractsTests
     private static CommandEnvelope CreateEnvelope(
         EntryOrigin entryOrigin = EntryOrigin.Normal,
         DateTimeOffset? occurredAt = null,
-        string? reason = null)
+        string? reason = null,
+        Guid? entryBatchRowId = null)
     {
         var actor = new ActorContext(
             AccountId.New(),
@@ -417,6 +419,7 @@ public sealed class MarkVisitCommandContractsTests
             occurredAt,
             IdempotencyKey: "mark-visit-key",
             reason,
-            Comment: "Reception note");
+            Comment: "Reception note",
+            entryBatchRowId);
     }
 }

@@ -231,6 +231,7 @@
   <data name="Identifier.IncomingCorrection"><value>ID вхідного виправлення</value></data>
   <data name="Identifier.OutgoingCorrection"><value>ID вихідного виправлення</value></data>
   <data name="Identifier.EntryBatch"><value>ID пакета внесення</value></data>
+  <data name="Identifier.EntryBatchRow"><value>ID рядка пакета внесення</value></data>
   <data name="Identifier.ApplicationMembership"><value>Застосування / абонемент</value></data>
   <data name="HistoryChange.BackfilledDeclaration"><value>Перенесена початкова декларація</value></data>
   <data name="HistoryChange.Cancellation"><value>Скасування</value></data>

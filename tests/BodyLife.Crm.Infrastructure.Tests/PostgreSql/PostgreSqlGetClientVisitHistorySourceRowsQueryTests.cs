@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Visits;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -109,6 +110,15 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         Assert.Equal(fixture.Actor.SessionId, oneOff.RecordedSessionId);
         Assert.Equal(VisitAuditActions.Marked, oneOffRow.AuditEntry.ActionType);
         Assert.Equal("Outage recovery", oneOffRow.AuditEntry.Reason);
+        var paper = Assert.IsType<PaperFallbackEntryRowReference>(
+            oneOff.PaperReference);
+        Assert.Equal(source.OneOffBatchId, paper.EntryBatchId);
+        Assert.Equal(source.OneOffBatchRowId, paper.EntryBatchRowId);
+        Assert.Equal(source.OneOffPaperSheetNumber, paper.PaperSheetNumber);
+        Assert.Equal(source.OneOffLineNumber, paper.LineNumber);
+        Assert.Equal(PaperFallbackEventType.Visit, paper.EventType);
+        Assert.Equal(TestNow.AddDays(-2), paper.OccurredAt);
+        Assert.Equal(source.OneOffExplanation, paper.Explanation);
 
         var secondPage = AssertSuccess(secondResult, fixture.ClientId);
         Assert.False(secondPage.HasMore);
@@ -135,6 +145,50 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         Assert.Equal(
             source.CancellationId,
             Assert.Single(rangedPage.Items).Cancellation!.CancellationId);
+    }
+
+    [PostgreSqlFact]
+    public async Task QueryFailsClosedWhenPaperLinkIsMissing()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var source = await SeedHistoryAsync(database, fixture);
+        var handler = CreateHandler(dbContext);
+        var query = new GetClientVisitHistorySourceRowsQuery(
+            fixture.Actor,
+            fixture.ClientId);
+
+        await ExecuteNonQueryAsync(
+            database,
+            $"""
+            delete from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = '{source.OneOffBatchRowId}'::uuid
+            """);
+        var missingLink = await handler.ExecuteAsync(query, CancellationToken.None);
+        AssertFailure(
+            missingLink,
+            GetClientVisitHistorySourceRowsStatus.SourceInconsistent);
+    }
+
+    [PostgreSqlFact]
+    public async Task QueryFailsClosedWhenPaperAuditProvenanceDoesNotMatchRow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        await SeedHistoryAsync(database, fixture, paperAuditLineNumber: 999);
+
+        var mismatchedAudit = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientVisitHistorySourceRowsQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+        AssertFailure(
+            mismatchedAudit,
+            GetClientVisitHistorySourceRowsStatus.SourceInconsistent);
     }
 
     [PostgreSqlFact]
@@ -484,7 +538,8 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
 
     private static async Task<VisitHistorySourceIds> SeedHistoryAsync(
         PostgreSqlTestDatabase database,
-        VisitHistoryFixture fixture)
+        VisitHistoryFixture fixture,
+        int? paperAuditLineNumber = null)
     {
         var membershipVisitId = Guid.NewGuid();
         var consumptionId = Guid.NewGuid();
@@ -494,12 +549,61 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         var cancellationBatchId = Guid.NewGuid();
         var oneOffVisitId = Guid.NewGuid();
         var oneOffBatchId = Guid.NewGuid();
+        var oneOffBatchRowId = Guid.NewGuid();
+        var oneOffAuditId = Guid.NewGuid();
+        const string oneOffPaperSheetNumber = "VISIT-HISTORY-001";
+        const int oneOffLineNumber = 7;
+        const string oneOffExplanation = "Recovered one-off Visit from paper";
         await using (var connection = new NpgsqlConnection(database.ConnectionString))
         {
             await connection.OpenAsync();
             await using var command = connection.CreateCommand();
             command.CommandText =
                 """
+                insert into bodylife.entry_batches (
+                    id,
+                    batch_type,
+                    paper_sheet_number,
+                    business_date_start,
+                    business_date_end,
+                    recorded_at,
+                    recorded_by_account_id,
+                    reconciled_at,
+                    reconciled_by_account_id,
+                    note)
+                values (
+                    @one_off_batch_id,
+                    'paper_fallback',
+                    @one_off_paper_sheet_number,
+                    @one_off_business_date,
+                    @one_off_business_date,
+                    @one_off_recorded_at,
+                    @account_id,
+                    null,
+                    null,
+                    'Visit history fixture');
+
+                insert into bodylife.entry_batch_rows (
+                    id,
+                    entry_batch_id,
+                    line_number,
+                    event_type,
+                    occurred_at,
+                    explanation,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id)
+                values (
+                    @one_off_batch_row_id,
+                    @one_off_batch_id,
+                    @one_off_line_number,
+                    'visit',
+                    @one_off_occurred_at,
+                    @one_off_explanation,
+                    @one_off_recorded_at,
+                    @account_id,
+                    @session_id);
+
                 insert into bodylife.visits (
                     id,
                     client_id,
@@ -623,7 +727,16 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                     'paper_fallback',
                     @one_off_batch_id,
                     'Recovered paper visit',
-                    'active')
+                    'active');
+
+                insert into bodylife.entry_batch_row_entities (
+                    entry_batch_row_id,
+                    entity_type,
+                    entity_id)
+                values (
+                    @one_off_batch_row_id,
+                    'visit',
+                    @one_off_visit_id)
                 """;
             command.Parameters.AddWithValue(
                 "membership_visit_id",
@@ -670,13 +783,29 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
                 "one_off_recorded_at",
                 TestNow.AddDays(-1).AddHours(-12));
             command.Parameters.AddWithValue("one_off_batch_id", oneOffBatchId);
-            Assert.Equal(5, await command.ExecuteNonQueryAsync());
+            command.Parameters.AddWithValue(
+                "one_off_batch_row_id",
+                oneOffBatchRowId);
+            command.Parameters.AddWithValue(
+                "one_off_paper_sheet_number",
+                oneOffPaperSheetNumber);
+            command.Parameters.AddWithValue(
+                "one_off_business_date",
+                NpgsqlDbType.Date,
+                BusinessTimeZone.GetBusinessDate(TestNow.AddDays(-2)));
+            command.Parameters.AddWithValue(
+                "one_off_line_number",
+                oneOffLineNumber);
+            command.Parameters.AddWithValue(
+                "one_off_explanation",
+                oneOffExplanation);
+            Assert.Equal(8, await command.ExecuteNonQueryAsync());
         }
 
         await InsertAuditAsync(
             database,
             fixture,
-            Guid.NewGuid(),
+            oneOffAuditId,
             VisitAuditActions.Marked,
             membershipVisitId,
             fixture.ClientId,
@@ -707,7 +836,12 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             TestNow.AddDays(-1).AddHours(-12),
             "paper_fallback",
             reason: "Outage recovery",
-            comment: "Recovered paper visit");
+            comment: "Recovered paper visit",
+            entryBatchId: oneOffBatchId,
+            entryBatchRowId: oneOffBatchRowId,
+            paperSheetNumber: oneOffPaperSheetNumber,
+            lineNumber: paperAuditLineNumber ?? oneOffLineNumber,
+            paperExplanation: oneOffExplanation);
         await InsertAuditAsync(
             database,
             fixture,
@@ -735,7 +869,12 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             cancellationId,
             cancellationBatchId,
             oneOffVisitId,
-            oneOffBatchId);
+            oneOffBatchId,
+            oneOffBatchRowId,
+            oneOffAuditId,
+            oneOffPaperSheetNumber,
+            oneOffLineNumber,
+            oneOffExplanation);
     }
 
     private static async Task<Guid> SeedMismatchedConsumptionAsync(
@@ -831,7 +970,12 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         string entryOrigin,
         string? reason = null,
         string? comment = null,
-        bool changedAfterClose = false)
+        bool changedAfterClose = false,
+        Guid? entryBatchId = null,
+        Guid? entryBatchRowId = null,
+        string? paperSheetNumber = null,
+        int? lineNumber = null,
+        string? paperExplanation = null)
     {
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
@@ -884,10 +1028,23 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         command.Parameters.AddWithValue("id", auditId);
         command.Parameters.AddWithValue("action_type", actionType);
         command.Parameters.AddWithValue("visit_id", visitId);
+        object relatedEntityRefs = entryBatchRowId is null
+            ? new { ClientId = clientId }
+            : new
+            {
+                ClientId = clientId,
+                MembershipId = (Guid?)null,
+                ConsumptionId = (Guid?)null,
+                EntryBatchId = entryBatchId,
+                EntryBatchRowId = entryBatchRowId,
+                PaperSheetNumber = paperSheetNumber,
+                LineNumber = lineNumber,
+                PaperExplanation = paperExplanation,
+            };
         command.Parameters.Add(
             "related_entity_refs",
             NpgsqlDbType.Jsonb).Value = JsonSerializer.Serialize(
-                new { ClientId = clientId },
+                relatedEntityRefs,
                 AuditJsonOptions);
         command.Parameters.AddWithValue(
             "actor_account_id",
@@ -908,6 +1065,16 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             $"visit-history-idempotency-{auditId:N}");
         command.Parameters.AddWithValue("changed_after_close", changedAfterClose);
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task ExecuteNonQueryAsync(
+        PostgreSqlTestDatabase database,
+        string sql)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand(sql, connection);
+        await command.ExecuteNonQueryAsync();
     }
 
     private static async Task DeactivateActorAsync(
@@ -965,7 +1132,12 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         Guid CancellationId,
         Guid CancellationBatchId,
         Guid OneOffVisitId,
-        Guid OneOffBatchId);
+        Guid OneOffBatchId,
+        Guid OneOffBatchRowId,
+        Guid OneOffAuditId,
+        string OneOffPaperSheetNumber,
+        int OneOffLineNumber,
+        string OneOffExplanation);
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {

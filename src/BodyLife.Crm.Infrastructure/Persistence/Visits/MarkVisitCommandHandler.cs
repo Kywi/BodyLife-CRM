@@ -5,6 +5,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Visits;
 using BodyLife.Crm.SharedKernel;
@@ -15,6 +16,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Visits;
 public sealed class MarkVisitCommandHandler(
     BodyLifeDbContext dbContext,
     BusinessAuditAppender auditAppender,
+    PaperFallbackEntryRowBinder paperFallbackEntryRowBinder,
     MembershipVisitEligibilityPreparer eligibilityPreparer,
     IMembershipStateRecalculator membershipStateRecalculator,
     IBodyLifeQueryHandler<GetMembershipStateQuery, GetMembershipStateResult>
@@ -108,6 +110,43 @@ public sealed class MarkVisitCommandHandler(
                 return await RollBackAsync(replay);
             }
 
+            var paperBinding = await paperFallbackEntryRowBinder.PrepareAsync(
+                visit.Envelope,
+                PaperFallbackEventType.Visit,
+                cancellationToken);
+            if (paperBinding.RowAlreadyLinked)
+            {
+                existingIdempotency = await VisitCommandSupport.FindIdempotencyAsync(
+                    dbContext,
+                    CommandName,
+                    visit.Envelope.IdempotencyKey!,
+                    cancellationToken);
+                if (existingIdempotency is not null)
+                {
+                    var replay = await ReplayOrRejectDuplicateAsync(
+                        existingIdempotency,
+                        visit,
+                        fingerprint,
+                        currentDate,
+                        cancellationToken);
+                    return await RollBackAsync(replay);
+                }
+            }
+
+            if (paperBinding.Error is not null)
+            {
+                return await RollBackAsync(paperBinding.Error);
+            }
+
+            var visitId = Guid.NewGuid();
+            if (paperBinding.Reference is { } paperReference)
+            {
+                paperFallbackEntryRowBinder.LinkEntity(
+                    paperReference,
+                    VisitAuditActions.VisitEntityType,
+                    visitId);
+            }
+
             MarkVisitPreparation preparation;
             MembershipStateReadModel? beforeMembershipState = null;
 
@@ -188,7 +227,6 @@ public sealed class MarkVisitCommandHandler(
                 }
             }
 
-            var visitId = Guid.NewGuid();
             var visitRecord = new VisitRecord
             {
                 Id = visitId,
@@ -200,7 +238,7 @@ public sealed class MarkVisitCommandHandler(
                 VisitKind = VisitCommandSupport.MapVisitKind(visit.VisitKind),
                 EntryOrigin = VisitCommandSupport.MapEntryOrigin(
                     visit.Envelope.EntryOrigin),
-                EntryBatchId = visit.EntryBatchId,
+                EntryBatchId = paperBinding.Reference?.EntryBatchId ?? visit.EntryBatchId,
                 Comment = visit.Envelope.Comment,
                 Status = "active",
             };
@@ -282,18 +320,38 @@ public sealed class MarkVisitCommandHandler(
                     ? null
                     : Summarize(afterMembershipState),
             };
+            object relatedEntityRefs;
+            if (paperBinding.Reference is { } auditPaperReference)
+            {
+                relatedEntityRefs = new
+                {
+                    visit.ClientId,
+                    visit.MembershipId,
+                    ConsumptionId = consumptionRecord?.Id,
+                    auditPaperReference.EntryBatchId,
+                    auditPaperReference.EntryBatchRowId,
+                    auditPaperReference.PaperSheetNumber,
+                    auditPaperReference.LineNumber,
+                    PaperExplanation = auditPaperReference.Explanation,
+                };
+            }
+            else
+            {
+                relatedEntityRefs = new
+                {
+                    visit.ClientId,
+                    visit.MembershipId,
+                    ConsumptionId = consumptionRecord?.Id,
+                };
+            }
+
             var auditEntryId = auditAppender.Append(
                 visit.Envelope,
                 VisitAuditActions.Marked,
                 VisitAuditActions.VisitEntityType,
                 visitId,
                 recordedAt,
-                relatedEntityRefs: new
-                {
-                    visit.ClientId,
-                    visit.MembershipId,
-                    ConsumptionId = consumptionRecord?.Id,
-                },
+                relatedEntityRefs,
                 beforeSummary,
                 afterSummary);
 

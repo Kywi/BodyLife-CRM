@@ -233,6 +233,88 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void PaperVisitShowsSheetLineAndExplanation()
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "visit.marked",
+                    AuditTimelineEntityType.Visit,
+                    visitId,
+                    new { },
+                    VisitMarkedAfter(
+                        visitId,
+                        clientId,
+                        "one_off",
+                        membershipId: null,
+                        consumptionId: null,
+                        entryOrigin: "paper_fallback",
+                        entryBatchId: batchId),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)null,
+                        ConsumptionId = (Guid?)null,
+                        EntryBatchId = batchId,
+                        EntryBatchRowId = rowId,
+                        PaperSheetNumber = "VISIT-SHEET-001",
+                        LineNumber = 17,
+                        PaperExplanation = "Recovered paper Visit",
+                    },
+                    entryOrigin: EntryOrigin.PaperFallback)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            "VISIT-SHEET-001",
+            FactValue(explanation.AfterFacts, "Paper sheet"));
+        Assert.Equal(
+            rowId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Paper row"));
+        Assert.Equal("17", FactValue(explanation.AfterFacts, "Line number"));
+        Assert.Equal(
+            "Recovered paper Visit",
+            FactValue(explanation.AfterFacts, "Explanation"));
+    }
+
+    [Fact]
+    public void PaperVisitWithoutRowIdentityFailsClosed()
+    {
+        var visitId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "visit.marked",
+                    AuditTimelineEntityType.Visit,
+                    visitId,
+                    new { },
+                    VisitMarkedAfter(
+                        visitId,
+                        clientId,
+                        "trial",
+                        membershipId: null,
+                        consumptionId: null,
+                        entryOrigin: "paper_fallback",
+                        entryBatchId: batchId),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipId = (Guid?)null,
+                        ConsumptionId = (Guid?)null,
+                        EntryBatchId = batchId,
+                    },
+                    entryOrigin: EntryOrigin.PaperFallback)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void MembershipVisitWithoutCountedConsumptionFailsClosed()
     {
         var visitId = Guid.NewGuid();
@@ -4065,7 +4147,9 @@ public sealed class AuditEntryExplanationViewModelTests
         Guid? membershipId,
         Guid? consumptionId,
         IReadOnlyList<string>? acknowledgements = null,
-        object? membershipState = null)
+        object? membershipState = null,
+        string entryOrigin = "normal",
+        Guid? entryBatchId = null)
     {
         return new
         {
@@ -4077,8 +4161,8 @@ public sealed class AuditEntryExplanationViewModelTests
                 MembershipId = membershipId,
                 OccurredAt = OriginalOccurredAt,
                 RecordedAt = OriginalOccurredAt.AddMinutes(5),
-                EntryOrigin = "normal",
-                EntryBatchId = (Guid?)null,
+                EntryOrigin = entryOrigin,
+                EntryBatchId = entryBatchId,
                 Comment = "Correction comment",
                 Status = "active",
                 ConsumptionId = consumptionId,

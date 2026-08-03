@@ -55,6 +55,7 @@ public static class ServiceCollectionExtensions
             NonWorkingDayPreviewTokenOptions.FromConfiguration(configuration)));
         services.TryAddSingleton<PasswordHashingService>();
         services.AddScoped<BusinessAuditAppender>();
+        services.AddScoped<PaperFallbackEntryRowBinder>();
         services.AddScoped<
             IBodyLifeCommandHandler<CreatePaperFallbackBatchCommand>,
             CreatePaperFallbackBatchCommandHandler>();

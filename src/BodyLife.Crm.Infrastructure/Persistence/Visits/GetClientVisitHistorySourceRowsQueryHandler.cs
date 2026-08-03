@@ -1,5 +1,7 @@
+using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Visits;
@@ -93,6 +95,14 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
             return GetClientVisitHistorySourceRowsResult.InconsistentSource();
         }
 
+        var paperReferences = await LoadPaperReferencesAsync(
+            visitRows,
+            cancellationToken);
+        if (paperReferences is null)
+        {
+            return GetClientVisitHistorySourceRowsResult.InconsistentSource();
+        }
+
         var consumptionRows = await (
             from consumption in dbContext.Set<VisitConsumptionRecord>().AsNoTracking()
             join membership in dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
@@ -134,6 +144,7 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
                     visit,
                     consumption,
                     cancellation,
+                    paperReferences.GetValueOrDefault(visit.Id),
                     out var source)
                 || source is null)
             {
@@ -190,6 +201,7 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
         VisitRecord visit,
         ConsumptionStorageRow? consumption,
         VisitCancellationRecord? cancellation,
+        PaperFallbackEntryRowReference? paperReference,
         out CanonicalVisitHistorySource? source)
     {
         source = null;
@@ -203,7 +215,9 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
                     || consumption.Consumption.RecordedByAccountId
                         != visit.RecordedByAccountId
                     || consumption.Consumption.RecordedSessionId != visit.SessionId)
-            || cancellation is not null && cancellation.VisitId != visit.Id)
+            || cancellation is not null && cancellation.VisitId != visit.Id
+            || visit.EntryOrigin == "paper_fallback" && paperReference is null
+            || visit.EntryOrigin != "paper_fallback" && paperReference is not null)
         {
             return false;
         }
@@ -259,7 +273,8 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
         source = new CanonicalVisitHistorySource(
             visit,
             cancellation,
-            projection);
+            projection,
+            paperReference);
         return true;
     }
 
@@ -294,7 +309,12 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
             visit.Comment,
             projection.Status,
             projection.Consumption,
-            source.Cancellation?.Id);
+            source.Cancellation?.Id,
+            source.PaperReference);
+        if (!HasMatchingPaperAuditReference(auditEntry, visit, source.PaperReference))
+        {
+            return null;
+        }
         return new ClientVisitHistorySourceRow(
             ClientVisitHistorySourceKind.MarkedVisit,
             visit.ClientId,
@@ -378,5 +398,133 @@ public sealed class GetClientVisitHistorySourceRowsQueryHandler(
     private sealed record CanonicalVisitHistorySource(
         VisitRecord Visit,
         VisitCancellationRecord? Cancellation,
-        VisitQuerySupport.CanonicalVisitProjection Projection);
+        VisitQuerySupport.CanonicalVisitProjection Projection,
+        PaperFallbackEntryRowReference? PaperReference);
+
+    private async Task<Dictionary<Guid, PaperFallbackEntryRowReference>?>
+        LoadPaperReferencesAsync(
+        IReadOnlyList<VisitRecord> visits,
+        CancellationToken cancellationToken)
+    {
+        var paperVisits = visits
+            .Where(visit => visit.EntryOrigin == "paper_fallback")
+            .ToArray();
+        if (paperVisits.Length == 0)
+        {
+            return new Dictionary<Guid, PaperFallbackEntryRowReference>();
+        }
+
+        var visitIds = visits.Select(visit => visit.Id).ToArray();
+        var links = await dbContext.Set<EntryBatchRowEntityRecord>()
+            .AsNoTracking()
+            .Where(link =>
+                link.EntityType == VisitAuditActions.VisitEntityType
+                && visitIds.Contains(link.EntityId))
+            .ToArrayAsync(cancellationToken);
+        if (links.GroupBy(link => link.EntityId).Any(group => group.Count() != 1)
+            || !links.Select(link => link.EntityId).Order()
+                .SequenceEqual(paperVisits.Select(visit => visit.Id).Order()))
+        {
+            return null;
+        }
+
+        var rowIds = links.Select(link => link.EntryBatchRowId).ToArray();
+        var rows = await dbContext.Set<EntryBatchRowRecord>().AsNoTracking()
+            .Where(row => rowIds.Contains(row.Id)).ToArrayAsync(cancellationToken);
+        var batchIds = rows.Select(row => row.EntryBatchId).Distinct().ToArray();
+        var batches = await dbContext.Set<EntryBatchRecord>().AsNoTracking()
+            .Where(batch => batchIds.Contains(batch.Id)).ToArrayAsync(cancellationToken);
+        if (rows.Length != links.Length || batches.Length != batchIds.Length)
+        {
+            return null;
+        }
+
+        var batchesById = batches.ToDictionary(batch => batch.Id);
+        var rowsById = rows.ToDictionary(row => row.Id);
+        var result = new Dictionary<Guid, PaperFallbackEntryRowReference>();
+        foreach (var link in links)
+        {
+            var row = rowsById[link.EntryBatchRowId];
+            var batch = batchesById[row.EntryBatchId];
+            var visit = paperVisits.Single(candidate => candidate.Id == link.EntityId);
+            if (batch.BatchType != "paper_fallback"
+                || row.EventType != "visit"
+                || string.IsNullOrWhiteSpace(batch.PaperSheetNumber)
+                || batch.PaperSheetNumber
+                    != batch.PaperSheetNumber.Trim().ToUpperInvariant()
+                || row.LineNumber <= 0
+                || string.IsNullOrWhiteSpace(row.Explanation)
+                || row.Explanation != row.Explanation.Trim()
+                || row.RecordedByAccountId != visit.RecordedByAccountId
+                || row.SessionId != visit.SessionId
+                || visit.EntryBatchId != batch.Id
+                || !SamePostgreSqlInstant(row.OccurredAt, visit.OccurredAt))
+            {
+                return null;
+            }
+
+            result.Add(
+                visit.Id,
+                new PaperFallbackEntryRowReference(
+                    batch.Id,
+                    row.Id,
+                    batch.PaperSheetNumber,
+                    row.LineNumber,
+                    PaperFallbackEventType.Visit,
+                    row.OccurredAt,
+                    row.Explanation));
+        }
+
+        return result;
+    }
+
+    private static bool HasMatchingPaperAuditReference(
+        ClientAuditEntry audit,
+        VisitRecord visit,
+        PaperFallbackEntryRowReference? paper)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(audit.RelatedEntityRefsJson);
+            var root = document.RootElement;
+            if (paper is null)
+            {
+                return IsMissingOrNull(root, "entryBatchId")
+                    && IsMissingOrNull(root, "entryBatchRowId")
+                    && IsMissingOrNull(root, "paperSheetNumber")
+                    && IsMissingOrNull(root, "lineNumber")
+                    && IsMissingOrNull(root, "paperExplanation");
+            }
+
+            return root.GetProperty("entryBatchId").GetGuid() == paper.EntryBatchId
+                && root.GetProperty("entryBatchRowId").GetGuid() == paper.EntryBatchRowId
+                && root.GetProperty("paperSheetNumber").GetString() == paper.PaperSheetNumber
+                && root.GetProperty("lineNumber").GetInt32() == paper.LineNumber
+                && root.GetProperty("paperExplanation").GetString() == paper.Explanation
+                && visit.EntryBatchId == paper.EntryBatchId;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+        catch (KeyNotFoundException)
+        {
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
+
+    private static bool IsMissingOrNull(JsonElement root, string propertyName) =>
+        !root.TryGetProperty(propertyName, out var value)
+        || value.ValueKind == JsonValueKind.Null;
+
+    private static bool SamePostgreSqlInstant(DateTimeOffset left, DateTimeOffset right) =>
+        left.UtcDateTime.Ticks / 10 == right.UtcDateTime.Ticks / 10;
 }

@@ -629,6 +629,10 @@ public sealed class AuditEntryExplanationPresenter(
         var relatedConsumptionId = RequireNullableGuid(related, "consumptionId");
         var visit = ReadMarkedVisit(RequireObject(after, "visit"));
         var afterStateElement = RequireNullableObject(after, "membershipState");
+        var paperReference = ReadVisitPaperReference(
+            related,
+            entry.EntryOrigin,
+            visit);
 
         ValidateEntryBatch(visit.EntryOrigin, visit.EntryBatchId);
         if (visit.VisitId != entry.EntityId
@@ -722,6 +726,20 @@ public sealed class AuditEntryExplanationPresenter(
             Fact("Selection", VisitSelectionLabel(visit.VisitKind)),
             Fact("Warning acknowledgements", acknowledgementLabel),
         ];
+        if (paperReference is not null)
+        {
+            afterFacts.Add(Fact(
+                "Paper fallback batch",
+                TimelineModel.ShortId(paperReference.EntryBatchId)));
+            afterFacts.Add(Fact("Paper sheet", paperReference.PaperSheetNumber));
+            afterFacts.Add(Fact(
+                "Paper row",
+                TimelineModel.ShortId(paperReference.EntryBatchRowId)));
+            afterFacts.Add(Fact(
+                "Line number",
+                Presentation.Number(paperReference.LineNumber)));
+            afterFacts.Add(Fact("Explanation", paperReference.Explanation));
+        }
         AddVisitMarkedMembershipFacts(afterFacts, afterState);
 
         var isMembershipVisit = visit.MembershipId is not null;
@@ -733,6 +751,95 @@ public sealed class AuditEntryExplanationPresenter(
                 ? JoinChanged("Visit", "CountedConsumption", "MembershipState")
                 : Presentation.Changed("VisitOnly"),
             IsAvailable: true);
+    }
+
+    private static VisitPaperReferenceSnapshot? ReadVisitPaperReference(
+        JsonElement related,
+        EntryOrigin entryOrigin,
+        VisitMarkedSnapshot visit)
+    {
+        var entryBatchId = ReadOptionalGuid(related, "entryBatchId");
+        var entryBatchRowId = ReadOptionalGuid(related, "entryBatchRowId");
+        var paperSheetNumber = ReadOptionalString(related, "paperSheetNumber");
+        var lineNumber = ReadOptionalInt32(related, "lineNumber");
+        var explanation = ReadOptionalString(related, "paperExplanation");
+
+        if (entryOrigin != EntryOrigin.PaperFallback)
+        {
+            if (entryBatchId is not null
+                || entryBatchRowId is not null
+                || paperSheetNumber is not null
+                || lineNumber is not null
+                || explanation is not null)
+            {
+                throw new JsonException(
+                    "A non-paper Visit cannot include paper row provenance.");
+            }
+
+            return null;
+        }
+
+        if (entryBatchId is null
+            || entryBatchRowId is null
+            || entryBatchId == Guid.Empty
+            || entryBatchRowId == Guid.Empty
+            || visit.EntryBatchId != entryBatchId
+            || string.IsNullOrWhiteSpace(paperSheetNumber)
+            || paperSheetNumber != paperSheetNumber.Trim().ToUpperInvariant()
+            || lineNumber is null or <= 0
+            || string.IsNullOrWhiteSpace(explanation)
+            || explanation != explanation.Trim())
+        {
+            throw new JsonException("Paper Visit row provenance is inconsistent.");
+        }
+
+        return new VisitPaperReferenceSnapshot(
+            entryBatchId.Value,
+            entryBatchRowId.Value,
+            paperSheetNumber,
+            lineNumber.Value,
+            explanation);
+    }
+
+    private static Guid? ReadOptionalGuid(JsonElement parent, string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value)
+            || value.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        return value.ValueKind == JsonValueKind.String
+            && value.TryGetGuid(out var parsed)
+            ? parsed
+            : throw new JsonException($"'{propertyName}' must be a UUID.");
+    }
+
+    private static string? ReadOptionalString(JsonElement parent, string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value)
+            || value.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        return value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : throw new JsonException($"'{propertyName}' must be text.");
+    }
+
+    private static int? ReadOptionalInt32(JsonElement parent, string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value)
+            || value.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        return value.ValueKind == JsonValueKind.Number
+            && value.TryGetInt32(out var parsed)
+            ? parsed
+            : throw new JsonException($"'{propertyName}' must be an integer.");
     }
 
     private AuditEntryExplanationViewModel CreateVisitCancellation(
@@ -2717,6 +2824,13 @@ public sealed class AuditEntryExplanationPresenter(
         Guid? ConsumptionId,
         IReadOnlyList<string> Acknowledgements,
         string Selection);
+
+    private sealed record VisitPaperReferenceSnapshot(
+        Guid EntryBatchId,
+        Guid EntryBatchRowId,
+        string PaperSheetNumber,
+        int LineNumber,
+        string Explanation);
 
     private sealed record VisitMarkedMembershipStateSnapshot(
         Guid MembershipId,

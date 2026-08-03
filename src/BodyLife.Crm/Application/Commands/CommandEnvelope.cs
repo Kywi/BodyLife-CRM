@@ -9,4 +9,5 @@ public sealed record CommandEnvelope(
     DateTimeOffset? OccurredAt,
     string? IdempotencyKey,
     string? Reason,
-    string? Comment);
+    string? Comment,
+    Guid? EntryBatchRowId = null);

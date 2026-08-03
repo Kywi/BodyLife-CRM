@@ -963,6 +963,15 @@ public sealed class PostgreSqlVisitsStorageTests
                 Guid.NewGuid(),
                 "cancel-missing-visit"),
             CancellationToken.None);
+        var unsupportedPaperRow = await handler.ExecuteAsync(
+            CreateCancelVisitCommand(
+                fixture,
+                visitId,
+                "cancel-paper-row-unsupported",
+                origin: EntryOrigin.PaperFallback,
+                entryBatchId: Guid.NewGuid(),
+                entryBatchRowId: Guid.NewGuid()),
+            CancellationToken.None);
         await DeactivateActorAsync(database, fixture.Actor.AccountId.Value);
         var inactiveActor = await handler.ExecuteAsync(
             valid,
@@ -973,6 +982,10 @@ public sealed class PostgreSqlVisitsStorageTests
             CommandErrorCode.ReasonRequired,
             "reason");
         AssertCommandError(missingVisit, CommandErrorCode.NotFound, "visitId");
+        AssertCommandError(
+            unsupportedPaperRow,
+            CommandErrorCode.ValidationFailed,
+            "entryBatchRowId");
         AssertCommandError(inactiveActor, CommandErrorCode.PermissionDenied);
         await AssertNoCancellationMutationAsync(database, visitId);
     }
@@ -1175,7 +1188,8 @@ public sealed class PostgreSqlVisitsStorageTests
         DateTimeOffset? occurredAt = null,
         string? reason = "Mistaken reception entry",
         string? comment = "Cancellation requested at reception",
-        Guid? entryBatchId = null)
+        Guid? entryBatchId = null,
+        Guid? entryBatchRowId = null)
     {
         return new CancelVisitCommand(
             new CommandEnvelope(
@@ -1185,7 +1199,8 @@ public sealed class PostgreSqlVisitsStorageTests
                 occurredAt ?? CancellationOccurredAt,
                 idempotencyKey,
                 reason,
-                comment),
+                comment,
+                entryBatchRowId),
             visitId,
             entryBatchId);
     }

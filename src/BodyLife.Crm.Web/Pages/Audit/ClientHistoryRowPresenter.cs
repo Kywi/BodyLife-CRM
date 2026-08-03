@@ -1,3 +1,5 @@
+using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Freezes;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.NonWorkingDays;
@@ -173,10 +175,62 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
         ClientHistorySourceRow row,
         MarkedVisitHistorySource source)
     {
+        var paperReference = source.PaperReference;
+        if (row.EntryOrigin == EntryOrigin.PaperFallback)
+        {
+            if (paperReference is null
+                || paperReference.EventType != PaperFallbackEventType.Visit
+                || paperReference.EntryBatchId != source.EntryBatchId
+                || paperReference.EntryBatchRowId == Guid.Empty
+                || string.IsNullOrWhiteSpace(paperReference.PaperSheetNumber)
+                || paperReference.PaperSheetNumber
+                    != paperReference.PaperSheetNumber.Trim().ToUpperInvariant()
+                || paperReference.LineNumber <= 0
+                || string.IsNullOrWhiteSpace(paperReference.Explanation)
+                || paperReference.Explanation != paperReference.Explanation.Trim()
+                || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                    paperReference.OccurredAt,
+                    source.OccurredAt))
+            {
+                throw new InvalidOperationException(
+                    "Paper Visit history provenance is inconsistent.");
+            }
+        }
+        else if (paperReference is not null)
+        {
+            throw new InvalidOperationException(
+                "A non-paper Visit cannot include paper row provenance.");
+        }
+
         var status = VisitStatus(source.CurrentStatus);
         var consumption = source.CurrentConsumption is { } currentConsumption
             ? presentation.Consumption(ConsumptionStatus(currentConsumption.Status))
             : presentation.Value("NoMembershipConsumption");
+
+        var facts = Facts(
+            ("VisitType", presentation.VisitKind(source.VisitKind)),
+            ("Membership", source.CurrentConsumption?.MembershipTypeNameSnapshot),
+            ("Consumption", consumption)).ToList();
+        if (paperReference is not null)
+        {
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("PaperSheet"),
+                paperReference.PaperSheetNumber));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("LineNumber"),
+                presentation.Number(paperReference.LineNumber)));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("Explanation"),
+                paperReference.Explanation));
+        }
+
+        var identifiers = Ids(
+            ("Visit", source.VisitId),
+            ("Consumption", source.CurrentConsumption?.ConsumptionId),
+            ("Membership", source.CurrentConsumption?.MembershipId),
+            ("Cancellation", source.CurrentCancellationId),
+            ("EntryBatch", source.EntryBatchId),
+            ("EntryBatchRow", paperReference?.EntryBatchRowId));
 
         return Row(
             row,
@@ -184,18 +238,10 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
             "history-group-visit",
             "VisitMarked",
             status,
-            Facts(
-                ("VisitType", presentation.VisitKind(source.VisitKind)),
-                ("Membership", source.CurrentConsumption?.MembershipTypeNameSnapshot),
-                ("Consumption", consumption)),
+            facts.AsReadOnly(),
             change: null,
             source.Comment,
-            Ids(
-                ("Visit", source.VisitId),
-                ("Consumption", source.CurrentConsumption?.ConsumptionId),
-                ("Membership", source.CurrentConsumption?.MembershipId),
-                ("Cancellation", source.CurrentCancellationId),
-                ("EntryBatch", source.EntryBatchId)));
+            identifiers);
     }
 
     private ClientHistoryRowViewModel CanceledVisit(

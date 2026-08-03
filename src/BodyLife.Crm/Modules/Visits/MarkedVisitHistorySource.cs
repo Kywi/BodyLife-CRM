@@ -1,3 +1,4 @@
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Visits;
@@ -14,4 +15,5 @@ public sealed record MarkedVisitHistorySource(
     string? Comment,
     ClientVisitRowStatus CurrentStatus,
     ClientVisitConsumption? CurrentConsumption,
-    Guid? CurrentCancellationId);
+    Guid? CurrentCancellationId,
+    PaperFallbackEntryRowReference? PaperReference = null);

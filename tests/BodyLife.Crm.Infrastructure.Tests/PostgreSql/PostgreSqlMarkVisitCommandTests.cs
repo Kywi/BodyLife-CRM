@@ -439,14 +439,18 @@ public sealed class PostgreSqlMarkVisitCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task PaperFallbackPreservesOccurredRecordedBatchAndAuditMetadata()
+    public async Task PaperFallbackBindsCanonicalRowAndReplaysOriginalResult()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var fixture = await SeedFixtureAsync(database, dbContext);
-        var entryBatchId = Guid.NewGuid();
         var occurredAt = TestNow.AddDays(-2).AddMinutes(-15);
+        var paper = await SeedPaperRowAsync(
+            database,
+            fixture,
+            occurredAt,
+            lineNumber: 17);
         var command = CreateCommand(
             fixture,
             "paper-fallback",
@@ -454,18 +458,23 @@ public sealed class PostgreSqlMarkVisitCommandTests
             origin: EntryOrigin.PaperFallback,
             occurredAt: occurredAt,
             reason: "Recovered from signed reception sheet",
-            entryBatchId: entryBatchId);
+            entryBatchRowId: paper.RowId);
 
-        var result = await CreateHandler(dbContext).ExecuteAsync(
+        var handler = CreateHandler(dbContext);
+        var result = await handler.ExecuteAsync(
             command,
             CancellationToken.None);
+        var replay = await handler.ExecuteAsync(command, CancellationToken.None);
 
         AssertSuccessfulResult(result, fixture.ClientId);
+        AssertSuccessfulResult(replay, fixture.ClientId);
+        Assert.Equal(result.PrimaryEntityId, replay.PrimaryEntityId);
+        Assert.Equal(result.AuditEntryId, replay.AuditEntryId);
         var visit = await ReadVisitAsync(database, result.PrimaryEntityId!.Value.Value);
         Assert.Equal(occurredAt, visit.OccurredAt);
         Assert.Equal(TestNow, visit.RecordedAt);
         Assert.Equal("paper_fallback", visit.EntryOrigin);
-        Assert.Equal(entryBatchId, visit.EntryBatchId);
+        Assert.Equal(paper.BatchId, visit.EntryBatchId);
 
         var audit = await ReadAuditAsync(database, result.AuditEntryId!.Value.Value);
         Assert.Equal(occurredAt, audit.OccurredAt);
@@ -473,6 +482,355 @@ public sealed class PostgreSqlMarkVisitCommandTests
         Assert.Equal("paper_fallback", audit.EntryOrigin);
         Assert.Equal("Recovered from signed reception sheet", audit.Reason);
         Assert.Equal("paper-fallback", audit.IdempotencyKey);
+        using (var related = JsonDocument.Parse(audit.RelatedEntityRefs))
+        {
+            Assert.Equal(8, related.RootElement.EnumerateObject().Count());
+            Assert.Equal(
+                paper.BatchId,
+                related.RootElement.GetProperty("entryBatchId").GetGuid());
+            Assert.Equal(
+                paper.RowId,
+                related.RootElement.GetProperty("entryBatchRowId").GetGuid());
+            Assert.Equal(
+                paper.SheetNumber,
+                related.RootElement.GetProperty("paperSheetNumber").GetString());
+            Assert.Equal(
+                paper.LineNumber,
+                related.RootElement.GetProperty("lineNumber").GetInt32());
+            Assert.Equal(
+                paper.Explanation,
+                related.RootElement.GetProperty("paperExplanation").GetString());
+        }
+
+        var link = await ReadPaperRowLinkAsync(database, paper.RowId);
+        Assert.Equal(VisitAuditActions.VisitEntityType, link.EntityType);
+        Assert.Equal(result.PrimaryEntityId.Value.Value, link.EntityId);
+        Assert.Equal(1L, await CountRowsAsync(database, "visits"));
+        Assert.Equal(1L, await CountRowsAsync(database, "entry_batch_row_entities"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperFallbackRequiresOnlyItsRegisteredRowReference()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var paper = await SeedPaperRowAsync(database, fixture, VisitOccurredAt);
+        var handler = CreateHandler(dbContext);
+
+        var missing = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-row-missing",
+                VisitKind.OneOff,
+                origin: EntryOrigin.PaperFallback,
+                reason: "Paper row is required"),
+            CancellationToken.None);
+        var unknown = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-row-unknown",
+                VisitKind.OneOff,
+                origin: EntryOrigin.PaperFallback,
+                reason: "Unknown paper row",
+                entryBatchRowId: Guid.NewGuid()),
+            CancellationToken.None);
+        var callerBatch = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-caller-batch",
+                VisitKind.OneOff,
+                origin: EntryOrigin.PaperFallback,
+                reason: "Caller batch is forbidden",
+                entryBatchId: paper.BatchId,
+                entryBatchRowId: paper.RowId),
+            CancellationToken.None);
+        var normalWithRow = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "normal-paper-row",
+                VisitKind.OneOff,
+                entryBatchRowId: paper.RowId),
+            CancellationToken.None);
+
+        AssertError(missing, CommandErrorCode.ValidationFailed, "entryBatchRowId");
+        AssertError(unknown, CommandErrorCode.NotFound, "entryBatchRowId");
+        AssertError(callerBatch, CommandErrorCode.ValidationFailed, "entryBatchId");
+        AssertError(normalWithRow, CommandErrorCode.ValidationFailed, "entryBatchRowId");
+        await AssertNoVisitMutationAsync(database);
+        Assert.Equal(0L, await CountRowsAsync(database, "entry_batch_row_entities"));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperFallbackRejectsEventTimeAndSessionMismatch()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var otherSessionId = await InsertSessionAsync(database, fixture);
+        var wrongEvent = await SeedPaperRowAsync(
+            database,
+            fixture,
+            VisitOccurredAt,
+            eventType: "payment");
+        var wrongTime = await SeedPaperRowAsync(
+            database,
+            fixture,
+            VisitOccurredAt.AddMinutes(-1));
+        var wrongSession = await SeedPaperRowAsync(
+            database,
+            fixture,
+            VisitOccurredAt,
+            sessionId: otherSessionId);
+        var handler = CreateHandler(dbContext);
+
+        var eventResult = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-event-mismatch",
+                VisitKind.OneOff,
+                origin: EntryOrigin.PaperFallback,
+                reason: "Wrong event",
+                entryBatchRowId: wrongEvent.RowId),
+            CancellationToken.None);
+        var timeResult = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-time-mismatch",
+                VisitKind.OneOff,
+                origin: EntryOrigin.PaperFallback,
+                reason: "Wrong time",
+                entryBatchRowId: wrongTime.RowId),
+            CancellationToken.None);
+        var sessionResult = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-session-mismatch",
+                VisitKind.OneOff,
+                origin: EntryOrigin.PaperFallback,
+                reason: "Wrong session",
+                entryBatchRowId: wrongSession.RowId),
+            CancellationToken.None);
+
+        AssertError(eventResult, CommandErrorCode.ValidationFailed, "entryBatchRowId");
+        AssertError(timeResult, CommandErrorCode.ValidationFailed, "entryBatchRowId");
+        AssertError(sessionResult, CommandErrorCode.ValidationFailed, "entryBatchRowId");
+        await AssertNoVisitMutationAsync(database);
+        Assert.Equal(0L, await CountRowsAsync(database, "entry_batch_row_entities"));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperFallbackRejectsRowFromReconciledBatch()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var paper = await SeedPaperRowAsync(database, fixture, VisitOccurredAt);
+        await ReconcilePaperBatchAsync(database, fixture, paper.BatchId);
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-reconciled",
+                VisitKind.OneOff,
+                origin: EntryOrigin.PaperFallback,
+                reason: "Already reconciled sheet",
+                entryBatchRowId: paper.RowId),
+            CancellationToken.None);
+
+        AssertError(result, CommandErrorCode.StaleState, "entryBatchRowId");
+        await AssertNoVisitMutationAsync(database);
+        Assert.Equal(0L, await CountRowsAsync(database, "entry_batch_row_entities"));
+    }
+
+    [PostgreSqlFact]
+    public async Task ConcurrentReconciliationWinsBeforePaperVisitWithoutRace()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        MarkVisitFixture fixture;
+        PaperRowFixture paper;
+        await using (var setupContext = database.CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync();
+            fixture = await SeedFixtureAsync(database, setupContext);
+            paper = await SeedPaperRowAsync(database, fixture, VisitOccurredAt);
+        }
+
+        await using var reconciliationConnection = new NpgsqlConnection(
+            database.ConnectionString);
+        await reconciliationConnection.OpenAsync();
+        await using var reconciliationTransaction =
+            await reconciliationConnection.BeginTransactionAsync();
+        await using (var reconciliationCommand =
+            reconciliationConnection.CreateCommand())
+        {
+            reconciliationCommand.Transaction = reconciliationTransaction;
+            reconciliationCommand.CommandText =
+                """
+                update bodylife.entry_batches
+                set reconciled_at = @reconciled_at,
+                    reconciled_by_account_id = @account_id
+                where id = @batch_id
+                """;
+            reconciliationCommand.Parameters.AddWithValue("reconciled_at", TestNow);
+            reconciliationCommand.Parameters.AddWithValue(
+                "account_id",
+                fixture.Actor.AccountId.Value);
+            reconciliationCommand.Parameters.AddWithValue("batch_id", paper.BatchId);
+            Assert.Equal(1, await reconciliationCommand.ExecuteNonQueryAsync());
+        }
+
+        await using var visitContext = database.CreateDbContext();
+        var visitBackendPid = await GetBackendPidAsync(visitContext);
+        var visitTask = CreateHandler(visitContext).ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-reconciliation-race",
+                VisitKind.OneOff,
+                origin: EntryOrigin.PaperFallback,
+                reason: "Concurrent reconciliation",
+                entryBatchRowId: paper.RowId),
+            CancellationToken.None);
+        await WaitForLockWaitAsync(database, visitBackendPid);
+
+        await reconciliationTransaction.CommitAsync();
+        var result = await visitTask;
+
+        AssertError(result, CommandErrorCode.StaleState, "entryBatchRowId");
+        await AssertNoVisitMutationAsync(database);
+        Assert.Equal(0L, await CountRowsAsync(database, "entry_batch_row_entities"));
+    }
+
+    [PostgreSqlFact]
+    public async Task FailedPaperVisitRollsBackItsRowBindingAndLeavesRowReusable()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var paper = await SeedPaperRowAsync(database, fixture, VisitOccurredAt);
+        var valid = CreateCommand(
+            fixture,
+            "paper-row-reused",
+            VisitKind.OneOff,
+            origin: EntryOrigin.PaperFallback,
+            reason: "Recovered paper Visit",
+            entryBatchRowId: paper.RowId);
+        var handler = CreateHandler(dbContext);
+
+        var failed = await handler.ExecuteAsync(
+            valid with
+            {
+                ClientId = Guid.NewGuid(),
+                Envelope = valid.Envelope with { IdempotencyKey = "paper-row-failed" },
+            },
+            CancellationToken.None);
+        AssertError(failed, CommandErrorCode.NotFound, "clientId");
+        Assert.Equal(0L, await CountRowsAsync(database, "entry_batch_row_entities"));
+
+        var succeeded = await handler.ExecuteAsync(valid, CancellationToken.None);
+
+        AssertSuccessfulResult(succeeded, fixture.ClientId);
+        var link = await ReadPaperRowLinkAsync(database, paper.RowId);
+        Assert.Equal(succeeded.PrimaryEntityId!.Value.Value, link.EntityId);
+        Assert.Equal(1L, await CountRowsAsync(database, "visits"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task ConcurrentPaperRowReuseCommitsExactlyOneVisit()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        MarkVisitFixture fixture;
+        PaperRowFixture paper;
+        await using (var setupContext = database.CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync();
+            fixture = await SeedFixtureAsync(database, setupContext);
+            paper = await SeedPaperRowAsync(database, fixture, VisitOccurredAt);
+        }
+
+        var firstCommand = CreateCommand(
+            fixture,
+            "paper-row-first",
+            VisitKind.OneOff,
+            origin: EntryOrigin.PaperFallback,
+            reason: "Concurrent paper row",
+            entryBatchRowId: paper.RowId);
+        var secondCommand = firstCommand with
+        {
+            Envelope = firstCommand.Envelope with
+            {
+                IdempotencyKey = "paper-row-second",
+            },
+        };
+        await using var firstContext = database.CreateDbContext();
+        await using var secondContext = database.CreateDbContext();
+
+        var results = await Task.WhenAll(
+            CreateHandler(firstContext).ExecuteAsync(
+                firstCommand,
+                CancellationToken.None),
+            CreateHandler(secondContext).ExecuteAsync(
+                secondCommand,
+                CancellationToken.None));
+
+        Assert.Single(results, result => result.Status == CommandStatus.Success);
+        var rejected = Assert.Single(
+            results,
+            result => result.Status == CommandStatus.Error);
+        AssertError(
+            rejected,
+            CommandErrorCode.DuplicateSubmission,
+            "entryBatchRowId");
+        Assert.Equal(1L, await CountRowsAsync(database, "visits"));
+        Assert.Equal(1L, await CountRowsAsync(database, "entry_batch_row_entities"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task ConcurrentPaperSameKeyConvergesOnOriginalSuccess()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        MarkVisitFixture fixture;
+        PaperRowFixture paper;
+        await using (var setupContext = database.CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync();
+            fixture = await SeedFixtureAsync(database, setupContext);
+            paper = await SeedPaperRowAsync(database, fixture, VisitOccurredAt);
+        }
+
+        var command = CreateCommand(
+            fixture,
+            "paper-same-key",
+            VisitKind.OneOff,
+            origin: EntryOrigin.PaperFallback,
+            reason: "Concurrent paper replay",
+            entryBatchRowId: paper.RowId);
+        await using var firstContext = database.CreateDbContext();
+        await using var secondContext = database.CreateDbContext();
+
+        var results = await Task.WhenAll(
+            CreateHandler(firstContext).ExecuteAsync(command, CancellationToken.None),
+            CreateHandler(secondContext).ExecuteAsync(command, CancellationToken.None));
+
+        Assert.All(
+            results,
+            result => AssertSuccessfulResult(result, fixture.ClientId));
+        Assert.Equal(results[0].PrimaryEntityId, results[1].PrimaryEntityId);
+        Assert.Equal(results[0].AuditEntryId, results[1].AuditEntryId);
+        Assert.Equal(1L, await CountRowsAsync(database, "visits"));
+        Assert.Equal(1L, await CountRowsAsync(database, "entry_batch_row_entities"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
     [PostgreSqlFact]
@@ -803,6 +1161,7 @@ public sealed class PostgreSqlMarkVisitCommandTests
         return new MarkVisitCommandHandler(
             dbContext,
             new BusinessAuditAppender(dbContext),
+            new PaperFallbackEntryRowBinder(dbContext),
             eligibilityPreparer,
             new MembershipStateRecalculator(cacheRebuilder),
             new GetMembershipStateQueryHandler(dbContext, timeProvider),
@@ -818,7 +1177,8 @@ public sealed class PostgreSqlMarkVisitCommandTests
         EntryOrigin origin = EntryOrigin.Normal,
         DateTimeOffset? occurredAt = null,
         string? reason = null,
-        Guid? entryBatchId = null)
+        Guid? entryBatchId = null,
+        Guid? entryBatchRowId = null)
     {
         return new MarkVisitCommand(
             new CommandEnvelope(
@@ -828,12 +1188,138 @@ public sealed class PostgreSqlMarkVisitCommandTests
                 occurredAt ?? VisitOccurredAt,
                 idempotencyKey,
                 reason,
-                "  Front desk Visit  "),
+                "  Front desk Visit  ",
+                entryBatchRowId),
             fixture.ClientId,
             visitKind,
             membershipId,
             acknowledgements ?? [],
             entryBatchId);
+    }
+
+    private static async Task<PaperRowFixture> SeedPaperRowAsync(
+        PostgreSqlTestDatabase database,
+        MarkVisitFixture fixture,
+        DateTimeOffset occurredAt,
+        string eventType = "visit",
+        int lineNumber = 1,
+        Guid? sessionId = null)
+    {
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var sheetNumber = $"SHEET-{batchId:N}".ToUpperInvariant();
+        var explanation = $"Recovered {eventType} from paper line {lineNumber}";
+        var businessDate = BusinessTimeZone.GetBusinessDate(occurredAt);
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.entry_batches (
+                id, batch_type, paper_sheet_number, business_date_start,
+                business_date_end, recorded_at, recorded_by_account_id,
+                reconciled_at, reconciled_by_account_id, note)
+            values (
+                @batch_id, 'paper_fallback', @sheet_number,
+                @business_date, @business_date, @batch_recorded_at,
+                @account_id, null, null, 'MarkVisit paper fixture');
+
+            insert into bodylife.entry_batch_rows (
+                id, entry_batch_id, line_number, event_type, occurred_at,
+                explanation, recorded_at, recorded_by_account_id, session_id)
+            values (
+                @row_id, @batch_id, @line_number, @event_type, @occurred_at,
+                @explanation, @row_recorded_at, @account_id, @session_id);
+            """;
+        command.Parameters.AddWithValue("batch_id", batchId);
+        command.Parameters.AddWithValue("sheet_number", sheetNumber);
+        command.Parameters.AddWithValue("business_date", NpgsqlDbType.Date, businessDate);
+        command.Parameters.AddWithValue("batch_recorded_at", TestNow.AddMinutes(-10));
+        command.Parameters.AddWithValue("account_id", fixture.Actor.AccountId.Value);
+        command.Parameters.AddWithValue("row_id", rowId);
+        command.Parameters.AddWithValue("line_number", lineNumber);
+        command.Parameters.AddWithValue("event_type", eventType);
+        command.Parameters.AddWithValue("occurred_at", occurredAt);
+        command.Parameters.AddWithValue("explanation", explanation);
+        command.Parameters.AddWithValue("row_recorded_at", TestNow.AddMinutes(-5));
+        command.Parameters.AddWithValue(
+            "session_id",
+            sessionId ?? fixture.Actor.SessionId.Value);
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
+        return new PaperRowFixture(
+            batchId,
+            rowId,
+            sheetNumber,
+            lineNumber,
+            explanation);
+    }
+
+    private static async Task<Guid> InsertSessionAsync(
+        PostgreSqlTestDatabase database,
+        MarkVisitFixture fixture)
+    {
+        var sessionId = Guid.NewGuid();
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.sessions (
+                id, account_id, device_label, started_at, expires_at,
+                ended_at, last_seen_at)
+            values (
+                @id, @account_id, 'Other reception tablet', @started_at,
+                @expires_at, null, @last_seen_at)
+            """;
+        command.Parameters.AddWithValue("id", sessionId);
+        command.Parameters.AddWithValue("account_id", fixture.Actor.AccountId.Value);
+        command.Parameters.AddWithValue("started_at", TestNow.AddHours(-1));
+        command.Parameters.AddWithValue("expires_at", TestNow.AddHours(8));
+        command.Parameters.AddWithValue("last_seen_at", TestNow.AddMinutes(-1));
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        return sessionId;
+    }
+
+    private static async Task ReconcilePaperBatchAsync(
+        PostgreSqlTestDatabase database,
+        MarkVisitFixture fixture,
+        Guid batchId)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            update bodylife.entry_batches
+            set reconciled_at = @reconciled_at,
+                reconciled_by_account_id = @account_id
+            where id = @batch_id
+            """;
+        command.Parameters.AddWithValue("reconciled_at", TestNow);
+        command.Parameters.AddWithValue("account_id", fixture.Actor.AccountId.Value);
+        command.Parameters.AddWithValue("batch_id", batchId);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task<PaperRowLink> ReadPaperRowLinkAsync(
+        PostgreSqlTestDatabase database,
+        Guid rowId)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select entity_type, entity_id
+            from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = @row_id
+            """;
+        command.Parameters.AddWithValue("row_id", rowId);
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+        var result = new PaperRowLink(reader.GetString(0), reader.GetGuid(1));
+        Assert.False(await reader.ReadAsync());
+        return result;
     }
 
     private static async Task<MarkVisitFixture> SeedFixtureAsync(
@@ -1303,6 +1789,15 @@ public sealed class PostgreSqlMarkVisitCommandTests
         ActorContext Actor,
         Guid ClientId,
         Guid MembershipId);
+
+    private sealed record PaperRowFixture(
+        Guid BatchId,
+        Guid RowId,
+        string SheetNumber,
+        int LineNumber,
+        string Explanation);
+
+    private sealed record PaperRowLink(string EntityType, Guid EntityId);
 
     private sealed record VisitRow(
         Guid ClientId,
