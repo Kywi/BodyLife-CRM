@@ -5,6 +5,7 @@ using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
@@ -18,7 +19,9 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
     INegativeClosurePaymentWriter paymentWriter,
     MembershipNegativeVisitSelector negativeVisitSelector,
     MembershipStateCacheRebuilder stateCacheRebuilder,
-    TimeProvider timeProvider)
+    IPaymentDayReconciliationStatusProvider dayReconciliationStatusProvider,
+    TimeProvider timeProvider,
+    PaperFallbackEntryRowBinder? paperFallbackEntryRowBinder = null)
     : IBodyLifeCommandHandler<CorrectNegativeVisitCoverageCommand>
 {
     private const string CommandName = "CorrectNegativeVisitCoverage";
@@ -37,6 +40,8 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
         }
 
         var correction = normalized!;
+        var rowBinder = paperFallbackEntryRowBinder
+            ?? new PaperFallbackEntryRowBinder(dbContext);
         if (!MembershipCommandSupport.IsAllowedActorShape(correction.Envelope.Actor))
         {
             return CorrectNegativeVisitCoverageCommandSupport.Error(
@@ -117,6 +122,35 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                     fingerprint,
                     cancellationToken);
             }
+
+            var paperBinding = await rowBinder.PrepareAsync(
+                correction.Envelope,
+                PaperFallbackEventType.CorrectionOrCancellation,
+                cancellationToken);
+            if (paperBinding.RowAlreadyLinked)
+            {
+                existingIdempotency = await MembershipCommandSupport.FindIdempotencyAsync(
+                    dbContext,
+                    CommandName,
+                    correction.IdempotencyKey,
+                    cancellationToken);
+                if (existingIdempotency is not null)
+                {
+                    return await ReplayOrRejectDuplicateAsync(
+                        existingIdempotency,
+                        correction,
+                        fingerprint,
+                        cancellationToken);
+                }
+            }
+
+            if (paperBinding.Error is not null)
+            {
+                return await RollBackAsync(paperBinding.Error);
+            }
+
+            var paperReference = paperBinding.Reference;
+            var entryBatchId = paperReference?.EntryBatchId;
 
             var original = await LockClosureAsync(
                 correction.OriginalNegativeClosureId,
@@ -247,6 +281,23 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
             }
 
             var originalPayment = originalPayments.SingleOrDefault();
+            var changedAfterClose = originalPayment is not null
+                && await IsChangedAfterCloseAsync(
+                    originalPayment.OccurredAt,
+                    correction.Mode == NegativeVisitCoverageCorrectionMode.Replace
+                        ? correction.Envelope.OccurredAt
+                        : null,
+                    cancellationToken);
+            if (changedAfterClose
+                && correction.Envelope.Actor.Role != ActorRole.Owner)
+            {
+                return await RollBackAsync(
+                    CorrectNegativeVisitCoverageCommandSupport.Error(
+                        CommandErrorCode.DayClosedRequiresOwner,
+                        "Only the Owner can correct negative coverage that affects a reconciled cash day.",
+                        "originalNegativeClosureId"));
+            }
+
             if (originalPayment is not null)
             {
                 originalPayment.Status = targetStatus;
@@ -333,19 +384,29 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                     RecordedAt = recordedAt,
                     RecordedByAccountId = correction.Envelope.Actor.AccountId.Value,
                     SessionId = correction.Envelope.Actor.SessionId.Value,
-                    EntryOrigin = "normal",
-                    EntryBatchId = correction.EntryBatchId,
+                    EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
+                        correction.Envelope.EntryOrigin),
+                    EntryBatchId = entryBatchId,
                     IdempotencyKey = correction.IdempotencyKey,
                     Status = "active",
                 };
                 dbContext.Set<MembershipNegativeClosureRecord>().Add(replacement);
+                if (paperReference is not null)
+                {
+                    rowBinder.LinkEntity(
+                        paperReference,
+                        MembershipNegativeClosureAuditActions.EntityType,
+                        replacement.Id);
+                }
 
                 var staged = StageReplacementFacts(
                     correction,
                     replacement,
                     restoredSelection,
                     preparedOneOffReplacement,
-                    affectedMembershipIds);
+                    affectedMembershipIds,
+                    rowBinder,
+                    paperReference);
                 replacementVisitIds = staged.VisitIds;
                 replacementLineSummaries = staged.LineSummaries;
                 if (preparedOneOffReplacement is not null)
@@ -357,9 +418,19 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         new Money(
                             preparedOneOffReplacement.TotalAmount,
                             preparedOneOffReplacement.Currency),
-                        correction.EntryBatchId,
-                        recordedAt);
+                        entryBatchId,
+                        recordedAt,
+                        paperReference,
+                        correctionId,
+                        changedAfterClose);
                     replacementPaymentId = paymentWrite.PaymentId;
+                    if (paperReference is not null)
+                    {
+                        rowBinder.LinkEntity(
+                            paperReference,
+                            PaymentAuditActions.EntityType,
+                            paymentWrite.PaymentId);
+                    }
                 }
 
                 await dbContext.SaveChangesAsync(cancellationToken);
@@ -398,11 +469,18 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                 SessionId = correction.Envelope.Actor.SessionId.Value,
                 EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
                     correction.Envelope.EntryOrigin),
-                EntryBatchId = correction.EntryBatchId,
+                EntryBatchId = entryBatchId,
                 IdempotencyKey = correction.IdempotencyKey,
             };
             dbContext.Set<MembershipNegativeClosureCorrectionRecord>()
                 .Add(correctionRecord);
+            if (paperReference is not null)
+            {
+                rowBinder.LinkEntity(
+                    paperReference,
+                    "membership_negative_closure_correction",
+                    correctionId);
+            }
 
             if (replacementClosureId is { } createdClosureId)
             {
@@ -412,7 +490,23 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                     MembershipNegativeClosureAuditActions.EntityType,
                     createdClosureId,
                     recordedAt,
-                    relatedEntityRefs: new
+                    relatedEntityRefs: paperReference is { } replacementAuditPaperReference
+                    ? new
+                    {
+                        ClientId = original.ClientId,
+                        CorrectionId = correctionId,
+                        OriginalNegativeClosureId = original.Id,
+                        original.CoveringMembershipId,
+                        ReplacementPaymentId = replacementPaymentId,
+                        SourceMembershipIds = affectedMembershipIds.Order().ToArray(),
+                        VisitIds = replacementVisitIds,
+                        replacementAuditPaperReference.EntryBatchId,
+                        replacementAuditPaperReference.EntryBatchRowId,
+                        replacementAuditPaperReference.PaperSheetNumber,
+                        replacementAuditPaperReference.LineNumber,
+                        PaperExplanation = replacementAuditPaperReference.Explanation,
+                    }
+                    : new
                     {
                         ClientId = original.ClientId,
                         CorrectionId = correctionId,
@@ -438,8 +532,14 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         original.CoveringMembershipId,
                         ReplacementPaymentId = replacementPaymentId,
                         RemainingNegativeBalance = remainingNegativeBalance,
+                        OccurredAt = correction.Envelope.OccurredAt!.Value,
+                        RecordedAt = recordedAt,
+                        correctionRecord.EntryOrigin,
+                        correctionRecord.EntryBatchId,
+                        ChangedAfterClose = changedAfterClose,
                         Status = "active",
-                    });
+                    },
+                    changedAfterClose: changedAfterClose);
             }
 
             AuditEntryId? paymentLifecycleAuditId = null;
@@ -452,7 +552,9 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                     correctionId,
                     replacementClosureId,
                     replacementPaymentId,
-                    recordedAt);
+                    recordedAt,
+                    paperReference,
+                    changedAfterClose);
             }
 
             var actionType = correction.Mode
@@ -465,7 +567,24 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                 MembershipNegativeClosureAuditActions.EntityType,
                 original.Id,
                 recordedAt,
-                relatedEntityRefs: new
+                relatedEntityRefs: paperReference is { } lifecycleAuditPaperReference
+                ? new
+                {
+                    ClientId = original.ClientId,
+                    CorrectionId = correctionId,
+                    ReplacementNegativeClosureId = replacementClosureId,
+                    ReplacementClosureAuditId = replacementClosureAuditId?.Value,
+                    OriginalPaymentId = originalPayment?.Id,
+                    ReplacementPaymentId = replacementPaymentId,
+                    PaymentLifecycleAuditId = paymentLifecycleAuditId?.Value,
+                    MembershipIds = affectedMembershipIds.Order().ToArray(),
+                    lifecycleAuditPaperReference.EntryBatchId,
+                    lifecycleAuditPaperReference.EntryBatchRowId,
+                    lifecycleAuditPaperReference.PaperSheetNumber,
+                    lifecycleAuditPaperReference.LineNumber,
+                    PaperExplanation = lifecycleAuditPaperReference.Explanation,
+                }
+                : new
                 {
                     ClientId = original.ClientId,
                     CorrectionId = correctionId,
@@ -484,7 +603,11 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         CorrectionId = correctionId,
                         Mode = correctionRecord.Mode,
                         correctionRecord.Reason,
+                        correctionRecord.OccurredAt,
                         correctionRecord.RecordedAt,
+                        correctionRecord.EntryOrigin,
+                        correctionRecord.EntryBatchId,
+                        ChangedAfterClose = changedAfterClose,
                     },
                     OriginalClosure = new
                     {
@@ -502,7 +625,8 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                             PaymentId = replacementPaymentId,
                         },
                     RemainingNegativeBalance = remainingNegativeBalance,
-                });
+                },
+                changedAfterClose: changedAfterClose);
 
             dbContext.Set<CommandIdempotencyRecord>().Add(
                 CorrectNegativeVisitCoverageCommandSupport
@@ -526,7 +650,8 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                 originalPayment?.Id,
                 replacementPaymentId,
                 auditEntryId,
-                remainingNegativeBalance);
+                remainingNegativeBalance,
+                changedAfterClose);
         }
         catch (Exception exception)
         {
@@ -639,6 +764,24 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
         var remaining = await GetClientNegativeBalanceAsync(
             clientId,
             cancellationToken);
+        var expectedAction = correction.Mode
+            == NegativeVisitCoverageCorrectionMode.Cancel
+            ? MembershipNegativeClosureAuditActions.Canceled
+            : MembershipNegativeClosureAuditActions.Replaced;
+        var audit = await dbContext.Set<BusinessAuditEntryRecord>()
+            .AsNoTracking()
+            .Where(entry => entry.Id == auditEntryId.Value
+                && entry.ActionType == expectedAction
+                && entry.EntityType
+                    == MembershipNegativeClosureAuditActions.EntityType
+                && entry.EntityId == original.Id)
+            .Select(entry => new { entry.ChangedAfterClose })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (audit is null)
+        {
+            return CorrectNegativeVisitCoverageCommandSupport.DuplicateSubmission();
+        }
+
         return CorrectNegativeVisitCoverageCommandSupport.Success(
             correctionId,
             original.Id,
@@ -648,7 +791,8 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
             originalPaymentId,
             replacementPaymentId,
             auditEntryId,
-            remaining);
+            remaining,
+            audit.ChangedAfterClose);
     }
 
     private async Task<bool> LockClientAsync(
@@ -807,7 +951,9 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
         MembershipNegativeClosureRecord replacement,
         MembershipNegativeVisitSelection restoredSelection,
         PreparedOneOffClosureLines? preparedOneOff,
-        ISet<Guid> affectedMembershipIds)
+        ISet<Guid> affectedMembershipIds,
+        PaperFallbackEntryRowBinder rowBinder,
+        PaperFallbackEntryRowReference? paperReference)
     {
         var visitIds = new List<Guid>(replacement.VisitsCount);
         var lineSummaries = new List<object>();
@@ -832,6 +978,13 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         LineTotal = preparedLine.LineTotal,
                         Sequence = preparedLine.Selection.Sequence,
                     });
+                if (paperReference is not null)
+                {
+                    rowBinder.LinkEntity(
+                        paperReference,
+                        "membership_negative_closure_line",
+                        lineId);
+                }
                 lineSummaries.Add(new
                 {
                     LineId = lineId,
@@ -851,10 +1004,11 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                     var candidate = restoredSelection.OpenConcreteVisits[candidateIndex++];
                     visitIds.Add(candidate.VisitId);
                     affectedMembershipIds.Add(candidate.SourceMembershipId);
+                    var itemId = Guid.NewGuid();
                     dbContext.Set<MembershipNegativeClosureItemRecord>().Add(
                         new MembershipNegativeClosureItemRecord
                         {
-                            Id = Guid.NewGuid(),
+                            Id = itemId,
                             NegativeClosureId = replacement.Id,
                             ClientId = replacement.ClientId,
                             ClosureLineId = lineId,
@@ -866,6 +1020,13 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                             NewConsumptionId = null,
                             Status = "active",
                         });
+                    if (paperReference is not null)
+                    {
+                        rowBinder.LinkEntity(
+                            paperReference,
+                            "membership_negative_closure_item",
+                            itemId);
+                    }
                 }
             }
         }
@@ -895,6 +1056,13 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         RecordedSessionId = correction.Envelope.Actor.SessionId.Value,
                         Status = "active",
                     });
+                if (paperReference is not null)
+                {
+                    rowBinder.LinkEntity(
+                        paperReference,
+                        "visit_consumption",
+                        consumptionId);
+                }
                 dbContext.Set<MembershipNegativeClosureItemRecord>().Add(
                     new MembershipNegativeClosureItemRecord
                     {
@@ -910,6 +1078,13 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         NewConsumptionId = consumptionId,
                         Status = "active",
                     });
+                if (paperReference is not null)
+                {
+                    rowBinder.LinkEntity(
+                        paperReference,
+                        "membership_negative_closure_item",
+                        itemId);
+                }
             }
         }
 
@@ -932,6 +1107,38 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
             .SumAsync(cancellationToken);
     }
 
+    private async Task<bool> IsChangedAfterCloseAsync(
+        DateTimeOffset originalPaymentOccurredAt,
+        DateTimeOffset? replacementPaymentOccurredAt,
+        CancellationToken cancellationToken)
+    {
+        var businessDates = new HashSet<DateOnly>
+        {
+            BusinessTimeZone.GetBusinessDate(originalPaymentOccurredAt),
+        };
+        if (replacementPaymentOccurredAt is { } replacementTime)
+        {
+            businessDates.Add(BusinessTimeZone.GetBusinessDate(replacementTime));
+        }
+
+        var changedAfterClose = false;
+        foreach (var businessDate in businessDates)
+        {
+            var status = await dayReconciliationStatusProvider.GetStatusAsync(
+                businessDate,
+                cancellationToken);
+            if (!Enum.IsDefined(status))
+            {
+                throw new InvalidOperationException(
+                    $"Payment day reconciliation status '{status}' is not supported.");
+            }
+
+            changedAfterClose |= status == PaymentDayReconciliationStatus.Reconciled;
+        }
+
+        return changedAfterClose;
+    }
+
     private AuditEntryId AppendPaymentLifecycleAudit(
         NormalizedNegativeCoverageCorrection correction,
         MembershipNegativeClosureRecord original,
@@ -939,7 +1146,9 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
         Guid correctionId,
         Guid? replacementClosureId,
         Guid? replacementPaymentId,
-        DateTimeOffset recordedAt)
+        DateTimeOffset recordedAt,
+        PaperFallbackEntryRowReference? paperReference,
+        bool changedAfterClose)
     {
         var action = correction.Mode == NegativeVisitCoverageCorrectionMode.Cancel
             ? PaymentAuditActions.Canceled
@@ -950,7 +1159,21 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
             PaymentAuditActions.EntityType,
             originalPayment.Id,
             recordedAt,
-            relatedEntityRefs: new
+            relatedEntityRefs: paperReference is { } paymentAuditPaperReference
+            ? new
+            {
+                original.ClientId,
+                OriginalNegativeClosureId = original.Id,
+                CorrectionId = correctionId,
+                ReplacementNegativeClosureId = replacementClosureId,
+                ReplacementPaymentId = replacementPaymentId,
+                paymentAuditPaperReference.EntryBatchId,
+                paymentAuditPaperReference.EntryBatchRowId,
+                paymentAuditPaperReference.PaperSheetNumber,
+                paymentAuditPaperReference.LineNumber,
+                PaperExplanation = paymentAuditPaperReference.Explanation,
+            }
+            : new
             {
                 original.ClientId,
                 OriginalNegativeClosureId = original.Id,
@@ -968,7 +1191,9 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                 ReplacementPaymentId = replacementPaymentId,
                 CoverageCorrectionId = correctionId,
                 NoRefundOrDeltaCalculated = true,
-            });
+                ChangedAfterClose = changedAfterClose,
+            },
+            changedAfterClose);
     }
 
     private static object SummarizeOriginal(

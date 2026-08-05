@@ -94,7 +94,7 @@ internal static class CorrectNegativeVisitCoverageCommandSupport
         if (command.EntryBatchId is not null)
         {
             return ValidationError(
-                "Normal coverage correction cannot carry paper batch metadata.",
+                "Coverage correction derives paper batch metadata from its paper row.",
                 "entryBatchId");
         }
 
@@ -141,7 +141,7 @@ internal static class CorrectNegativeVisitCoverageCommandSupport
             }),
             correction.ReplacementNewMembershipCoverageCount,
             correction.ExpectedOldestOpenNegativeVisitId,
-            correction.EntryBatchId,
+            correction.Envelope.EntryBatchRowId,
         });
         return Convert.ToHexString(SHA256.HashData(payload));
     }
@@ -196,7 +196,8 @@ internal static class CorrectNegativeVisitCoverageCommandSupport
             AccountKind = MapKind(correction.Envelope.Actor.AccountKind),
             SessionId = correction.Envelope.Actor.SessionId.Value,
             DeviceLabel = correction.Envelope.Actor.DeviceLabel,
-            EntryOrigin = "normal",
+            EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
+                correction.Envelope.EntryOrigin),
             Status = SucceededIdempotencyStatus,
             CreatedAt = recordedAt,
             CompletedAt = recordedAt,
@@ -217,7 +218,8 @@ internal static class CorrectNegativeVisitCoverageCommandSupport
         Guid? originalPaymentId,
         Guid? replacementPaymentId,
         AuditEntryId auditEntryId,
-        int remainingNegativeBalance)
+        int remainingNegativeBalance,
+        bool changedAfterClose)
     {
         var related = membershipIds
             .Order()
@@ -249,7 +251,8 @@ internal static class CorrectNegativeVisitCoverageCommandSupport
                 clientId),
             related,
             warnings,
-            auditEntryId);
+            auditEntryId,
+            changedAfterClose);
     }
 
     internal static bool TryMapPostgresFailure(
@@ -408,11 +411,27 @@ internal static class CorrectNegativeVisitCoverageCommandSupport
                 "requestCorrelationId");
         }
 
-        if (envelope.EntryOrigin != EntryOrigin.Normal)
+        if (envelope.EntryOrigin is not (EntryOrigin.Normal or EntryOrigin.PaperFallback))
         {
             return ValidationError(
-                "Coverage correction currently accepts only normal entry origin.",
+                "Coverage correction accepts only normal or paper fallback entry origin.",
                 "entryOrigin");
+        }
+
+        if (envelope.EntryOrigin == EntryOrigin.Normal
+            && envelope.EntryBatchRowId is not null)
+        {
+            return ValidationError(
+                "Entry batch row id is only valid for paper fallback entry.",
+                "entryBatchRowId");
+        }
+
+        if (envelope.EntryOrigin == EntryOrigin.PaperFallback
+            && (envelope.EntryBatchRowId is null || envelope.EntryBatchRowId == Guid.Empty))
+        {
+            return ValidationError(
+                "Paper fallback entry requires an entry batch row id.",
+                "entryBatchRowId");
         }
 
         if (envelope.OccurredAt is null
@@ -460,11 +479,12 @@ internal static class CorrectNegativeVisitCoverageCommandSupport
         normalized = new CommandEnvelope(
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(correlationId),
-            EntryOrigin.Normal,
+            envelope.EntryOrigin,
             occurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 

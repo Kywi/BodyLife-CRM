@@ -18,7 +18,9 @@ public sealed class NegativeClosurePaymentWriter(
         Money amount,
         Guid? entryBatchId,
         DateTimeOffset recordedAt,
-        PaperFallbackEntryRowReference? paperReference = null)
+        PaperFallbackEntryRowReference? paperReference = null,
+        Guid? coverageCorrectionId = null,
+        bool changedAfterClose = false)
     {
         ArgumentNullException.ThrowIfNull(envelope);
         if (clientId == Guid.Empty)
@@ -73,12 +75,14 @@ public sealed class NegativeClosurePaymentWriter(
                 auditPaperReference.PaperSheetNumber,
                 auditPaperReference.LineNumber,
                 PaperExplanation = auditPaperReference.Explanation,
+                CoverageCorrectionId = coverageCorrectionId,
             }
             : new
             {
                 ClientId = clientId,
                 MembershipId = (Guid?)null,
                 NegativeClosureId = negativeClosureId,
+                CoverageCorrectionId = coverageCorrectionId,
             };
 
         var auditEntryId = auditAppender.Append(
@@ -111,8 +115,11 @@ public sealed class NegativeClosurePaymentWriter(
                     Kind = "negative_visit_one_off_closure",
                     NegativeClosureId = negativeClosureId,
                     IsStandalonePayment = false,
+                    CoverageCorrectionId = coverageCorrectionId,
+                    ChangedAfterClose = changedAfterClose,
                 },
-            });
+            },
+            changedAfterClose: changedAfterClose);
 
         return new NegativeClosurePaymentWriteResult(paymentId, auditEntryId);
     }

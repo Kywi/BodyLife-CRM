@@ -13,7 +13,9 @@ public interface INegativeClosurePaymentWriter
         Money amount,
         Guid? entryBatchId,
         DateTimeOffset recordedAt,
-        PaperFallbackEntryRowReference? paperReference = null);
+        PaperFallbackEntryRowReference? paperReference = null,
+        Guid? coverageCorrectionId = null,
+        bool changedAfterClose = false);
 }
 
 public sealed record NegativeClosurePaymentWriteResult(

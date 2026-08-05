@@ -14486,3 +14486,64 @@ Stop point:
   and its paper provenance, add typed canceled/replaced audit explanations and
   canonical history/report checks, and keep the final schema invariant for the
   single greenfield baseline. Do not begin Milestone 11.
+
+## Step 226 - Bound paper rows to negative coverage corrections
+
+Status: completed for the command and persistence half of
+`CorrectNegativeVisitCoverage`. Milestone 10.5 remains in progress; Milestone
+11 has not started.
+
+Completed:
+
+- Made correction/cancellation accept only `normal` or `paper_fallback`, reject
+  caller-supplied legacy batch ids, require a registered
+  `correction_or_cancellation` row for paper entries and include its row id in
+  the idempotency fingerprint. The canonical batch is derived only from the
+  locked row.
+- Preserved Client -> batch -> row -> closure locking and linked only facts
+  created by the correction. Cancellation links its correction record;
+  one-off replacement additionally links the replacement closure, every line
+  and item, and the exact replacement Payment; new-Membership replacement
+  links the replacement closure, every item and new Visit consumption without
+  creating a Payment.
+- Kept the original closure, items, consumptions, sale Membership and Payments
+  on their original provenance. Replacement payment audit now carries the
+  coverage correction id, and every correction-created audit carries the
+  verified paper row reference.
+- Applied reconciled cash-day policy to one-off coverage correction. Admin is
+  denied when either the original or replacement Payment business date is
+  reconciled; Owner may proceed and every affected closure/Payment audit plus
+  the command result and idempotent replay is marked `changed_after_close`.
+- Proved same-key replay, different-key row reuse rejection, mismatched-row
+  rollback and forced-audit rollback. A failed transaction leaves no paper
+  links or replacement facts and the same row can be retried successfully.
+- Kept the accepted sterile-database strategy and added no interim migration.
+  Exact cross-table paper-row shapes remain deferred to the final greenfield
+  baseline after all Milestone 10.5 command integrations are complete.
+- Independent review found and drove fixes for reconciled-day policy and paper
+  rollback coverage. Fresh review found no remaining command/persistence
+  provenance issue; it identified the expected next presentation work for
+  canceled/replaced closure audit and replacement creation event labels.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 416/416; full Web tests passed: 348/348.
+- Focused PostgreSQL correction tests passed: 14/14 with no skips, including
+  both replacement modes, replay/reuse, forced-audit rollback/retry,
+  reconciled Admin denial, Owner override and distinct original/replacement
+  business dates.
+- Original one-off creation regressions passed: 11/11; canonical negative
+  coverage query/preview regressions passed: 20/20.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Add fail-closed typed explanations for
+  `membership_negative_closure.canceled` and `.replaced`, support both initial
+  and correction-created `membership_negative_closure.created`, and label a
+  correction-created negative-closure `payment.created` as
+  `correction_or_cancellation`. Then add canonical negative-coverage source
+  rows to `GetClientHistory` so original and correction facts remain visible.
+  Do not begin issued-sale correction paper integration or Milestone 11 until
+  this audit/history slice is green.

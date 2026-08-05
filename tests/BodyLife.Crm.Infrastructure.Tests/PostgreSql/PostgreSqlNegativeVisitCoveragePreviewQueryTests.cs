@@ -7,6 +7,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -632,6 +633,7 @@ public sealed partial class PostgreSqlGetClientNegativeVisitCoverageQueryTests
             new NegativeClosurePaymentWriter(dbContext, auditAppender),
             new MembershipNegativeVisitSelector(dbContext),
             new MembershipStateCacheRebuilder(dbContext, timeProvider),
+            new OpenPaymentDayStatusProvider(),
             timeProvider);
     }
 
@@ -715,6 +717,17 @@ public sealed partial class PostgreSqlGetClientNegativeVisitCoverageQueryTests
             }
 
             return result;
+        }
+    }
+
+    private sealed class OpenPaymentDayStatusProvider
+        : IPaymentDayReconciliationStatusProvider
+    {
+        public Task<PaymentDayReconciliationStatus> GetStatusAsync(
+            DateOnly businessDate,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentDayReconciliationStatus.Open);
         }
     }
 }

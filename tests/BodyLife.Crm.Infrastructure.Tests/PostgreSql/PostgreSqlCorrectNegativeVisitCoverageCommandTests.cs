@@ -121,6 +121,461 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task PaperCancelLinksOnlyTheNewCorrectionAndUsesTheRegisteredRow()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(
+            database,
+            ActorRole.Admin,
+            AccountKind.NamedAdmin);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, 3);
+        var originalClosureId = await CloseOneOffAsync(
+            dbContext,
+            fixture,
+            "normal-one-off-for-paper-cancel",
+            quantity: 2,
+            fixture.OneOffTypeAId);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            CorrectionNow,
+            "correction_or_cancellation",
+            CorrectionNow,
+            explanation: "Paper correction of one-off coverage");
+        var command = CreateCancelCommand(
+            fixture,
+            originalClosureId,
+            "paper-cancel") with
+        {
+            Envelope = CreateEnvelope(
+                fixture.Actor,
+                "paper-cancel",
+                paper.Explanation) with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                EntryBatchRowId = paper.EntryBatchRowId,
+            },
+        };
+
+        var result = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+        var replay = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+        var reuse = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            command with
+            {
+                Envelope = command.Envelope with
+                {
+                    RequestCorrelationId = new RequestCorrelationId(
+                        "correlation-paper-cancel-reuse"),
+                    IdempotencyKey = "paper-cancel-reuse",
+                },
+            },
+            CancellationToken.None);
+        AssertSuccessful(result, fixture.ClientId);
+        Assert.Equal(result.PrimaryEntityId, replay.PrimaryEntityId);
+        Assert.Equal(result.AuditEntryId, replay.AuditEntryId);
+        AssertError(reuse, CommandErrorCode.DuplicateSubmission, "entryBatchRowId");
+        var correctionId = result.PrimaryEntityId!.Value.Value;
+        var links = await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId);
+        Assert.Equal(
+            [new PaperFallbackEntityLink(
+                "membership_negative_closure_correction",
+                correctionId)],
+            links);
+        Assert.Equal(
+            "paper_fallback",
+            await database.ExecuteScalarAsync<string>(
+                $"select entry_origin from bodylife.membership_negative_closure_corrections where id = '{correctionId}'"));
+        Assert.Equal(
+            paper.EntryBatchId,
+            await database.ExecuteScalarAsync<Guid>(
+                $"select entry_batch_id from bodylife.membership_negative_closure_corrections where id = '{correctionId}'"));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperOneOffReplacementLinksExactlyItsNewAggregate()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(
+            database,
+            ActorRole.Owner,
+            AccountKind.Owner);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, 3);
+        var originalClosureId = await CloseOneOffAsync(
+            dbContext,
+            fixture,
+            "normal-one-off-for-paper-replace",
+            quantity: 2,
+            fixture.OneOffTypeAId);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            CorrectionNow,
+            "correction_or_cancellation",
+            CorrectionNow,
+            explanation: "Paper replacement of one-off coverage");
+        var command = CreateReplaceOneOffCommand(
+            fixture,
+            originalClosureId,
+            "paper-replace-one-off",
+            fixture.VisitIds[2],
+            fixture.OneOffTypeBId,
+            quantity: 1) with
+        {
+            Envelope = CreateEnvelope(
+                fixture.Actor,
+                "paper-replace-one-off",
+                paper.Explanation) with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                EntryBatchRowId = paper.EntryBatchRowId,
+            },
+        };
+
+        var result = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+        var replay = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+
+        AssertSuccessful(result, fixture.ClientId);
+        Assert.Equal(result.PrimaryEntityId, replay.PrimaryEntityId);
+        var correctionId = result.PrimaryEntityId!.Value.Value;
+        var replacementClosureId = await database.ExecuteScalarAsync<Guid>(
+            $"select replacement_closure_id from bodylife.membership_negative_closure_corrections where id = '{correctionId}'");
+        var replacementLineId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.membership_negative_closure_lines where negative_closure_id = '{replacementClosureId}'");
+        var replacementItemId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.membership_negative_closure_items where negative_closure_id = '{replacementClosureId}'");
+        var replacementPaymentId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.payments where negative_closure_id = '{replacementClosureId}'");
+        var links = await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId);
+
+        Assert.Equal(5, links.Count);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                "membership_negative_closure_correction",
+                correctionId),
+            links);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                MembershipNegativeClosureAuditActions.EntityType,
+                replacementClosureId),
+            links);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                "membership_negative_closure_line",
+                replacementLineId),
+            links);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                "membership_negative_closure_item",
+                replacementItemId),
+            links);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                PaymentAuditActions.EntityType,
+                replacementPaymentId),
+            links);
+        Assert.DoesNotContain(links, link => link.EntityId == originalClosureId);
+        Assert.Equal(
+            4L,
+            await database.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.business_audit_entries where related_entity_refs @> '{{\"entryBatchRowId\":\"{paper.EntryBatchRowId}\"}}'::jsonb"));
+        Assert.Equal(
+            paper.EntryBatchId,
+            await database.ExecuteScalarAsync<Guid>(
+                $"select entry_batch_id from bodylife.payments where id = '{replacementPaymentId}'"));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperNewMembershipReplacementLinksOnlyCorrectionFacts()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(
+            database,
+            ActorRole.Owner,
+            AccountKind.Owner);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, 3);
+        var original = await IssueCoveringMembershipAsync(
+            database,
+            dbContext,
+            fixture,
+            "normal-membership-coverage-for-paper-replace",
+            coverageCount: 2);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            CorrectionNow,
+            "correction_or_cancellation",
+            CorrectionNow,
+            explanation: "Paper replacement of Membership coverage");
+        var command = CreateReplaceMembershipCoverageCommand(
+            fixture,
+            original.ClosureId,
+            "paper-replace-membership-coverage",
+            fixture.VisitIds[2],
+            coverageCount: 1) with
+        {
+            Envelope = CreateEnvelope(
+                fixture.Actor,
+                "paper-replace-membership-coverage",
+                paper.Explanation) with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                EntryBatchRowId = paper.EntryBatchRowId,
+            },
+        };
+
+        var result = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+
+        AssertSuccessful(result, fixture.ClientId);
+        var correctionId = result.PrimaryEntityId!.Value.Value;
+        var replacementClosureId = await database.ExecuteScalarAsync<Guid>(
+            $"select replacement_closure_id from bodylife.membership_negative_closure_corrections where id = '{correctionId}'");
+        var replacementItemId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.membership_negative_closure_items where negative_closure_id = '{replacementClosureId}'");
+        var replacementConsumptionId = await database.ExecuteScalarAsync<Guid>(
+            $"select new_consumption_id from bodylife.membership_negative_closure_items where id = '{replacementItemId}'");
+        var originalSalePaymentId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.payments where membership_id = '{original.MembershipId}' and payment_context = 'membership_sale'");
+        var links = await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId);
+
+        Assert.Equal(4, links.Count);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                "membership_negative_closure_correction",
+                correctionId),
+            links);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                MembershipNegativeClosureAuditActions.EntityType,
+                replacementClosureId),
+            links);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                "membership_negative_closure_item",
+                replacementItemId),
+            links);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                "visit_consumption",
+                replacementConsumptionId),
+            links);
+        Assert.DoesNotContain(links, link => link.EntityId == original.MembershipId);
+        Assert.DoesNotContain(links, link => link.EntityId == originalSalePaymentId);
+        Assert.Equal(
+            0L,
+            await database.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.payments where negative_closure_id = '{replacementClosureId}'"));
+        Assert.Equal(
+            "active",
+            await database.ExecuteScalarAsync<string>(
+                $"select status from bodylife.payments where id = '{originalSalePaymentId}'"));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperCorrectionRejectsMismatchedRowWithoutMutation()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(
+            database,
+            ActorRole.Admin,
+            AccountKind.NamedAdmin);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, 3);
+        var originalClosureId = await CloseOneOffAsync(
+            dbContext,
+            fixture,
+            "normal-one-off-for-invalid-paper-cancel",
+            quantity: 2,
+            fixture.OneOffTypeAId);
+        var wrongEvent = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            CorrectionNow,
+            "negative_coverage",
+            CorrectionNow,
+            explanation: "Wrong paper event type");
+        var command = CreateCancelCommand(
+            fixture,
+            originalClosureId,
+            "paper-cancel-wrong-event") with
+        {
+            Envelope = CreateEnvelope(
+                fixture.Actor,
+                "paper-cancel-wrong-event",
+                wrongEvent.Explanation) with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                EntryBatchRowId = wrongEvent.EntryBatchRowId,
+            },
+        };
+
+        var result = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+
+        AssertError(result, CommandErrorCode.ValidationFailed, "entryBatchRowId");
+        await AssertOriginalActiveAsync(database, originalClosureId, expectedNegative: 1);
+        Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            wrongEvent.EntryBatchRowId));
+    }
+
+    [PostgreSqlFact]
+    public async Task ReconciledCashDayDeniesAdminAndMarksOwnerPaperReplacement()
+    {
+        var originalBusinessDate = BusinessTimeZone.GetBusinessDate(CorrectionNow);
+        var replacementOccurredAt = CorrectionNow.AddDays(1);
+        var replacementBusinessDate = BusinessTimeZone.GetBusinessDate(
+            replacementOccurredAt);
+        await using var adminDatabase = await CreateMigratedDatabaseAsync();
+        var adminFixture = await SeedFixtureAsync(
+            adminDatabase,
+            ActorRole.Admin,
+            AccountKind.NamedAdmin);
+        await using (var adminContext = adminDatabase.CreateDbContext())
+        {
+            await RebuildSourceAsync(
+                adminContext,
+                adminFixture.SourceMembershipId,
+                3);
+            var adminClosureId = await CloseOneOffAsync(
+                adminContext,
+                adminFixture,
+                "admin-reconciled-original",
+                quantity: 2,
+                adminFixture.OneOffTypeAId);
+            var adminPaper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+                adminDatabase,
+                adminFixture.Actor,
+                CorrectionNow,
+                "correction_or_cancellation",
+                CorrectionNow,
+                explanation: "Admin paper correction on reconciled day");
+            var adminCommand = CreateCancelCommand(
+                adminFixture,
+                adminClosureId,
+                "admin-reconciled-paper-cancel") with
+            {
+                Envelope = CreateEnvelope(
+                    adminFixture.Actor,
+                    "admin-reconciled-paper-cancel",
+                    adminPaper.Explanation) with
+                {
+                    EntryOrigin = EntryOrigin.PaperFallback,
+                    EntryBatchRowId = adminPaper.EntryBatchRowId,
+                },
+            };
+
+            var denied = await CreateCorrectionHandler(
+                    adminContext,
+                    new StubPaymentDayStatusProvider(
+                        new HashSet<DateOnly> { originalBusinessDate }))
+                .ExecuteAsync(adminCommand, CancellationToken.None);
+
+            AssertError(
+                denied,
+                CommandErrorCode.DayClosedRequiresOwner,
+                "originalNegativeClosureId");
+            Assert.False(denied.ChangedAfterClose);
+            await AssertOriginalActiveAsync(
+                adminDatabase,
+                adminClosureId,
+                expectedNegative: 1);
+            Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                adminDatabase,
+                adminPaper.EntryBatchRowId));
+        }
+
+        await using var ownerDatabase = await CreateMigratedDatabaseAsync();
+        var ownerFixture = await SeedFixtureAsync(
+            ownerDatabase,
+            ActorRole.Owner,
+            AccountKind.Owner);
+        await ownerDatabase.ExecuteScalarAsync<int>(
+            $"update bodylife.sessions set expires_at = '{replacementOccurredAt.AddHours(8):O}' where id = '{ownerFixture.Actor.SessionId.Value}'; select 1;");
+        await using var ownerContext = ownerDatabase.CreateDbContext();
+        await RebuildSourceAsync(ownerContext, ownerFixture.SourceMembershipId, 3);
+        var ownerClosureId = await CloseOneOffAsync(
+            ownerContext,
+            ownerFixture,
+            "owner-reconciled-original",
+            quantity: 2,
+            ownerFixture.OneOffTypeAId);
+        var ownerPaper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            ownerDatabase,
+            ownerFixture.Actor,
+            replacementOccurredAt,
+            "correction_or_cancellation",
+            replacementOccurredAt.AddHours(1),
+            explanation: "Owner paper replacement on reconciled day");
+        var ownerCommand = CreateReplaceOneOffCommand(
+            ownerFixture,
+            ownerClosureId,
+            "owner-reconciled-paper-replace",
+            ownerFixture.VisitIds[2],
+            ownerFixture.OneOffTypeBId,
+            quantity: 1) with
+        {
+            Envelope = CreateEnvelope(
+                ownerFixture.Actor,
+                "owner-reconciled-paper-replace",
+                ownerPaper.Explanation) with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                OccurredAt = replacementOccurredAt,
+                EntryBatchRowId = ownerPaper.EntryBatchRowId,
+            },
+        };
+        var ownerStatus = new StubPaymentDayStatusProvider(
+            new HashSet<DateOnly> { replacementBusinessDate });
+
+        var allowed = await CreateCorrectionHandler(
+                ownerContext,
+                ownerStatus,
+                replacementOccurredAt.AddHours(1))
+            .ExecuteAsync(ownerCommand, CancellationToken.None);
+        var replay = await CreateCorrectionHandler(
+                ownerContext,
+                ownerStatus,
+                replacementOccurredAt.AddHours(1))
+            .ExecuteAsync(ownerCommand, CancellationToken.None);
+
+        AssertSuccessful(allowed, ownerFixture.ClientId);
+        Assert.True(allowed.ChangedAfterClose);
+        Assert.True(replay.ChangedAfterClose);
+        Assert.Equal(allowed.PrimaryEntityId, replay.PrimaryEntityId);
+        Assert.Equal(
+            [originalBusinessDate, replacementBusinessDate],
+            ownerStatus.RequestedDates);
+        Assert.Equal(
+            4L,
+            await ownerDatabase.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.business_audit_entries where changed_after_close and related_entity_refs @> '{{\"entryBatchRowId\":\"{ownerPaper.EntryBatchRowId}\"}}'::jsonb"));
+        Assert.Equal(
+            0L,
+            await ownerDatabase.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.business_audit_entries where not changed_after_close and related_entity_refs @> '{{\"entryBatchRowId\":\"{ownerPaper.EntryBatchRowId}\"}}'::jsonb"));
+    }
+
+    [PostgreSqlFact]
     public async Task ReplaceOneOffUsesRestoredOldestVisitAndNewExactPayment()
     {
         await using var database = await CreateMigratedDatabaseAsync();
@@ -685,6 +1140,28 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             "replacementOneOffLines[0].membershipTypeId");
         await AssertOriginalActiveAsync(database, originalClosureId, expectedNegative: 1);
 
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            CorrectionNow,
+            "correction_or_cancellation",
+            CorrectionNow,
+            explanation: "Paper cancellation retried after audit rollback");
+        var paperCancel = CreateCancelCommand(
+            fixture,
+            originalClosureId,
+            "paper-audit-failure") with
+        {
+            Envelope = CreateEnvelope(
+                fixture.Actor,
+                "paper-audit-failure",
+                paper.Explanation) with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                EntryBatchRowId = paper.EntryBatchRowId,
+            },
+        };
+
         await database.ExecuteScalarAsync<int>(
             """
             alter table bodylife.business_audit_entries
@@ -694,12 +1171,30 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             """);
         await Assert.ThrowsAsync<DbUpdateException>(() =>
             CreateCorrectionHandler(dbContext).ExecuteAsync(
-                CreateCancelCommand(
-                    fixture,
-                    originalClosureId,
-                    "audit-failure"),
+                paperCancel,
                 CancellationToken.None));
         await AssertOriginalActiveAsync(database, originalClosureId, expectedNegative: 1);
+        Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId));
+
+        await database.ExecuteScalarAsync<int>(
+            """
+            alter table bodylife.business_audit_entries
+            drop constraint ck_test_reject_coverage_cancel_audit;
+            select 1;
+            """);
+        var retry = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            paperCancel,
+            CancellationToken.None);
+        AssertSuccessful(retry, fixture.ClientId);
+        Assert.Equal(
+            [new PaperFallbackEntityLink(
+                "membership_negative_closure_correction",
+                retry.PrimaryEntityId!.Value.Value)],
+            await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId));
     }
 
     [PostgreSqlFact]
@@ -767,6 +1262,11 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
         Assert.Equal(
             typeof(CorrectNegativeVisitCoverageCommandHandler),
             descriptor.ImplementationType);
+        using var serviceProvider = services.BuildServiceProvider();
+        using var scope = serviceProvider.CreateScope();
+        Assert.IsType<CorrectNegativeVisitCoverageCommandHandler>(
+            scope.ServiceProvider.GetRequiredService<
+                IBodyLifeCommandHandler<CorrectNegativeVisitCoverageCommand>>());
     }
 
     private static async Task<PostgreSqlTestDatabase> CreateMigratedDatabaseAsync()
@@ -1071,9 +1571,11 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
     }
 
     private static CorrectNegativeVisitCoverageCommandHandler CreateCorrectionHandler(
-        BodyLifeDbContext dbContext)
+        BodyLifeDbContext dbContext,
+        IPaymentDayReconciliationStatusProvider? dayStatusProvider = null,
+        DateTimeOffset? recordedAt = null)
     {
-        var time = new FixedTimeProvider(CorrectionNow);
+        var time = new FixedTimeProvider(recordedAt ?? CorrectionNow);
         var audit = new BusinessAuditAppender(dbContext);
         return new CorrectNegativeVisitCoverageCommandHandler(
             dbContext,
@@ -1081,6 +1583,7 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             new NegativeClosurePaymentWriter(dbContext, audit),
             new MembershipNegativeVisitSelector(dbContext),
             new MembershipStateCacheRebuilder(dbContext, time),
+            dayStatusProvider ?? new OpenPaymentDayStatusProvider(),
             time);
     }
 
@@ -1228,6 +1731,24 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(PaymentDayReconciliationStatus.Open);
+        }
+    }
+
+    private sealed class StubPaymentDayStatusProvider(
+        IReadOnlySet<DateOnly> reconciledDates)
+        : IPaymentDayReconciliationStatusProvider
+    {
+        public List<DateOnly> RequestedDates { get; } = [];
+
+        public Task<PaymentDayReconciliationStatus> GetStatusAsync(
+            DateOnly businessDate,
+            CancellationToken cancellationToken = default)
+        {
+            RequestedDates.Add(businessDate);
+            return Task.FromResult(
+                reconciledDates.Contains(businessDate)
+                    ? PaymentDayReconciliationStatus.Reconciled
+                    : PaymentDayReconciliationStatus.Open);
         }
     }
 
