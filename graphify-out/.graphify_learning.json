@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-22T20:07:11.672074+00:00",
+  "generated_at": "2026-08-05T08:34:29.686515+00:00",
   "nodes": {
     "docs_adr_adr_backlog_adr_backlog_для_bodylife_crm": {
       "code_fingerprint": "8587e9f50a6bad2f1e3cf969b815bface8d14027062981a22c37c9c0693a4775",
@@ -12,7 +12,7 @@
           "q": "Сформувати accepted ADR package"
         }
       ],
-      "score": 0.703063959,
+      "score": 0.514447547,
       "source_file": "docs/adr/adr-backlog.md",
       "status": "tentative",
       "uses": 1
@@ -28,15 +28,110 @@
           "q": "Сформувати accepted ADR package"
         }
       ],
-      "score": 0.703063959,
+      "score": 0.514447547,
       "source_file": "docs/architecture-research-options.md",
       "status": "tentative",
       "uses": 1
     },
+    "docs_domain_model_correction_and_cancellation": {
+      "code_fingerprint": "b7531bb5e5ea1e1cc1da4e13aad2820f0b0cbf7ee38a4fa3ac5489cd553082c8",
+      "label": "Correction and Cancellation",
+      "last": "2026-07-30T22:09:32.518581+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-30T22:09:32.518581+00:00",
+          "outcome": "useful",
+          "q": "Зафіксувати всі погоджені правила продажу абонемента, погашення мінусових відвідувань, виправлення помилкового абонемента та внесення записів після збою"
+        }
+      ],
+      "score": 0.882009948,
+      "source_file": "docs/domain-model.md",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_domain_model_issued_membership": {
+      "code_fingerprint": "b7531bb5e5ea1e1cc1da4e13aad2820f0b0cbf7ee38a4fa3ac5489cd553082c8",
+      "label": "Issued Membership",
+      "last": "2026-07-31T11:42:31.492550+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-31T11:42:31.492550+00:00",
+          "outcome": "useful",
+          "q": "дай мені промпт щоб це всьо реалізувати те що ми зараз знайшли і пропустили"
+        },
+        {
+          "date": "2026-07-30T22:09:32.518581+00:00",
+          "outcome": "useful",
+          "q": "Зафіксувати всі погоджені правила продажу абонемента, погашення мінусових відвідувань, виправлення помилкового абонемента та внесення записів після збою"
+        },
+        {
+          "date": "2026-07-30T20:22:57.042443+00:00",
+          "outcome": "useful",
+          "q": "Яка різниця між додати абонемент і у ньому зафіксувати оплату та додати платіж і підв'язати абонемент я шось не розумію"
+        }
+      ],
+      "score": 2.656103295,
+      "source_file": "docs/domain-model.md",
+      "status": "preferred",
+      "uses": 3
+    },
+    "docs_domain_model_one_off_negative_closure": {
+      "code_fingerprint": "b7531bb5e5ea1e1cc1da4e13aad2820f0b0cbf7ee38a4fa3ac5489cd553082c8",
+      "label": "One-Off Negative Closure",
+      "last": "2026-07-31T11:42:31.492550+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-31T11:42:31.492550+00:00",
+          "outcome": "useful",
+          "q": "дай мені промпт щоб це всьо реалізувати те що ми зараз знайшли і пропустили"
+        },
+        {
+          "date": "2026-07-30T20:38:47.784569+00:00",
+          "outcome": "useful",
+          "q": "Чи закриття мінуса разовою оплатою є незавершеною частиною плану, яку мали імплементувати пізніше?"
+        },
+        {
+          "date": "2026-07-30T20:33:16.238107+00:00",
+          "outcome": "useful",
+          "q": "Для чого ускладнювати оплати і як виконати оплату, коли є мінус по відвідуванням та клієнт закриває його разовими відвідуваннями?"
+        }
+      ],
+      "score": 2.654965815,
+      "source_file": "docs/domain-model.md",
+      "status": "preferred",
+      "uses": 3
+    },
+    "docs_domain_model_signed_remaining_visits": {
+      "code_fingerprint": "b7531bb5e5ea1e1cc1da4e13aad2820f0b0cbf7ee38a4fa3ac5489cd553082c8",
+      "label": "Signed Remaining Visits",
+      "last": "2026-07-31T11:42:31.492550+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-31T11:42:31.492550+00:00",
+          "outcome": "useful",
+          "q": "дай мені промпт щоб це всьо реалізувати те що ми зараз знайшли і пропустили"
+        },
+        {
+          "date": "2026-07-30T20:38:47.784569+00:00",
+          "outcome": "useful",
+          "q": "Чи закриття мінуса разовою оплатою є незавершеною частиною плану, яку мали імплементувати пізніше?"
+        },
+        {
+          "date": "2026-07-30T20:33:16.238107+00:00",
+          "outcome": "useful",
+          "q": "Для чого ускладнювати оплати і як виконати оплату, коли є мінус по відвідуванням та клієнт закриває його разовими відвідуваннями?"
+        }
+      ],
+      "score": 2.654965815,
+      "source_file": "docs/domain-model.md",
+      "status": "preferred",
+      "uses": 3
+    },
     "docs_initial_context_membership": {
       "code_fingerprint": "65cc094e9c7fe34398ed58b38b27750ffc7ba0e98b45c15f2af440c1dae82256",
       "label": "Membership",
-      "last": "2026-07-06T21:05:10.575259+00:00",
+      "last": "2026-07-30T13:00:05.532476+00:00",
+      "neg": 2,
       "provenance": [
         {
           "date": "2026-07-06T21:05:10.575259+00:00",
@@ -44,10 +139,48 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.69159955,
+      "score": -1.241937311,
       "source_file": "docs/initial-context.txt",
+      "status": "contested",
+      "uses": 1,
+      "verdict": "dead end"
+    },
+    "docs_operations_design_business_audit": {
+      "code_fingerprint": "5864089df6127a6bab9260c2952fd8566e33944f39cdb6584305344474f080ac",
+      "label": "Business Audit",
+      "last": "2026-07-28T11:21:13.514073+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-28T11:21:13.514073+00:00",
+          "outcome": "useful",
+          "q": "Редизайн сторінки Журнал аудиту в шаблоні BodyLife CRM як компактний Master-Detail з фільтрами, деталями та адаптивними картками"
+        }
+      ],
+      "score": 0.833464603,
+      "source_file": "docs/operations-design.md",
       "status": "tentative",
       "uses": 1
+    },
+    "docs_operations_design_paper_fallback": {
+      "code_fingerprint": "5864089df6127a6bab9260c2952fd8566e33944f39cdb6584305344474f080ac",
+      "label": "Paper Fallback",
+      "last": "2026-07-31T11:42:31.492550+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-31T11:42:31.492550+00:00",
+          "outcome": "useful",
+          "q": "дай мені промпт щоб це всьо реалізувати те що ми зараз знайшли і пропустили"
+        },
+        {
+          "date": "2026-07-30T22:09:32.518581+00:00",
+          "outcome": "useful",
+          "q": "Зафіксувати всі погоджені правила продажу абонемента, погашення мінусових відвідувань, виправлення помилкового абонемента та внесення записів після збою"
+        }
+      ],
+      "score": 1.775600528,
+      "source_file": "docs/operations-design.md",
+      "status": "preferred",
+      "uses": 2
     },
     "docs_question_answering_interview_freezes": {
       "code_fingerprint": "a19c55de663784ab702086faf0ec10b50de2f1076401fc583f8539ee77b0dd82",
@@ -60,7 +193,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.69159955,
+      "score": 0.506058785,
       "source_file": "docs/question-answering-interview.txt",
       "status": "tentative",
       "uses": 1
@@ -76,7 +209,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.69159955,
+      "score": 0.506058785,
       "source_file": "docs/question-answering-interview.txt",
       "status": "tentative",
       "uses": 1
@@ -92,56 +225,14 @@
           "q": "На основі всіх post-ADR документів сформуй docs/implementation-roadmap.md"
         }
       ],
-      "score": 0.708139053,
+      "score": 0.518161107,
       "source_file": "docs/technology-stack-decision.md",
       "status": "tentative",
       "uses": 1
     },
-    "docs_ui_design_foundation_5_visual_language": {
-      "code_fingerprint": "82ec8c0af55908457a0823e5baec97689072d9bd6f107fd2668eaffce360d4bf",
-      "label": "5. Visual language",
-      "last": "2026-07-17T09:48:47.834166+00:00",
-      "provenance": [
-        {
-          "date": "2026-07-17T09:48:47.834166+00:00",
-          "outcome": "useful",
-          "q": "і давай перейдемо на світлу тему, бо темна для рецепції не кайф; перероби будь ласка і також щоб кольорова палітра не постраждала після переходу, її напевне теж потрібно буде змінити"
-        }
-      ],
-      "score": 0.882102726,
-      "source_file": "docs/ui-design-foundation.md",
-      "status": "tentative",
-      "uses": 1
-    },
-    "docs_ui_design_foundation_bodylife_crm_ui_design_foundation": {
-      "code_fingerprint": "82ec8c0af55908457a0823e5baec97689072d9bd6f107fd2668eaffce360d4bf",
-      "label": "BodyLife CRM UI design foundation",
-      "last": "2026-07-17T09:48:47.834166+00:00",
-      "provenance": [
-        {
-          "date": "2026-07-17T09:48:47.834166+00:00",
-          "outcome": "useful",
-          "q": "і давай перейдемо на світлу тему, бо темна для рецепції не кайф; перероби будь ласка і також щоб кольорова палітра не постраждала після переходу, її напевне теж потрібно буде змінити"
-        },
-        {
-          "date": "2026-07-16T20:32:37.350856+00:00",
-          "outcome": "useful",
-          "q": "шо ти думаєш про шось таке?"
-        },
-        {
-          "date": "2026-07-16T20:11:45.190389+00:00",
-          "outcome": "useful",
-          "q": "мені не подобається поточний вигляд інтерфейсу, він не практичний та щоб наприклад додати нового клієнта потрібно виконати пошук і не знайти його, як на мене це з точки зору ux не правильно, які шаблони ти можеш запропонувти, щоб воно якось стильово ше виглядало. поки робимо чисто шаблони без змін коду"
-        }
-      ],
-      "score": 2.623622782,
-      "source_file": "docs/ui-design-foundation.md",
-      "status": "preferred",
-      "uses": 3
-    },
-    "docs_ui_workflows_client_search_workflow": {
-      "code_fingerprint": "9082a0e6efd91f876543d02086222ca69a13cf93147232c69007f10814952eb0",
-      "label": "Client Search Workflow",
+    "docs_ui_workflows_reception_dashboard": {
+      "code_fingerprint": "b559cd42c48b427c4863590398491c3bfe940cff9446b2f3469901f4f7823594",
+      "label": "Reception Dashboard Workflow",
       "last": "2026-07-16T20:32:37.350856+00:00",
       "provenance": [
         {
@@ -155,7 +246,7 @@
           "q": "мені не подобається поточний вигляд інтерфейсу, він не практичний та щоб наприклад додати нового клієнта потрібно виконати пошук і не знайти його, як на мене це з точки зору ux не правильно, які шаблони ти можеш запропонувти, щоб воно якось стильово ше виглядало. поки робимо чисто шаблони без змін коду"
         }
       ],
-      "score": 1.741520056,
+      "score": 1.274308988,
       "source_file": "docs/ui-workflows.md",
       "status": "preferred",
       "uses": 2
