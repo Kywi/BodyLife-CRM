@@ -21,6 +21,8 @@ internal sealed class PaperFallbackEntryRowReferenceReader(
         }
 
         if (sources.Any(source => source.EntityId == Guid.Empty)
+            || sources.Any(source => source.EntryOrigin == "normal"
+                && source.EntryBatchId is not null)
             || sources.Select(source => source.EntityId).Distinct().Count()
                 != sources.Count)
         {

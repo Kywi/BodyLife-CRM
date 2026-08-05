@@ -4,7 +4,9 @@ using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
+using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.MembershipTypes;
 using BodyLife.Crm.Modules.Payments;
@@ -19,7 +21,8 @@ public sealed class IssueMembershipCommandHandler(
     IMembershipIssuePaymentWriter paymentWriter,
     MembershipNegativeVisitSelector negativeVisitSelector,
     MembershipStateCacheRebuilder stateCacheRebuilder,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    PaperFallbackEntryRowBinder? paperFallbackEntryRowBinder = null)
     : IBodyLifeCommandHandler<IssueMembershipCommand>
 {
     private const string CommandName = "IssueMembership";
@@ -46,6 +49,8 @@ public sealed class IssueMembershipCommandHandler(
         }
 
         var issue = normalizedIssue!;
+        var paperFallbackBinder = paperFallbackEntryRowBinder
+            ?? new PaperFallbackEntryRowBinder(dbContext);
         if (!MembershipCommandSupport.IsAllowedActorShape(issue.Envelope.Actor))
         {
             return IssueMembershipCommandSupport.Error(
@@ -108,6 +113,34 @@ public sealed class IssueMembershipCommandHandler(
                     issue.Envelope.Actor.AccountId.Value,
                     fingerprint);
             }
+
+            var paperBinding = await paperFallbackBinder.PrepareAsync(
+                issue.Envelope,
+                PaperFallbackEventType.MembershipSale,
+                cancellationToken);
+            if (paperBinding.RowAlreadyLinked)
+            {
+                existingIdempotency = await MembershipCommandSupport.FindIdempotencyAsync(
+                    dbContext,
+                    CommandName,
+                    issue.IdempotencyKey,
+                    cancellationToken);
+                if (existingIdempotency is not null)
+                {
+                    return IssueMembershipCommandSupport.ReplayOrRejectDuplicate(
+                        existingIdempotency,
+                        issue,
+                        issue.Envelope.Actor.AccountId.Value,
+                        fingerprint);
+                }
+            }
+
+            if (paperBinding.Error is not null)
+            {
+                return paperBinding.Error;
+            }
+
+            var entryBatchId = paperBinding.Reference?.EntryBatchId;
 
             var membershipType = await LockMembershipTypeAsync(
                 issue.MembershipTypeId,
@@ -288,10 +321,17 @@ public sealed class IssueMembershipCommandHandler(
                 Status = MembershipQuerySupport.ActiveMembershipStatus,
                 EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
                     issue.Envelope.EntryOrigin),
-                EntryBatchId = issue.EntryBatchId,
+                EntryBatchId = entryBatchId,
                 Comment = issue.Envelope.Comment,
             };
             dbContext.Set<IssuedMembershipRecord>().Add(membership);
+            if (paperBinding.Reference is { } membershipPaperReference)
+            {
+                paperFallbackBinder.LinkEntity(
+                    membershipPaperReference,
+                    MembershipAuditActions.MembershipEntityType,
+                    membershipId);
+            }
             await dbContext.SaveChangesAsync(cancellationToken);
             if (!await dbContext.Set<IssuedMembershipRecord>()
                     .AsNoTracking()
@@ -329,11 +369,18 @@ public sealed class IssueMembershipCommandHandler(
                     SessionId = issue.Envelope.Actor.SessionId.Value,
                     EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
                         issue.Envelope.EntryOrigin),
-                    EntryBatchId = issue.EntryBatchId,
+                    EntryBatchId = entryBatchId,
                     IdempotencyKey = issue.IdempotencyKey,
                     Status = "active",
                 };
                 dbContext.Set<MembershipNegativeClosureRecord>().Add(closureRecord);
+                if (paperBinding.Reference is { } closurePaperReference)
+                {
+                    paperFallbackBinder.LinkEntity(
+                        closurePaperReference,
+                        MembershipNegativeClosureAuditActions.EntityType,
+                        negativeClosureId.Value);
+                }
 
                 var sequence = 0;
                 foreach (var coveredVisit in coveredVisits)
@@ -359,6 +406,13 @@ public sealed class IssueMembershipCommandHandler(
                             RecordedSessionId = issue.Envelope.Actor.SessionId.Value,
                             Status = "active",
                         });
+                    if (paperBinding.Reference is { } consumptionPaperReference)
+                    {
+                        paperFallbackBinder.LinkEntity(
+                            consumptionPaperReference,
+                            "visit_consumption",
+                            newConsumptionId);
+                    }
                     dbContext.Set<MembershipNegativeClosureItemRecord>().Add(
                         new MembershipNegativeClosureItemRecord
                         {
@@ -374,6 +428,13 @@ public sealed class IssueMembershipCommandHandler(
                             NewConsumptionId = newConsumptionId,
                             Status = "active",
                         });
+                    if (paperBinding.Reference is { } itemPaperReference)
+                    {
+                        paperFallbackBinder.LinkEntity(
+                            itemPaperReference,
+                            "membership_negative_closure_item",
+                            itemId);
+                    }
                 }
             }
 
@@ -382,8 +443,16 @@ public sealed class IssueMembershipCommandHandler(
                 issue.ClientId,
                 membershipId,
                 preparation.Snapshot.Price,
-                issue.EntryBatchId,
-                recordedAt);
+                entryBatchId,
+                recordedAt,
+                paperReference: paperBinding.Reference);
+            if (paperBinding.Reference is { } paymentPaperReference)
+            {
+                paperFallbackBinder.LinkEntity(
+                    paymentPaperReference,
+                    PaymentAuditActions.EntityType,
+                    paymentWrite.PaymentId);
+            }
             await dbContext.SaveChangesAsync(cancellationToken);
 
             foreach (var sourceMembershipId in sourceMembershipIds.Order())
@@ -444,13 +513,8 @@ public sealed class IssueMembershipCommandHandler(
             AuditEntryId? negativeClosureAuditEntryId = null;
             if (negativeClosureId is { } closureId)
             {
-                negativeClosureAuditEntryId = auditAppender.Append(
-                    issue.Envelope,
-                    MembershipNegativeClosureAuditActions.Created,
-                    MembershipNegativeClosureAuditActions.EntityType,
-                    closureId,
-                    recordedAt,
-                    relatedEntityRefs: new
+                object closureRelatedEntityRefs = paperBinding.Reference is { } closureAuditPaperReference
+                    ? new
                     {
                         ClientId = issue.ClientId,
                         CoveringMembershipId = membershipId,
@@ -458,7 +522,28 @@ public sealed class IssueMembershipCommandHandler(
                         SalePaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
                         SourceMembershipIds = sourceMembershipIds.Order().ToArray(),
                         VisitIds = coveredVisitIds,
-                    },
+                        closureAuditPaperReference.EntryBatchId,
+                        closureAuditPaperReference.EntryBatchRowId,
+                        closureAuditPaperReference.PaperSheetNumber,
+                        closureAuditPaperReference.LineNumber,
+                        PaperExplanation = closureAuditPaperReference.Explanation,
+                    }
+                    : new
+                    {
+                        ClientId = issue.ClientId,
+                        CoveringMembershipId = membershipId,
+                        SalePaymentId = paymentWrite.PaymentId,
+                        SalePaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
+                        SourceMembershipIds = sourceMembershipIds.Order().ToArray(),
+                        VisitIds = coveredVisitIds,
+                    };
+                negativeClosureAuditEntryId = auditAppender.Append(
+                    issue.Envelope,
+                    MembershipNegativeClosureAuditActions.Created,
+                    MembershipNegativeClosureAuditActions.EntityType,
+                    closureId,
+                    recordedAt,
+                    relatedEntityRefs: closureRelatedEntityRefs,
                     beforeSummary: new
                     {
                         negativeSelection.TotalNegativeBalance,
@@ -507,6 +592,19 @@ public sealed class IssueMembershipCommandHandler(
                     sourceMembershipIds.Order().ToArray();
                 membershipRelatedEntityRefs["coveredVisitIds"] = coveredVisitIds;
             }
+            if (paperBinding.Reference is { } membershipAuditPaperReference)
+            {
+                membershipRelatedEntityRefs["entryBatchId"] =
+                    membershipAuditPaperReference.EntryBatchId;
+                membershipRelatedEntityRefs["entryBatchRowId"] =
+                    membershipAuditPaperReference.EntryBatchRowId;
+                membershipRelatedEntityRefs["paperSheetNumber"] =
+                    membershipAuditPaperReference.PaperSheetNumber;
+                membershipRelatedEntityRefs["lineNumber"] =
+                    membershipAuditPaperReference.LineNumber;
+                membershipRelatedEntityRefs["paperExplanation"] =
+                    membershipAuditPaperReference.Explanation;
+            }
 
             var membershipAfterSummary = new Dictionary<string, object?>
             {
@@ -526,6 +624,9 @@ public sealed class IssueMembershipCommandHandler(
                 ["baseEndDate"] = preparation.BaseEndDate,
                 ["issuedAt"] = membership.IssuedAt,
                 ["status"] = membership.Status,
+                ["entryOrigin"] = membership.EntryOrigin,
+                ["entryBatchId"] = membership.EntryBatchId,
+                ["comment"] = membership.Comment,
                 ["negativeHandlingDecision"] =
                     IssueMembershipCommandSupport.MapNegativeHandlingDecision(
                         preparation.NegativeHandlingDecision),
@@ -622,6 +723,9 @@ public sealed class IssueMembershipCommandHandler(
                     postgresException,
                     out var errorResult))
             {
+                await MembershipCommandSupport.RollBackAndClearAsync(
+                    dbContext,
+                    transaction);
                 throw;
             }
 

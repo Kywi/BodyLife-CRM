@@ -121,6 +121,7 @@ internal static class IssueMembershipCommandSupport
             issue.Envelope.OccurredAt,
             EnvelopeReason = issue.Envelope.Reason,
             EnvelopeComment = issue.Envelope.Comment,
+            issue.Envelope.EntryBatchRowId,
             issue.ClientId,
             issue.MembershipTypeId,
             issue.ExpectedMembershipTypeUpdatedAt,
@@ -277,10 +278,10 @@ internal static class IssueMembershipCommandSupport
                 "deviceLabel");
         }
 
-        if (envelope.EntryOrigin != EntryOrigin.Normal)
+        if (envelope.EntryOrigin is not EntryOrigin.Normal and not EntryOrigin.PaperFallback)
         {
             return ValidationError(
-                "This membership issue workflow accepts only normal entry origin.",
+                "This membership issue workflow accepts only normal or paper fallback entry origin.",
                 "entryOrigin");
         }
 
@@ -300,6 +301,32 @@ internal static class IssueMembershipCommandSupport
                 "envelope.comment");
         }
 
+        if (envelope.EntryOrigin == EntryOrigin.Normal
+            && envelope.EntryBatchRowId is not null)
+        {
+            return ValidationError(
+                "Normal membership issue cannot carry paper row metadata.",
+                "entryBatchRowId");
+        }
+
+        if (envelope.EntryOrigin == EntryOrigin.PaperFallback
+            && (envelope.EntryBatchRowId is not { } entryBatchRowId
+                || entryBatchRowId == Guid.Empty))
+        {
+            return ValidationError(
+                "Paper fallback membership issue requires an entry batch row id.",
+                "entryBatchRowId");
+        }
+
+        if (envelope.EntryOrigin == EntryOrigin.PaperFallback
+            && reason is null
+            && comment is null)
+        {
+            return ValidationError(
+                "Paper fallback membership issue requires a reason or comment.",
+                "reason");
+        }
+
         DateTimeOffset? occurredAt = null;
         if (envelope.OccurredAt is { } submittedOccurredAt)
         {
@@ -313,6 +340,13 @@ internal static class IssueMembershipCommandSupport
             occurredAt = normalizedOccurredAt;
         }
 
+        if (envelope.EntryOrigin == EntryOrigin.PaperFallback && occurredAt is null)
+        {
+            return ValidationError(
+                "Paper fallback membership issue requires occurred_at.",
+                "occurredAt");
+        }
+
         normalizedEnvelope = new CommandEnvelope(
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(requestCorrelationId),
@@ -320,7 +354,8 @@ internal static class IssueMembershipCommandSupport
             occurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 

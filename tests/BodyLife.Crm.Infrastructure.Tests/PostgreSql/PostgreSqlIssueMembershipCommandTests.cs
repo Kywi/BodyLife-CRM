@@ -5,6 +5,7 @@ using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
@@ -115,7 +116,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
 
         using var after = JsonDocument.Parse(audit.AfterSummary);
         var summary = after.RootElement;
-        Assert.Equal(13, summary.EnumerateObject().Count());
+        Assert.Equal(16, summary.EnumerateObject().Count());
         Assert.Equal(membershipId, summary.GetProperty("membershipId").GetGuid());
         Assert.Equal("sale", summary.GetProperty("issuanceMode").GetString());
         Assert.Equal(fixture.ClientId, summary.GetProperty("clientId").GetGuid());
@@ -126,6 +127,9 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         Assert.Equal("2026-08-30", summary.GetProperty("baseEndDate").GetString());
         Assert.Equal(TestNow, summary.GetProperty("issuedAt").GetDateTimeOffset());
         Assert.Equal("active", summary.GetProperty("status").GetString());
+        Assert.Equal("normal", summary.GetProperty("entryOrigin").GetString());
+        Assert.Equal(JsonValueKind.Null, summary.GetProperty("entryBatchId").ValueKind);
+        Assert.Equal("Front desk issue", summary.GetProperty("comment").GetString());
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("negativeHandlingDecision").ValueKind);
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("existingNegativeState").ValueKind);
         var paymentSummary = summary.GetProperty("payment");
@@ -266,6 +270,293 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         Assert.Equal(1L, await CountRowsAsync(database, "payments"));
         Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperFallbackSaleBindsAggregateAndCanonicalMembershipHistory()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(
+            database,
+            ActorRole.Admin,
+            AccountKind.NamedAdmin,
+            deviceLabel: "paper sale tablet");
+        var fixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
+        var occurredAt = TestNow.AddDays(-2);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            actor,
+            occurredAt,
+            "membership_sale",
+            TestNow,
+            lineNumber: 12,
+            explanation: "Recovered signed Membership sale");
+        var command = CreatePaperCommand(
+            actor,
+            fixture,
+            paper,
+            occurredAt,
+            "paper-membership-sale");
+        var handler = CreateHandler(dbContext);
+
+        var result = await handler.ExecuteAsync(command, CancellationToken.None);
+        var replay = await handler.ExecuteAsync(command, CancellationToken.None);
+        var reuse = await handler.ExecuteAsync(
+            command with
+            {
+                Envelope = command.Envelope with
+                {
+                    IdempotencyKey = "paper-membership-sale-reuse",
+                    RequestCorrelationId = new RequestCorrelationId(
+                        "correlation-paper-membership-sale-reuse"),
+                },
+            },
+            CancellationToken.None);
+
+        AssertSuccessfulResult(result, fixture.ClientId);
+        AssertSuccessfulResult(replay, fixture.ClientId);
+        Assert.Equal(result.PrimaryEntityId, replay.PrimaryEntityId);
+        Assert.Equal(result.AuditEntryId, replay.AuditEntryId);
+        AssertError(
+            reuse,
+            CommandErrorCode.DuplicateSubmission,
+            "entryBatchRowId");
+
+        var membershipId = result.PrimaryEntityId!.Value.Value;
+        var membership = await ReadIssuedMembershipAsync(database, membershipId);
+        var payment = await ReadPaymentForMembershipAsync(database, membershipId);
+        Assert.Equal("paper_fallback", membership.EntryOrigin);
+        Assert.Equal(paper.EntryBatchId, membership.EntryBatchId);
+        Assert.Equal(TestNow, membership.IssuedAt);
+        Assert.Equal("paper_fallback", payment.EntryOrigin);
+        Assert.Equal(paper.EntryBatchId, payment.EntryBatchId);
+        Assert.Equal(occurredAt, payment.OccurredAt);
+        Assert.Equal(TestNow, payment.RecordedAt);
+
+        Assert.Collection(
+            await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId),
+            link =>
+            {
+                Assert.Equal(MembershipAuditActions.MembershipEntityType, link.EntityType);
+                Assert.Equal(membershipId, link.EntityId);
+            },
+            link =>
+            {
+                Assert.Equal(PaymentAuditActions.EntityType, link.EntityType);
+                Assert.Equal(payment.Id, link.EntityId);
+            });
+
+        var membershipAudit = await ReadAuditAsync(
+            database,
+            result.AuditEntryId!.Value.Value);
+        Assert.Equal(occurredAt, membershipAudit.OccurredAt);
+        Assert.Equal(TestNow, membershipAudit.RecordedAt);
+        Assert.Equal("paper_fallback", membershipAudit.EntryOrigin);
+        AssertPaperAuditReference(membershipAudit.RelatedEntityRefs, paper);
+        using var membershipAfter = JsonDocument.Parse(membershipAudit.AfterSummary);
+        Assert.Equal(
+            "paper_fallback",
+            membershipAfter.RootElement.GetProperty("entryOrigin").GetString());
+        Assert.Equal(
+            paper.EntryBatchId,
+            membershipAfter.RootElement.GetProperty("entryBatchId").GetGuid());
+
+        var paymentAuditId = membershipAfter.RootElement
+            .GetProperty("payment")
+            .GetProperty("paymentAuditEntryId")
+            .GetGuid();
+        var paymentAudit = await ReadAuditAsync(database, paymentAuditId);
+        Assert.Equal(occurredAt, paymentAudit.OccurredAt);
+        Assert.Equal("paper_fallback", paymentAudit.EntryOrigin);
+        AssertPaperAuditReference(paymentAudit.RelatedEntityRefs, paper);
+
+        var paymentHistory = await new GetClientPaymentHistorySourceRowsQueryHandler(
+                dbContext,
+                new GetClientAuditEntriesQueryHandler(
+                    dbContext,
+                    new FixedTimeProvider(TestNow)))
+            .ExecuteAsync(
+                new GetClientPaymentHistorySourceRowsQuery(actor, fixture.ClientId),
+                CancellationToken.None);
+        Assert.Equal(GetClientPaymentHistorySourceRowsStatus.Success, paymentHistory.Status);
+        var paymentHistoryPage = Assert.IsType<ClientPaymentHistorySourceRowsPage>(
+            paymentHistory.Page);
+        var paymentHistoryRow = Assert.Single(paymentHistoryPage.Items);
+        Assert.Equal(
+            ClientPaymentHistorySourceKind.CreatedPayment,
+            paymentHistoryRow.Kind);
+        var paymentHistorySource = Assert.IsType<PaymentHistorySource>(
+            paymentHistoryRow.CreatedPayment);
+        var paymentHistoryPaper = Assert.IsType<PaperFallbackEntryRowReference>(
+            paymentHistorySource.PaperReference);
+        Assert.Equal(PaperFallbackEventType.MembershipSale, paymentHistoryPaper.EventType);
+        Assert.Equal(paper.EntryBatchRowId, paymentHistoryPaper.EntryBatchRowId);
+
+        var dailyPayments = await new GetDailyPaymentSourceRowsQueryHandler(
+                dbContext,
+                new IssueMembershipOpenPaymentDayStatusProvider(),
+                new FixedTimeProvider(TestNow))
+            .ExecuteAsync(
+                new GetDailyPaymentSourceRowsQuery(
+                    actor,
+                    BusinessTimeZone.GetBusinessDate(occurredAt)),
+                CancellationToken.None);
+        Assert.Equal(GetDailyPaymentSourceRowsStatus.Success, dailyPayments.Status);
+        var dailySnapshot = Assert.IsType<DailyPaymentSourceSnapshot>(
+            dailyPayments.Snapshot);
+        var dailyPayment = Assert.Single(dailySnapshot.Rows).Payment;
+        Assert.Equal(payment.Id, dailyPayment.PaymentId);
+        Assert.Equal(EntryOrigin.PaperFallback, dailyPayment.EntryOrigin);
+        Assert.Equal(paper.EntryBatchId, dailyPayment.EntryBatchId);
+
+        var historyHandler = new GetClientMembershipHistorySourceRowsQueryHandler(
+            dbContext,
+            new GetClientAuditEntriesQueryHandler(
+                dbContext,
+                new FixedTimeProvider(TestNow)));
+        var history = await historyHandler.ExecuteAsync(
+            new GetClientMembershipHistorySourceRowsQuery(actor, fixture.ClientId),
+            CancellationToken.None);
+        Assert.Equal(
+            GetClientMembershipHistorySourceRowsStatus.Success,
+            history.Status);
+        var page = Assert.IsType<ClientMembershipHistorySourceRowsPage>(history.Page);
+        var historyRow = Assert.Single(page.Items);
+        Assert.Equal(ClientMembershipHistorySourceKind.IssuedMembership, historyRow.Kind);
+        Assert.Equal(occurredAt, historyRow.OccurredAt);
+        var historyMembership = Assert.IsType<IssuedMembershipHistorySource>(
+            historyRow.IssuedMembership);
+        Assert.Equal(TestNow, historyMembership.IssuedAt);
+        var historyPaper = Assert.IsType<PaperFallbackEntryRowReference>(
+            historyMembership.PaperReference);
+        Assert.Equal(paper.EntryBatchId, historyPaper.EntryBatchId);
+        Assert.Equal(paper.EntryBatchRowId, historyPaper.EntryBatchRowId);
+        Assert.Equal(paper.PaperSheetNumber, historyPaper.PaperSheetNumber);
+        Assert.Equal(paper.LineNumber, historyPaper.LineNumber);
+        Assert.Equal(PaperFallbackEventType.MembershipSale, historyPaper.EventType);
+        Assert.Equal(paper.Explanation, historyPaper.Explanation);
+
+        await ExecuteNonQueryAsync(
+            database,
+            $"""
+            delete from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = '{paper.EntryBatchRowId}'
+              and entity_type = 'membership'
+              and entity_id = '{membershipId}'
+            """);
+        var inconsistentHistory = await historyHandler.ExecuteAsync(
+            new GetClientMembershipHistorySourceRowsQuery(actor, fixture.ClientId),
+            CancellationToken.None);
+        Assert.Equal(
+            GetClientMembershipHistorySourceRowsStatus.SourceInconsistent,
+            inconsistentHistory.Status);
+        Assert.Null(inconsistentHistory.Page);
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperFallbackRequiresUnusedRegisteredMembershipSaleRow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
+        var fixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
+        var occurredAt = TestNow.AddDays(-1);
+        var wrongEvent = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            actor,
+            occurredAt,
+            "payment",
+            TestNow);
+        var validPaperShape = CreatePaperCommand(
+            actor,
+            fixture,
+            wrongEvent,
+            occurredAt,
+            "paper-membership-validation");
+        var handler = CreateHandler(dbContext);
+
+        var wrongEventResult = await handler.ExecuteAsync(
+            validPaperShape,
+            CancellationToken.None);
+        var missingRowResult = await handler.ExecuteAsync(
+            validPaperShape with
+            {
+                Envelope = validPaperShape.Envelope with
+                {
+                    IdempotencyKey = "paper-membership-missing-row",
+                    RequestCorrelationId = new RequestCorrelationId(
+                        "correlation-paper-membership-missing-row"),
+                    EntryBatchRowId = Guid.NewGuid(),
+                },
+            },
+            CancellationToken.None);
+        var normalWithRowResult = await handler.ExecuteAsync(
+            CreateCommand(actor, fixture, "normal-membership-with-row") with
+            {
+                Envelope = CreateCommand(
+                    actor,
+                    fixture,
+                    "normal-membership-with-row").Envelope with
+                {
+                    EntryBatchRowId = wrongEvent.EntryBatchRowId,
+                },
+            },
+            CancellationToken.None);
+        var missingOccurredAtResult = await handler.ExecuteAsync(
+            validPaperShape with
+            {
+                Envelope = validPaperShape.Envelope with
+                {
+                    IdempotencyKey = "paper-membership-missing-occurred",
+                    RequestCorrelationId = new RequestCorrelationId(
+                        "correlation-paper-membership-missing-occurred"),
+                    OccurredAt = null,
+                },
+            },
+            CancellationToken.None);
+        var missingExplanationResult = await handler.ExecuteAsync(
+            validPaperShape with
+            {
+                Envelope = validPaperShape.Envelope with
+                {
+                    IdempotencyKey = "paper-membership-missing-explanation",
+                    RequestCorrelationId = new RequestCorrelationId(
+                        "correlation-paper-membership-missing-explanation"),
+                    Reason = null,
+                    Comment = null,
+                },
+            },
+            CancellationToken.None);
+
+        AssertError(
+            wrongEventResult,
+            CommandErrorCode.ValidationFailed,
+            "entryBatchRowId");
+        AssertError(
+            missingRowResult,
+            CommandErrorCode.NotFound,
+            "entryBatchRowId");
+        AssertError(
+            normalWithRowResult,
+            CommandErrorCode.ValidationFailed,
+            "entryBatchRowId");
+        AssertError(
+            missingOccurredAtResult,
+            CommandErrorCode.ValidationFailed,
+            "occurredAt");
+        AssertError(
+            missingExplanationResult,
+            CommandErrorCode.ValidationFailed,
+            "reason");
+        Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            wrongEvent.EntryBatchRowId));
+        await AssertNoIssueMutationAsync(database);
     }
 
     [PostgreSqlFact]
@@ -899,6 +1190,83 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task ConcurrentPaperSalesBindExactlyOneAggregateToTheRow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using (var migrationContext = database.CreateDbContext())
+        {
+            await migrationContext.Database.MigrateAsync();
+        }
+
+        var actor = await SeedActorAsync(
+            database,
+            ActorRole.Admin,
+            AccountKind.NamedAdmin);
+        var fixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
+        var occurredAt = TestNow.AddDays(-1);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            actor,
+            occurredAt,
+            "membership_sale",
+            TestNow,
+            explanation: "Concurrent paper Membership sale");
+        var firstCommand = CreatePaperCommand(
+            actor,
+            fixture,
+            paper,
+            occurredAt,
+            "concurrent-paper-membership-a");
+        var secondCommand = CreatePaperCommand(
+            actor,
+            fixture,
+            paper,
+            occurredAt,
+            "concurrent-paper-membership-b");
+        await using var firstContext = database.CreateDbContext();
+        await using var secondContext = database.CreateDbContext();
+
+        var results = await Task.WhenAll(
+            CreateHandler(firstContext).ExecuteAsync(
+                firstCommand,
+                CancellationToken.None),
+            CreateHandler(secondContext).ExecuteAsync(
+                secondCommand,
+                CancellationToken.None));
+
+        var success = Assert.Single(
+            results,
+            result => result.Status == CommandStatus.Success);
+        var rejected = Assert.Single(
+            results,
+            result => result.Status == CommandStatus.Error);
+        AssertSuccessfulResult(success, fixture.ClientId);
+        AssertError(
+            rejected,
+            CommandErrorCode.DuplicateSubmission,
+            "entryBatchRowId");
+        var membershipId = success.PrimaryEntityId!.Value.Value;
+        var payment = await ReadPaymentForMembershipAsync(database, membershipId);
+        var links = await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId);
+        Assert.Equal(2, links.Count);
+        Assert.Contains(
+            links,
+            link => link.EntityType == MembershipAuditActions.MembershipEntityType
+                && link.EntityId == membershipId);
+        Assert.Contains(
+            links,
+            link => link.EntityType == PaymentAuditActions.EntityType
+                && link.EntityId == payment.Id);
+        Assert.Equal(1L, await CountRowsAsync(database, "issued_memberships"));
+        Assert.Equal(1L, await CountRowsAsync(database, "membership_state_cache"));
+        Assert.Equal(1L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
     public async Task MissingSourceDuringRebuildReturnsRecalculationFailureAndRollsBack()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -1023,6 +1391,63 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         await AssertNoIssueMutationAsync(database);
     }
 
+    [PostgreSqlFact]
+    public async Task PaperAuditFailureRollsBackLinksAndLeavesRowReusable()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
+        var fixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
+        var occurredAt = TestNow.AddDays(-1);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            actor,
+            occurredAt,
+            "membership_sale",
+            TestNow,
+            explanation: "Paper Membership sale retry");
+        var command = CreatePaperCommand(
+            actor,
+            fixture,
+            paper,
+            occurredAt,
+            "paper-membership-audit-failure");
+        await ExecuteNonQueryAsync(
+            database,
+            """
+            alter table bodylife.business_audit_entries
+            add constraint ck_test_reject_paper_membership_issue_audit
+            check (action_type <> 'membership.issued')
+            """);
+
+        await Assert.ThrowsAsync<DbUpdateException>(() =>
+            CreateHandler(dbContext).ExecuteAsync(command, CancellationToken.None));
+
+        await AssertNoIssueMutationAsync(database);
+        Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId));
+        Assert.Empty(dbContext.ChangeTracker.Entries());
+
+        await ExecuteNonQueryAsync(
+            database,
+            """
+            alter table bodylife.business_audit_entries
+            drop constraint ck_test_reject_paper_membership_issue_audit
+            """);
+        var retry = await CreateHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+
+        AssertSuccessfulResult(retry, fixture.ClientId);
+        Assert.Equal(
+            2,
+            (await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId)).Count);
+    }
+
     [Fact]
     public void PersistenceRegistrationExposesScopedIssueMembershipHandlerAndPaymentWriter()
     {
@@ -1087,6 +1512,50 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             TestNow.AddDays(-1),
             NewStartDate,
             decision);
+    }
+
+    private static IssueMembershipCommand CreatePaperCommand(
+        ActorContext actor,
+        IssueFixture fixture,
+        PaperFallbackRowFixture paper,
+        DateTimeOffset occurredAt,
+        string idempotencyKey,
+        MembershipNegativeHandlingDecision? decision = null)
+    {
+        var command = CreateCommand(actor, fixture, idempotencyKey, decision);
+        return command with
+        {
+            Envelope = command.Envelope with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                OccurredAt = occurredAt,
+                Reason = paper.Explanation,
+                Comment = "Recovered paper Membership sale",
+                EntryBatchRowId = paper.EntryBatchRowId,
+            },
+        };
+    }
+
+    private static void AssertPaperAuditReference(
+        string relatedEntityRefs,
+        PaperFallbackRowFixture paper)
+    {
+        using var related = JsonDocument.Parse(relatedEntityRefs);
+        Assert.Equal(
+            paper.EntryBatchId,
+            related.RootElement.GetProperty("entryBatchId").GetGuid());
+        Assert.Equal(
+            paper.EntryBatchRowId,
+            related.RootElement.GetProperty("entryBatchRowId").GetGuid());
+        Assert.Equal(
+            paper.PaperSheetNumber,
+            related.RootElement.GetProperty("paperSheetNumber").GetString());
+        Assert.Equal(
+            paper.LineNumber,
+            related.RootElement.GetProperty("lineNumber").GetInt32());
+        Assert.Equal(
+            paper.Explanation,
+            related.RootElement.GetProperty("paperExplanation").GetString());
     }
 
     private static void AssertSuccessfulResult(CommandResult result, Guid clientId)
@@ -1841,5 +2310,14 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => utcNow;
+    }
+
+    private sealed class IssueMembershipOpenPaymentDayStatusProvider
+        : IPaymentDayReconciliationStatusProvider
+    {
+        public Task<PaymentDayReconciliationStatus> GetStatusAsync(
+            DateOnly businessDate,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(PaymentDayReconciliationStatus.Open);
     }
 }

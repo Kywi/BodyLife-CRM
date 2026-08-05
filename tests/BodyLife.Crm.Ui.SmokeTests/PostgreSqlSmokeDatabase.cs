@@ -2480,6 +2480,11 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var replacementPaymentId = Guid.NewGuid();
         var paymentCorrectionId = Guid.NewGuid();
         var paymentCorrectionBatchId = Guid.NewGuid();
+        var paymentCorrectionRowId = Guid.NewGuid();
+        const string paymentCorrectionSheetNumber = "PAYMENT-CORRECTION-SMOKE";
+        const int paymentCorrectionLineNumber = 8;
+        const string paymentCorrectionExplanation =
+            "Cash amount was entered incorrectly";
         var freezeId = Guid.NewGuid();
         var freezeCancellationId = Guid.NewGuid();
         var nonWorkingPeriodId = Guid.NewGuid();
@@ -2834,7 +2839,65 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     @non_working_end_date,
                     @non_working_previewed_at,
                     @non_working_recorded_at,
-                    'active')
+                    'active');
+
+                insert into bodylife.entry_batches (
+                    id,
+                    batch_type,
+                    paper_sheet_number,
+                    business_date_start,
+                    business_date_end,
+                    recorded_at,
+                    recorded_by_account_id,
+                    reconciled_at,
+                    reconciled_by_account_id,
+                    note)
+                values (
+                    @payment_correction_batch_id,
+                    'paper_fallback',
+                    @payment_correction_sheet_number,
+                    @payment_correction_business_date,
+                    @payment_correction_business_date,
+                    @payment_correction_batch_recorded_at,
+                    @shared_account_id,
+                    null,
+                    null,
+                    'Client history smoke paper correction');
+
+                insert into bodylife.entry_batch_rows (
+                    id,
+                    entry_batch_id,
+                    line_number,
+                    event_type,
+                    occurred_at,
+                    explanation,
+                    recorded_at,
+                    recorded_by_account_id,
+                    session_id)
+                values (
+                    @payment_correction_row_id,
+                    @payment_correction_batch_id,
+                    @payment_correction_line_number,
+                    'correction_or_cancellation',
+                    @featured_occurred_at,
+                    @payment_correction_explanation,
+                    @featured_recorded_at,
+                    @shared_account_id,
+                    @shared_session_id);
+
+                insert into bodylife.entry_batch_row_entities (
+                    entry_batch_row_id,
+                    entity_type,
+                    entity_id)
+                values
+                    (
+                        @payment_correction_row_id,
+                        'payment_correction',
+                        @payment_correction_id),
+                    (
+                        @payment_correction_row_id,
+                        'payment',
+                        @replacement_payment_id)
                 """;
             sourceCommand.Parameters.AddWithValue("owner_session_id", ownerSessionId);
             sourceCommand.Parameters.AddWithValue("owner_account_id", ownerAccountId);
@@ -2900,6 +2963,25 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             sourceCommand.Parameters.AddWithValue(
                 "payment_correction_batch_id",
                 paymentCorrectionBatchId);
+            sourceCommand.Parameters.AddWithValue(
+                "payment_correction_row_id",
+                paymentCorrectionRowId);
+            sourceCommand.Parameters.AddWithValue(
+                "payment_correction_sheet_number",
+                paymentCorrectionSheetNumber);
+            sourceCommand.Parameters.AddWithValue(
+                "payment_correction_line_number",
+                paymentCorrectionLineNumber);
+            sourceCommand.Parameters.AddWithValue(
+                "payment_correction_explanation",
+                paymentCorrectionExplanation);
+            sourceCommand.Parameters.AddWithValue(
+                "payment_correction_business_date",
+                NpgsqlDbType.Date,
+                BusinessTimeZone.GetBusinessDate(featuredOccurredAt));
+            sourceCommand.Parameters.AddWithValue(
+                "payment_correction_batch_recorded_at",
+                featuredRecordedAt.AddMinutes(-10));
             sourceCommand.Parameters.AddWithValue("payment_correction_id", paymentCorrectionId);
             sourceCommand.Parameters.AddWithValue("freeze_id", freezeId);
             sourceCommand.Parameters.AddWithValue(
@@ -2939,7 +3021,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             sourceCommand.Parameters.AddWithValue(
                 "non_working_previewed_at",
                 nonWorkingRecordedAt.AddMinutes(-30));
-            Assert.Equal(16, await sourceCommand.ExecuteNonQueryAsync());
+            Assert.Equal(20, await sourceCommand.ExecuteNonQueryAsync());
         }
 
         var clientReference = new { clientId, membershipId };
@@ -3083,7 +3165,16 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 "payment.corrected",
                 "payment",
                 originalPaymentId,
-                clientReference,
+                new
+                {
+                    clientId,
+                    membershipId,
+                    entryBatchId = paymentCorrectionBatchId,
+                    entryBatchRowId = paymentCorrectionRowId,
+                    paperSheetNumber = paymentCorrectionSheetNumber,
+                    lineNumber = paymentCorrectionLineNumber,
+                    paperExplanation = paymentCorrectionExplanation,
+                },
                 sharedAdminAccountId,
                 "shared_reception_admin",
                 "admin",

@@ -238,6 +238,66 @@ public sealed class ClientHistoryRowPresenterTests
         Assert.Equal("issued comment", row.Narrative);
     }
 
+    [Fact]
+    public void PaperMembershipSaleShowsLocalizedCanonicalProvenance()
+    {
+        var source = CreateMembershipIssuedRow();
+
+        var english = Present(source, WebCultures.English);
+        var ukrainian = Present(source, WebCultures.Ukrainian);
+
+        Assert.Equal(
+            "MEMBERSHIP-SALE-001",
+            FactValue(english.Facts, "Paper sheet"));
+        Assert.Equal("11", FactValue(english.Facts, "Line number"));
+        Assert.Equal(
+            "Membership sale",
+            FactValue(english.Facts, "Event type"));
+        Assert.Equal(
+            "Recovered paper membership sale",
+            FactValue(english.Facts, "Explanation"));
+        Assert.Equal(
+            Id(110).ToString(),
+            FactValue(english.Identifiers, "Entry batch row ID"));
+
+        Assert.Equal(
+            "MEMBERSHIP-SALE-001",
+            FactValue(ukrainian.Facts, "Паперовий аркуш"));
+        Assert.Equal("11", FactValue(ukrainian.Facts, "Номер рядка"));
+        Assert.Equal(
+            "Продаж абонемента",
+            FactValue(ukrainian.Facts, "Тип події"));
+        Assert.Equal(
+            "Recovered paper membership sale",
+            FactValue(ukrainian.Facts, "Пояснення"));
+        Assert.Equal(
+            Id(110).ToString(),
+            FactValue(ukrainian.Identifiers, "ID рядка пакета внесення"));
+    }
+
+    [Fact]
+    public void PaperMembershipSaleWithoutCanonicalRowReferenceFailsClosed()
+    {
+        var row = CreateMembershipIssuedRow();
+        row = row with
+        {
+            MembershipSourceRow = row.MembershipSourceRow! with
+            {
+                IssuedMembership = row.MembershipSourceRow.IssuedMembership! with
+                {
+                    PaperReference = null,
+                },
+            },
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => Present(row, WebCultures.English));
+
+        Assert.Equal(
+            "Paper Membership history provenance is inconsistent.",
+            exception.Message);
+    }
+
     [Theory]
     [InlineData("en-US", "7/5/2026 to 7/7/2026")]
     [InlineData("uk-UA", "05.07.2026 – 07.07.2026")]
@@ -774,7 +834,15 @@ public sealed class ClientHistoryRowPresenterTests
             ActorAccountId,
             IssuedMembershipLifecycleStatus.Active,
             BatchId,
-            "issued comment");
+            "issued comment",
+            new PaperFallbackEntryRowReference(
+                BatchId,
+                Id(110),
+                "MEMBERSHIP-SALE-001",
+                11,
+                PaperFallbackEventType.MembershipSale,
+                OccurredAt,
+                "Recovered paper membership sale"));
         var audit = Audit(MembershipId);
         var source = new ClientMembershipHistorySourceRow(
             ClientMembershipHistorySourceKind.IssuedMembership,

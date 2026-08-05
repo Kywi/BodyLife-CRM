@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 
@@ -17,7 +18,8 @@ public sealed class MembershipIssuePaymentWriter(
         Money amount,
         Guid? entryBatchId,
         DateTimeOffset recordedAt,
-        bool changedAfterClose = false)
+        bool changedAfterClose = false,
+        PaperFallbackEntryRowReference? paperReference = null)
     {
         ArgumentNullException.ThrowIfNull(envelope);
 
@@ -53,11 +55,28 @@ public sealed class MembershipIssuePaymentWriter(
             RecordedByAccountId = envelope.Actor.AccountId.Value,
             SessionId = envelope.Actor.SessionId.Value,
             EntryOrigin = PaymentCommandSupport.MapEntryOrigin(envelope.EntryOrigin),
-            EntryBatchId = entryBatchId,
+            EntryBatchId = paperReference?.EntryBatchId ?? entryBatchId,
             Comment = NormalizeOptional(envelope.Comment),
             Status = "active",
         };
         dbContext.Set<PaymentRecord>().Add(paymentRecord);
+
+        object relatedEntityRefs = paperReference is { } auditPaperReference
+            ? new
+            {
+                ClientId = clientId,
+                MembershipId = membershipId,
+                auditPaperReference.EntryBatchId,
+                auditPaperReference.EntryBatchRowId,
+                auditPaperReference.PaperSheetNumber,
+                auditPaperReference.LineNumber,
+                PaperExplanation = auditPaperReference.Explanation,
+            }
+            : new
+            {
+                ClientId = clientId,
+                MembershipId = membershipId,
+            };
 
         var auditEntryId = auditAppender.Append(
             envelope,
@@ -65,11 +84,7 @@ public sealed class MembershipIssuePaymentWriter(
             PaymentAuditActions.EntityType,
             paymentId,
             recordedAt,
-            relatedEntityRefs: new
-            {
-                ClientId = clientId,
-                MembershipId = membershipId,
-            },
+            relatedEntityRefs: relatedEntityRefs,
             afterSummary: new
             {
                 Payment = new

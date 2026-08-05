@@ -1,3 +1,4 @@
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Memberships;
@@ -13,4 +14,5 @@ public sealed record IssuedMembershipHistorySource(
     AccountId IssuedByAccountId,
     IssuedMembershipLifecycleStatus Status,
     Guid? EntryBatchId,
-    string? Comment);
+    string? Comment,
+    PaperFallbackEntryRowReference? PaperReference = null);

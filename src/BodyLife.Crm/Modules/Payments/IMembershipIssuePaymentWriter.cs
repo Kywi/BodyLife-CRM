@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Payments;
@@ -12,7 +13,8 @@ public interface IMembershipIssuePaymentWriter
         Money amount,
         Guid? entryBatchId,
         DateTimeOffset recordedAt,
-        bool changedAfterClose = false);
+        bool changedAfterClose = false,
+        PaperFallbackEntryRowReference? paperReference = null);
 }
 
 public sealed record MembershipIssuePaymentWriteResult(

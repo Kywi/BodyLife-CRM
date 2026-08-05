@@ -152,6 +152,40 @@ public sealed class PostgreSqlGetClientMembershipHistorySourceRowsQueryTests
     }
 
     [PostgreSqlFact]
+    public async Task QueryFailsClosedWhenNormalMembershipCarriesBatchMetadata()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var source = await SeedHistoryAsync(database, fixture);
+        await using (var connection = new NpgsqlConnection(database.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                """
+                update bodylife.issued_memberships
+                set entry_batch_id = @entry_batch_id
+                where id = @membership_id
+                """;
+            command.Parameters.AddWithValue("entry_batch_id", Guid.NewGuid());
+            command.Parameters.AddWithValue("membership_id", source.MembershipId);
+            Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        }
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientMembershipHistorySourceRowsQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+
+        AssertFailure(
+            result,
+            GetClientMembershipHistorySourceRowsStatus.SourceInconsistent);
+    }
+
+    [PostgreSqlFact]
     public async Task ValidationMissingClientAndInactiveActorReturnNoRows()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -507,7 +541,8 @@ public sealed class PostgreSqlGetClientMembershipHistorySourceRowsQueryTests
             fixture.ClientId,
             TestNow.AddDays(-3),
             TestNow.AddDays(-3),
-            "normal");
+            "normal",
+            comment: "Imported contract");
         await InsertAuditAsync(
             database,
             fixture,
@@ -557,7 +592,8 @@ public sealed class PostgreSqlGetClientMembershipHistorySourceRowsQueryTests
         DateTimeOffset occurredAt,
         DateTimeOffset recordedAt,
         string entryOrigin,
-        string? reason = null)
+        string? reason = null,
+        string? comment = null)
     {
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
@@ -599,7 +635,7 @@ public sealed class PostgreSqlGetClientMembershipHistorySourceRowsQueryTests
                 @occurred_at,
                 @recorded_at,
                 @reason,
-                null,
+                @comment,
                 '{}'::jsonb,
                 '{"state":"recorded"}'::jsonb,
                 @request_correlation_id,
@@ -624,6 +660,8 @@ public sealed class PostgreSqlGetClientMembershipHistorySourceRowsQueryTests
         command.Parameters.AddWithValue("recorded_at", recordedAt);
         command.Parameters.Add("reason", NpgsqlDbType.Varchar).Value =
             reason ?? (object)DBNull.Value;
+        command.Parameters.Add("comment", NpgsqlDbType.Varchar).Value =
+            comment ?? (object)DBNull.Value;
         command.Parameters.AddWithValue(
             "request_correlation_id",
             $"history-{auditId:N}");

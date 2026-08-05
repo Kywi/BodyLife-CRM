@@ -1,9 +1,12 @@
+using System.Text.Json;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
+using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -159,6 +162,105 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task PaperMembershipSaleBindsEveryNewCoverageSourceFact()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(database, sourceVisitCount: 5);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, expectedNegative: 3);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            TestNow,
+            "membership_sale",
+            TestNow,
+            lineNumber: 14,
+            explanation: "Recovered Membership sale with negative coverage");
+        var command = CreatePaperCommand(
+            fixture,
+            paper,
+            "paper-cover-two",
+            coverageCount: 2,
+            fixture.VisitIds[2]);
+        var handler = CreateHandler(dbContext);
+
+        var result = await handler.ExecuteAsync(command, CancellationToken.None);
+        var replay = await handler.ExecuteAsync(command, CancellationToken.None);
+
+        Assert.Equal(CommandStatus.Success, result.Status);
+        Assert.Equal(result.PrimaryEntityId, replay.PrimaryEntityId);
+        Assert.Equal(result.AuditEntryId, replay.AuditEntryId);
+        var membershipId = result.PrimaryEntityId!.Value.Value;
+        var closureId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.membership_negative_closures where covering_membership_id = '{membershipId}'");
+        var paymentId = await database.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.payments where membership_id = '{membershipId}' and status = 'active'");
+        var itemIds = await ReadIdsAsync(
+            database,
+            $"select id from bodylife.membership_negative_closure_items where negative_closure_id = '{closureId}' order by id");
+        var consumptionIds = await ReadIdsAsync(
+            database,
+            $"select id from bodylife.visit_consumptions where membership_id = '{membershipId}' and consumption_type = 'negative_coverage' order by id");
+        Assert.Equal(2, itemIds.Length);
+        Assert.Equal(2, consumptionIds.Length);
+
+        Assert.Equal(
+            paper.EntryBatchId,
+            await database.ExecuteScalarAsync<Guid>(
+                $"select entry_batch_id from bodylife.issued_memberships where id = '{membershipId}'"));
+        Assert.Equal(
+            paper.EntryBatchId,
+            await database.ExecuteScalarAsync<Guid>(
+                $"select entry_batch_id from bodylife.payments where id = '{paymentId}'"));
+        Assert.Equal(
+            paper.EntryBatchId,
+            await database.ExecuteScalarAsync<Guid>(
+                $"select entry_batch_id from bodylife.membership_negative_closures where id = '{closureId}'"));
+
+        var links = await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId);
+        Assert.Equal(7, links.Count);
+        Assert.Equal(
+            [membershipId],
+            LinkIds(links, MembershipAuditActions.MembershipEntityType));
+        Assert.Equal(
+            [closureId],
+            LinkIds(links, MembershipNegativeClosureAuditActions.EntityType));
+        Assert.Equal(
+            itemIds,
+            LinkIds(links, "membership_negative_closure_item"));
+        Assert.Equal(
+            [paymentId],
+            LinkIds(links, PaymentAuditActions.EntityType));
+        Assert.Equal(
+            consumptionIds,
+            LinkIds(links, "visit_consumption"));
+
+        var membershipAuditRefs = await database.ExecuteScalarAsync<string>(
+            $"select related_entity_refs::text from bodylife.business_audit_entries where id = '{result.AuditEntryId!.Value.Value}'");
+        var paymentAuditRefs = await database.ExecuteScalarAsync<string>(
+            $"select related_entity_refs::text from bodylife.business_audit_entries where action_type = 'payment.created' and entity_id = '{paymentId}'");
+        var closureAuditRefs = await database.ExecuteScalarAsync<string>(
+            $"select related_entity_refs::text from bodylife.business_audit_entries where action_type = 'membership_negative_closure.created' and entity_id = '{closureId}'");
+        Assert.NotNull(membershipAuditRefs);
+        Assert.NotNull(paymentAuditRefs);
+        Assert.NotNull(closureAuditRefs);
+        AssertPaperAuditReference(membershipAuditRefs, paper);
+        AssertPaperAuditReference(paymentAuditRefs, paper);
+        AssertPaperAuditReference(closureAuditRefs, paper);
+
+        Assert.Equal(2L, await database.ExecuteScalarAsync<long>(
+            $"select count(*) from bodylife.membership_negative_closure_items where negative_closure_id = '{closureId}'"));
+        Assert.Equal(2L, await database.ExecuteScalarAsync<long>(
+            $"select count(*) from bodylife.visit_consumptions where membership_id = '{membershipId}' and consumption_type = 'negative_coverage'"));
+        Assert.Equal(3L, await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.business_audit_entries"));
+        Assert.Equal(1L, await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
     public async Task InvalidCountsStaleOldestAndExpiredCoverageHaveStableOutcomes()
     {
         await using var database = await CreateMigratedDatabaseAsync();
@@ -256,6 +358,61 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
                 database,
                 fixture.SourceMembershipId,
                 "negative_balance"));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperCoverageAuditFailureRollsBackAllLinksAndAllowsRetry()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(database, sourceVisitCount: 5);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, expectedNegative: 3);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            TestNow,
+            "membership_sale",
+            TestNow,
+            explanation: "Retry paper Membership coverage");
+        var command = CreatePaperCommand(
+            fixture,
+            paper,
+            "paper-coverage-audit-failure",
+            coverageCount: 2,
+            fixture.VisitIds[2]);
+        await ExecuteSqlAsync(
+            database,
+            """
+            alter table bodylife.business_audit_entries
+            add constraint ck_test_reject_paper_negative_closure_audit
+            check (action_type <> 'membership_negative_closure.created')
+            """);
+
+        await Assert.ThrowsAsync<DbUpdateException>(() =>
+            CreateHandler(dbContext).ExecuteAsync(command, CancellationToken.None));
+
+        await AssertNoNewIssueAsync(database);
+        Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId));
+        Assert.Empty(dbContext.ChangeTracker.Entries());
+
+        await ExecuteSqlAsync(
+            database,
+            """
+            alter table bodylife.business_audit_entries
+            drop constraint ck_test_reject_paper_negative_closure_audit
+            """);
+        var retry = await CreateHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+
+        Assert.Equal(CommandStatus.Success, retry.Status);
+        Assert.Equal(
+            7,
+            (await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId)).Count);
     }
 
     private static async Task<PostgreSqlTestDatabase> CreateMigratedDatabaseAsync()
@@ -424,6 +581,31 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             expectedOldestVisitId);
     }
 
+    private static IssueMembershipCommand CreatePaperCommand(
+        CoverageFixture fixture,
+        PaperFallbackRowFixture paper,
+        string idempotencyKey,
+        int coverageCount,
+        Guid expectedOldestVisitId)
+    {
+        var command = CreateCommand(
+            fixture,
+            idempotencyKey,
+            coverageCount,
+            expectedOldestVisitId);
+        return command with
+        {
+            Envelope = command.Envelope with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                OccurredAt = TestNow,
+                Reason = paper.Explanation,
+                Comment = "Recovered paper Membership sale",
+                EntryBatchRowId = paper.EntryBatchRowId,
+            },
+        };
+    }
+
     private static IssueMembershipCommandHandler CreateHandler(
         BodyLifeDbContext dbContext)
     {
@@ -458,6 +640,63 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
     {
         return await database.ExecuteScalarAsync<int>(
             $"select {column} from bodylife.membership_state_cache where membership_id = '{membershipId}'");
+    }
+
+    private static async Task<Guid[]> ReadIdsAsync(
+        PostgreSqlTestDatabase database,
+        string sql)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand(sql, connection);
+        await using var reader = await command.ExecuteReaderAsync();
+        var ids = new List<Guid>();
+        while (await reader.ReadAsync())
+        {
+            ids.Add(reader.GetGuid(0));
+        }
+
+        return ids.ToArray();
+    }
+
+    private static Guid[] LinkIds(
+        IReadOnlyList<PaperFallbackEntityLink> links,
+        string entityType) => links
+        .Where(link => link.EntityType == entityType)
+        .Select(link => link.EntityId)
+        .Order()
+        .ToArray();
+
+    private static void AssertPaperAuditReference(
+        string relatedEntityRefs,
+        PaperFallbackRowFixture paper)
+    {
+        using var related = JsonDocument.Parse(relatedEntityRefs);
+        Assert.Equal(
+            paper.EntryBatchId,
+            related.RootElement.GetProperty("entryBatchId").GetGuid());
+        Assert.Equal(
+            paper.EntryBatchRowId,
+            related.RootElement.GetProperty("entryBatchRowId").GetGuid());
+        Assert.Equal(
+            paper.PaperSheetNumber,
+            related.RootElement.GetProperty("paperSheetNumber").GetString());
+        Assert.Equal(
+            paper.LineNumber,
+            related.RootElement.GetProperty("lineNumber").GetInt32());
+        Assert.Equal(
+            paper.Explanation,
+            related.RootElement.GetProperty("paperExplanation").GetString());
+    }
+
+    private static async Task ExecuteSqlAsync(
+        PostgreSqlTestDatabase database,
+        string sql)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand(sql, connection);
+        await command.ExecuteNonQueryAsync();
     }
 
     private static async Task AssertNoNewIssueAsync(PostgreSqlTestDatabase database)

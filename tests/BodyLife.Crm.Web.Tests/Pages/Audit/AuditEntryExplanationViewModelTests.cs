@@ -1310,7 +1310,8 @@ public sealed class AuditEntryExplanationViewModelTests
                     MembershipIssueSummary(
                         membershipId,
                         clientId,
-                        membershipTypeId),
+                        membershipTypeId,
+                        comment: "Front desk issue"),
                     related: new
                     {
                         ClientId = clientId,
@@ -1358,6 +1359,102 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("None", FactValue(explanation.AfterFacts, "Payment"));
         Assert.Equal("Issued Membership", explanation.ChangedFields);
         Assert.Contains("do not rewrite", explanation.Narrative, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PaperMembershipIssueShowsLocalizedRowProvenance()
+    {
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var entry = Entry(
+            "membership.issued",
+            AuditTimelineEntityType.Membership,
+            membershipId,
+            new { },
+            MembershipIssueSummary(
+                membershipId,
+                clientId,
+                membershipTypeId,
+                entryOrigin: "paper_fallback",
+                entryBatchId: batchId,
+                comment: "Recovered paper Membership sale"),
+            related: new
+            {
+                ClientId = clientId,
+                MembershipTypeId = membershipTypeId,
+                PaymentId = (Guid?)null,
+                EntryBatchId = batchId,
+                EntryBatchRowId = rowId,
+                PaperSheetNumber = "MEMBERSHIP-SALE-001",
+                LineNumber = 12,
+                PaperExplanation = "Recovered signed Membership sale",
+            },
+            reason: "Recovered signed Membership sale",
+            comment: "Recovered paper Membership sale",
+            entryOrigin: EntryOrigin.PaperFallback);
+
+        var english = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.English));
+        var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.Ukrainian));
+
+        Assert.True(english.IsAvailable);
+        Assert.Equal(
+            "MEMBERSHIP-SALE-001",
+            FactValue(english.AfterFacts, "Paper sheet"));
+        Assert.Equal("12", FactValue(english.AfterFacts, "Line number"));
+        Assert.Equal(
+            "Membership sale",
+            FactValue(english.AfterFacts, "Event type"));
+        Assert.Equal(
+            "Recovered signed Membership sale",
+            FactValue(english.AfterFacts, "Explanation"));
+        Assert.Equal(
+            "Продаж абонемента",
+            FactValue(ukrainian.AfterFacts, "Тип події"));
+        Assert.Equal(
+            "Recovered signed Membership sale",
+            FactValue(ukrainian.AfterFacts, "Пояснення"));
+    }
+
+    [Fact]
+    public void PaperMembershipIssueWithoutCanonicalRowReferenceFailsClosed()
+    {
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "membership.issued",
+                    AuditTimelineEntityType.Membership,
+                    membershipId,
+                    new { },
+                    MembershipIssueSummary(
+                        membershipId,
+                        clientId,
+                        membershipTypeId,
+                        entryOrigin: "paper_fallback",
+                        entryBatchId: batchId,
+                        comment: "Recovered paper Membership sale"),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipTypeId = membershipTypeId,
+                        PaymentId = (Guid?)null,
+                        EntryBatchId = batchId,
+                    },
+                    reason: "Recovered signed Membership sale",
+                    comment: "Recovered paper Membership sale",
+                    entryOrigin: EntryOrigin.PaperFallback)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
     }
 
     [Fact]
@@ -4571,7 +4668,10 @@ public sealed class AuditEntryExplanationViewModelTests
         Guid membershipTypeId,
         string? negativeHandlingDecision = null,
         object? existingNegativeState = null,
-        object? payment = null)
+        object? payment = null,
+        string entryOrigin = "normal",
+        Guid? entryBatchId = null,
+        string? comment = "Correction comment")
     {
         return new
         {
@@ -4590,6 +4690,9 @@ public sealed class AuditEntryExplanationViewModelTests
             BaseEndDate = new DateOnly(2026, 8, 30),
             IssuedAt = OriginalOccurredAt.AddMinutes(5),
             Status = "active",
+            EntryOrigin = entryOrigin,
+            EntryBatchId = entryBatchId,
+            Comment = comment,
             NegativeHandlingDecision = negativeHandlingDecision,
             ExistingNegativeState = existingNegativeState,
             Payment = payment,

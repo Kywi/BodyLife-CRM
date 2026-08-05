@@ -1470,11 +1470,19 @@ public sealed class AuditEntryExplanationPresenter(
         var relatedMembershipTypeId = RequireGuid(related, "membershipTypeId");
         var relatedPaymentId = RequireNullableGuid(related, "paymentId");
         var issue = ReadMembershipIssue(after);
+        var paperReference = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            issue.EntryBatchId,
+            "Membership issue");
+        ValidateEntryBatch(issue.EntryOrigin, issue.EntryBatchId);
 
         if (issue.MembershipId != entry.EntityId
             || issue.ClientId != relatedClientId
             || issue.MembershipTypeId != relatedMembershipTypeId
             || issue.Payment?.PaymentId != relatedPaymentId
+            || issue.EntryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || issue.Comment != entry.Comment
             || issue.StartDate > issue.BaseEndDate
             || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
                 issue.IssuedAt,
@@ -1553,6 +1561,7 @@ public sealed class AuditEntryExplanationPresenter(
         {
             afterFacts.Add(Fact("Payment", Presentation.Value("None")));
         }
+
         else
         {
             afterFacts.Add(Fact(
@@ -1563,6 +1572,11 @@ public sealed class AuditEntryExplanationPresenter(
                 "Payment record",
                 TimelineModel.ShortId(issue.Payment.PaymentId)));
         }
+
+        AddPaperReferenceFacts(
+            afterFacts,
+            paperReference,
+            PaperFallbackEventType.MembershipSale);
 
         return CreateExplanation("MembershipIssued",
             "membership-issued",
@@ -1831,6 +1845,9 @@ public sealed class AuditEntryExplanationPresenter(
             RequireDateOnly(summary, "baseEndDate"),
             RequireTimestamp(summary, "issuedAt"),
             RequireString(summary, "status"),
+            RequireString(summary, "entryOrigin"),
+            RequireNullableGuid(summary, "entryBatchId"),
+            RequireNullableString(summary, "comment"),
             RequireNullableString(summary, "negativeHandlingDecision"),
             ReadExistingNegativeState(summary),
             ReadMembershipIssuePayment(summary),
@@ -2968,6 +2985,9 @@ public sealed class AuditEntryExplanationPresenter(
         DateOnly BaseEndDate,
         DateTimeOffset IssuedAt,
         string Status,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment,
         string? NegativeHandlingDecision,
         MembershipIssueExistingNegativeStateSnapshot? ExistingNegativeState,
         MembershipIssuePaymentSnapshot? Payment,

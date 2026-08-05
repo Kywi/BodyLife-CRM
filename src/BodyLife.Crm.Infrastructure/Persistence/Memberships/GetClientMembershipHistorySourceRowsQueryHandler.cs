@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.SharedKernel;
@@ -126,6 +127,32 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
         var correctionsByMembershipId = correctionRows.ToDictionary(
             correction => correction.OriginalMembershipId);
         var openingStatesById = openingStateRows.ToDictionary(row => row.OpeningState.Id);
+        var paperReferenceReader = new PaperFallbackEntryRowReferenceReader(dbContext);
+        var issuedPaperReferenceSources = auditPage.Items
+            .Where(item => item.EntityType == ClientAuditEntityFilter.Membership
+                && item.ActionType == MembershipAuditActions.Issued)
+            .Select(item =>
+            {
+                var membership = membershipsById[item.EntityId];
+                return new PaperFallbackEntryRowReferenceSource(
+                    membership.Id,
+                    membership.EntryOrigin,
+                    membership.EntryBatchId,
+                    item.OccurredAt,
+                    item.ActorAccountId.Value,
+                    item.SessionId.Value,
+                    PaperFallbackEventType.MembershipSale);
+            })
+            .ToArray();
+        var issuedPaperReferences = await paperReferenceReader.LoadAsync(
+            issuedPaperReferenceSources,
+            MembershipAuditActions.MembershipEntityType,
+            PaperFallbackEventType.MembershipSale,
+            cancellationToken);
+        if (issuedPaperReferences is null)
+        {
+            return GetClientMembershipHistorySourceRowsResult.InconsistentSource();
+        }
         var rows = new List<ClientMembershipHistorySourceRow>(auditPage.Items.Count);
 
         try
@@ -141,6 +168,9 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
                         => MapIssuedMembership(
                             membership,
                             auditEntry,
+                            auditEntry.ActionType == MembershipAuditActions.Issued
+                                ? issuedPaperReferences.GetValueOrDefault(membership.Id)
+                                : null,
                             auditEntry.ActionType == MembershipAuditActions.Issued
                                 ? null
                                 : correctionsByMembershipId.GetValueOrDefault(
@@ -183,6 +213,7 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
     private static ClientMembershipHistorySourceRow? MapIssuedMembership(
         IssuedMembershipRecord membership,
         ClientAuditEntry auditEntry,
+        PaperFallbackEntryRowReference? paperReference,
         IssuedMembershipSaleCorrectionRecord? correction)
     {
         if (membership.Id == Guid.Empty
@@ -209,7 +240,12 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
             if (correction is not null
                 || auditEntry.RecordedAt != membership.IssuedAt
                 || auditEntry.ActorAccountId.Value != membership.IssuedByAccountId
-                || auditEntry.EntryOrigin != entryOrigin)
+                || auditEntry.EntryOrigin != entryOrigin
+                || auditEntry.Comment != membership.Comment
+                || !PaperFallbackEntryRowReferenceReader.HasMatchingAuditReference(
+                    auditEntry,
+                    membership.EntryBatchId,
+                    paperReference))
             {
                 return null;
             }
@@ -263,7 +299,8 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
             new AccountId(membership.IssuedByAccountId),
             status,
             membership.EntryBatchId,
-            membership.Comment);
+            membership.Comment,
+            paperReference);
         return new ClientMembershipHistorySourceRow(
             ClientMembershipHistorySourceKind.IssuedMembership,
             membership.ClientId,

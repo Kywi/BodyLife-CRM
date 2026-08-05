@@ -14355,3 +14355,69 @@ Stop point:
   derive the batch, bind every source entity created by the aggregate command,
   preserve deterministic locks/replay/rollback and expose canonical
   report/history/audit provenance. Do not begin Milestone 11.
+
+## Step 224 - Bound paper fallback rows to membership issue aggregates
+
+Status: completed for ordinary `IssueMembership` sales and their optional
+new-Membership negative coverage. Milestone 10.5 remains in progress;
+Milestone 11 has not started.
+
+Completed:
+
+- Made `paper_fallback` membership issue require a registered
+  `membership_sale` row, reject caller-supplied legacy batch ids and derive the
+  canonical batch from the row. Normal issues reject row ids, row identity is
+  part of the idempotency fingerprint and paper issues require matching
+  `occurred_at` plus a reason or comment.
+- Preserved Client -> batch -> row -> MembershipType/negative-fact lock order
+  and atomically linked ordinary sales to the issued Membership and exact cash
+  Payment. Same-key replay returns the original aggregate, different commands
+  cannot reuse one row and concurrent attempts commit one complete sale.
+- Bound every source fact created by new-Membership negative coverage to the
+  same sale row: issued Membership, exact sale Payment, negative closure, each
+  closure item and each replacement Visit consumption. Membership, Payment and
+  closure source rows retain the same derived batch identity.
+- Made unrecognized PostgreSQL failures roll back and clear the EF tracker
+  before rethrowing, so forced audit failures leave both ordinary and coverage
+  rows reusable without retaining partial source facts or entity links.
+- Extended canonical Membership history to verify source/link/batch/row/audit
+  agreement for paper sales. The actual Payment history and daily cash source
+  readers also accept the sale only when their `membership_sale` provenance is
+  coherent. Normal Membership rows with stray batch metadata now fail closed.
+- Added paper sheet, line, row, event type and explanation to typed
+  `membership.issued` audit explanations and Client history in English and
+  Ukrainian. Membership summaries now cross-check stored entry origin, batch
+  and comment before rendering trusted text.
+- Corrected the Client-history Playwright fixture so its earlier paper Payment
+  correction has the canonical batch row, Payment/correction links and audit
+  references required by Step 223.
+- Kept the accepted greenfield schema strategy and added no interim migration.
+  The final clean baseline must enforce normal-vs-paper batch provenance and
+  the complete `membership_sale` aggregate link shape, including optional
+  coverage facts.
+- Independent read-only review first found one fail-closed normal/batch gap.
+  After the shared reader, presenter and PostgreSQL corruption test were
+  updated, fresh re-review found no remaining P0-P3 issue.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 416/416; full Web tests passed: 346/346.
+- Focused PostgreSQL Membership issue, negative coverage, Membership history,
+  Payment history and daily Payment source tests passed: 66/66 with no skips.
+  Coverage includes valid paper aggregates, wrong/missing rows, replay,
+  different-key concurrency, audit rollback/reuse and malformed provenance.
+- Audit timeline and Client-history Playwright smoke tests passed: 43/43 across
+  the existing tablet/phone and Owner/Admin matrix; the directly affected
+  canonical Client-history scenario also passed 2/2 after fixture repair.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Integrate first-class paper rows into standalone negative-visit coverage
+  next. `CloseNegativeVisitsOneOff` uses event type `negative_coverage` and
+  binds its closure, closure lines/items, replacement consumptions and exact
+  negative-closure Payment. Then integrate
+  `CorrectNegativeVisitCoverage` with `correction_or_cancellation`, linking only
+  the newly created correction/lifecycle/replacement facts while preserving
+  original provenance. Do not begin Milestone 11.

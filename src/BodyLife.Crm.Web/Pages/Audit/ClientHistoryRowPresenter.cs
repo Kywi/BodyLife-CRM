@@ -73,7 +73,29 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
         ClientHistorySourceRow row,
         IssuedMembershipHistorySource source)
     {
+        if (row.EntryOrigin == EntryOrigin.Normal && source.EntryBatchId is not null)
+        {
+            throw new InvalidOperationException(
+                "Normal Membership history cannot include entry batch metadata.");
+        }
+
         var status = MembershipStatus(source.Status);
+        var facts = Facts(
+                ("MembershipType", source.Snapshot.TypeName),
+                ("StartDate", presentation.Date(source.StartDate)),
+                ("BaseEndDate", presentation.Date(source.BaseEndDate)),
+                ("DurationSnapshot", presentation.Days(source.Snapshot.DurationDays)),
+                ("VisitsSnapshot", presentation.Visits(source.Snapshot.VisitsLimit)),
+                ("PriceSnapshot", presentation.Money(source.Snapshot.Price)))
+            .ToList();
+        AddPaymentPaperFacts(
+            facts,
+            row.EntryOrigin,
+            source.EntryBatchId,
+            row.OccurredAt,
+            source.PaperReference,
+            PaperFallbackEventType.MembershipSale,
+            sourceName: "Membership");
 
         return Row(
             row,
@@ -81,19 +103,14 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
             "history-group-membership",
             "MembershipIssued",
             status,
-            Facts(
-                ("MembershipType", source.Snapshot.TypeName),
-                ("StartDate", presentation.Date(source.StartDate)),
-                ("BaseEndDate", presentation.Date(source.BaseEndDate)),
-                ("DurationSnapshot", presentation.Days(source.Snapshot.DurationDays)),
-                ("VisitsSnapshot", presentation.Visits(source.Snapshot.VisitsLimit)),
-                ("PriceSnapshot", presentation.Money(source.Snapshot.Price))),
+            facts,
             change: null,
             source.Comment,
             Ids(
                 ("Membership", source.MembershipId),
                 ("MembershipType", source.MembershipTypeId),
-                ("EntryBatch", source.EntryBatchId)));
+                ("EntryBatch", source.EntryBatchId),
+                ("EntryBatchRow", source.PaperReference?.EntryBatchRowId)));
     }
 
     private ClientHistoryRowViewModel Opening(
@@ -667,7 +684,8 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
         Guid? entryBatchId,
         DateTimeOffset occurredAt,
         PaperFallbackEntryRowReference? paperReference,
-        PaperFallbackEventType expectedEventType)
+        PaperFallbackEventType expectedEventType,
+        string sourceName = "Payment")
     {
         if (entryOrigin == EntryOrigin.PaperFallback)
         {
@@ -682,7 +700,8 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
                 || paperReference.Explanation != paperReference.Explanation.Trim()
                 || !AuditTimestampPrecision.IsSamePostgreSqlInstant(paperReference.OccurredAt, occurredAt))
             {
-                throw new InvalidOperationException("Paper Payment history provenance is inconsistent.");
+                throw new InvalidOperationException(
+                    $"Paper {sourceName} history provenance is inconsistent.");
             }
 
             facts.Add(new ClientHistoryFactViewModel(
@@ -698,7 +717,7 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
         else if (paperReference is not null)
         {
             throw new InvalidOperationException(
-                "A non-paper Payment cannot include paper row provenance.");
+                $"A non-paper {sourceName} cannot include paper row provenance.");
         }
     }
 
