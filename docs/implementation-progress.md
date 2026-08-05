@@ -14242,3 +14242,59 @@ Stop point:
   rollback and concurrent row-reuse behavior, and expose verified provenance
   through audit explanation and canonical Client history. Do not begin
   Milestone 11.
+
+## Step 222 - Bound paper fallback rows to CancelFreeze
+
+Status: completed as the correction/cancellation half of the Freeze lifecycle.
+Milestone 10.5 remains in progress; Milestone 11 has not started.
+
+Completed:
+
+- Made `paper_fallback` Freeze cancellation require a registered row with event
+  type `correction_or_cancellation`, reject caller-supplied legacy batch ids and
+  derive the canonical batch from the row. Non-paper cancellations reject row
+  ids, and row identity participates in the idempotency fingerprint.
+- Added deterministic Client -> batch -> row -> Membership/Freeze locking and
+  bound the row atomically to the new `freeze_cancellation` source fact rather
+  than the preserved original Freeze. Same-key replay returns the canonical
+  cancellation, different commands cannot reuse one row, audit failure rolls
+  back the link and concurrent attempts commit exactly one cancellation.
+- Extended canonical Freeze history with independent cancellation provenance.
+  The projection verifies source origin, batch, row link, occurrence envelope
+  and audit reference agreement and fails closed when any paper cancellation
+  relationship is missing or inconsistent.
+- Added paper batch, sheet, row, line, event type and explanation to the
+  `freeze.canceled` audit explanation and Client history presentation in English
+  and Ukrainian.
+- Kept the accepted greenfield schema strategy and added no interim migration.
+  The final clean baseline still needs the deferred cross-table invariant that
+  requires every paper Freeze cancellation row to link to exactly one real
+  `freeze_cancellation` fact.
+- Independent read-only review found no P0-P3 issue. The shared binder already
+  covers actor/session/date and reconciled-batch validation exercised by the
+  earlier domain integrations; no duplicate command-specific mechanism was
+  introduced.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 416/416; full Web tests passed: 334/334.
+- Focused PostgreSQL `CancelFreeze` command tests passed: 15/15, including
+  paper-row validation, same-key replay, row reuse, audit rollback reuse and
+  concurrent different-key binding.
+- PostgreSQL canonical Freeze history tests passed: 10/10; the combined
+  `CancelFreeze`, Freeze-history and Visit-history regression gate passed:
+  34/34 with no skips.
+- Focused audit explanation and Client-history presenter tests passed: 215/215.
+- CancelFreeze, Audit timeline and Client-history Playwright smoke tests passed:
+  45/45 across the existing tablet/phone and Owner/Admin matrix.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Integrate first-class paper rows into valid standalone Payment lifecycle
+  commands next, beginning with `CreatePayment` and then `CorrectPayment`.
+  Preserve Client -> batch -> row -> Payment lock order, explicit correction
+  fact links, report/history/audit provenance and rollback/replay behavior.
+  Keep membership-sale and negative-coverage Payment contexts owned by their
+  existing aggregate workflows, and do not begin Milestone 11.
