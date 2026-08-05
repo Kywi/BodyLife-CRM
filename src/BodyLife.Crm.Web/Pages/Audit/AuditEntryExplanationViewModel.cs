@@ -243,6 +243,7 @@ public sealed class AuditEntryExplanationPresenter(
                 "freeze.canceled" when entry.EntityType == AuditTimelineEntityType.Freeze
                     => CreateFreezeCancellation(
                         entry,
+                        related.RootElement,
                         before.RootElement,
                         after.RootElement),
                 "visit.marked" when entry.EntityType == AuditTimelineEntityType.Visit
@@ -970,6 +971,7 @@ public sealed class AuditEntryExplanationPresenter(
 
     private AuditEntryExplanationViewModel CreateFreezeCancellation(
         AuditTimelineEntry entry,
+        JsonElement related,
         JsonElement before,
         JsonElement after)
     {
@@ -985,6 +987,11 @@ public sealed class AuditEntryExplanationPresenter(
         var cancellationEntryOrigin = RequireString(cancellation, "entryOrigin");
         var cancellationEntryBatchId = RequireNullableGuid(cancellation, "entryBatchId");
         var cancellationRecordedAt = RequireTimestamp(cancellation, "recordedAt");
+        var paperReference = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            cancellationEntryBatchId,
+            "Freeze cancellation");
 
         _ = RequireTimestamp(originalElement, "occurredAt");
         _ = RequireTimestamp(originalElement, "recordedAt");
@@ -1024,6 +1031,37 @@ public sealed class AuditEntryExplanationPresenter(
             beforeMembership.ExtensionDays != afterMembership.ExtensionDays
             || beforeMembership.EffectiveEndDate != afterMembership.EffectiveEndDate;
 
+        List<AuditEntryExplanationFactViewModel> afterFacts =
+        [
+            Fact("Original fact", Presentation.Value("Preserved")),
+            Fact("Status", Presentation.Status("Canceled")),
+            Fact(
+                "Extension days",
+                Presentation.Days(afterMembership.ExtensionDays)),
+            Fact("Effective end", DateLabel(afterMembership.EffectiveEndDate)),
+            Fact(
+                "Cancellation recorded",
+                TimelineModel.TimestampLabel(cancellationRecordedAt)),
+        ];
+        if (paperReference is not null)
+        {
+            afterFacts.Add(Fact(
+                "Paper fallback batch",
+                TimelineModel.ShortId(paperReference.EntryBatchId)));
+            afterFacts.Add(Fact("Paper sheet", paperReference.PaperSheetNumber));
+            afterFacts.Add(Fact(
+                "Paper row",
+                TimelineModel.ShortId(paperReference.EntryBatchRowId)));
+            afterFacts.Add(Fact(
+                "Line number",
+                Presentation.Number(paperReference.LineNumber)));
+            afterFacts.Add(Fact(
+                "Event type",
+                Presentation.Text(
+                    "PaperFallback.EventType.correction_or_cancellation")));
+            afterFacts.Add(Fact("Explanation", paperReference.Explanation));
+        }
+
         return CreateExplanation("FreezeCanceled",
             "freeze-canceled",
             [
@@ -1039,15 +1077,7 @@ public sealed class AuditEntryExplanationPresenter(
                     Presentation.Days(beforeMembership.ExtensionDays)),
                 Fact("Effective end", DateLabel(beforeMembership.EffectiveEndDate)),
             ],
-            [
-                Fact("Original fact", Presentation.Value("Preserved")),
-                Fact("Status", Presentation.Status("Canceled")),
-                Fact(
-                    "Extension days",
-                    Presentation.Days(afterMembership.ExtensionDays)),
-                Fact("Effective end", DateLabel(afterMembership.EffectiveEndDate)),
-                Fact("Cancellation recorded", TimelineModel.TimestampLabel(cancellationRecordedAt)),
-            ],
+            afterFacts,
             ChangedFields: membershipStateChanged
                 ? JoinChanged("FreezeStatus", "MembershipExtensionState")
                 : Presentation.Changed("FreezeStatus"),

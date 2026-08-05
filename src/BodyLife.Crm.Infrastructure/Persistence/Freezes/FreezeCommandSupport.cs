@@ -191,17 +191,34 @@ internal static class FreezeCommandSupport
                 "entryBatchId");
         }
 
-        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback)
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback
+            && command.EntryBatchId is not null)
         {
             return ValidationError(
-                "Paper fallback Freeze cancellation requires first-class row integration.",
-                "entryOrigin");
+                "Paper fallback Freeze cancellation derives its entry batch from the paper row.",
+                "entryBatchId");
         }
 
-        if (canonicalEnvelope.EntryBatchRowId is not null)
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback
+            && canonicalEnvelope.EntryBatchRowId is null)
         {
             return ValidationError(
-                "CancelFreeze does not accept a paper row until its first-class row integration is enabled.",
+                "Paper fallback Freeze cancellation requires an entry batch row id.",
+                "entryBatchRowId");
+        }
+
+        if (canonicalEnvelope.EntryBatchRowId == Guid.Empty)
+        {
+            return ValidationError(
+                "Entry batch row id must be a non-empty identifier when supplied.",
+                "entryBatchRowId");
+        }
+
+        if (canonicalEnvelope.EntryOrigin != EntryOrigin.PaperFallback
+            && canonicalEnvelope.EntryBatchRowId is not null)
+        {
+            return ValidationError(
+                "Entry batch row id is only valid for a paper fallback Freeze cancellation.",
                 "entryBatchRowId");
         }
 
@@ -251,6 +268,7 @@ internal static class FreezeCommandSupport
             EnvelopeComment = envelope.Comment,
             cancellation.FreezeId,
             cancellation.EntryBatchId,
+            envelope.EntryBatchRowId,
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));

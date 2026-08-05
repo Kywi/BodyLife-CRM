@@ -2355,6 +2355,90 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void PaperFreezeCancellationShowsLocalizedRowProvenance()
+    {
+        var fixture = FreezeCancellationAudit(
+            membershipStateChanges: true,
+            paperFallback: true);
+        var entry = Entry(
+            "freeze.canceled",
+            AuditTimelineEntityType.Freeze,
+            fixture.FreezeId,
+            fixture.Before,
+            fixture.After,
+            related: fixture.Related,
+            entryOrigin: EntryOrigin.PaperFallback);
+        var batchId = fixture.EntryBatchId.GetValueOrDefault();
+        var rowId = fixture.EntryBatchRowId.GetValueOrDefault();
+        Assert.NotEqual(Guid.Empty, batchId);
+        Assert.NotEqual(Guid.Empty, rowId);
+
+        var english = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.English));
+        var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.Ukrainian));
+
+        Assert.True(english.IsAvailable);
+        Assert.Equal(
+            batchId.ToString("N")[..8],
+            FactValue(english.AfterFacts, "Paper fallback batch"));
+        Assert.Equal(
+            "FREEZE-CANCEL-SHEET-001",
+            FactValue(english.AfterFacts, "Paper sheet"));
+        Assert.Equal(
+            rowId.ToString("N")[..8],
+            FactValue(english.AfterFacts, "Paper row"));
+        Assert.Equal("24", FactValue(english.AfterFacts, "Line number"));
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(english.AfterFacts, "Event type"));
+        Assert.Equal(
+            "Recovered paper Freeze cancellation",
+            FactValue(english.AfterFacts, "Explanation"));
+
+        Assert.True(ukrainian.IsAvailable);
+        Assert.Equal(
+            batchId.ToString("N")[..8],
+            FactValue(ukrainian.AfterFacts, "Пакет паперових записів"));
+        Assert.Equal(
+            "FREEZE-CANCEL-SHEET-001",
+            FactValue(ukrainian.AfterFacts, "Паперовий аркуш"));
+        Assert.Equal(
+            rowId.ToString("N")[..8],
+            FactValue(ukrainian.AfterFacts, "Рядок паперового запису"));
+        Assert.Equal("24", FactValue(ukrainian.AfterFacts, "Номер рядка"));
+        Assert.Equal(
+            "Виправлення або скасування",
+            FactValue(ukrainian.AfterFacts, "Тип події"));
+        Assert.Equal(
+            "Recovered paper Freeze cancellation",
+            FactValue(ukrainian.AfterFacts, "Пояснення"));
+    }
+
+    [Fact]
+    public void PaperFreezeCancellationWithoutRowIdentityFailsClosed()
+    {
+        var fixture = FreezeCancellationAudit(
+            membershipStateChanges: true,
+            paperFallback: true,
+            omitPaperRowIdentity: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "freeze.canceled",
+                    AuditTimelineEntityType.Freeze,
+                    fixture.FreezeId,
+                    fixture.Before,
+                    fixture.After,
+                    related: fixture.Related,
+                    entryOrigin: EntryOrigin.PaperFallback)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void FreezeAdditionShowsInclusiveSourceAndStoredMembershipState()
     {
         var fixture = FreezeAdditionAudit(membershipStateChanges: true);
@@ -4907,11 +4991,17 @@ public sealed class AuditEntryExplanationViewModelTests
 
     private static FreezeCancellationAuditFixture FreezeCancellationAudit(
         bool membershipStateChanges,
-        bool mismatchAfterMembership = false)
+        bool mismatchAfterMembership = false,
+        bool paperFallback = false,
+        bool omitPaperRowIdentity = false)
     {
         var freezeId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
         var membershipId = Guid.NewGuid();
+        var entryBatchId = paperFallback ? Guid.NewGuid() : (Guid?)null;
+        var entryBatchRowId = paperFallback && !omitPaperRowIdentity
+            ? Guid.NewGuid()
+            : (Guid?)null;
         var startDate = new DateOnly(2026, 2, 10);
         var endDate = new DateOnly(2026, 2, 12);
         var original = new FreezeSourceAuditFixture(
@@ -4957,8 +5047,8 @@ public sealed class AuditEntryExplanationViewModelTests
                 Reason = "Correction reason",
                 OccurredAt = OriginalOccurredAt,
                 RecordedAt = OriginalOccurredAt.AddMinutes(5),
-                EntryOrigin = "normal",
-                EntryBatchId = (Guid?)null,
+                EntryOrigin = paperFallback ? "paper_fallback" : "normal",
+                EntryBatchId = entryBatchId,
                 ChangedAfterClose = false,
             },
             Freeze = new
@@ -4975,7 +5065,30 @@ public sealed class AuditEntryExplanationViewModelTests
             MembershipState = afterMembership,
         };
 
-        return new FreezeCancellationAuditFixture(freezeId, before, after);
+        object related = paperFallback
+            ? new
+            {
+                ClientId = clientId,
+                MembershipId = membershipId,
+                EntryBatchId = entryBatchId,
+                EntryBatchRowId = entryBatchRowId,
+                PaperSheetNumber = "FREEZE-CANCEL-SHEET-001",
+                LineNumber = 24,
+                PaperExplanation = "Recovered paper Freeze cancellation",
+            }
+            : new
+            {
+                ClientId = clientId,
+                MembershipId = membershipId,
+            };
+
+        return new FreezeCancellationAuditFixture(
+            freezeId,
+            entryBatchId,
+            entryBatchRowId,
+            related,
+            before,
+            after);
     }
 
     private static FreezeAdditionAuditFixture FreezeAdditionAudit(
@@ -5229,6 +5342,9 @@ public sealed class AuditEntryExplanationViewModelTests
 
     private sealed record FreezeCancellationAuditFixture(
         Guid FreezeId,
+        Guid? EntryBatchId,
+        Guid? EntryBatchRowId,
+        object Related,
         object Before,
         object After);
 

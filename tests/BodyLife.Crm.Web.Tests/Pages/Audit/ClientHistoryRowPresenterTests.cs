@@ -424,6 +424,66 @@ public sealed class ClientHistoryRowPresenterTests
     }
 
     [Fact]
+    public void PaperFreezeCancellationShowsLocalizedRowProvenance()
+    {
+        var source = CreateFreezeCanceledRow();
+
+        var english = Present(source, WebCultures.English);
+        var ukrainian = Present(source, WebCultures.Ukrainian);
+
+        Assert.Equal(
+            "FREEZE-CANCEL-001",
+            FactValue(english.Facts, "Paper sheet"));
+        Assert.Equal("24", FactValue(english.Facts, "Line number"));
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(english.Facts, "Event type"));
+        Assert.Equal(
+            "Recovered paper Freeze cancellation",
+            FactValue(english.Facts, "Explanation"));
+        Assert.Equal(
+            Id(142).ToString(),
+            FactValue(english.Identifiers, "Entry batch row ID"));
+
+        Assert.Equal(
+            "FREEZE-CANCEL-001",
+            FactValue(ukrainian.Facts, "Паперовий аркуш"));
+        Assert.Equal("24", FactValue(ukrainian.Facts, "Номер рядка"));
+        Assert.Equal(
+            "Виправлення або скасування",
+            FactValue(ukrainian.Facts, "Тип події"));
+        Assert.Equal(
+            "Recovered paper Freeze cancellation",
+            FactValue(ukrainian.Facts, "Пояснення"));
+        Assert.Equal(
+            Id(142).ToString(),
+            FactValue(ukrainian.Identifiers, "ID рядка пакета внесення"));
+    }
+
+    [Fact]
+    public void PaperFreezeCancellationWithoutCanonicalRowReferenceFailsClosed()
+    {
+        var row = CreateFreezeCanceledRow();
+        row = row with
+        {
+            FreezeSourceRow = row.FreezeSourceRow! with
+            {
+                Cancellation = row.FreezeSourceRow.Cancellation! with
+                {
+                    PaperReference = null,
+                },
+            },
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => Present(row, WebCultures.English));
+
+        Assert.Equal(
+            "Paper Freeze cancellation history provenance is inconsistent.",
+            exception.Message);
+    }
+
+    [Fact]
     public void CorrectedMembershipAndOpeningStateUseWarningStyling()
     {
         var membership = CreateMembershipIssuedRow();
@@ -989,7 +1049,15 @@ public sealed class ClientHistoryRowPresenterTests
             SessionId,
             EntryOrigin.PaperFallback,
             BatchId,
-            freeze);
+            freeze,
+            new PaperFallbackEntryRowReference(
+                BatchId,
+                Id(142),
+                "FREEZE-CANCEL-001",
+                24,
+                PaperFallbackEventType.CorrectionOrCancellation,
+                OccurredAt,
+                "Recovered paper Freeze cancellation"));
         var audit = Audit(cancellation.CancellationId);
         var source = new ClientFreezeHistorySourceRow(
             ClientFreezeHistorySourceKind.CanceledFreeze,

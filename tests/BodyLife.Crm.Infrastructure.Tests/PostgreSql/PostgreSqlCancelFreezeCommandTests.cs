@@ -212,7 +212,7 @@ public sealed class PostgreSqlCancelFreezeCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task PaperFallbackIsRejectedUntilFirstClassRowIntegration()
+    public async Task SharedAdminPaperFallbackBindsRowAndReplaysCanonicalCancellation()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -222,21 +222,148 @@ public sealed class PostgreSqlCancelFreezeCommandTests
             database,
             AccountKind.SharedReceptionAdmin,
             "Shared Reception");
-        var entryBatchId = Guid.NewGuid();
         var occurredAt = CancellationOccurredAt.AddDays(-2);
+        var paper = await SeedPaperRowAsync(
+            database,
+            sharedAdmin,
+            occurredAt,
+            "correction_or_cancellation",
+            lineNumber: 12);
+        var command = CreateCommand(
+            fixture,
+            "paper-cancel-freeze",
+            actor: sharedAdmin,
+            origin: EntryOrigin.PaperFallback,
+            occurredAt: occurredAt,
+            reason: "Recovered cancellation",
+            entryBatchRowId: paper.RowId);
+        var handler = CreateHandler(dbContext);
 
-        var result = await CreateHandler(dbContext).ExecuteAsync(
-            CreateCommand(
-                fixture,
-                "paper-cancel-freeze",
-                actor: sharedAdmin,
-                origin: EntryOrigin.PaperFallback,
-                occurredAt: occurredAt,
-                reason: "Recovered cancellation",
-                entryBatchId: entryBatchId),
+        var result = await handler.ExecuteAsync(command, CancellationToken.None);
+        var replay = await handler.ExecuteAsync(command, CancellationToken.None);
+        var reused = await handler.ExecuteAsync(
+            command with
+            {
+                Envelope = command.Envelope with
+                {
+                    IdempotencyKey = "paper-cancel-freeze-reused",
+                    RequestCorrelationId = new RequestCorrelationId(
+                        "correlation-paper-cancel-freeze-reused"),
+                },
+            },
             CancellationToken.None);
 
-        AssertError(result, CommandErrorCode.ValidationFailed, "entryOrigin");
+        AssertSuccessfulResult(result, fixture);
+        AssertSuccessfulResult(replay, fixture);
+        Assert.Equal(result.PrimaryEntityId, replay.PrimaryEntityId);
+        Assert.Equal(result.AuditEntryId, replay.AuditEntryId);
+        AssertError(
+            reused,
+            CommandErrorCode.DuplicateSubmission,
+            "entryBatchRowId");
+
+        var cancellationId = result.PrimaryEntityId!.Value.Value;
+        var cancellation = await ReadCancellationAsync(database, cancellationId);
+        Assert.Equal("Recovered cancellation", cancellation.Reason);
+        Assert.Equal(occurredAt, cancellation.OccurredAt);
+        Assert.Equal("paper_fallback", cancellation.EntryOrigin);
+        Assert.Equal(paper.BatchId, cancellation.EntryBatchId);
+        Assert.Equal(sharedAdmin.AccountId.Value, cancellation.RecordedByAccountId);
+        Assert.Equal(sharedAdmin.SessionId.Value, cancellation.SessionId);
+        var link = await ReadPaperRowLinkAsync(database, paper.RowId);
+        Assert.Equal(FreezeAuditActions.FreezeCancellationEntityType, link.EntityType);
+        Assert.Equal(cancellationId, link.EntityId);
+
+        var audit = await ReadAuditAsync(database, result.AuditEntryId!.Value.Value);
+        Assert.Equal("shared_reception_admin", audit.ActorAccountType);
+        Assert.Equal("admin", audit.ActorRole);
+        Assert.Equal("paper_fallback", audit.EntryOrigin);
+        Assert.Equal("Recovered cancellation", audit.Reason);
+        Assert.Equal(occurredAt, audit.OccurredAt);
+        using var related = JsonDocument.Parse(
+            await ReadAuditRelatedEntityRefsAsync(
+                database,
+                result.AuditEntryId.Value.Value));
+        Assert.Equal(
+            paper.BatchId,
+            related.RootElement.GetProperty("entryBatchId").GetGuid());
+        Assert.Equal(
+            paper.RowId,
+            related.RootElement.GetProperty("entryBatchRowId").GetGuid());
+        Assert.Equal(
+            paper.SheetNumber,
+            related.RootElement.GetProperty("paperSheetNumber").GetString());
+        Assert.Equal(
+            paper.LineNumber,
+            related.RootElement.GetProperty("lineNumber").GetInt32());
+        Assert.Equal(
+            paper.Explanation,
+            related.RootElement.GetProperty("paperExplanation").GetString());
+        Assert.Equal(1L, await CountPaperRowLinksAsync(database, paper.RowId));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperFallbackRejectsInvalidRowsAndLegacyBatchWithoutMutation()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureWithFreezeAsync(database, dbContext);
+        var wrongEvent = await SeedPaperRowAsync(
+            database,
+            fixture.Actor,
+            CancellationOccurredAt,
+            "freeze",
+            lineNumber: 13);
+        var validPaper = await SeedPaperRowAsync(
+            database,
+            fixture.Actor,
+            CancellationOccurredAt,
+            "correction_or_cancellation",
+            lineNumber: 14);
+        var handler = CreateHandler(dbContext);
+
+        var missingRow = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-cancel-missing-row",
+                origin: EntryOrigin.PaperFallback),
+            CancellationToken.None);
+        var unknownRow = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-cancel-unknown-row",
+                origin: EntryOrigin.PaperFallback,
+                entryBatchRowId: Guid.NewGuid()),
+            CancellationToken.None);
+        var wrongEventResult = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-cancel-wrong-event",
+                origin: EntryOrigin.PaperFallback,
+                entryBatchRowId: wrongEvent.RowId),
+            CancellationToken.None);
+        var legacyBatch = await handler.ExecuteAsync(
+            CreateCommand(
+                fixture,
+                "paper-cancel-legacy-batch",
+                origin: EntryOrigin.PaperFallback,
+                entryBatchId: Guid.NewGuid(),
+                entryBatchRowId: validPaper.RowId),
+            CancellationToken.None);
+
+        AssertError(
+            missingRow,
+            CommandErrorCode.ValidationFailed,
+            "entryBatchRowId");
+        AssertError(unknownRow, CommandErrorCode.NotFound, "entryBatchRowId");
+        AssertError(
+            wrongEventResult,
+            CommandErrorCode.ValidationFailed,
+            "entryBatchRowId");
+        AssertError(legacyBatch, CommandErrorCode.ValidationFailed, "entryBatchId");
+        Assert.Equal(0L, await CountPaperRowLinksAsync(database, wrongEvent.RowId));
+        Assert.Equal(0L, await CountPaperRowLinksAsync(database, validPaper.RowId));
         await AssertNoCancellationMutationAsync(
             database,
             fixture,
@@ -435,6 +562,62 @@ public sealed class PostgreSqlCancelFreezeCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task ConcurrentPaperFallbackCommandsBindOneCancellationToRow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        FreezeFixture fixture;
+        PaperRowFixture paper;
+        await using (var setupContext = database.CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync();
+            fixture = await SeedFixtureWithFreezeAsync(database, setupContext);
+            paper = await SeedPaperRowAsync(
+                database,
+                fixture.Actor,
+                CancellationOccurredAt,
+                "correction_or_cancellation",
+                lineNumber: 15);
+        }
+
+        await using var firstContext = database.CreateDbContext();
+        await using var secondContext = database.CreateDbContext();
+        var results = await Task.WhenAll(
+            CreateHandler(firstContext).ExecuteAsync(
+                CreateCommand(
+                    fixture,
+                    "paper-cancel-race-first",
+                    origin: EntryOrigin.PaperFallback,
+                    entryBatchRowId: paper.RowId),
+                CancellationToken.None),
+            CreateHandler(secondContext).ExecuteAsync(
+                CreateCommand(
+                    fixture,
+                    "paper-cancel-race-second",
+                    origin: EntryOrigin.PaperFallback,
+                    entryBatchRowId: paper.RowId),
+                CancellationToken.None));
+
+        var success = Assert.Single(
+            results,
+            result => result.Status == CommandStatus.Success);
+        var rejected = Assert.Single(
+            results,
+            result => result.Status == CommandStatus.Error);
+        AssertSuccessfulResult(success, fixture);
+        AssertError(
+            rejected,
+            CommandErrorCode.DuplicateSubmission,
+            "entryBatchRowId");
+        var link = await ReadPaperRowLinkAsync(database, paper.RowId);
+        Assert.Equal(FreezeAuditActions.FreezeCancellationEntityType, link.EntityType);
+        Assert.Equal(success.PrimaryEntityId!.Value.Value, link.EntityId);
+        Assert.Equal(1L, await CountRowsAsync(database, "freeze_cancellations"));
+        Assert.Equal(3L, await CountRowsAsync(database, "membership_extension_days"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
     public async Task RecalculationFailureRollsBackSourceAndCancellation()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -465,6 +648,17 @@ public sealed class PostgreSqlCancelFreezeCommandTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var fixture = await SeedFixtureWithFreezeAsync(database, dbContext);
+        var paper = await SeedPaperRowAsync(
+            database,
+            fixture.Actor,
+            CancellationOccurredAt,
+            "correction_or_cancellation",
+            lineNumber: 16);
+        var command = CreateCommand(
+            fixture,
+            "paper-cancel-audit-failure",
+            origin: EntryOrigin.PaperFallback,
+            entryBatchRowId: paper.RowId);
         await ExecuteNonQueryAsync(
             database,
             """
@@ -475,11 +669,27 @@ public sealed class PostgreSqlCancelFreezeCommandTests
 
         await Assert.ThrowsAsync<DbUpdateException>(() =>
             CreateHandler(dbContext).ExecuteAsync(
-                CreateCommand(fixture, "cancel-audit-failure"),
+                command,
                 CancellationToken.None));
 
         await AssertNoCancellationMutationAsync(database, fixture, expectedExtensionDays: 3);
+        Assert.Equal(0L, await CountPaperRowLinksAsync(database, paper.RowId));
         Assert.Empty(dbContext.ChangeTracker.Entries());
+        await ExecuteNonQueryAsync(
+            database,
+            """
+            alter table bodylife.business_audit_entries
+            drop constraint ck_test_reject_freeze_canceled_audit
+            """);
+
+        var retry = await CreateHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+
+        AssertSuccessfulResult(retry, fixture);
+        var link = await ReadPaperRowLinkAsync(database, paper.RowId);
+        Assert.Equal(FreezeAuditActions.FreezeCancellationEntityType, link.EntityType);
+        Assert.Equal(retry.PrimaryEntityId!.Value.Value, link.EntityId);
     }
 
     [PostgreSqlFact]
@@ -577,6 +787,7 @@ public sealed class PostgreSqlCancelFreezeCommandTests
         return new CancelFreezeCommandHandler(
             dbContext,
             new BusinessAuditAppender(dbContext),
+            new PaperFallbackEntryRowBinder(dbContext),
             new CancelFreezeSourcePreparer(dbContext),
             membershipStateRecalculator ?? CreateRecalculator(dbContext),
             new GetMembershipStateQueryHandler(dbContext, timeProvider),
@@ -604,7 +815,8 @@ public sealed class PostgreSqlCancelFreezeCommandTests
         DateTimeOffset? occurredAt = null,
         string? reason = "Entered by mistake",
         Guid? entryBatchId = null,
-        Guid? freezeId = null)
+        Guid? freezeId = null,
+        Guid? entryBatchRowId = null)
     {
         return new CancelFreezeCommand(
             new CommandEnvelope(
@@ -614,9 +826,67 @@ public sealed class PostgreSqlCancelFreezeCommandTests
                 occurredAt ?? CancellationOccurredAt,
                 idempotencyKey,
                 reason,
-                "  Cancel front desk Freeze  "),
+                "  Cancel front desk Freeze  ",
+                entryBatchRowId),
             freezeId ?? fixture.FreezeId,
             entryBatchId);
+    }
+
+    private static async Task<PaperRowFixture> SeedPaperRowAsync(
+        PostgreSqlTestDatabase database,
+        ActorContext actor,
+        DateTimeOffset occurredAt,
+        string eventType,
+        int lineNumber)
+    {
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var sheetNumber = $"FREEZE-CANCEL-{batchId:N}".ToUpperInvariant();
+        var explanation = $"Recovered {eventType} from paper line {lineNumber}";
+        var businessDate = BusinessTimeZone.GetBusinessDate(occurredAt);
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.entry_batches (
+                id, batch_type, paper_sheet_number, business_date_start,
+                business_date_end, recorded_at, recorded_by_account_id,
+                reconciled_at, reconciled_by_account_id, note)
+            values (
+                @batch_id, 'paper_fallback', @sheet_number,
+                @business_date, @business_date, @batch_recorded_at,
+                @account_id, null, null, 'CancelFreeze paper fixture');
+
+            insert into bodylife.entry_batch_rows (
+                id, entry_batch_id, line_number, event_type, occurred_at,
+                explanation, recorded_at, recorded_by_account_id, session_id)
+            values (
+                @row_id, @batch_id, @line_number, @event_type, @occurred_at,
+                @explanation, @row_recorded_at, @account_id, @session_id);
+            """;
+        command.Parameters.AddWithValue("batch_id", batchId);
+        command.Parameters.AddWithValue("sheet_number", sheetNumber);
+        command.Parameters.AddWithValue(
+            "business_date",
+            NpgsqlDbType.Date,
+            businessDate);
+        command.Parameters.AddWithValue("batch_recorded_at", TestNow.AddMinutes(-10));
+        command.Parameters.AddWithValue("account_id", actor.AccountId.Value);
+        command.Parameters.AddWithValue("row_id", rowId);
+        command.Parameters.AddWithValue("line_number", lineNumber);
+        command.Parameters.AddWithValue("event_type", eventType);
+        command.Parameters.AddWithValue("occurred_at", occurredAt);
+        command.Parameters.AddWithValue("explanation", explanation);
+        command.Parameters.AddWithValue("row_recorded_at", TestNow.AddMinutes(-5));
+        command.Parameters.AddWithValue("session_id", actor.SessionId.Value);
+        Assert.Equal(2, await command.ExecuteNonQueryAsync());
+        return new PaperRowFixture(
+            batchId,
+            rowId,
+            sheetNumber,
+            lineNumber,
+            explanation);
     }
 
     private static async Task<FreezeFixture> SeedFixtureWithFreezeAsync(
@@ -1108,6 +1378,61 @@ public sealed class PostgreSqlCancelFreezeCommandTests
             reader.GetBoolean(17));
     }
 
+    private static async Task<string> ReadAuditRelatedEntityRefsAsync(
+        PostgreSqlTestDatabase database,
+        Guid auditEntryId)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select related_entity_refs::text
+            from bodylife.business_audit_entries
+            where id = @id
+            """;
+        command.Parameters.AddWithValue("id", auditEntryId);
+        return (string)(await command.ExecuteScalarAsync())!;
+    }
+
+    private static async Task<PaperRowLink> ReadPaperRowLinkAsync(
+        PostgreSqlTestDatabase database,
+        Guid rowId)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select entity_type, entity_id
+            from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = @row_id
+            """;
+        command.Parameters.AddWithValue("row_id", rowId);
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+        var result = new PaperRowLink(reader.GetString(0), reader.GetGuid(1));
+        Assert.False(await reader.ReadAsync());
+        return result;
+    }
+
+    private static async Task<long> CountPaperRowLinksAsync(
+        PostgreSqlTestDatabase database,
+        Guid rowId)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            select count(*)
+            from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = @row_id
+            """;
+        command.Parameters.AddWithValue("row_id", rowId);
+        return (long)(await command.ExecuteScalarAsync())!;
+    }
+
     private static async Task<IdempotencyRow> ReadIdempotencyAsync(
         PostgreSqlTestDatabase database,
         string idempotencyKey)
@@ -1299,6 +1624,15 @@ public sealed class PostgreSqlCancelFreezeCommandTests
         Guid ClientId,
         Guid MembershipId,
         Guid FreezeId);
+
+    private sealed record PaperRowFixture(
+        Guid BatchId,
+        Guid RowId,
+        string SheetNumber,
+        int LineNumber,
+        string Explanation);
+
+    private sealed record PaperRowLink(string EntityType, Guid EntityId);
 
     private sealed record FreezeCancellationRow(
         Guid FreezeId,

@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Freezes;
@@ -15,4 +16,5 @@ public sealed record FreezeCancellationHistorySource(
     SessionId RecordedSessionId,
     EntryOrigin EntryOrigin,
     Guid? EntryBatchId,
-    FreezeHistorySource Freeze);
+    FreezeHistorySource Freeze,
+    PaperFallbackEntryRowReference? PaperReference = null);
