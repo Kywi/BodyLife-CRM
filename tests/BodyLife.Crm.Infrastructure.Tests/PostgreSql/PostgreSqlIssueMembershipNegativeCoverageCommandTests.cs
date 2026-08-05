@@ -258,6 +258,37 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             "select count(*) from bodylife.business_audit_entries"));
         Assert.Equal(1L, await database.ExecuteScalarAsync<long>(
             "select count(*) from bodylife.command_idempotency_keys"));
+
+        await using var queryContext = database.CreateDbContext();
+        var coverageHandler = new GetClientNegativeVisitCoverageQueryHandler(
+            queryContext,
+            new MembershipNegativeVisitSelector(queryContext),
+            new FixedTimeProvider(TestNow));
+        var canonicalCoverage = await coverageHandler.ExecuteAsync(
+            new GetClientNegativeVisitCoverageQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+        Assert.Equal(
+            GetClientNegativeVisitCoverageStatus.Success,
+            canonicalCoverage.Status);
+
+        await database.ExecuteScalarAsync<int>(
+            $"""
+            delete from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = '{paper.EntryBatchRowId}'
+              and entity_type = '{MembershipAuditActions.MembershipEntityType}'
+              and entity_id = '{membershipId}';
+            select 1;
+            """);
+        var missingMembershipLink = await coverageHandler.ExecuteAsync(
+            new GetClientNegativeVisitCoverageQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+        Assert.Equal(
+            GetClientNegativeVisitCoverageStatus.CanonicalStateInvalid,
+            missingMembershipLink.Status);
     }
 
     [PostgreSqlFact]

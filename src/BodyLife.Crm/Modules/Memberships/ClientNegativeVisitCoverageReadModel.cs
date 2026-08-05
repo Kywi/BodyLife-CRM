@@ -1,3 +1,4 @@
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Memberships;
@@ -43,7 +44,9 @@ public sealed record NegativeVisitCoverageClosureReadModel(
     string Status,
     IReadOnlyList<NegativeVisitCoverageLineReadModel> Lines,
     IReadOnlyList<NegativeVisitCoverageItemReadModel> Items,
-    NegativeVisitCoveragePaymentReadModel? Payment);
+    NegativeVisitCoveragePaymentReadModel? Payment,
+    Guid? EntryBatchId = null,
+    PaperFallbackEntryRowReference? PaperReference = null);
 
 public sealed record IssuedMembershipCoverageSnapshotReadModel(
     Guid MembershipId,

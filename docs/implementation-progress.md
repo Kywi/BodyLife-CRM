@@ -14421,3 +14421,68 @@ Stop point:
   `CorrectNegativeVisitCoverage` with `correction_or_cancellation`, linking only
   the newly created correction/lifecycle/replacement facts while preserving
   original provenance. Do not begin Milestone 11.
+
+## Step 225 - Bound paper fallback rows to one-off negative coverage
+
+Status: completed for standalone `CloseNegativeVisitsOneOff` creation.
+Milestone 10.5 remains in progress; Milestone 11 has not started.
+
+Completed:
+
+- Made `paper_fallback` one-off negative coverage require a registered
+  `negative_coverage` row, reject caller-supplied legacy batch ids and derive
+  the canonical batch from the row. Normal commands reject row ids, row
+  identity participates in the idempotency fingerprint and paper commands
+  require matching `occurred_at` plus a reason or comment.
+- Preserved Client -> batch -> row -> MembershipType/source-fact locking and
+  atomically linked the closure, every one-off line and closure item, and the
+  exact negative-closure Payment. Same-key replay returns the original
+  aggregate, different commands cannot reuse a row and concurrent attempts
+  commit one complete closure.
+- Kept source facts, Memberships recalculation, Payment audit, closure audit,
+  paper links and idempotency in one transaction. Audit failure rolls back and
+  clears the EF tracker so the row remains reusable without partial facts.
+- Extended canonical negative-coverage rereads with exact per-row entity sets.
+  Missing, extra, cross-row and same-sheet whole-aggregate link moves fail
+  closed. Append-only creation audit references pin each paper closure to its
+  immutable row rather than trusting the mutable polymorphic link table alone.
+- Verified new-Membership coverage against its issued Membership and exact
+  active sale Payment. Replacement coverage keeps those original sale facts on
+  their original paper row and independently cross-checks append-only
+  `membership.issued` and `payment.created` row references, while replacement
+  facts remain owned by the correction row.
+- Added first-class paper provenance to typed
+  `membership_negative_closure.created` and negative-closure
+  `payment.created` audit explanations in English and Ukrainian. The closure
+  explanation validates before/after arithmetic, exact line totals, oldest
+  Visit ordering, Payment identity and the visible remaining negative balance.
+- Kept the accepted greenfield schema strategy and added no interim migration.
+  The final clean baseline still needs the deferred PostgreSQL cross-table
+  invariant for exact paper-row aggregate shapes and immutable source binding.
+- Independent read-only review iterated over exact sets, preserved sale
+  provenance and same-batch swaps. Final signoff found no P0-P3 issue; the
+  deferred database invariant above remains the known residual risk.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 416/416; full Web tests passed: 348/348.
+- Focused PostgreSQL close/correct/issue and canonical coverage tests passed:
+  46/46 with no skips. Coverage includes wrong/missing rows, replay,
+  different-key concurrency, audit rollback/reuse, exact multi-row sets,
+  same-sheet aggregate swaps and preserved original paper-sale provenance
+  after normal replacement.
+- Focused typed audit explanation tests passed: 180/180; both localization XML
+  resources parsed successfully.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Integrate `CorrectNegativeVisitCoverage` with a first-class
+  `correction_or_cancellation` row. Derive its batch and link only the new
+  correction/lifecycle/replacement facts: the correction record; replacement
+  closure, every replacement line/item and new consumption; and the exact
+  replacement Payment for one-off mode. Preserve every original source fact
+  and its paper provenance, add typed canceled/replaced audit explanations and
+  canonical history/report checks, and keep the final schema invariant for the
+  single greenfield baseline. Do not begin Milestone 11.

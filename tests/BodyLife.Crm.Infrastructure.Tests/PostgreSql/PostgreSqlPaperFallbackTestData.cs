@@ -67,6 +67,52 @@ internal static class PostgreSqlPaperFallbackTestData
             normalizedExplanation);
     }
 
+    internal static async Task<PaperFallbackRowFixture> SeedRowInBatchAsync(
+        PostgreSqlTestDatabase database,
+        PaperFallbackRowFixture batchRow,
+        ActorContext actor,
+        DateTimeOffset occurredAt,
+        string eventType,
+        DateTimeOffset recordedAt,
+        int lineNumber,
+        string? explanation = null)
+    {
+        var rowId = Guid.NewGuid();
+        var normalizedExplanation = explanation
+            ?? $"Recovered {eventType} from paper line {lineNumber}";
+
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            insert into bodylife.entry_batch_rows (
+                id, entry_batch_id, line_number, event_type, occurred_at,
+                explanation, recorded_at, recorded_by_account_id, session_id)
+            values (
+                @row_id, @batch_id, @line_number, @event_type, @occurred_at,
+                @explanation, @row_recorded_at, @account_id, @session_id);
+            """;
+        command.Parameters.AddWithValue("row_id", rowId);
+        command.Parameters.AddWithValue("batch_id", batchRow.EntryBatchId);
+        command.Parameters.AddWithValue("line_number", lineNumber);
+        command.Parameters.AddWithValue("event_type", eventType);
+        command.Parameters.AddWithValue("occurred_at", occurredAt);
+        command.Parameters.AddWithValue("explanation", normalizedExplanation);
+        command.Parameters.AddWithValue("row_recorded_at", recordedAt.AddMinutes(-5));
+        command.Parameters.AddWithValue("account_id", actor.AccountId.Value);
+        command.Parameters.AddWithValue("session_id", actor.SessionId.Value);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+
+        return new PaperFallbackRowFixture(
+            batchRow.EntryBatchId,
+            rowId,
+            batchRow.PaperSheetNumber,
+            lineNumber,
+            eventType,
+            normalizedExplanation);
+    }
+
     internal static async Task<IReadOnlyList<PaperFallbackEntityLink>> ReadLinksAsync(
         PostgreSqlTestDatabase database,
         Guid entryBatchRowId)

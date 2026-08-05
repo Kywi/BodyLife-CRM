@@ -110,7 +110,7 @@ internal static class NegativeCoverageCommandSupport
         if (command.EntryBatchId is not null)
         {
             return ValidationError(
-                "Normal one-off closure cannot carry paper batch metadata.",
+                "One-off closure derives paper batch metadata from its paper fallback row.",
                 "entryBatchId");
         }
 
@@ -127,7 +127,6 @@ internal static class NegativeCoverageCommandSupport
             command.ExpectedOldestOpenNegativeVisitId,
             normalizedLines.AsReadOnly(),
             (int)visitsCount,
-            command.EntryBatchId,
             envelope!);
         return null;
     }
@@ -154,7 +153,7 @@ internal static class NegativeCoverageCommandSupport
                 line.Quantity,
                 line.Sequence,
             }),
-            closure.EntryBatchId,
+            closure.Envelope.EntryBatchRowId,
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));
@@ -327,10 +326,10 @@ internal static class NegativeCoverageCommandSupport
                 "deviceLabel");
         }
 
-        if (envelope.EntryOrigin != EntryOrigin.Normal)
+        if (envelope.EntryOrigin is not (EntryOrigin.Normal or EntryOrigin.PaperFallback))
         {
             return ValidationError(
-                "This negative closure workflow currently accepts only normal entry origin.",
+                "This negative closure workflow accepts only normal or paper fallback entry origin.",
                 "entryOrigin");
         }
 
@@ -365,6 +364,38 @@ internal static class NegativeCoverageCommandSupport
                 "comment");
         }
 
+        if (envelope.EntryOrigin == EntryOrigin.Normal
+            && envelope.EntryBatchRowId is not null)
+        {
+            return ValidationError(
+                "Entry batch row id is only valid for paper fallback entry.",
+                "entryBatchRowId");
+        }
+
+        if (envelope.EntryOrigin == EntryOrigin.PaperFallback
+            && (envelope.EntryBatchRowId is null || envelope.EntryBatchRowId == Guid.Empty))
+        {
+            return ValidationError(
+                "Paper fallback entry requires an entry batch row id.",
+                "entryBatchRowId");
+        }
+
+        if (envelope.EntryOrigin == EntryOrigin.PaperFallback && occurredAt is null)
+        {
+            return ValidationError(
+                "Paper fallback entry requires occurred_at.",
+                "occurredAt");
+        }
+
+        if (envelope.EntryOrigin == EntryOrigin.PaperFallback
+            && string.IsNullOrWhiteSpace(reason)
+            && string.IsNullOrWhiteSpace(comment))
+        {
+            return ValidationError(
+                "Paper fallback entry requires a reason or comment.",
+                "reason");
+        }
+
         normalized = new CommandEnvelope(
             envelope.Actor with { DeviceLabel = deviceLabel },
             new RequestCorrelationId(correlationId),
@@ -372,7 +403,8 @@ internal static class NegativeCoverageCommandSupport
             occurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 
@@ -403,7 +435,6 @@ internal sealed record NormalizedOneOffNegativeClosure(
     Guid ExpectedOldestOpenNegativeVisitId,
     IReadOnlyList<NormalizedOneOffNegativeClosureLine> Lines,
     int VisitsCount,
-    Guid? EntryBatchId,
     CommandEnvelope Envelope)
 {
     public string IdempotencyKey => Envelope.IdempotencyKey!;

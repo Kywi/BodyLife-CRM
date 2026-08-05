@@ -88,6 +88,10 @@
   <data name="Entity.Membership"><value>Membership</value></data>
   <data name="Entity.MembershipOpeningState"><value>Opening state</value></data>
   <data name="Entity.MembershipNegativeClosure"><value>Negative Visit closure</value></data>
+  <data name="MembershipNegativeClosureCreated.Title"><value>Negative Visit closure created</value></data>
+  <data name="MembershipNegativeClosureCreated.Narrative"><value>Creates an explicit one-off closure and its exact cash payment.</value></data>
+  <data name="MembershipNegativeClosureCreated.Before"><value>Before</value></data>
+  <data name="MembershipNegativeClosureCreated.After"><value>After</value></data>
   <data name="Entity.Visit"><value>Visit</value></data>
   <data name="Entity.Payment"><value>Payment</value></data>
   <data name="Entity.Freeze"><value>Freeze</value></data>
@@ -257,6 +261,7 @@
   <data name="PaymentContext.OneOff"><value>One-off visit</value></data>
   <data name="PaymentContext.Trial"><value>Trial visit</value></data>
   <data name="PaymentContext.NegativeClosure"><value>Negative closure</value></data>
+  <data name="ClosureType.OneOff"><value>One-off</value></data>
   <data name="PaymentContext.Other"><value>Other</value></data>
   <data name="PaymentMethod.Cash"><value>Cash</value></data>
   <data name="Template.DateRange"><value>{0} to {1}</value></data>
@@ -368,6 +373,9 @@
   <data name="Fact.NegativeHandling"><value>Negative handling</value></data>
   <data name="Fact.EntryBatch"><value>Entry batch</value></data>
   <data name="Fact.PaymentRecord"><value>Payment record</value></data>
+  <data name="Fact.NegativeClosure"><value>Negative closure</value></data>
+  <data name="Fact.ClosureType"><value>Closure type</value></data>
+  <data name="Fact.CoveredVisits"><value>Covered visits</value></data>
   <data name="Payment.Method.Cash"><value>Cash</value></data>
   <data name="Changed.Currency"><value>Currency</value></data>
   <data name="Visit.Selection.Membership"><value>Explicit Membership</value></data>

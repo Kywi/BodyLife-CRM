@@ -115,11 +115,20 @@ internal sealed class PaperFallbackEntryRowReferenceReader(
     internal static bool HasMatchingAuditReference(
         ClientAuditEntry audit,
         Guid? sourceEntryBatchId,
+        PaperFallbackEntryRowReference? paper) =>
+        HasMatchingAuditReference(
+            audit.RelatedEntityRefsJson,
+            sourceEntryBatchId,
+            paper);
+
+    internal static bool HasMatchingAuditReference(
+        string relatedEntityRefsJson,
+        Guid? sourceEntryBatchId,
         PaperFallbackEntryRowReference? paper)
     {
         try
         {
-            using var document = JsonDocument.Parse(audit.RelatedEntityRefsJson);
+            using var document = JsonDocument.Parse(relatedEntityRefsJson);
             var root = document.RootElement;
             if (paper is null)
             {
@@ -158,6 +167,113 @@ internal sealed class PaperFallbackEntryRowReferenceReader(
         }
     }
 
+    internal Task<bool> HasExpectedEntityLinksAsync(
+        IReadOnlyCollection<PaperFallbackExpectedEntityLink> expectedLinks,
+        CancellationToken cancellationToken) =>
+        HasEntityLinksAsync(
+            expectedLinks,
+            requireExactPaperRowSet: true,
+            cancellationToken);
+
+    internal Task<bool> HasRequiredEntityLinksAsync(
+        IReadOnlyCollection<PaperFallbackExpectedEntityLink> expectedLinks,
+        CancellationToken cancellationToken) =>
+        HasEntityLinksAsync(
+            expectedLinks,
+            requireExactPaperRowSet: false,
+            cancellationToken);
+
+    private async Task<bool> HasEntityLinksAsync(
+        IReadOnlyCollection<PaperFallbackExpectedEntityLink> expectedLinks,
+        bool requireExactPaperRowSet,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(expectedLinks);
+        if (expectedLinks.Count == 0)
+        {
+            return true;
+        }
+
+        if (expectedLinks.Any(link => string.IsNullOrWhiteSpace(link.EntityType)
+                || link.EntityId == Guid.Empty)
+            || expectedLinks.GroupBy(link => (link.EntityType, link.EntityId))
+                .Any(group => group.Count() != 1))
+        {
+            return false;
+        }
+
+        var entityTypes = expectedLinks
+            .Select(link => link.EntityType)
+            .Distinct()
+            .ToArray();
+        var entityIds = expectedLinks
+            .Select(link => link.EntityId)
+            .Distinct()
+            .ToArray();
+        var expectedByEntity = expectedLinks.ToDictionary(
+            link => (link.EntityType, link.EntityId));
+        var links = await dbContext.Set<EntryBatchRowEntityRecord>()
+            .AsNoTracking()
+            .Where(link => entityTypes.Contains(link.EntityType)
+                && entityIds.Contains(link.EntityId))
+            .ToArrayAsync(cancellationToken);
+        var relevantLinks = links
+            .Where(link => expectedByEntity.ContainsKey(
+                (link.EntityType, link.EntityId)))
+            .ToArray();
+        if (relevantLinks.GroupBy(link => (link.EntityType, link.EntityId))
+            .Any(group => group.Count() != 1))
+        {
+            return false;
+        }
+
+        var linksByEntity = relevantLinks.ToDictionary(
+            link => (link.EntityType, link.EntityId));
+        if (!expectedLinks.All(expected =>
+        {
+            var hasLink = linksByEntity.TryGetValue(
+                (expected.EntityType, expected.EntityId),
+                out var actual);
+            return expected.ExpectedEntryBatchRowId is { } expectedRowId
+                ? hasLink && actual!.EntryBatchRowId == expectedRowId
+                : !hasLink;
+        }))
+        {
+            return false;
+        }
+
+        if (!requireExactPaperRowSet)
+        {
+            return true;
+        }
+
+        var expectedPaperLinks = expectedLinks
+            .Where(link => link.ExpectedEntryBatchRowId.HasValue)
+            .Select(link => (
+                EntryBatchRowId: link.ExpectedEntryBatchRowId!.Value,
+                link.EntityType,
+                link.EntityId))
+            .ToHashSet();
+        if (expectedPaperLinks.Count == 0)
+        {
+            return true;
+        }
+
+        var expectedRowIds = expectedPaperLinks
+            .Select(link => link.EntryBatchRowId)
+            .Distinct()
+            .ToArray();
+        var allRowLinks = await dbContext.Set<EntryBatchRowEntityRecord>()
+            .AsNoTracking()
+            .Where(link => expectedRowIds.Contains(link.EntryBatchRowId))
+            .ToArrayAsync(cancellationToken);
+        return allRowLinks.Length == expectedPaperLinks.Count
+            && allRowLinks.All(link => expectedPaperLinks.Contains((
+                link.EntryBatchRowId,
+                link.EntityType,
+                link.EntityId)));
+    }
+
     private static bool IsMissingOrNull(JsonElement root, string propertyName) =>
         !root.TryGetProperty(propertyName, out var value)
         || value.ValueKind == JsonValueKind.Null;
@@ -176,3 +292,8 @@ internal sealed record PaperFallbackEntryRowReferenceSource(
     Guid RecordedByAccountId,
     Guid SessionId,
     PaperFallbackEventType? ExpectedEventType = null);
+
+internal sealed record PaperFallbackExpectedEntityLink(
+    string EntityType,
+    Guid EntityId,
+    Guid? ExpectedEntryBatchRowId);

@@ -4,6 +4,8 @@ using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
+using BodyLife.Crm.Infrastructure.Persistence.Payments;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
@@ -14,6 +16,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 public sealed class CloseNegativeVisitsOneOffCommandHandler(
     BodyLifeDbContext dbContext,
     BusinessAuditAppender auditAppender,
+    PaperFallbackEntryRowBinder paperFallbackEntryRowBinder,
     INegativeClosurePaymentWriter paymentWriter,
     MembershipNegativeVisitSelector negativeVisitSelector,
     MembershipStateCacheRebuilder stateCacheRebuilder,
@@ -98,6 +101,33 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                     fingerprint);
             }
 
+            var paperBinding = await paperFallbackEntryRowBinder.PrepareAsync(
+                closure.Envelope,
+                PaperFallbackEventType.NegativeCoverage,
+                cancellationToken);
+            if (paperBinding.RowAlreadyLinked)
+            {
+                existingIdempotency = await MembershipCommandSupport.FindIdempotencyAsync(
+                    dbContext,
+                    CommandName,
+                    closure.IdempotencyKey,
+                    cancellationToken);
+                if (existingIdempotency is not null)
+                {
+                    return NegativeCoverageCommandSupport.ReplayOrRejectDuplicate(
+                        existingIdempotency,
+                        closure,
+                        fingerprint);
+                }
+            }
+
+            if (paperBinding.Error is not null)
+            {
+                return paperBinding.Error;
+            }
+
+            var entryBatchId = paperBinding.Reference?.EntryBatchId;
+
             var preparedLinesResult = await OneOffNegativeClosureLinePreparer
                 .PrepareAsync(dbContext, closure.Lines, "lines", cancellationToken);
             if (preparedLinesResult.Error is not null)
@@ -164,11 +194,18 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                 SessionId = closure.Envelope.Actor.SessionId.Value,
                 EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
                     closure.Envelope.EntryOrigin),
-                EntryBatchId = closure.EntryBatchId,
+                EntryBatchId = entryBatchId,
                 IdempotencyKey = closure.IdempotencyKey,
                 Status = "active",
             };
             dbContext.Set<MembershipNegativeClosureRecord>().Add(closureRecord);
+            if (paperBinding.Reference is { } closurePaperReference)
+            {
+                paperFallbackEntryRowBinder.LinkEntity(
+                    closurePaperReference,
+                    MembershipNegativeClosureAuditActions.EntityType,
+                    closureId);
+            }
 
             var sourceMembershipIds = new HashSet<Guid>();
             var visitIds = new List<Guid>(closure.VisitsCount);
@@ -192,6 +229,13 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                         LineTotal = preparedLine.LineTotal,
                         Sequence = preparedLine.Selection.Sequence,
                     });
+                if (paperBinding.Reference is { } linePaperReference)
+                {
+                    paperFallbackEntryRowBinder.LinkEntity(
+                        linePaperReference,
+                        "membership_negative_closure_line",
+                        lineId);
+                }
                 lineSummaries.Add(new
                 {
                     LineId = lineId,
@@ -214,10 +258,11 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                     candidateIndex++;
                     sourceMembershipIds.Add(candidate.SourceMembershipId);
                     visitIds.Add(candidate.VisitId);
+                    var itemId = Guid.NewGuid();
                     dbContext.Set<MembershipNegativeClosureItemRecord>().Add(
                         new MembershipNegativeClosureItemRecord
                         {
-                            Id = Guid.NewGuid(),
+                            Id = itemId,
                             NegativeClosureId = closureId,
                             ClientId = closure.ClientId,
                             ClosureLineId = lineId,
@@ -229,6 +274,13 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                             NewConsumptionId = null,
                             Status = "active",
                         });
+                    if (paperBinding.Reference is { } itemPaperReference)
+                    {
+                        paperFallbackEntryRowBinder.LinkEntity(
+                            itemPaperReference,
+                            "membership_negative_closure_item",
+                            itemId);
+                    }
                 }
             }
 
@@ -239,8 +291,16 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                 closure.ClientId,
                 closureId,
                 new Money(totalAmount, currency),
-                closure.EntryBatchId,
-                recordedAt);
+                entryBatchId,
+                recordedAt,
+                paperBinding.Reference);
+            if (paperBinding.Reference is { } paymentPaperReference)
+            {
+                paperFallbackEntryRowBinder.LinkEntity(
+                    paymentPaperReference,
+                    PaymentAuditActions.EntityType,
+                    paymentWrite.PaymentId);
+            }
             await dbContext.SaveChangesAsync(cancellationToken);
 
             foreach (var membershipId in sourceMembershipIds.Order())
@@ -283,14 +343,28 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                 MembershipNegativeClosureAuditActions.EntityType,
                 closureId,
                 recordedAt,
-                relatedEntityRefs: new
-                {
-                    ClientId = closure.ClientId,
-                    PaymentId = paymentWrite.PaymentId,
-                    PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
-                    SourceMembershipIds = sourceMembershipIds.Order().ToArray(),
-                    VisitIds = visitIds,
-                },
+                relatedEntityRefs: paperBinding.Reference is { } closureAuditPaperReference
+                    ? new
+                    {
+                        ClientId = closure.ClientId,
+                        PaymentId = paymentWrite.PaymentId,
+                        PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
+                        SourceMembershipIds = sourceMembershipIds.Order().ToArray(),
+                        VisitIds = visitIds,
+                        closureAuditPaperReference.EntryBatchId,
+                        closureAuditPaperReference.EntryBatchRowId,
+                        closureAuditPaperReference.PaperSheetNumber,
+                        closureAuditPaperReference.LineNumber,
+                        PaperExplanation = closureAuditPaperReference.Explanation,
+                    }
+                    : new
+                    {
+                        ClientId = closure.ClientId,
+                        PaymentId = paymentWrite.PaymentId,
+                        PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
+                        SourceMembershipIds = sourceMembershipIds.Order().ToArray(),
+                        VisitIds = visitIds,
+                    },
                 beforeSummary: new
                 {
                     selection.TotalNegativeBalance,
@@ -317,6 +391,7 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                     closureRecord.OccurredAt,
                     closureRecord.RecordedAt,
                     closureRecord.EntryOrigin,
+                    closureRecord.EntryBatchId,
                     closureRecord.Status,
                 });
             dbContext.Set<CommandIdempotencyRecord>().Add(
@@ -347,6 +422,9 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                     postgresException,
                     out var error))
             {
+                await MembershipCommandSupport.RollBackAndClearAsync(
+                    dbContext,
+                    transaction);
                 throw;
             }
 

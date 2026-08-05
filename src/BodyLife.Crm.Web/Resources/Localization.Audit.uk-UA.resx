@@ -88,6 +88,10 @@
   <data name="Entity.Membership"><value>Абонемент</value></data>
   <data name="Entity.MembershipOpeningState"><value>Початковий стан</value></data>
   <data name="Entity.MembershipNegativeClosure"><value>Погашення мінусових відвідувань</value></data>
+  <data name="MembershipNegativeClosureCreated.Title"><value>Створено погашення мінусових відвідувань</value></data>
+  <data name="MembershipNegativeClosureCreated.Narrative"><value>Створює явне разове погашення та його точну готівкову оплату.</value></data>
+  <data name="MembershipNegativeClosureCreated.Before"><value>До</value></data>
+  <data name="MembershipNegativeClosureCreated.After"><value>Після</value></data>
   <data name="Entity.Visit"><value>Відвідування</value></data>
   <data name="Entity.Payment"><value>Платіж</value></data>
   <data name="Entity.Freeze"><value>Замороження</value></data>
@@ -257,6 +261,7 @@
   <data name="PaymentContext.OneOff"><value>Разове відвідування</value></data>
   <data name="PaymentContext.Trial"><value>Пробне відвідування</value></data>
   <data name="PaymentContext.NegativeClosure"><value>Закриття від’ємного залишку</value></data>
+  <data name="ClosureType.OneOff"><value>Разове</value></data>
   <data name="PaymentContext.Other"><value>Інше</value></data>
   <data name="PaymentMethod.Cash"><value>Готівка</value></data>
   <data name="Template.DateRange"><value>{0} – {1}</value></data>
@@ -368,6 +373,9 @@
   <data name="Fact.NegativeHandling"><value>Обробка від’ємного залишку</value></data>
   <data name="Fact.EntryBatch"><value>Пакет внесення</value></data>
   <data name="Fact.PaymentRecord"><value>Запис платежу</value></data>
+  <data name="Fact.NegativeClosure"><value>Погашення мінусових відвідувань</value></data>
+  <data name="Fact.ClosureType"><value>Тип погашення</value></data>
+  <data name="Fact.CoveredVisits"><value>Погашені відвідування</value></data>
   <data name="Payment.Method.Cash"><value>Готівка</value></data>
   <data name="Changed.Currency"><value>Валюта</value></data>
   <data name="Visit.Selection.Membership"><value>Явний абонемент</value></data>

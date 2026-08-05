@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Payments;
@@ -11,7 +12,8 @@ public interface INegativeClosurePaymentWriter
         Guid negativeClosureId,
         Money amount,
         Guid? entryBatchId,
-        DateTimeOffset recordedAt);
+        DateTimeOffset recordedAt,
+        PaperFallbackEntryRowReference? paperReference = null);
 }
 
 public sealed record NegativeClosurePaymentWriteResult(

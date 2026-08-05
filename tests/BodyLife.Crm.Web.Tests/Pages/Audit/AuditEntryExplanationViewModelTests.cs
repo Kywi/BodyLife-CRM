@@ -4620,6 +4620,191 @@ public sealed class AuditEntryExplanationViewModelTests
                 new { })));
     }
 
+    [Fact]
+    public void PaperNegativeClosureShowsVerifiedRowProvenance()
+    {
+        var closureId = Guid.NewGuid();
+        var paymentId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var visitId = Guid.NewGuid();
+        var lineId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+        var entry = Entry(
+            "membership_negative_closure.created",
+            AuditTimelineEntityType.MembershipNegativeClosure,
+            closureId,
+            new
+            {
+                TotalNegativeBalance = 2,
+                OpenConcreteVisitCount = 2,
+                UnknownNegativeBalance = 0,
+                OldestOpenNegativeVisitId = visitId,
+            },
+            new
+            {
+                NegativeClosureId = closureId,
+                ClosureType = "one_off",
+                VisitsCount = 1,
+                Lines = new[]
+                {
+                    new
+                    {
+                        LineId = lineId,
+                        Sequence = 1,
+                        MembershipTypeId = membershipTypeId,
+                        TypeName = "One-off visit",
+                        Quantity = 1,
+                        UnitPriceAmount = 50m,
+                        Currency = "UAH",
+                        LineTotal = 50m,
+                    },
+                },
+                Payment = new
+                {
+                    PaymentId = paymentId,
+                    Amount = 50m,
+                    Currency = "UAH",
+                    Method = "cash",
+                    Context = "negative_closure",
+                },
+                CoveredVisitIds = new[] { visitId },
+                RemainingNegativeBalance = 1,
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "paper_fallback",
+                EntryBatchId = batchId,
+                Status = "active",
+            },
+            related: new
+            {
+                ClientId = clientId,
+                PaymentId = paymentId,
+                PaymentAuditEntryId = Guid.NewGuid(),
+                SourceMembershipIds = new[] { Guid.NewGuid() },
+                VisitIds = new[] { visitId },
+                EntryBatchId = batchId,
+                EntryBatchRowId = rowId,
+                PaperSheetNumber = "NEG-2026-001",
+                LineNumber = 8,
+                PaperExplanation = "Recovered one-off closure",
+            },
+            entryOrigin: EntryOrigin.PaperFallback);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(Explain(entry));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-negative-closure-created", explanation.Kind);
+        Assert.Equal("NEG-2026-001", FactValue(explanation.AfterFacts, "Paper sheet"));
+        Assert.Equal("Recovered one-off closure", FactValue(explanation.AfterFacts, "Explanation"));
+        Assert.Equal("1", FactValue(explanation.AfterFacts, "Negative balance"));
+
+        var malformedBefore = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with { BeforeSummaryJson = "{}" }));
+        Assert.False(malformedBefore.IsAvailable);
+
+        var normalWithBatch = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with
+            {
+                EntryOrigin = EntryOrigin.Normal,
+                AfterSummaryJson = entry.AfterSummaryJson.Replace(
+                    "paper_fallback",
+                    "normal",
+                    StringComparison.Ordinal),
+                RelatedEntityRefsJson = Serialize(new
+                {
+                    ClientId = clientId,
+                    PaymentId = paymentId,
+                    PaymentAuditEntryId = Guid.NewGuid(),
+                    SourceMembershipIds = new[] { Guid.NewGuid() },
+                    VisitIds = new[] { visitId },
+                }),
+            }));
+        Assert.False(normalWithBatch.IsAvailable);
+    }
+
+    [Fact]
+    public void PaperNegativeClosurePaymentShowsAndVerifiesAggregateProvenance()
+    {
+        var paymentId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var closureId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var related = new
+        {
+            ClientId = clientId,
+            MembershipId = (Guid?)null,
+            NegativeClosureId = closureId,
+            EntryBatchId = batchId,
+            EntryBatchRowId = rowId,
+            PaperSheetNumber = "NEG-PAYMENT-001",
+            LineNumber = 5,
+            PaperExplanation = "Recovered exact closure payment",
+        };
+        var entry = Entry(
+            "payment.created",
+            AuditTimelineEntityType.Payment,
+            paymentId,
+            new { },
+            new
+            {
+                Payment = new
+                {
+                    PaymentId = paymentId,
+                    ClientId = clientId,
+                    MembershipId = (Guid?)null,
+                    NegativeClosureId = closureId,
+                    Amount = 50m,
+                    Currency = "UAH",
+                    Method = "cash",
+                    PaymentContext = "negative_closure",
+                    OccurredAt = OriginalOccurredAt,
+                    RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                    EntryOrigin = "paper_fallback",
+                    EntryBatchId = batchId,
+                    Comment = "Correction comment",
+                    Status = "active",
+                },
+                Explanation = new
+                {
+                    Kind = "negative_visit_one_off_closure",
+                    NegativeClosureId = closureId,
+                    IsStandalonePayment = false,
+                },
+            },
+            related: related,
+            entryOrigin: EntryOrigin.PaperFallback);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry));
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            closureId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Negative closure"));
+        Assert.Equal(
+            "Negative Visit coverage",
+            FactValue(explanation.AfterFacts, "Event type"));
+
+        var inconsistent = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with
+            {
+                RelatedEntityRefsJson = Serialize(new
+                {
+                    related.ClientId,
+                    related.MembershipId,
+                    NegativeClosureId = Guid.NewGuid(),
+                    related.EntryBatchId,
+                    related.EntryBatchRowId,
+                    related.PaperSheetNumber,
+                    related.LineNumber,
+                    related.PaperExplanation,
+                }),
+            }));
+        Assert.False(inconsistent.IsAvailable);
+    }
+
     private static AuditTimelineEntry Entry(
         string actionType,
         AuditTimelineEntityType entityType,

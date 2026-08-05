@@ -213,6 +213,13 @@ public sealed class AuditEntryExplanationPresenter(
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
+                "membership_negative_closure.created"
+                    when entry.EntityType == AuditTimelineEntityType.MembershipNegativeClosure
+                    => CreateNegativeClosureCreation(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement),
                 "non_working_day.added"
                     when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
                     => nonWorkingDayFactory.CreateAddition(
@@ -588,6 +595,168 @@ public sealed class AuditEntryExplanationPresenter(
             ],
             ChangedFields: JoinChanged("OpeningState", "MembershipStateCache"),
             IsAvailable: true);
+    }
+
+    private AuditEntryExplanationViewModel CreateNegativeClosureCreation(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after)
+    {
+        if (entry.EntityId == Guid.Empty)
+        {
+            throw new JsonException("Negative closure creation summary is inconsistent.");
+        }
+
+        var closureId = RequireGuid(after, "negativeClosureId");
+        var clientId = RequireGuid(related, "clientId");
+        var paymentId = RequireGuid(related, "paymentId");
+        _ = RequireGuid(related, "paymentAuditEntryId");
+        var sourceMembershipIds = RequireGuidArray(
+            related,
+            "sourceMembershipIds");
+        var relatedVisitIds = RequireGuidArray(related, "visitIds");
+        var totalNegativeBalance = RequirePositiveInt32(
+            before,
+            "totalNegativeBalance");
+        var openConcreteVisitCount = RequirePositiveInt32(
+            before,
+            "openConcreteVisitCount");
+        var unknownNegativeBalance = RequireNonNegativeInt32(
+            before,
+            "unknownNegativeBalance");
+        var oldestOpenNegativeVisitId = RequireGuid(
+            before,
+            "oldestOpenNegativeVisitId");
+        var closureType = RequireString(after, "closureType");
+        var visitsCount = RequirePositiveInt32(after, "visitsCount");
+        var lines = ReadNegativeClosureLines(after);
+        var coveredVisitIds = RequireGuidArray(after, "coveredVisitIds");
+        var remainingNegativeBalance = RequireNonNegativeInt32(
+            after,
+            "remainingNegativeBalance");
+        var occurredAt = RequireTimestamp(after, "occurredAt");
+        var recordedAt = RequireTimestamp(after, "recordedAt");
+        var entryOrigin = RequireString(after, "entryOrigin");
+        var entryBatchId = RequireNullableGuid(after, "entryBatchId");
+        var status = RequireString(after, "status");
+        var payment = RequireObject(after, "payment");
+        var paymentAmount = RequireDecimal(payment, "amount");
+        var paymentCurrency = RequireString(payment, "currency");
+        ValidateEntryBatch(entryOrigin, entryBatchId);
+        var paperReference = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            entryBatchId,
+            "Negative closure");
+
+        if (closureId != entry.EntityId
+            || closureType != "one_off"
+            || status != "active"
+            || clientId == Guid.Empty
+            || sourceMembershipIds.Count == 0
+            || sourceMembershipIds.Distinct().Count() != sourceMembershipIds.Count
+            || coveredVisitIds.Count != visitsCount
+            || coveredVisitIds.Distinct().Count() != coveredVisitIds.Count
+            || !relatedVisitIds.SequenceEqual(coveredVisitIds)
+            || coveredVisitIds[0] != oldestOpenNegativeVisitId
+            || totalNegativeBalance
+                != openConcreteVisitCount + unknownNegativeBalance
+            || visitsCount > openConcreteVisitCount
+            || remainingNegativeBalance != totalNegativeBalance - visitsCount
+            || lines.Sum(line => line.Quantity) != visitsCount
+            || lines.Any(line => line.Currency != paymentCurrency)
+            || lines.Sum(line => line.LineTotal) != paymentAmount
+            || RequireGuid(payment, "paymentId") != paymentId
+            || RequireString(payment, "context") != "negative_closure"
+            || RequireString(payment, "method") != "cash"
+            || entryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(occurredAt, entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(recordedAt, entry.RecordedAt))
+        {
+            throw new JsonException("Negative closure creation summary identity is inconsistent.");
+        }
+
+        var afterFacts = new List<AuditEntryExplanationFactViewModel>
+        {
+            Fact("Negative closure", TimelineModel.ShortId(closureId)),
+            Fact("Payment record", TimelineModel.ShortId(paymentId)),
+            Fact("Closure type", Presentation.Text("ClosureType.OneOff")),
+            Fact("Covered visits", Presentation.Number(visitsCount)),
+            Fact("Amount", MoneyLabel(
+                paymentAmount,
+                paymentCurrency)),
+            Fact(
+                "Negative balance",
+                Presentation.Number(remainingNegativeBalance)),
+            Fact("Occurred", TimelineModel.TimestampLabel(occurredAt)),
+            Fact("Entry origin", StoredEntryOriginLabel(entryOrigin)),
+        };
+        if (paperReference is not null)
+        {
+            afterFacts.Add(Fact("Paper fallback batch", TimelineModel.ShortId(paperReference.EntryBatchId)));
+            afterFacts.Add(Fact("Paper sheet", paperReference.PaperSheetNumber));
+            afterFacts.Add(Fact("Paper row", TimelineModel.ShortId(paperReference.EntryBatchRowId)));
+            afterFacts.Add(Fact("Line number", Presentation.Number(paperReference.LineNumber)));
+            afterFacts.Add(Fact("Event type", Presentation.Text("PaperFallback.EventType.negative_coverage")));
+            afterFacts.Add(Fact("Explanation", paperReference.Explanation));
+        }
+
+        return CreateExplanation(
+            "MembershipNegativeClosureCreated",
+            "membership-negative-closure-created",
+            [Fact("Negative closure", Presentation.Value("NotPresent"))],
+            afterFacts,
+            Presentation.Changed("NegativeVisitCoverage"),
+            IsAvailable: true);
+    }
+
+    private static IReadOnlyList<NegativeClosureAuditLineSnapshot>
+        ReadNegativeClosureLines(JsonElement summary)
+    {
+        if (!summary.TryGetProperty("lines", out var lines)
+            || lines.ValueKind != JsonValueKind.Array)
+        {
+            throw new JsonException(
+                "Negative closure creation requires line summaries.");
+        }
+
+        var result = new List<NegativeClosureAuditLineSnapshot>();
+        foreach (var line in lines.EnumerateArray())
+        {
+            if (line.ValueKind != JsonValueKind.Object)
+            {
+                throw new JsonException(
+                    "Negative closure line summary is inconsistent.");
+            }
+
+            var quantity = RequirePositiveInt32(line, "quantity");
+            var unitPrice = RequireDecimal(line, "unitPriceAmount");
+            var lineTotal = RequireDecimal(line, "lineTotal");
+            result.Add(new NegativeClosureAuditLineSnapshot(
+                RequireGuid(line, "lineId"),
+                RequirePositiveInt32(line, "sequence"),
+                RequireGuid(line, "membershipTypeId"),
+                RequireString(line, "typeName"),
+                quantity,
+                unitPrice,
+                RequireString(line, "currency"),
+                lineTotal));
+        }
+
+        if (result.Count == 0
+            || result.Select(line => line.LineId).Distinct().Count() != result.Count
+            || result.Select(line => line.MembershipTypeId).Distinct().Count()
+                != result.Count
+            || !result.Select(line => line.Sequence)
+                .SequenceEqual(Enumerable.Range(1, result.Count))
+            || result.Any(line => line.LineTotal != line.UnitPrice * line.Quantity))
+        {
+            throw new JsonException(
+                "Negative closure line summaries are inconsistent.");
+        }
+
+        return result;
     }
 
     private AuditEntryExplanationViewModel CreateMembershipTypeDeactivation(
@@ -1328,6 +1497,9 @@ public sealed class AuditEntryExplanationPresenter(
 
         var relatedClientId = RequireGuid(related, "clientId");
         var relatedMembershipId = RequireNullableGuid(related, "membershipId");
+        var relatedNegativeClosureId = ReadOptionalGuid(
+            related,
+            "negativeClosureId");
         var payment = ReadCreatedPayment(RequireObject(after, "payment"));
         ValidateEntryBatch(payment.EntryOrigin, payment.EntryBatchId);
         var paperReference = ReadPaperReference(
@@ -1339,6 +1511,7 @@ public sealed class AuditEntryExplanationPresenter(
         if (payment.PaymentId != entry.EntityId
             || payment.ClientId != relatedClientId
             || payment.MembershipId != relatedMembershipId
+            || payment.NegativeClosureId != relatedNegativeClosureId
             || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
                 payment.OccurredAt,
                 entry.OccurredAt)
@@ -1353,6 +1526,27 @@ public sealed class AuditEntryExplanationPresenter(
             throw new JsonException("Created Payment summary is inconsistent.");
         }
 
+        if (payment.PaymentContext == "negative_closure")
+        {
+            var explanation = RequireObject(after, "explanation");
+            if (payment.MembershipId is not null
+                || payment.NegativeClosureId is null
+                || RequireString(explanation, "kind")
+                    != "negative_visit_one_off_closure"
+                || RequireGuid(explanation, "negativeClosureId")
+                    != payment.NegativeClosureId
+                || RequireBoolean(explanation, "isStandalonePayment"))
+            {
+                throw new JsonException(
+                    "Negative-closure Payment explanation is inconsistent.");
+            }
+        }
+        else if (payment.NegativeClosureId is not null)
+        {
+            throw new JsonException(
+                "Only a negative-closure Payment can reference a closure.");
+        }
+
         var context = PaymentContextLabel(payment.PaymentContext);
         var afterFacts = new List<AuditEntryExplanationFactViewModel>
         {
@@ -1365,6 +1559,12 @@ public sealed class AuditEntryExplanationPresenter(
             Fact("Occurred", TimelineModel.TimestampLabel(payment.OccurredAt)),
             Fact("Status", Presentation.Status("Active")),
         };
+        if (payment.NegativeClosureId is { } negativeClosureId)
+        {
+            afterFacts.Add(Fact(
+                "Negative closure",
+                TimelineModel.ShortId(negativeClosureId)));
+        }
         AddPaperReferenceFacts(
             afterFacts,
             paperReference,
@@ -2138,6 +2338,7 @@ public sealed class AuditEntryExplanationPresenter(
             RequireGuid(payment, "paymentId"),
             RequireGuid(payment, "clientId"),
             RequireNullableGuid(payment, "membershipId"),
+            ReadOptionalGuid(payment, "negativeClosureId"),
             amount,
             RequireString(payment, "currency"),
             RequireString(payment, "method"),
@@ -2376,6 +2577,9 @@ public sealed class AuditEntryExplanationPresenter(
             "Initial effective end date" => "InitialEffectiveEndDate",
             "Initial first negative visit date" => "InitialFirstNegativeVisitDate",
             "Payment record" => "PaymentRecord",
+            "Negative closure" => "NegativeClosure",
+            "Closure type" => "ClosureType",
+            "Covered visits" => "CoveredVisits",
             "Paper fallback batch" => "PaperFallbackBatch",
             "Paper sheet" => "PaperSheet",
             "Business dates" => "BusinessDates",
@@ -2709,6 +2913,33 @@ public sealed class AuditEntryExplanationPresenter(
         return items;
     }
 
+    private static IReadOnlyList<Guid> RequireGuidArray(
+        JsonElement parent,
+        string propertyName)
+    {
+        if (!parent.TryGetProperty(propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Array)
+        {
+            throw new JsonException($"Audit summary property '{propertyName}' is required.");
+        }
+
+        var items = new List<Guid>();
+        foreach (var item in value.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.String
+                || !Guid.TryParse(item.GetString(), out var id)
+                || id == Guid.Empty)
+            {
+                throw new JsonException(
+                    $"Audit summary property '{propertyName}' has an invalid item.");
+            }
+
+            items.Add(id);
+        }
+
+        return items;
+    }
+
     private string MoneyLabel(decimal amount, string currency)
     {
         return Presentation.Money(new BodyLife.Crm.SharedKernel.Money(amount, currency));
@@ -2965,6 +3196,7 @@ public sealed class AuditEntryExplanationPresenter(
         Guid PaymentId,
         Guid ClientId,
         Guid? MembershipId,
+        Guid? NegativeClosureId,
         decimal Amount,
         string Currency,
         string Method,
@@ -3122,6 +3354,16 @@ public sealed class AuditEntryExplanationPresenter(
         string PaperSheetNumber,
         int LineNumber,
         string Explanation);
+
+    private sealed record NegativeClosureAuditLineSnapshot(
+        Guid LineId,
+        int Sequence,
+        Guid MembershipTypeId,
+        string TypeName,
+        int Quantity,
+        decimal UnitPrice,
+        string Currency,
+        decimal LineTotal);
 
     private sealed record VisitMarkedMembershipStateSnapshot(
         Guid MembershipId,

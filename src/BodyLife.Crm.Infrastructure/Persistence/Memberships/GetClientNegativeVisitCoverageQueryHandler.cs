@@ -1,9 +1,11 @@
 using System.Data;
 using BodyLife.Crm.Application.Queries;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -72,11 +74,119 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
         var items = closureIds.Length == 0 ? [] : await dbContext.Set<MembershipNegativeClosureItemRecord>()
             .AsNoTracking().Where(item => closureIds.Contains(item.NegativeClosureId) && item.Status == "active")
             .ToArrayAsync(cancellationToken);
+        var coveringMembershipIds = closures
+            .Where(closure => closure.ClosureType == "new_membership"
+                && closure.CoveringMembershipId.HasValue)
+            .Select(closure => closure.CoveringMembershipId!.Value)
+            .Distinct()
+            .ToArray();
         var payments = closureIds.Length == 0 ? [] : await dbContext.Set<PaymentRecord>().AsNoTracking()
-            .Where(payment => payment.NegativeClosureId.HasValue
-                && closureIds.Contains(payment.NegativeClosureId.Value)
-                && payment.Status == "active")
+            .Where(payment => payment.Status == "active"
+                && ((payment.NegativeClosureId.HasValue
+                        && closureIds.Contains(payment.NegativeClosureId.Value))
+                    || (payment.MembershipId.HasValue
+                        && coveringMembershipIds.Contains(payment.MembershipId.Value)
+                        && payment.PaymentContext == "membership_sale")))
             .ToArrayAsync(cancellationToken);
+        var replacementCorrections = closureIds.Length == 0
+            ? []
+            : await dbContext.Set<MembershipNegativeClosureCorrectionRecord>()
+                .AsNoTracking()
+                .Where(correction => correction.ReplacementClosureId.HasValue
+                    && closureIds.Contains(correction.ReplacementClosureId.Value))
+                .ToArrayAsync(cancellationToken);
+        var paperClosureIds = closures
+            .Where(closure => closure.EntryOrigin == "paper_fallback")
+            .Select(closure => closure.Id)
+            .ToArray();
+        var creationAudits = paperClosureIds.Length == 0
+            ? []
+            : await dbContext.Set<BusinessAuditEntryRecord>()
+                .AsNoTracking()
+                .Where(audit =>
+                    audit.ActionType
+                        == MembershipNegativeClosureAuditActions.Created
+                    && audit.EntityType
+                        == MembershipNegativeClosureAuditActions.EntityType
+                    && paperClosureIds.Contains(audit.EntityId))
+                .ToArrayAsync(cancellationToken);
+
+        if (closures.Any(closure => closure.EntryOrigin is not ("normal" or "paper_fallback"))
+            || replacementCorrections
+                .GroupBy(correction => correction.ReplacementClosureId!.Value)
+                .Any(group => group.Count() != 1)
+            || creationAudits.Length != paperClosureIds.Length
+            || creationAudits.GroupBy(audit => audit.EntityId)
+                .Any(group => group.Count() != 1))
+        {
+            return await CompleteAsync(
+                GetClientNegativeVisitCoverageResult.CanonicalStateInvalid());
+        }
+
+        var closuresById = closures.ToDictionary(closure => closure.Id);
+        var correctionsByReplacementId = replacementCorrections.ToDictionary(
+            correction => correction.ReplacementClosureId!.Value);
+        var creationAuditsByClosureId = creationAudits.ToDictionary(
+            audit => audit.EntityId);
+        if (replacementCorrections.Any(correction =>
+                correction.Mode != "replace"
+                || !closuresById.TryGetValue(
+                    correction.ReplacementClosureId!.Value,
+                    out var replacement)
+                || correction.EntryOrigin != replacement.EntryOrigin
+                || correction.EntryBatchId != replacement.EntryBatchId
+                || correction.OccurredAt != replacement.OccurredAt
+                || correction.RecordedAt != replacement.RecordedAt
+                || correction.RecordedByAccountId != replacement.RecordedByAccountId
+                || correction.SessionId != replacement.SessionId))
+        {
+            return await CompleteAsync(
+                GetClientNegativeVisitCoverageResult.CanonicalStateInvalid());
+        }
+
+        var paperReferenceReader = new PaperFallbackEntryRowReferenceReader(dbContext);
+        var paperReferencesByClosureId = await paperReferenceReader.LoadAsync(
+            closures.Select(closure => new PaperFallbackEntryRowReferenceSource(
+                closure.Id,
+                closure.EntryOrigin,
+                closure.EntryBatchId,
+                closure.OccurredAt,
+                closure.RecordedByAccountId,
+                closure.SessionId,
+                ExpectedPaperEventType(
+                    closure,
+                    correctionsByReplacementId.ContainsKey(closure.Id))))
+                .ToArray(),
+            MembershipNegativeClosureAuditActions.EntityType,
+            PaperFallbackEventType.NegativeCoverage,
+            cancellationToken);
+        if (paperReferencesByClosureId is null
+            || !await paperReferenceReader.HasExpectedEntityLinksAsync(
+                BuildExpectedPaperLinks(
+                    closures,
+                    lines,
+                    items,
+                    payments,
+                    correctionsByReplacementId,
+                    paperReferencesByClosureId),
+                cancellationToken)
+            || closures.Any(closure =>
+                closure.EntryOrigin == "paper_fallback"
+                && !HasMatchingCreationAudit(
+                    closure,
+                    creationAuditsByClosureId[closure.Id],
+                    paperReferencesByClosureId.GetValueOrDefault(closure.Id)))
+            || !await HasPreservedNewMembershipSaleProvenanceAsync(
+                dbContext,
+                paperReferenceReader,
+                closures,
+                payments,
+                correctionsByReplacementId,
+                cancellationToken))
+        {
+            return await CompleteAsync(
+                GetClientNegativeVisitCoverageResult.CanonicalStateInvalid());
+        }
 
         var allMembershipIds = closures.Where(closure => closure.CoveringMembershipId.HasValue)
             .Select(closure => closure.CoveringMembershipId!.Value)
@@ -106,6 +216,8 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
                 membershipById,
                 visitsById,
                 consumptionsById,
+                correctionsByReplacementId.Keys.ToHashSet(),
+                paperReferencesByClosureId,
                 out var projectedClosures))
         {
             return await CompleteAsync(GetClientNegativeVisitCoverageResult.CanonicalStateInvalid());
@@ -165,6 +277,8 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
         IReadOnlyDictionary<Guid, IssuedMembershipRecord> memberships,
         IReadOnlyDictionary<Guid, VisitRecord> visits,
         IReadOnlyDictionary<Guid, VisitConsumptionRecord> consumptions,
+        IReadOnlySet<Guid> replacementClosureIds,
+        IReadOnlyDictionary<Guid, PaperFallbackEntryRowReference> paperReferences,
         out IReadOnlyList<NegativeVisitCoverageClosureReadModel> result)
     {
         result = [];
@@ -181,7 +295,15 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
                 .OrderBy(line => line.Sequence).ThenBy(line => line.Id).ToArray();
             var items = allItems.Where(item => item.NegativeClosureId == closure.Id)
                 .OrderBy(item => item.Sequence).ThenBy(item => item.Id).ToArray();
-            var payments = allPayments.Where(payment => payment.NegativeClosureId == closure.Id).ToArray();
+            var closurePayments = allPayments
+                .Where(payment => payment.NegativeClosureId == closure.Id)
+                .ToArray();
+            var salePayments = closure.CoveringMembershipId is { } paymentMembershipId
+                ? allPayments.Where(payment =>
+                        payment.MembershipId == paymentMembershipId
+                        && payment.PaymentContext == "membership_sale")
+                    .ToArray()
+                : [];
             if (closure.ClientId != clientId
                 || closure.Status != "active"
                 || closure.VisitsCount <= 0
@@ -196,7 +318,10 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
 
             if (closure.ClosureType == "one_off")
             {
-                if (closure.CoveringMembershipId is not null || lines.Length == 0 || payments.Length != 1)
+                if (closure.CoveringMembershipId is not null
+                    || lines.Length == 0
+                    || closurePayments.Length != 1
+                    || salePayments.Length != 0)
                 {
                     return false;
                 }
@@ -214,7 +339,7 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
                         || item.CoveringMembershipId is not null
                         || item.NewConsumptionId is not null)
                     || !ValidateOldFacts(clientId, items, memberships, visits, consumptions)
-                    || !ValidateOneOffPayment(clientId, closure, payments[0], lines))
+                    || !ValidateOneOffPayment(clientId, closure, closurePayments[0], lines))
                 {
                     return false;
                 }
@@ -223,10 +348,18 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
             {
                 if (closure.CoveringMembershipId is not { } coveringMembershipId
                     || lines.Length != 0
-                    || payments.Length != 0
+                    || closurePayments.Length != 0
+                    || salePayments.Length != 1
                     || !memberships.TryGetValue(coveringMembershipId, out var coveringMembership)
                     || coveringMembership.ClientId != clientId
                     || coveringMembership.Status != "active"
+                    || !ValidateNewMembershipSalePayment(
+                        clientId,
+                        closure,
+                        coveringMembership,
+                        salePayments[0],
+                        requireClosureEnvelope: !replacementClosureIds.Contains(
+                            closure.Id))
                     || items.Any(item => item.ClosureLineId is not null
                         || item.CoveringMembershipId != coveringMembershipId
                         || !ValidateNewConsumption(item, clientId, coveringMembershipId, consumptions))
@@ -257,7 +390,7 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
                     item.SourceMembershipId, item.OldConsumptionId,
                     item.CoveringMembershipId, item.NewConsumptionId, item.Status);
             }).ToArray();
-            var payment = payments.SingleOrDefault();
+            var payment = closurePayments.SingleOrDefault();
             output.Add(new NegativeVisitCoverageClosureReadModel(
                 closure.Id, closure.ClosureType, closure.CoveringMembershipId, coveringSnapshot,
                 closure.OldestOpenNegativeVisitId, closure.VisitsCount, closure.Comment,
@@ -265,7 +398,9 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
                 closure.EntryOrigin, closure.Status, projectedLines, projectedItems,
                 payment is null ? null : new NegativeVisitCoveragePaymentReadModel(
                     payment.Id, new Money(payment.Amount, payment.Currency), payment.OccurredAt,
-                    payment.RecordedAt, payment.Status)));
+                    payment.RecordedAt, payment.Status),
+                closure.EntryBatchId,
+                paperReferences.GetValueOrDefault(closure.Id)));
         }
 
         result = output;
@@ -309,7 +444,14 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
     {
         if (payment.ClientId != clientId || payment.Status != "active" || payment.Method != "cash"
             || payment.PaymentContext != "negative_closure" || payment.NegativeClosureId != closure.Id
-            || payment.MembershipId is not null || !TryMoney(payment.Amount, payment.Currency, out _))
+            || payment.MembershipId is not null
+            || payment.OccurredAt != closure.OccurredAt
+            || payment.RecordedAt != closure.RecordedAt
+            || payment.RecordedByAccountId != closure.RecordedByAccountId
+            || payment.SessionId != closure.SessionId
+            || payment.EntryOrigin != closure.EntryOrigin
+            || payment.EntryBatchId != closure.EntryBatchId
+            || !TryMoney(payment.Amount, payment.Currency, out _))
         {
             return false;
         }
@@ -318,6 +460,331 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
         return lines.All(line => line.CurrencySnapshot == currency)
             && payment.Currency == currency
             && payment.Amount == lines.Sum(line => line.LineTotal);
+    }
+
+    private static bool HasMatchingCreationAudit(
+        MembershipNegativeClosureRecord closure,
+        BusinessAuditEntryRecord audit,
+        PaperFallbackEntryRowReference? paperReference) =>
+        audit.ActionType == MembershipNegativeClosureAuditActions.Created
+        && audit.EntityType == MembershipNegativeClosureAuditActions.EntityType
+        && audit.EntityId == closure.Id
+        && audit.ActorAccountId == closure.RecordedByAccountId
+        && audit.SessionId == closure.SessionId
+        && SamePostgreSqlInstant(audit.OccurredAt, closure.OccurredAt)
+        && SamePostgreSqlInstant(audit.RecordedAt, closure.RecordedAt)
+        && audit.EntryOrigin == closure.EntryOrigin
+        && audit.IdempotencyKey == closure.IdempotencyKey
+        && audit.Comment == closure.Comment
+        && PaperFallbackEntryRowReferenceReader.HasMatchingAuditReference(
+            audit.RelatedEntityRefsJson,
+            closure.EntryBatchId,
+            paperReference);
+
+    private static async Task<bool>
+        HasPreservedNewMembershipSaleProvenanceAsync(
+            BodyLifeDbContext dbContext,
+            PaperFallbackEntryRowReferenceReader paperReferenceReader,
+            IReadOnlyList<MembershipNegativeClosureRecord> closures,
+            IReadOnlyList<PaymentRecord> allPayments,
+            IReadOnlyDictionary<Guid, MembershipNegativeClosureCorrectionRecord>
+                correctionsByReplacementId,
+            CancellationToken cancellationToken)
+    {
+        var preservedMembershipIds = closures
+            .Where(closure => closure.ClosureType == "new_membership"
+                && closure.CoveringMembershipId.HasValue
+                && correctionsByReplacementId.ContainsKey(closure.Id))
+            .Select(closure => closure.CoveringMembershipId!.Value)
+            .Distinct()
+            .ToArray();
+        if (preservedMembershipIds.Length == 0)
+        {
+            return true;
+        }
+
+        var salePayments = new List<PaymentRecord>(
+            preservedMembershipIds.Length);
+        foreach (var membershipId in preservedMembershipIds)
+        {
+            var matchingPayments = allPayments
+                .Where(payment => payment.MembershipId == membershipId
+                    && payment.PaymentContext == "membership_sale")
+                .ToArray();
+            if (matchingPayments.Length != 1
+                || matchingPayments[0].EntryOrigin is not (
+                    "normal" or "paper_fallback"))
+            {
+                return false;
+            }
+
+            salePayments.Add(matchingPayments[0]);
+        }
+
+        var paperReferences = await paperReferenceReader.LoadAsync(
+            salePayments.Select(payment =>
+                new PaperFallbackEntryRowReferenceSource(
+                    payment.Id,
+                    payment.EntryOrigin,
+                    payment.EntryBatchId,
+                    payment.OccurredAt,
+                    payment.RecordedByAccountId,
+                    payment.SessionId,
+                    PaperFallbackEventType.MembershipSale))
+                .ToArray(),
+            PaymentAuditActions.EntityType,
+            PaperFallbackEventType.MembershipSale,
+            cancellationToken);
+        if (paperReferences is null)
+        {
+            return false;
+        }
+
+        var paperSalePayments = salePayments
+            .Where(payment => payment.EntryOrigin == "paper_fallback")
+            .ToArray();
+        if (!await HasMatchingPreservedSaleAuditsAsync(
+                dbContext,
+                paperSalePayments,
+                paperReferences,
+                cancellationToken))
+        {
+            return false;
+        }
+
+        var expectedLinks = salePayments
+            .SelectMany(payment =>
+            {
+                var expectedRowId = paperReferences
+                    .GetValueOrDefault(payment.Id)
+                    ?.EntryBatchRowId;
+                return new[]
+                {
+                    new PaperFallbackExpectedEntityLink(
+                        PaymentAuditActions.EntityType,
+                        payment.Id,
+                        expectedRowId),
+                    new PaperFallbackExpectedEntityLink(
+                        MembershipAuditActions.MembershipEntityType,
+                        payment.MembershipId!.Value,
+                        expectedRowId),
+                };
+            })
+            .ToArray();
+        return await paperReferenceReader.HasRequiredEntityLinksAsync(
+            expectedLinks,
+            cancellationToken);
+    }
+
+    private static async Task<bool> HasMatchingPreservedSaleAuditsAsync(
+        BodyLifeDbContext dbContext,
+        IReadOnlyList<PaymentRecord> paperSalePayments,
+        IReadOnlyDictionary<Guid, PaperFallbackEntryRowReference>
+            paperReferences,
+        CancellationToken cancellationToken)
+    {
+        if (paperSalePayments.Count == 0)
+        {
+            return true;
+        }
+
+        var paymentIds = paperSalePayments
+            .Select(payment => payment.Id)
+            .ToArray();
+        var membershipIds = paperSalePayments
+            .Select(payment => payment.MembershipId!.Value)
+            .ToArray();
+        var paymentAudits = await dbContext.Set<BusinessAuditEntryRecord>()
+            .AsNoTracking()
+            .Where(audit => audit.ActionType == PaymentAuditActions.Created
+                && audit.EntityType == PaymentAuditActions.EntityType
+                && paymentIds.Contains(audit.EntityId))
+            .ToArrayAsync(cancellationToken);
+        var membershipAudits = await dbContext.Set<BusinessAuditEntryRecord>()
+            .AsNoTracking()
+            .Where(audit => audit.ActionType == MembershipAuditActions.Issued
+                && audit.EntityType == MembershipAuditActions.MembershipEntityType
+                && membershipIds.Contains(audit.EntityId))
+            .ToArrayAsync(cancellationToken);
+        if (paymentAudits.Length != paperSalePayments.Count
+            || membershipAudits.Length != paperSalePayments.Count
+            || paymentAudits.GroupBy(audit => audit.EntityId)
+                .Any(group => group.Count() != 1)
+            || membershipAudits.GroupBy(audit => audit.EntityId)
+                .Any(group => group.Count() != 1))
+        {
+            return false;
+        }
+
+        var paymentAuditsById = paymentAudits.ToDictionary(
+            audit => audit.EntityId);
+        var membershipAuditsById = membershipAudits.ToDictionary(
+            audit => audit.EntityId);
+        return paperSalePayments.All(payment =>
+        {
+            var paperReference = paperReferences.GetValueOrDefault(payment.Id);
+            var paymentAudit = paymentAuditsById[payment.Id];
+            var membershipAudit = membershipAuditsById[
+                payment.MembershipId!.Value];
+            return paperReference is not null
+                && HasMatchingSaleAuditEnvelope(paymentAudit, payment)
+                && HasMatchingSaleAuditEnvelope(membershipAudit, payment)
+                && !string.IsNullOrWhiteSpace(paymentAudit.IdempotencyKey)
+                && paymentAudit.IdempotencyKey
+                    == membershipAudit.IdempotencyKey
+                && PaperFallbackEntryRowReferenceReader
+                    .HasMatchingAuditReference(
+                        paymentAudit.RelatedEntityRefsJson,
+                        payment.EntryBatchId,
+                        paperReference)
+                && PaperFallbackEntryRowReferenceReader
+                    .HasMatchingAuditReference(
+                        membershipAudit.RelatedEntityRefsJson,
+                        payment.EntryBatchId,
+                        paperReference);
+        });
+    }
+
+    private static bool HasMatchingSaleAuditEnvelope(
+        BusinessAuditEntryRecord audit,
+        PaymentRecord payment) =>
+        audit.ActorAccountId == payment.RecordedByAccountId
+        && audit.SessionId == payment.SessionId
+        && SamePostgreSqlInstant(audit.OccurredAt, payment.OccurredAt)
+        && SamePostgreSqlInstant(audit.RecordedAt, payment.RecordedAt)
+        && audit.EntryOrigin == payment.EntryOrigin
+        && audit.Comment == payment.Comment;
+
+    private static bool ValidateNewMembershipSalePayment(
+        Guid clientId,
+        MembershipNegativeClosureRecord closure,
+        IssuedMembershipRecord membership,
+        PaymentRecord payment,
+        bool requireClosureEnvelope)
+    {
+        if (payment.ClientId != clientId
+            || payment.MembershipId != membership.Id
+            || payment.NegativeClosureId is not null
+            || payment.Status != "active"
+            || payment.Method != "cash"
+            || payment.PaymentContext != "membership_sale"
+            || payment.Amount != membership.PriceAmountSnapshot
+            || payment.Currency != membership.PriceCurrencySnapshot
+            || payment.RecordedAt != membership.IssuedAt
+            || payment.RecordedByAccountId != membership.IssuedByAccountId
+            || payment.EntryOrigin != membership.EntryOrigin
+            || payment.EntryBatchId != membership.EntryBatchId
+            || !TryMoney(payment.Amount, payment.Currency, out _))
+        {
+            return false;
+        }
+
+        return !requireClosureEnvelope
+            || (payment.OccurredAt == closure.OccurredAt
+                && payment.RecordedAt == closure.RecordedAt
+                && payment.RecordedByAccountId == closure.RecordedByAccountId
+                && payment.SessionId == closure.SessionId
+                && payment.EntryOrigin == closure.EntryOrigin
+                && payment.EntryBatchId == closure.EntryBatchId);
+    }
+
+    private static PaperFallbackEventType ExpectedPaperEventType(
+        MembershipNegativeClosureRecord closure,
+        bool isReplacement)
+    {
+        if (isReplacement)
+        {
+            return PaperFallbackEventType.CorrectionOrCancellation;
+        }
+
+        return closure.ClosureType == "new_membership"
+            ? PaperFallbackEventType.MembershipSale
+            : PaperFallbackEventType.NegativeCoverage;
+    }
+
+    private static IReadOnlyList<PaperFallbackExpectedEntityLink>
+        BuildExpectedPaperLinks(
+            IReadOnlyList<MembershipNegativeClosureRecord> closures,
+            IReadOnlyList<MembershipNegativeClosureLineRecord> allLines,
+            IReadOnlyList<MembershipNegativeClosureItemRecord> allItems,
+            IReadOnlyList<PaymentRecord> allPayments,
+            IReadOnlyDictionary<Guid, MembershipNegativeClosureCorrectionRecord>
+                correctionsByReplacementId,
+            IReadOnlyDictionary<Guid, PaperFallbackEntryRowReference>
+                paperReferences)
+    {
+        var expected = new List<PaperFallbackExpectedEntityLink>();
+        foreach (var closure in closures)
+        {
+            var expectedRowId = paperReferences.GetValueOrDefault(closure.Id)
+                ?.EntryBatchRowId;
+            var isReplacement = correctionsByReplacementId.ContainsKey(
+                closure.Id);
+            expected.Add(new PaperFallbackExpectedEntityLink(
+                MembershipNegativeClosureAuditActions.EntityType,
+                closure.Id,
+                expectedRowId));
+            if (closure.ClosureType == "new_membership"
+                && !isReplacement
+                && closure.CoveringMembershipId is { } coveringMembershipId)
+            {
+                expected.Add(new PaperFallbackExpectedEntityLink(
+                    MembershipAuditActions.MembershipEntityType,
+                    coveringMembershipId,
+                    expectedRowId));
+            }
+
+            if (correctionsByReplacementId.TryGetValue(
+                    closure.Id,
+                    out var correction))
+            {
+                expected.Add(new PaperFallbackExpectedEntityLink(
+                    CorrectNegativeVisitCoverageCommand.PrimaryEntityType,
+                    correction.Id,
+                    expectedRowId));
+            }
+
+            expected.AddRange(allLines
+                .Where(line => line.NegativeClosureId == closure.Id)
+                .Select(line => new PaperFallbackExpectedEntityLink(
+                    "membership_negative_closure_line",
+                    line.Id,
+                    expectedRowId)));
+            var items = allItems
+                .Where(item => item.NegativeClosureId == closure.Id)
+                .ToArray();
+            expected.AddRange(items.Select(item =>
+                new PaperFallbackExpectedEntityLink(
+                    "membership_negative_closure_item",
+                    item.Id,
+                    expectedRowId)));
+            expected.AddRange(items
+                .Where(item => item.NewConsumptionId.HasValue)
+                .Select(item => new PaperFallbackExpectedEntityLink(
+                    "visit_consumption",
+                    item.NewConsumptionId!.Value,
+                    expectedRowId)));
+            expected.AddRange(allPayments
+                .Where(payment => payment.NegativeClosureId == closure.Id)
+                .Select(payment => new PaperFallbackExpectedEntityLink(
+                    PaymentAuditActions.EntityType,
+                    payment.Id,
+                    expectedRowId)));
+            if (closure.ClosureType == "new_membership"
+                && !isReplacement
+                && closure.CoveringMembershipId is { } membershipId)
+            {
+                expected.AddRange(allPayments
+                    .Where(payment => payment.MembershipId == membershipId
+                        && payment.PaymentContext == "membership_sale")
+                    .Select(payment => new PaperFallbackExpectedEntityLink(
+                        PaymentAuditActions.EntityType,
+                        payment.Id,
+                        expectedRowId)));
+            }
+        }
+
+        return expected;
     }
 
     private static IssuedMembershipCoverageSnapshotReadModel CreateMembershipSnapshot(IssuedMembershipRecord membership) => new(
@@ -339,4 +806,9 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
             return false;
         }
     }
+
+    private static bool SamePostgreSqlInstant(
+        DateTimeOffset left,
+        DateTimeOffset right) =>
+        left.UtcDateTime.Ticks / 10 == right.UtcDateTime.Ticks / 10;
 }

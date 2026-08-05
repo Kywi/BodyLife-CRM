@@ -4,6 +4,7 @@ using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
@@ -368,12 +369,20 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             AccountKind.Owner);
         await using var replaceContext = replaceDatabase.CreateDbContext();
         await RebuildSourceAsync(replaceContext, replaceFixture.SourceMembershipId, 3);
+        var originalPaper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            replaceDatabase,
+            replaceFixture.Actor,
+            CorrectionNow,
+            "membership_sale",
+            CorrectionNow,
+            explanation: "Original paper Membership coverage");
         var original = await IssueCoveringMembershipAsync(
             replaceDatabase,
             replaceContext,
             replaceFixture,
             "coverage-to-replace",
-            coverageCount: 2);
+            coverageCount: 2,
+            originalPaper);
         var replacementCommand = CreateReplaceMembershipCoverageCommand(
             replaceFixture,
             original.ClosureId,
@@ -412,6 +421,172 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             1L,
             await replaceDatabase.ExecuteScalarAsync<long>(
                 $"select count(*) from bodylife.payments where membership_id = '{original.MembershipId}' and payment_context = 'membership_sale' and status = 'active'"));
+        var salePaymentId = await replaceDatabase.ExecuteScalarAsync<Guid>(
+            $"select id from bodylife.payments where membership_id = '{original.MembershipId}' and payment_context = 'membership_sale' and status = 'active'");
+        var originalLinks = await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            replaceDatabase,
+            originalPaper.EntryBatchRowId);
+        Assert.Contains(
+            originalLinks,
+            link => link.EntityType == MembershipAuditActions.MembershipEntityType
+                && link.EntityId == original.MembershipId);
+        Assert.Contains(
+            originalLinks,
+            link => link.EntityType == PaymentAuditActions.EntityType
+                && link.EntityId == salePaymentId);
+        Assert.DoesNotContain(
+            originalLinks,
+            link => link.EntityId == replacementClosureId);
+
+        var coverageHandler = new GetClientNegativeVisitCoverageQueryHandler(
+            replaceContext,
+            new MembershipNegativeVisitSelector(replaceContext),
+            new FixedTimeProvider(CorrectionNow));
+        Assert.Equal(
+            GetClientNegativeVisitCoverageStatus.Success,
+            (await coverageHandler.ExecuteAsync(
+                new GetClientNegativeVisitCoverageQuery(
+                    replaceFixture.Actor,
+                    replaceFixture.ClientId),
+                CancellationToken.None)).Status);
+
+        await replaceDatabase.ExecuteScalarAsync<int>(
+            $"""
+            delete from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = '{originalPaper.EntryBatchRowId}'
+              and entity_type = '{MembershipAuditActions.MembershipEntityType}'
+              and entity_id = '{original.MembershipId}';
+            select 1;
+            """);
+        Assert.Equal(
+            GetClientNegativeVisitCoverageStatus.CanonicalStateInvalid,
+            (await coverageHandler.ExecuteAsync(
+                new GetClientNegativeVisitCoverageQuery(
+                    replaceFixture.Actor,
+                    replaceFixture.ClientId),
+                CancellationToken.None)).Status);
+        await PostgreSqlPaperFallbackTestData.LinkRowAsync(
+            replaceDatabase,
+            originalPaper.EntryBatchRowId,
+            new PaperFallbackEntityLink(
+                MembershipAuditActions.MembershipEntityType,
+                original.MembershipId));
+
+        await replaceDatabase.ExecuteScalarAsync<int>(
+            $"""
+            delete from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = '{originalPaper.EntryBatchRowId}'
+              and entity_type = '{PaymentAuditActions.EntityType}'
+              and entity_id = '{salePaymentId}';
+            select 1;
+            """);
+        Assert.Equal(
+            GetClientNegativeVisitCoverageStatus.CanonicalStateInvalid,
+            (await coverageHandler.ExecuteAsync(
+                new GetClientNegativeVisitCoverageQuery(
+                    replaceFixture.Actor,
+                    replaceFixture.ClientId),
+                CancellationToken.None)).Status);
+    }
+
+    [PostgreSqlFact]
+    public async Task PreservedPaperSalesRejectSameBatchAggregateRowSwap()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(
+            database,
+            ActorRole.Owner,
+            AccountKind.Owner);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, 3);
+        var firstPaper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            CorrectionNow,
+            "membership_sale",
+            CorrectionNow,
+            lineNumber: 31,
+            explanation: "First original paper sale");
+        var secondPaper = await PostgreSqlPaperFallbackTestData.SeedRowInBatchAsync(
+            database,
+            firstPaper,
+            fixture.Actor,
+            CorrectionNow,
+            "membership_sale",
+            CorrectionNow,
+            lineNumber: 32,
+            explanation: "Second original paper sale");
+        var firstIssue = await IssueCoveringMembershipAsync(
+            database,
+            dbContext,
+            fixture,
+            "first-paper-sale-to-replace",
+            coverageCount: 1,
+            firstPaper,
+            fixture.VisitIds[2]);
+        var secondIssue = await IssueCoveringMembershipAsync(
+            database,
+            dbContext,
+            fixture,
+            "second-paper-sale-to-replace",
+            coverageCount: 1,
+            secondPaper,
+            fixture.VisitIds[3]);
+
+        var firstReplacement = await CreateCorrectionHandler(dbContext)
+            .ExecuteAsync(
+                CreateReplaceMembershipCoverageCommand(
+                    fixture,
+                    firstIssue.ClosureId,
+                    "replace-first-paper-sale-coverage",
+                    fixture.VisitIds[2],
+                    coverageCount: 1),
+                CancellationToken.None);
+        var secondReplacement = await CreateCorrectionHandler(dbContext)
+            .ExecuteAsync(
+                CreateReplaceMembershipCoverageCommand(
+                    fixture,
+                    secondIssue.ClosureId,
+                    "replace-second-paper-sale-coverage",
+                    fixture.VisitIds[3],
+                    coverageCount: 1),
+                CancellationToken.None);
+        AssertSuccessful(firstReplacement, fixture.ClientId);
+        AssertSuccessful(secondReplacement, fixture.ClientId);
+
+        var coverageHandler = new GetClientNegativeVisitCoverageQueryHandler(
+            dbContext,
+            new MembershipNegativeVisitSelector(dbContext),
+            new FixedTimeProvider(CorrectionNow));
+        var valid = await coverageHandler.ExecuteAsync(
+            new GetClientNegativeVisitCoverageQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+        Assert.Equal(GetClientNegativeVisitCoverageStatus.Success, valid.Status);
+        Assert.Equal(2, valid.Coverage!.ActiveClosures.Count);
+
+        await database.ExecuteScalarAsync<int>(
+            $"""
+            update bodylife.entry_batch_row_entities
+            set entry_batch_row_id = case
+                when entry_batch_row_id = '{firstPaper.EntryBatchRowId}'
+                    then '{secondPaper.EntryBatchRowId}'::uuid
+                else '{firstPaper.EntryBatchRowId}'::uuid
+            end
+            where entry_batch_row_id in (
+                '{firstPaper.EntryBatchRowId}',
+                '{secondPaper.EntryBatchRowId}');
+            select 1;
+            """);
+        var swapped = await coverageHandler.ExecuteAsync(
+            new GetClientNegativeVisitCoverageQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+        Assert.Equal(
+            GetClientNegativeVisitCoverageStatus.CanonicalStateInvalid,
+            swapped.Status);
     }
 
     [PostgreSqlFact]
@@ -765,11 +940,28 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
         BodyLifeDbContext dbContext,
         CoverageFixture fixture,
         string key,
-        int coverageCount)
+        int coverageCount,
+        PaperFallbackRowFixture? paper = null,
+        Guid? expectedOldestVisitId = null)
     {
+        var envelope = CreateEnvelope(
+            fixture.Actor,
+            key,
+            "Create original coverage");
+        if (paper is not null)
+        {
+            envelope = envelope with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                OccurredAt = CorrectionNow,
+                Reason = paper.Explanation,
+                EntryBatchRowId = paper.EntryBatchRowId,
+            };
+        }
+
         var result = await CreateIssueHandler(dbContext).ExecuteAsync(
             new IssueMembershipCommand(
-                CreateEnvelope(fixture.Actor, key, "Create original coverage"),
+                envelope,
                 fixture.ClientId,
                 fixture.CoveringTypeId,
                 CatalogUpdatedAt,
@@ -777,7 +969,7 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
                 MembershipNegativeHandlingDecision.CoverWithNewMembership,
                 EntryBatchId: null,
                 coverageCount,
-                fixture.VisitIds[2]),
+                expectedOldestVisitId ?? fixture.VisitIds[2]),
             CancellationToken.None);
         Assert.Equal(CommandStatus.Success, result.Status);
         var membershipId = result.PrimaryEntityId!.Value.Value;
@@ -857,6 +1049,7 @@ public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
         return new CloseNegativeVisitsOneOffCommandHandler(
             dbContext,
             audit,
+            new PaperFallbackEntryRowBinder(dbContext),
             new NegativeClosurePaymentWriter(dbContext, audit),
             new MembershipNegativeVisitSelector(dbContext),
             new MembershipStateCacheRebuilder(dbContext, time),

@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 
@@ -16,7 +17,8 @@ public sealed class NegativeClosurePaymentWriter(
         Guid negativeClosureId,
         Money amount,
         Guid? entryBatchId,
-        DateTimeOffset recordedAt)
+        DateTimeOffset recordedAt,
+        PaperFallbackEntryRowReference? paperReference = null)
     {
         ArgumentNullException.ThrowIfNull(envelope);
         if (clientId == Guid.Empty)
@@ -54,11 +56,30 @@ public sealed class NegativeClosurePaymentWriter(
             RecordedByAccountId = envelope.Actor.AccountId.Value,
             SessionId = envelope.Actor.SessionId.Value,
             EntryOrigin = PaymentCommandSupport.MapEntryOrigin(envelope.EntryOrigin),
-            EntryBatchId = entryBatchId,
+            EntryBatchId = paperReference?.EntryBatchId ?? entryBatchId,
             Comment = NormalizeOptional(envelope.Comment),
             Status = "active",
         };
         dbContext.Set<PaymentRecord>().Add(payment);
+
+        object relatedEntityRefs = paperReference is { } auditPaperReference
+            ? new
+            {
+                ClientId = clientId,
+                MembershipId = (Guid?)null,
+                NegativeClosureId = negativeClosureId,
+                auditPaperReference.EntryBatchId,
+                auditPaperReference.EntryBatchRowId,
+                auditPaperReference.PaperSheetNumber,
+                auditPaperReference.LineNumber,
+                PaperExplanation = auditPaperReference.Explanation,
+            }
+            : new
+            {
+                ClientId = clientId,
+                MembershipId = (Guid?)null,
+                NegativeClosureId = negativeClosureId,
+            };
 
         var auditEntryId = auditAppender.Append(
             envelope,
@@ -66,11 +87,7 @@ public sealed class NegativeClosurePaymentWriter(
             PaymentAuditActions.EntityType,
             paymentId,
             recordedAt,
-            relatedEntityRefs: new
-            {
-                ClientId = clientId,
-                NegativeClosureId = negativeClosureId,
-            },
+            relatedEntityRefs: relatedEntityRefs,
             afterSummary: new
             {
                 Payment = new
