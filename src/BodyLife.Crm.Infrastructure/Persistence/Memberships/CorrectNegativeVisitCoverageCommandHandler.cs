@@ -326,7 +326,9 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
             var restoredSelection = restoredSelectionResult.Selection!;
             Guid? replacementClosureId = null;
             Guid? replacementPaymentId = null;
+            AuditEntryId? replacementPaymentAuditId = null;
             AuditEntryId? replacementClosureAuditId = null;
+            PaymentRecord? replacementPayment = null;
             IReadOnlyList<Guid> replacementVisitIds = [];
             IReadOnlyList<object> replacementLineSummaries = [];
             var replacementVisitsCount = 0;
@@ -424,6 +426,9 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         correctionId,
                         changedAfterClose);
                     replacementPaymentId = paymentWrite.PaymentId;
+                    replacementPaymentAuditId = paymentWrite.AuditEntryId;
+                    replacementPayment = dbContext.Set<PaymentRecord>().Local
+                        .Single(payment => payment.Id == paymentWrite.PaymentId);
                     if (paperReference is not null)
                     {
                         rowBinder.LinkEntity(
@@ -498,6 +503,8 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         OriginalNegativeClosureId = original.Id,
                         original.CoveringMembershipId,
                         ReplacementPaymentId = replacementPaymentId,
+                        ReplacementPaymentAuditEntryId =
+                            replacementPaymentAuditId?.Value,
                         SourceMembershipIds = affectedMembershipIds.Order().ToArray(),
                         VisitIds = replacementVisitIds,
                         replacementAuditPaperReference.EntryBatchId,
@@ -513,6 +520,8 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         OriginalNegativeClosureId = original.Id,
                         original.CoveringMembershipId,
                         ReplacementPaymentId = replacementPaymentId,
+                        ReplacementPaymentAuditEntryId =
+                            replacementPaymentAuditId?.Value,
                         SourceMembershipIds = affectedMembershipIds.Order().ToArray(),
                         VisitIds = replacementVisitIds,
                     },
@@ -531,6 +540,11 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                         CoveredVisitIds = replacementVisitIds,
                         original.CoveringMembershipId,
                         ReplacementPaymentId = replacementPaymentId,
+                        ReplacementPaymentAuditEntryId =
+                            replacementPaymentAuditId?.Value,
+                        ReplacementPayment = replacementPayment is null
+                            ? null
+                            : SummarizePayment(replacementPayment),
                         RemainingNegativeBalance = remainingNegativeBalance,
                         OccurredAt = correction.Envelope.OccurredAt!.Value,
                         RecordedAt = recordedAt,
@@ -552,6 +566,9 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                     correctionId,
                     replacementClosureId,
                     replacementPaymentId,
+                    replacementPayment,
+                    replacementLineSummaries,
+                    replacementPaymentAuditId,
                     recordedAt,
                     paperReference,
                     changedAfterClose);
@@ -1146,6 +1163,9 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
         Guid correctionId,
         Guid? replacementClosureId,
         Guid? replacementPaymentId,
+        PaymentRecord? replacementPayment,
+        IReadOnlyList<object> replacementLineSummaries,
+        AuditEntryId? replacementPaymentAuditId,
         DateTimeOffset recordedAt,
         PaperFallbackEntryRowReference? paperReference,
         bool changedAfterClose)
@@ -1167,6 +1187,8 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                 CorrectionId = correctionId,
                 ReplacementNegativeClosureId = replacementClosureId,
                 ReplacementPaymentId = replacementPaymentId,
+                ReplacementPaymentAuditEntryId =
+                    replacementPaymentAuditId?.Value,
                 paymentAuditPaperReference.EntryBatchId,
                 paymentAuditPaperReference.EntryBatchRowId,
                 paymentAuditPaperReference.PaperSheetNumber,
@@ -1180,6 +1202,8 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                 CorrectionId = correctionId,
                 ReplacementNegativeClosureId = replacementClosureId,
                 ReplacementPaymentId = replacementPaymentId,
+                ReplacementPaymentAuditEntryId =
+                    replacementPaymentAuditId?.Value,
             },
             beforeSummary: new
             {
@@ -1189,7 +1213,39 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
             {
                 Payment = SummarizePayment(originalPayment),
                 ReplacementPaymentId = replacementPaymentId,
+                ReplacementPaymentAuditEntryId =
+                    replacementPaymentAuditId?.Value,
+                ReplacementPayment = replacementPayment is null
+                    ? null
+                    : SummarizePayment(replacementPayment),
+                ReplacementCoverageWitness = replacementPayment is null
+                    || replacementPaymentAuditId is null
+                    ? null
+                    : new
+                    {
+                        Lines = replacementLineSummaries,
+                        ExpectedAmount = replacementPayment.Amount,
+                        ExpectedCurrency = replacementPayment.Currency,
+                        PaymentAudit = new
+                        {
+                            AuditEntryId = replacementPaymentAuditId.Value.Value,
+                            ActionType = PaymentAuditActions.Created,
+                            EntityType = PaymentAuditActions.EntityType,
+                            EntityId = replacementPayment.Id,
+                        },
+                    },
                 CoverageCorrectionId = correctionId,
+                Correction = new
+                {
+                    CorrectionId = correctionId,
+                    correction.Envelope.Reason,
+                    OccurredAt = correction.Envelope.OccurredAt!.Value,
+                    RecordedAt = recordedAt,
+                    EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
+                        correction.Envelope.EntryOrigin),
+                    EntryBatchId = paperReference?.EntryBatchId,
+                    ChangedAfterClose = changedAfterClose,
+                },
                 NoRefundOrDeltaCalculated = true,
                 ChangedAfterClose = changedAfterClose,
             },

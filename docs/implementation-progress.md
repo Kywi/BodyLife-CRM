@@ -14547,3 +14547,59 @@ Stop point:
   rows to `GetClientHistory` so original and correction facts remain visible.
   Do not begin issued-sale correction paper integration or Milestone 11 until
   this audit/history slice is green.
+
+## Step 227 - Made the negative coverage audit lifecycle owner-readable
+
+Status: completed for the audit/presentation half of negative Visit coverage.
+Milestone 10.5 remains in progress; Milestone 11 has not started.
+
+Completed:
+
+- Added fail-closed typed explanations for initial one-off and Membership-sale
+  `membership_negative_closure.created`, correction-created one-off and
+  existing-Membership replacement creation, and the closure
+  `canceled`/`replaced` lifecycle. The English and Ukrainian narratives now
+  distinguish a newly issued sale from correction coverage that reuses an
+  existing Membership.
+- Added typed negative-closure Payment explanations for initial and
+  correction-created `payment.created` plus correction-created
+  `payment.corrected`/`payment.canceled`. Paper rows are labeled as
+  `negative_coverage`, `membership_sale`, or `correction_or_cancellation`
+  according to the command that created the fact, with no invented refund or
+  cash delta.
+- Strengthened source audit payloads with the exact replacement Payment,
+  Membership/batch references, creation-audit identity, and a one-off coverage
+  witness. Presentation fails closed unless line totals, currency, Payment id,
+  `payment.created` audit id/entity binding, timestamps, origin, paper row,
+  changed-after-close state, negative-balance arithmetic, and recorded oldest
+  Visit are internally consistent.
+- Corrected the negative-closure localization key prefix so all supported
+  explanation keys resolve through `Explanation.*` instead of silently
+  falling back to raw JSON. Added negative coverage creation and lifecycle
+  regression coverage in both supported cultures.
+- Kept the accepted greenfield database strategy. This slice changes audit
+  payloads and presentation only, so it adds no interim migration; final
+  cross-table paper-row invariants remain deferred to the single clean
+  baseline after every Milestone 10.5 command integration is complete.
+- Two independent read-only review rounds drove the replacement Payment
+  monetary/audit witness and the cancellation-only witness regression test.
+  The resulting contract has no known P0-P3 correctness or raw-only finding.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Focused typed audit explanation tests passed: 198/198; full Web tests passed:
+  366/366.
+- Focused PostgreSQL issue/one-off closure/coverage correction tests passed:
+  64/64 with no skips.
+- Solution formatting verification and `git diff --check` passed for the
+  implementation before this progress update; the commit gate reruns both.
+
+Stop point:
+
+- Add canonical negative-coverage source rows to `GetClientHistory`, including
+  creation, cancellation and replacement facts, so the original coverage and
+  every correction remain visible with their exact paper provenance. Keep
+  formulas in Memberships, preserve original source rows, and do not begin
+  issued-sale correction paper integration or Milestone 11 until this history
+  slice is green.

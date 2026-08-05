@@ -573,6 +573,7 @@ public sealed class IssueMembershipCommandHandler(
                         RecordedAt = recordedAt,
                         EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
                             issue.Envelope.EntryOrigin),
+                        EntryBatchId = entryBatchId,
                         Status = "active",
                     });
             }

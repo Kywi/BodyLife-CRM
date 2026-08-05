@@ -220,6 +220,14 @@ public sealed class AuditEntryExplanationPresenter(
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
+                "membership_negative_closure.canceled"
+                    when entry.EntityType == AuditTimelineEntityType.MembershipNegativeClosure
+                    => CreateNegativeClosureCorrection(entry, related.RootElement,
+                        before.RootElement, after.RootElement, isCancellation: true),
+                "membership_negative_closure.replaced"
+                    when entry.EntityType == AuditTimelineEntityType.MembershipNegativeClosure
+                    => CreateNegativeClosureCorrection(entry, related.RootElement,
+                        before.RootElement, after.RootElement, isCancellation: false),
                 "non_working_day.added"
                     when entry.EntityType == AuditTimelineEntityType.NonWorkingPeriod
                     => nonWorkingDayFactory.CreateAddition(
@@ -271,6 +279,28 @@ public sealed class AuditEntryExplanationPresenter(
                         related.RootElement,
                         before.RootElement,
                         after.RootElement),
+                "payment.corrected"
+                    when entry.EntityType == AuditTimelineEntityType.Payment
+                        && related.RootElement.TryGetProperty(
+                            "originalNegativeClosureId",
+                            out _)
+                    => CreateNegativeClosurePaymentLifecycle(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement,
+                        isCancellation: false),
+                "payment.canceled"
+                    when entry.EntityType == AuditTimelineEntityType.Payment
+                        && related.RootElement.TryGetProperty(
+                            "originalNegativeClosureId",
+                            out _)
+                    => CreateNegativeClosurePaymentLifecycle(
+                        entry,
+                        related.RootElement,
+                        before.RootElement,
+                        after.RootElement,
+                        isCancellation: true),
                 "payment.corrected" when entry.EntityType == AuditTimelineEntityType.Payment
                     => CreatePaymentCorrection(entry, related.RootElement, before.RootElement, after.RootElement),
                 "payment.canceled" when entry.EntityType == AuditTimelineEntityType.Payment
@@ -603,6 +633,16 @@ public sealed class AuditEntryExplanationPresenter(
         JsonElement before,
         JsonElement after)
     {
+        if (related.TryGetProperty("correctionId", out _))
+        {
+            return CreateReplacementNegativeClosureCreation(entry, related, before, after);
+        }
+
+        if (RequireString(after, "closureType") == "new_membership")
+        {
+            return CreateNewMembershipNegativeClosureCreation(entry, related, before, after);
+        }
+
         if (entry.EntityId == Guid.Empty)
         {
             throw new JsonException("Negative closure creation summary is inconsistent.");
@@ -709,6 +749,401 @@ public sealed class AuditEntryExplanationPresenter(
             afterFacts,
             Presentation.Changed("NegativeVisitCoverage"),
             IsAvailable: true);
+    }
+
+    private AuditEntryExplanationViewModel CreateNewMembershipNegativeClosureCreation(
+        AuditTimelineEntry entry, JsonElement related, JsonElement before, JsonElement after)
+    {
+        var closureId = RequireGuid(after, "negativeClosureId");
+        var clientId = RequireGuid(related, "clientId");
+        var coveringMembershipId = RequireGuid(related, "coveringMembershipId");
+        var salePaymentId = RequireGuid(related, "salePaymentId");
+        _ = RequireGuid(related, "salePaymentAuditEntryId");
+        var relatedVisits = RequireGuidArray(related, "visitIds");
+        var sourceMembershipIds = RequireGuidArray(related, "sourceMembershipIds");
+        var visits = RequireGuidArray(after, "coveredVisitIds");
+        var count = RequirePositiveInt32(after, "coveredVisitCount");
+        var total = RequirePositiveInt32(before, "totalNegativeBalance");
+        var open = RequirePositiveInt32(before, "openConcreteVisitCount");
+        var unknown = RequireNonNegativeInt32(before, "unknownNegativeBalance");
+        var oldest = RequireGuid(before, "oldestOpenNegativeVisitId");
+        var origin = RequireString(after, "entryOrigin");
+        var batch = ReadOptionalGuid(after, "entryBatchId");
+        var occurred = RequireTimestamp(after, "occurredAt");
+        var recorded = RequireTimestamp(after, "recordedAt");
+        var forcedStartDate = RequireDateOnly(after, "forcedStartDate");
+        var coveringState = RequireObject(after, "coveringMembershipState");
+        var countedVisits = RequireNonNegativeInt32(coveringState, "countedVisits");
+        _ = RequireNonNegativeInt32(coveringState, "remainingVisits");
+        var effectiveEndDate = RequireDateOnly(coveringState, "effectiveEndDate");
+        _ = RequireTimestamp(coveringState, "lastCountedVisitAt");
+        var paper = ReadPaperReference(related, entry.EntryOrigin, batch, "Negative closure");
+        ValidateEntryBatch(origin, batch);
+        if (closureId != entry.EntityId
+            || clientId == Guid.Empty
+            || coveringMembershipId == Guid.Empty
+            || salePaymentId == Guid.Empty
+            || RequireGuid(after, "coveringMembershipId") != coveringMembershipId
+            || RequireString(after, "closureType") != "new_membership"
+            || RequireString(after, "status") != "active"
+            || visits.Count != count
+            || visits.Distinct().Count() != count
+            || !relatedVisits.SequenceEqual(visits)
+            || sourceMembershipIds.Count == 0
+            || sourceMembershipIds.Distinct().Count() != sourceMembershipIds.Count
+            || visits[0] != oldest
+            || total != open + unknown
+            || count > open
+            || RequireNonNegativeInt32(after, "remainingNegativeBalance") != total - count
+            || countedVisits != count
+            || effectiveEndDate < forcedStartDate
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(occurred, entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(recorded, entry.RecordedAt)
+            || origin != EntryOriginValue(entry.EntryOrigin))
+        {
+            throw new JsonException("New-Membership negative closure creation is inconsistent.");
+        }
+
+        var facts = new List<AuditEntryExplanationFactViewModel>
+        {
+            Fact("Negative closure", TimelineModel.ShortId(closureId)),
+            Fact("Membership", TimelineModel.ShortId(coveringMembershipId)),
+            Fact("Payment record", TimelineModel.ShortId(salePaymentId)),
+            Fact("Closure type", Presentation.Text("ClosureType.NewMembership")),
+            Fact("Covered visits", Presentation.Number(count)),
+            Fact("Negative balance", Presentation.Number(RequireNonNegativeInt32(after, "remainingNegativeBalance"))),
+            Fact("Occurred", TimelineModel.TimestampLabel(occurred)),
+            Fact("Entry origin", StoredEntryOriginLabel(origin)),
+        };
+        AddPaperReferenceFacts(facts, paper, PaperFallbackEventType.MembershipSale);
+        return CreateExplanation("MembershipNegativeClosureCreatedNewMembership", "membership-negative-closure-created",
+            [Fact("Negative closure", Presentation.Value("NotPresent"))], facts,
+            Presentation.Changed("NegativeVisitCoverage"), IsAvailable: true);
+    }
+
+    private AuditEntryExplanationViewModel CreateReplacementNegativeClosureCreation(
+        AuditTimelineEntry entry, JsonElement related, JsonElement before, JsonElement after)
+    {
+        var closureId = RequireGuid(after, "negativeClosureId");
+        var correctionId = RequireGuid(related, "correctionId");
+        var originalId = RequireGuid(related, "originalNegativeClosureId");
+        var clientId = RequireGuid(related, "clientId");
+        var relatedVisits = RequireGuidArray(related, "visitIds");
+        var sources = RequireGuidArray(related, "sourceMembershipIds");
+        var visits = RequireGuidArray(after, "coveredVisitIds");
+        var count = RequirePositiveInt32(after, "visitsCount");
+        var restored = RequirePositiveInt32(before, "restoredNegativeBalance");
+        var oldest = RequireGuid(before, "oldestOpenConcreteVisitId");
+        var type = RequireString(after, "closureType");
+        var origin = RequireString(after, "entryOrigin");
+        var batch = RequireNullableGuid(after, "entryBatchId");
+        var occurred = RequireTimestamp(after, "occurredAt");
+        var recorded = RequireTimestamp(after, "recordedAt");
+        var paymentId = RequireNullableGuid(after, "replacementPaymentId");
+        var paymentAuditId = RequireNullableGuid(
+            related,
+            "replacementPaymentAuditEntryId");
+        var summarizedPaymentAuditId = RequireNullableGuid(
+            after,
+            "replacementPaymentAuditEntryId");
+        var replacementPaymentElement = RequireNullableObject(
+            after,
+            "replacementPayment");
+        var replacementPayment = replacementPaymentElement is null
+            ? null
+            : ReadNegativeClosureLifecyclePayment(
+                replacementPaymentElement.Value);
+        var coveringMembershipId = RequireNullableGuid(after, "coveringMembershipId");
+        var paper = ReadPaperReference(related, entry.EntryOrigin, batch, "Negative closure");
+        ValidateEntryBatch(origin, batch);
+        IReadOnlyList<NegativeClosureAuditLineSnapshot> lines;
+        if (type == "one_off")
+        {
+            lines = ReadNegativeClosureLines(after);
+        }
+        else
+        {
+            if (!after.TryGetProperty("lines", out var newMembershipLines)
+                || newMembershipLines.ValueKind != JsonValueKind.Array
+                || newMembershipLines.GetArrayLength() != 0)
+            {
+                throw new JsonException(
+                    "New-Membership replacement cannot include one-off lines.");
+            }
+
+            lines = [];
+        }
+        if (closureId != entry.EntityId
+            || closureId == originalId
+            || correctionId == Guid.Empty
+            || originalId == Guid.Empty
+            || clientId == Guid.Empty
+            || visits.Count != count
+            || visits.Distinct().Count() != count
+            || !relatedVisits.SequenceEqual(visits)
+            || sources.Count == 0
+            || sources.Distinct().Count() != sources.Count
+            || visits[0] != oldest
+            || RequireNonNegativeInt32(after, "remainingNegativeBalance") != restored - count
+            || RequireString(after, "status") != "active"
+            || RequireBoolean(after, "changedAfterClose")
+                != entry.ChangedAfterClose
+            || origin != EntryOriginValue(entry.EntryOrigin)
+            || RequireGuid(related, "correctionId") != correctionId
+            || RequireGuid(related, "originalNegativeClosureId") != originalId
+            || RequireNullableGuid(related, "replacementPaymentId") != paymentId
+            || summarizedPaymentAuditId != paymentAuditId
+            || RequireNullableGuid(related, "coveringMembershipId") != coveringMembershipId
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(occurred, entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(recorded, entry.RecordedAt)
+            || (type == "one_off"
+                && (paymentId is null
+                    || paymentAuditId is null
+                    || replacementPayment is null
+                    || coveringMembershipId is not null
+                    || lines.Count == 0
+                    || lines.Sum(line => line.Quantity) != count
+                    || replacementPayment.PaymentId != paymentId
+                    || replacementPayment.ClientId != clientId
+                    || replacementPayment.NegativeClosureId != closureId
+                    || replacementPayment.Amount
+                        != lines.Sum(line => line.LineTotal)
+                    || lines.Any(
+                        line => line.Currency != replacementPayment.Currency)
+                    || replacementPayment.Method != "cash"
+                    || replacementPayment.PaymentContext
+                        != "negative_closure"
+                    || replacementPayment.Status != "active"
+                    || replacementPayment.EntryOrigin != origin
+                    || replacementPayment.EntryBatchId != batch
+                    || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                        replacementPayment.OccurredAt,
+                        occurred)
+                    || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                        replacementPayment.RecordedAt,
+                        recorded)))
+            || (type == "new_membership"
+                && (paymentId is not null
+                    || paymentAuditId is not null
+                    || replacementPayment is not null
+                    || coveringMembershipId is null
+                    || lines.Count != 0))
+            || (type is not ("one_off" or "new_membership")))
+        {
+            throw new JsonException("Replacement negative closure creation is inconsistent.");
+        }
+
+        var facts = new List<AuditEntryExplanationFactViewModel>
+        {
+            Fact("Negative closure", TimelineModel.ShortId(closureId)),
+            Fact("Correction", TimelineModel.ShortId(correctionId)),
+            Fact("Closure type", type == "one_off" ? Presentation.Text("ClosureType.OneOff") : Presentation.Text("ClosureType.NewMembership")),
+            Fact("Covered visits", Presentation.Number(count)),
+            Fact("Negative balance", Presentation.Number(RequireNonNegativeInt32(after, "remainingNegativeBalance"))),
+        };
+        if (paymentId is { } payment) facts.Add(Fact("Payment record", TimelineModel.ShortId(payment)));
+        if (coveringMembershipId is { } membership) facts.Add(Fact("Membership", TimelineModel.ShortId(membership)));
+        AddPaperReferenceFacts(facts, paper, PaperFallbackEventType.CorrectionOrCancellation);
+        var resourceKey = type == "new_membership"
+            ? "MembershipNegativeClosureCreatedNewMembershipCorrection"
+            : "MembershipNegativeClosureCreated";
+        return CreateExplanation(resourceKey, "membership-negative-closure-created",
+            [Fact("Negative closure", TimelineModel.ShortId(originalId))], facts,
+            Presentation.Changed("NegativeVisitCoverage"), IsAvailable: true);
+    }
+
+    private AuditEntryExplanationViewModel CreateNegativeClosureCorrection(
+        AuditTimelineEntry entry, JsonElement related, JsonElement before, JsonElement after, bool isCancellation)
+    {
+        var correction = RequireObject(after, "correction");
+        var original = RequireObject(before, "closure");
+        var correctionId = RequireGuid(correction, "correctionId");
+        var originalId = RequireGuid(original, "id");
+        var oldestVisitId = RequireGuid(
+            original,
+            "oldestOpenNegativeVisitId");
+        var type = RequireString(original, "closureType");
+        var originalVisits = RequirePositiveInt32(original, "visitsCount");
+        var originalItems = RequireGuidArray(before, "itemIds");
+        var originalVisitIds = RequireGuidArray(before, "visitIds");
+        var beforeVisible = RequireNonNegativeInt32(before, "visibleNegativeBalance");
+        var mode = RequireString(correction, "mode");
+        var origin = RequireString(correction, "entryOrigin");
+        var batch = RequireNullableGuid(correction, "entryBatchId");
+        var replacement = RequireNullableObject(after, "replacement");
+        var relatedReplacementId = RequireNullableGuid(related, "replacementNegativeClosureId");
+        var relatedReplacementAuditId = RequireNullableGuid(related, "replacementClosureAuditId");
+        var relatedOriginalPaymentId = RequireNullableGuid(related, "originalPaymentId");
+        var relatedReplacementPaymentId = RequireNullableGuid(related, "replacementPaymentId");
+        var paymentLifecycleAuditId = RequireNullableGuid(related, "paymentLifecycleAuditId");
+        var relatedMembershipIds = RequireGuidArray(related, "membershipIds");
+        var paper = ReadPaperReference(related, entry.EntryOrigin, batch, "Negative closure correction");
+        ValidateEntryBatch(origin, batch);
+        var expectedStatus = isCancellation ? "canceled" : "replaced";
+        var clientId = RequireGuid(original, "clientId");
+        var coveringMembershipId = RequireNullableGuid(original, "coveringMembershipId");
+        var originalLines = ReadNegativeClosureCorrectionLines(before);
+        var originalPaymentElement = RequireNullableObject(before, "payment");
+        var originalPayment = originalPaymentElement is null
+            ? null
+            : ReadNegativeClosureLifecyclePayment(originalPaymentElement.Value);
+        if (entry.EntityId != originalId
+            || RequireGuid(related, "clientId") != clientId
+            || RequireGuid(related, "correctionId") != correctionId
+            || mode != (isCancellation ? "cancel" : "replace")
+            || RequireString(correction, "reason") != entry.Reason
+            || origin != EntryOriginValue(entry.EntryOrigin)
+            || RequireBoolean(correction, "changedAfterClose") != entry.ChangedAfterClose
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(RequireTimestamp(correction, "occurredAt"), entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(RequireTimestamp(correction, "recordedAt"), entry.RecordedAt)
+            || RequireString(original, "status") != "active"
+            || RequireString(RequireObject(after, "originalClosure"), "status") != expectedStatus
+            || RequireGuid(RequireObject(after, "originalClosure"), "id") != originalId
+            || RequireString(RequireObject(after, "originalClosure"), "closureType") != type
+            || originalItems.Count != originalVisits
+            || originalItems.Distinct().Count() != originalVisits
+            || originalVisitIds.Count != originalVisits
+            || originalVisitIds.Distinct().Count() != originalVisits
+            || originalVisitIds[0] != oldestVisitId
+            || relatedMembershipIds.Count == 0
+            || relatedMembershipIds.Distinct().Count() != relatedMembershipIds.Count
+            || (type == "one_off"
+                && (coveringMembershipId is not null
+                    || originalPayment is null
+                    || relatedOriginalPaymentId != originalPayment.PaymentId
+                    || paymentLifecycleAuditId is null
+                    || originalPayment.ClientId != clientId
+                    || originalPayment.NegativeClosureId != originalId
+                    || originalPayment.Amount != originalLines.Sum(line => line.LineTotal)
+                    || originalLines.Count == 0
+                    || originalLines.Sum(line => line.Quantity) != originalVisits
+                    || originalLines.Any(line => line.Currency != originalPayment.Currency)
+                    || originalPayment.Method != "cash"
+                    || originalPayment.PaymentContext != "negative_closure"
+                    || originalPayment.Status != "active"))
+            || (type == "new_membership"
+                && (coveringMembershipId is null
+                    || originalPayment is not null
+                    || relatedOriginalPaymentId is not null
+                    || paymentLifecycleAuditId is not null
+                    || originalLines.Count != 0
+                    || entry.ChangedAfterClose))
+            || (type is not ("one_off" or "new_membership")))
+        {
+            throw new JsonException("Negative closure correction identity is inconsistent.");
+        }
+        var replacementVisits = 0;
+        if (isCancellation
+                ? replacement is not null
+                    || relatedReplacementId is not null
+                    || relatedReplacementAuditId is not null
+                    || relatedReplacementPaymentId is not null
+                : replacement is null
+                    || relatedReplacementId is null
+                    || relatedReplacementAuditId is null)
+        {
+            throw new JsonException("Negative closure correction replacement shape is inconsistent.");
+        }
+        if (replacement is not null)
+        {
+            replacementVisits = RequirePositiveInt32(replacement.Value, "visitsCount");
+            var replacementId = RequireGuid(replacement.Value, "negativeClosureId");
+            var paymentId = RequireNullableGuid(replacement.Value, "paymentId");
+            var visitIds = RequireGuidArray(replacement.Value, "visitIds");
+            if (replacementId != relatedReplacementId
+                || visitIds.Count != replacementVisits
+                || visitIds.Distinct().Count() != replacementVisits
+                || (type == "one_off" && paymentId is null)
+                || (type == "new_membership" && paymentId is not null)
+                || relatedReplacementPaymentId != paymentId)
+            {
+                throw new JsonException("Negative closure replacement facts are inconsistent.");
+            }
+        }
+        if (RequireNonNegativeInt32(after, "remainingNegativeBalance") != beforeVisible + originalVisits - replacementVisits)
+        {
+            throw new JsonException("Negative closure correction balance is inconsistent.");
+        }
+        var facts = new List<AuditEntryExplanationFactViewModel>
+        {
+            Fact("Negative closure", TimelineModel.ShortId(originalId)),
+            Fact("Correction", TimelineModel.ShortId(correctionId)),
+            Fact("Original status", Presentation.Status(isCancellation ? "Canceled" : "Replaced")),
+            Fact("Negative balance", Presentation.Number(RequireNonNegativeInt32(after, "remainingNegativeBalance"))),
+        };
+        if (replacement is { } item) facts.Add(Fact("Replacement", TimelineModel.ShortId(RequireGuid(item, "negativeClosureId"))));
+        AddPaperReferenceFacts(facts, paper, PaperFallbackEventType.CorrectionOrCancellation);
+        return CreateExplanation(isCancellation ? "MembershipNegativeClosureCanceled" : "MembershipNegativeClosureReplaced",
+            isCancellation ? "membership-negative-closure-canceled" : "membership-negative-closure-replaced",
+            [Fact("Negative closure", TimelineModel.ShortId(originalId))], facts,
+            Presentation.Changed("NegativeVisitCoverage"), IsAvailable: true);
+    }
+
+    private static IReadOnlyList<NegativeClosureCorrectionLineSnapshot>
+        ReadNegativeClosureCorrectionLines(JsonElement before)
+    {
+        if (!before.TryGetProperty("lines", out var lines)
+            || lines.ValueKind != JsonValueKind.Array)
+        {
+            throw new JsonException(
+                "Negative closure correction requires original line summaries.");
+        }
+
+        var result = new List<NegativeClosureCorrectionLineSnapshot>();
+        foreach (var line in lines.EnumerateArray())
+        {
+            var quantity = RequirePositiveInt32(line, "quantity");
+            var unitPrice = RequireDecimal(line, "unitPriceAmountSnapshot");
+            var lineTotal = RequireDecimal(line, "lineTotal");
+            if (unitPrice <= 0 || lineTotal != unitPrice * quantity)
+            {
+                throw new JsonException(
+                    "Negative closure correction line arithmetic is inconsistent.");
+            }
+
+            result.Add(new NegativeClosureCorrectionLineSnapshot(
+                RequireGuid(line, "id"),
+                RequireGuid(line, "membershipTypeId"),
+                RequireString(line, "typeNameSnapshot"),
+                quantity,
+                unitPrice,
+                RequireString(line, "currencySnapshot"),
+                lineTotal));
+        }
+
+        if (result.Select(line => line.LineId).Distinct().Count() != result.Count)
+        {
+            throw new JsonException(
+                "Negative closure correction line identities are inconsistent.");
+        }
+
+        return result.AsReadOnly();
+    }
+
+    private static NegativeClosureLifecyclePaymentSnapshot
+        ReadNegativeClosureLifecyclePayment(JsonElement payment)
+    {
+        var amount = RequireDecimal(payment, "amount");
+        if (amount <= 0)
+        {
+            throw new JsonException(
+                "Negative closure lifecycle Payment amount must be positive.");
+        }
+
+        return new NegativeClosureLifecyclePaymentSnapshot(
+            RequireGuid(payment, "paymentId"),
+            RequireGuid(payment, "clientId"),
+            RequireGuid(payment, "negativeClosureId"),
+            amount,
+            RequireString(payment, "currency"),
+            RequireString(payment, "method"),
+            RequireString(payment, "paymentContext"),
+            RequireTimestamp(payment, "occurredAt"),
+            RequireTimestamp(payment, "recordedAt"),
+            RequireString(payment, "entryOrigin"),
+            RequireNullableGuid(payment, "entryBatchId"),
+            RequireNullableString(payment, "comment"),
+            RequireString(payment, "status"));
     }
 
     private static IReadOnlyList<NegativeClosureAuditLineSnapshot>
@@ -1398,6 +1833,195 @@ public sealed class AuditEntryExplanationPresenter(
             IsAvailable: true);
     }
 
+    private AuditEntryExplanationViewModel CreateNegativeClosurePaymentLifecycle(
+        AuditTimelineEntry entry,
+        JsonElement related,
+        JsonElement before,
+        JsonElement after,
+        bool isCancellation)
+    {
+        var original = ReadNegativeClosureLifecyclePayment(
+            RequireObject(before, "payment"));
+        var updated = ReadNegativeClosureLifecyclePayment(
+            RequireObject(after, "payment"));
+        var replacementPaymentId = RequireNullableGuid(
+            after,
+            "replacementPaymentId");
+        var summarizedReplacementPaymentAuditId = RequireNullableGuid(
+            after,
+            "replacementPaymentAuditEntryId");
+        var replacementPaymentElement = RequireNullableObject(
+            after,
+            "replacementPayment");
+        var replacementPayment = replacementPaymentElement is null
+            ? null
+            : ReadNegativeClosureLifecyclePayment(
+                replacementPaymentElement.Value);
+        var replacementCoverageWitnessElement = RequireNullableObject(
+            after,
+            "replacementCoverageWitness");
+        IReadOnlyList<NegativeClosureAuditLineSnapshot> replacementLines = [];
+        decimal? expectedReplacementAmount = null;
+        string? expectedReplacementCurrency = null;
+        Guid? witnessedPaymentAuditId = null;
+        string? witnessedPaymentAuditAction = null;
+        string? witnessedPaymentAuditEntityType = null;
+        Guid? witnessedPaymentAuditEntityId = null;
+        if (replacementCoverageWitnessElement is { } replacementCoverageWitness)
+        {
+            replacementLines = ReadNegativeClosureLines(
+                replacementCoverageWitness);
+            expectedReplacementAmount = RequireDecimal(
+                replacementCoverageWitness,
+                "expectedAmount");
+            expectedReplacementCurrency = RequireString(
+                replacementCoverageWitness,
+                "expectedCurrency");
+            var paymentAudit = RequireObject(
+                replacementCoverageWitness,
+                "paymentAudit");
+            witnessedPaymentAuditId = RequireGuid(paymentAudit, "auditEntryId");
+            witnessedPaymentAuditAction = RequireString(paymentAudit, "actionType");
+            witnessedPaymentAuditEntityType = RequireString(
+                paymentAudit,
+                "entityType");
+            witnessedPaymentAuditEntityId = RequireGuid(paymentAudit, "entityId");
+        }
+        var correction = RequireObject(after, "correction");
+        var correctionId = RequireGuid(correction, "correctionId");
+        var correctionOccurredAt = RequireTimestamp(correction, "occurredAt");
+        var correctionRecordedAt = RequireTimestamp(correction, "recordedAt");
+        var correctionOrigin = RequireString(correction, "entryOrigin");
+        var correctionBatchId = RequireNullableGuid(
+            correction,
+            "entryBatchId");
+        var originalClosureId = RequireGuid(
+            related,
+            "originalNegativeClosureId");
+        var replacementClosureId = RequireNullableGuid(
+            related,
+            "replacementNegativeClosureId");
+        var relatedReplacementPaymentId = RequireNullableGuid(
+            related,
+            "replacementPaymentId");
+        var replacementPaymentAuditId = RequireNullableGuid(
+            related,
+            "replacementPaymentAuditEntryId");
+        var paper = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            correctionBatchId,
+            "Negative closure Payment correction");
+        ValidateEntryBatch(correctionOrigin, correctionBatchId);
+
+        var expectedStatus = isCancellation ? "canceled" : "replaced";
+        if (original.PaymentId != entry.EntityId
+            || original.ClientId != RequireGuid(related, "clientId")
+            || original.NegativeClosureId != originalClosureId
+            || original.PaymentContext != "negative_closure"
+            || original.Method != "cash"
+            || original.Status != "active"
+            || updated != original with { Status = expectedStatus }
+            || RequireGuid(related, "correctionId") != correctionId
+            || RequireGuid(after, "coverageCorrectionId") != correctionId
+            || replacementPaymentId != relatedReplacementPaymentId
+            || summarizedReplacementPaymentAuditId
+                != replacementPaymentAuditId
+            || !RequireBoolean(after, "noRefundOrDeltaCalculated")
+            || RequireBoolean(after, "changedAfterClose")
+                != entry.ChangedAfterClose
+            || RequireBoolean(correction, "changedAfterClose")
+                != entry.ChangedAfterClose
+            || RequireString(correction, "reason") != entry.Reason
+            || correctionOrigin != EntryOriginValue(entry.EntryOrigin)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                correctionOccurredAt,
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                correctionRecordedAt,
+                entry.RecordedAt)
+            || (isCancellation
+                && (replacementClosureId is not null
+                    || replacementPaymentId is not null
+                    || replacementPayment is not null
+                    || replacementPaymentAuditId is not null
+                    || replacementCoverageWitnessElement is not null))
+            || (!isCancellation
+                && (replacementClosureId is null
+                    || replacementPaymentId is null
+                    || replacementPayment is null
+                    || replacementPaymentAuditId is null
+                    || replacementCoverageWitnessElement is null
+                    || expectedReplacementAmount is null
+                    || expectedReplacementAmount <= 0
+                    || expectedReplacementCurrency is null
+                    || replacementPayment.Amount != expectedReplacementAmount
+                    || replacementLines.Sum(line => line.LineTotal)
+                        != expectedReplacementAmount
+                    || replacementLines.Any(
+                        line => line.Currency != expectedReplacementCurrency)
+                    || replacementPayment.Currency
+                        != expectedReplacementCurrency
+                    || witnessedPaymentAuditId != replacementPaymentAuditId
+                    || witnessedPaymentAuditAction != "payment.created"
+                    || witnessedPaymentAuditEntityType != "payment"
+                    || witnessedPaymentAuditEntityId != replacementPaymentId
+                    || replacementPayment.PaymentId
+                        != replacementPaymentId
+                    || replacementPayment.ClientId != original.ClientId
+                    || replacementPayment.NegativeClosureId
+                        != replacementClosureId
+                    || replacementPayment.PaymentContext
+                        != "negative_closure"
+                    || replacementPayment.Method != "cash"
+                    || replacementPayment.Status != "active"
+                    || replacementPayment.EntryOrigin != correctionOrigin
+                    || replacementPayment.EntryBatchId != correctionBatchId
+                    || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                        replacementPayment.OccurredAt,
+                        correctionOccurredAt)
+                    || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                        replacementPayment.RecordedAt,
+                        correctionRecordedAt))))
+        {
+            throw new JsonException(
+                "Negative closure Payment lifecycle summary is inconsistent.");
+        }
+
+        var afterFacts = new List<AuditEntryExplanationFactViewModel>
+        {
+            Fact("Payment record", TimelineModel.ShortId(original.PaymentId)),
+            Fact("Correction", TimelineModel.ShortId(correctionId)),
+            Fact("Negative closure", TimelineModel.ShortId(originalClosureId)),
+            Fact("Original status", Presentation.Status(expectedStatus)),
+        };
+        if (replacementPaymentId is { } replacementId)
+        {
+            afterFacts.Add(Fact(
+                "Replacement",
+                TimelineModel.ShortId(replacementId)));
+        }
+
+        AddPaperReferenceFacts(
+            afterFacts,
+            paper,
+            PaperFallbackEventType.CorrectionOrCancellation);
+        return CreateExplanation(
+            isCancellation
+                ? "NegativeClosurePaymentCanceled"
+                : "NegativeClosurePaymentCorrected",
+            isCancellation ? "payment-canceled" : "payment-corrected",
+            [
+                Fact("Payment record", TimelineModel.ShortId(original.PaymentId)),
+                Fact("Amount", MoneyLabel(original.Amount, original.Currency)),
+                Fact("Status", Presentation.Status("Active")),
+                Fact("Negative closure", TimelineModel.ShortId(originalClosureId)),
+            ],
+            afterFacts,
+            JoinChanged("PaymentStatus", "NegativeVisitCoverage"),
+            IsAvailable: true);
+    }
+
     private AuditEntryExplanationViewModel CreatePaymentCorrection(
         AuditTimelineEntry entry,
         JsonElement related,
@@ -1529,13 +2153,22 @@ public sealed class AuditEntryExplanationPresenter(
         if (payment.PaymentContext == "negative_closure")
         {
             var explanation = RequireObject(after, "explanation");
+            var relatedCorrectionId = ReadOptionalGuid(related, "coverageCorrectionId");
+            var explanationCorrectionId = ReadOptionalGuid(
+                explanation,
+                "coverageCorrectionId");
             if (payment.MembershipId is not null
                 || payment.NegativeClosureId is null
                 || RequireString(explanation, "kind")
                     != "negative_visit_one_off_closure"
                 || RequireGuid(explanation, "negativeClosureId")
                     != payment.NegativeClosureId
-                || RequireBoolean(explanation, "isStandalonePayment"))
+                || RequireBoolean(explanation, "isStandalonePayment")
+                || relatedCorrectionId != explanationCorrectionId
+                || relatedCorrectionId == Guid.Empty
+                || (relatedCorrectionId is not null
+                    && RequireBoolean(explanation, "changedAfterClose")
+                        != entry.ChangedAfterClose))
             {
                 throw new JsonException(
                     "Negative-closure Payment explanation is inconsistent.");
@@ -1565,10 +2198,17 @@ public sealed class AuditEntryExplanationPresenter(
                 "Negative closure",
                 TimelineModel.ShortId(negativeClosureId)));
         }
+        var coverageCorrectionId = ReadOptionalGuid(related, "coverageCorrectionId");
+        if (coverageCorrectionId is { } correctionId)
+        {
+            afterFacts.Add(Fact("Correction", TimelineModel.ShortId(correctionId)));
+        }
         AddPaperReferenceFacts(
             afterFacts,
             paperReference,
-            PaymentPaperEventType(payment.PaymentContext));
+            coverageCorrectionId is null
+                ? PaymentPaperEventType(payment.PaymentContext)
+                : PaperFallbackEventType.CorrectionOrCancellation);
         return CreateExplanation("PaymentCreated",
             "payment-created",
             [
@@ -2578,6 +3218,8 @@ public sealed class AuditEntryExplanationPresenter(
             "Initial first negative visit date" => "InitialFirstNegativeVisitDate",
             "Payment record" => "PaymentRecord",
             "Negative closure" => "NegativeClosure",
+            "Correction" => "Correction",
+            "Replacement" => "Replacement",
             "Closure type" => "ClosureType",
             "Covered visits" => "CoveredVisits",
             "Paper fallback batch" => "PaperFallbackBatch",
@@ -3364,6 +4006,30 @@ public sealed class AuditEntryExplanationPresenter(
         decimal UnitPrice,
         string Currency,
         decimal LineTotal);
+
+    private sealed record NegativeClosureCorrectionLineSnapshot(
+        Guid LineId,
+        Guid MembershipTypeId,
+        string TypeName,
+        int Quantity,
+        decimal UnitPrice,
+        string Currency,
+        decimal LineTotal);
+
+    private sealed record NegativeClosureLifecyclePaymentSnapshot(
+        Guid PaymentId,
+        Guid ClientId,
+        Guid NegativeClosureId,
+        decimal Amount,
+        string Currency,
+        string Method,
+        string PaymentContext,
+        DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment,
+        string Status);
 
     private sealed record VisitMarkedMembershipStateSnapshot(
         Guid MembershipId,

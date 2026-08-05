@@ -4805,6 +4805,613 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.False(inconsistent.IsAvailable);
     }
 
+    [Fact]
+    public void CorrectionCreatedNegativeClosurePaymentUsesCorrectionPaperEvent()
+    {
+        var paymentId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var closureId = Guid.NewGuid();
+        var correctionId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var related = new
+        {
+            ClientId = clientId,
+            MembershipId = (Guid?)null,
+            NegativeClosureId = closureId,
+            CoverageCorrectionId = correctionId,
+            EntryBatchId = batchId,
+            EntryBatchRowId = Guid.NewGuid(),
+            PaperSheetNumber = "NEG-CORRECTION-001",
+            LineNumber = 6,
+            PaperExplanation = "Recovered replacement coverage",
+        };
+        var entry = Entry(
+            "payment.created",
+            AuditTimelineEntityType.Payment,
+            paymentId,
+            new { },
+            new
+            {
+                Payment = new
+                {
+                    PaymentId = paymentId,
+                    ClientId = clientId,
+                    MembershipId = (Guid?)null,
+                    NegativeClosureId = closureId,
+                    Amount = 50m,
+                    Currency = "UAH",
+                    Method = "cash",
+                    PaymentContext = "negative_closure",
+                    OccurredAt = OriginalOccurredAt,
+                    RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                    EntryOrigin = "paper_fallback",
+                    EntryBatchId = batchId,
+                    Comment = "Correction comment",
+                    Status = "active",
+                },
+                Explanation = new
+                {
+                    Kind = "negative_visit_one_off_closure",
+                    NegativeClosureId = closureId,
+                    IsStandalonePayment = false,
+                    CoverageCorrectionId = correctionId,
+                    ChangedAfterClose = true,
+                },
+            },
+            related: related,
+            entryOrigin: EntryOrigin.PaperFallback) with
+        {
+            ChangedAfterClose = true,
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            correctionId.ToString("N")[..8],
+            FactValue(explanation.AfterFacts, "Correction"));
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(explanation.AfterFacts, "Event type"));
+
+        var mismatched = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with
+            {
+                RelatedEntityRefsJson = Serialize(new
+                {
+                    related.ClientId,
+                    related.MembershipId,
+                    related.NegativeClosureId,
+                    CoverageCorrectionId = Guid.NewGuid(),
+                    related.EntryBatchId,
+                    related.EntryBatchRowId,
+                    related.PaperSheetNumber,
+                    related.LineNumber,
+                    related.PaperExplanation,
+                }),
+            }));
+        Assert.False(mismatched.IsAvailable);
+    }
+
+    [Fact]
+    public void PaperNegativeClosureCancellationShowsCorrectionEventAndChangedAfterClose()
+    {
+        var entry = NegativeClosureCorrectionEntry(isCancellation: true, closureType: "one_off", paper: true);
+        var changed = entry with
+        {
+            ChangedAfterClose = true,
+            AfterSummaryJson = entry.AfterSummaryJson.Replace("\"changedAfterClose\":false", "\"changedAfterClose\":true", StringComparison.Ordinal),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(Explain(changed));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-negative-closure-canceled", explanation.Kind);
+        Assert.Equal("Correction or cancellation", FactValue(explanation.AfterFacts, "Event type"));
+    }
+
+    [Theory]
+    [InlineData("one_off")]
+    [InlineData("new_membership")]
+    public void NegativeClosureReplacementValidatesTypedReplacementShape(string closureType)
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(NegativeClosureCorrectionEntry(isCancellation: false, closureType, paper: true)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal("membership-negative-closure-replaced", explanation.Kind);
+        Assert.Equal("Correction or cancellation", FactValue(explanation.AfterFacts, "Event type"));
+    }
+
+    [Fact]
+    public void NegativeClosureCorrectionFailsClosedForMismatchedArithmetic()
+    {
+        var entry = NegativeClosureCorrectionEntry(isCancellation: false, closureType: "one_off", paper: false);
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(Explain(entry with
+        {
+            AfterSummaryJson = entry.AfterSummaryJson.Replace("\"remainingNegativeBalance\":1", "\"remainingNegativeBalance\":2", StringComparison.Ordinal),
+        }));
+
+        Assert.False(explanation.IsAvailable);
+    }
+
+    [Fact]
+    public void NegativeClosureCorrectionFailsClosedForMismatchedOldestVisit()
+    {
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(NegativeClosureCorrectionEntry(
+                isCancellation: false,
+                closureType: "one_off",
+                paper: false,
+                mismatchOldestVisit: true)));
+
+        Assert.False(explanation.IsAvailable);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NegativeClosurePaymentLifecycleUsesTypedCorrectionSchema(
+        bool isCancellation)
+    {
+        var entry = NegativeClosurePaymentLifecycleEntry(
+            isCancellation,
+            paper: true);
+
+        var english = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.English));
+        var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.Ukrainian));
+
+        Assert.True(english.IsAvailable);
+        Assert.Equal(
+            isCancellation
+                ? "Coverage Payment canceled"
+                : "Coverage Payment replaced",
+            english.Title);
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(english.AfterFacts, "Event type"));
+        Assert.Contains(
+            "не обчислює повернення",
+            ukrainian.Narrative,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NegativeClosurePaymentLifecycleFailsClosedForRefundFlag()
+    {
+        var entry = NegativeClosurePaymentLifecycleEntry(
+            isCancellation: false,
+            paper: false);
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with
+            {
+                AfterSummaryJson = entry.AfterSummaryJson.Replace(
+                    "\"noRefundOrDeltaCalculated\":true",
+                    "\"noRefundOrDeltaCalculated\":false",
+                    StringComparison.Ordinal),
+            }));
+
+        Assert.False(explanation.IsAvailable);
+    }
+
+    [Theory]
+    [InlineData("amount")]
+    [InlineData("currency")]
+    [InlineData("payment-id")]
+    [InlineData("audit-id")]
+    public void NegativeClosurePaymentLifecycleFailsClosedForReplacementWitness(
+        string mismatch)
+    {
+        var entry = NegativeClosurePaymentLifecycleEntry(
+            isCancellation: false,
+            paper: false);
+        using var document = JsonDocument.Parse(entry.AfterSummaryJson);
+        var witness = document.RootElement.GetProperty(
+            "replacementCoverageWitness");
+        var audit = witness.GetProperty("paymentAudit");
+        var mismatchedJson = mismatch switch
+        {
+            "amount" => entry.AfterSummaryJson.Replace(
+                "\"expectedAmount\":100",
+                "\"expectedAmount\":90",
+                StringComparison.Ordinal),
+            "currency" => entry.AfterSummaryJson.Replace(
+                "\"expectedCurrency\":\"UAH\"",
+                "\"expectedCurrency\":\"USD\"",
+                StringComparison.Ordinal),
+            "payment-id" => entry.AfterSummaryJson.Replace(
+                $"\"entityId\":\"{audit.GetProperty("entityId").GetGuid():D}\"",
+                $"\"entityId\":\"{Guid.NewGuid():D}\"",
+                StringComparison.Ordinal),
+            "audit-id" => entry.AfterSummaryJson.Replace(
+                $"\"auditEntryId\":\"{audit.GetProperty("auditEntryId").GetGuid():D}\"",
+                $"\"auditEntryId\":\"{Guid.NewGuid():D}\"",
+                StringComparison.Ordinal),
+            _ => throw new InvalidOperationException(
+                $"Unsupported mismatch '{mismatch}'."),
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with { AfterSummaryJson = mismatchedJson }));
+
+        Assert.False(explanation.IsAvailable);
+    }
+
+    [Fact]
+    public void NegativeClosurePaymentCancellationRejectsReplacementWitness()
+    {
+        var entry = NegativeClosurePaymentLifecycleEntry(
+            isCancellation: true,
+            paper: false);
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with
+            {
+                AfterSummaryJson = entry.AfterSummaryJson.Replace(
+                    "\"replacementCoverageWitness\":null",
+                    "\"replacementCoverageWitness\":{}",
+                    StringComparison.Ordinal),
+            }));
+
+        Assert.False(explanation.IsAvailable);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NewMembershipNegativeClosureCreationUsesMembershipSalePaperEvent(bool paper)
+    {
+        var closureId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipId = Guid.NewGuid();
+        var batchId = paper ? Guid.NewGuid() : (Guid?)null;
+        var visitId = Guid.NewGuid();
+        var entry = Entry("membership_negative_closure.created", AuditTimelineEntityType.MembershipNegativeClosure,
+            closureId,
+            new { TotalNegativeBalance = 2, OpenConcreteVisitCount = 2, UnknownNegativeBalance = 0, OldestOpenNegativeVisitId = visitId },
+            new { NegativeClosureId = closureId, ClosureType = "new_membership", CoveringMembershipId = membershipId, CoveredVisitIds = new[] { visitId }, CoveredVisitCount = 1, RemainingNegativeBalance = 1, ForcedStartDate = new DateOnly(2026, 7, 18), CoveringMembershipState = new { CountedVisits = 1, RemainingVisits = 4, EffectiveEndDate = new DateOnly(2026, 8, 16), LastCountedVisitAt = OriginalOccurredAt }, OccurredAt = OriginalOccurredAt, RecordedAt = OriginalOccurredAt.AddMinutes(5), EntryOrigin = paper ? "paper_fallback" : "normal", EntryBatchId = batchId, Status = "active" },
+            related: paper
+                ? new { ClientId = clientId, CoveringMembershipId = membershipId, SalePaymentId = Guid.NewGuid(), SalePaymentAuditEntryId = Guid.NewGuid(), SourceMembershipIds = new[] { Guid.NewGuid() }, VisitIds = new[] { visitId }, EntryBatchId = batchId, EntryBatchRowId = Guid.NewGuid(), PaperSheetNumber = "MEM-2026-001", LineNumber = 1, PaperExplanation = "Recovered sale" }
+                : new { ClientId = clientId, CoveringMembershipId = membershipId, SalePaymentId = Guid.NewGuid(), SalePaymentAuditEntryId = Guid.NewGuid(), SourceMembershipIds = new[] { Guid.NewGuid() }, VisitIds = new[] { visitId } },
+            entryOrigin: paper ? EntryOrigin.PaperFallback : EntryOrigin.Normal);
+
+        var english = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.English));
+        var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.Ukrainian));
+
+        Assert.True(english.IsAvailable);
+        Assert.Contains("Membership sale", english.Narrative, StringComparison.Ordinal);
+        Assert.Contains(
+            "not a separate closure Payment",
+            english.Narrative,
+            StringComparison.Ordinal);
+        Assert.Contains("продаж абонемента", ukrainian.Narrative, StringComparison.Ordinal);
+        if (paper)
+        {
+            Assert.Equal(
+                "Membership sale",
+                FactValue(english.AfterFacts, "Event type"));
+        }
+    }
+
+    [Theory]
+    [InlineData("one_off")]
+    [InlineData("new_membership")]
+    public void CorrectionCreatedNegativeClosureUsesCorrectionPaperEvent(
+        string closureType)
+    {
+        var closureId = Guid.NewGuid();
+        var originalClosureId = Guid.NewGuid();
+        var correctionId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var visitId = Guid.NewGuid();
+        var paymentId = closureType == "one_off" ? Guid.NewGuid() : (Guid?)null;
+        var paymentAuditId = closureType == "one_off"
+            ? Guid.NewGuid()
+            : (Guid?)null;
+        var membershipId = closureType == "new_membership"
+            ? Guid.NewGuid()
+            : (Guid?)null;
+        var lines = closureType == "one_off"
+            ? new[]
+            {
+                new
+                {
+                    LineId = Guid.NewGuid(),
+                    Sequence = 1,
+                    MembershipTypeId = Guid.NewGuid(),
+                    TypeName = "One-off",
+                    Quantity = 1,
+                    UnitPriceAmount = 50m,
+                    Currency = "UAH",
+                    LineTotal = 50m,
+                },
+            }
+            : [];
+        object? replacementPayment = paymentId is { } exactPaymentId
+            ? new
+            {
+                PaymentId = exactPaymentId,
+                ClientId = clientId,
+                NegativeClosureId = closureId,
+                Amount = 50m,
+                Currency = "UAH",
+                Method = "cash",
+                PaymentContext = "negative_closure",
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "paper_fallback",
+                EntryBatchId = batchId,
+                Comment = "Correction comment",
+                Status = "active",
+            }
+            : null;
+        var entry = Entry(
+            "membership_negative_closure.created",
+            AuditTimelineEntityType.MembershipNegativeClosure,
+            closureId,
+            new
+            {
+                RestoredNegativeBalance = 2,
+                UnknownNegativeBalance = 0,
+                OldestOpenConcreteVisitId = visitId,
+            },
+            new
+            {
+                NegativeClosureId = closureId,
+                ClosureType = closureType,
+                VisitsCount = 1,
+                Lines = lines,
+                CoveredVisitIds = new[] { visitId },
+                CoveringMembershipId = membershipId,
+                ReplacementPaymentId = paymentId,
+                ReplacementPaymentAuditEntryId = paymentAuditId,
+                ReplacementPayment = replacementPayment,
+                RemainingNegativeBalance = 1,
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "paper_fallback",
+                EntryBatchId = batchId,
+                ChangedAfterClose = false,
+                Status = "active",
+            },
+            related: new
+            {
+                ClientId = clientId,
+                CorrectionId = correctionId,
+                OriginalNegativeClosureId = originalClosureId,
+                CoveringMembershipId = membershipId,
+                ReplacementPaymentId = paymentId,
+                ReplacementPaymentAuditEntryId = paymentAuditId,
+                SourceMembershipIds = new[] { Guid.NewGuid() },
+                VisitIds = new[] { visitId },
+                EntryBatchId = batchId,
+                EntryBatchRowId = Guid.NewGuid(),
+                PaperSheetNumber = "NEG-CORRECTION-002",
+                LineNumber = 7,
+                PaperExplanation = "Recovered replacement coverage",
+            },
+            entryOrigin: EntryOrigin.PaperFallback);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(explanation.AfterFacts, "Event type"));
+        if (closureType == "new_membership")
+        {
+            var english = Assert.IsType<AuditEntryExplanationViewModel>(
+                ExplainInCulture(entry, WebCultures.English));
+            var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+                ExplainInCulture(entry, WebCultures.Ukrainian));
+            Assert.Contains(
+                "existing covering Membership",
+                english.Narrative,
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "не створює нового продажу",
+                ukrainian.Narrative,
+                StringComparison.Ordinal);
+        }
+
+        var changedAfterCloseMismatch = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with { ChangedAfterClose = true }));
+        Assert.False(changedAfterCloseMismatch.IsAvailable);
+
+        if (closureType == "one_off")
+        {
+            var amountMismatch = Assert.IsType<AuditEntryExplanationViewModel>(
+                Explain(entry with
+                {
+                    AfterSummaryJson = entry.AfterSummaryJson.Replace(
+                        "\"amount\":50",
+                        "\"amount\":40",
+                        StringComparison.Ordinal),
+                }));
+            Assert.False(amountMismatch.IsAvailable);
+
+            var currencyMismatch = Assert.IsType<AuditEntryExplanationViewModel>(
+                Explain(entry with
+                {
+                    AfterSummaryJson = entry.AfterSummaryJson.Replace(
+                        "\"currency\":\"UAH\",\"method\":\"cash\"",
+                        "\"currency\":\"USD\",\"method\":\"cash\"",
+                        StringComparison.Ordinal),
+                }));
+            Assert.False(currencyMismatch.IsAvailable);
+
+            var paymentIdMismatch = Assert.IsType<AuditEntryExplanationViewModel>(
+                Explain(entry with
+                {
+                    AfterSummaryJson = entry.AfterSummaryJson.Replace(
+                        $"\"paymentId\":\"{paymentId!.Value:D}\"",
+                        $"\"paymentId\":\"{Guid.NewGuid():D}\"",
+                        StringComparison.Ordinal),
+                }));
+            Assert.False(paymentIdMismatch.IsAvailable);
+
+            var paymentAuditIdMismatch = Assert.IsType<AuditEntryExplanationViewModel>(
+                Explain(entry with
+                {
+                    RelatedEntityRefsJson = entry.RelatedEntityRefsJson.Replace(
+                        $"\"replacementPaymentAuditEntryId\":\"{paymentAuditId!.Value:D}\"",
+                        $"\"replacementPaymentAuditEntryId\":\"{Guid.NewGuid():D}\"",
+                        StringComparison.Ordinal),
+                }));
+            Assert.False(paymentAuditIdMismatch.IsAvailable);
+        }
+    }
+
+    private static AuditTimelineEntry NegativeClosurePaymentLifecycleEntry(
+        bool isCancellation,
+        bool paper)
+    {
+        var originalPaymentId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var originalClosureId = Guid.NewGuid();
+        var correctionId = Guid.NewGuid();
+        var replacementClosureId = isCancellation
+            ? (Guid?)null
+            : Guid.NewGuid();
+        var replacementPaymentId = isCancellation
+            ? (Guid?)null
+            : Guid.NewGuid();
+        var batchId = paper ? Guid.NewGuid() : (Guid?)null;
+        var originalPayment = new
+        {
+            PaymentId = originalPaymentId,
+            ClientId = clientId,
+            NegativeClosureId = originalClosureId,
+            Amount = 100m,
+            Currency = "UAH",
+            Method = "cash",
+            PaymentContext = "negative_closure",
+            OccurredAt = OriginalOccurredAt.AddDays(-1),
+            RecordedAt = OriginalOccurredAt.AddDays(-1).AddMinutes(5),
+            EntryOrigin = "normal",
+            EntryBatchId = (Guid?)null,
+            Comment = "Original coverage",
+            Status = "active",
+        };
+        object? replacementPayment = replacementPaymentId is { } replacementId
+            ? new
+            {
+                PaymentId = replacementId,
+                ClientId = clientId,
+                NegativeClosureId = replacementClosureId,
+                Amount = 100m,
+                Currency = "UAH",
+                Method = "cash",
+                PaymentContext = "negative_closure",
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = paper ? "paper_fallback" : "normal",
+                EntryBatchId = batchId,
+                Comment = "Correction comment",
+                Status = "active",
+            }
+            : null;
+        var related = new
+        {
+            ClientId = clientId,
+            OriginalNegativeClosureId = originalClosureId,
+            CorrectionId = correctionId,
+            ReplacementNegativeClosureId = replacementClosureId,
+            ReplacementPaymentId = replacementPaymentId,
+            ReplacementPaymentAuditEntryId = isCancellation
+                ? (Guid?)null
+                : Guid.NewGuid(),
+            EntryBatchId = batchId,
+            EntryBatchRowId = paper ? Guid.NewGuid() : (Guid?)null,
+            PaperSheetNumber = paper ? "NEG-CORRECTION-003" : null,
+            LineNumber = paper ? 8 : (int?)null,
+            PaperExplanation = paper ? "Recovered coverage correction" : null,
+        };
+        return Entry(
+            isCancellation ? "payment.canceled" : "payment.corrected",
+            AuditTimelineEntityType.Payment,
+            originalPaymentId,
+            new { Payment = originalPayment },
+            new
+            {
+                Payment = originalPayment with
+                {
+                    Status = isCancellation ? "canceled" : "replaced",
+                },
+                ReplacementPaymentId = replacementPaymentId,
+                ReplacementPaymentAuditEntryId =
+                    related.ReplacementPaymentAuditEntryId,
+                ReplacementPayment = replacementPayment,
+                ReplacementCoverageWitness = isCancellation
+                    ? null
+                    : new
+                    {
+                        Lines = new[]
+                        {
+                            new
+                            {
+                                LineId = Guid.NewGuid(),
+                                Sequence = 1,
+                                MembershipTypeId = Guid.NewGuid(),
+                                TypeName = "Replacement one-off",
+                                Quantity = 1,
+                                UnitPriceAmount = 100m,
+                                Currency = "UAH",
+                                LineTotal = 100m,
+                            },
+                        },
+                        ExpectedAmount = 100m,
+                        ExpectedCurrency = "UAH",
+                        PaymentAudit = new
+                        {
+                            AuditEntryId = related.ReplacementPaymentAuditEntryId,
+                            ActionType = "payment.created",
+                            EntityType = "payment",
+                            EntityId = replacementPaymentId,
+                        },
+                    },
+                CoverageCorrectionId = correctionId,
+                Correction = new
+                {
+                    CorrectionId = correctionId,
+                    Reason = "Correction reason",
+                    OccurredAt = OriginalOccurredAt,
+                    RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                    EntryOrigin = paper ? "paper_fallback" : "normal",
+                    EntryBatchId = batchId,
+                    ChangedAfterClose = false,
+                },
+                NoRefundOrDeltaCalculated = true,
+                ChangedAfterClose = false,
+            },
+            related: related,
+            entryOrigin: paper ? EntryOrigin.PaperFallback : EntryOrigin.Normal);
+    }
+
+    private static AuditTimelineEntry NegativeClosureCorrectionEntry(
+        bool isCancellation,
+        string closureType,
+        bool paper,
+        bool mismatchOldestVisit = false)
+    {
+        var closureId = Guid.NewGuid(); var correctionId = Guid.NewGuid(); var clientId = Guid.NewGuid(); var replacementId = Guid.NewGuid();
+        var paymentId = closureType == "one_off" ? Guid.NewGuid() : (Guid?)null;
+        var replacementPaymentId = isCancellation || paymentId is null ? (Guid?)null : Guid.NewGuid();
+        var batchId = paper ? Guid.NewGuid() : (Guid?)null;
+        var visitId = Guid.NewGuid(); var replacementVisitId = Guid.NewGuid();
+        var related = new { ClientId = clientId, CorrectionId = correctionId, ReplacementNegativeClosureId = isCancellation ? (Guid?)null : replacementId, ReplacementClosureAuditId = isCancellation ? (Guid?)null : Guid.NewGuid(), OriginalPaymentId = paymentId, ReplacementPaymentId = replacementPaymentId, PaymentLifecycleAuditId = paymentId is null ? (Guid?)null : Guid.NewGuid(), MembershipIds = new[] { Guid.NewGuid() }, EntryBatchId = batchId, EntryBatchRowId = paper ? Guid.NewGuid() : (Guid?)null, PaperSheetNumber = paper ? "COR-2026-001" : null, LineNumber = paper ? 3 : (int?)null, PaperExplanation = paper ? "Recovered correction" : null };
+        return Entry(isCancellation ? "membership_negative_closure.canceled" : "membership_negative_closure.replaced", AuditTimelineEntityType.MembershipNegativeClosure, closureId,
+            new { Closure = new { Id = closureId, ClientId = clientId, ClosureType = closureType, CoveringMembershipId = closureType == "new_membership" ? Guid.NewGuid() : (Guid?)null, OldestOpenNegativeVisitId = mismatchOldestVisit ? Guid.NewGuid() : visitId, VisitsCount = 2, Status = "active" }, ItemIds = new[] { Guid.NewGuid(), Guid.NewGuid() }, VisitIds = new[] { visitId, Guid.NewGuid() }, Lines = closureType == "one_off" ? new[] { new { Id = Guid.NewGuid(), MembershipTypeId = Guid.NewGuid(), TypeNameSnapshot = "One-off", Quantity = 2, UnitPriceAmountSnapshot = 50m, CurrencySnapshot = "UAH", LineTotal = 100m } } : [], Payment = paymentId is null ? null : new { PaymentId = paymentId, ClientId = clientId, NegativeClosureId = closureId, Amount = 100m, Currency = "UAH", Method = "cash", PaymentContext = "negative_closure", OccurredAt = OriginalOccurredAt, RecordedAt = OriginalOccurredAt.AddMinutes(-5), EntryOrigin = "normal", EntryBatchId = (Guid?)null, Comment = "Original coverage", Status = "active" }, VisibleNegativeBalance = 1 },
+            new { Correction = new { CorrectionId = correctionId, Mode = isCancellation ? "cancel" : "replace", Reason = "Correction reason", OccurredAt = OriginalOccurredAt, RecordedAt = OriginalOccurredAt.AddMinutes(5), EntryOrigin = paper ? "paper_fallback" : "normal", EntryBatchId = batchId, ChangedAfterClose = false }, OriginalClosure = new { Id = closureId, ClosureType = closureType, Status = isCancellation ? "canceled" : "replaced" }, Replacement = isCancellation ? null : new { NegativeClosureId = replacementId, VisitsCount = 2, VisitIds = new[] { replacementVisitId, Guid.NewGuid() }, PaymentId = replacementPaymentId }, RemainingNegativeBalance = isCancellation ? 3 : 1 },
+            related: related, entryOrigin: paper ? EntryOrigin.PaperFallback : EntryOrigin.Normal);
+    }
+
     private static AuditTimelineEntry Entry(
         string actionType,
         AuditTimelineEntityType entityType,

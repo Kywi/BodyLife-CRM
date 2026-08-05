@@ -98,6 +98,7 @@ public sealed class NegativeClosurePaymentWriter(
                 {
                     PaymentId = paymentId,
                     payment.ClientId,
+                    payment.MembershipId,
                     payment.NegativeClosureId,
                     payment.Amount,
                     payment.Currency,
