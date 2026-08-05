@@ -805,6 +805,95 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void PaperPaymentCreationShowsLocalizedRowProvenance()
+    {
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var payment = Payment(
+            Guid.NewGuid(),
+            membershipId: null,
+            amount: 300m,
+            OriginalOccurredAt,
+            status: "active",
+            paymentContext: "one_off") with
+        {
+            EntryOrigin = "paper_fallback",
+            EntryBatchId = batchId,
+        };
+        var entry = Entry(
+            "payment.created",
+            AuditTimelineEntityType.Payment,
+            payment.PaymentId,
+            new { },
+            new { Payment = payment },
+            related: new
+            {
+                ClientId = payment.ClientId,
+                MembershipId = (Guid?)null,
+                EntryBatchId = batchId,
+                EntryBatchRowId = rowId,
+                PaperSheetNumber = "PAYMENT-SHEET-001",
+                LineNumber = 7,
+                PaperExplanation = "Recovered paper one-off Payment",
+            },
+            reason: null,
+            comment: payment.Comment,
+            entryOrigin: EntryOrigin.PaperFallback);
+
+        var english = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.English));
+        var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.Ukrainian));
+
+        Assert.True(english.IsAvailable);
+        Assert.Equal("PAYMENT-SHEET-001", FactValue(english.AfterFacts, "Paper sheet"));
+        Assert.Equal("7", FactValue(english.AfterFacts, "Line number"));
+        Assert.Equal("Payment", FactValue(english.AfterFacts, "Event type"));
+        Assert.Equal("Оплата", FactValue(ukrainian.AfterFacts, "Тип події"));
+        Assert.Equal(
+            "Recovered paper one-off Payment",
+            FactValue(ukrainian.AfterFacts, "Пояснення"));
+    }
+
+    [Fact]
+    public void PaperPaymentCreationWithoutRowIdentityFailsClosed()
+    {
+        var batchId = Guid.NewGuid();
+        var payment = Payment(
+            Guid.NewGuid(),
+            membershipId: null,
+            amount: 300m,
+            OriginalOccurredAt,
+            status: "active",
+            paymentContext: "one_off") with
+        {
+            EntryOrigin = "paper_fallback",
+            EntryBatchId = batchId,
+        };
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "payment.created",
+                    AuditTimelineEntityType.Payment,
+                    payment.PaymentId,
+                    new { },
+                    new { Payment = payment },
+                    related: new
+                    {
+                        ClientId = payment.ClientId,
+                        MembershipId = (Guid?)null,
+                        EntryBatchId = batchId,
+                    },
+                    reason: null,
+                    comment: payment.Comment,
+                    entryOrigin: EntryOrigin.PaperFallback)));
+
+        Assert.False(explanation.IsAvailable);
+        Assert.Equal("Readable change summary unavailable", explanation.Title);
+    }
+
+    [Fact]
     public void PaymentCreationWithMismatchedRelatedClientFailsClosed()
     {
         var payment = Payment(
@@ -932,6 +1021,7 @@ public sealed class AuditEntryExplanationViewModelTests
     {
         var originalPaymentId = Guid.NewGuid();
         var replacementPaymentId = Guid.NewGuid();
+        var correctionId = Guid.NewGuid();
         var membershipId = Guid.NewGuid();
         var beforePayment = Payment(
             originalPaymentId,
@@ -940,23 +1030,34 @@ public sealed class AuditEntryExplanationViewModelTests
             OriginalOccurredAt,
             status: "active");
         var replacementOccurredAt = OriginalOccurredAt.AddHours(1);
+        var replacementPayment = Payment(
+            replacementPaymentId,
+            membershipId,
+            amount: 950m,
+            replacementOccurredAt,
+            status: "active") with
+        {
+            ClientId = beforePayment.ClientId,
+            RecordedAt = OriginalOccurredAt.AddMinutes(5),
+        };
         var before = new { Payment = beforePayment };
         var after = new
         {
             Correction = new
             {
-                CorrectionId = Guid.NewGuid(),
+                CorrectionId = correctionId,
                 OriginalPaymentId = originalPaymentId,
                 ReplacementPaymentId = replacementPaymentId,
                 ChangedFields = new[] { "amount", "occurred_at", "comment" },
+                Reason = "Correction reason",
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "normal",
+                EntryBatchId = (Guid?)null,
+                ChangedAfterClose = false,
             },
             OriginalPayment = beforePayment with { Status = "replaced" },
-            ReplacementPayment = Payment(
-                replacementPaymentId,
-                membershipId,
-                amount: 950m,
-                replacementOccurredAt,
-                status: "active"),
+            ReplacementPayment = replacementPayment,
         };
 
         var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
@@ -966,7 +1067,16 @@ public sealed class AuditEntryExplanationViewModelTests
                     AuditTimelineEntityType.Payment,
                     originalPaymentId,
                     before,
-                    after)));
+                    after,
+                    related: new
+                    {
+                        ClientId = beforePayment.ClientId,
+                        OriginalPaymentId = originalPaymentId,
+                        OriginalMembershipId = (Guid?)membershipId,
+                        ReplacementPaymentId = replacementPaymentId,
+                        ReplacementMembershipId = (Guid?)membershipId,
+                        CorrectionId = correctionId,
+                    })));
 
         Assert.True(explanation.IsAvailable);
         Assert.Equal("payment-corrected", explanation.Kind);
@@ -978,9 +1088,97 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void PaperPaymentCorrectionShowsLocalizedRowProvenance()
+    {
+        var originalPaymentId = Guid.NewGuid();
+        var replacementPaymentId = Guid.NewGuid();
+        var correctionId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var original = Payment(
+            originalPaymentId,
+            membershipId: null,
+            amount: 300m,
+            OriginalOccurredAt,
+            status: "active",
+            paymentContext: "other");
+        var replacement = Payment(
+            replacementPaymentId,
+            membershipId: null,
+            amount: 250m,
+            OriginalOccurredAt.AddHours(1),
+            status: "active",
+            paymentContext: "other") with
+        {
+            ClientId = original.ClientId,
+            EntryOrigin = "paper_fallback",
+            EntryBatchId = batchId,
+            RecordedAt = OriginalOccurredAt.AddMinutes(5),
+        };
+        var entry = Entry(
+            "payment.corrected",
+            AuditTimelineEntityType.Payment,
+            originalPaymentId,
+            new { Payment = original },
+            new
+            {
+                Correction = new
+                {
+                    CorrectionId = correctionId,
+                    OriginalPaymentId = originalPaymentId,
+                    ReplacementPaymentId = replacementPaymentId,
+                    ChangedFields = new[] { "amount", "occurred_at" },
+                    Reason = "Correction reason",
+                    OccurredAt = OriginalOccurredAt,
+                    RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                    EntryOrigin = "paper_fallback",
+                    EntryBatchId = (Guid?)batchId,
+                    ChangedAfterClose = false,
+                },
+                OriginalPayment = original with { Status = "replaced" },
+                ReplacementPayment = replacement,
+            },
+            related: new
+            {
+                ClientId = original.ClientId,
+                OriginalPaymentId = originalPaymentId,
+                OriginalMembershipId = (Guid?)null,
+                ReplacementPaymentId = replacementPaymentId,
+                ReplacementMembershipId = (Guid?)null,
+                CorrectionId = correctionId,
+                EntryBatchId = batchId,
+                EntryBatchRowId = rowId,
+                PaperSheetNumber = "PAYMENT-CORRECTION-001",
+                LineNumber = 8,
+                PaperExplanation = "Recovered paper Payment correction",
+            },
+            entryOrigin: EntryOrigin.PaperFallback);
+
+        var english = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.English));
+        var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.Ukrainian));
+
+        Assert.True(english.IsAvailable);
+        Assert.Equal(
+            "PAYMENT-CORRECTION-001",
+            FactValue(english.AfterFacts, "Paper sheet"));
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(english.AfterFacts, "Event type"));
+        Assert.Equal(
+            "Виправлення або скасування",
+            FactValue(ukrainian.AfterFacts, "Тип події"));
+        var mismatchedEnvelope = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with { OccurredAt = entry.OccurredAt.AddMinutes(1) }));
+        Assert.False(mismatchedEnvelope.IsAvailable);
+    }
+
+    [Fact]
     public void PaymentCancellationShowsStatusChangeWithoutRewritingPayment()
     {
         var paymentId = Guid.NewGuid();
+        var cancellationId = Guid.NewGuid();
         var payment = Payment(
             paymentId,
             Guid.NewGuid(),
@@ -992,8 +1190,14 @@ public sealed class AuditEntryExplanationViewModelTests
         {
             Cancellation = new
             {
-                CancellationId = Guid.NewGuid(),
+                CancellationId = cancellationId,
                 PaymentId = paymentId,
+                Reason = "Correction reason",
+                OccurredAt = OriginalOccurredAt,
+                RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                EntryOrigin = "normal",
+                EntryBatchId = (Guid?)null,
+                ChangedAfterClose = false,
             },
             Payment = payment with { Status = "canceled" },
         };
@@ -1005,7 +1209,14 @@ public sealed class AuditEntryExplanationViewModelTests
                     AuditTimelineEntityType.Payment,
                     paymentId,
                     before,
-                    after)));
+                    after,
+                    related: new
+                    {
+                        ClientId = payment.ClientId,
+                        PaymentId = paymentId,
+                        MembershipId = payment.MembershipId,
+                        CancellationId = cancellationId,
+                    })));
 
         Assert.True(explanation.IsAvailable);
         Assert.Equal("500.00 UAH", FactValue(explanation.BeforeFacts, "Amount"));
@@ -1013,6 +1224,73 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal("500.00 UAH", FactValue(explanation.AfterFacts, "Amount"));
         Assert.Equal("Canceled", FactValue(explanation.AfterFacts, "Status"));
         Assert.Equal("Payment status", explanation.ChangedFields);
+    }
+
+    [Fact]
+    public void PaperPaymentCancellationShowsLocalizedRowProvenance()
+    {
+        var paymentId = Guid.NewGuid();
+        var cancellationId = Guid.NewGuid();
+        var batchId = Guid.NewGuid();
+        var rowId = Guid.NewGuid();
+        var payment = Payment(
+            paymentId,
+            membershipId: null,
+            amount: 125m,
+            OriginalOccurredAt,
+            status: "active",
+            paymentContext: "one_off");
+        var entry = Entry(
+            "payment.canceled",
+            AuditTimelineEntityType.Payment,
+            paymentId,
+            new { Payment = payment },
+            new
+            {
+                Cancellation = new
+                {
+                    CancellationId = cancellationId,
+                    PaymentId = paymentId,
+                    Reason = "Correction reason",
+                    OccurredAt = OriginalOccurredAt,
+                    RecordedAt = OriginalOccurredAt.AddMinutes(5),
+                    EntryOrigin = "paper_fallback",
+                    EntryBatchId = (Guid?)batchId,
+                    ChangedAfterClose = false,
+                },
+                Payment = payment with { Status = "canceled" },
+            },
+            related: new
+            {
+                ClientId = payment.ClientId,
+                PaymentId = paymentId,
+                MembershipId = (Guid?)null,
+                CancellationId = cancellationId,
+                EntryBatchId = batchId,
+                EntryBatchRowId = rowId,
+                PaperSheetNumber = "PAYMENT-CANCEL-001",
+                LineNumber = 9,
+                PaperExplanation = "Recovered paper Payment cancellation",
+            },
+            entryOrigin: EntryOrigin.PaperFallback);
+
+        var english = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.English));
+        var ukrainian = Assert.IsType<AuditEntryExplanationViewModel>(
+            ExplainInCulture(entry, WebCultures.Ukrainian));
+
+        Assert.True(english.IsAvailable);
+        Assert.Equal("PAYMENT-CANCEL-001", FactValue(english.AfterFacts, "Paper sheet"));
+        Assert.Equal("9", FactValue(english.AfterFacts, "Line number"));
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(english.AfterFacts, "Event type"));
+        Assert.Equal(
+            "Виправлення або скасування",
+            FactValue(ukrainian.AfterFacts, "Тип події"));
+        var mismatchedReason = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(entry with { Reason = "Different correction reason" }));
+        Assert.False(mismatchedReason.IsAvailable);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Payments;
@@ -17,4 +18,5 @@ public sealed record PaymentCorrectionHistorySource(
     EntryOrigin EntryOrigin,
     Guid? EntryBatchId,
     PaymentHistorySource OriginalPayment,
-    PaymentHistorySource ReplacementPayment);
+    PaymentHistorySource ReplacementPayment,
+    PaperFallbackEntryRowReference? PaperReference = null);

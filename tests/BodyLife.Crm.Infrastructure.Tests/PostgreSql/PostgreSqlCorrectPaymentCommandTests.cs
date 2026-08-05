@@ -157,13 +157,20 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             database,
             AccountKind.SharedReceptionAdmin,
             "Shared Reception");
-        var entryBatchId = Guid.NewGuid();
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            sharedAdmin,
+            CorrectionOccurredAt,
+            "correction_or_cancellation",
+            TestNow,
+            lineNumber: 7,
+            explanation: "Corrected paper receipt");
         var command = CreateCancelCommand(
             fixture,
             "cancel-payment",
             sharedAdmin,
             EntryOrigin.PaperFallback,
-            entryBatchId);
+            entryBatchRowId: paper.EntryBatchRowId);
         var handler = CreateHandler(dbContext);
 
         var result = await handler.ExecuteAsync(command, CancellationToken.None);
@@ -185,7 +192,10 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             CorrectPaymentCommand.CancellationEntityType,
             fixture.ClientId);
         AssertEquivalentSuccess(result, replay);
-        AssertError(laterCorrection, CommandErrorCode.AlreadyCanceled, "originalPaymentId");
+        AssertError(
+            laterCorrection,
+            CommandErrorCode.DuplicateSubmission,
+            "entryBatchRowId");
 
         var payment = Assert.Single(await ReadPaymentsAsync(database));
         Assert.Equal("canceled", payment.Status);
@@ -198,7 +208,13 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         Assert.Equal(sharedAdmin.AccountId.Value, cancellation.RecordedByAccountId);
         Assert.Equal(sharedAdmin.SessionId.Value, cancellation.SessionId);
         Assert.Equal("paper_fallback", cancellation.EntryOrigin);
-        Assert.Equal(entryBatchId, cancellation.EntryBatchId);
+        Assert.Equal(paper.EntryBatchId, cancellation.EntryBatchId);
+        var link = Assert.Single(
+            await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId));
+        Assert.Equal(CorrectPaymentCommand.CancellationEntityType, link.EntityType);
+        Assert.Equal(cancellation.Id, link.EntityId);
 
         var audit = await ReadAuditAsync(database);
         Assert.Equal(PaymentAuditActions.Canceled, audit.ActionType);
@@ -212,12 +228,101 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             "canceled",
             after.RootElement.GetProperty("payment").GetProperty("status").GetString());
         Assert.Equal(
-            entryBatchId,
+            paper.EntryBatchId,
             after.RootElement
                 .GetProperty("cancellation")
                 .GetProperty("entryBatchId")
                 .GetGuid());
+        var relatedJson = Assert.IsType<string>(
+            await database.ExecuteScalarAsync<string>(
+                "select related_entity_refs::text from bodylife.business_audit_entries"));
+        using var related = JsonDocument.Parse(relatedJson);
+        Assert.Equal(
+            paper.EntryBatchRowId,
+            related.RootElement.GetProperty("entryBatchRowId").GetGuid());
+        Assert.Equal(
+            paper.PaperSheetNumber,
+            related.RootElement.GetProperty("paperSheetNumber").GetString());
+        Assert.Equal(
+            paper.LineNumber,
+            related.RootElement.GetProperty("lineNumber").GetInt32());
+        Assert.Equal(
+            paper.Explanation,
+            related.RootElement.GetProperty("paperExplanation").GetString());
         Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperReplacementBindsCorrectionAndReplacementPaymentAtomically()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Owner,
+            CorrectionOccurredAt,
+            "correction_or_cancellation",
+            TestNow,
+            lineNumber: 8,
+            explanation: "Corrected paper replacement");
+        var command = CreateReplaceCommand(
+            fixture,
+            "paper-replacement",
+            entryOrigin: EntryOrigin.PaperFallback,
+            entryBatchRowId: paper.EntryBatchRowId);
+        var handler = CreateHandler(dbContext);
+
+        var result = await handler.ExecuteAsync(command, CancellationToken.None);
+        var replay = await handler.ExecuteAsync(command, CancellationToken.None);
+        var reuse = await handler.ExecuteAsync(
+            command with
+            {
+                Envelope = WithKey(command.Envelope, "paper-replacement-reuse"),
+            },
+            CancellationToken.None);
+
+        AssertSuccessfulResult(
+            result,
+            CorrectPaymentCommand.CorrectionEntityType,
+            fixture.ClientId);
+        AssertEquivalentSuccess(result, replay);
+        AssertError(reuse, CommandErrorCode.DuplicateSubmission, "entryBatchRowId");
+        var replacementPaymentId = await database.ExecuteScalarAsync<Guid>(
+            $"select replacement_payment_id from bodylife.payment_corrections where id = '{result.PrimaryEntityId!.Value.Value}'");
+        var links = await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId);
+        Assert.Equal(2, links.Count);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                CorrectPaymentCommand.CorrectionEntityType,
+                result.PrimaryEntityId.Value.Value),
+            links);
+        Assert.Contains(
+            new PaperFallbackEntityLink(
+                CorrectPaymentCommand.PaymentEntityType,
+                replacementPaymentId),
+            links);
+        Assert.Equal(
+            paper.EntryBatchId,
+            await database.ExecuteScalarAsync<Guid>(
+                $"select entry_batch_id from bodylife.payment_corrections where id = '{result.PrimaryEntityId.Value.Value}'"));
+        Assert.Equal(
+            paper.EntryBatchId,
+            await database.ExecuteScalarAsync<Guid>(
+                $"select entry_batch_id from bodylife.payments where id = '{replacementPaymentId}'"));
+        var relatedJson = Assert.IsType<string>(
+            await database.ExecuteScalarAsync<string>(
+                "select related_entity_refs::text from bodylife.business_audit_entries"));
+        using var related = JsonDocument.Parse(relatedJson);
+        Assert.Equal(
+            paper.EntryBatchRowId,
+            related.RootElement.GetProperty("entryBatchRowId").GetGuid());
+        Assert.Equal(
+            paper.Explanation,
+            related.RootElement.GetProperty("paperExplanation").GetString());
     }
 
     [PostgreSqlFact]
@@ -330,6 +435,70 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task ConcurrentPaperCancellationsBindOneCancellationToTheRow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        CorrectPaymentFixture fixture;
+        PaperFallbackRowFixture paper;
+        await using (var setupContext = database.CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync();
+            fixture = await SeedFixtureAsync(database, setupContext);
+            paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+                database,
+                fixture.Owner,
+                CorrectionOccurredAt,
+                "correction_or_cancellation",
+                TestNow,
+                lineNumber: 9,
+                explanation: "Concurrent paper Payment cancellation");
+        }
+
+        var firstCommand = CreateCancelCommand(
+            fixture,
+            "paper-cancel-race-first",
+            entryOrigin: EntryOrigin.PaperFallback,
+            entryBatchRowId: paper.EntryBatchRowId);
+        var secondCommand = CreateCancelCommand(
+            fixture,
+            "paper-cancel-race-second",
+            entryOrigin: EntryOrigin.PaperFallback,
+            entryBatchRowId: paper.EntryBatchRowId);
+        await using var firstContext = database.CreateDbContext();
+        await using var secondContext = database.CreateDbContext();
+
+        var results = await Task.WhenAll(
+            CreateHandler(firstContext).ExecuteAsync(
+                firstCommand,
+                CancellationToken.None),
+            CreateHandler(secondContext).ExecuteAsync(
+                secondCommand,
+                CancellationToken.None));
+
+        var success = Assert.Single(
+            results,
+            result => result.Status == CommandStatus.Success);
+        var rejected = Assert.Single(
+            results,
+            result => result.Status == CommandStatus.Error);
+        AssertSuccessfulResult(
+            success,
+            CorrectPaymentCommand.CancellationEntityType,
+            fixture.ClientId);
+        AssertError(
+            rejected,
+            CommandErrorCode.DuplicateSubmission,
+            "entryBatchRowId");
+        var link = Assert.Single(
+            await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId));
+        Assert.Equal(CorrectPaymentCommand.CancellationEntityType, link.EntityType);
+        Assert.Equal(success.PrimaryEntityId!.Value.Value, link.EntityId);
+        await AssertCorrectionCountsAsync(database, 1, 0, 1, 1, 1);
+    }
+
+    [PostgreSqlFact]
     public async Task InvalidShapesRelationshipsAndNegativeClosureFailWithoutMutation()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
@@ -409,6 +578,29 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                 OriginalPaymentId = salePaymentId,
             },
             CancellationToken.None);
+        var paperWithoutRow = await handler.ExecuteAsync(
+            CreateCancelCommand(
+                fixture,
+                "paper-without-row",
+                entryOrigin: EntryOrigin.PaperFallback),
+            CancellationToken.None);
+        var normalWithRow = await handler.ExecuteAsync(
+            CreateCancelCommand(fixture, "normal-with-row") with
+            {
+                Envelope = CreateCancelCommand(fixture, "normal-with-row").Envelope with
+                {
+                    EntryBatchRowId = Guid.NewGuid(),
+                },
+            },
+            CancellationToken.None);
+        var paperWithRawBatch = await handler.ExecuteAsync(
+            CreateCancelCommand(
+                fixture,
+                "paper-with-raw-batch",
+                entryOrigin: EntryOrigin.PaperFallback,
+                entryBatchId: Guid.NewGuid(),
+                entryBatchRowId: Guid.NewGuid()),
+            CancellationToken.None);
 
         AssertError(missingReason, CommandErrorCode.ReasonRequired, "reason");
         AssertError(
@@ -436,6 +628,12 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             membershipSale,
             CommandErrorCode.MembershipNotEligible,
             "originalPaymentId");
+        AssertError(
+            paperWithoutRow,
+            CommandErrorCode.ValidationFailed,
+            "entryBatchRowId");
+        AssertError(normalWithRow, CommandErrorCode.ValidationFailed, "entryBatchRowId");
+        AssertError(paperWithRawBatch, CommandErrorCode.ValidationFailed, "entryBatchId");
         await AssertCorrectionCountsAsync(database, 3, 0, 0, 0, 0);
 
         Assert.All(
@@ -475,6 +673,67 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         Assert.Empty(dbContext.ChangeTracker.Entries());
     }
 
+    [PostgreSqlFact]
+    public async Task PaperReplacementAuditFailureLeavesRowReusable()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Owner,
+            CorrectionOccurredAt,
+            "correction_or_cancellation",
+            TestNow,
+            lineNumber: 10,
+            explanation: "Recovered paper replacement");
+        var command = CreateReplaceCommand(
+            fixture,
+            "paper-replacement-audit-failure",
+            entryOrigin: EntryOrigin.PaperFallback,
+            entryBatchRowId: paper.EntryBatchRowId);
+        await ExecuteNonQueryAsync(
+            database,
+            """
+            alter table bodylife.business_audit_entries
+            add constraint ck_test_reject_paper_payment_correction_audit
+            check (action_type <> 'payment.corrected')
+            """);
+
+        await Assert.ThrowsAsync<DbUpdateException>(() =>
+            CreateHandler(dbContext).ExecuteAsync(
+                command,
+                CancellationToken.None));
+
+        await AssertCorrectionCountsAsync(database, 1, 0, 0, 0, 0);
+        Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId));
+        Assert.Empty(dbContext.ChangeTracker.Entries());
+
+        await ExecuteNonQueryAsync(
+            database,
+            """
+            alter table bodylife.business_audit_entries
+            drop constraint ck_test_reject_paper_payment_correction_audit
+            """);
+        var retry = await CreateHandler(dbContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+
+        AssertSuccessfulResult(
+            retry,
+            CorrectPaymentCommand.CorrectionEntityType,
+            fixture.ClientId);
+        Assert.Equal(
+            2,
+            (await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId)).Count);
+        await AssertCorrectionCountsAsync(database, 2, 1, 0, 1, 1);
+    }
+
     [Fact]
     public void PersistenceRegistrationResolvesCorrectPaymentWorkflow()
     {
@@ -507,6 +766,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         return new CorrectPaymentCommandHandler(
             dbContext,
             new BusinessAuditAppender(dbContext),
+            new PaperFallbackEntryRowBinder(dbContext),
             dayStatusProvider ?? new StubPaymentDayReconciliationStatusProvider(),
             new FixedTimeProvider(TestNow));
     }
@@ -514,15 +774,20 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
     private static CorrectPaymentCommand CreateReplaceCommand(
         CorrectPaymentFixture fixture,
         string idempotencyKey,
-        ActorContext? actor = null)
+        ActorContext? actor = null,
+        EntryOrigin entryOrigin = EntryOrigin.Normal,
+        Guid? entryBatchRowId = null)
     {
         return new CorrectPaymentCommand(
             CreateEnvelope(
                 actor ?? fixture.Owner,
                 idempotencyKey,
-                EntryOrigin.Normal,
+                entryOrigin,
                 "  Corrected cash receipt  ",
-                "  Operator correction note  "),
+                "  Operator correction note  ") with
+            {
+                EntryBatchRowId = entryBatchRowId,
+            },
             fixture.OriginalPaymentId,
             PaymentCorrectionMode.Replace,
             new PaymentReplacement(
@@ -538,7 +803,8 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         string idempotencyKey,
         ActorContext? actor = null,
         EntryOrigin entryOrigin = EntryOrigin.Normal,
-        Guid? entryBatchId = null)
+        Guid? entryBatchId = null,
+        Guid? entryBatchRowId = null)
     {
         var comment = entryOrigin == EntryOrigin.PaperFallback
             ? "  Recovered paper line 7  "
@@ -553,7 +819,10 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
                 idempotencyKey,
                 entryOrigin,
                 reason,
-                comment),
+                comment) with
+            {
+                EntryBatchRowId = entryBatchRowId,
+            },
             fixture.OriginalPaymentId,
             PaymentCorrectionMode.Cancel,
             Replacement: null,

@@ -310,6 +310,54 @@ public sealed class ClientHistoryRowPresenterTests
             exception.Message);
     }
 
+    [Theory]
+    [InlineData(ClientHistorySourceKind.PaymentCreated, "MEMBERSHIP-SALE-001", "Membership sale", "Продаж абонемента")]
+    [InlineData(ClientHistorySourceKind.PaymentCorrected, "PAYMENT-CORRECTION-001", "Correction or cancellation", "Виправлення або скасування")]
+    [InlineData(ClientHistorySourceKind.PaymentCanceled, "PAYMENT-CANCEL-001", "Correction or cancellation", "Виправлення або скасування")]
+    public void PaperPaymentRowsShowLocalizedCanonicalProvenance(
+        ClientHistorySourceKind kind,
+        string sheetNumber,
+        string englishEventType,
+        string ukrainianEventType)
+    {
+        var source = CreateRow(kind);
+
+        var english = Present(source, WebCultures.English);
+        var ukrainian = Present(source, WebCultures.Ukrainian);
+
+        Assert.Equal(sheetNumber, FactValue(english.Facts, "Paper sheet"));
+        Assert.Equal(englishEventType, FactValue(english.Facts, "Event type"));
+        Assert.Equal(sheetNumber, FactValue(ukrainian.Facts, "Паперовий аркуш"));
+        Assert.Equal(ukrainianEventType, FactValue(ukrainian.Facts, "Тип події"));
+        Assert.NotEmpty(FactValue(english.Facts, "Explanation"));
+        Assert.NotEmpty(FactValue(
+            english.Identifiers,
+            "Entry batch row ID"));
+    }
+
+    [Fact]
+    public void PaperPaymentWithoutCanonicalRowReferenceFailsClosed()
+    {
+        var row = CreatePaymentCreatedRow();
+        row = row with
+        {
+            PaymentSourceRow = row.PaymentSourceRow! with
+            {
+                CreatedPayment = row.PaymentSourceRow.CreatedPayment! with
+                {
+                    PaperReference = null,
+                },
+            },
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => Present(row, WebCultures.English));
+
+        Assert.Equal(
+            "Paper Payment history provenance is inconsistent.",
+            exception.Message);
+    }
+
     [Fact]
     public void PaperVisitShowsLocalizedSheetLineExplanationAndRowIdentifier()
     {
@@ -882,7 +930,17 @@ public sealed class ClientHistoryRowPresenterTests
         var payment = Payment(
             Id(30),
             amount: 125.50m,
-            ClientPaymentRowStatus.Active);
+            ClientPaymentRowStatus.Active) with
+        {
+            PaperReference = new PaperFallbackEntryRowReference(
+                BatchId,
+                Id(130),
+                "MEMBERSHIP-SALE-001",
+                30,
+                PaperFallbackEventType.MembershipSale,
+                OccurredAt,
+                "Recovered paper membership sale"),
+        };
         var audit = Audit(payment.PaymentId);
         var source = new ClientPaymentHistorySourceRow(
             ClientPaymentHistorySourceKind.CreatedPayment,
@@ -925,7 +983,15 @@ public sealed class ClientHistoryRowPresenterTests
             EntryOrigin.PaperFallback,
             BatchId,
             original,
-            replacement);
+            replacement,
+            new PaperFallbackEntryRowReference(
+                BatchId,
+                Id(133),
+                "PAYMENT-CORRECTION-001",
+                33,
+                PaperFallbackEventType.CorrectionOrCancellation,
+                OccurredAt,
+                "Recovered paper Payment correction"));
         var audit = Audit(correction.CorrectionId);
         var source = new ClientPaymentHistorySourceRow(
             ClientPaymentHistorySourceKind.CorrectedPayment,
@@ -960,7 +1026,15 @@ public sealed class ClientHistoryRowPresenterTests
             SessionId,
             EntryOrigin.PaperFallback,
             BatchId,
-            payment);
+            payment,
+            new PaperFallbackEntryRowReference(
+                BatchId,
+                Id(134),
+                "PAYMENT-CANCEL-001",
+                34,
+                PaperFallbackEventType.CorrectionOrCancellation,
+                OccurredAt,
+                "Recovered paper Payment cancellation"));
         var audit = Audit(cancellation.CancellationId);
         var source = new ClientPaymentHistorySourceRow(
             ClientPaymentHistorySourceKind.CanceledPayment,

@@ -14298,3 +14298,60 @@ Stop point:
   fact links, report/history/audit provenance and rollback/replay behavior.
   Keep membership-sale and negative-coverage Payment contexts owned by their
   existing aggregate workflows, and do not begin Milestone 11.
+
+## Step 223 - Bound paper fallback rows to standalone Payment workflows
+
+Status: completed for the standalone Payment lifecycle. Milestone 10.5 remains
+in progress; Milestone 11 has not started.
+
+Completed:
+
+- Made `CreatePayment` require a registered `payment` row for
+  `paper_fallback`, derive its batch from that row and atomically link the row
+  to the created Payment. Legacy caller-supplied paper batch ids and non-paper
+  row ids are rejected, while row identity participates in the idempotency
+  fingerprint.
+- Made standalone `CorrectPayment` require a
+  `correction_or_cancellation` row. Cancellation links the explicit
+  `payment_cancellation`; replacement links both the `payment_correction` and
+  replacement Payment created by the command. Generic commands remain unable
+  to create or correct membership-sale and negative-closure Payments.
+- Preserved deterministic Client -> batch -> row -> Payment/Membership locking,
+  same-key replay, different-key row-reuse rejection and full transaction
+  rollback. Concurrent commands bind exactly one source workflow to a row, and
+  a forced audit failure leaves the row reusable.
+- Extended canonical Payment history and daily cash source reads to verify
+  source/link/batch/row/event/envelope agreement. Replacement Payment
+  provenance uses the correction event time while retaining the replacement
+  Payment business time; missing links and mismatched audit references fail the
+  whole read closed.
+- Added first-class paper provenance to typed `payment.created`,
+  `payment.corrected` and `payment.canceled` audit explanations and canonical
+  Client history in English and Ukrainian, including sheet, line, row, event
+  type and explanation. Correction/cancellation explanations now cross-check
+  related ids, reason, timestamps, origin and changed-after-close before
+  rendering trusted text.
+- Kept the accepted greenfield schema strategy and added no interim migration.
+  The final clean baseline still needs the deferred cross-table invariants for
+  exact paper-row entity shapes.
+- Independent read-only review initially found one fail-closed audit weakness
+  and missing rollback/query-negative tests. Those findings were fixed; fresh
+  re-review found no remaining P0-P3 issue.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Full domain tests passed: 416/416; full Web tests passed: 342/342.
+- Focused PostgreSQL Payment command/report/history tests passed: 38/38 with no
+  skips, including replay, different-key concurrency, rollback/reuse and
+  malformed provenance.
+- Focused audit explanation and Client-history presenter tests passed: 223/223.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Integrate first-class paper rows into `IssueMembership` ordinary sale and
+  new-Membership negative coverage next. Use event type `membership_sale`,
+  derive the batch, bind every source entity created by the aggregate command,
+  preserve deterministic locks/replay/rollback and expose canonical
+  report/history/audit provenance. Do not begin Milestone 11.

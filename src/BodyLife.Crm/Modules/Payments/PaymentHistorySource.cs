@@ -1,4 +1,5 @@
 using BodyLife.Crm.Application.Commands;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.SharedKernel;
 
 namespace BodyLife.Crm.Modules.Payments;
@@ -21,4 +22,5 @@ public sealed record PaymentHistorySource(
     ClientPaymentRowStatus CurrentStatus,
     Guid? CurrentCancellationId,
     Guid? IncomingCorrectionId,
-    Guid? OutgoingCorrectionId);
+    Guid? OutgoingCorrectionId,
+    PaperFallbackEntryRowReference? PaperReference = null);

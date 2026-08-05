@@ -1,6 +1,8 @@
 using BodyLife.Crm.Application.Queries;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -97,6 +99,56 @@ public sealed class GetDailyPaymentSourceRowsQueryHandler(
             paymentIds,
             cancellationToken);
         if (relations is null)
+        {
+            return GetDailyPaymentSourceRowsResult.InconsistentSource();
+        }
+
+        var paperReferenceReader = new PaperFallbackEntryRowReferenceReader(dbContext);
+        var paymentPaperReferences = await paperReferenceReader.LoadAsync(
+            sourceRows.Select(source =>
+            {
+                relations.CorrectionsFromOriginalByPaymentId.TryGetValue(
+                    source.PaymentId,
+                    out var incomingCorrection);
+                return new PaperFallbackEntryRowReferenceSource(
+                    source.PaymentId,
+                    source.EntryOrigin,
+                    source.EntryBatchId,
+                    incomingCorrection?.OccurredAt ?? source.OccurredAt,
+                    source.RecordedByAccountId,
+                    source.SessionId,
+                    ExpectedPaymentEventType(source.PaymentContext, incomingCorrection));
+            }).ToArray(),
+            CorrectPaymentCommand.PaymentEntityType,
+            PaperFallbackEventType.Payment,
+            cancellationToken);
+        var correctionPaperReferences = await paperReferenceReader.LoadAsync(
+            relations.CorrectionsToReplacementByPaymentId.Values
+                .Select(correction => new PaperFallbackEntryRowReferenceSource(
+                    correction.CorrectionId,
+                    correction.EntryOrigin,
+                    correction.EntryBatchId,
+                    correction.OccurredAt,
+                    correction.RecordedByAccountId,
+                    correction.SessionId)).ToArray(),
+            CorrectPaymentCommand.CorrectionEntityType,
+            PaperFallbackEventType.CorrectionOrCancellation,
+            cancellationToken);
+        var cancellationPaperReferences = await paperReferenceReader.LoadAsync(
+            relations.CancellationsByPaymentId.Values
+                .Select(cancellation => new PaperFallbackEntryRowReferenceSource(
+                    cancellation.CancellationId,
+                    cancellation.EntryOrigin,
+                    cancellation.EntryBatchId,
+                    cancellation.OccurredAt,
+                    cancellation.RecordedByAccountId,
+                    cancellation.SessionId)).ToArray(),
+            CorrectPaymentCommand.CancellationEntityType,
+            PaperFallbackEventType.CorrectionOrCancellation,
+            cancellationToken);
+        if (paymentPaperReferences is null
+            || correctionPaperReferences is null
+            || cancellationPaperReferences is null)
         {
             return GetDailyPaymentSourceRowsResult.InconsistentSource();
         }
@@ -222,4 +274,16 @@ public sealed class GetDailyPaymentSourceRowsQueryHandler(
                 Status);
         }
     }
+
+    private static PaperFallbackEventType ExpectedPaymentEventType(
+        string paymentContext,
+        PaymentQuerySupport.CanonicalPaymentCorrectionSourceRow? incomingCorrection) =>
+        incomingCorrection is not null
+            ? PaperFallbackEventType.CorrectionOrCancellation
+            : paymentContext switch
+            {
+                "membership_sale" => PaperFallbackEventType.MembershipSale,
+                "negative_closure" => PaperFallbackEventType.NegativeCoverage,
+                _ => PaperFallbackEventType.Payment,
+            };
 }

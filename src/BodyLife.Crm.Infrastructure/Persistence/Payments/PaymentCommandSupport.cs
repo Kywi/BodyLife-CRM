@@ -141,6 +141,14 @@ internal static class PaymentCommandSupport
                 "entryBatchId");
         }
 
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback
+            && command.EntryBatchId is not null)
+        {
+            return ValidationError(
+                "Paper fallback Payment derives its entry batch from the registered row.",
+                "entryBatchId");
+        }
+
         normalizedPayment = new NormalizedCreatePayment(
             command.ClientId,
             command.MembershipId,
@@ -164,6 +172,7 @@ internal static class PaymentCommandSupport
             envelope.OccurredAt,
             EnvelopeReason = envelope.Reason,
             EnvelopeComment = envelope.Comment,
+            envelope.EntryBatchRowId,
             payment.ClientId,
             payment.MembershipId,
             Amount = payment.Amount.Amount,
@@ -459,7 +468,8 @@ internal static class PaymentCommandSupport
             occurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 

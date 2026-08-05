@@ -6,6 +6,7 @@ using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -142,6 +143,17 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
             correctedRow.AuditEntry.ActionType);
         Assert.Equal("Correct cash amount", correctedRow.AuditEntry.Reason);
         Assert.True(correctedRow.AuditEntry.ChangedAfterClose);
+        var correctionPaper = Assert.IsType<PaperFallbackEntryRowReference>(
+            correction.PaperReference);
+        Assert.Equal(source.CorrectionBatchId, correctionPaper.EntryBatchId);
+        Assert.Equal(
+            PaperFallbackEventType.CorrectionOrCancellation,
+            correctionPaper.EventType);
+        Assert.Equal("Correct cash amount", correctionPaper.Explanation);
+        Assert.Equal(
+            correctionPaper,
+            correction.ReplacementPayment.PaperReference);
+        Assert.Null(correction.OriginalPayment.PaperReference);
 
         var secondPage = AssertSuccess(secondResult, fixture.ClientId);
         Assert.False(secondPage.HasMore);
@@ -210,6 +222,53 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
             database,
             source.ReplacementPaymentId,
             TestNow.AddDays(-1).AddHours(-12).AddMinutes(1));
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientPaymentHistorySourceRowsQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+
+        AssertFailure(
+            result,
+            GetClientPaymentHistorySourceRowsStatus.SourceInconsistent);
+    }
+
+    [PostgreSqlFact]
+    public async Task QueryFailsClosedWhenPaperCorrectionLinkIsMissing()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        var source = await SeedHistoryAsync(database, fixture);
+        await DeletePaperLinkAsync(
+            database,
+            source.CorrectionEntryBatchRowId,
+            CorrectPaymentCommand.CorrectionEntityType);
+
+        var result = await CreateHandler(dbContext).ExecuteAsync(
+            new GetClientPaymentHistorySourceRowsQuery(
+                fixture.Actor,
+                fixture.ClientId),
+            CancellationToken.None);
+
+        AssertFailure(
+            result,
+            GetClientPaymentHistorySourceRowsStatus.SourceInconsistent);
+    }
+
+    [PostgreSqlFact]
+    public async Task QueryFailsClosedWhenPaperAuditReferencesAnotherRow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var fixture = await SeedFixtureAsync(database, dbContext);
+        await SeedHistoryAsync(
+            database,
+            fixture,
+            mismatchCorrectionAuditRow: true);
 
         var result = await CreateHandler(dbContext).ExecuteAsync(
             new GetClientPaymentHistorySourceRowsQuery(
@@ -427,16 +486,26 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
 
     private static async Task<PaymentHistorySourceIds> SeedHistoryAsync(
         PostgreSqlTestDatabase database,
-        PaymentHistoryFixture fixture)
+        PaymentHistoryFixture fixture,
+        bool mismatchCorrectionAuditRow = false)
     {
         var originalPaymentId = Guid.NewGuid();
         var replacementPaymentId = Guid.NewGuid();
         var canceledPaymentId = Guid.NewGuid();
         var correctionId = Guid.NewGuid();
-        var correctionBatchId = Guid.NewGuid();
         var cancellationId = Guid.NewGuid();
         var cancellationBatchId = Guid.NewGuid();
+        var correctionOccurredAt = TestNow.AddDays(-2);
         var correctionRecordedAt = TestNow.AddDays(-1).AddHours(-12);
+        var correctionPaper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            correctionOccurredAt,
+            "correction_or_cancellation",
+            correctionRecordedAt,
+            lineNumber: 4,
+            explanation: "Correct cash amount");
+        var correctionBatchId = correctionPaper.EntryBatchId;
 
         await using (var connection = new NpgsqlConnection(database.ConnectionString))
         {
@@ -583,7 +652,7 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
             command.Parameters.AddWithValue("correction_id", correctionId);
             command.Parameters.AddWithValue(
                 "correction_occurred_at",
-                TestNow.AddDays(-2));
+                correctionOccurredAt);
             command.Parameters.AddWithValue(
                 "correction_recorded_at",
                 correctionRecordedAt);
@@ -602,6 +671,16 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
                 cancellationBatchId);
             Assert.Equal(5, await command.ExecuteNonQueryAsync());
         }
+
+        await PostgreSqlPaperFallbackTestData.LinkRowAsync(
+            database,
+            correctionPaper.EntryBatchRowId,
+            new PaperFallbackEntityLink(
+                CorrectPaymentCommand.CorrectionEntityType,
+                correctionId),
+            new PaperFallbackEntityLink(
+                CorrectPaymentCommand.PaymentEntityType,
+                replacementPaymentId));
 
         await InsertAuditAsync(
             database,
@@ -636,7 +715,10 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
             correctionRecordedAt,
             "paper_fallback",
             reason: "Correct cash amount",
-            changedAfterClose: true);
+            changedAfterClose: true,
+            paper: mismatchCorrectionAuditRow
+                ? correctionPaper with { EntryBatchRowId = Guid.NewGuid() }
+                : correctionPaper);
         await InsertAuditAsync(
             database,
             fixture,
@@ -676,6 +758,7 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
             canceledPaymentId,
             correctionId,
             correctionBatchId,
+            correctionPaper.EntryBatchRowId,
             cancellationId,
             cancellationBatchId);
     }
@@ -692,7 +775,8 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
         string entryOrigin,
         string? reason = null,
         string? comment = null,
-        bool changedAfterClose = false)
+        bool changedAfterClose = false,
+        PaperFallbackRowFixture? paper = null)
     {
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
@@ -745,10 +829,21 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
         command.Parameters.AddWithValue("id", auditId);
         command.Parameters.AddWithValue("action_type", actionType);
         command.Parameters.AddWithValue("payment_id", paymentId);
+        object relatedEntityRefs = paper is null
+            ? new { ClientId = clientId }
+            : new
+            {
+                ClientId = clientId,
+                paper.EntryBatchId,
+                paper.EntryBatchRowId,
+                paper.PaperSheetNumber,
+                paper.LineNumber,
+                PaperExplanation = paper.Explanation,
+            };
         command.Parameters.Add(
             "related_entity_refs",
             NpgsqlDbType.Jsonb).Value = JsonSerializer.Serialize(
-                new { ClientId = clientId },
+                relatedEntityRefs,
                 AuditJsonOptions);
         command.Parameters.AddWithValue(
             "actor_account_id",
@@ -787,6 +882,25 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
             """;
         command.Parameters.AddWithValue("recorded_at", recordedAt);
         command.Parameters.AddWithValue("payment_id", paymentId);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    private static async Task DeletePaperLinkAsync(
+        PostgreSqlTestDatabase database,
+        Guid entryBatchRowId,
+        string entityType)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            delete from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = @row_id
+              and entity_type = @entity_type
+            """;
+        command.Parameters.AddWithValue("row_id", entryBatchRowId);
+        command.Parameters.AddWithValue("entity_type", entityType);
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
 
@@ -844,6 +958,7 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
         Guid CanceledPaymentId,
         Guid CorrectionId,
         Guid CorrectionBatchId,
+        Guid CorrectionEntryBatchRowId,
         Guid CancellationId,
         Guid CancellationBatchId);
 

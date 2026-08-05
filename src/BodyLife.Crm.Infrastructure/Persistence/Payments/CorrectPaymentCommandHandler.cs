@@ -1,8 +1,10 @@
 using System.Data;
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
+using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +14,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Payments;
 public sealed class CorrectPaymentCommandHandler(
     BodyLifeDbContext dbContext,
     BusinessAuditAppender auditAppender,
+    PaperFallbackEntryRowBinder paperFallbackEntryRowBinder,
     IPaymentDayReconciliationStatusProvider dayReconciliationStatusProvider,
     TimeProvider timeProvider)
     : IBodyLifeCommandHandler<CorrectPaymentCommand>
@@ -74,9 +77,17 @@ public sealed class CorrectPaymentCommandHandler(
                     cancellationToken));
             }
 
-            var original = await LockOriginalPaymentAsync(
+            var originalClientId = await FindOriginalPaymentClientIdAsync(
                 correction.OriginalPaymentId,
                 cancellationToken);
+            if (originalClientId is null
+                || !await LockClientAsync(originalClientId.Value, cancellationToken))
+            {
+                return await RollBackAsync(CorrectPaymentCommandSupport.Error(
+                    CommandErrorCode.NotFound,
+                    "Original Payment was not found.",
+                    "originalPaymentId"));
+            }
 
             existingIdempotency = await PaymentCommandSupport.FindIdempotencyAsync(
                 dbContext,
@@ -91,6 +102,36 @@ public sealed class CorrectPaymentCommandHandler(
                     fingerprint,
                     cancellationToken));
             }
+
+            var paperBinding = await paperFallbackEntryRowBinder.PrepareAsync(
+                correction.Envelope,
+                PaperFallbackEventType.CorrectionOrCancellation,
+                cancellationToken);
+            if (paperBinding.RowAlreadyLinked)
+            {
+                existingIdempotency = await PaymentCommandSupport.FindIdempotencyAsync(
+                    dbContext,
+                    CommandName,
+                    correction.Envelope.IdempotencyKey!,
+                    cancellationToken);
+                if (existingIdempotency is not null)
+                {
+                    return await RollBackAsync(await ReplayOrRejectDuplicateAsync(
+                        existingIdempotency,
+                        correction,
+                        fingerprint,
+                        cancellationToken));
+                }
+            }
+
+            if (paperBinding.Error is not null)
+            {
+                return await RollBackAsync(paperBinding.Error);
+            }
+
+            var original = await LockOriginalPaymentAsync(
+                correction.OriginalPaymentId,
+                cancellationToken);
 
             if (original is null)
             {
@@ -204,7 +245,7 @@ public sealed class CorrectPaymentCommandHandler(
                     SessionId = correction.Envelope.Actor.SessionId.Value,
                     EntryOrigin = PaymentCommandSupport.MapEntryOrigin(
                         correction.Envelope.EntryOrigin),
-                    EntryBatchId = correction.EntryBatchId,
+                    EntryBatchId = paperBinding.Reference?.EntryBatchId ?? correction.EntryBatchId,
                     Comment = replacement.Comment,
                     Status = "active",
                 };
@@ -222,21 +263,47 @@ public sealed class CorrectPaymentCommandHandler(
                     RecordedByAccountId = correction.Envelope.Actor.AccountId.Value,
                     SessionId = correction.Envelope.Actor.SessionId.Value,
                     EntryOrigin = replacementRecord.EntryOrigin,
-                    EntryBatchId = correction.EntryBatchId,
+                    EntryBatchId = paperBinding.Reference?.EntryBatchId ?? correction.EntryBatchId,
                 };
 
                 original.Status = "replaced";
                 dbContext.Set<PaymentRecord>().Add(replacementRecord);
                 dbContext.Set<PaymentCorrectionRecord>().Add(correctionRecord);
-                relatedEntityRefs = new
+                if (paperBinding.Reference is { } replacementPaperReference)
                 {
-                    original.ClientId,
-                    OriginalPaymentId = original.Id,
-                    OriginalMembershipId = original.MembershipId,
-                    ReplacementPaymentId = replacementRecord.Id,
-                    ReplacementMembershipId = replacementRecord.MembershipId,
-                    CorrectionId = correctionRecord.Id,
-                };
+                    paperFallbackEntryRowBinder.LinkEntity(
+                        replacementPaperReference,
+                        CorrectPaymentCommand.CorrectionEntityType,
+                        correctionRecord.Id);
+                    paperFallbackEntryRowBinder.LinkEntity(
+                        replacementPaperReference,
+                        CorrectPaymentCommand.PaymentEntityType,
+                        replacementRecord.Id);
+                }
+                relatedEntityRefs = paperBinding.Reference is { } replacementAuditPaperReference
+                    ? new
+                    {
+                        original.ClientId,
+                        OriginalPaymentId = original.Id,
+                        OriginalMembershipId = original.MembershipId,
+                        ReplacementPaymentId = replacementRecord.Id,
+                        ReplacementMembershipId = replacementRecord.MembershipId,
+                        CorrectionId = correctionRecord.Id,
+                        replacementAuditPaperReference.EntryBatchId,
+                        replacementAuditPaperReference.EntryBatchRowId,
+                        replacementAuditPaperReference.PaperSheetNumber,
+                        replacementAuditPaperReference.LineNumber,
+                        PaperExplanation = replacementAuditPaperReference.Explanation,
+                    }
+                    : new
+                    {
+                        original.ClientId,
+                        OriginalPaymentId = original.Id,
+                        OriginalMembershipId = original.MembershipId,
+                        ReplacementPaymentId = replacementRecord.Id,
+                        ReplacementMembershipId = replacementRecord.MembershipId,
+                        CorrectionId = correctionRecord.Id,
+                    };
                 afterSummary = new
                 {
                     Correction = new
@@ -269,18 +336,38 @@ public sealed class CorrectPaymentCommandHandler(
                     SessionId = correction.Envelope.Actor.SessionId.Value,
                     EntryOrigin = PaymentCommandSupport.MapEntryOrigin(
                         correction.Envelope.EntryOrigin),
-                    EntryBatchId = correction.EntryBatchId,
+                    EntryBatchId = paperBinding.Reference?.EntryBatchId ?? correction.EntryBatchId,
                 };
 
                 original.Status = "canceled";
                 dbContext.Set<PaymentCancellationRecord>().Add(cancellationRecord);
-                relatedEntityRefs = new
+                if (paperBinding.Reference is { } cancellationPaperReference)
                 {
-                    original.ClientId,
-                    PaymentId = original.Id,
-                    original.MembershipId,
-                    CancellationId = cancellationRecord.Id,
-                };
+                    paperFallbackEntryRowBinder.LinkEntity(
+                        cancellationPaperReference,
+                        CorrectPaymentCommand.CancellationEntityType,
+                        cancellationRecord.Id);
+                }
+                relatedEntityRefs = paperBinding.Reference is { } cancellationAuditPaperReference
+                    ? new
+                    {
+                        original.ClientId,
+                        PaymentId = original.Id,
+                        original.MembershipId,
+                        CancellationId = cancellationRecord.Id,
+                        cancellationAuditPaperReference.EntryBatchId,
+                        cancellationAuditPaperReference.EntryBatchRowId,
+                        cancellationAuditPaperReference.PaperSheetNumber,
+                        cancellationAuditPaperReference.LineNumber,
+                        PaperExplanation = cancellationAuditPaperReference.Explanation,
+                    }
+                    : new
+                    {
+                        original.ClientId,
+                        PaymentId = original.Id,
+                        original.MembershipId,
+                        CancellationId = cancellationRecord.Id,
+                    };
                 afterSummary = new
                 {
                     Cancellation = new
@@ -369,6 +456,31 @@ public sealed class CorrectPaymentCommandHandler(
                 """)
             .ToArrayAsync(cancellationToken);
         return payments.SingleOrDefault();
+    }
+
+    private Task<Guid?> FindOriginalPaymentClientIdAsync(
+        Guid paymentId,
+        CancellationToken cancellationToken) =>
+        dbContext.Set<PaymentRecord>()
+            .AsNoTracking()
+            .Where(payment => payment.Id == paymentId)
+            .Select(payment => (Guid?)payment.ClientId)
+            .SingleOrDefaultAsync(cancellationToken);
+
+    private async Task<bool> LockClientAsync(
+        Guid clientId,
+        CancellationToken cancellationToken)
+    {
+        var clients = await dbContext.Set<ClientRecord>()
+            .FromSqlInterpolated($"""
+                select *
+                from bodylife.clients
+                where id = {clientId}
+                for update
+                """)
+            .AsNoTracking()
+            .ToArrayAsync(cancellationToken);
+        return clients.Length == 1;
     }
 
     private async Task<bool> LockMembershipAsync(

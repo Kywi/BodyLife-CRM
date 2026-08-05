@@ -67,7 +67,15 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var fixture = await SeedFixtureAsync(database, dbContext);
-        var originalBatchId = Guid.NewGuid();
+        var originalPaper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            AtBusinessTime(9),
+            "payment",
+            TestNow.AddMinutes(-30),
+            lineNumber: 3,
+            explanation: "Recovered membership sale");
+        var originalBatchId = originalPaper.EntryBatchId;
         var originalPaymentId = await InsertPaymentAsync(
             database,
             fixture,
@@ -81,6 +89,12 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             entryBatchId: originalBatchId,
             comment: "Recovered membership sale",
             status: "replaced");
+        await PostgreSqlPaperFallbackTestData.LinkRowAsync(
+            database,
+            originalPaper.EntryBatchRowId,
+            new PaperFallbackEntityLink(
+                CorrectPaymentCommand.PaymentEntityType,
+                originalPaymentId));
         var replacementPaymentId = await InsertPaymentAsync(
             database,
             fixture,
@@ -113,7 +127,15 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             AtBusinessTime(12),
             TestNow.AddMinutes(-10),
             status: "canceled");
-        var cancellationBatchId = Guid.NewGuid();
+        var cancellationPaper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            AtBusinessTime(12).AddMinutes(30),
+            "correction_or_cancellation",
+            TestNow.AddMinutes(-8),
+            lineNumber: 4,
+            explanation: "Duplicate daily cash entry");
+        var cancellationBatchId = cancellationPaper.EntryBatchId;
         var cancellationId = await InsertCancellationAsync(
             database,
             fixture,
@@ -123,6 +145,12 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             TestNow.AddMinutes(-8),
             "paper_fallback",
             cancellationBatchId);
+        await PostgreSqlPaperFallbackTestData.LinkRowAsync(
+            database,
+            cancellationPaper.EntryBatchRowId,
+            new PaperFallbackEntityLink(
+                CorrectPaymentCommand.CancellationEntityType,
+                cancellationId));
         var oneOffPaymentId = await InsertPaymentAsync(
             database,
             fixture,
@@ -161,8 +189,9 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             TestNow);
         var dayProvider = new RecordingPaymentDayStatusProvider(
             PaymentDayReconciliationStatus.Open);
+        var handler = CreateHandler(dbContext, dayProvider);
 
-        var result = await CreateHandler(dbContext, dayProvider).ExecuteAsync(
+        var result = await handler.ExecuteAsync(
             new GetDailyPaymentSourceRowsQuery(fixture.Actor, BusinessDate),
             CancellationToken.None);
 
@@ -243,6 +272,17 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             0L,
             await database.ExecuteScalarAsync<long>(
                 "select count(*) from bodylife.business_audit_entries"));
+
+        await DeletePaperLinkAsync(
+            database,
+            cancellationPaper.EntryBatchRowId,
+            CorrectPaymentCommand.CancellationEntityType);
+        var inconsistent = await handler.ExecuteAsync(
+            new GetDailyPaymentSourceRowsQuery(fixture.Actor, BusinessDate),
+            CancellationToken.None);
+        AssertFailure(
+            inconsistent,
+            GetDailyPaymentSourceRowsStatus.SourceInconsistent);
     }
 
     [PostgreSqlFact]
@@ -1050,6 +1090,25 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             entryBatchId ?? (object)DBNull.Value;
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
         return correctionId;
+    }
+
+    private static async Task DeletePaperLinkAsync(
+        PostgreSqlTestDatabase database,
+        Guid entryBatchRowId,
+        string entityType)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            delete from bodylife.entry_batch_row_entities
+            where entry_batch_row_id = @row_id
+              and entity_type = @entity_type
+            """;
+        command.Parameters.AddWithValue("row_id", entryBatchRowId);
+        command.Parameters.AddWithValue("entity_type", entityType);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
 
     private static async Task<DailyCashSnapshot> ReadDailyCashAsync(

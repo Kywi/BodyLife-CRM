@@ -63,6 +63,14 @@ internal static class CorrectPaymentCommandSupport
                 "entryBatchId");
         }
 
+        if (canonicalEnvelope.EntryOrigin == EntryOrigin.PaperFallback
+            && command.EntryBatchId is not null)
+        {
+            return ValidationError(
+                "Paper fallback Payment correction derives its entry batch from the registered row.",
+                "entryBatchId");
+        }
+
         NormalizedPaymentReplacement? replacement = null;
         if (command.Mode == PaymentCorrectionMode.Cancel)
         {
@@ -113,6 +121,7 @@ internal static class CorrectPaymentCommandSupport
             envelope.OccurredAt,
             EnvelopeReason = envelope.Reason,
             EnvelopeComment = envelope.Comment,
+            envelope.EntryBatchRowId,
             correction.OriginalPaymentId,
             Mode = correction.Mode.ToString(),
             Replacement = correction.Replacement is null
@@ -528,7 +537,8 @@ internal static class CorrectPaymentCommandSupport
             occurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 

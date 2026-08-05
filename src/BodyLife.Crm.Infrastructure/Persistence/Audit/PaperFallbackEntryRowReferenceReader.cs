@@ -73,9 +73,10 @@ internal sealed class PaperFallbackEntryRowReferenceReader(
             var row = rowsById[link.EntryBatchRowId];
             var batch = batchesById[row.EntryBatchId];
             var source = sourcesById[link.EntityId];
+            var sourceExpectedEventType = source.ExpectedEventType ?? expectedEventType;
             if (batch.BatchType != "paper_fallback"
                 || row.EventType
-                    != PaperFallbackCommandSupport.MapEventType(expectedEventType)
+                    != PaperFallbackCommandSupport.MapEventType(sourceExpectedEventType)
                 || string.IsNullOrWhiteSpace(batch.PaperSheetNumber)
                 || batch.PaperSheetNumber
                     != batch.PaperSheetNumber.Trim().ToUpperInvariant()
@@ -101,7 +102,7 @@ internal sealed class PaperFallbackEntryRowReferenceReader(
                     row.Id,
                     batch.PaperSheetNumber,
                     row.LineNumber,
-                    expectedEventType,
+                    sourceExpectedEventType,
                     row.OccurredAt,
                     row.Explanation));
         }
@@ -171,4 +172,5 @@ internal sealed record PaperFallbackEntryRowReferenceSource(
     Guid? EntryBatchId,
     DateTimeOffset OccurredAt,
     Guid RecordedByAccountId,
-    Guid SessionId);
+    Guid SessionId,
+    PaperFallbackEventType? ExpectedEventType = null);

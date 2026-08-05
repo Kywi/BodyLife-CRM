@@ -1,5 +1,6 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
+using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Payments;
@@ -113,6 +114,56 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             return GetClientPaymentHistorySourceRowsResult.InconsistentSource();
         }
 
+        var paperReferenceReader = new PaperFallbackEntryRowReferenceReader(dbContext);
+        var paymentPaperReferences = await paperReferenceReader.LoadAsync(
+            paymentRows.Select(row =>
+            {
+                relations.CorrectionsFromOriginalByPaymentId.TryGetValue(
+                    row.Payment.Id,
+                    out var incomingCorrection);
+                return new PaperFallbackEntryRowReferenceSource(
+                    row.Payment.Id,
+                    row.Payment.EntryOrigin,
+                    row.Payment.EntryBatchId,
+                    incomingCorrection?.OccurredAt ?? row.Payment.OccurredAt,
+                    row.Payment.RecordedByAccountId,
+                    row.Payment.SessionId,
+                    ExpectedPaymentEventType(row.Payment, incomingCorrection));
+            }).ToArray(),
+            CorrectPaymentCommand.PaymentEntityType,
+            PaperFallbackEventType.Payment,
+            cancellationToken);
+        var correctionPaperReferences = await paperReferenceReader.LoadAsync(
+            relations.CorrectionsToReplacementByPaymentId.Values
+                .Select(correction => new PaperFallbackEntryRowReferenceSource(
+                    correction.CorrectionId,
+                    correction.EntryOrigin,
+                    correction.EntryBatchId,
+                    correction.OccurredAt,
+                    correction.RecordedByAccountId,
+                    correction.SessionId)).ToArray(),
+            CorrectPaymentCommand.CorrectionEntityType,
+            PaperFallbackEventType.CorrectionOrCancellation,
+            cancellationToken);
+        var cancellationPaperReferences = await paperReferenceReader.LoadAsync(
+            relations.CancellationsByPaymentId.Values
+                .Select(cancellation => new PaperFallbackEntryRowReferenceSource(
+                    cancellation.CancellationId,
+                    cancellation.EntryOrigin,
+                    cancellation.EntryBatchId,
+                    cancellation.OccurredAt,
+                    cancellation.RecordedByAccountId,
+                    cancellation.SessionId)).ToArray(),
+            CorrectPaymentCommand.CancellationEntityType,
+            PaperFallbackEventType.CorrectionOrCancellation,
+            cancellationToken);
+        if (paymentPaperReferences is null
+            || correctionPaperReferences is null
+            || cancellationPaperReferences is null)
+        {
+            return GetClientPaymentHistorySourceRowsResult.InconsistentSource();
+        }
+
         var sourcesByPaymentId = new Dictionary<Guid, CanonicalPaymentHistorySource>(
             paymentRows.Length);
 
@@ -133,6 +184,19 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
                     cancellation,
                     correctionFromOriginal,
                     correctionToReplacement,
+                    paymentPaperReferences.GetValueOrDefault(paymentId),
+                    correctionFromOriginal is null
+                        ? null
+                        : correctionPaperReferences.GetValueOrDefault(
+                            correctionFromOriginal.CorrectionId),
+                    correctionToReplacement is null
+                        ? null
+                        : correctionPaperReferences.GetValueOrDefault(
+                            correctionToReplacement.CorrectionId),
+                    cancellation is null
+                        ? null
+                        : cancellationPaperReferences.GetValueOrDefault(
+                            cancellation.CancellationId),
                     out var source)
                 || source is null)
             {
@@ -202,6 +266,10 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             correctionFromOriginal,
         PaymentQuerySupport.CanonicalPaymentCorrectionSourceRow?
             correctionToReplacement,
+        PaperFallbackEntryRowReference? paperReference,
+        PaperFallbackEntryRowReference? correctionFromPaperReference,
+        PaperFallbackEntryRowReference? correctionToPaperReference,
+        PaperFallbackEntryRowReference? cancellationPaperReference,
         out CanonicalPaymentHistorySource? source)
     {
         source = null;
@@ -209,7 +277,27 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
         if (payment.Id == Guid.Empty
             || payment.ClientId == Guid.Empty
             || payment.RecordedByAccountId == Guid.Empty
-            || payment.SessionId == Guid.Empty)
+            || payment.SessionId == Guid.Empty
+            || payment.EntryOrigin == "paper_fallback" && paperReference is null
+            || payment.EntryOrigin != "paper_fallback" && paperReference is not null
+            || correctionFromOriginal is not null
+                && correctionFromOriginal.EntryOrigin == "paper_fallback"
+                && correctionFromPaperReference is null
+            || correctionFromOriginal is not null
+                && correctionFromOriginal.EntryOrigin != "paper_fallback"
+                && correctionFromPaperReference is not null
+            || correctionToReplacement is not null
+                && correctionToReplacement.EntryOrigin == "paper_fallback"
+                && correctionToPaperReference is null
+            || correctionToReplacement is not null
+                && correctionToReplacement.EntryOrigin != "paper_fallback"
+                && correctionToPaperReference is not null
+            || cancellation is not null
+                && cancellation.EntryOrigin == "paper_fallback"
+                && cancellationPaperReference is null
+            || cancellation is not null
+                && cancellation.EntryOrigin != "paper_fallback"
+                && cancellationPaperReference is not null)
         {
             return false;
         }
@@ -261,11 +349,15 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             projection.Status,
             projection.Cancellation?.CancellationId,
             projection.CorrectionFromOriginal?.CorrectionId,
-            projection.CorrectionToReplacement?.CorrectionId);
+            projection.CorrectionToReplacement?.CorrectionId,
+            paperReference);
         source = new CanonicalPaymentHistorySource(
             payment,
             paymentSource,
-            projection);
+            projection,
+            correctionFromPaperReference,
+            correctionToPaperReference,
+            cancellationPaperReference);
         return true;
     }
 
@@ -282,7 +374,11 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             || auditEntry.ActorAccountId.Value != payment.RecordedByAccountId
             || auditEntry.SessionId.Value != payment.SessionId
             || auditEntry.EntryOrigin != source.Source.EntryOrigin
-            || auditEntry.Comment != payment.Comment)
+            || auditEntry.Comment != payment.Comment
+            || !PaperFallbackEntryRowReferenceReader.HasMatchingAuditReference(
+                auditEntry,
+                payment.EntryBatchId,
+                source.Source.PaperReference))
         {
             return null;
         }
@@ -307,8 +403,12 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
     {
         var correction = original.Projection.CorrectionToReplacement;
         if (correction is null
-            || original.Source.CurrentStatus != ClientPaymentRowStatus.Replaced
-            || !sourcesByPaymentId.TryGetValue(
+            || original.Source.CurrentStatus != ClientPaymentRowStatus.Replaced)
+        {
+            return null;
+        }
+
+        if (!sourcesByPaymentId.TryGetValue(
                 correction.ReplacementPaymentId,
                 out var replacement)
             || replacement.Source.IncomingCorrectionId != correction.CorrectionId
@@ -326,7 +426,11 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             || auditEntry.ActorAccountId.Value != correction.RecordedByAccountId
             || auditEntry.SessionId.Value != correction.SessionId
             || auditEntry.EntryOrigin != correction.EntryOrigin
-            || auditEntry.Reason != correction.Reason)
+            || auditEntry.Reason != correction.Reason
+            || !PaperFallbackEntryRowReferenceReader.HasMatchingAuditReference(
+                auditEntry,
+                correction.EntryBatchId,
+                original.CorrectionToPaperReference))
         {
             return null;
         }
@@ -345,7 +449,8 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             correction.EntryOrigin,
             correction.EntryBatchId,
             original.Source,
-            replacement.Source);
+            replacement.Source,
+            original.CorrectionToPaperReference);
         return new ClientPaymentHistorySourceRow(
             ClientPaymentHistorySourceKind.CorrectedPayment,
             original.Payment.ClientId,
@@ -365,8 +470,12 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
     {
         var cancellation = source.Projection.Cancellation;
         if (cancellation is null
-            || source.Source.CurrentStatus != ClientPaymentRowStatus.Canceled
-            || auditEntry.ActionType != PaymentAuditActions.Canceled
+            || source.Source.CurrentStatus != ClientPaymentRowStatus.Canceled)
+        {
+            return null;
+        }
+
+        if (auditEntry.ActionType != PaymentAuditActions.Canceled
             || auditEntry.EntityType != ClientAuditEntityFilter.Payment
             || auditEntry.EntityId != source.Payment.Id
             || auditEntry.OccurredAt != cancellation.OccurredAt
@@ -375,7 +484,11 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
                 != cancellation.RecordedByAccountId
             || auditEntry.SessionId.Value != cancellation.SessionId
             || auditEntry.EntryOrigin != cancellation.EntryOrigin
-            || auditEntry.Reason != cancellation.Reason)
+            || auditEntry.Reason != cancellation.Reason
+            || !PaperFallbackEntryRowReferenceReader.HasMatchingAuditReference(
+                auditEntry,
+                cancellation.EntryBatchId,
+                source.CancellationPaperReference))
         {
             return null;
         }
@@ -391,7 +504,8 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
             new SessionId(cancellation.SessionId),
             cancellation.EntryOrigin,
             cancellation.EntryBatchId,
-            source.Source);
+            source.Source,
+            source.CancellationPaperReference);
         return new ClientPaymentHistorySourceRow(
             ClientPaymentHistorySourceKind.CanceledPayment,
             source.Payment.ClientId,
@@ -422,6 +536,18 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
         };
     }
 
+    private static PaperFallbackEventType ExpectedPaymentEventType(
+        PaymentRecord payment,
+        PaymentQuerySupport.CanonicalPaymentCorrectionSourceRow? incomingCorrection) =>
+        incomingCorrection is not null
+            ? PaperFallbackEventType.CorrectionOrCancellation
+            : payment.PaymentContext switch
+            {
+                "membership_sale" => PaperFallbackEventType.MembershipSale,
+                "negative_closure" => PaperFallbackEventType.NegativeCoverage,
+                _ => PaperFallbackEventType.Payment,
+            };
+
     private sealed record PaymentStorageRow(
         PaymentRecord Payment,
         Guid? MembershipClientId,
@@ -430,5 +556,8 @@ public sealed class GetClientPaymentHistorySourceRowsQueryHandler(
     private sealed record CanonicalPaymentHistorySource(
         PaymentRecord Payment,
         PaymentHistorySource Source,
-        PaymentQuerySupport.CanonicalPaymentProjection Projection);
+        PaymentQuerySupport.CanonicalPaymentProjection Projection,
+        PaperFallbackEntryRowReference? CorrectionFromPaperReference,
+        PaperFallbackEntryRowReference? CorrectionToPaperReference,
+        PaperFallbackEntryRowReference? CancellationPaperReference);
 }

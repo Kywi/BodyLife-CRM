@@ -265,9 +265,9 @@ public sealed class AuditEntryExplanationPresenter(
                         before.RootElement,
                         after.RootElement),
                 "payment.corrected" when entry.EntityType == AuditTimelineEntityType.Payment
-                    => CreatePaymentCorrection(entry, before.RootElement, after.RootElement),
+                    => CreatePaymentCorrection(entry, related.RootElement, before.RootElement, after.RootElement),
                 "payment.canceled" when entry.EntityType == AuditTimelineEntityType.Payment
-                    => CreatePaymentCancellation(entry, before.RootElement, after.RootElement),
+                    => CreatePaymentCancellation(entry, related.RootElement, before.RootElement, after.RootElement),
                 _ => Unavailable(kind),
             };
         }
@@ -809,6 +809,42 @@ public sealed class AuditEntryExplanationPresenter(
             explanation);
     }
 
+    private void AddPaperReferenceFacts(
+        ICollection<AuditEntryExplanationFactViewModel> facts,
+        PaperReferenceSnapshot? paperReference,
+        PaperFallbackEventType eventType)
+    {
+        if (paperReference is null)
+        {
+            return;
+        }
+
+        facts.Add(Fact("Paper fallback batch", TimelineModel.ShortId(paperReference.EntryBatchId)));
+        facts.Add(Fact("Paper sheet", paperReference.PaperSheetNumber));
+        facts.Add(Fact("Paper row", TimelineModel.ShortId(paperReference.EntryBatchRowId)));
+        facts.Add(Fact("Line number", Presentation.Number(paperReference.LineNumber)));
+        facts.Add(Fact("Event type", PaperEventTypeLabel(eventType)));
+        facts.Add(Fact("Explanation", paperReference.Explanation));
+    }
+
+    private string PaperEventTypeLabel(PaperFallbackEventType eventType) =>
+        Presentation.Text(eventType switch
+        {
+            PaperFallbackEventType.Visit => "PaperFallback.EventType.visit",
+            PaperFallbackEventType.Payment => "PaperFallback.EventType.payment",
+            PaperFallbackEventType.Freeze => "PaperFallback.EventType.freeze",
+            PaperFallbackEventType.MembershipSale =>
+                "PaperFallback.EventType.membership_sale",
+            PaperFallbackEventType.NegativeCoverage =>
+                "PaperFallback.EventType.negative_coverage",
+            PaperFallbackEventType.CorrectionOrCancellation =>
+                "PaperFallback.EventType.correction_or_cancellation",
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(eventType),
+                eventType,
+                "Unsupported paper fallback event type."),
+        });
+
     private static Guid? ReadOptionalGuid(JsonElement parent, string propertyName)
     {
         if (!parent.TryGetProperty(propertyName, out var value)
@@ -1195,6 +1231,7 @@ public sealed class AuditEntryExplanationPresenter(
 
     private AuditEntryExplanationViewModel CreatePaymentCorrection(
         AuditTimelineEntry entry,
+        JsonElement related,
         JsonElement before,
         JsonElement after)
     {
@@ -1202,14 +1239,54 @@ public sealed class AuditEntryExplanationPresenter(
         var preservedOriginal = ReadPayment(RequireObject(after, "originalPayment"));
         var replacement = ReadPayment(RequireObject(after, "replacementPayment"));
         var correction = RequireObject(after, "correction");
+        var correctionId = RequireGuid(correction, "correctionId");
+        var correctionReason = RequireString(correction, "reason");
+        var correctionOccurredAt = RequireTimestamp(correction, "occurredAt");
+        var correctionRecordedAt = RequireTimestamp(correction, "recordedAt");
+        var correctionEntryOrigin = RequireString(correction, "entryOrigin");
+        var correctionEntryBatchId = RequireNullableGuid(
+            correction,
+            "entryBatchId");
+        var correctionChangedAfterClose = RequireBoolean(
+            correction,
+            "changedAfterClose");
         var changedFields = RequireStringArray(correction, "changedFields");
+        var paperReference = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            correctionEntryBatchId,
+            "Payment correction");
+        ValidateEntryBatch(correctionEntryOrigin, correctionEntryBatchId);
 
         if (original.PaymentId != entry.EntityId
+            || original.ClientId != RequireGuid(related, "clientId")
             || preservedOriginal.PaymentId != original.PaymentId
             || RequireGuid(correction, "originalPaymentId") != original.PaymentId
             || RequireGuid(correction, "replacementPaymentId") != replacement.PaymentId
-            || RequireGuid(correction, "correctionId") == Guid.Empty
+            || correctionId == Guid.Empty
+            || RequireGuid(related, "originalPaymentId") != original.PaymentId
+            || RequireNullableGuid(related, "originalMembershipId")
+                != original.MembershipId
+            || RequireGuid(related, "replacementPaymentId") != replacement.PaymentId
+            || RequireNullableGuid(related, "replacementMembershipId")
+                != replacement.MembershipId
+            || RequireGuid(related, "correctionId") != correctionId
             || replacement.PaymentId == original.PaymentId
+            || replacement.ClientId != original.ClientId
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                replacement.RecordedAt,
+                correctionRecordedAt)
+            || replacement.EntryOrigin != correctionEntryOrigin
+            || replacement.EntryBatchId != correctionEntryBatchId
+            || correctionReason != entry.Reason
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                correctionOccurredAt,
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                correctionRecordedAt,
+                entry.RecordedAt)
+            || correctionEntryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || correctionChangedAfterClose != entry.ChangedAfterClose
             || original.Status != "active"
             || preservedOriginal.Status != "replaced"
             || (preservedOriginal with { Status = "active" }) != original
@@ -1219,13 +1296,19 @@ public sealed class AuditEntryExplanationPresenter(
             throw new JsonException("Payment correction summary identity is inconsistent.");
         }
 
+        var afterFacts = new List<AuditEntryExplanationFactViewModel>
+        {
+            Fact("Original status", Presentation.Status("Replaced")),
+        };
+        afterFacts.AddRange(PaymentFacts(replacement));
+        AddPaperReferenceFacts(
+            afterFacts,
+            paperReference,
+            PaperFallbackEventType.CorrectionOrCancellation);
         return CreateExplanation("PaymentCorrected",
             "payment-corrected",
             PaymentFacts(original),
-            [
-                Fact("Original status", Presentation.Status("Replaced")),
-                .. PaymentFacts(replacement),
-            ],
+            afterFacts,
             string.Join(", ", changedFields.Select(ChangedFieldLabel)),
             IsAvailable: true);
     }
@@ -1247,6 +1330,11 @@ public sealed class AuditEntryExplanationPresenter(
         var relatedMembershipId = RequireNullableGuid(related, "membershipId");
         var payment = ReadCreatedPayment(RequireObject(after, "payment"));
         ValidateEntryBatch(payment.EntryOrigin, payment.EntryBatchId);
+        var paperReference = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            payment.EntryBatchId,
+            "Payment");
 
         if (payment.PaymentId != entry.EntityId
             || payment.ClientId != relatedClientId
@@ -1266,38 +1354,75 @@ public sealed class AuditEntryExplanationPresenter(
         }
 
         var context = PaymentContextLabel(payment.PaymentContext);
+        var afterFacts = new List<AuditEntryExplanationFactViewModel>
+        {
+            Fact("Payment", TimelineModel.ShortId(payment.PaymentId)),
+            Fact("Client", TimelineModel.ShortId(payment.ClientId)),
+            Fact("Amount", MoneyLabel(payment.Amount, payment.Currency)),
+            Fact("Method", PaymentMethodLabel(payment.Method)),
+            Fact("Context", context),
+            Fact("Membership", OptionalIdLabel(payment.MembershipId)),
+            Fact("Occurred", TimelineModel.TimestampLabel(payment.OccurredAt)),
+            Fact("Status", Presentation.Status("Active")),
+        };
+        AddPaperReferenceFacts(
+            afterFacts,
+            paperReference,
+            PaymentPaperEventType(payment.PaymentContext));
         return CreateExplanation("PaymentCreated",
             "payment-created",
             [
                 Fact("Payment", Presentation.Value("NotPresent")),
             ],
-            [
-                Fact("Payment", TimelineModel.ShortId(payment.PaymentId)),
-                Fact("Client", TimelineModel.ShortId(payment.ClientId)),
-                Fact("Amount", MoneyLabel(payment.Amount, payment.Currency)),
-                Fact("Method", PaymentMethodLabel(payment.Method)),
-                Fact("Context", context),
-                Fact("Membership", OptionalIdLabel(payment.MembershipId)),
-                Fact("Occurred", TimelineModel.TimestampLabel(payment.OccurredAt)),
-                Fact("Status", Presentation.Status("Active")),
-            ],
+            afterFacts,
             ChangedFields: Presentation.Changed("Payment"),
             IsAvailable: true);
     }
 
     private AuditEntryExplanationViewModel CreatePaymentCancellation(
         AuditTimelineEntry entry,
+        JsonElement related,
         JsonElement before,
         JsonElement after)
     {
         var original = ReadPayment(RequireObject(before, "payment"));
         var canceled = ReadPayment(RequireObject(after, "payment"));
         var cancellation = RequireObject(after, "cancellation");
+        var cancellationId = RequireGuid(cancellation, "cancellationId");
+        var cancellationReason = RequireString(cancellation, "reason");
+        var cancellationOccurredAt = RequireTimestamp(cancellation, "occurredAt");
+        var cancellationRecordedAt = RequireTimestamp(cancellation, "recordedAt");
+        var cancellationEntryOrigin = RequireString(cancellation, "entryOrigin");
+        var cancellationEntryBatchId = RequireNullableGuid(
+            cancellation,
+            "entryBatchId");
+        var cancellationChangedAfterClose = RequireBoolean(
+            cancellation,
+            "changedAfterClose");
+        var paperReference = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            cancellationEntryBatchId,
+            "Payment cancellation");
+        ValidateEntryBatch(cancellationEntryOrigin, cancellationEntryBatchId);
 
         if (original.PaymentId != entry.EntityId
+            || original.ClientId != RequireGuid(related, "clientId")
             || canceled.PaymentId != original.PaymentId
             || RequireGuid(cancellation, "paymentId") != original.PaymentId
-            || RequireGuid(cancellation, "cancellationId") == Guid.Empty
+            || cancellationId == Guid.Empty
+            || RequireGuid(related, "paymentId") != original.PaymentId
+            || RequireNullableGuid(related, "membershipId") != original.MembershipId
+            || RequireGuid(related, "cancellationId") != cancellationId
+            || cancellationReason != entry.Reason
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                cancellationOccurredAt,
+                entry.OccurredAt)
+            || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
+                cancellationRecordedAt,
+                entry.RecordedAt)
+            || cancellationEntryOrigin != EntryOriginValue(entry.EntryOrigin)
+            || cancellationChangedAfterClose != entry.ChangedAfterClose
             || original.Status != "active"
             || canceled.Status != "canceled"
             || (canceled with { Status = "active" }) != original)
@@ -1305,13 +1430,28 @@ public sealed class AuditEntryExplanationPresenter(
             throw new JsonException("Payment cancellation summary identity is inconsistent.");
         }
 
+        var afterFacts = PaymentFacts(canceled).ToList();
+        AddPaperReferenceFacts(
+            afterFacts,
+            paperReference,
+            PaperFallbackEventType.CorrectionOrCancellation);
         return CreateExplanation("PaymentCanceled",
             "payment-canceled",
             PaymentFacts(original),
-            PaymentFacts(canceled),
+            afterFacts,
             ChangedFields: Presentation.Changed("PaymentStatus"),
             IsAvailable: true);
     }
+
+    private static PaperFallbackEventType PaymentPaperEventType(
+        string paymentContext) => paymentContext switch
+        {
+            "membership_sale" => PaperFallbackEventType.MembershipSale,
+            "negative_closure" => PaperFallbackEventType.NegativeCoverage,
+            "one_off" or "trial" or "other" => PaperFallbackEventType.Payment,
+            _ => throw new JsonException(
+                $"Unsupported Payment context '{paymentContext}'."),
+        };
 
     private AuditEntryExplanationViewModel CreateMembershipIssue(
         AuditTimelineEntry entry,
@@ -1839,12 +1979,17 @@ public sealed class AuditEntryExplanationPresenter(
     {
         return new PaymentSnapshot(
             RequireGuid(payment, "paymentId"),
+            RequireGuid(payment, "clientId"),
             RequireNullableGuid(payment, "membershipId"),
             RequireDecimal(payment, "amount"),
             RequireString(payment, "currency"),
             RequireString(payment, "method"),
             RequireString(payment, "paymentContext"),
             RequireTimestamp(payment, "occurredAt"),
+            RequireTimestamp(payment, "recordedAt"),
+            RequireString(payment, "entryOrigin"),
+            RequireNullableGuid(payment, "entryBatchId"),
+            RequireNullableString(payment, "comment"),
             RequireString(payment, "status"));
     }
 
@@ -2753,12 +2898,17 @@ public sealed class AuditEntryExplanationPresenter(
 
     private sealed record PaymentSnapshot(
         Guid PaymentId,
+        Guid ClientId,
         Guid? MembershipId,
         decimal Amount,
         string Currency,
         string Method,
         string PaymentContext,
         DateTimeOffset OccurredAt,
+        DateTimeOffset RecordedAt,
+        string EntryOrigin,
+        Guid? EntryBatchId,
+        string? Comment,
         string Status);
 
     private sealed record IssuedSaleMembershipSnapshot(

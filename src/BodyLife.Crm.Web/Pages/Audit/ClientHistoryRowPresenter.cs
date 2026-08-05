@@ -320,32 +320,34 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
 
     private ClientHistoryRowViewModel Payment(
         ClientHistorySourceRow row,
-        PaymentHistorySource source) => Row(
-            row,
-            "Payment",
-            "history-group-payment",
-            "PaymentRecorded",
-            PaymentStatus(source.CurrentStatus),
-            PaymentFacts(source),
-            change: null,
-            source.Comment,
-            PaymentIds(source));
+        PaymentHistorySource source)
+    {
+        var facts = PaymentFacts(source).ToList();
+        AddPaymentPaperFacts(
+            facts,
+            row.EntryOrigin,
+            source.EntryBatchId,
+            source.OccurredAt,
+            source.PaperReference,
+            PaymentPaperEventType(source.PaymentContext));
+        return Row(row, "Payment", "history-group-payment", "PaymentRecorded", PaymentStatus(source.CurrentStatus), facts, null, source.Comment, PaymentIds(source, source.PaperReference));
+    }
 
     private ClientHistoryRowViewModel CorrectedPayment(
         ClientHistorySourceRow row,
-        PaymentCorrectionHistorySource source) => Row(
-            row,
-            "Payment",
-            "history-group-payment",
-            "PaymentCorrected",
-            new PresentedStatus(presentation.Status("ReplacementActive"), "status-warning"),
-            Facts(
+        PaymentCorrectionHistorySource source)
+    {
+        var facts = Facts(
                 ("OriginalAmount", presentation.Money(source.OriginalPayment.Amount)),
                 ("ReplacementAmount", presentation.Money(source.ReplacementPayment.Amount)),
                 ("OriginalOccurred", presentation.Timestamp(source.OriginalPayment.OccurredAt)),
                 ("ReplacementOccurred", presentation.Timestamp(source.ReplacementPayment.OccurredAt)),
                 ("PaymentContext", presentation.PaymentContext(source.ReplacementPayment.PaymentContext)),
-                ("Membership", source.ReplacementPayment.MembershipTypeNameSnapshot)),
+                ("Membership", source.ReplacementPayment.MembershipTypeNameSnapshot)).ToList();
+        AddPaymentPaperFacts(facts, row.EntryOrigin, source.EntryBatchId, source.OccurredAt, source.PaperReference, PaperFallbackEventType.CorrectionOrCancellation);
+        return Row(
+            row, "Payment", "history-group-payment", "PaymentCorrected",
+            new PresentedStatus(presentation.Status("ReplacementActive"), "status-warning"), facts,
             new ClientHistoryChangeViewModel(
                 presentation.HistoryChange("Correction"),
                 source.Reason,
@@ -358,17 +360,19 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
                 ("OriginalPayment", source.OriginalPaymentId),
                 ("ReplacementPayment", source.ReplacementPaymentId),
                 ("Correction", source.CorrectionId),
-                ("EntryBatch", source.EntryBatchId)));
+                ("EntryBatch", source.EntryBatchId),
+                ("EntryBatchRow", source.PaperReference?.EntryBatchRowId)));
+    }
 
     private ClientHistoryRowViewModel CanceledPayment(
         ClientHistorySourceRow row,
-        PaymentCancellationHistorySource source) => Row(
-            row,
-            "Payment",
-            "history-group-payment",
-            "PaymentCanceled",
-            new PresentedStatus(presentation.Status("Canceled"), "status-canceled"),
-            PaymentFacts(source.Payment),
+        PaymentCancellationHistorySource source)
+    {
+        var facts = PaymentFacts(source.Payment).ToList();
+        AddPaymentPaperFacts(facts, row.EntryOrigin, source.EntryBatchId, source.OccurredAt, source.PaperReference, PaperFallbackEventType.CorrectionOrCancellation);
+        return Row(
+            row, "Payment", "history-group-payment", "PaymentCanceled",
+            new PresentedStatus(presentation.Status("Canceled"), "status-canceled"), facts,
             new ClientHistoryChangeViewModel(
                 presentation.HistoryChange("Cancellation"),
                 source.Reason,
@@ -379,7 +383,9 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
                 ("Payment", source.PaymentId),
                 ("Cancellation", source.CancellationId),
                 ("Membership", source.Payment.MembershipId),
-                ("EntryBatch", source.EntryBatchId)));
+                ("EntryBatch", source.EntryBatchId),
+                ("EntryBatchRow", source.PaperReference?.EntryBatchRowId)));
+    }
 
     private ClientHistoryRowViewModel Freeze(
         ClientHistorySourceRow row,
@@ -645,13 +651,81 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
             ("SourceStatus", PaymentStatus(source.CurrentStatus).Label));
 
     private IReadOnlyList<ClientHistoryFactViewModel> PaymentIds(
-        PaymentHistorySource source) => Ids(
+        PaymentHistorySource source,
+        PaperFallbackEntryRowReference? paperReference = null) => Ids(
             ("Payment", source.PaymentId),
             ("Membership", source.MembershipId),
             ("Cancellation", source.CurrentCancellationId),
             ("IncomingCorrection", source.IncomingCorrectionId),
             ("OutgoingCorrection", source.OutgoingCorrectionId),
-            ("EntryBatch", source.EntryBatchId));
+            ("EntryBatch", source.EntryBatchId),
+            ("EntryBatchRow", paperReference?.EntryBatchRowId));
+
+    private void AddPaymentPaperFacts(
+        ICollection<ClientHistoryFactViewModel> facts,
+        EntryOrigin entryOrigin,
+        Guid? entryBatchId,
+        DateTimeOffset occurredAt,
+        PaperFallbackEntryRowReference? paperReference,
+        PaperFallbackEventType expectedEventType)
+    {
+        if (entryOrigin == EntryOrigin.PaperFallback)
+        {
+            if (paperReference is null
+                || paperReference.EventType != expectedEventType
+                || paperReference.EntryBatchId != entryBatchId
+                || paperReference.EntryBatchRowId == Guid.Empty
+                || string.IsNullOrWhiteSpace(paperReference.PaperSheetNumber)
+                || paperReference.PaperSheetNumber != paperReference.PaperSheetNumber.Trim().ToUpperInvariant()
+                || paperReference.LineNumber <= 0
+                || string.IsNullOrWhiteSpace(paperReference.Explanation)
+                || paperReference.Explanation != paperReference.Explanation.Trim()
+                || !AuditTimestampPrecision.IsSamePostgreSqlInstant(paperReference.OccurredAt, occurredAt))
+            {
+                throw new InvalidOperationException("Paper Payment history provenance is inconsistent.");
+            }
+
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("PaperSheet"), paperReference.PaperSheetNumber));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("LineNumber"), presentation.Number(paperReference.LineNumber)));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("EventType"),
+                presentation.Text(PaperEventTypeKey(expectedEventType))));
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("Explanation"), paperReference.Explanation));
+        }
+        else if (paperReference is not null)
+        {
+            throw new InvalidOperationException(
+                "A non-paper Payment cannot include paper row provenance.");
+        }
+    }
+
+    private static PaperFallbackEventType PaymentPaperEventType(
+        PaymentContext paymentContext) => paymentContext switch
+        {
+            PaymentContext.MembershipSale => PaperFallbackEventType.MembershipSale,
+            PaymentContext.NegativeClosure => PaperFallbackEventType.NegativeCoverage,
+            PaymentContext.OneOff or PaymentContext.Trial or PaymentContext.Other =>
+                PaperFallbackEventType.Payment,
+            _ => throw new InvalidOperationException(
+                $"Unsupported Client history Payment context '{paymentContext}'."),
+        };
+
+    private static string PaperEventTypeKey(PaperFallbackEventType eventType) =>
+        eventType switch
+        {
+            PaperFallbackEventType.Payment => "PaperFallback.EventType.payment",
+            PaperFallbackEventType.MembershipSale =>
+                "PaperFallback.EventType.membership_sale",
+            PaperFallbackEventType.NegativeCoverage =>
+                "PaperFallback.EventType.negative_coverage",
+            PaperFallbackEventType.CorrectionOrCancellation =>
+                "PaperFallback.EventType.correction_or_cancellation",
+            _ => throw new InvalidOperationException(
+                $"Unsupported Payment paper event type '{eventType}'."),
+        };
 
     private IReadOnlyList<ClientHistoryFactViewModel> FreezeFacts(
         FreezeHistorySource source) => Facts(

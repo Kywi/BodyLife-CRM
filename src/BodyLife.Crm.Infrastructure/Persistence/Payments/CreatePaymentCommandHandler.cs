@@ -4,6 +4,7 @@ using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Payments;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Payments;
 public sealed class CreatePaymentCommandHandler(
     BodyLifeDbContext dbContext,
     BusinessAuditAppender auditAppender,
+    PaperFallbackEntryRowBinder paperFallbackEntryRowBinder,
     TimeProvider timeProvider)
     : IBodyLifeCommandHandler<CreatePaymentCommand>
 {
@@ -100,6 +102,31 @@ public sealed class CreatePaymentCommandHandler(
                     fingerprint));
             }
 
+            var paperBinding = await paperFallbackEntryRowBinder.PrepareAsync(
+                payment.Envelope,
+                PaperFallbackEventType.Payment,
+                cancellationToken);
+            if (paperBinding.RowAlreadyLinked)
+            {
+                existingIdempotency = await PaymentCommandSupport.FindIdempotencyAsync(
+                    dbContext,
+                    CommandName,
+                    payment.Envelope.IdempotencyKey!,
+                    cancellationToken);
+                if (existingIdempotency is not null)
+                {
+                    return await RollBackAsync(ReplayOrRejectDuplicate(
+                        existingIdempotency,
+                        payment,
+                        fingerprint));
+                }
+            }
+
+            if (paperBinding.Error is not null)
+            {
+                return await RollBackAsync(paperBinding.Error);
+            }
+
             if (payment.MembershipId is { } membershipId
                 && !await LockMembershipAsync(
                     payment.ClientId,
@@ -129,11 +156,35 @@ public sealed class CreatePaymentCommandHandler(
                 SessionId = payment.Envelope.Actor.SessionId.Value,
                 EntryOrigin = PaymentCommandSupport.MapEntryOrigin(
                     payment.Envelope.EntryOrigin),
-                EntryBatchId = payment.EntryBatchId,
+                EntryBatchId = paperBinding.Reference?.EntryBatchId ?? payment.EntryBatchId,
                 Comment = payment.Envelope.Comment,
                 Status = "active",
             };
             dbContext.Set<PaymentRecord>().Add(paymentRecord);
+            if (paperBinding.Reference is { } paperReference)
+            {
+                paperFallbackEntryRowBinder.LinkEntity(
+                    paperReference,
+                    CreatePaymentCommand.PrimaryEntityType,
+                    paymentId);
+            }
+
+            object relatedEntityRefs = paperBinding.Reference is { } auditPaperReference
+                ? new
+                {
+                    payment.ClientId,
+                    payment.MembershipId,
+                    auditPaperReference.EntryBatchId,
+                    auditPaperReference.EntryBatchRowId,
+                    auditPaperReference.PaperSheetNumber,
+                    auditPaperReference.LineNumber,
+                    PaperExplanation = auditPaperReference.Explanation,
+                }
+                : new
+                {
+                    payment.ClientId,
+                    payment.MembershipId,
+                };
 
             var auditEntryId = auditAppender.Append(
                 payment.Envelope,
@@ -141,11 +192,7 @@ public sealed class CreatePaymentCommandHandler(
                 PaymentAuditActions.EntityType,
                 paymentId,
                 recordedAt,
-                relatedEntityRefs: new
-                {
-                    payment.ClientId,
-                    payment.MembershipId,
-                },
+                relatedEntityRefs: relatedEntityRefs,
                 afterSummary: new
                 {
                     Payment = new

@@ -234,29 +234,58 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var fixture = await SeedFixtureAsync(database, dbContext);
-        var entryBatchId = Guid.NewGuid();
         var occurredAt = PaymentOccurredAt.AddDays(-2);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            occurredAt,
+            "payment",
+            TestNow,
+            lineNumber: 7,
+            explanation: "Recovered from signed reception sheet");
+        var command = CreateCommand(
+            fixture,
+            "paper-fallback",
+            PaymentContext.OneOff,
+            amount: 250m,
+            origin: EntryOrigin.PaperFallback,
+            occurredAt: occurredAt,
+            reason: "Recovered from signed reception sheet",
+            entryBatchRowId: paper.EntryBatchRowId);
+        var handler = CreateHandler(dbContext);
 
-        var result = await CreateHandler(dbContext).ExecuteAsync(
-            CreateCommand(
-                fixture,
-                "paper-fallback",
-                PaymentContext.OneOff,
-                amount: 250m,
-                origin: EntryOrigin.PaperFallback,
-                occurredAt: occurredAt,
-                reason: "Recovered from signed reception sheet",
-                entryBatchId: entryBatchId),
+        var result = await handler.ExecuteAsync(command, CancellationToken.None);
+        var replay = await handler.ExecuteAsync(command, CancellationToken.None);
+        var reuse = await handler.ExecuteAsync(
+            command with
+            {
+                Envelope = command.Envelope with
+                {
+                    IdempotencyKey = "paper-fallback-reuse",
+                    RequestCorrelationId = new RequestCorrelationId(
+                        "correlation-paper-fallback-reuse"),
+                },
+            },
             CancellationToken.None);
 
         AssertSuccessfulResult(result, fixture.ClientId);
+        AssertSuccessfulResult(replay, fixture.ClientId);
+        Assert.Equal(result.PrimaryEntityId, replay.PrimaryEntityId);
+        Assert.Equal(result.AuditEntryId, replay.AuditEntryId);
+        AssertError(reuse, CommandErrorCode.DuplicateSubmission, "entryBatchRowId");
         var payment = await ReadPaymentAsync(
             database,
             result.PrimaryEntityId!.Value.Value);
         Assert.Equal(occurredAt, payment.OccurredAt);
         Assert.Equal(TestNow, payment.RecordedAt);
         Assert.Equal("paper_fallback", payment.EntryOrigin);
-        Assert.Equal(entryBatchId, payment.EntryBatchId);
+        Assert.Equal(paper.EntryBatchId, payment.EntryBatchId);
+        var link = Assert.Single(
+            await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId));
+        Assert.Equal("payment", link.EntityType);
+        Assert.Equal(result.PrimaryEntityId.Value.Value, link.EntityId);
 
         var audit = await ReadAuditAsync(database, result.AuditEntryId!.Value.Value);
         Assert.Equal(occurredAt, audit.OccurredAt);
@@ -264,6 +293,22 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         Assert.Equal("paper_fallback", audit.EntryOrigin);
         Assert.Equal("Recovered from signed reception sheet", audit.Reason);
         Assert.Equal("paper-fallback", audit.IdempotencyKey);
+        using var related = JsonDocument.Parse(audit.RelatedEntityRefs);
+        Assert.Equal(
+            paper.EntryBatchId,
+            related.RootElement.GetProperty("entryBatchId").GetGuid());
+        Assert.Equal(
+            paper.EntryBatchRowId,
+            related.RootElement.GetProperty("entryBatchRowId").GetGuid());
+        Assert.Equal(
+            paper.PaperSheetNumber,
+            related.RootElement.GetProperty("paperSheetNumber").GetString());
+        Assert.Equal(
+            paper.LineNumber,
+            related.RootElement.GetProperty("lineNumber").GetInt32());
+        Assert.Equal(
+            paper.Explanation,
+            related.RootElement.GetProperty("paperExplanation").GetString());
     }
 
     [PostgreSqlFact]
@@ -324,6 +369,75 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         Assert.All(results, result => AssertSuccessfulResult(result, fixture.ClientId));
         Assert.Equal(results[0].PrimaryEntityId, results[1].PrimaryEntityId);
         Assert.Equal(results[0].AuditEntryId, results[1].AuditEntryId);
+        Assert.Equal(1L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
+    }
+
+    [PostgreSqlFact]
+    public async Task ConcurrentPaperPaymentsBindOnePaymentToTheRow()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        PaymentFixture fixture;
+        PaperFallbackRowFixture paper;
+        await using (var setupContext = database.CreateDbContext())
+        {
+            await setupContext.Database.MigrateAsync();
+            fixture = await SeedFixtureAsync(database, setupContext);
+            paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+                database,
+                fixture.Actor,
+                PaymentOccurredAt,
+                "payment",
+                TestNow,
+                lineNumber: 8,
+                explanation: "Concurrent paper Payment");
+        }
+
+        var firstCommand = CreateCommand(
+            fixture,
+            "paper-payment-race-first",
+            PaymentContext.OneOff,
+            amount: 250m,
+            origin: EntryOrigin.PaperFallback,
+            reason: paper.Explanation,
+            entryBatchRowId: paper.EntryBatchRowId);
+        var secondCommand = CreateCommand(
+            fixture,
+            "paper-payment-race-second",
+            PaymentContext.OneOff,
+            amount: 250m,
+            origin: EntryOrigin.PaperFallback,
+            reason: paper.Explanation,
+            entryBatchRowId: paper.EntryBatchRowId);
+        await using var firstContext = database.CreateDbContext();
+        await using var secondContext = database.CreateDbContext();
+
+        var results = await Task.WhenAll(
+            CreateHandler(firstContext).ExecuteAsync(
+                firstCommand,
+                CancellationToken.None),
+            CreateHandler(secondContext).ExecuteAsync(
+                secondCommand,
+                CancellationToken.None));
+
+        var success = Assert.Single(
+            results,
+            result => result.Status == CommandStatus.Success);
+        var rejected = Assert.Single(
+            results,
+            result => result.Status == CommandStatus.Error);
+        AssertSuccessfulResult(success, fixture.ClientId);
+        AssertError(
+            rejected,
+            CommandErrorCode.DuplicateSubmission,
+            "entryBatchRowId");
+        var link = Assert.Single(
+            await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId));
+        Assert.Equal(CreatePaymentCommand.PrimaryEntityType, link.EntityType);
+        Assert.Equal(success.PrimaryEntityId!.Value.Value, link.EntityId);
         Assert.Equal(1L, await CountRowsAsync(database, "payments"));
         Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
@@ -392,6 +506,25 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         var normalWithBatch = await handler.ExecuteAsync(
             valid with { EntryBatchId = Guid.NewGuid() },
             CancellationToken.None);
+        var fallbackWithoutRow = await handler.ExecuteAsync(
+            valid with
+            {
+                Envelope = valid.Envelope with
+                {
+                    EntryOrigin = EntryOrigin.PaperFallback,
+                    Reason = "Recovered paper payment",
+                },
+            },
+            CancellationToken.None);
+        var normalWithRow = await handler.ExecuteAsync(
+            valid with
+            {
+                Envelope = valid.Envelope with
+                {
+                    EntryBatchRowId = Guid.NewGuid(),
+                },
+            },
+            CancellationToken.None);
         var invalidActorShape = await handler.ExecuteAsync(
             valid with
             {
@@ -422,6 +555,11 @@ public sealed class PostgreSqlCreatePaymentCommandTests
             CommandErrorCode.ValidationFailed,
             "entryOrigin");
         AssertError(normalWithBatch, CommandErrorCode.ValidationFailed, "entryBatchId");
+        AssertError(
+            fallbackWithoutRow,
+            CommandErrorCode.ValidationFailed,
+            "entryBatchRowId");
+        AssertError(normalWithRow, CommandErrorCode.ValidationFailed, "entryBatchRowId");
         AssertError(invalidActorShape, CommandErrorCode.PermissionDenied);
         await AssertNoPaymentMutationAsync(database);
     }
@@ -512,6 +650,20 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var fixture = await SeedFixtureAsync(database, dbContext);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            PaymentOccurredAt,
+            "payment",
+            TestNow);
+        var paperCommand = CreateCommand(
+            fixture,
+            "audit-failure",
+            PaymentContext.Other,
+            fixture.MembershipId,
+            origin: EntryOrigin.PaperFallback,
+            reason: "Recovered paper payment",
+            entryBatchRowId: paper.EntryBatchRowId);
         await ExecuteNonQueryAsync(
             database,
             """
@@ -522,16 +674,29 @@ public sealed class PostgreSqlCreatePaymentCommandTests
 
         await Assert.ThrowsAsync<DbUpdateException>(() =>
             CreateHandler(dbContext).ExecuteAsync(
-                CreateCommand(
-                    fixture,
-                    "audit-failure",
-                    PaymentContext.Other,
-                    fixture.MembershipId),
+                paperCommand,
                 CancellationToken.None));
 
         await AssertNoPaymentMutationAsync(database);
+        Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId));
         Assert.Equal(1L, await CountRowsAsync(database, "membership_state_cache"));
         Assert.Empty(dbContext.ChangeTracker.Entries());
+
+        await ExecuteNonQueryAsync(
+            database,
+            """
+            alter table bodylife.business_audit_entries
+            drop constraint ck_test_reject_payment_created_audit
+            """);
+        var retry = await CreateHandler(dbContext).ExecuteAsync(
+            paperCommand,
+            CancellationToken.None);
+        AssertSuccessfulResult(retry, fixture.ClientId);
+        Assert.Single(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId));
     }
 
     [Fact]
@@ -559,6 +724,7 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         return new CreatePaymentCommandHandler(
             dbContext,
             new BusinessAuditAppender(dbContext),
+            new PaperFallbackEntryRowBinder(dbContext),
             new FixedTimeProvider(TestNow));
     }
 
@@ -573,7 +739,8 @@ public sealed class PostgreSqlCreatePaymentCommandTests
         DateTimeOffset? occurredAt = null,
         string? reason = null,
         Guid? entryBatchId = null,
-        Guid? clientId = null)
+        Guid? clientId = null,
+        Guid? entryBatchRowId = null)
     {
         return new CreatePaymentCommand(
             new CommandEnvelope(
@@ -583,7 +750,8 @@ public sealed class PostgreSqlCreatePaymentCommandTests
                 occurredAt ?? PaymentOccurredAt,
                 idempotencyKey,
                 reason,
-                "  Front desk Payment  "),
+                "  Front desk Payment  ",
+                entryBatchRowId),
             clientId ?? fixture.ClientId,
             membershipId,
             new Money(amount, "uah"),
