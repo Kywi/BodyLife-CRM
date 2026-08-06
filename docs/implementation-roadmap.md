@@ -1,7 +1,7 @@
 # BodyLife CRM v1 implementation roadmap
 
-Дата: 2026-07-07, оновлено 2026-07-30
-Статус: чинний план; Milestones 1-10 виконані, наступний — 10.5
+Дата: 2026-07-07, оновлено 2026-08-06
+Статус: чинний план; Milestones 1-10.5 виконані, наступний — 11
 
 Основа: `docs/architecture-baseline.md`, `docs/domain-model.md`, `docs/data-architecture.md`, `docs/interaction-contracts.md`, `docs/ui-workflows.md`, `docs/ui-design-foundation.md`, `docs/operations-design.md`, `docs/technology-stack-decision.md`, `docs/vertical-slice-plan.md` і accepted ADR package у `docs/adr/`.
 
@@ -683,10 +683,10 @@
 - Full support ticketing system.
 
 
-## Стоп після реалізованого Milestone 10
+## Стоп після реалізованого Milestone 10.5
 
-ADR-018 is accepted but not implemented. Milestone 10.5 is the next product
-workflow milestone and must finish before Milestone 11.
+ADR-018 is implemented and validated. Milestone 11 is the next roadmap
+milestone and has not started.
 
 ## Milestone 10.5. ADR-018 membership sales, negative coverage and replacement
 
@@ -701,9 +701,10 @@ Implement accepted ADR-018 without treating it as already delivered: exact ordin
 ### Задачі
 
 - Add PostgreSQL schema/source facts and constraints for type kind, exact sale links, one-off line snapshots, coverage allocations, replacement/cancel facts and paper batch sheet/line metadata.
-- Add a migration preflight that classifies existing issued rows as sale or
-  opening state and fails on ambiguous, missing, mismatched or duplicate
-  historical sale Payments without inventing or rewriting cash history.
+- Consolidate the pre-deployment EF migration chain into one reviewable
+  greenfield baseline that creates the current schema and PostgreSQL
+  invariants. No historical classification or upgrade path is required while
+  the application has no deployed database or production data.
 - Implement `IssueMembership` exact sale, one-off closure/correction,
   paymentless opening-state creation, issued-sale replace/cancel and paper
   batch-row commands with deterministic locks, authorization, idempotency,
@@ -719,8 +720,9 @@ Implement accepted ADR-018 without treating it as already delivered: exact ordin
   payment-command bypass are rejected.
 - Manual opening-state declaration commits with zero sale Payments and cannot
   be mistaken for an ordinary sale.
-- Migration preflight rejects ambiguous historical rows without fabricating a
-  Payment or changing a recorded amount.
+- A clean database applies the sole baseline, reaches the current EF model and
+  preserves all sale, coverage and paper-row invariants without fabricating
+  historical Membership or Payment facts.
 - Catalog edits preserve issued and closure snapshots; partial/full one-off closure and oldest-first coverage remain explainable.
 - Repeated or concurrent allocation cannot cover one Visit twice.
 - New-Membership coverage accepts counts from 1 through its visit limit,
@@ -738,8 +740,8 @@ Implement accepted ADR-018 without treating it as already delivered: exact ordin
   paymentless opening mode, context checks, one active coverage per Visit,
   allocation limit boundary, line totals, duplicate sheet line, FK consistency
   and deterministic row locks.
-- Migration tests for valid sale/opening classification and refusal of missing,
-  mismatched, duplicate or ambiguous historical Payment rows.
+- Migration tests for clean baseline apply, no-op reapply, rollback/reapply,
+  current-model drift and the PostgreSQL sale/coverage/paper-row invariants.
 - Command tests for omitted/under/over payment attempts, generic
   CreatePayment/CorrectPayment bypass, partial/full oldest-first closure,
   new-Membership coverage at 0/1/limit/limit+1, concurrent repeated allocation,

@@ -2,17 +2,17 @@
 
 ## Current State
 
-- The ASP.NET Core application, PostgreSQL persistence, test harnesses, and roadmap Milestones 1 through 10 are implemented. Read the latest entry in `docs/implementation-progress.md` before planning work; it is the current implementation stop point and must not be replaced by a stale milestone assumption.
+- The ASP.NET Core application, PostgreSQL persistence, test harnesses, and roadmap Milestones 1 through 10.5 are implemented. Read the latest entry in `docs/implementation-progress.md` before planning work; it is the current implementation stop point and must not be replaced by a stale milestone assumption.
 - The accepted ADR package is complete in `docs/adr/` and is the governing architecture source. If a later request conflicts with an accepted ADR, require a new ADR or an explicit ADR update instead of silently changing direction.
 - The selected application stack is fixed in `docs/technology-stack-decision.md`: ASP.NET Core 10 LTS + Razor Pages/MVC + htmx + EF Core/Npgsql + PostgreSQL.
 - Hosting provider is still pending. Production readiness requires backup/restore evidence, including at least 30-day backup retention expectation and a restore rehearsal before production use.
-- Milestone 10 is complete and validated. The next roadmap milestone is Milestone 11 (backup/restore/paper fallback readiness), but always confirm the latest progress entry and the user's requested scope before starting it.
+- Milestone 10.5 is complete and validated. The next roadmap milestone is Milestone 11 (backup/restore/paper fallback readiness), but always confirm the latest progress entry and the user's requested scope before starting it.
 
 ## Source Of Truth
 
 Use these documents before inventing implementation details:
 
-- `docs/adr/README.md` and `docs/adr/001..016-*.md` for accepted decisions.
+- `docs/adr/README.md` and `docs/adr/001..018-*.md` for accepted decisions.
 - `docs/architecture-baseline.md` for the concise implementation contract.
 - `docs/domain-model.md` for business entities, invariants, lifecycle rules, and membership calculations.
 - `docs/data-architecture.md` for source facts, derived state, schema direction, constraints, indexes, audit, backfill, and reporting data access.

@@ -14663,3 +14663,53 @@ Stop point:
   replacement links the correction, replacement Membership and exact
   replacement Payment. Then consolidate the final greenfield baseline and run
   the Milestone 10.5 acceptance gate once. Do not start Milestone 11.
+
+## Step 229 - Completed Milestone 10.5 acceptance
+
+Status: completed and validated. Milestone 10.5 is closed; Milestone 11 has not
+started.
+
+Completed:
+
+- Bound `ReplaceIssuedMembership` and `CancelIssuedMembershipSale` to exact
+  first-class `correction_or_cancellation` paper rows. The original sale row
+  remains immutable; a cancellation row identifies its correction fact, while
+  a replacement row identifies the correction, replacement Membership and
+  exact replacement Payment in one transaction.
+- Completed typed `payment.created` explanations for corrected issued sales and
+  kept report, Client history and audit presentation on canonical source facts.
+  The final audit review found no remaining important Milestone 10.5 event that
+  falls back to raw JSON in a valid workflow.
+- Consolidated the unreleased schema into the single
+  `20260806074535_InitialBaseline` migration. This is an intentional greenfield
+  baseline: the application has no deployed database or production history, so
+  no historical classification/upgrade migration is retained.
+- Preserved the PostgreSQL sale, negative-coverage and paper provenance
+  constraints in the clean baseline. Every `paper_fallback` source fact must be
+  linked to exactly one batch row, including the zero-link case identified by
+  independent review.
+- Updated stale PostgreSQL and Playwright fixtures to create valid first-class
+  paper provenance atomically. The acceptance review covers ADR-018 ordinary
+  sales, opening states, oldest-first negative coverage, replacement/cancel,
+  report/history/audit explanations and paper-row reconciliation.
+
+Validation:
+
+- Full Release validation passed through `./scripts/validate.sh`: build and
+  analyzers 0 warnings/0 errors; domain/application tests 420/420; Web tests
+  378/378; PostgreSQL infrastructure tests 674/674; Playwright smoke tests
+  139/139.
+- EF reports the sole migration `20260806074535_InitialBaseline`, and
+  `dotnet ef migrations has-pending-model-changes` reports no model drift.
+- Focused paper provenance tests passed 70/70, strict baseline paper-link tests
+  passed 3/3, and the final corrected-sale audit UI regression passed 2/2.
+- Independent risk review found one P1 gap for a paper source with no row link;
+  the baseline constraint and regression test now close it. No P0-P3 findings
+  remain after the fix and complete gate.
+
+Stop point:
+
+- Milestone 10.5 is complete. The next roadmap item is Milestone 11 backup,
+  restore and operational paper-fallback readiness, but it must begin as a
+  separate step only after an explicit user request. Hosting-provider backup
+  configuration and restore evidence remain intentionally pending.
