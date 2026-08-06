@@ -3723,6 +3723,10 @@ textarea:focus-visible,
   border-left-color: var(--restricted);
 }
 
+.client-history-row.history-group-negative-coverage {
+  border-left-color: var(--warning);
+}
+
 .client-history-row.audit-entry-backdated {
   border-left-color: var(--warning);
 }

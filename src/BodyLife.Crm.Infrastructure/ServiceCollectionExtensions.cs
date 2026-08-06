@@ -134,6 +134,11 @@ public static class ServiceCollectionExtensions
                 GetClientMembershipHistorySourceRowsResult>,
             GetClientMembershipHistorySourceRowsQueryHandler>();
         services.AddScoped<
+            IBodyLifeQueryHandler<
+                GetClientNegativeVisitCoverageHistorySourceRowsQuery,
+                GetClientNegativeVisitCoverageHistorySourceRowsResult>,
+            GetClientNegativeVisitCoverageHistorySourceRowsQueryHandler>();
+        services.AddScoped<
             IBodyLifeQueryHandler<PreviewIssueMembershipQuery, PreviewIssueMembershipResult>,
             PreviewIssueMembershipQueryHandler>();
         services.AddScoped<

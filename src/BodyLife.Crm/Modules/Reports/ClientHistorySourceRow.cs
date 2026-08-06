@@ -19,4 +19,5 @@ public sealed record ClientHistorySourceRow(
     ClientPaymentHistorySourceRow? PaymentSourceRow,
     ClientFreezeHistorySourceRow? FreezeSourceRow,
     ClientNonWorkingDayHistorySourceRow? NonWorkingDaySourceRow,
-    ClientAuditEntry AuditEntry);
+    ClientAuditEntry AuditEntry,
+    ClientNegativeVisitCoverageHistorySourceRow? NegativeCoverageSourceRow = null);

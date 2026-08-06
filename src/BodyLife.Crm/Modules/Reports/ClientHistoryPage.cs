@@ -110,6 +110,7 @@ public sealed class ClientHistoryPage
             row.PaymentSourceRow,
             row.FreezeSourceRow,
             row.NonWorkingDaySourceRow,
+            row.NegativeCoverageSourceRow,
         }.Count(source => source is not null);
         if (sourceCount != 1)
         {
@@ -188,6 +189,15 @@ public sealed class ClientHistoryPage
                     row,
                     row.NonWorkingDaySourceRow,
                     ClientNonWorkingDayHistorySourceKind.Canceled),
+            ClientHistorySourceKind.NegativeCoverageCreated
+                => MatchesSource(row, row.NegativeCoverageSourceRow,
+                    ClientNegativeVisitCoverageHistorySourceKind.Created),
+            ClientHistorySourceKind.NegativeCoverageCanceled
+                => MatchesSource(row, row.NegativeCoverageSourceRow,
+                    ClientNegativeVisitCoverageHistorySourceKind.Canceled),
+            ClientHistorySourceKind.NegativeCoverageReplaced
+                => MatchesSource(row, row.NegativeCoverageSourceRow,
+                    ClientNegativeVisitCoverageHistorySourceKind.Replaced),
             _ => false,
         };
     }
@@ -270,6 +280,17 @@ public sealed class ClientHistoryPage
                 source.RecordedAt,
                 source.EntryOrigin,
                 source.AuditEntry);
+    }
+
+    private static bool MatchesSource(
+        ClientHistorySourceRow row,
+        ClientNegativeVisitCoverageHistorySourceRow? source,
+        ClientNegativeVisitCoverageHistorySourceKind expectedKind)
+    {
+        return source is not null
+            && source.Kind == expectedKind
+            && MatchesEnvelope(row, source.ClientId, source.OccurredAt,
+                source.RecordedAt, source.EntryOrigin, source.AuditEntry);
     }
 
     private static bool MatchesEnvelope(

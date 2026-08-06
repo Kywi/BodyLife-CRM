@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace BodyLife.Crm.Web.Tests.Pages.Audit;
 
 [Collection(nameof(LocalizationCollection))]
-public sealed class ClientHistoryRowPresenterTests
+public sealed partial class ClientHistoryRowPresenterTests
 {
     private static readonly Guid ClientId = Id(1);
     private static readonly Guid MembershipId = Id(2);
@@ -179,6 +179,36 @@ public sealed class ClientHistoryRowPresenterTests
             "Неробочий день",
             "Неробочий період скасовано",
             "Скасовано");
+        yield return RowExpectation(
+            ClientHistorySourceKind.NegativeCoverageCreated,
+            "history-group-negative-coverage",
+            "status-active",
+            "Negative-visit coverage",
+            "Negative-visit coverage recorded",
+            "Active source",
+            "Покриття мінусових відвідувань",
+            "Покриття мінусових відвідувань зафіксовано",
+            "Активний факт-джерело");
+        yield return RowExpectation(
+            ClientHistorySourceKind.NegativeCoverageCanceled,
+            "history-group-negative-coverage",
+            "status-canceled",
+            "Negative-visit coverage",
+            "Negative-visit coverage canceled",
+            "Canceled",
+            "Покриття мінусових відвідувань",
+            "Покриття мінусових відвідувань скасовано",
+            "Скасовано");
+        yield return RowExpectation(
+            ClientHistorySourceKind.NegativeCoverageReplaced,
+            "history-group-negative-coverage",
+            "status-warning",
+            "Negative-visit coverage",
+            "Negative-visit coverage replaced",
+            "Replaced",
+            "Покриття мінусових відвідувань",
+            "Покриття мінусових відвідувань замінено",
+            "Замінено");
     }
 
     [Theory]
@@ -814,6 +844,12 @@ public sealed class ClientHistoryRowPresenterTests
         ClientHistorySourceKind.NonWorkingDayCorrected => CreateNonWorkingDayCorrectedRow(
             NonWorkingDayCorrectionMode.ReplaceRange),
         ClientHistorySourceKind.NonWorkingDayCanceled => CreateNonWorkingDayCanceledRow(),
+        ClientHistorySourceKind.NegativeCoverageCreated =>
+            CreateNegativeCoverageRow(kind),
+        ClientHistorySourceKind.NegativeCoverageCanceled =>
+            CreateNegativeCoverageRow(kind),
+        ClientHistorySourceKind.NegativeCoverageReplaced =>
+            CreateNegativeCoverageRow(kind),
         _ => throw new InvalidOperationException(),
     };
 
@@ -1523,7 +1559,8 @@ public sealed class ClientHistoryRowPresenterTests
         ClientVisitHistorySourceRow? visit = null,
         ClientPaymentHistorySourceRow? payment = null,
         ClientFreezeHistorySourceRow? freeze = null,
-        ClientNonWorkingDayHistorySourceRow? nonWorkingDay = null) => new(
+        ClientNonWorkingDayHistorySourceRow? nonWorkingDay = null,
+        ClientNegativeVisitCoverageHistorySourceRow? negativeCoverage = null) => new(
             kind,
             ClientId,
             OccurredAt,
@@ -1534,7 +1571,8 @@ public sealed class ClientHistoryRowPresenterTests
             payment,
             freeze,
             nonWorkingDay,
-            audit);
+            audit,
+            negativeCoverage);
 
     private static ClientAuditEntry Audit(Guid entityId) => new(
         new AuditEntryId(Id(90)),

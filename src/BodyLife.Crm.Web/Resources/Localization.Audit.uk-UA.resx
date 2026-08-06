@@ -127,6 +127,7 @@
   <data name="HistoryEntity.Payment"><value>Платежі</value></data>
   <data name="HistoryEntity.Freeze"><value>Замороження</value></data>
   <data name="HistoryEntity.NonWorkingDay"><value>Неробочі дні</value></data>
+  <data name="HistoryEntity.NegativeCoverage"><value>Покриття мінусових відвідувань</value></data>
 <data name="AccountKind.Owner"><value>Обліковий запис власника</value></data>
   <data name="AccountKind.NamedAdmin"><value>Іменований адміністратор</value></data>
   <data name="AccountKind.SharedReceptionAdmin"><value>Спільний обліковий запис рецепції/адміністратора</value></data>
@@ -173,6 +174,7 @@
   <data name="History.Group.Payment"><value>Платіж</value></data>
   <data name="History.Group.Freeze"><value>Замороження</value></data>
   <data name="History.Group.NonWorkingDay"><value>Неробочий день</value></data>
+  <data name="History.Group.NegativeCoverage"><value>Покриття мінусових відвідувань</value></data>
   <data name="History.MembershipIssued.Title"><value>Абонемент оформлено</value></data>
   <data name="History.MembershipSaleReplaced.Title"><value>Продаж абонемента замінено</value></data>
   <data name="History.MembershipSaleCanceled.Title"><value>Продаж абонемента скасовано</value></data>
@@ -187,6 +189,9 @@
   <data name="History.NonWorkingDayApplied.Title"><value>Неробочий період застосовано</value></data>
   <data name="History.NonWorkingDayCorrected.Title"><value>Неробочий період виправлено</value></data>
   <data name="History.NonWorkingDayCanceled.Title"><value>Неробочий період скасовано</value></data>
+  <data name="History.NegativeCoverageRecorded.Title"><value>Покриття мінусових відвідувань зафіксовано</value></data>
+  <data name="History.NegativeCoverageCanceled.Title"><value>Покриття мінусових відвідувань скасовано</value></data>
+  <data name="History.NegativeCoverageReplaced.Title"><value>Покриття мінусових відвідувань замінено</value></data>
   <data name="History.Device.NotRecorded"><value>Не зафіксовано</value></data>
   <data name="Status.ActiveSource"><value>Активний факт-джерело</value></data>
   <data name="Status.Canceled"><value>Скасовано</value></data>
@@ -242,6 +247,11 @@
   <data name="Fact.AffectedMemberships"><value>Зачеплені абонементи</value></data>
   <data name="Fact.OriginalClientApplications"><value>Початкові застосування до клієнтів</value></data>
   <data name="Fact.ReplacementClientApplications"><value>Застосування до клієнтів у заміні</value></data>
+  <data name="Fact.CoverageMethod"><value>Спосіб покриття</value></data>
+  <data name="Fact.OldestVisit"><value>Найстаріше покрите відвідування</value></data>
+  <data name="Fact.ExactPayment"><value>Точна готівкова оплата</value></data>
+  <data name="Fact.CoveringMembership"><value>Покривний абонемент</value></data>
+  <data name="Fact.ReplacementCoverage"><value>Покриття-замінник</value></data>
   <data name="Identifier.Membership"><value>ID абонемента</value></data>
   <data name="Identifier.MembershipType"><value>ID типу абонемента</value></data>
   <data name="Identifier.OpeningState"><value>ID початкового стану</value></data>
@@ -251,6 +261,9 @@
   <data name="Identifier.OriginalPayment"><value>ID початкового платежу</value></data>
   <data name="Identifier.ReplacementPayment"><value>ID платежу-заміни</value></data>
   <data name="Identifier.Correction"><value>ID виправлення</value></data>
+  <data name="Identifier.NegativeClosure"><value>ID погашення мінусових відвідувань</value></data>
+  <data name="Identifier.OriginalNegativeClosure"><value>ID початкового погашення мінусових відвідувань</value></data>
+  <data name="Identifier.ReplacementClosure"><value>ID погашення-замінника</value></data>
   <data name="Identifier.Freeze"><value>ID замороження</value></data>
   <data name="Identifier.Period"><value>ID періоду</value></data>
   <data name="Identifier.OriginalPeriod"><value>ID початкового періоду</value></data>
@@ -273,6 +286,9 @@
   <data name="Changed.Comment"><value>Коментар</value></data>
   <data name="Changed.Unknown"><value>Інше змінене поле</value></data>
   <data name="Value.NotDeclared"><value>Не вказано</value></data>
+  <data name="CoverageMethod.OneOff"><value>Разове погашення</value></data>
+  <data name="CoverageMethod.NewMembership"><value>Покривний абонемент</value></data>
+  <data name="Template.CoverageSummary"><value>{0}; {1}</value></data>
   <data name="Value.PreservedSeparateSourceFact"><value>Збережено як окремий факт-джерело</value></data>
   <data name="Value.NoMembershipConsumption"><value>Без списання з абонемента</value></data>
   <data name="Value.PaymentFallback"><value>Платіж</value></data>

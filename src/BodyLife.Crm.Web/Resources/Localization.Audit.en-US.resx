@@ -127,6 +127,7 @@
   <data name="HistoryEntity.Payment"><value>Payments</value></data>
   <data name="HistoryEntity.Freeze"><value>Freezes</value></data>
   <data name="HistoryEntity.NonWorkingDay"><value>Non-working days</value></data>
+  <data name="HistoryEntity.NegativeCoverage"><value>Negative-visit coverage</value></data>
 <data name="AccountKind.Owner"><value>Owner account</value></data>
   <data name="AccountKind.NamedAdmin"><value>Named Admin</value></data>
   <data name="AccountKind.SharedReceptionAdmin"><value>Shared Reception/Admin</value></data>
@@ -173,6 +174,7 @@
   <data name="History.Group.Payment"><value>Payment</value></data>
   <data name="History.Group.Freeze"><value>Freeze</value></data>
   <data name="History.Group.NonWorkingDay"><value>Non-working day</value></data>
+  <data name="History.Group.NegativeCoverage"><value>Negative-visit coverage</value></data>
   <data name="History.MembershipIssued.Title"><value>Membership issued</value></data>
   <data name="History.MembershipSaleReplaced.Title"><value>Membership sale replaced</value></data>
   <data name="History.MembershipSaleCanceled.Title"><value>Membership sale canceled</value></data>
@@ -187,6 +189,9 @@
   <data name="History.NonWorkingDayApplied.Title"><value>Non-working period applied</value></data>
   <data name="History.NonWorkingDayCorrected.Title"><value>Non-working period corrected</value></data>
   <data name="History.NonWorkingDayCanceled.Title"><value>Non-working period canceled</value></data>
+  <data name="History.NegativeCoverageRecorded.Title"><value>Negative-visit coverage recorded</value></data>
+  <data name="History.NegativeCoverageCanceled.Title"><value>Negative-visit coverage canceled</value></data>
+  <data name="History.NegativeCoverageReplaced.Title"><value>Negative-visit coverage replaced</value></data>
   <data name="History.Device.NotRecorded"><value>Not recorded</value></data>
   <data name="Status.ActiveSource"><value>Active source</value></data>
   <data name="Status.Canceled"><value>Canceled</value></data>
@@ -242,6 +247,11 @@
   <data name="Fact.AffectedMemberships"><value>Affected memberships</value></data>
   <data name="Fact.OriginalClientApplications"><value>Original client applications</value></data>
   <data name="Fact.ReplacementClientApplications"><value>Replacement client applications</value></data>
+  <data name="Fact.CoverageMethod"><value>Coverage method</value></data>
+  <data name="Fact.OldestVisit"><value>Oldest covered Visit</value></data>
+  <data name="Fact.ExactPayment"><value>Exact cash Payment</value></data>
+  <data name="Fact.CoveringMembership"><value>Covering Membership</value></data>
+  <data name="Fact.ReplacementCoverage"><value>Replacement coverage</value></data>
   <data name="Identifier.Membership"><value>Membership ID</value></data>
   <data name="Identifier.MembershipType"><value>Membership type ID</value></data>
   <data name="Identifier.OpeningState"><value>Opening state ID</value></data>
@@ -251,6 +261,9 @@
   <data name="Identifier.OriginalPayment"><value>Original payment ID</value></data>
   <data name="Identifier.ReplacementPayment"><value>Replacement payment ID</value></data>
   <data name="Identifier.Correction"><value>Correction ID</value></data>
+  <data name="Identifier.NegativeClosure"><value>Negative closure ID</value></data>
+  <data name="Identifier.OriginalNegativeClosure"><value>Original negative closure ID</value></data>
+  <data name="Identifier.ReplacementClosure"><value>Replacement closure ID</value></data>
   <data name="Identifier.Freeze"><value>Freeze ID</value></data>
   <data name="Identifier.Period"><value>Period ID</value></data>
   <data name="Identifier.OriginalPeriod"><value>Original period ID</value></data>
@@ -273,6 +286,9 @@
   <data name="Changed.Comment"><value>Comment</value></data>
   <data name="Changed.Unknown"><value>Other changed field</value></data>
   <data name="Value.NotDeclared"><value>Not declared</value></data>
+  <data name="CoverageMethod.OneOff"><value>One-off closure</value></data>
+  <data name="CoverageMethod.NewMembership"><value>Covering Membership</value></data>
+  <data name="Template.CoverageSummary"><value>{0}; {1}</value></data>
   <data name="Value.PreservedSeparateSourceFact"><value>Preserved as a separate source fact</value></data>
   <data name="Value.NoMembershipConsumption"><value>No membership consumption</value></data>
   <data name="Value.PaymentFallback"><value>Payment</value></data>

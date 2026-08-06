@@ -14603,3 +14603,63 @@ Stop point:
   formulas in Memberships, preserve original source rows, and do not begin
   issued-sale correction paper integration or Milestone 11 until this history
   slice is green.
+
+## Step 228 - Added canonical negative coverage to Client history
+
+Status: completed for the remaining negative-coverage history slice. Milestone
+10.5 remains in progress; Milestone 11 has not started.
+
+Completed:
+
+- Added a Memberships-owned canonical history source query for negative Visit
+  coverage creation, cancellation and replacement. It reconstructs retained
+  closures, immutable one-off lines, covered Visits, source and replacement
+  consumptions, exact Payments, covering Membership snapshots and correction
+  relationships from source facts rather than audit JSON.
+- Added the three negative-coverage source kinds to unified `GetClientHistory`,
+  including exact audit-id selection, global PostgreSQL ordering, offset
+  pagination and occurred-time bounds. Original creation and later lifecycle
+  rows remain independently visible instead of collapsing into current state.
+- Made the source query fail closed unless audit `related_entity_refs` and
+  `after_summary` match the canonical closure, line, Visit, Membership,
+  Payment and correction graph. Creation and lifecycle audit ids are checked
+  against the exact related audit records, including correction-created
+  replacement Payments and Membership-sale Payments.
+- Verified first-class paper provenance for initial one-off coverage, initial
+  Membership-sale coverage and correction-created facts. The query requires
+  the exact event type, batch row, occurrence/account/session envelope and
+  complete entity-link set while preserving every original row assignment.
+- Added English and Ukrainian Client-history titles, fact labels, filters and
+  presentation for recorded, canceled and replaced coverage. The UI identifies
+  exact cash Payments, covering Memberships, replacement coverage and source
+  ids without calculating refunds or duplicating Membership formulas.
+- Extended the existing phone Playwright correction workflow to open the real
+  filtered Client-history page after create -> replace -> cancel and prove two
+  creation rows plus replacement and cancellation rows fit the viewport.
+- A scope audit compared ADR-018, the Milestone 10.5 roadmap, Steps 207-227 and
+  commits since `337a590`. It confirmed that further event-by-event audit or
+  paper variants would repeat already completed work. The remaining milestone
+  path is now limited to issued-sale correction paper binding, one final
+  greenfield baseline and one acceptance gate.
+
+Validation:
+
+- Release solution build passed with 0 warnings and 0 errors.
+- Focused domain history contracts passed: 4/4.
+- Focused Client-history presenter and localization tests passed: 58/58.
+- Focused history composition and PostgreSQL source tests passed: 10/10 with
+  no skips. The PostgreSQL cases include audit-payload corruption, exact paper
+  links, three-page offset continuation, non-UTC date bounds and deterministic
+  UUID tie ordering.
+- The directly affected phone Playwright workflow passed: 1/1, including the
+  canonical negative-coverage history filter and viewport check.
+- Solution formatter/analyzer verification and `git diff --check` passed.
+
+Stop point:
+
+- Bind a first-class `correction_or_cancellation` paper row to
+  `ReplaceIssuedMembership` and `CancelIssuedMembershipSale`. Preserve the
+  original sale row; cancellation links only its correction fact, while
+  replacement links the correction, replacement Membership and exact
+  replacement Payment. Then consolidate the final greenfield baseline and run
+  the Milestone 10.5 acceptance gate once. Do not start Milestone 11.

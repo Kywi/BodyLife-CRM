@@ -102,6 +102,7 @@ public sealed class GetClientHistoryQueryHandlerTests
         var handler = new GetClientHistoryQueryHandler(
             auditHandler,
             membershipHandler,
+            CreateNegativeCoverageHandler([]),
             visitHandler,
             paymentHandler,
             freezeHandler,
@@ -197,6 +198,7 @@ public sealed class GetClientHistoryQueryHandlerTests
         var handler = new GetClientHistoryQueryHandler(
             auditHandler,
             membershipHandler,
+            CreateNegativeCoverageHandler([]),
             CreateVisitHandler([]),
             CreatePaymentHandler([]),
             CreateFreezeHandler([]),
@@ -218,6 +220,48 @@ public sealed class GetClientHistoryQueryHandlerTests
         AssertExactSelection(
             Assert.Single(membershipHandler.Queries),
             auditEntry.AuditEntryId);
+    }
+
+    [Fact]
+    public async Task NegativeCoverageSourceUsesExactAuditSelectionAndMapsLifecycleKind()
+    {
+        var actor = CreateActor();
+        var clientId = Guid.NewGuid();
+        var auditEntry = CreateAuditEntry(
+            actor,
+            clientId,
+            MembershipNegativeClosureAuditActions.Replaced,
+            ClientAuditEntityFilter.MembershipNegativeClosure,
+            TestNow);
+        var auditHandler = new StubQueryHandler<
+            GetClientAuditEntriesQuery,
+            GetClientAuditEntriesResult>(query =>
+                GetClientAuditEntriesResult.Succeeded(ClientAuditEntriesPage.Create(
+                    query.ClientId, query.OccurredFromInclusive,
+                    query.OccurredBeforeExclusive, query.EntityFilters ?? [],
+                    query.ActionTypes ?? [], query.Offset, [auditEntry], false)));
+        var coverage = CreateNegativeCoverageRow(auditEntry, clientId);
+        var coverageHandler = CreateNegativeCoverageHandler([coverage]);
+        var handler = new GetClientHistoryQueryHandler(
+            auditHandler,
+            CreateMembershipHandler([]),
+            coverageHandler,
+            CreateVisitHandler([]),
+            CreatePaymentHandler([]),
+            CreateFreezeHandler([]),
+            CreateNonWorkingDayHandler([]));
+
+        var result = await handler.ExecuteAsync(new GetClientHistoryQuery(
+            actor, clientId, EntityFilters: [ClientHistoryEntityFilter.NegativeCoverage]),
+            CancellationToken.None);
+
+        Assert.Equal(GetClientHistoryStatus.Success, result.Status);
+        Assert.Equal(ClientHistorySourceKind.NegativeCoverageReplaced,
+            Assert.Single(result.Page!.Items).Kind);
+        var sourceQuery = Assert.Single(coverageHandler.Queries);
+        Assert.Equal([auditEntry.AuditEntryId], sourceQuery.AuditEntryIds);
+        Assert.Equal(1, sourceQuery.Limit);
+        Assert.Equal(0, sourceQuery.Offset);
     }
 
     [Fact]
@@ -251,6 +295,7 @@ public sealed class GetClientHistoryQueryHandlerTests
         var handler = new GetClientHistoryQueryHandler(
             auditHandler,
             CreateMembershipHandler([]),
+            CreateNegativeCoverageHandler([]),
             visitHandler,
             CreatePaymentHandler([]),
             CreateFreezeHandler([]),
@@ -303,6 +348,16 @@ public sealed class GetClientHistoryQueryHandlerTests
                     Limit: 2,
                     AuditEntryIds: auditEntryIds),
                 CancellationToken.None);
+        await new GetClientNegativeVisitCoverageHistorySourceRowsQueryHandler(
+                dbContext,
+                recordingAuditHandler)
+            .ExecuteAsync(
+                new GetClientNegativeVisitCoverageHistorySourceRowsQuery(
+                    actor,
+                    clientId,
+                    Limit: 2,
+                    AuditEntryIds: auditEntryIds),
+                CancellationToken.None);
         await new GetClientVisitHistorySourceRowsQueryHandler(
                 dbContext,
                 recordingAuditHandler)
@@ -344,7 +399,7 @@ public sealed class GetClientHistoryQueryHandlerTests
                     AuditEntryIds: auditEntryIds),
                 CancellationToken.None);
 
-        Assert.Equal(5, recordingAuditHandler.Queries.Count);
+        Assert.Equal(6, recordingAuditHandler.Queries.Count);
         Assert.All(recordingAuditHandler.Queries, query =>
         {
             Assert.Same(auditEntryIds, query.AuditEntryIds);
@@ -395,6 +450,23 @@ public sealed class GetClientHistoryQueryHandlerTests
                 query.Offset,
                 SelectRows(rows, query.AuditEntryIds),
                 hasMore: false)));
+    }
+
+    private static StubQueryHandler<
+        GetClientNegativeVisitCoverageHistorySourceRowsQuery,
+        GetClientNegativeVisitCoverageHistorySourceRowsResult>
+        CreateNegativeCoverageHandler(
+            IReadOnlyList<ClientNegativeVisitCoverageHistorySourceRow> rows)
+    {
+        return new(query =>
+            GetClientNegativeVisitCoverageHistorySourceRowsResult.Succeeded(
+                ClientNegativeVisitCoverageHistorySourceRowsPage.Create(
+                    query.ClientId,
+                    query.OccurredFromInclusive,
+                    query.OccurredBeforeExclusive,
+                    query.Offset,
+                    SelectRows(rows, query.AuditEntryIds),
+                    hasMore: false)));
     }
 
     private static StubQueryHandler<
@@ -478,6 +550,8 @@ public sealed class GetClientHistoryQueryHandlerTests
         return row switch
         {
             ClientMembershipHistorySourceRow membership => membership.AuditEntry,
+            ClientNegativeVisitCoverageHistorySourceRow negativeCoverage
+                => negativeCoverage.AuditEntry,
             ClientVisitHistorySourceRow visit => visit.AuditEntry,
             ClientPaymentHistorySourceRow payment => payment.AuditEntry,
             ClientFreezeHistorySourceRow freeze => freeze.AuditEntry,
@@ -500,6 +574,41 @@ public sealed class GetClientHistoryQueryHandlerTests
             auditEntry.EntryOrigin,
             IssuedMembership: null,
             OpeningState: null,
+            auditEntry);
+    }
+
+    private static ClientNegativeVisitCoverageHistorySourceRow CreateNegativeCoverageRow(
+        ClientAuditEntry auditEntry,
+        Guid clientId)
+    {
+        var closure = new NegativeVisitCoverageClosureHistorySnapshot(
+            auditEntry.EntityId,
+            clientId,
+            NegativeVisitCoverageClosureMethod.OneOff,
+            Guid.NewGuid(),
+            1,
+            null,
+            auditEntry.OccurredAt,
+            auditEntry.RecordedAt,
+            auditEntry.ActorAccountId,
+            auditEntry.SessionId,
+            auditEntry.EntryOrigin,
+            null,
+            NegativeVisitCoverageClosureHistoryStatus.Replaced,
+            [],
+            [],
+            null,
+            null);
+        return new ClientNegativeVisitCoverageHistorySourceRow(
+            ClientNegativeVisitCoverageHistorySourceKind.Replaced,
+            clientId,
+            auditEntry.OccurredAt,
+            auditEntry.RecordedAt,
+            auditEntry.EntryOrigin,
+            closure,
+            ReplacementClosure: null,
+            Correction: null,
+            PaperReference: null,
             auditEntry);
     }
 

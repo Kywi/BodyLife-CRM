@@ -15,7 +15,7 @@ using Npgsql;
 
 namespace BodyLife.Crm.Infrastructure.Tests.PostgreSql;
 
-public sealed class PostgreSqlCorrectNegativeVisitCoverageCommandTests
+public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
 {
     private static readonly DateTimeOffset TestNow = new(
         2026,

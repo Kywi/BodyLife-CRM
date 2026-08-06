@@ -29,6 +29,7 @@ public sealed class ClientHistoryModel(
         new(ClientHistoryEntityFilter.Payment, "HistoryEntity.Payment"),
         new(ClientHistoryEntityFilter.Freeze, "HistoryEntity.Freeze"),
         new(ClientHistoryEntityFilter.NonWorkingDay, "HistoryEntity.NonWorkingDay"),
+        new(ClientHistoryEntityFilter.NegativeCoverage, "HistoryEntity.NegativeCoverage"),
     ];
 
     [BindProperty(SupportsGet = true, Name = "clientId")]

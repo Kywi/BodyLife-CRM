@@ -8,4 +8,5 @@ public enum ClientHistoryEntityFilter
     Payment,
     Freeze,
     NonWorkingDay,
+    NegativeCoverage,
 }

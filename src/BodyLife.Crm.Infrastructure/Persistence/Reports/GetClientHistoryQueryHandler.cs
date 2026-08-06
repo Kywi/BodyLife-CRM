@@ -22,6 +22,10 @@ public sealed class GetClientHistoryQueryHandler(
         GetClientMembershipHistorySourceRowsQuery,
         GetClientMembershipHistorySourceRowsResult> membershipSourceRowsQueryHandler,
     IBodyLifeQueryHandler<
+        GetClientNegativeVisitCoverageHistorySourceRowsQuery,
+        GetClientNegativeVisitCoverageHistorySourceRowsResult>
+        negativeCoverageSourceRowsQueryHandler,
+    IBodyLifeQueryHandler<
         GetClientVisitHistorySourceRowsQuery,
         GetClientVisitHistorySourceRowsResult> visitSourceRowsQueryHandler,
     IBodyLifeQueryHandler<
@@ -44,6 +48,7 @@ public sealed class GetClientHistoryQueryHandler(
         ClientHistoryEntityFilter.Payment,
         ClientHistoryEntityFilter.Freeze,
         ClientHistoryEntityFilter.NonWorkingDay,
+        ClientHistoryEntityFilter.NegativeCoverage,
     ];
 
     public async Task<GetClientHistoryResult> ExecuteAsync(
@@ -131,6 +136,47 @@ public sealed class GetClientHistoryQueryHandler(
                     result.Page.Items,
                     row => row.AuditEntry,
                     MapMembershipRow,
+                    auditEntriesById,
+                    mappedRows))
+            {
+                return GetClientHistoryResult.InconsistentSource();
+            }
+        }
+
+        var negativeCoverageIds = SelectAuditEntryIds(
+            auditPage.Items,
+            ClientHistorySourceGroup.NegativeCoverage);
+        if (negativeCoverageIds.Length > 0)
+        {
+            var result = await negativeCoverageSourceRowsQueryHandler.ExecuteAsync(
+                new GetClientNegativeVisitCoverageHistorySourceRowsQuery(
+                    query.Actor,
+                    auditPage.ClientId,
+                    auditPage.OccurredFromInclusive,
+                    auditPage.OccurredBeforeExclusive,
+                    Limit: negativeCoverageIds.Length,
+                    Offset: 0,
+                    AuditEntryIds: negativeCoverageIds),
+                cancellationToken);
+            if (result.Status
+                != GetClientNegativeVisitCoverageHistorySourceRowsStatus.Success)
+            {
+                return MapNegativeCoverageFailure(result);
+            }
+
+            if (result.Page is null
+                || !IsExactSourcePage(
+                    result.Page.ClientId,
+                    result.Page.Offset,
+                    result.Page.HasMore,
+                    result.Page.Items.Count,
+                    auditPage.ClientId,
+                    negativeCoverageIds.Length)
+                || !TryAddRows(
+                    negativeCoverageIds,
+                    result.Page.Items,
+                    row => row.AuditEntry,
+                    MapNegativeCoverageRow,
                     auditEntriesById,
                     mappedRows))
             {
@@ -390,6 +436,12 @@ public sealed class GetClientHistoryQueryHandler(
                     actions.Add(NonWorkingDayAuditActions.Corrected);
                     actions.Add(NonWorkingDayAuditActions.Canceled);
                     break;
+                case ClientHistoryEntityFilter.NegativeCoverage:
+                    entities.Add(ClientAuditEntityFilter.MembershipNegativeClosure);
+                    actions.Add(MembershipNegativeClosureAuditActions.Created);
+                    actions.Add(MembershipNegativeClosureAuditActions.Canceled);
+                    actions.Add(MembershipNegativeClosureAuditActions.Replaced);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(entityFilters));
             }
@@ -445,6 +497,15 @@ public sealed class GetClientHistoryQueryHandler(
             (ClientAuditEntityFilter.NonWorkingPeriod,
                 NonWorkingDayAuditActions.Canceled)
                 => ClientHistorySourceGroup.NonWorkingDay,
+            (ClientAuditEntityFilter.MembershipNegativeClosure,
+                MembershipNegativeClosureAuditActions.Created)
+                => ClientHistorySourceGroup.NegativeCoverage,
+            (ClientAuditEntityFilter.MembershipNegativeClosure,
+                MembershipNegativeClosureAuditActions.Canceled)
+                => ClientHistorySourceGroup.NegativeCoverage,
+            (ClientAuditEntityFilter.MembershipNegativeClosure,
+                MembershipNegativeClosureAuditActions.Replaced)
+                => ClientHistorySourceGroup.NegativeCoverage,
             _ => null,
         };
     }
@@ -552,6 +613,35 @@ public sealed class GetClientHistoryQueryHandler(
             FreezeSourceRow: null,
             NonWorkingDaySourceRow: null,
             row.AuditEntry);
+    }
+
+    private static ClientHistorySourceRow MapNegativeCoverageRow(
+        ClientNegativeVisitCoverageHistorySourceRow row)
+    {
+        var kind = row.Kind switch
+        {
+            ClientNegativeVisitCoverageHistorySourceKind.Created
+                => ClientHistorySourceKind.NegativeCoverageCreated,
+            ClientNegativeVisitCoverageHistorySourceKind.Canceled
+                => ClientHistorySourceKind.NegativeCoverageCanceled,
+            ClientNegativeVisitCoverageHistorySourceKind.Replaced
+                => ClientHistorySourceKind.NegativeCoverageReplaced,
+            _ => throw new InvalidOperationException(
+                "Unsupported negative coverage history source kind."),
+        };
+        return new ClientHistorySourceRow(
+            kind,
+            row.ClientId,
+            row.OccurredAt,
+            row.RecordedAt,
+            row.EntryOrigin,
+            MembershipSourceRow: null,
+            VisitSourceRow: null,
+            PaymentSourceRow: null,
+            FreezeSourceRow: null,
+            NonWorkingDaySourceRow: null,
+            row.AuditEntry,
+            row);
     }
 
     private static ClientHistorySourceRow MapPaymentRow(
@@ -670,6 +760,24 @@ public sealed class GetClientHistoryQueryHandler(
         };
     }
 
+    private static GetClientHistoryResult MapNegativeCoverageFailure(
+        GetClientNegativeVisitCoverageHistorySourceRowsResult result)
+    {
+        return result.Status switch
+        {
+            GetClientNegativeVisitCoverageHistorySourceRowsStatus.PermissionDenied
+                => GetClientHistoryResult.Denied(),
+            GetClientNegativeVisitCoverageHistorySourceRowsStatus.ValidationFailed
+                => GetClientHistoryResult.Invalid(
+                    result.ErrorMessage
+                        ?? "Negative coverage history request is invalid.",
+                    result.ErrorField),
+            GetClientNegativeVisitCoverageHistorySourceRowsStatus.NotFound
+                => GetClientHistoryResult.MissingClient(),
+            _ => GetClientHistoryResult.InconsistentSource(),
+        };
+    }
+
     private static GetClientHistoryResult MapVisitFailure(
         GetClientVisitHistorySourceRowsResult result)
     {
@@ -746,5 +854,6 @@ public sealed class GetClientHistoryQueryHandler(
         Payment,
         Freeze,
         NonWorkingDay,
+        NegativeCoverage,
     }
 }

@@ -243,6 +243,46 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
             Assert.Equal(1, afterCancel.CloseIdempotencyCount);
             Assert.Equal(2, afterCancel.CorrectionIdempotencyCount);
             Assert.Null(afterCancel.ActiveClosureId);
+
+            await page.GotoAsync(
+                new Uri(
+                    _app.BaseAddress,
+                    $"/Audit/ClientHistory?clientId={_app.NegativeCoveragePhoneClientId}&entity=NegativeCoverage")
+                    .ToString(),
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            Assert.Equal("Client history - BodyLife CRM", await page.TitleAsync());
+            Assert.Equal(
+                "NegativeCoverage",
+                await page.GetByLabel("Source type", new() { Exact = true }).InputValueAsync());
+            var historyRows = page.Locator(
+                "[data-client-history-list] > [data-client-history-row]");
+            Assert.Equal(4, await historyRows.CountAsync());
+            var historyKinds = await historyRows.EvaluateAllAsync<string[]>(
+                "rows => rows.map(row => row.dataset.sourceKind)");
+            Assert.Equal(2, historyKinds.Count(kind => kind == "NegativeCoverageCreated"));
+            Assert.Single(historyKinds, kind => kind == "NegativeCoverageReplaced");
+            Assert.Single(historyKinds, kind => kind == "NegativeCoverageCanceled");
+            await ExpectVisibleAsync(
+                page.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Negative-visit coverage replaced", Exact = true }),
+                "phone",
+                "replacement history row");
+            await ExpectVisibleAsync(
+                page.GetByRole(
+                    AriaRole.Heading,
+                    new() { Name = "Negative-visit coverage canceled", Exact = true }),
+                "phone",
+                "cancellation history row");
+            await ExpectVisibleAsync(
+                page.GetByText("250.00 UAH", new() { Exact = true }).First,
+                "phone",
+                "original exact cash history fact");
+            await ExpectVisibleAsync(
+                page.GetByText("125.00 UAH", new() { Exact = true }).First,
+                "phone",
+                "replacement exact cash history fact");
+            await AssertFitsViewportAsync(page, "phone", "negative coverage client history");
         }
         finally
         {

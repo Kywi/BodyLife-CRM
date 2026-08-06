@@ -65,6 +65,18 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
             ClientHistorySourceKind.NonWorkingDayCanceled => CanceledNonWorkingDay(
                 row,
                 Require(row.NonWorkingDaySourceRow?.Correction)),
+            ClientHistorySourceKind.NegativeCoverageCreated => NegativeCoverage(
+                row,
+                Require(row.NegativeCoverageSourceRow),
+                ClientNegativeVisitCoverageHistorySourceKind.Created),
+            ClientHistorySourceKind.NegativeCoverageCanceled => NegativeCoverage(
+                row,
+                Require(row.NegativeCoverageSourceRow),
+                ClientNegativeVisitCoverageHistorySourceKind.Canceled),
+            ClientHistorySourceKind.NegativeCoverageReplaced => NegativeCoverage(
+                row,
+                Require(row.NegativeCoverageSourceRow),
+                ClientNegativeVisitCoverageHistorySourceKind.Replaced),
             _ => throw Unsupported("source kind", row.Kind),
         };
     }
@@ -187,6 +199,168 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
                 ("Membership", source.MembershipId),
                 ("MembershipType", source.MembershipTypeId)));
     }
+
+    private ClientHistoryRowViewModel NegativeCoverage(
+        ClientHistorySourceRow row,
+        ClientNegativeVisitCoverageHistorySourceRow source,
+        ClientNegativeVisitCoverageHistorySourceKind expectedKind)
+    {
+        if (source.Kind != expectedKind
+            || !HasExpectedCoverageShape(source, expectedKind))
+        {
+            throw new InvalidOperationException(
+                "Negative-visit coverage history projection is inconsistent.");
+        }
+
+        var expectedPaperEvent = expectedKind switch
+        {
+            ClientNegativeVisitCoverageHistorySourceKind.Created
+                when source.Correction is not null
+                => PaperFallbackEventType.CorrectionOrCancellation,
+            ClientNegativeVisitCoverageHistorySourceKind.Created
+                when source.Closure.Method
+                    == NegativeVisitCoverageClosureMethod.NewMembership
+                => PaperFallbackEventType.MembershipSale,
+            ClientNegativeVisitCoverageHistorySourceKind.Created
+                => PaperFallbackEventType.NegativeCoverage,
+            ClientNegativeVisitCoverageHistorySourceKind.Canceled
+                or ClientNegativeVisitCoverageHistorySourceKind.Replaced
+                => PaperFallbackEventType.CorrectionOrCancellation,
+            _ => throw Unsupported("negative coverage source kind", expectedKind),
+        };
+        var eventBatchId = expectedKind
+            == ClientNegativeVisitCoverageHistorySourceKind.Created
+            ? source.Closure.EntryBatchId
+            : source.Correction!.EntryBatchId;
+        var facts = CoverageFacts(source.Closure).ToList();
+        if (source.ReplacementClosure is { } replacement)
+        {
+            facts.Add(new ClientHistoryFactViewModel(
+                presentation.Fact("ReplacementCoverage"),
+                presentation.Text(
+                    "Template.CoverageSummary",
+                    CoverageMethod(replacement.Method),
+                    presentation.Visits(replacement.VisitsCount))));
+        }
+
+        AddPaymentPaperFacts(
+            facts,
+            source.EntryOrigin,
+            eventBatchId,
+            source.OccurredAt,
+            source.PaperReference,
+            expectedPaperEvent,
+            sourceName: "negative-visit coverage");
+
+        var titleKey = expectedKind switch
+        {
+            ClientNegativeVisitCoverageHistorySourceKind.Created
+                => "NegativeCoverageRecorded",
+            ClientNegativeVisitCoverageHistorySourceKind.Canceled
+                => "NegativeCoverageCanceled",
+            ClientNegativeVisitCoverageHistorySourceKind.Replaced
+                => "NegativeCoverageReplaced",
+            _ => throw Unsupported("negative coverage source kind", expectedKind),
+        };
+        var change = source.Correction is null
+            ? null
+            : new ClientHistoryChangeViewModel(
+                presentation.HistoryChange(
+                    source.Correction.Mode
+                        == NegativeVisitCoverageCorrectionHistoryMode.Cancel
+                        ? "Cancellation"
+                        : "Correction"),
+                source.Correction.Reason,
+                row.AuditEntry.Comment,
+                source.ReplacementClosure is null
+                    ? []
+                    : Facts(
+                        ("ReplacementCoverage",
+                            presentation.Text(
+                                "Template.CoverageSummary",
+                                CoverageMethod(source.ReplacementClosure.Method),
+                                presentation.Visits(
+                                    source.ReplacementClosure.VisitsCount)))));
+
+        return Row(
+            row,
+            "NegativeCoverage",
+            "history-group-negative-coverage",
+            titleKey,
+            CoverageStatus(source.Closure.Status),
+            facts.AsReadOnly(),
+            change,
+            source.Closure.Comment,
+            Ids(
+                ("NegativeClosure", source.Closure.ClosureId),
+                ("OriginalNegativeClosure",
+                    expectedKind == ClientNegativeVisitCoverageHistorySourceKind.Created
+                        ? source.Correction?.OriginalClosureId
+                        : source.Closure.ClosureId),
+                ("ReplacementClosure", source.ReplacementClosure?.ClosureId),
+                ("Correction", source.Correction?.CorrectionId),
+                ("Payment", source.Closure.Payment?.PaymentId),
+                ("ReplacementPayment", source.ReplacementClosure?.Payment?.PaymentId),
+                ("Membership", source.Closure.CoveringMembership?.MembershipId),
+                ("EntryBatch", eventBatchId),
+                ("EntryBatchRow", source.PaperReference?.EntryBatchRowId)));
+    }
+
+    private static bool HasExpectedCoverageShape(
+        ClientNegativeVisitCoverageHistorySourceRow source,
+        ClientNegativeVisitCoverageHistorySourceKind kind) => kind switch
+        {
+            ClientNegativeVisitCoverageHistorySourceKind.Created =>
+                source.ReplacementClosure is null
+                && (source.Correction is null
+                    || source.Correction.Mode
+                        == NegativeVisitCoverageCorrectionHistoryMode.Replace
+                    && source.Correction.ReplacementClosureId
+                        == source.Closure.ClosureId),
+            ClientNegativeVisitCoverageHistorySourceKind.Canceled =>
+                source.Closure.Status
+                    == NegativeVisitCoverageClosureHistoryStatus.Canceled
+                && source.ReplacementClosure is null
+                && source.Correction is
+                {
+                    Mode: NegativeVisitCoverageCorrectionHistoryMode.Cancel,
+                    ReplacementClosureId: null,
+                } correction
+                && correction.OriginalClosureId == source.Closure.ClosureId,
+            ClientNegativeVisitCoverageHistorySourceKind.Replaced =>
+                source.Closure.Status
+                    == NegativeVisitCoverageClosureHistoryStatus.Replaced
+                && source.ReplacementClosure is { } replacement
+                && source.Correction is
+                {
+                    Mode: NegativeVisitCoverageCorrectionHistoryMode.Replace,
+                    ReplacementClosureId: not null,
+                } correction
+                && correction.OriginalClosureId == source.Closure.ClosureId
+                && correction.ReplacementClosureId == replacement.ClosureId,
+            _ => false,
+        };
+
+    private IReadOnlyList<ClientHistoryFactViewModel> CoverageFacts(
+        NegativeVisitCoverageClosureHistorySnapshot source) => Facts(
+            ("CoverageMethod", CoverageMethod(source.Method)),
+            ("CoveredVisits", presentation.Visits(source.VisitsCount)),
+            ("OldestVisit", presentation.ShortId(source.OldestOpenNegativeVisitId)),
+            ("ExactPayment", source.Payment is { } payment
+                ? presentation.Money(payment.Amount)
+                : presentation.Value("NotApplicable")),
+            ("CoveringMembership", source.CoveringMembership is { } membership
+                ? membership.Snapshot.TypeName
+                : presentation.Value("NotApplicable")));
+
+    private string CoverageMethod(NegativeVisitCoverageClosureMethod value) => value switch
+    {
+        NegativeVisitCoverageClosureMethod.OneOff =>
+            presentation.Text("CoverageMethod.OneOff"),
+        NegativeVisitCoverageClosureMethod.NewMembership =>
+            presentation.Text("CoverageMethod.NewMembership"),
+        _ => throw Unsupported("negative coverage method", value),
+    };
 
     private ClientHistoryRowViewModel MarkedVisit(
         ClientHistorySourceRow row,
@@ -346,7 +520,7 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
             source.EntryBatchId,
             source.OccurredAt,
             source.PaperReference,
-            PaymentPaperEventType(source.PaymentContext));
+            CreatedPaymentPaperEventType(source));
         return Row(row, "Payment", "history-group-payment", "PaymentRecorded", PaymentStatus(source.CurrentStatus), facts, null, source.Comment, PaymentIds(source, source.PaperReference));
     }
 
@@ -732,6 +906,14 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
                 $"Unsupported Client history Payment context '{paymentContext}'."),
         };
 
+    private static PaperFallbackEventType CreatedPaymentPaperEventType(
+        PaymentHistorySource source) =>
+        source.PaymentContext == PaymentContext.NegativeClosure
+        && source.PaperReference?.EventType
+            == PaperFallbackEventType.CorrectionOrCancellation
+            ? PaperFallbackEventType.CorrectionOrCancellation
+            : PaymentPaperEventType(source.PaymentContext);
+
     private static string PaperEventTypeKey(PaperFallbackEventType eventType) =>
         eventType switch
         {
@@ -824,6 +1006,21 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
                 presentation.Status("Corrected"),
                 "status-warning"),
             _ => throw Unsupported("Membership status", value),
+        };
+
+    private PresentedStatus CoverageStatus(
+        NegativeVisitCoverageClosureHistoryStatus value) => value switch
+        {
+            NegativeVisitCoverageClosureHistoryStatus.Active => new(
+                presentation.Status("ActiveSource"),
+                "status-active"),
+            NegativeVisitCoverageClosureHistoryStatus.Canceled => new(
+                presentation.Status("Canceled"),
+                "status-canceled"),
+            NegativeVisitCoverageClosureHistoryStatus.Replaced => new(
+                presentation.Status("Replaced"),
+                "status-warning"),
+            _ => throw Unsupported("negative coverage status", value),
         };
 
     private PresentedStatus OpeningStatus(
