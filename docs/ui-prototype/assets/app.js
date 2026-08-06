@@ -260,16 +260,6 @@
     });
 
     const issueForm = actionWorkspace.querySelector('[data-client-action-form="issue"]');
-    const includePayment = issueForm?.querySelector('[data-include-payment]');
-    const syncIssuePayment = () => {
-      if (!issueForm || !includePayment) return;
-      const enabled = includePayment.checked;
-      const fields = issueForm.querySelector('.client-action-payment-fields');
-      if (fields) fields.hidden = !enabled;
-      issueForm.querySelectorAll('[data-issue-payment-control]').forEach((control) => { control.disabled = !enabled; });
-      const amount = issueForm.querySelector('[data-issue-payment-amount]');
-      if (amount) amount.required = enabled;
-    };
     const syncIssuePreview = () => {
       if (!issueForm) return;
       const type = issueForm.querySelector('[data-issue-type]');
@@ -277,7 +267,7 @@
       const start = issueForm.querySelector('[data-issue-start]')?.value;
       const preview = issueForm.querySelector('[data-issue-preview]');
       const submit = issueForm.querySelector('[data-issue-submit]');
-      const supported = Boolean(option) && start === '2026-07-30';
+      const supported = Boolean(type?.value && option?.dataset.price) && start === '2026-07-30';
       issueForm.dataset.previewReady = String(supported);
       if (submit) submit.disabled = !supported;
       if (preview) {
@@ -286,11 +276,14 @@
         if (value) {
           value.textContent = supported
             ? `${option.dataset.price} · ${option.dataset.visits} · до ${option.dataset.end}`
-            : 'Змініть дату назад на 30.07.2026 або оновіть розрахунок у системі';
+            : type?.value
+              ? 'Змініть дату назад на 30.07.2026 або оновіть розрахунок у системі'
+              : 'Спочатку оберіть тип абонемента';
         }
+        const exactPayment = issueForm.querySelector('[data-issue-exact-payment]');
+        if (exactPayment) exactPayment.value = option?.dataset.price || '';
       }
     };
-    includePayment?.addEventListener('change', syncIssuePayment);
     issueForm?.querySelector('[data-issue-type]')?.addEventListener('change', syncIssuePreview);
     issueForm?.querySelector('[data-issue-start]')?.addEventListener('change', syncIssuePreview);
 
@@ -358,7 +351,6 @@
         activeProfile.querySelector('[data-fixture-extension]')?.replaceChildren('+6 днів');
       }
       addHistoryEvent(type, form);
-      if (type === 'issue' && includePayment?.checked) addHistoryEvent('payment', form);
     };
 
     const resetForm = (form, { focus = false } = {}) => {
@@ -366,7 +358,6 @@
       form.hidden = false;
       form.parentElement?.querySelector('[data-client-action-result]')?.remove();
       if (form === issueForm) {
-        syncIssuePayment();
         syncIssuePreview();
       }
       if (form === freezeForm) syncFreezePreview();
@@ -378,7 +369,7 @@
       panel.querySelector('[data-client-action-result]')?.remove();
       const labels = {
         visit: ['Вхід підтверджено', 'Подію додано до таблиці активності.'],
-        issue: ['Абонемент видано', 'Тариф і показники профілю оновлено.'],
+        issue: ['Абонемент і точний платіж створено', 'Один звичайний абонемент і один точний готівковий платіж показано разом.'],
         payment: ['Платіж проведено', 'Касову подію додано без зміни показників абонемента.'],
         freeze: ['Заморозку додано', 'Дату завершення та загальне продовження оновлено.']
       };
@@ -422,7 +413,6 @@
         if (actionLive) actionLive.textContent = 'Готово. Демонстраційні дані оновлено до перезавантаження сторінки.';
       }, 420);
     }));
-    syncIssuePayment();
     syncIssuePreview();
     syncFreezePreview();
     actionPanels.forEach((panel) => panel.classList.toggle('is-active', !panel.hidden));
@@ -649,11 +639,22 @@
       const visits = dialogToPopulate.querySelector('[name="form.VisitsLimit"]');
       const price = dialogToPopulate.querySelector('[name="form.PriceAmount"]');
       const currency = dialogToPopulate.querySelector('[name="form.PriceCurrency"]');
+      const kindDisplay = dialogToPopulate.querySelector('[name="form.KindDisplay"]');
       if (name) { name.setAttribute('value', data.name); name.value = data.name; }
       if (duration) { duration.setAttribute('value', data.duration); duration.value = data.duration; }
-      if (visits) { visits.setAttribute('value', data.visits); visits.value = data.visits; }
+      if (visits) {
+        visits.setAttribute('value', data.visits);
+        visits.value = data.visits;
+        visits.readOnly = data.kind === 'one_off';
+        visits.setAttribute('aria-readonly', String(data.kind === 'one_off'));
+      }
       if (price) { price.setAttribute('value', data.price); price.value = data.price; }
       if (currency) { currency.setAttribute('value', data.currency); currency.value = data.currency; }
+      if (kindDisplay) {
+        const kindLabel = data.kind === 'one_off' ? 'Разовий (one_off)' : 'Звичайний (ordinary)';
+        kindDisplay.setAttribute('value', kindLabel);
+        kindDisplay.value = kindLabel;
+      }
       const comment = dialogToPopulate.querySelector('[name="form.Comment"]');
       if (comment) comment.value = data.comment;
       dialogToPopulate.querySelector('[data-mt-created-at]')?.replaceChildren(document.createTextNode(mtText(data.createdAt)));
@@ -666,6 +667,8 @@
       mtCreateDialog.querySelector('form').reset();
       mtCreateDialog.querySelector('[data-mt-status]').textContent = '';
       mtCreateDialog.querySelector('[data-mt-validation]').hidden = true;
+      const visits = mtCreateDialog.querySelector('[data-mt-visits]');
+      if (visits) { visits.readOnly = false; visits.removeAttribute('aria-readonly'); }
       openMtDialog(mtCreateDialog, event.currentTarget);
       mtCreateDialog.querySelector('[name="form.Name"]')?.focus();
     });
@@ -694,6 +697,15 @@
       event.preventDefault();
       setMtStatus(form);
     }));
+    const mtKind = mtCreateDialog?.querySelector('[data-mt-kind]');
+    const mtVisits = mtCreateDialog?.querySelector('[data-mt-visits]');
+    mtKind?.addEventListener('change', () => {
+      const isOneOff = mtKind.value === 'one_off';
+      if (!mtVisits) return;
+      if (isOneOff) mtVisits.value = '1';
+      mtVisits.readOnly = isOneOff;
+      mtVisits.setAttribute('aria-readonly', String(isOneOff));
+    });
     const mtState = new URLSearchParams(window.location.search).get('state');
     if (mtState === 'validation') {
       mtCreateDialog.querySelector('form').reset();

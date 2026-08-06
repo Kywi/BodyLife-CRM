@@ -16,7 +16,7 @@ Pages candidate with canonical data and the acceptance gates in
 | Route | Review states |
 | --- | --- |
 | `index.html` | `normal`, `empty`, `unavailable` |
-| `clients.html` | `default`, `exact-card`, `search-multiple`, `no-result`, `query-failure`, `zero-visits`, `negative`, `expired`, `ending-soon`, `low-remaining`, `inactive`, `duplicate-warning`, `stale`, `freeze-blocked`, `backfill` |
+| `clients.html` | `default`, `exact-card`, `search-multiple`, `no-result`, `query-failure`, `zero-visits`, `negative` (ADR-018 coverage fixture), `expired`, `ending-soon`, `low-remaining`, `inactive`, `duplicate-warning`, `stale`, `freeze-blocked`, `backfill` |
 | `reports-daily.html` | `default`, `changed-after-close`, `empty`, `unavailable` |
 | `reports-ending-soon.html`, `reports-low-remaining.html`, `reports-negative-clients.html`, `reports-inactive-clients.html` | `default`, `empty`, `unavailable` |
 | `audit-timeline.html` | `default`, `loading`, `empty`, `unavailable` |
@@ -45,7 +45,9 @@ The `default` and `exact-card` client states share one interactive,
 non-persistent action surface. Its four keyboard-operable tabs preview marking
 a visit, issuing a membership, recording a cash payment and adding a freeze.
 Successful previews replace the submitted form with a confirmation state and
-update the fictional profile/activity table until the page is reloaded.
+update the fictional profile/activity table until the page is reloaded. An
+ordinary issue preview always represents one ordinary Membership plus one
+read-only exact cash Payment; it cannot omit, underpay or overpay the sale.
 
 These interactions are presentation fixtures, not application commands.
 Terminal payments remain visibly unavailable because BodyLife v1 is cash-only.
@@ -54,3 +56,10 @@ date or range no longer matches a fixture, the preview is invalidated and
 submission is disabled instead of calculating Membership state in JavaScript.
 Warning, stale, blocked, search and error states do not simulate a successful
 client action.
+
+Standalone payments are limited to one-off, trial and other accepted contexts;
+they never bind a Membership and never substitute for a membership sale or
+negative-coverage closure. ADR-018 review panels make replacement/cancellation,
+oldest-first negative coverage and exact payments visible. Daily exposes paper
+origin plus drill-down, while History and Audit expose first-class paper
+provenance; no Milestone 11 paper-entry or reconciliation form is invented.
