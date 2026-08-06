@@ -177,11 +177,11 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
             fixture.Actor,
             fixture.ClientId);
 
-        await ExecuteNonQueryAsync(
-            database,
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             delete from bodylife.entry_batch_row_entities
             where entry_batch_row_id = '{source.OneOffBatchRowId}'::uuid
+            returning 1
             """);
         var missingLink = await handler.ExecuteAsync(query, CancellationToken.None);
         AssertFailure(
@@ -198,11 +198,11 @@ public sealed class PostgreSqlGetClientVisitHistorySourceRowsQueryTests
         var fixture = await SeedFixtureAsync(database, dbContext);
         var source = await SeedHistoryAsync(database, fixture);
 
-        await ExecuteNonQueryAsync(
-            database,
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             delete from bodylife.entry_batch_row_entities
             where entry_batch_row_id = '{source.CancellationBatchRowId}'::uuid
+            returning 1
             """);
         var result = await CreateHandler(dbContext).ExecuteAsync(
             new GetClientVisitHistorySourceRowsQuery(

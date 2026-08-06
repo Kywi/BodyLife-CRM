@@ -131,6 +131,133 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
     }
 
     [PostgreSqlFact]
+    public async Task PaperCancelBindsOnlyItsCorrectionAndKeepsCanonicalHistoryReadable()
+    {
+        await using var database = await CreateIssuedSaleCorrectionDatabaseAsync();
+        var fixture = await SeedIssuedSaleCorrectionFixtureAsync(database);
+        var preview = await PreviewIssuedSaleAsync(database, fixture);
+        var occurredAt = TestNow.AddMinutes(-5);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            occurredAt,
+            "correction_or_cancellation",
+            TestNow,
+            explanation: "Canceled incorrect Membership sale from paper");
+        var command = new CancelIssuedMembershipSaleCommand(
+            CreateIssuedSaleCorrectionEnvelope(fixture.Actor, "paper-sale-cancel") with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                EntryBatchRowId = paper.EntryBatchRowId,
+            },
+            fixture.OriginalMembershipId,
+            preview.DependencyToken);
+
+        CommandResult result;
+        await using (var dbContext = database.CreateDbContext())
+        {
+            result = await CreateCancelIssuedSaleHandler(dbContext).ExecuteAsync(
+                command,
+                CancellationToken.None);
+        }
+
+        AssertIssuedSaleCorrectionSuccess(result, fixture.ClientId);
+        await using (var replayContext = database.CreateDbContext())
+        {
+            var replay = await CreateCancelIssuedSaleHandler(replayContext).ExecuteAsync(
+                command,
+                CancellationToken.None);
+            Assert.Equal(result.PrimaryEntityId, replay.PrimaryEntityId);
+            Assert.Equal(result.AuditEntryId, replay.AuditEntryId);
+        }
+
+        await using (var reuseContext = database.CreateDbContext())
+        {
+            var reuse = await CreateCancelIssuedSaleHandler(reuseContext).ExecuteAsync(
+                command with
+                {
+                    Envelope = command.Envelope with
+                    {
+                        RequestCorrelationId = new RequestCorrelationId(
+                            "correlation-paper-sale-cancel-reuse"),
+                        IdempotencyKey = "paper-sale-cancel-reuse",
+                    },
+                },
+                CancellationToken.None);
+            AssertIssuedSaleCorrectionError(
+                reuse,
+                CommandErrorCode.DuplicateSubmission,
+                "entryBatchRowId");
+        }
+
+        var correctionId = result.PrimaryEntityId!.Value.Value;
+        Assert.Equal(
+            [new PaperFallbackEntityLink(
+                "issued_membership_sale_correction",
+                correctionId)],
+            await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId));
+        Assert.Equal(
+            paper.EntryBatchId,
+            await database.ExecuteScalarAsync<Guid>(
+                $"select entry_batch_id from bodylife.issued_membership_sale_corrections where id = '{correctionId}'"));
+        Assert.Equal(
+            2L,
+            await database.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.business_audit_entries where related_entity_refs @> '{{\"entryBatchRowId\":\"{paper.EntryBatchRowId}\"}}'::jsonb"));
+        await AssertCanceledIssuedSaleProjectionsAsync(database, fixture, paper);
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperCorrectionRejectsWrongEventWithoutPartialState()
+    {
+        await using var database = await CreateIssuedSaleCorrectionDatabaseAsync();
+        var fixture = await SeedIssuedSaleCorrectionFixtureAsync(database);
+        var preview = await PreviewIssuedSaleAsync(database, fixture);
+        var wrongEvent = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            TestNow.AddMinutes(-5),
+            "membership_sale",
+            TestNow);
+
+        await using var dbContext = database.CreateDbContext();
+        var result = await CreateCancelIssuedSaleHandler(dbContext).ExecuteAsync(
+            new CancelIssuedMembershipSaleCommand(
+                CreateIssuedSaleCorrectionEnvelope(
+                    fixture.Actor,
+                    "paper-sale-wrong-event") with
+                {
+                    EntryOrigin = EntryOrigin.PaperFallback,
+                    EntryBatchRowId = wrongEvent.EntryBatchRowId,
+                },
+                fixture.OriginalMembershipId,
+                preview.DependencyToken),
+            CancellationToken.None);
+
+        AssertIssuedSaleCorrectionError(
+            result,
+            CommandErrorCode.ValidationFailed,
+            "entryBatchRowId");
+        Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            wrongEvent.EntryBatchRowId));
+        Assert.Equal(
+            0L,
+            await database.ExecuteScalarAsync<long>(
+                "select count(*) from bodylife.issued_membership_sale_corrections"));
+        Assert.Equal(
+            "active",
+            await database.ExecuteScalarAsync<string>(
+                $"select status from bodylife.issued_memberships where id = '{fixture.OriginalMembershipId}'"));
+        Assert.Equal(
+            "active",
+            await database.ExecuteScalarAsync<string>(
+                $"select status from bodylife.payments where id = '{fixture.OriginalPaymentId}'"));
+    }
+
+    [PostgreSqlFact]
     public async Task ReplaceIssuedSaleCreatesNewExactSaleAndPreservesOriginalHistory()
     {
         await using var database = await CreateIssuedSaleCorrectionDatabaseAsync();
@@ -209,6 +336,103 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             fixture,
             replacementMembershipId,
             replacementPaymentId);
+    }
+
+    [PostgreSqlFact]
+    public async Task PaperReplacementBindsExactlyNewSaleFactsAndPreservesOriginalProvenance()
+    {
+        await using var database = await CreateIssuedSaleCorrectionDatabaseAsync();
+        var fixture = await SeedIssuedSaleCorrectionFixtureAsync(database);
+        var preview = await PreviewIssuedSaleAsync(
+            database,
+            fixture,
+            fixture.MembershipTypeId,
+            NewStartDate);
+        var replacement = Assert.IsType<IssuedMembershipSaleReplacementTerms>(
+            preview.Replacement);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            TestNow.AddMinutes(-5),
+            "correction_or_cancellation",
+            TestNow,
+            explanation: "Replaced incorrect Membership sale from paper");
+
+        CommandResult result;
+        await using (var dbContext = database.CreateDbContext())
+        {
+            result = await CreateReplaceIssuedSaleHandler(dbContext).ExecuteAsync(
+                new ReplaceIssuedMembershipCommand(
+                    CreateIssuedSaleCorrectionEnvelope(
+                        fixture.Actor,
+                        "paper-sale-replace") with
+                    {
+                        EntryOrigin = EntryOrigin.PaperFallback,
+                        EntryBatchRowId = paper.EntryBatchRowId,
+                    },
+                    fixture.OriginalMembershipId,
+                    replacement.MembershipTypeId,
+                    replacement.ExpectedMembershipTypeUpdatedAt,
+                    replacement.StartDate,
+                    preview.DependencyToken),
+                CancellationToken.None);
+        }
+
+        AssertIssuedSaleCorrectionSuccess(result, fixture.ClientId);
+        var correctionId = result.PrimaryEntityId!.Value.Value;
+        var replacementMembershipId = await database.ExecuteScalarAsync<Guid>(
+            $"select replacement_membership_id from bodylife.issued_membership_sale_corrections where id = '{correctionId}'");
+        var replacementPaymentId = await database.ExecuteScalarAsync<Guid>(
+            $"select replacement_payment_id from bodylife.issued_membership_sale_corrections where id = '{correctionId}'");
+        Assert.Equal(
+            [
+                new PaperFallbackEntityLink(
+                    "issued_membership_sale_correction",
+                    correctionId),
+                new PaperFallbackEntityLink("membership", replacementMembershipId),
+                new PaperFallbackEntityLink("payment", replacementPaymentId),
+            ],
+            await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+                database,
+                paper.EntryBatchRowId));
+        Assert.Equal(
+            3L,
+            await database.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.business_audit_entries where related_entity_refs @> '{{\"entryBatchRowId\":\"{paper.EntryBatchRowId}\"}}'::jsonb"));
+        Assert.Equal(
+            0L,
+            await database.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.issued_memberships where id = '{fixture.OriginalMembershipId}' and entry_batch_id is not null"));
+        Assert.Equal(
+            0L,
+            await database.ExecuteScalarAsync<long>(
+                $"select count(*) from bodylife.payments where id = '{fixture.OriginalPaymentId}' and entry_batch_id is not null"));
+        Assert.Equal(
+            3L,
+            await database.ExecuteScalarAsync<long>(
+                $"""
+                select count(*)
+                from (
+                    select entry_batch_id
+                    from bodylife.issued_membership_sale_corrections
+                    where id = '{correctionId}'
+                    union all
+                    select entry_batch_id
+                    from bodylife.issued_memberships
+                    where id = '{replacementMembershipId}'
+                    union all
+                    select entry_batch_id
+                    from bodylife.payments
+                    where id = '{replacementPaymentId}'
+                ) source
+                where entry_batch_id = '{paper.EntryBatchId}'
+                """));
+        await AssertReplacedIssuedSaleProjectionsAsync(
+            database,
+            fixture,
+            replacementMembershipId,
+            replacementPaymentId,
+            paper);
     }
 
     [Theory]
@@ -598,11 +822,27 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task AuditFailureRollsBackIssuedSaleCorrectionLifecycle()
+    public async Task AuditFailureRollsBackPaperIssuedSaleCorrectionAndAllowsRetry()
     {
         await using var database = await CreateIssuedSaleCorrectionDatabaseAsync();
         var fixture = await SeedIssuedSaleCorrectionFixtureAsync(database);
         var preview = await PreviewIssuedSaleAsync(database, fixture);
+        var paper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
+            database,
+            fixture.Actor,
+            TestNow.AddMinutes(-5),
+            "correction_or_cancellation",
+            TestNow);
+        var command = new CancelIssuedMembershipSaleCommand(
+            CreateIssuedSaleCorrectionEnvelope(
+                fixture.Actor,
+                "paper-sale-audit-rollback") with
+            {
+                EntryOrigin = EntryOrigin.PaperFallback,
+                EntryBatchRowId = paper.EntryBatchRowId,
+            },
+            fixture.OriginalMembershipId,
+            preview.DependencyToken);
         await ExecuteNonQueryAsync(
             database,
             """
@@ -614,12 +854,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         await using var dbContext = database.CreateDbContext();
         await Assert.ThrowsAsync<DbUpdateException>(() =>
             CreateCancelIssuedSaleHandler(dbContext).ExecuteAsync(
-                new CancelIssuedMembershipSaleCommand(
-                    CreateIssuedSaleCorrectionEnvelope(
-                        fixture.Actor,
-                        "sale-audit-rollback"),
-                    fixture.OriginalMembershipId,
-                    preview.DependencyToken),
+                command,
                 CancellationToken.None));
 
         Assert.Equal(
@@ -642,6 +877,21 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             0L,
             await database.ExecuteScalarAsync<long>(
                 "select count(*) from bodylife.command_idempotency_keys"));
+        Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId));
+
+        await ExecuteNonQueryAsync(
+            database,
+            "alter table bodylife.business_audit_entries drop constraint ck_test_reject_issued_sale_cancel_audit");
+        await using var retryContext = database.CreateDbContext();
+        var retry = await CreateCancelIssuedSaleHandler(retryContext).ExecuteAsync(
+            command,
+            CancellationToken.None);
+        AssertIssuedSaleCorrectionSuccess(retry, fixture.ClientId);
+        Assert.Single(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
+            database,
+            paper.EntryBatchRowId));
     }
 
     [PostgreSqlFact]
@@ -1252,7 +1502,8 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
 
     private static async Task AssertCanceledIssuedSaleProjectionsAsync(
         PostgreSqlTestDatabase database,
-        IssuedSaleCorrectionFixture fixture)
+        IssuedSaleCorrectionFixture fixture,
+        PaperFallbackRowFixture? paper = null)
     {
         await using var dbContext = database.CreateDbContext();
         var timeProvider = new FixedTimeProvider(TestNow);
@@ -1309,10 +1560,12 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             paymentHistoryResult.Status);
         var paymentHistory = Assert.Single(paymentHistoryResult.Page!.Items);
         Assert.Equal(ClientPaymentHistorySourceKind.CanceledPayment, paymentHistory.Kind);
+        var cancellationHistory = Assert.IsType<PaymentCancellationHistorySource>(
+            paymentHistory.Cancellation);
         Assert.Equal(
             "Incorrect Membership sale",
-            Assert.IsType<PaymentCancellationHistorySource>(
-                paymentHistory.Cancellation).Reason);
+            cancellationHistory.Reason);
+        AssertPaperCorrectionReference(cancellationHistory.PaperReference, paper);
 
         var membershipHistoryResult = await new GetClientMembershipHistorySourceRowsQueryHandler(
                 dbContext,
@@ -1330,6 +1583,9 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         Assert.Equal(
             IssuedMembershipLifecycleStatus.Canceled,
             membershipHistory.IssuedMembership!.Status);
+        AssertPaperCorrectionReference(
+            membershipHistory.IssuedMembership.PaperReference,
+            paper);
 
         var receptionResult = await CreateIssuedSaleReceptionHandler(
                 dbContext,
@@ -1356,7 +1612,8 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         PostgreSqlTestDatabase database,
         IssuedSaleCorrectionFixture fixture,
         Guid replacementMembershipId,
-        Guid replacementPaymentId)
+        Guid replacementPaymentId,
+        PaperFallbackRowFixture? paper = null)
     {
         await using var dbContext = database.CreateDbContext();
         var timeProvider = new FixedTimeProvider(TestNow);
@@ -1457,6 +1714,10 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         Assert.Equal(
             ClientPaymentRowStatus.Active,
             correction.ReplacementPayment.CurrentStatus);
+        AssertPaperCorrectionReference(correction.PaperReference, paper);
+        AssertPaperCorrectionReference(
+            correction.ReplacementPayment.PaperReference,
+            paper);
 
         var membershipHistoryResult = await new GetClientMembershipHistorySourceRowsQueryHandler(
                 dbContext,
@@ -1474,6 +1735,9 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         Assert.Equal(
             IssuedMembershipLifecycleStatus.Corrected,
             membershipHistory.IssuedMembership!.Status);
+        AssertPaperCorrectionReference(
+            membershipHistory.IssuedMembership.PaperReference,
+            paper);
 
         var receptionResult = await CreateIssuedSaleReceptionHandler(
                 dbContext,
@@ -1505,6 +1769,27 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             eventRow.RelatedEntities);
     }
 
+    private static void AssertPaperCorrectionReference(
+        PaperFallbackEntryRowReference? reference,
+        PaperFallbackRowFixture? paper)
+    {
+        if (paper is null)
+        {
+            Assert.Null(reference);
+            return;
+        }
+
+        var actual = Assert.IsType<PaperFallbackEntryRowReference>(reference);
+        Assert.Equal(paper.EntryBatchId, actual.EntryBatchId);
+        Assert.Equal(paper.EntryBatchRowId, actual.EntryBatchRowId);
+        Assert.Equal(paper.PaperSheetNumber, actual.PaperSheetNumber);
+        Assert.Equal(paper.LineNumber, actual.LineNumber);
+        Assert.Equal(
+            PaperFallbackEventType.CorrectionOrCancellation,
+            actual.EventType);
+        Assert.Equal(paper.Explanation, actual.Explanation);
+    }
+
     private static GetReceptionActivityQueryHandler CreateIssuedSaleReceptionHandler(
         BodyLifeDbContext dbContext,
         TimeProvider timeProvider) => new(
@@ -1533,10 +1818,16 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
 
     private static void AssertIssuedSaleCorrectionError(
         CommandResult result,
-        CommandErrorCode expectedCode)
+        CommandErrorCode expectedCode,
+        string? expectedField = null)
     {
         Assert.Equal(CommandStatus.Error, result.Status);
-        Assert.Equal(expectedCode, Assert.Single(result.Errors).Code);
+        var error = Assert.Single(result.Errors);
+        Assert.Equal(expectedCode, error.Code);
+        if (expectedField is not null)
+        {
+            Assert.Equal(expectedField, error.Field);
+        }
         Assert.Null(result.PrimaryEntityId);
         Assert.Null(result.RereadTargetId);
         Assert.Null(result.AuditEntryId);

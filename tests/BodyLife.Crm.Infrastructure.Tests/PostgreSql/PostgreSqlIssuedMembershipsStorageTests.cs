@@ -77,7 +77,7 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
             clientId,
             membershipTypeId,
             actorAccountId,
-            entryOrigin: "paper_fallback",
+            entryOrigin: "manual_backfill",
             entryBatchId: entryBatchId,
             comment: "Recorded from the outage log");
 
@@ -96,7 +96,7 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
         Assert.Equal(TestNow, persisted.IssuedAt);
         Assert.Equal(actorAccountId, persisted.IssuedByAccountId);
         Assert.Equal("active", persisted.Status);
-        Assert.Equal("paper_fallback", persisted.EntryOrigin);
+        Assert.Equal("manual_backfill", persisted.EntryOrigin);
         Assert.Equal(entryBatchId, persisted.EntryBatchId);
         Assert.Equal("Recorded from the outage log", persisted.Comment);
     }

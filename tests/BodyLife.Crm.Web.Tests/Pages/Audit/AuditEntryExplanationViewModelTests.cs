@@ -1719,6 +1719,35 @@ public sealed class AuditEntryExplanationViewModelTests
     }
 
     [Fact]
+    public void PaperMembershipSaleReplacementExplainsCanonicalSheetRow()
+    {
+        var audit = IssuedMembershipSaleAudit(
+            isCancellation: false,
+            isPaperFallback: true);
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "membership.replaced",
+                    AuditTimelineEntityType.Membership,
+                    audit.OriginalMembershipId,
+                    audit.Before,
+                    audit.After,
+                    related: audit.Related,
+                    entryOrigin: EntryOrigin.PaperFallback,
+                    occurredAt: audit.CorrectionOccurredAt,
+                    recordedAt: audit.CorrectionRecordedAt)));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            "MEMBERSHIP-SALE-CORRECTION-001",
+            FactValue(explanation.AfterFacts, "Paper sheet"));
+        Assert.Equal(
+            "Correction or cancellation",
+            FactValue(explanation.AfterFacts, "Event type"));
+    }
+
+    [Fact]
     public void MembershipSaleReplacementWithMismatchedRelatedPaymentFailsClosed()
     {
         var audit = IssuedMembershipSaleAudit(
@@ -5504,7 +5533,8 @@ public sealed class AuditEntryExplanationViewModelTests
 
     private static IssuedMembershipSaleAuditFixture IssuedMembershipSaleAudit(
         bool isCancellation,
-        bool mismatchReplacementPayment = false)
+        bool mismatchReplacementPayment = false,
+        bool isPaperFallback = false)
     {
         var originalMembershipId = Guid.NewGuid();
         var originalPaymentId = Guid.NewGuid();
@@ -5515,6 +5545,9 @@ public sealed class AuditEntryExplanationViewModelTests
         var issuedAt = OriginalOccurredAt.AddDays(-30);
         var correctionOccurredAt = OriginalOccurredAt;
         var correctionRecordedAt = OriginalOccurredAt.AddMinutes(5);
+        var correctionEntryOrigin = isPaperFallback ? "paper_fallback" : "normal";
+        var correctionEntryBatchId = isPaperFallback ? Guid.NewGuid() : (Guid?)null;
+        var correctionEntryBatchRowId = isPaperFallback ? Guid.NewGuid() : (Guid?)null;
         var originalMembership = new IssuedSaleMembershipAuditFixture(
             originalMembershipId,
             clientId,
@@ -5562,8 +5595,8 @@ public sealed class AuditEntryExplanationViewModelTests
             new DateOnly(2026, 9, 14),
             correctionRecordedAt,
             "active",
-            "normal",
-            EntryBatchId: null,
+            correctionEntryOrigin,
+            correctionEntryBatchId,
             "Correction comment");
         var relatedReplacementPaymentId = mismatchReplacementPayment
             ? Guid.NewGuid()
@@ -5584,6 +5617,15 @@ public sealed class AuditEntryExplanationViewModelTests
             ReplacementPaymentCreatedAuditEntryId = isCancellation
                 ? (Guid?)null
                 : Guid.NewGuid(),
+            EntryBatchId = correctionEntryBatchId,
+            EntryBatchRowId = correctionEntryBatchRowId,
+            PaperSheetNumber = isPaperFallback
+                ? "MEMBERSHIP-SALE-CORRECTION-001"
+                : null,
+            LineNumber = isPaperFallback ? 17 : (int?)null,
+            PaperExplanation = isPaperFallback
+                ? "Recovered issued-sale correction"
+                : null,
         };
         var before = new
         {
@@ -5600,7 +5642,8 @@ public sealed class AuditEntryExplanationViewModelTests
                 Reason = "Correction reason",
                 OccurredAt = correctionOccurredAt,
                 RecordedAt = correctionRecordedAt,
-                EntryOrigin = "normal",
+                EntryOrigin = correctionEntryOrigin,
+                EntryBatchId = correctionEntryBatchId,
                 Status = "active",
             },
             OriginalMembership = originalMembership with

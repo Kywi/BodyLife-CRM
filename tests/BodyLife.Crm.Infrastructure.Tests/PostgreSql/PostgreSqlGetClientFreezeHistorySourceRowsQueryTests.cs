@@ -1055,29 +1055,32 @@ public sealed class PostgreSqlGetClientFreezeHistorySourceRowsQueryTests
         PostgreSqlTestDatabase database,
         Guid cancellationId)
     {
-        await using var connection = new NpgsqlConnection(database.ConnectionString);
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            "delete from bodylife.freeze_cancellations where id = @id";
-        command.Parameters.AddWithValue("id", cancellationId);
-        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        Assert.Equal(
+            1,
+            await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
+                $"""
+                with deleted as (
+                    delete from bodylife.freeze_cancellations
+                    where id = '{cancellationId}'
+                    returning 1)
+                select count(*)::int from deleted
+                """));
     }
 
     private static async Task DeletePaperLinkAsync(
         PostgreSqlTestDatabase database,
         Guid rowId)
     {
-        await using var connection = new NpgsqlConnection(database.ConnectionString);
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            """
-            delete from bodylife.entry_batch_row_entities
-            where entry_batch_row_id = @row_id
-            """;
-        command.Parameters.AddWithValue("row_id", rowId);
-        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        Assert.Equal(
+            1,
+            await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
+                $"""
+                with deleted as (
+                    delete from bodylife.entry_batch_row_entities
+                    where entry_batch_row_id = '{rowId}'
+                    returning 1)
+                select count(*)::int from deleted
+                """));
     }
 
     private static async Task ChangeCancellationRecordedAtAsync(

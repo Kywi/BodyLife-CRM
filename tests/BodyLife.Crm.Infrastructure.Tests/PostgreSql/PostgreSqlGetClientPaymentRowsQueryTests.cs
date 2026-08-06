@@ -50,7 +50,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
             "other",
             FirstPaymentOccurredAt,
             TestNow.AddMinutes(-30),
-            entryOrigin: "paper_fallback",
+            entryOrigin: "manual_backfill",
             entryBatchId: originalBatchId,
             comment: "Recovered sale",
             status: "replaced");
@@ -95,7 +95,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
             "Duplicate cash entry",
             FirstPaymentOccurredAt.AddHours(4),
             TestNow.AddMinutes(-5),
-            "paper_fallback",
+            "manual_backfill",
             cancellationBatchId);
         var latestPaymentId = await InsertPaymentAsync(
             database,
@@ -159,7 +159,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Assert.Equal(TestNow.AddMinutes(-5), cancellation.RecordedAt);
         Assert.Equal(fixture.Actor.AccountId.Value, cancellation.RecordedByAccountId);
         Assert.Equal(fixture.Actor.SessionId.Value, cancellation.SessionId);
-        Assert.Equal(EntryOrigin.PaperFallback, cancellation.EntryOrigin);
+        Assert.Equal(EntryOrigin.ManualBackfill, cancellation.EntryOrigin);
         Assert.Equal(cancellationBatchId, cancellation.EntryBatchId);
         Assert.Null(canceled.CorrectionFromOriginal);
         Assert.Null(canceled.CorrectionToReplacement);
@@ -184,7 +184,7 @@ public sealed class PostgreSqlGetClientPaymentRowsQueryTests
         Assert.True(replacement.AllowedActions.IsAllowed(PaymentActionKeys.Correct));
 
         var original = page.Items[3];
-        Assert.Equal(EntryOrigin.PaperFallback, original.EntryOrigin);
+        Assert.Equal(EntryOrigin.ManualBackfill, original.EntryOrigin);
         Assert.Equal(originalBatchId, original.EntryBatchId);
         Assert.Equal("Recovered sale", original.Comment);
         Assert.Equal(ClientPaymentRowStatus.Replaced, original.Status);

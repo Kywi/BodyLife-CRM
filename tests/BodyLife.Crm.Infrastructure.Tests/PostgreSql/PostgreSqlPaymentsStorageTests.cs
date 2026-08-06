@@ -49,6 +49,7 @@ public sealed class PostgreSqlPaymentsStorageTests
                 "id",
                 "client_id",
                 "membership_id",
+                "negative_closure_id",
                 "amount",
                 "currency",
                 "method",
@@ -61,7 +62,6 @@ public sealed class PostgreSqlPaymentsStorageTests
                 "entry_batch_id",
                 "comment",
                 "status",
-                "negative_closure_id",
             ],
             await ReadColumnNamesAsync(database, "payments"));
         Assert.Equal(
@@ -181,9 +181,9 @@ public sealed class PostgreSqlPaymentsStorageTests
             fixture.MembershipId,
             amount: 1000m,
             occurredAt: OriginalOccurredAt,
-            entryOrigin: "paper_fallback",
+            entryOrigin: "manual_backfill",
             entryBatchId: entryBatchId,
-            comment: "Recovered from the reception paper sheet",
+            comment: "Recovered from the manual register",
             status: "replaced");
         var replacementPaymentId = await InsertPaymentAsync(
             database.ConnectionString,
@@ -224,7 +224,7 @@ public sealed class PostgreSqlPaymentsStorageTests
         Assert.Equal("cash", original.Method);
         Assert.Equal("other", original.PaymentContext);
         Assert.Equal(OriginalOccurredAt, original.OccurredAt);
-        Assert.Equal("paper_fallback", original.EntryOrigin);
+        Assert.Equal("manual_backfill", original.EntryOrigin);
         Assert.Equal(entryBatchId, original.EntryBatchId);
         Assert.Equal("replaced", original.Status);
 

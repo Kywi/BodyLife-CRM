@@ -14,7 +14,8 @@ public interface IMembershipIssuePaymentWriter
         Guid? entryBatchId,
         DateTimeOffset recordedAt,
         bool changedAfterClose = false,
-        PaperFallbackEntryRowReference? paperReference = null);
+        PaperFallbackEntryRowReference? paperReference = null,
+        Guid? saleCorrectionId = null);
 }
 
 public sealed record MembershipIssuePaymentWriteResult(

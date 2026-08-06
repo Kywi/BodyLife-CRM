@@ -19,7 +19,8 @@ public sealed class MembershipIssuePaymentWriter(
         Guid? entryBatchId,
         DateTimeOffset recordedAt,
         bool changedAfterClose = false,
-        PaperFallbackEntryRowReference? paperReference = null)
+        PaperFallbackEntryRowReference? paperReference = null,
+        Guid? saleCorrectionId = null)
     {
         ArgumentNullException.ThrowIfNull(envelope);
 
@@ -66,6 +67,7 @@ public sealed class MembershipIssuePaymentWriter(
             {
                 ClientId = clientId,
                 MembershipId = membershipId,
+                SaleCorrectionId = saleCorrectionId,
                 auditPaperReference.EntryBatchId,
                 auditPaperReference.EntryBatchRowId,
                 auditPaperReference.PaperSheetNumber,
@@ -76,6 +78,7 @@ public sealed class MembershipIssuePaymentWriter(
             {
                 ClientId = clientId,
                 MembershipId = membershipId,
+                SaleCorrectionId = saleCorrectionId,
             };
 
         var auditEntryId = auditAppender.Append(

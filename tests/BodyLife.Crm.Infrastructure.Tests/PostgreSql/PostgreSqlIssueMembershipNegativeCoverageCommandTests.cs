@@ -273,7 +273,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             GetClientNegativeVisitCoverageStatus.Success,
             canonicalCoverage.Status);
 
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             delete from bodylife.entry_batch_row_entities
             where entry_batch_row_id = '{paper.EntryBatchRowId}'

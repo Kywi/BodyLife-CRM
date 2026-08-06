@@ -1009,21 +1009,10 @@ public sealed class PostgreSqlPaperFallbackEntryBatchCommandTests
         string entityType,
         Guid entityId)
     {
-        await using var connection = new NpgsqlConnection(database.ConnectionString);
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            """
-            insert into bodylife.entry_batch_row_entities (
-                entry_batch_row_id,
-                entity_type,
-                entity_id)
-            values (@row_id, @entity_type, @entity_id)
-            """;
-        command.Parameters.AddWithValue("row_id", rowId);
-        command.Parameters.AddWithValue("entity_type", entityType);
-        command.Parameters.AddWithValue("entity_id", entityId);
-        await command.ExecuteNonQueryAsync();
+        await PostgreSqlPaperFallbackTestData.CorruptLinksAsync(
+            database,
+            rowId,
+            new PaperFallbackEntityLink(entityType, entityId));
     }
 
     private static Task<long> CountRowsAsync(

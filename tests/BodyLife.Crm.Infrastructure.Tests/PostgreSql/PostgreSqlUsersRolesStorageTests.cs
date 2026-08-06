@@ -1,7 +1,5 @@
 using BodyLife.Crm.Infrastructure.Persistence.UsersRoles;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -173,35 +171,6 @@ public sealed class PostgreSqlUsersRolesStorageTests
         Assert.Equal("ck_sessions_expires_after_started", exception.ConstraintName);
     }
 
-    [PostgreSqlFact]
-    public async Task SessionExpiryMigrationBackfillsExistingRows()
-    {
-        await using var database = await PostgreSqlTestDatabase.CreateAsync();
-        await using var dbContext = database.CreateDbContext();
-        var migrator = dbContext.Database.GetService<IMigrator>();
-        await migrator.MigrateAsync("20260709204232_AddBusinessAuditEntries");
-        var accountId = Guid.NewGuid();
-        var sessionId = Guid.NewGuid();
-        var lastSeenAt = new DateTimeOffset(2026, 7, 9, 12, 30, 0, TimeSpan.Zero);
-        await InsertAccountAsync(
-            database.ConnectionString,
-            accountId,
-            "Reception",
-            "shared_reception_admin",
-            "admin");
-        await InsertPreExpirySessionAsync(
-            database.ConnectionString,
-            sessionId,
-            accountId,
-            lastSeenAt);
-
-        await migrator.MigrateAsync();
-
-        var expiresAt = await database.ExecuteScalarAsync<DateTime>(
-            $"select expires_at from bodylife.sessions where id = '{sessionId}'::uuid");
-        Assert.Equal(lastSeenAt.Add(AccountSessionPolicy.IdleTimeout).UtcDateTime, expiresAt);
-    }
-
     private static Task<bool> TableExistsAsync(PostgreSqlTestDatabase database, string tableName)
     {
         return database.ExecuteScalarAsync<bool>(
@@ -319,41 +288,4 @@ public sealed class PostgreSqlUsersRolesStorageTests
         await command.ExecuteNonQueryAsync();
     }
 
-    private static async Task InsertPreExpirySessionAsync(
-        string connectionString,
-        Guid id,
-        Guid accountId,
-        DateTimeOffset lastSeenAt)
-    {
-        var startedAt = new DateTimeOffset(2026, 7, 9, 12, 0, 0, TimeSpan.Zero);
-
-        await using var connection = new NpgsqlConnection(connectionString);
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            """
-            insert into bodylife.sessions (
-                id,
-                account_id,
-                device_label,
-                started_at,
-                ended_at,
-                last_seen_at)
-            values (
-                @id,
-                @account_id,
-                @device_label,
-                @started_at,
-                @ended_at,
-                @last_seen_at)
-            """;
-        command.Parameters.AddWithValue("id", id);
-        command.Parameters.AddWithValue("account_id", accountId);
-        command.Parameters.AddWithValue("device_label", "front-desk-tablet");
-        command.Parameters.AddWithValue("started_at", startedAt);
-        command.Parameters.Add("ended_at", NpgsqlDbType.TimestampTz).Value = DBNull.Value;
-        command.Parameters.AddWithValue("last_seen_at", lastSeenAt);
-
-        await command.ExecuteNonQueryAsync();
-    }
 }

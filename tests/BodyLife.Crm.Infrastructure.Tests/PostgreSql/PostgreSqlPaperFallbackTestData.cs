@@ -168,6 +168,36 @@ internal static class PostgreSqlPaperFallbackTestData
 
         await transaction.CommitAsync();
     }
+
+    internal static async Task CorruptLinksAsync(
+        PostgreSqlTestDatabase database,
+        Guid entryBatchRowId,
+        params PaperFallbackEntityLink[] links)
+    {
+        ArgumentNullException.ThrowIfNull(links);
+
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var disableTriggers = new NpgsqlCommand(
+            "set session_replication_role = replica",
+            connection);
+        await disableTriggers.ExecuteNonQueryAsync();
+
+        foreach (var link in links)
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                """
+                insert into bodylife.entry_batch_row_entities (
+                    entry_batch_row_id, entity_type, entity_id)
+                values (@row_id, @entity_type, @entity_id)
+                """;
+            command.Parameters.AddWithValue("row_id", entryBatchRowId);
+            command.Parameters.AddWithValue("entity_type", link.EntityType);
+            command.Parameters.AddWithValue("entity_id", link.EntityId);
+            Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        }
+    }
 }
 
 internal sealed record PaperFallbackRowFixture(

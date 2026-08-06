@@ -56,7 +56,7 @@ public sealed class PostgreSqlGetClientVisitRowsQueryTests
             "membership",
             FirstVisitOccurredAt.AddHours(1),
             TestNow.AddMinutes(-20),
-            entryOrigin: "paper_fallback",
+            entryOrigin: "manual_backfill",
             entryBatchId: visitBatchId,
             comment: "Recovered Visit",
             status: "canceled");
@@ -114,7 +114,7 @@ public sealed class PostgreSqlGetClientVisitRowsQueryTests
         var canceled = page.Items[1];
         Assert.Equal(fixture.ClientId, canceled.ClientId);
         Assert.Equal(VisitKind.Membership, canceled.VisitKind);
-        Assert.Equal(EntryOrigin.PaperFallback, canceled.EntryOrigin);
+        Assert.Equal(EntryOrigin.ManualBackfill, canceled.EntryOrigin);
         Assert.Equal(visitBatchId, canceled.EntryBatchId);
         Assert.Equal("Recovered Visit", canceled.Comment);
         Assert.Equal(ClientVisitRowStatus.Canceled, canceled.Status);

@@ -175,6 +175,21 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
                 "Issued Membership sale correction history is inconsistent.");
         }
 
+        var facts = Facts(
+                ("MembershipType", source.Snapshot.TypeName),
+                ("StartDate", presentation.Date(source.StartDate)),
+                ("BaseEndDate", presentation.Date(source.BaseEndDate)),
+                ("PriceSnapshot", presentation.Money(source.Snapshot.Price)))
+            .ToList();
+        AddPaymentPaperFacts(
+            facts,
+            row.EntryOrigin,
+            source.EntryBatchId,
+            row.OccurredAt,
+            source.PaperReference,
+            PaperFallbackEventType.CorrectionOrCancellation,
+            sourceName: "issued-sale correction");
+
         return Row(
             row,
             "Membership",
@@ -183,11 +198,7 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
                 ? "MembershipSaleCanceled"
                 : "MembershipSaleReplaced",
             MembershipStatus(source.Status),
-            Facts(
-                ("MembershipType", source.Snapshot.TypeName),
-                ("StartDate", presentation.Date(source.StartDate)),
-                ("BaseEndDate", presentation.Date(source.BaseEndDate)),
-                ("PriceSnapshot", presentation.Money(source.Snapshot.Price))),
+            facts.AsReadOnly(),
             new ClientHistoryChangeViewModel(
                 presentation.HistoryChange(
                     isCancellation ? "Cancellation" : "Correction"),
@@ -197,7 +208,9 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
             narrative: null,
             Ids(
                 ("Membership", source.MembershipId),
-                ("MembershipType", source.MembershipTypeId)));
+                ("MembershipType", source.MembershipTypeId),
+                ("EntryBatch", source.EntryBatchId),
+                ("EntryBatchRow", source.PaperReference?.EntryBatchRowId)));
     }
 
     private ClientHistoryRowViewModel NegativeCoverage(

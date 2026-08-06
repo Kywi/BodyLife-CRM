@@ -88,13 +88,8 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             entryOrigin: "paper_fallback",
             entryBatchId: originalBatchId,
             comment: "Recovered membership sale",
-            status: "replaced");
-        await PostgreSqlPaperFallbackTestData.LinkRowAsync(
-            database,
-            originalPaper.EntryBatchRowId,
-            new PaperFallbackEntityLink(
-                CorrectPaymentCommand.PaymentEntityType,
-                originalPaymentId));
+            status: "replaced",
+            paperEntryBatchRowId: originalPaper.EntryBatchRowId);
         var replacementPaymentId = await InsertPaymentAsync(
             database,
             fixture,
@@ -144,13 +139,8 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             AtBusinessTime(12).AddMinutes(30),
             TestNow.AddMinutes(-8),
             "paper_fallback",
-            cancellationBatchId);
-        await PostgreSqlPaperFallbackTestData.LinkRowAsync(
-            database,
-            cancellationPaper.EntryBatchRowId,
-            new PaperFallbackEntityLink(
-                CorrectPaymentCommand.CancellationEntityType,
-                cancellationId));
+            cancellationBatchId,
+            cancellationPaper.EntryBatchRowId);
         var oneOffPaymentId = await InsertPaymentAsync(
             database,
             fixture,
@@ -914,12 +904,15 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         string? comment = null,
         string status = "active",
         Guid? paymentId = null,
-        string currency = "UAH")
+        string currency = "UAH",
+        Guid? paperEntryBatchRowId = null)
     {
         var id = paymentId ?? Guid.NewGuid();
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             """
             insert into bodylife.payments (
@@ -973,6 +966,25 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
             comment ?? (object)DBNull.Value;
         command.Parameters.AddWithValue("status", status);
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
+
+        if (paperEntryBatchRowId.HasValue)
+        {
+            await using var linkCommand = connection.CreateCommand();
+            linkCommand.Transaction = transaction;
+            linkCommand.CommandText =
+                """
+                insert into bodylife.entry_batch_row_entities (
+                    entry_batch_row_id,
+                    entity_type,
+                    entity_id)
+                values (@row_id, 'payment', @payment_id)
+                """;
+            linkCommand.Parameters.AddWithValue("row_id", paperEntryBatchRowId.Value);
+            linkCommand.Parameters.AddWithValue("payment_id", id);
+            Assert.Equal(1, await linkCommand.ExecuteNonQueryAsync());
+        }
+
+        await transaction.CommitAsync();
         return id;
     }
 
@@ -984,12 +996,15 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         DateTimeOffset occurredAt,
         DateTimeOffset recordedAt,
         string entryOrigin,
-        Guid? entryBatchId)
+        Guid? entryBatchId,
+        Guid? paperEntryBatchRowId = null)
     {
         var cancellationId = Guid.NewGuid();
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             """
             insert into bodylife.payment_cancellations (
@@ -1024,6 +1039,25 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         command.Parameters.Add("entry_batch_id", NpgsqlDbType.Uuid).Value =
             entryBatchId ?? (object)DBNull.Value;
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
+
+        if (paperEntryBatchRowId.HasValue)
+        {
+            await using var linkCommand = connection.CreateCommand();
+            linkCommand.Transaction = transaction;
+            linkCommand.CommandText =
+                """
+                insert into bodylife.entry_batch_row_entities (
+                    entry_batch_row_id,
+                    entity_type,
+                    entity_id)
+                values (@row_id, 'payment_cancellation', @cancellation_id)
+                """;
+            linkCommand.Parameters.AddWithValue("row_id", paperEntryBatchRowId.Value);
+            linkCommand.Parameters.AddWithValue("cancellation_id", cancellationId);
+            Assert.Equal(1, await linkCommand.ExecuteNonQueryAsync());
+        }
+
+        await transaction.CommitAsync();
         return cancellationId;
     }
 
@@ -1097,18 +1131,18 @@ public sealed class PostgreSqlGetDailyPaymentSourceRowsQueryTests
         Guid entryBatchRowId,
         string entityType)
     {
-        await using var connection = new NpgsqlConnection(database.ConnectionString);
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            """
-            delete from bodylife.entry_batch_row_entities
-            where entry_batch_row_id = @row_id
-              and entity_type = @entity_type
-            """;
-        command.Parameters.AddWithValue("row_id", entryBatchRowId);
-        command.Parameters.AddWithValue("entity_type", entityType);
-        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        var normalizedEntityType = entityType.Replace("'", "''", StringComparison.Ordinal);
+        Assert.Equal(
+            1,
+            await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
+                $"""
+                with deleted as (
+                    delete from bodylife.entry_batch_row_entities
+                    where entry_batch_row_id = '{entryBatchRowId}'
+                      and entity_type = '{normalizedEntityType}'
+                    returning 1)
+                select count(*)::int from deleted
+                """));
     }
 
     private static async Task<DailyCashSnapshot> ReadDailyCashAsync(

@@ -266,15 +266,11 @@ public sealed partial class PostgreSqlGetClientNegativeVisitCoverageQueryTests
                 new FixedTimeProvider(Now)).RebuildAsync(fixture.SourceMembershipId)).Succeeded);
         }
 
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedConstraintCorruptionAsync<int>(
             $"""
-            alter table bodylife.membership_negative_closure_items
-                disable trigger ck_negative_closure_items_consistent;
             update bodylife.membership_negative_closure_items
             set status = 'canceled'
             where id = '{fixture.OneOffItemId}';
-            alter table bodylife.membership_negative_closure_items
-                enable trigger ck_negative_closure_items_consistent;
             select 1;
             """);
         await using var malformedContext = database.CreateDbContext();
@@ -340,19 +336,11 @@ public sealed partial class PostgreSqlGetClientNegativeVisitCoverageQueryTests
     {
         await using var database = await CreateMigratedDatabaseAsync();
         var fixture = await SeedClosureProjectionFixtureAsync(database);
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedConstraintCorruptionAsync<int>(
             $"""
-            alter table bodylife.membership_negative_closure_lines
-                disable trigger ck_negative_closure_lines_consistent;
-            alter table bodylife.membership_negative_closure_lines
-                disable trigger ck_negative_closure_lines_immutable_source;
             update bodylife.membership_negative_closure_lines
             set sequence = 2
             where id = '{fixture.OneOffLineId}';
-            alter table bodylife.membership_negative_closure_lines
-                enable trigger ck_negative_closure_lines_immutable_source;
-            alter table bodylife.membership_negative_closure_lines
-                enable trigger ck_negative_closure_lines_consistent;
             select 1;
             """);
         await using var dbContext = database.CreateDbContext();
@@ -376,19 +364,11 @@ public sealed partial class PostgreSqlGetClientNegativeVisitCoverageQueryTests
     {
         await using var database = await CreateMigratedDatabaseAsync();
         var fixture = await SeedClosureProjectionFixtureAsync(database);
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedConstraintCorruptionAsync<int>(
             $"""
-            alter table bodylife.membership_negative_closure_items
-                disable trigger ck_negative_closure_items_consistent;
-            alter table bodylife.membership_negative_closure_items
-                disable trigger ck_negative_closure_items_immutable_source;
             update bodylife.membership_negative_closure_items
             set sequence = 3
             where id = '{fixture.NewMembershipItemIds[1]}';
-            alter table bodylife.membership_negative_closure_items
-                enable trigger ck_negative_closure_items_immutable_source;
-            alter table bodylife.membership_negative_closure_items
-                enable trigger ck_negative_closure_items_consistent;
             select 1;
             """);
         await using var dbContext = database.CreateDbContext();

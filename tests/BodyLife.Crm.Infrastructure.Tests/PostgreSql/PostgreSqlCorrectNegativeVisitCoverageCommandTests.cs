@@ -905,7 +905,7 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
                     replaceFixture.ClientId),
                 CancellationToken.None)).Status);
 
-        await replaceDatabase.ExecuteScalarAsync<int>(
+        await replaceDatabase.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             delete from bodylife.entry_batch_row_entities
             where entry_batch_row_id = '{originalPaper.EntryBatchRowId}'
@@ -927,7 +927,7 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
                 MembershipAuditActions.MembershipEntityType,
                 original.MembershipId));
 
-        await replaceDatabase.ExecuteScalarAsync<int>(
+        await replaceDatabase.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             delete from bodylife.entry_batch_row_entities
             where entry_batch_row_id = '{originalPaper.EntryBatchRowId}'
@@ -1021,7 +1021,7 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
         Assert.Equal(GetClientNegativeVisitCoverageStatus.Success, valid.Status);
         Assert.Equal(2, valid.Coverage!.ActiveClosures.Count);
 
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             update bodylife.entry_batch_row_entities
             set entry_batch_row_id = case

@@ -16,6 +16,10 @@ internal static class PaymentQuerySupport
         "[\"membership_sale\"]";
     private const string NegativeCoverageChangedFieldsJson =
         "[\"negative_coverage\"]";
+    private const string IssuedSaleCorrectionEntityType =
+        "issued_membership_sale_correction";
+    private const string NegativeCoverageCorrectionEntityType =
+        "membership_negative_closure_correction";
     private const string ReplacedStatus = "replaced";
 
     internal static Task<bool> IsActorAuthorizedAsync(
@@ -81,7 +85,8 @@ internal static class PaymentQuerySupport
                     correction.RecordedByAccountId,
                     correction.SessionId,
                     correction.EntryOrigin,
-                    correction.EntryBatchId))
+                    correction.EntryBatchId,
+                    CorrectPaymentCommand.CorrectionEntityType))
                 .ToArrayAsync(cancellationToken);
             foreach (var row in genericRows)
             {
@@ -125,7 +130,8 @@ internal static class PaymentQuerySupport
                             correction.RecordedByAccountId,
                             correction.SessionId,
                             correction.EntryOrigin,
-                            EntryBatchId: null);
+                            correction.EntryBatchId,
+                            IssuedSaleCorrectionEntityType);
                     relevantPaymentIds.Add(correction.OriginalPaymentId);
                     continue;
                 }
@@ -150,7 +156,8 @@ internal static class PaymentQuerySupport
                         correction.RecordedByAccountId,
                         correction.SessionId,
                         correction.EntryOrigin,
-                        EntryBatchId: null);
+                        correction.EntryBatchId,
+                        IssuedSaleCorrectionEntityType);
                 relevantPaymentIds.Add(correction.OriginalPaymentId);
                 relevantPaymentIds.Add(replacementPaymentId);
             }
@@ -235,7 +242,8 @@ internal static class PaymentQuerySupport
                             correction.RecordedByAccountId,
                             correction.SessionId,
                             correction.EntryOrigin,
-                            correction.EntryBatchId);
+                            correction.EntryBatchId,
+                            NegativeCoverageCorrectionEntityType);
                     relevantPaymentIds.Add(originalPayment.PaymentId);
                     continue;
                 }
@@ -264,7 +272,8 @@ internal static class PaymentQuerySupport
                         correction.RecordedByAccountId,
                         correction.SessionId,
                         correction.EntryOrigin,
-                        correction.EntryBatchId);
+                        correction.EntryBatchId,
+                        NegativeCoverageCorrectionEntityType);
                 relevantPaymentIds.Add(originalPayment.PaymentId);
                 relevantPaymentIds.Add(replacementPayment.PaymentId);
             }
@@ -283,7 +292,8 @@ internal static class PaymentQuerySupport
                 cancellation.RecordedByAccountId,
                 cancellation.SessionId,
                 cancellation.EntryOrigin,
-                cancellation.EntryBatchId))
+                cancellation.EntryBatchId,
+                CorrectPaymentCommand.CancellationEntityType))
             .ToArrayAsync(cancellationToken);
         var cancellationRows = genericCancellations
             .Concat(saleCancellations.Values)
@@ -653,7 +663,8 @@ internal static class PaymentQuerySupport
         Guid RecordedByAccountId,
         Guid SessionId,
         string EntryOrigin,
-        Guid? EntryBatchId);
+        Guid? EntryBatchId,
+        string PaperEntityType);
 
     internal sealed record CanonicalPaymentCorrectionSourceRow(
         Guid CorrectionId,
@@ -667,7 +678,8 @@ internal static class PaymentQuerySupport
         Guid RecordedByAccountId,
         Guid SessionId,
         string EntryOrigin,
-        Guid? EntryBatchId);
+        Guid? EntryBatchId,
+        string PaperEntityType);
 
     internal sealed record CanonicalPaymentProjection(
         Money Amount,

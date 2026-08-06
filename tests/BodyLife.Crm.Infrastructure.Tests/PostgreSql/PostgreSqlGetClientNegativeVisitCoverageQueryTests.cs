@@ -144,15 +144,11 @@ public sealed partial class PostgreSqlGetClientNegativeVisitCoverageQueryTests
     {
         await using var database = await CreateMigratedDatabaseAsync();
         var fixture = await SeedClosureProjectionFixtureAsync(database);
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedConstraintCorruptionAsync<int>(
             $"""
-            alter table bodylife.membership_negative_closure_items
-                disable trigger ck_negative_closure_items_consistent;
             update bodylife.membership_negative_closure_items
             set status = 'canceled'
             where negative_closure_id = '{fixture.OneOffClosureId}';
-            alter table bodylife.membership_negative_closure_items
-                enable trigger ck_negative_closure_items_consistent;
             select 1;
             """);
         await using var dbContext = database.CreateDbContext();

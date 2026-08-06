@@ -183,7 +183,7 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
 
         Assert.Equal(
             1,
-            await database.ExecuteScalarAsync<int>(
+            await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
                 $"""
                 with deleted as (
                     delete from bodylife.entry_batch_row_entities
@@ -304,7 +304,7 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
 
         Assert.Equal(
             1,
-            await database.ExecuteScalarAsync<int>(
+            await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
                 $"""
                 with deleted as (
                     delete from bodylife.entry_batch_row_entities
@@ -626,7 +626,7 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
         var replacementPaymentId = replacementCreation.Closure.Payment!.PaymentId;
         Assert.Equal(
             1,
-            await database.ExecuteScalarAsync<int>(
+            await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
                 $"""
                 with deleted as (
                     delete from bodylife.entry_batch_row_entities

@@ -422,7 +422,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
         var unexpectedLink = new PaperFallbackEntityLink(
             MembershipAuditActions.MembershipEntityType,
             fixture.SourceMembershipId);
-        await PostgreSqlPaperFallbackTestData.LinkRowAsync(
+        await PostgreSqlPaperFallbackTestData.CorruptLinksAsync(
             database,
             paper.EntryBatchRowId,
             unexpectedLink);
@@ -434,7 +434,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
         Assert.Equal(
             GetClientNegativeVisitCoverageStatus.CanonicalStateInvalid,
             unexpectedAggregateLink.Status);
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             delete from bodylife.entry_batch_row_entities
             where entry_batch_row_id = '{paper.EntryBatchRowId}'
@@ -451,7 +451,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
             GetClientNegativeVisitCoverageStatus.Success,
             restoredAggregate.Status);
 
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             delete from bodylife.entry_batch_row_entities
             where entry_batch_row_id = '{paper.EntryBatchRowId}'
@@ -472,7 +472,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
             database,
             paper.EntryBatchRowId,
             lineLink);
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             delete from bodylife.entry_batch_row_entities
             where entry_batch_row_id = '{paper.EntryBatchRowId}'
@@ -578,7 +578,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
         var movedLink = Assert.Single(
             firstLinks,
             link => link.EntityType == "membership_negative_closure_line");
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             update bodylife.entry_batch_row_entities
             set entry_batch_row_id = '{secondPaper.EntryBatchRowId}'
@@ -595,7 +595,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
                     fixture.ClientId),
                 CancellationToken.None)).Status);
 
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             update bodylife.entry_batch_row_entities
             set entry_batch_row_id = '{firstPaper.EntryBatchRowId}'
@@ -612,7 +612,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
                     fixture.ClientId),
                 CancellationToken.None)).Status);
 
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             update bodylife.entry_batch_row_entities
             set entry_batch_row_id = case
@@ -633,7 +633,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
                     fixture.ClientId),
                 CancellationToken.None)).Status);
 
-        await database.ExecuteScalarAsync<int>(
+        await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
             $"""
             update bodylife.entry_batch_row_entities
             set entry_batch_row_id = case
@@ -654,7 +654,7 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
                     fixture.ClientId),
                 CancellationToken.None)).Status);
 
-        await PostgreSqlPaperFallbackTestData.LinkRowAsync(
+        await PostgreSqlPaperFallbackTestData.CorruptLinksAsync(
             database,
             secondPaper.EntryBatchRowId,
             new PaperFallbackEntityLink(

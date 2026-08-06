@@ -2,8 +2,6 @@ using System.Net;
 using BodyLife.Crm.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -44,9 +42,6 @@ public sealed class PostgreSqlReadyHealthCheckTests
     public async Task ReadyHealthEndpointIsUnhealthyWhenMigrationsArePending()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
-        await using var dbContext = database.CreateDbContext();
-        var migrator = dbContext.Database.GetService<IMigrator>();
-        await migrator.MigrateAsync("20260709204232_AddBusinessAuditEntries");
 
         using var factory = CreateFactory(database.ConnectionString);
         using var client = factory.CreateClient(

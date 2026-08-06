@@ -153,9 +153,9 @@ public sealed class PostgreSqlVisitsStorageTests
             fixture,
             fixture.ClientId,
             "membership",
-            entryOrigin: "paper_fallback",
+            entryOrigin: "manual_backfill",
             entryBatchId: entryBatchId,
-            comment: "Recovered from the reception paper sheet");
+            comment: "Recovered from the manual register");
         var consumptionId = await InsertConsumptionAsync(
             database.ConnectionString,
             fixture,
@@ -181,9 +181,9 @@ public sealed class PostgreSqlVisitsStorageTests
         Assert.Equal(fixture.ActorAccountId, visit.RecordedByAccountId);
         Assert.Equal(fixture.SessionId, visit.SessionId);
         Assert.Equal("membership", visit.VisitKind);
-        Assert.Equal("paper_fallback", visit.EntryOrigin);
+        Assert.Equal("manual_backfill", visit.EntryOrigin);
         Assert.Equal(entryBatchId, visit.EntryBatchId);
-        Assert.Equal("Recovered from the reception paper sheet", visit.Comment);
+        Assert.Equal("Recovered from the manual register", visit.Comment);
         Assert.Equal("canceled", visit.Status);
 
         var consumption = await ReadConsumptionAsync(
@@ -497,9 +497,9 @@ public sealed class PostgreSqlVisitsStorageTests
             fixture,
             fixture.ClientId,
             "membership",
-            entryOrigin: "paper_fallback",
+            entryOrigin: "manual_backfill",
             entryBatchId: entryBatchId,
-            comment: "Paper batch visit");
+            comment: "Manual batch visit");
         var consumptionId = await InsertConsumptionAsync(
             database.ConnectionString,
             fixture,
@@ -522,9 +522,9 @@ public sealed class PostgreSqlVisitsStorageTests
         Assert.Equal(fixture.ActorAccountId, source.RecordedByAccountId);
         Assert.Equal(fixture.SessionId, source.SessionId);
         Assert.Equal(VisitKind.Membership, source.VisitKind);
-        Assert.Equal(EntryOrigin.PaperFallback, source.EntryOrigin);
+        Assert.Equal(EntryOrigin.ManualBackfill, source.EntryOrigin);
         Assert.Equal(entryBatchId, source.EntryBatchId);
-        Assert.Equal("Paper batch visit", source.Comment);
+        Assert.Equal("Manual batch visit", source.Comment);
         Assert.Equal(VisitCancellationSourceStatus.Active, source.Status);
         Assert.Equal(consumptionId, source.ActiveConsumptionId);
         Assert.Equal(fixture.MembershipId, source.MembershipId);

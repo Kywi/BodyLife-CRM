@@ -15,6 +15,7 @@ internal sealed class IssuedMembershipSaleCorrectionRecord
     public Guid RecordedByAccountId { get; set; }
     public Guid SessionId { get; set; }
     public required string EntryOrigin { get; set; }
+    public Guid? EntryBatchId { get; set; }
     public required string Status { get; set; }
     public required string DependencyToken { get; set; }
 }

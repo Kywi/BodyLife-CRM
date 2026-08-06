@@ -1564,6 +1564,9 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                     BaseEndDate = issuedBaseEndDate,
                     IssuedAt = issuedAt,
                     Status = "active",
+                    EntryOrigin = "normal",
+                    EntryBatchId = (Guid?)null,
+                    Comment = "Immutable terms captured at reception",
                     NegativeHandlingDecision = (string?)null,
                     ExistingNegativeState = (object?)null,
                     Payment = (object?)null,
@@ -4331,8 +4334,12 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var trialPaymentId = Guid.NewGuid();
         var recordedAt = TimeProvider.System.GetUtcNow();
         var sourceBatchId = Guid.NewGuid();
+        var sourceRowId = Guid.NewGuid();
         var correctionBatchId = Guid.NewGuid();
         var cancellationBatchId = Guid.NewGuid();
+        var cancellationRowId = Guid.NewGuid();
+        var correctionId = Guid.NewGuid();
+        var cancellationId = Guid.NewGuid();
 
         await using var connection = new NpgsqlConnection(ConnectionString);
         await connection.OpenAsync();
@@ -4355,6 +4362,73 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 @session_expires_at,
                 null,
                 @session_last_seen_at);
+
+            insert into bodylife.entry_batches (
+                id,
+                batch_type,
+                paper_sheet_number,
+                business_date_start,
+                business_date_end,
+                recorded_at,
+                recorded_by_account_id,
+                reconciled_at,
+                reconciled_by_account_id,
+                note)
+            values
+                (
+                    @source_batch_id,
+                    'paper_fallback',
+                    @source_sheet_number,
+                    @source_business_date,
+                    @source_business_date,
+                    @original_recorded_at,
+                    @account_id,
+                    null,
+                    null,
+                    'UI payment history source'),
+                (
+                    @cancellation_batch_id,
+                    'paper_fallback',
+                    @cancellation_sheet_number,
+                    @cancellation_business_date,
+                    @cancellation_business_date,
+                    @cancellation_recorded_at,
+                    @account_id,
+                    null,
+                    null,
+                    'UI payment history cancellation');
+
+            insert into bodylife.entry_batch_rows (
+                id,
+                entry_batch_id,
+                line_number,
+                event_type,
+                occurred_at,
+                explanation,
+                recorded_at,
+                recorded_by_account_id,
+                session_id)
+            values
+                (
+                    @source_row_id,
+                    @source_batch_id,
+                    1,
+                    'payment',
+                    @original_occurred_at,
+                    'Recovered original cash sale',
+                    @original_recorded_at,
+                    @account_id,
+                    @session_id),
+                (
+                    @cancellation_row_id,
+                    @cancellation_batch_id,
+                    1,
+                    'correction_or_cancellation',
+                    @cancellation_occurred_at,
+                    'Duplicate cash entry',
+                    @cancellation_recorded_at,
+                    @account_id,
+                    @session_id);
 
             insert into bodylife.payments (
                 id,
@@ -4484,7 +4558,15 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 @account_id,
                 @session_id,
                 'paper_fallback',
-                @cancellation_batch_id)
+                @cancellation_batch_id);
+
+            insert into bodylife.entry_batch_row_entities (
+                entry_batch_row_id,
+                entity_type,
+                entity_id)
+            values
+                (@source_row_id, 'payment', @original_payment_id),
+                (@cancellation_row_id, 'payment_cancellation', @cancellation_id)
             """;
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("account_id", recordedByAccountId);
@@ -4494,11 +4576,27 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue("replacement_payment_id", replacementPaymentId);
         command.Parameters.AddWithValue("canceled_payment_id", canceledPaymentId);
         command.Parameters.AddWithValue("trial_payment_id", trialPaymentId);
-        command.Parameters.AddWithValue("correction_id", Guid.NewGuid());
-        command.Parameters.AddWithValue("cancellation_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("correction_id", correctionId);
+        command.Parameters.AddWithValue("cancellation_id", cancellationId);
         command.Parameters.AddWithValue("source_batch_id", sourceBatchId);
+        command.Parameters.AddWithValue("source_row_id", sourceRowId);
         command.Parameters.AddWithValue("correction_batch_id", correctionBatchId);
         command.Parameters.AddWithValue("cancellation_batch_id", cancellationBatchId);
+        command.Parameters.AddWithValue("cancellation_row_id", cancellationRowId);
+        command.Parameters.AddWithValue(
+            "source_sheet_number",
+            $"UI-PAY-{sourceBatchId:N}".ToUpperInvariant());
+        command.Parameters.AddWithValue(
+            "cancellation_sheet_number",
+            $"UI-CANCEL-{cancellationBatchId:N}".ToUpperInvariant());
+        command.Parameters.AddWithValue(
+            "source_business_date",
+            NpgsqlDbType.Date,
+            DateOnly.FromDateTime(recordedAt.AddHours(-4).UtcDateTime));
+        command.Parameters.AddWithValue(
+            "cancellation_business_date",
+            NpgsqlDbType.Date,
+            DateOnly.FromDateTime(recordedAt.AddHours(-1).UtcDateTime));
         command.Parameters.AddWithValue("session_started_at", recordedAt.AddDays(-1));
         command.Parameters.AddWithValue("session_expires_at", recordedAt.AddDays(1));
         command.Parameters.AddWithValue("session_last_seen_at", recordedAt.AddMinutes(-5));
@@ -4518,7 +4616,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "changed_fields",
             NpgsqlDbType.Jsonb,
             "[\"amount\",\"occurred_at\"]");
-        Assert.Equal(7, await command.ExecuteNonQueryAsync());
+        Assert.Equal(13, await command.ExecuteNonQueryAsync());
     }
 
     public async Task SeedDailyReportAsync(
@@ -4544,6 +4642,18 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         var canceledPaymentId = Guid.NewGuid();
         var paymentCorrectionId = Guid.NewGuid();
         var paymentCancellationId = Guid.NewGuid();
+        var visitBatchId = Guid.NewGuid();
+        var visitRowId = Guid.NewGuid();
+        var visitCancellationBatchId = Guid.NewGuid();
+        var paymentBatchId = Guid.NewGuid();
+        var paymentRowId = Guid.NewGuid();
+        var paymentCorrectionBatchId = Guid.NewGuid();
+        var paymentCancellationBatchId = Guid.NewGuid();
+        var paymentCancellationRowId = Guid.NewGuid();
+        var visitSheetNumber = $"UI-VISIT-{visitBatchId:N}".ToUpperInvariant();
+        var paymentSheetNumber = $"UI-PAY-{paymentBatchId:N}".ToUpperInvariant();
+        var paymentCancellationSheetNumber =
+            $"UI-CANCEL-{paymentCancellationBatchId:N}".ToUpperInvariant();
         var dayStart = new DateTimeOffset(
                 businessDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
             .AddMinutes(minuteOffset);
@@ -4587,6 +4697,94 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 @session_expires_at,
                 @session_ended_at,
                 @session_last_seen_at);
+
+            insert into bodylife.entry_batches (
+                id,
+                batch_type,
+                paper_sheet_number,
+                business_date_start,
+                business_date_end,
+                recorded_at,
+                recorded_by_account_id,
+                reconciled_at,
+                reconciled_by_account_id,
+                note)
+            values
+                (
+                    @visit_batch_id,
+                    'paper_fallback',
+                    @visit_sheet_number,
+                    @business_date,
+                    @business_date,
+                    @canceled_visit_recorded_at,
+                    @account_id,
+                    null,
+                    null,
+                    'UI daily Visit source'),
+                (
+                    @payment_batch_id,
+                    'paper_fallback',
+                    @payment_sheet_number,
+                    @business_date,
+                    @business_date,
+                    @original_payment_recorded_at,
+                    @account_id,
+                    null,
+                    null,
+                    'UI daily Payment source'),
+                (
+                    @payment_cancellation_batch_id,
+                    'paper_fallback',
+                    @payment_cancellation_sheet_number,
+                    @business_date,
+                    @business_date,
+                    @payment_cancellation_recorded_at,
+                    @account_id,
+                    null,
+                    null,
+                    'UI daily Payment cancellation');
+
+            insert into bodylife.entry_batch_rows (
+                id,
+                entry_batch_id,
+                line_number,
+                event_type,
+                occurred_at,
+                explanation,
+                recorded_at,
+                recorded_by_account_id,
+                session_id)
+            values
+                (
+                    @visit_row_id,
+                    @visit_batch_id,
+                    1,
+                    'visit',
+                    @canceled_visit_occurred_at,
+                    'Canceled daily report visit',
+                    @canceled_visit_recorded_at,
+                    @account_id,
+                    @session_id),
+                (
+                    @payment_row_id,
+                    @payment_batch_id,
+                    1,
+                    'payment',
+                    @original_payment_occurred_at,
+                    'Original daily report payment',
+                    @original_payment_recorded_at,
+                    @account_id,
+                    @session_id),
+                (
+                    @payment_cancellation_row_id,
+                    @payment_cancellation_batch_id,
+                    1,
+                    'correction_or_cancellation',
+                    @payment_cancellation_occurred_at,
+                    'Duplicate report payment',
+                    @payment_cancellation_recorded_at,
+                    @account_id,
+                    @session_id);
 
             insert into bodylife.visits (
                 id,
@@ -4759,7 +4957,19 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 @account_id,
                 @session_id,
                 'paper_fallback',
-                @payment_cancellation_batch_id)
+                @payment_cancellation_batch_id);
+
+            insert into bodylife.entry_batch_row_entities (
+                entry_batch_row_id,
+                entity_type,
+                entity_id)
+            values
+                (@visit_row_id, 'visit', @canceled_visit_id),
+                (@payment_row_id, 'payment', @original_payment_id),
+                (
+                    @payment_cancellation_row_id,
+                    'payment_cancellation',
+                    @payment_cancellation_id)
             """;
         command.Parameters.AddWithValue("session_id", sessionId);
         command.Parameters.AddWithValue("account_id", recordedByAccountId);
@@ -4771,8 +4981,12 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue("active_visit_id", activeVisitId);
         command.Parameters.AddWithValue("canceled_visit_id", canceledVisitId);
         command.Parameters.AddWithValue("visit_cancellation_id", visitCancellationId);
-        command.Parameters.AddWithValue("visit_batch_id", Guid.NewGuid());
-        command.Parameters.AddWithValue("visit_cancellation_batch_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("visit_batch_id", visitBatchId);
+        command.Parameters.AddWithValue("visit_row_id", visitRowId);
+        command.Parameters.AddWithValue("visit_sheet_number", visitSheetNumber);
+        command.Parameters.AddWithValue(
+            "visit_cancellation_batch_id",
+            visitCancellationBatchId);
         command.Parameters.AddWithValue("active_visit_occurred_at", activeVisitOccurredAt);
         command.Parameters.AddWithValue("active_visit_recorded_at", activeVisitRecordedAt);
         command.Parameters.AddWithValue("canceled_visit_occurred_at", canceledVisitOccurredAt);
@@ -4788,9 +5002,25 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue("canceled_payment_id", canceledPaymentId);
         command.Parameters.AddWithValue("payment_correction_id", paymentCorrectionId);
         command.Parameters.AddWithValue("payment_cancellation_id", paymentCancellationId);
-        command.Parameters.AddWithValue("payment_batch_id", Guid.NewGuid());
-        command.Parameters.AddWithValue("payment_correction_batch_id", Guid.NewGuid());
-        command.Parameters.AddWithValue("payment_cancellation_batch_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("payment_batch_id", paymentBatchId);
+        command.Parameters.AddWithValue("payment_row_id", paymentRowId);
+        command.Parameters.AddWithValue("payment_sheet_number", paymentSheetNumber);
+        command.Parameters.AddWithValue(
+            "payment_correction_batch_id",
+            paymentCorrectionBatchId);
+        command.Parameters.AddWithValue(
+            "payment_cancellation_batch_id",
+            paymentCancellationBatchId);
+        command.Parameters.AddWithValue(
+            "payment_cancellation_row_id",
+            paymentCancellationRowId);
+        command.Parameters.AddWithValue(
+            "payment_cancellation_sheet_number",
+            paymentCancellationSheetNumber);
+        command.Parameters.AddWithValue(
+            "business_date",
+            NpgsqlDbType.Date,
+            businessDate);
         command.Parameters.AddWithValue(
             "original_payment_occurred_at",
             originalPaymentOccurredAt);
@@ -4825,7 +5055,7 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
             "changed_fields",
             NpgsqlDbType.Jsonb,
             "[\"amount\",\"occurred_at\"]");
-        Assert.Equal(9, await command.ExecuteNonQueryAsync());
+        Assert.Equal(18, await command.ExecuteNonQueryAsync());
 
         var clientReference = new { clientId };
         AuditSeed[] auditSeeds =
@@ -4854,7 +5084,15 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 "visit.marked",
                 "visit",
                 canceledVisitId,
-                clientReference,
+                new
+                {
+                    clientId,
+                    entryBatchId = visitBatchId,
+                    entryBatchRowId = visitRowId,
+                    paperSheetNumber = visitSheetNumber,
+                    lineNumber = 1,
+                    paperExplanation = "Canceled daily report visit",
+                },
                 recordedByAccountId,
                 "owner",
                 "owner",
@@ -4892,7 +5130,15 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 "payment.created",
                 "payment",
                 originalPaymentId,
-                clientReference,
+                new
+                {
+                    clientId,
+                    entryBatchId = paymentBatchId,
+                    entryBatchRowId = paymentRowId,
+                    paperSheetNumber = paymentSheetNumber,
+                    lineNumber = 1,
+                    paperExplanation = "Original daily report payment",
+                },
                 recordedByAccountId,
                 "owner",
                 "owner",
@@ -4949,7 +5195,15 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
                 "payment.canceled",
                 "payment",
                 canceledPaymentId,
-                clientReference,
+                new
+                {
+                    clientId,
+                    entryBatchId = paymentCancellationBatchId,
+                    entryBatchRowId = paymentCancellationRowId,
+                    paperSheetNumber = paymentCancellationSheetNumber,
+                    lineNumber = 1,
+                    paperExplanation = "Duplicate report payment",
+                },
                 recordedByAccountId,
                 "owner",
                 "owner",

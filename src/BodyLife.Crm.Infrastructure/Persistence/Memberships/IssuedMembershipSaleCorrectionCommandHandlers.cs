@@ -8,6 +8,7 @@ using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
 using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Infrastructure.Persistence.Visits;
+using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Payments;
 using BodyLife.Crm.SharedKernel;
@@ -61,7 +62,8 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
     IMembershipIssuePaymentWriter paymentWriter,
     MembershipStateCacheRebuilder stateCacheRebuilder,
     IPaymentDayReconciliationStatusProvider dayReconciliationStatusProvider,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    PaperFallbackEntryRowBinder? paperFallbackEntryRowBinder = null)
 {
     internal async Task<CommandResult> ExecuteAsync(
         string commandName,
@@ -69,6 +71,8 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
         CancellationToken cancellationToken)
     {
         var recordedAt = timeProvider.GetUtcNow();
+        var rowBinder = paperFallbackEntryRowBinder
+            ?? new PaperFallbackEntryRowBinder(dbContext);
         var fingerprint = IssuedMembershipSaleCorrectionCommandSupport
             .CreateFingerprint(correction);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(
@@ -144,6 +148,37 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                         fingerprint,
                         cancellationToken));
             }
+
+            var paperBinding = await rowBinder.PrepareAsync(
+                correction.Envelope,
+                PaperFallbackEventType.CorrectionOrCancellation,
+                cancellationToken);
+            if (paperBinding.RowAlreadyLinked)
+            {
+                existingIdempotency = await MembershipCommandSupport.FindIdempotencyAsync(
+                    dbContext,
+                    commandName,
+                    correction.IdempotencyKey,
+                    cancellationToken);
+                if (existingIdempotency is not null)
+                {
+                    return await RollBackAsync(await IssuedMembershipSaleCorrectionCommandSupport
+                        .ReplayOrRejectDuplicateAsync(
+                            dbContext,
+                            existingIdempotency,
+                            correction,
+                            fingerprint,
+                            cancellationToken));
+                }
+            }
+
+            if (paperBinding.Error is not null)
+            {
+                return await RollBackAsync(paperBinding.Error);
+            }
+
+            var paperReference = paperBinding.Reference;
+            var entryBatchId = paperReference?.EntryBatchId;
 
             var originalMembership = await LockMembershipAsync(
                 correction.OriginalMembershipId,
@@ -298,10 +333,17 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                     Status = IssuedMembershipSaleCorrectionSupport.ActiveStatus,
                     EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
                         correction.Envelope.EntryOrigin),
-                    EntryBatchId = null,
+                    EntryBatchId = entryBatchId,
                     Comment = correction.Envelope.Comment,
                 };
                 dbContext.Set<IssuedMembershipRecord>().Add(replacementMembership);
+                if (paperReference is not null)
+                {
+                    rowBinder.LinkEntity(
+                        paperReference,
+                        MembershipAuditActions.MembershipEntityType,
+                        replacementMembership.Id);
+                }
                 var paymentWrite = paymentWriter.StageExactSale(
                     correction.Envelope,
                     originalMembership.ClientId,
@@ -309,13 +351,22 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                     new Money(
                         replacementMembership.PriceAmountSnapshot,
                         replacementMembership.PriceCurrencySnapshot),
-                    entryBatchId: null,
+                    entryBatchId,
                     recordedAt,
-                    changedAfterClose);
+                    changedAfterClose,
+                    paperReference,
+                    correctionId);
                 replacementPaymentId = paymentWrite.PaymentId;
                 replacementPaymentAuditId = paymentWrite.AuditEntryId;
                 replacementPayment = dbContext.Set<PaymentRecord>().Local
                     .Single(payment => payment.Id == paymentWrite.PaymentId);
+                if (paperReference is not null)
+                {
+                    rowBinder.LinkEntity(
+                        paperReference,
+                        PaymentAuditActions.EntityType,
+                        paymentWrite.PaymentId);
+                }
                 originalMembership.Status = "corrected";
                 originalPayment.Status = "replaced";
             }
@@ -342,11 +393,19 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                 SessionId = correction.Envelope.Actor.SessionId.Value,
                 EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
                     correction.Envelope.EntryOrigin),
+                EntryBatchId = entryBatchId,
                 Status = "active",
                 DependencyToken = currentToken,
             };
             dbContext.Set<IssuedMembershipSaleCorrectionRecord>().Add(
                 correctionRecord);
+            if (paperReference is not null)
+            {
+                rowBinder.LinkEntity(
+                    paperReference,
+                    "issued_membership_sale_correction",
+                    correctionRecord.Id);
+            }
             await dbContext.SaveChangesAsync(cancellationToken);
 
             var originalRebuild = await stateCacheRebuilder.RebuildAsync(
@@ -380,6 +439,7 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                 originalPayment,
                 replacementPayment,
                 recordedAt,
+                paperReference,
                 changedAfterClose);
             var membershipAuditEntryId = auditAppender.Append(
                 correction.Envelope,
@@ -389,7 +449,25 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                 MembershipAuditActions.MembershipEntityType,
                 originalMembership.Id,
                 recordedAt,
-                relatedEntityRefs: new
+                relatedEntityRefs: paperReference is { } membershipAuditPaperReference
+                ? new
+                {
+                    correctionRecord.ClientId,
+                    SaleCorrectionId = correctionRecord.Id,
+                    correctionRecord.OriginalMembershipId,
+                    correctionRecord.OriginalPaymentId,
+                    correctionRecord.ReplacementMembershipId,
+                    correctionRecord.ReplacementPaymentId,
+                    PaymentLifecycleAuditEntryId = paymentAuditEntryId.Value,
+                    ReplacementPaymentCreatedAuditEntryId =
+                        replacementPaymentAuditId?.Value,
+                    membershipAuditPaperReference.EntryBatchId,
+                    membershipAuditPaperReference.EntryBatchRowId,
+                    membershipAuditPaperReference.PaperSheetNumber,
+                    membershipAuditPaperReference.LineNumber,
+                    PaperExplanation = membershipAuditPaperReference.Explanation,
+                }
+                : new
                 {
                     correctionRecord.ClientId,
                     SaleCorrectionId = correctionRecord.Id,
@@ -417,6 +495,7 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                         correctionRecord.OccurredAt,
                         correctionRecord.RecordedAt,
                         correctionRecord.EntryOrigin,
+                        correctionRecord.EntryBatchId,
                         correctionRecord.Status,
                     },
                     OriginalMembership = SummarizeMembership(originalMembership),
@@ -485,6 +564,7 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
         PaymentRecord originalPayment,
         PaymentRecord? replacementPayment,
         DateTimeOffset recordedAt,
+        PaperFallbackEntryRowReference? paperReference,
         bool changedAfterClose)
     {
         if (correction.Mode == IssuedMembershipSaleCorrectionMode.Replace)
@@ -495,7 +575,22 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                 PaymentAuditActions.EntityType,
                 originalPayment.Id,
                 recordedAt,
-                relatedEntityRefs: new
+                relatedEntityRefs: paperReference is { } paymentAuditPaperReference
+                ? new
+                {
+                    source.ClientId,
+                    OriginalPaymentId = originalPayment.Id,
+                    OriginalMembershipId = source.OriginalMembershipId,
+                    ReplacementPaymentId = replacementPayment?.Id,
+                    ReplacementMembershipId = replacementPayment?.MembershipId,
+                    CorrectionId = source.Id,
+                    paymentAuditPaperReference.EntryBatchId,
+                    paymentAuditPaperReference.EntryBatchRowId,
+                    paymentAuditPaperReference.PaperSheetNumber,
+                    paymentAuditPaperReference.LineNumber,
+                    PaperExplanation = paymentAuditPaperReference.Explanation,
+                }
+                : new
                 {
                     source.ClientId,
                     OriginalPaymentId = originalPayment.Id,
@@ -517,7 +612,7 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                         source.OccurredAt,
                         source.RecordedAt,
                         source.EntryOrigin,
-                        EntryBatchId = (Guid?)null,
+                        source.EntryBatchId,
                         ChangedAfterClose = changedAfterClose,
                     },
                     OriginalPayment = SummarizePayment(originalPayment),
@@ -532,7 +627,20 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
             PaymentAuditActions.EntityType,
             originalPayment.Id,
             recordedAt,
-            relatedEntityRefs: new
+            relatedEntityRefs: paperReference is { } cancellationAuditPaperReference
+            ? new
+            {
+                source.ClientId,
+                PaymentId = originalPayment.Id,
+                MembershipId = source.OriginalMembershipId,
+                CancellationId = source.Id,
+                cancellationAuditPaperReference.EntryBatchId,
+                cancellationAuditPaperReference.EntryBatchRowId,
+                cancellationAuditPaperReference.PaperSheetNumber,
+                cancellationAuditPaperReference.LineNumber,
+                PaperExplanation = cancellationAuditPaperReference.Explanation,
+            }
+            : new
             {
                 source.ClientId,
                 PaymentId = originalPayment.Id,
@@ -550,7 +658,7 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
                     source.OccurredAt,
                     source.RecordedAt,
                     source.EntryOrigin,
-                    EntryBatchId = (Guid?)null,
+                    source.EntryBatchId,
                     ChangedAfterClose = changedAfterClose,
                 },
                 Payment = SummarizePayment(originalPayment),

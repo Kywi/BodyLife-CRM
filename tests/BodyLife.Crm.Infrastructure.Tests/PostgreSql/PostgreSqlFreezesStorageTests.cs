@@ -107,7 +107,7 @@ public sealed class PostgreSqlFreezesStorageTests
             fixture.MembershipId,
             new DateOnly(2026, 7, 10),
             new DateOnly(2026, 7, 12),
-            entryOrigin: "paper_fallback",
+            entryOrigin: "manual_backfill",
             entryBatchId: entryBatchId);
         var cancellationId = await CancelFreezeAsync(
             database.ConnectionString,

@@ -404,6 +404,8 @@ public sealed partial class ClientHistoryRowPresenterTests
     [InlineData(ClientHistorySourceKind.PaymentCreated, "MEMBERSHIP-SALE-001", "Membership sale", "Продаж абонемента")]
     [InlineData(ClientHistorySourceKind.PaymentCorrected, "PAYMENT-CORRECTION-001", "Correction or cancellation", "Виправлення або скасування")]
     [InlineData(ClientHistorySourceKind.PaymentCanceled, "PAYMENT-CANCEL-001", "Correction or cancellation", "Виправлення або скасування")]
+    [InlineData(ClientHistorySourceKind.MembershipSaleReplaced, "MEMBERSHIP-SALE-CORRECTION-001", "Correction or cancellation", "Виправлення або скасування")]
+    [InlineData(ClientHistorySourceKind.MembershipSaleCanceled, "MEMBERSHIP-SALE-CORRECTION-001", "Correction or cancellation", "Виправлення або скасування")]
     public void PaperPaymentRowsShowLocalizedCanonicalProvenance(
         ClientHistorySourceKind kind,
         string sheetNumber,
@@ -949,6 +951,14 @@ public sealed partial class ClientHistoryRowPresenterTests
                     Status = isCancellation
                         ? IssuedMembershipLifecycleStatus.Canceled
                         : IssuedMembershipLifecycleStatus.Corrected,
+                    PaperReference = new PaperFallbackEntryRowReference(
+                        BatchId,
+                        Id(111),
+                        "MEMBERSHIP-SALE-CORRECTION-001",
+                        12,
+                        PaperFallbackEventType.CorrectionOrCancellation,
+                        OccurredAt,
+                        "Recovered paper Membership sale correction"),
                 },
             },
         };

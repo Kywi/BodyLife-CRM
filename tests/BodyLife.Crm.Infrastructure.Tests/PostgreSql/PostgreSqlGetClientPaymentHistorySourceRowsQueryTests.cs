@@ -625,7 +625,21 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
                     @account_id,
                     @session_id,
                     'manual_backfill',
-                    @cancellation_batch_id)
+                    @cancellation_batch_id);
+
+                insert into bodylife.entry_batch_row_entities (
+                    entry_batch_row_id,
+                    entity_type,
+                    entity_id)
+                values
+                    (
+                        @correction_row_id,
+                        'payment_correction',
+                        @correction_id),
+                    (
+                        @correction_row_id,
+                        'payment',
+                        @replacement_payment_id)
                 """;
             command.Parameters.AddWithValue("original_payment_id", originalPaymentId);
             command.Parameters.AddWithValue("replacement_payment_id", replacementPaymentId);
@@ -659,6 +673,9 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
             command.Parameters.AddWithValue(
                 "correction_batch_id",
                 correctionBatchId);
+            command.Parameters.AddWithValue(
+                "correction_row_id",
+                correctionPaper.EntryBatchRowId);
             command.Parameters.AddWithValue("cancellation_id", cancellationId);
             command.Parameters.AddWithValue(
                 "cancellation_occurred_at",
@@ -669,18 +686,8 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
             command.Parameters.AddWithValue(
                 "cancellation_batch_id",
                 cancellationBatchId);
-            Assert.Equal(5, await command.ExecuteNonQueryAsync());
+            Assert.Equal(7, await command.ExecuteNonQueryAsync());
         }
-
-        await PostgreSqlPaperFallbackTestData.LinkRowAsync(
-            database,
-            correctionPaper.EntryBatchRowId,
-            new PaperFallbackEntityLink(
-                CorrectPaymentCommand.CorrectionEntityType,
-                correctionId),
-            new PaperFallbackEntityLink(
-                CorrectPaymentCommand.PaymentEntityType,
-                replacementPaymentId));
 
         await InsertAuditAsync(
             database,
@@ -890,18 +897,18 @@ public sealed class PostgreSqlGetClientPaymentHistorySourceRowsQueryTests
         Guid entryBatchRowId,
         string entityType)
     {
-        await using var connection = new NpgsqlConnection(database.ConnectionString);
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            """
-            delete from bodylife.entry_batch_row_entities
-            where entry_batch_row_id = @row_id
-              and entity_type = @entity_type
-            """;
-        command.Parameters.AddWithValue("row_id", entryBatchRowId);
-        command.Parameters.AddWithValue("entity_type", entityType);
-        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        var normalizedEntityType = entityType.Replace("'", "''", StringComparison.Ordinal);
+        Assert.Equal(
+            1,
+            await database.ExecutePrivilegedPaperLinkCorruptionAsync<int>(
+                $"""
+                with deleted as (
+                    delete from bodylife.entry_batch_row_entities
+                    where entry_batch_row_id = '{entryBatchRowId}'
+                      and entity_type = '{normalizedEntityType}'
+                    returning 1)
+                select count(*)::int from deleted
+                """));
     }
 
     private static async Task DeactivateActorAsync(

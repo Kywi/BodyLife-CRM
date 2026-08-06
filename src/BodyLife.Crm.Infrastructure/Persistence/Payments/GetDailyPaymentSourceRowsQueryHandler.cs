@@ -122,28 +122,32 @@ public sealed class GetDailyPaymentSourceRowsQueryHandler(
             CorrectPaymentCommand.PaymentEntityType,
             PaperFallbackEventType.Payment,
             cancellationToken);
-        var correctionPaperReferences = await paperReferenceReader.LoadAsync(
+        var correctionPaperReferences = await LoadPaperReferencesAsync(
             relations.CorrectionsToReplacementByPaymentId.Values
-                .Select(correction => new PaperFallbackEntryRowReferenceSource(
-                    correction.CorrectionId,
-                    correction.EntryOrigin,
-                    correction.EntryBatchId,
-                    correction.OccurredAt,
-                    correction.RecordedByAccountId,
-                    correction.SessionId)).ToArray(),
-            CorrectPaymentCommand.CorrectionEntityType,
+                .Select(correction => new PaperReferenceLookup(
+                    new PaperFallbackEntryRowReferenceSource(
+                        correction.CorrectionId,
+                        correction.EntryOrigin,
+                        correction.EntryBatchId,
+                        correction.OccurredAt,
+                        correction.RecordedByAccountId,
+                        correction.SessionId),
+                    correction.PaperEntityType))
+                .ToArray(),
             PaperFallbackEventType.CorrectionOrCancellation,
             cancellationToken);
-        var cancellationPaperReferences = await paperReferenceReader.LoadAsync(
+        var cancellationPaperReferences = await LoadPaperReferencesAsync(
             relations.CancellationsByPaymentId.Values
-                .Select(cancellation => new PaperFallbackEntryRowReferenceSource(
-                    cancellation.CancellationId,
-                    cancellation.EntryOrigin,
-                    cancellation.EntryBatchId,
-                    cancellation.OccurredAt,
-                    cancellation.RecordedByAccountId,
-                    cancellation.SessionId)).ToArray(),
-            CorrectPaymentCommand.CancellationEntityType,
+                .Select(cancellation => new PaperReferenceLookup(
+                    new PaperFallbackEntryRowReferenceSource(
+                        cancellation.CancellationId,
+                        cancellation.EntryOrigin,
+                        cancellation.EntryBatchId,
+                        cancellation.OccurredAt,
+                        cancellation.RecordedByAccountId,
+                        cancellation.SessionId),
+                    cancellation.PaperEntityType))
+                .ToArray(),
             PaperFallbackEventType.CorrectionOrCancellation,
             cancellationToken);
         if (paymentPaperReferences is null
@@ -286,4 +290,37 @@ public sealed class GetDailyPaymentSourceRowsQueryHandler(
                 "negative_closure" => PaperFallbackEventType.NegativeCoverage,
                 _ => PaperFallbackEventType.Payment,
             };
+
+    private async Task<Dictionary<Guid, PaperFallbackEntryRowReference>?>
+        LoadPaperReferencesAsync(
+            IReadOnlyList<PaperReferenceLookup> lookups,
+            PaperFallbackEventType expectedEventType,
+            CancellationToken cancellationToken)
+    {
+        var references = new Dictionary<Guid, PaperFallbackEntryRowReference>();
+        foreach (var group in lookups.GroupBy(lookup => lookup.EntityType))
+        {
+            var loaded = await new PaperFallbackEntryRowReferenceReader(dbContext)
+                .LoadAsync(
+                    group.Select(lookup => lookup.Source).ToArray(),
+                    group.Key,
+                    expectedEventType,
+                    cancellationToken);
+            if (loaded is null || loaded.Keys.Any(references.ContainsKey))
+            {
+                return null;
+            }
+
+            foreach (var (entityId, reference) in loaded)
+            {
+                references.Add(entityId, reference);
+            }
+        }
+
+        return references;
+    }
+
+    private sealed record PaperReferenceLookup(
+        PaperFallbackEntryRowReferenceSource Source,
+        string EntityType);
 }

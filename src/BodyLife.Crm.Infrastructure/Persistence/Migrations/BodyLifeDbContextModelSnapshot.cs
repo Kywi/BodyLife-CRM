@@ -1062,6 +1062,10 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("dependency_token");
 
+                    b.Property<Guid?>("EntryBatchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_batch_id");
+
                     b.Property<string>("EntryOrigin")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -1154,7 +1158,9 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_issued_membership_sale_corrections_mode", "correction_mode in ('cancel', 'replace')");
 
-                            t.HasCheckConstraint("ck_issued_membership_sale_corrections_origin", "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
+                            t.HasCheckConstraint("ck_issued_membership_sale_corrections_origin", "entry_origin in ('normal', 'paper_fallback')");
+
+                            t.HasCheckConstraint("ck_issued_membership_sale_corrections_origin_batch", "(entry_origin = 'normal' and entry_batch_id is null) or (entry_origin = 'paper_fallback' and entry_batch_id is not null)");
 
                             t.HasCheckConstraint("ck_issued_membership_sale_corrections_reason", "length(btrim(reason)) > 0");
 

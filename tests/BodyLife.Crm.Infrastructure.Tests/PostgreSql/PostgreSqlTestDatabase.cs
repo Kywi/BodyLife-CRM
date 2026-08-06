@@ -62,6 +62,42 @@ internal sealed class PostgreSqlTestDatabase : IAsyncDisposable
             : (T)result;
     }
 
+    public async Task<T?> ExecutePrivilegedPaperLinkCorruptionAsync<T>(
+        string commandText)
+    {
+        return await ExecutePrivilegedConstraintCorruptionAsync<T>(commandText);
+    }
+
+    public async Task<T?> ExecutePrivilegedConstraintCorruptionAsync<T>(
+        string commandText)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+
+        await using (var disableTriggers = new NpgsqlCommand(
+            "set session_replication_role = replica",
+            connection))
+        {
+            await disableTriggers.ExecuteNonQueryAsync();
+        }
+
+        try
+        {
+            await using var command = new NpgsqlCommand(commandText, connection);
+            var result = await command.ExecuteScalarAsync();
+            return result is null or DBNull
+                ? default
+                : (T)result;
+        }
+        finally
+        {
+            await using var enableTriggers = new NpgsqlCommand(
+                "set session_replication_role = origin",
+                connection);
+            await enableTriggers.ExecuteNonQueryAsync();
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
         await ExecuteAdminCommandAsync(

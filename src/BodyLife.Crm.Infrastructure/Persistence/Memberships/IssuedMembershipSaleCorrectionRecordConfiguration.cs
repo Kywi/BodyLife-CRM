@@ -32,7 +32,10 @@ internal sealed class IssuedMembershipSaleCorrectionRecordConfiguration
                     "length(btrim(reason)) > 0");
                 table.HasCheckConstraint(
                     "ck_issued_membership_sale_corrections_origin",
-                    "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
+                    "entry_origin in ('normal', 'paper_fallback')");
+                table.HasCheckConstraint(
+                    "ck_issued_membership_sale_corrections_origin_batch",
+                    "(entry_origin = 'normal' and entry_batch_id is null) or (entry_origin = 'paper_fallback' and entry_batch_id is not null)");
                 table.HasCheckConstraint(
                     "ck_issued_membership_sale_corrections_status",
                     "status = 'active'");
@@ -63,6 +66,8 @@ internal sealed class IssuedMembershipSaleCorrectionRecordConfiguration
             .HasColumnName("entry_origin")
             .HasMaxLength(32)
             .IsRequired();
+        builder.Property(row => row.EntryBatchId)
+            .HasColumnName("entry_batch_id");
         builder.Property(row => row.Status)
             .HasColumnName("status")
             .HasMaxLength(16)

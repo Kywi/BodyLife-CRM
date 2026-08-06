@@ -2124,6 +2124,12 @@ public sealed class AuditEntryExplanationPresenter(
         var relatedNegativeClosureId = ReadOptionalGuid(
             related,
             "negativeClosureId");
+        var coverageCorrectionId = ReadOptionalGuid(
+            related,
+            "coverageCorrectionId");
+        var saleCorrectionId = ReadOptionalGuid(
+            related,
+            "saleCorrectionId");
         var payment = ReadCreatedPayment(RequireObject(after, "payment"));
         ValidateEntryBatch(payment.EntryOrigin, payment.EntryBatchId);
         var paperReference = ReadPaperReference(
@@ -2153,7 +2159,6 @@ public sealed class AuditEntryExplanationPresenter(
         if (payment.PaymentContext == "negative_closure")
         {
             var explanation = RequireObject(after, "explanation");
-            var relatedCorrectionId = ReadOptionalGuid(related, "coverageCorrectionId");
             var explanationCorrectionId = ReadOptionalGuid(
                 explanation,
                 "coverageCorrectionId");
@@ -2164,9 +2169,10 @@ public sealed class AuditEntryExplanationPresenter(
                 || RequireGuid(explanation, "negativeClosureId")
                     != payment.NegativeClosureId
                 || RequireBoolean(explanation, "isStandalonePayment")
-                || relatedCorrectionId != explanationCorrectionId
-                || relatedCorrectionId == Guid.Empty
-                || (relatedCorrectionId is not null
+                || coverageCorrectionId != explanationCorrectionId
+                || coverageCorrectionId == Guid.Empty
+                || saleCorrectionId is not null
+                || (coverageCorrectionId is not null
                     && RequireBoolean(explanation, "changedAfterClose")
                         != entry.ChangedAfterClose))
             {
@@ -2178,6 +2184,21 @@ public sealed class AuditEntryExplanationPresenter(
         {
             throw new JsonException(
                 "Only a negative-closure Payment can reference a closure.");
+        }
+
+        if (payment.PaymentContext == "membership_sale")
+        {
+            if (coverageCorrectionId is not null
+                || saleCorrectionId == Guid.Empty)
+            {
+                throw new JsonException(
+                    "Membership-sale Payment correction provenance is inconsistent.");
+            }
+        }
+        else if (saleCorrectionId is not null)
+        {
+            throw new JsonException(
+                "Only a Membership-sale Payment can reference an issued-sale correction.");
         }
 
         var context = PaymentContextLabel(payment.PaymentContext);
@@ -2198,15 +2219,15 @@ public sealed class AuditEntryExplanationPresenter(
                 "Negative closure",
                 TimelineModel.ShortId(negativeClosureId)));
         }
-        var coverageCorrectionId = ReadOptionalGuid(related, "coverageCorrectionId");
-        if (coverageCorrectionId is { } correctionId)
+        var correctionId = coverageCorrectionId ?? saleCorrectionId;
+        if (correctionId is { } sourceCorrectionId)
         {
-            afterFacts.Add(Fact("Correction", TimelineModel.ShortId(correctionId)));
+            afterFacts.Add(Fact("Correction", TimelineModel.ShortId(sourceCorrectionId)));
         }
         AddPaperReferenceFacts(
             afterFacts,
             paperReference,
-            coverageCorrectionId is null
+            correctionId is null
                 ? PaymentPaperEventType(payment.PaymentContext)
                 : PaperFallbackEventType.CorrectionOrCancellation);
         return CreateExplanation("PaymentCreated",
@@ -2475,7 +2496,16 @@ public sealed class AuditEntryExplanationPresenter(
         var correctionOccurredAt = RequireTimestamp(correction, "occurredAt");
         var correctionRecordedAt = RequireTimestamp(correction, "recordedAt");
         var correctionEntryOrigin = RequireString(correction, "entryOrigin");
+        var correctionEntryBatchId = RequireNullableGuid(
+            correction,
+            "entryBatchId");
         var correctionReason = RequireString(correction, "reason");
+        ValidateEntryBatch(correctionEntryOrigin, correctionEntryBatchId);
+        var paperReference = ReadPaperReference(
+            related,
+            entry.EntryOrigin,
+            correctionEntryBatchId,
+            "issued Membership sale correction");
 
         ValidateIssuedSale(
             originalMembership,
@@ -2534,7 +2564,7 @@ public sealed class AuditEntryExplanationPresenter(
                 || replacementPaymentId == originalPaymentId
                 || replacementMembership.Status != "active"
                 || replacementMembership.EntryOrigin != correctionEntryOrigin
-                || replacementMembership.EntryBatchId is not null
+                || replacementMembership.EntryBatchId != correctionEntryBatchId
                 || replacementMembership.Comment != entry.Comment
                 || !AuditTimestampPrecision.IsSamePostgreSqlInstant(
                     replacementMembership.IssuedAt,
@@ -2578,6 +2608,11 @@ public sealed class AuditEntryExplanationPresenter(
                     replacementMembership.PriceAmount,
                     replacementMembership.PriceCurrency)));
         }
+
+        AddPaperReferenceFacts(
+            afterFacts,
+            paperReference,
+            PaperFallbackEventType.CorrectionOrCancellation);
 
         return CreateExplanation(
             isCancellation ? "MembershipSaleCanceled" : "MembershipSaleReplaced",

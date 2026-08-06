@@ -60,7 +60,7 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
             "one_off",
             AtBusinessTime(11),
             TestNow.AddDays(1),
-            entryOrigin: "paper_fallback",
+            entryOrigin: "manual_backfill",
             entryBatchId: fallbackBatchId,
             comment: "Recovered from paper");
         var canceledVisitId = await InsertVisitAsync(
@@ -163,7 +163,7 @@ public sealed class PostgreSqlGetDailyVisitSourceRowsQueryTests
         Assert.Equal(cancellationBatchId, cancellation.EntryBatchId);
 
         var oneOff = snapshot.Rows[2].Visit;
-        Assert.Equal(EntryOrigin.PaperFallback, oneOff.EntryOrigin);
+        Assert.Equal(EntryOrigin.ManualBackfill, oneOff.EntryOrigin);
         Assert.Equal(fallbackBatchId, oneOff.EntryBatchId);
         Assert.Equal(TestNow.AddDays(1), oneOff.RecordedAt);
         Assert.Equal("Recovered from paper", oneOff.Comment);

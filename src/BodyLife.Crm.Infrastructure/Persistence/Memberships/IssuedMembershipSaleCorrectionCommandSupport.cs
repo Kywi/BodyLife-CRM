@@ -139,6 +139,7 @@ internal static class IssuedMembershipSaleCorrectionCommandSupport
             RequestCorrelationId = correction.Envelope.RequestCorrelationId.Value,
             EntryOrigin = MembershipCommandSupport.MapEntryOrigin(
                 correction.Envelope.EntryOrigin),
+            correction.Envelope.EntryBatchRowId,
             correction.Envelope.OccurredAt,
             correction.Envelope.Reason,
             correction.Envelope.Comment,
@@ -373,11 +374,28 @@ internal static class IssuedMembershipSaleCorrectionCommandSupport
                 "deviceLabel");
         }
 
-        if (envelope.EntryOrigin != EntryOrigin.Normal)
+        if (envelope.EntryOrigin is not (EntryOrigin.Normal or EntryOrigin.PaperFallback))
         {
             return ValidationError(
-                "Issued-sale correction currently requires normal entry origin.",
+                "Issued-sale correction accepts only normal or paper fallback entry origin.",
                 "entryOrigin");
+        }
+
+        if (envelope.EntryOrigin == EntryOrigin.Normal
+            && envelope.EntryBatchRowId is not null)
+        {
+            return ValidationError(
+                "Entry batch row id is only valid for paper fallback entry.",
+                "entryBatchRowId");
+        }
+
+        if (envelope.EntryOrigin == EntryOrigin.PaperFallback
+            && (envelope.EntryBatchRowId is null
+                || envelope.EntryBatchRowId == Guid.Empty))
+        {
+            return ValidationError(
+                "Paper fallback entry requires an entry batch row id.",
+                "entryBatchRowId");
         }
 
         if (envelope.OccurredAt is not { } occurredAt
@@ -397,7 +415,8 @@ internal static class IssuedMembershipSaleCorrectionCommandSupport
             normalizedOccurredAt,
             idempotencyKey,
             reason,
-            comment);
+            comment,
+            envelope.EntryBatchRowId);
         return null;
     }
 

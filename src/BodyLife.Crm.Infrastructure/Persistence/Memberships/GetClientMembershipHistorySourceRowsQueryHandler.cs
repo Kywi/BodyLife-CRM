@@ -1,6 +1,7 @@
 using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
+using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.SharedKernel;
@@ -16,6 +17,9 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
         GetClientMembershipHistorySourceRowsQuery,
         GetClientMembershipHistorySourceRowsResult>
 {
+    private const string SaleCorrectionEntityType =
+        "issued_membership_sale_correction";
+
     private static readonly ClientAuditEntityFilter[] EntityFilters =
     [
         ClientAuditEntityFilter.Membership,
@@ -149,10 +153,61 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
             MembershipAuditActions.MembershipEntityType,
             PaperFallbackEventType.MembershipSale,
             cancellationToken);
-        if (issuedPaperReferences is null)
+        var correctionPaperReferences = await paperReferenceReader.LoadAsync(
+            correctionRows.Select(correction =>
+                new PaperFallbackEntryRowReferenceSource(
+                    correction.Id,
+                    correction.EntryOrigin,
+                    correction.EntryBatchId,
+                    correction.OccurredAt,
+                    correction.RecordedByAccountId,
+                    correction.SessionId,
+                    PaperFallbackEventType.CorrectionOrCancellation))
+                .ToArray(),
+            SaleCorrectionEntityType,
+            PaperFallbackEventType.CorrectionOrCancellation,
+            cancellationToken);
+        if (issuedPaperReferences is null
+            || correctionPaperReferences is null)
         {
             return GetClientMembershipHistorySourceRowsResult.InconsistentSource();
         }
+
+        var expectedCorrectionLinks = correctionRows
+            .SelectMany(correction =>
+            {
+                var rowId = correctionPaperReferences
+                    .GetValueOrDefault(correction.Id)?.EntryBatchRowId;
+                var links = new List<PaperFallbackExpectedEntityLink>
+                {
+                    new(SaleCorrectionEntityType, correction.Id, rowId),
+                };
+                if (correction.ReplacementMembershipId is { } membershipId)
+                {
+                    links.Add(new(
+                        MembershipAuditActions.MembershipEntityType,
+                        membershipId,
+                        rowId));
+                }
+
+                if (correction.ReplacementPaymentId is { } paymentId)
+                {
+                    links.Add(new(PaymentAuditActions.EntityType, paymentId, rowId));
+                }
+
+                return links;
+            })
+            .ToArray();
+        if (!await paperReferenceReader.HasExpectedEntityLinksAsync(
+                expectedCorrectionLinks,
+                cancellationToken))
+        {
+            return GetClientMembershipHistorySourceRowsResult.InconsistentSource();
+        }
+
+        var correctionPaperReferencesByMembershipId = correctionRows.ToDictionary(
+            correction => correction.OriginalMembershipId,
+            correction => correctionPaperReferences.GetValueOrDefault(correction.Id));
         var rows = new List<ClientMembershipHistorySourceRow>(auditPage.Items.Count);
 
         try
@@ -170,7 +225,8 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
                             auditEntry,
                             auditEntry.ActionType == MembershipAuditActions.Issued
                                 ? issuedPaperReferences.GetValueOrDefault(membership.Id)
-                                : null,
+                                : correctionPaperReferencesByMembershipId
+                                    .GetValueOrDefault(membership.Id),
                             auditEntry.ActionType == MembershipAuditActions.Issued
                                 ? null
                                 : correctionsByMembershipId.GetValueOrDefault(
@@ -261,6 +317,7 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
                 || correction.SessionId == Guid.Empty
                 || correction.Status != "active"
                 || string.IsNullOrWhiteSpace(correction.Reason)
+                || correction.EntryOrigin is not ("normal" or "paper_fallback")
                 || !TryMapEntryOrigin(
                     correction.EntryOrigin,
                     out eventEntryOrigin)
@@ -271,6 +328,10 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
                 || auditEntry.SessionId.Value != correction.SessionId
                 || auditEntry.EntryOrigin != eventEntryOrigin
                 || auditEntry.Reason != correction.Reason
+                || !PaperFallbackEntryRowReferenceReader.HasMatchingAuditReference(
+                    auditEntry,
+                    correction.EntryBatchId,
+                    paperReference)
                 || !IsMatchingSaleCorrectionLifecycle(
                     membership,
                     correction,
@@ -298,7 +359,9 @@ public sealed class GetClientMembershipHistorySourceRowsQueryHandler(
             membership.IssuedAt,
             new AccountId(membership.IssuedByAccountId),
             status,
-            membership.EntryBatchId,
+            correction is null
+                ? membership.EntryBatchId
+                : correction.EntryBatchId,
             membership.Comment,
             paperReference);
         return new ClientMembershipHistorySourceRow(

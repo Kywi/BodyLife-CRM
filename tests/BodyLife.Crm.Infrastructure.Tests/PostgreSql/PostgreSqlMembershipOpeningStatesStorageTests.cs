@@ -137,7 +137,7 @@ public sealed class PostgreSqlMembershipOpeningStatesStorageTests
             knownExtensionDays: null,
             sourceReference: "Outage log, page 3",
             reason: "Only the current remaining visits are known",
-            entryOrigin: "paper_fallback",
+            entryOrigin: "manual_backfill",
             entryBatchId: null);
 
         var persisted = await ReadOpeningStateAsync(
@@ -146,7 +146,7 @@ public sealed class PostgreSqlMembershipOpeningStatesStorageTests
         Assert.Null(persisted.KnownEffectiveEndDate);
         Assert.Null(persisted.KnownExtensionDays);
         Assert.Null(persisted.EntryBatchId);
-        Assert.Equal("paper_fallback", persisted.EntryOrigin);
+        Assert.Equal("manual_backfill", persisted.EntryOrigin);
     }
 
     [PostgreSqlFact]

@@ -440,21 +440,27 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         Assert.Equal(PaperFallbackEventType.MembershipSale, historyPaper.EventType);
         Assert.Equal(paper.Explanation, historyPaper.Explanation);
 
-        await ExecuteNonQueryAsync(
-            database,
-            $"""
-            delete from bodylife.entry_batch_row_entities
-            where entry_batch_row_id = '{paper.EntryBatchRowId}'
-              and entity_type = 'membership'
-              and entity_id = '{membershipId}'
-            """);
-        var inconsistentHistory = await historyHandler.ExecuteAsync(
+        var mutationException = await Assert.ThrowsAsync<PostgresException>(
+            () => ExecuteNonQueryAsync(
+                database,
+                $"""
+                delete from bodylife.entry_batch_row_entities
+                where entry_batch_row_id = '{paper.EntryBatchRowId}'
+                  and entity_type = 'membership'
+                  and entity_id = '{membershipId}'
+                """));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, mutationException.SqlState);
+        Assert.Equal(
+            "ck_entry_batch_row_entities_immutable",
+            mutationException.ConstraintName);
+
+        var preservedHistory = await historyHandler.ExecuteAsync(
             new GetClientMembershipHistorySourceRowsQuery(actor, fixture.ClientId),
             CancellationToken.None);
         Assert.Equal(
-            GetClientMembershipHistorySourceRowsStatus.SourceInconsistent,
-            inconsistentHistory.Status);
-        Assert.Null(inconsistentHistory.Page);
+            GetClientMembershipHistorySourceRowsStatus.Success,
+            preservedHistory.Status);
+        Assert.NotNull(preservedHistory.Page);
     }
 
     [PostgreSqlFact]
