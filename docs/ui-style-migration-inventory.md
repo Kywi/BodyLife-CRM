@@ -1,10 +1,11 @@
 # BodyLife CRM light UI migration inventory
 
 Date: 2026-07-22
+Updated: 2026-08-06 for completed Milestone 10.5 / ADR-018 UI scope.
 
 Status: functional UI migration implemented and behaviorally validated; visual fidelity rejected/pending
 
-Architecture impact: none; post-Milestone 10 presentation hardening
+Architecture impact: none; post-Milestone 10.5 presentation hardening
 
 ## Scope
 
@@ -18,12 +19,12 @@ coverage matrix for the structural rebuild and visual acceptance.
 
 | Area | Visual routes | Migrated surfaces |
 | --- | ---: | --- |
-| Reception | 1 | Dashboard, search/results, direct client creation, profile, membership, visit, payment, freeze, card and correction partials |
+| Reception | 1 | Dashboard, search/results, direct client creation, profile, membership, visit, payment, freeze, card and correction partials, including negative coverage and issued-sale correction |
 | Owner | 3 | Membership Types, Non-Working Days, Staff Accounts, including both NonWorkingDay preview/correction workspaces |
 | Reports | 5 | Daily, Ending Soon, Low Remaining, Negative Clients, Inactive Clients |
 | Audit | 2 | Audit Timeline and Client History |
 | Public/status | 4 | Login, Logout, AccessDenied and Error |
-| Total | 15 visual page files plus `/` alias | 16 visual route entries, 14 workflow partials and 5 shared composition partials |
+| Total | 15 visual page files plus `/` alias | 16 visual route entries, 16 workflow partials and 5 shared composition partials |
 
 `SetLanguage` remains a POST transport endpoint and has no visual page.
 
@@ -43,6 +44,22 @@ coverage matrix for the structural rebuild and visual acceptance.
   semantic surfaces, responsive shell and area-specific presentation.
 
 No external fonts, icons, image CDN or client-side visual framework was added.
+
+### Milestone 10.5 presentation additions
+
+- `_NegativeVisitCoveragePanel.cshtml` exposes leave-visible, one-off closure
+  and new-ordinary-Membership coverage without preselecting or recommending a
+  method, while preserving oldest-first Visits, exact Payments and correction
+  history.
+- `_IssuedMembershipSaleCorrectionForm.cshtml` owns reasoned cancel/replace of
+  one issued sale, including dependency preview, original/replacement exact
+  Payments and the explicit no-refund/no-delta boundary.
+- Ordinary issue no longer has an optional or editable sale payment, while
+  standalone Payment forms cannot stand in for a membership sale or negative
+  closure.
+- Daily report must keep canceled originals, replacements, entry origin and
+  drill-down links visible. Client History and Audit carry the full first-class
+  paper batch/sheet/row/event provenance exposed by their current read models.
 
 ## UX contract changes
 

@@ -1,6 +1,7 @@
 # План міграції візуальної відповідності UI
 
 Дата: 2026-07-22
+Оновлено: 2026-08-06 — додано UI-охоплення завершеного Milestone 10.5 / ADR-018.
 Статус: **in progress** — Phase 0 locked; Wave 1 is implemented and
 automatically validated but remains a candidate until explicit side-by-side
 product-owner approval. Waves 2–6 are not started.
@@ -164,16 +165,17 @@ Reports `/Reports/Daily`, `/Reports/EndingSoon`, `/Reports/LowRemaining`,
 page files and 16 visual route entries when `/` and `/Reception/Index` are
 independently verified.
 
-Workflow partial inventory (14): Reception (12) `_AddFreezeForm.cshtml`,
+Workflow partial inventory (16): Reception (14) `_AddFreezeForm.cshtml`,
 `_AddPaymentForm.cshtml`, `_CancelFreezeForm.cshtml`, `_CancelVisitForm.cshtml`,
 `_CardAssignmentForm.cshtml`, `_ClientProfile.cshtml`, `_CorrectPaymentForm.cshtml`,
 `_CreateClientForm.cshtml`, `_IssueMembershipForm.cshtml`, `_MarkVisitForm.cshtml`,
+`_NegativeVisitCoveragePanel.cshtml`, `_IssuedMembershipSaleCorrectionForm.cshtml`,
 `_ReceptionWorkspace.cshtml`, `_UpdateClientForm.cshtml`; Owner (2)
 `_NonWorkingDayPreviewWorkspace.cshtml`, `_NonWorkingDayCorrectionWorkspace.cshtml`.
 Shared composition partials (5) are `_Layout.cshtml`, `_AppNavigation.cshtml`,
 `_CurrentSession.cshtml`, `_LanguageSelector.cshtml` and `_Icon.cshtml`. The
-complete presentation inventory is therefore 14 workflow partials plus 5
-shared composition partials (19), enumerated row-by-row in the coverage matrix.
+complete presentation inventory is therefore 16 workflow partials plus 5
+shared composition partials (21), enumerated row-by-row in the coverage matrix.
 
 ## Waves and executable gates
 
@@ -186,9 +188,9 @@ before the relevant anchor composition is approved.
 | 0 | completed / locked | Lock the repository reference package and capture metadata; extract target tokens; update workflow/interaction docs with Activity and Attention contracts, navigation mapping, deterministic fixture and visual-test manifest. No production UI composition changes. | All 12 delivered artifact hashes match; capture metadata, contracts, typed failures and ownership were independently reviewed. |
 | 1 | awaiting product-owner approval | Implement the two read queries, shared shell/navigation and separate Reception Home anchor; Reports/Application/Infrastructure query files, `Pages/Shared/_Layout.cshtml`, `_AppNavigation.cshtml`, `_CurrentSession.cshtml`, root `Pages/Index.cshtml`, the direct-create entry on `/Reception/Index`, `site.css` and focused tests. | Automated query/PostgreSQL/Playwright gates pass and candidate captures are ready. Explicit side-by-side desktop/mobile approval is still required; rejection blocks Wave 2. |
 | 2 | not started | Search and direct-create anchors; likely `Index.cshtml`, `_ReceptionWorkspace.cshtml`, `_CreateClientForm.cshtml`, search/profile tests and CSS. | User approval of search/create desktop/mobile, contracts unchanged. |
-| 3 | not started | Profile, actions and Cancel Visit anchors; likely `_ClientProfile.cshtml`, action forms including `_CancelVisitForm.cshtml`, CSS and focused tests. | User approval of profile/cancel desktop/mobile; rejected anchor blocks later waves. |
+| 3 | not started | Profile, actions and Cancel Visit anchors, including ADR-018 exact ordinary sale, oldest-first negative coverage and issued-sale replace/cancel; likely `_ClientProfile.cshtml`, `_IssueMembershipForm.cshtml`, `_NegativeVisitCoveragePanel.cshtml`, `_IssuedMembershipSaleCorrectionForm.cshtml`, `_CancelVisitForm.cshtml`, CSS and focused tests. | User approval of profile/cancel/coverage/corrected-sale desktop/mobile; rejected anchor blocks later waves. |
 | 4 | not started | Owner surfaces and two NonWorkingDay workspaces. | Owner visual approval; exact confirmation/permission behavior preserved. |
-| 5 | not started | Reports, Audit, Client History and public/status pages. | User approval of representative desktop/phone routes and no loss of report/audit provenance. |
+| 5 | not started | Reports, Audit, Client History and public/status pages, including retained original/replacement sale and negative-coverage lifecycle rows. Daily keeps entry origin plus drill-down; Audit and Client History keep exact paper sheet/line/event provenance. | User approval of representative desktop/phone routes and no loss of report/audit provenance. |
 | 6 | not started | Dead CSS cleanup and all-route acceptance; likely shared CSS, all visual pages/partials and UI tests only where decisions require. | Matrix complete, no P0/P1 visual/a11y issue, product-owner sign-off. |
 
 Each wave runs focused unit/Web/PostgreSQL/Playwright checks for its changed

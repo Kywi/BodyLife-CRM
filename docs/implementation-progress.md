@@ -14713,3 +14713,65 @@ Stop point:
   restore and operational paper-fallback readiness, but it must begin as a
   separate step only after an explicit user request. Hosting-provider backup
   configuration and restore evidence remain intentionally pending.
+
+## Step 230 - Aligned the editable UI templates with Milestone 10.5
+
+Status: completed and validated for the review-only UI template lab. Production
+Razor behavior and the locked v1 visual references are unchanged; Milestone 11
+has not started.
+
+Completed:
+
+- Audited the editable `docs/ui-prototype/` templates against ADR-018, the
+  Milestone 10.5 interaction/UI contracts and the completed production Razor
+  surfaces. The migration inventory and fidelity matrix now cover 16 workflow
+  partials and explicitly retain the two Milestone 10.5 reception panels.
+- Updated ordinary membership issue to require an explicit active ordinary
+  type and create one read-only exact cash Payment in the same represented
+  sale. Removed optional/editable sale payment and disallowed membership-sale
+  or negative-closure contexts from the standalone Payment form.
+- Added tablet/phone review states for oldest-first negative Visit coverage,
+  issued-sale cancel/replace, immutable snapshots, dependency blockers,
+  mandatory reason/confirmation and no refund, extra-payment or cash-difference
+  calculation. Negative coverage offers no recommended or preselected method.
+- Aligned Membership Type templates with immutable `ordinary`/`one_off` kind,
+  positive prices and the one-Visit `one_off` invariant while presenting those
+  concepts with reception-friendly Ukrainian labels.
+- Extended Daily, Client History and Audit fixtures with retained original and
+  replacement facts, exact Payments, typed sale/coverage lifecycle actions and
+  consistent source ids. Negative-coverage correction remains same-method.
+  Daily shows entry origin plus drill-down; full paper sheet/row/event
+  provenance remains on Client History and Audit, matching the implemented read
+  models. No Milestone 11 paper-entry or reconciliation UI was invented.
+- Preserved the approved light palette, semantic blue/green/amber/red/violet
+  guidance and 44px touch targets. The 12 locked v1 reference artifacts were
+  not modified.
+- Independent review found four material contract inconsistencies in the first
+  pass: a cross-method coverage correction, reused immutable ids, overclaimed
+  Daily paper detail and a preselected issue type. All four were corrected; the
+  focused re-review found no remaining P0-P2 semantic or accessibility issue.
+
+Validation:
+
+- Bundled Node syntax validation passed for `docs/ui-prototype/assets/app.js`.
+- Strict static HTML contracts passed for all 16 template pages: parseability,
+  unique ids, ARIA references, local links/assets and landmark count.
+- Focused ADR-018 assertions passed for explicit issue selection, exact
+  read-only sale Payment, standalone Payment exclusions, unselected negative
+  coverage, Membership Type invariants, same-method correction, stable source
+  ids and page-appropriate paper provenance.
+- Headless Chromium checks passed at 1440px desktop, 1024px tablet and 390px
+  phone across seven routes/states. They found no console/page error or
+  horizontal overflow and confirmed at least 44px interactive targets on the
+  new reception/Owner controls.
+- All 12 locked-reference SHA-256 hashes and `git diff --check` passed.
+- `graphify . --update --no-viz` detected the 12 changed documentation files
+  but could not run semantic extraction because no supported LLM API key is
+  configured. It changed no tracked graph artifact; refresh remains pending
+  until a key is available.
+
+Stop point:
+
+- Use the corrected review-only templates for product feedback and future UI
+  migration Waves 3-5. Wave 1 remains a candidate awaiting explicit visual
+  approval. Start Milestone 11 only as a separate explicitly requested task.
