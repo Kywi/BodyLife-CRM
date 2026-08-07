@@ -221,6 +221,100 @@
     });
   }
 
+  // ADR-018 negative coverage is one deliberate method at a time. These are
+  // fixed review-copy lookups, not browser-owned membership calculations.
+  const negativeCoverage = document.querySelector('[data-negative-coverage]');
+  if (negativeCoverage) {
+    const actions = [...negativeCoverage.querySelectorAll('[data-negative-action]')];
+    const methodPanels = [...negativeCoverage.querySelectorAll('[data-negative-fields]')];
+    const previewSummary = negativeCoverage.querySelector('[data-negative-preview-summary]');
+    const previewDetail = negativeCoverage.querySelector('[data-negative-preview-detail]');
+    const previewButton = negativeCoverage.querySelector('[data-negative-preview-button]');
+    const oneOffType = negativeCoverage.querySelector('[data-negative-oneoff-type]');
+    const oneOffCount = negativeCoverage.querySelector('[data-negative-oneoff-count]');
+    const membershipType = negativeCoverage.querySelector('[data-negative-membership-type]');
+    const membershipCount = negativeCoverage.querySelector('[data-negative-membership-count]');
+
+    const setNegativePreview = (summary, detail, ready) => {
+      if (previewSummary) previewSummary.textContent = summary;
+      if (previewDetail) previewDetail.textContent = detail;
+      if (previewButton) previewButton.disabled = !ready;
+    };
+
+    const syncNegativeCoverage = () => {
+      const method = actions.find((control) => control.checked)?.value || '';
+      methodPanels.forEach((panel) => { panel.hidden = panel.dataset.negativeFields !== method; });
+      actions.forEach((control) => {
+        if (control.hasAttribute('aria-controls')) {
+          control.setAttribute('aria-expanded', String(control.value === method));
+        }
+      });
+
+      if (!method) {
+        setNegativePreview(
+          'Оберіть один із трьох варіантів вище.',
+          'Жоден метод або тип не рекомендовано й не обрано автоматично.',
+          false
+        );
+        return;
+      }
+      if (method === 'leave') {
+        setNegativePreview(
+          'Від’ємний залишок −2 не зміниться.',
+          'VIS-515 і VIS-519 залишаться відкритими та видимими в профілі й звіті.',
+          true
+        );
+        return;
+      }
+      if (method === 'oneoff') {
+        const count = oneOffCount?.value || '';
+        if (!oneOffType?.value || !count) {
+          setNegativePreview(
+            'Оберіть разовий тип і кількість візитів.',
+            'Платіж з’явиться лише після повного вибору; сума окремо не вводиться.',
+            false
+          );
+          return;
+        }
+        setNegativePreview(
+          count === '1'
+            ? 'Точний платіж 250 ₴ закриє VIS-515.'
+            : 'Точний платіж 500 ₴ закриє VIS-515 і VIS-519.',
+          count === '1'
+            ? 'VIS-519 залишиться відкритим; від’ємний залишок стане −1.'
+            : 'Обидва найстарші візити буде покрито; від’ємний залишок стане 0.',
+          true
+        );
+        return;
+      }
+
+      const count = membershipCount?.value || '';
+      if (!membershipType?.value || !count) {
+        setNegativePreview(
+          'Оберіть звичайний тип і кількість візитів.',
+          'Початок, точний платіж і результат з’являться після повного вибору.',
+          false
+        );
+        return;
+      }
+      setNegativePreview(
+        count === '1'
+          ? 'Новий абонемент покриє VIS-515 і матиме 7 занять.'
+          : 'Новий абонемент покриє VIS-515 і VIS-519 та матиме 6 занять.',
+        count === '1'
+          ? 'Старт 25.07.2026, точний платіж 900 ₴; VIS-519 залишиться відкритим.'
+          : 'Старт 25.07.2026, точний платіж 900 ₴, діє до 23.08.2026.',
+        true
+      );
+    };
+
+    actions.forEach((control) => control.addEventListener('change', syncNegativeCoverage));
+    [oneOffType, oneOffCount, membershipType, membershipCount]
+      .filter(Boolean)
+      .forEach((control) => control.addEventListener('change', syncNegativeCoverage));
+    syncNegativeCoverage();
+  }
+
   // Client action surface is intentionally one movable, non-persistent review fixture.
   // Only the default and exact-card states share the same fictional client snapshot.
   // No browser-side Membership formula or backend call exists here.

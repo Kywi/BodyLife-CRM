@@ -14775,3 +14775,37 @@ Stop point:
 - Use the corrected review-only templates for product feedback and future UI
   migration Waves 3-5. Wave 1 remains a candidate awaiting explicit visual
   approval. Start Milestone 11 only as a separate explicitly requested task.
+
+## Step 231 - Clarified negative Visit coverage choices in the editable templates
+
+Status: completed and validated for the review-only UI template lab. Production
+Razor behavior and the locked v1 visual references are unchanged; Milestone 11
+has not started.
+
+Completed:
+
+- Replaced the simultaneous ambiguous `Кількість` and `Кількість покриття`
+  controls with three explicit coverage choices. No method is preselected.
+- Show only the fields required by the selected method. Leaving Visits negative
+  adds no fields; one-off closure asks how many oldest Visits to close; ordinary
+  membership coverage asks how many oldest Visits to cover.
+- Named the affected oldest Visit ids directly in each count option and added a
+  deterministic consequence preview for the selected method, count and exact
+  fixture amount. This browser-only behavior demonstrates the contract and does
+  not calculate production business state.
+- Kept the approved semantic color guidance and at least 44px touch targets on
+  the three method choices at phone and tablet widths.
+
+Validation:
+
+- Bundled Node syntax validation and the focused static HTML/ARIA contract pass.
+- Headless Chromium interaction checks pass at 390x844 phone and 1024x768 tablet
+  widths for every method, conditional field visibility, disabled/incomplete
+  states, explicit Visit order, exact preview copy and horizontal overflow.
+- Focused screenshots were reviewed at both widths, and `git diff --check`
+  passes.
+
+Stop point:
+
+- The editable negative-coverage template is ready for product review. The
+  production Razor workflow remains unchanged, and Milestone 11 has not started.
