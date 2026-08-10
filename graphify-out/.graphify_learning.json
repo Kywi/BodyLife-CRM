@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-05T08:34:29.686515+00:00",
+  "generated_at": "2026-08-10T20:22:10.844375+00:00",
   "nodes": {
     "docs_adr_adr_backlog_adr_backlog_для_bodylife_crm": {
       "code_fingerprint": "8587e9f50a6bad2f1e3cf969b815bface8d14027062981a22c37c9c0693a4775",
@@ -12,7 +12,7 @@
           "q": "Сформувати accepted ADR package"
         }
       ],
-      "score": 0.514447547,
+      "score": 0.453145922,
       "source_file": "docs/adr/adr-backlog.md",
       "status": "tentative",
       "uses": 1
@@ -28,8 +28,24 @@
           "q": "Сформувати accepted ADR package"
         }
       ],
-      "score": 0.514447547,
+      "score": 0.453145922,
       "source_file": "docs/architecture-research-options.md",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_domain_model_bodylife_crm_domain_model": {
+      "code_fingerprint": "b7531bb5e5ea1e1cc1da4e13aad2820f0b0cbf7ee38a4fa3ac5489cd553082c8",
+      "label": "BodyLife CRM domain model",
+      "last": "2026-07-07T21:38:06.760175+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-07T21:38:06.760175+00:00",
+          "outcome": "useful",
+          "q": "На основі всіх post-ADR документів сформуй docs/implementation-roadmap.md"
+        }
+      ],
+      "score": 0.456416974,
+      "source_file": "docs/domain-model.md",
       "status": "tentative",
       "uses": 1
     },
@@ -44,7 +60,7 @@
           "q": "Зафіксувати всі погоджені правила продажу абонемента, погашення мінусових відвідувань, виправлення помилкового абонемента та внесення записів після збою"
         }
       ],
-      "score": 0.882009948,
+      "score": 0.776909548,
       "source_file": "docs/domain-model.md",
       "status": "tentative",
       "uses": 1
@@ -70,7 +86,7 @@
           "q": "Яка різниця між додати абонемент і у ньому зафіксувати оплату та додати платіж і підв'язати абонемент я шось не розумію"
         }
       ],
-      "score": 2.656103295,
+      "score": 2.339601741,
       "source_file": "docs/domain-model.md",
       "status": "preferred",
       "uses": 3
@@ -96,7 +112,7 @@
           "q": "Для чого ускладнювати оплати і як виконати оплату, коли є мінус по відвідуванням та клієнт закриває його разовими відвідуваннями?"
         }
       ],
-      "score": 2.654965815,
+      "score": 2.338599803,
       "source_file": "docs/domain-model.md",
       "status": "preferred",
       "uses": 3
@@ -122,7 +138,7 @@
           "q": "Для чого ускладнювати оплати і як виконати оплату, коли є мінус по відвідуванням та клієнт закриває його разовими відвідуваннями?"
         }
       ],
-      "score": 2.654965815,
+      "score": 2.338599803,
       "source_file": "docs/domain-model.md",
       "status": "preferred",
       "uses": 3
@@ -139,7 +155,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": -1.241937311,
+      "score": -1.093947927,
       "source_file": "docs/initial-context.txt",
       "status": "contested",
       "uses": 1,
@@ -156,7 +172,7 @@
           "q": "Редизайн сторінки Журнал аудиту в шаблоні BodyLife CRM як компактний Master-Detail з фільтрами, деталями та адаптивними картками"
         }
       ],
-      "score": 0.833464603,
+      "score": 0.734148871,
       "source_file": "docs/operations-design.md",
       "status": "tentative",
       "uses": 1
@@ -177,7 +193,7 @@
           "q": "Зафіксувати всі погоджені правила продажу абонемента, погашення мінусових відвідувань, виправлення помилкового абонемента та внесення записів після збою"
         }
       ],
-      "score": 1.775600528,
+      "score": 1.564019778,
       "source_file": "docs/operations-design.md",
       "status": "preferred",
       "uses": 2
@@ -193,7 +209,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.506058785,
+      "score": 0.445756766,
       "source_file": "docs/question-answering-interview.txt",
       "status": "tentative",
       "uses": 1
@@ -209,7 +225,7 @@
           "q": "Що прийняти в ADR-005?"
         }
       ],
-      "score": 0.506058785,
+      "score": 0.445756766,
       "source_file": "docs/question-answering-interview.txt",
       "status": "tentative",
       "uses": 1
@@ -225,10 +241,52 @@
           "q": "На основі всіх post-ADR документів сформуй docs/implementation-roadmap.md"
         }
       ],
-      "score": 0.518161107,
+      "score": 0.456416974,
       "source_file": "docs/technology-stack-decision.md",
       "status": "tentative",
       "uses": 1
+    },
+    "docs_ui_design_foundation_5_visual_language": {
+      "code_fingerprint": "2b12641c5206c6f9cb02df7ceb64fce26df6fe7b8be9a3e2a5b05a2182377095",
+      "label": "5. Visual language",
+      "last": "2026-07-17T09:48:47.834166+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-17T09:48:47.834166+00:00",
+          "outcome": "useful",
+          "q": "і давай перейдемо на світлу тему, бо темна для рецепції не кайф; перероби будь ласка і також щоб кольорова палітра не постраждала після переходу, її напевне теж потрібно буде змінити"
+        }
+      ],
+      "score": 0.568541807,
+      "source_file": "docs/ui-design-foundation.md",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docs_ui_design_foundation_bodylife_crm_ui_design_foundation": {
+      "code_fingerprint": "2b12641c5206c6f9cb02df7ceb64fce26df6fe7b8be9a3e2a5b05a2182377095",
+      "label": "BodyLife CRM UI design foundation",
+      "last": "2026-07-17T09:48:47.834166+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-17T09:48:47.834166+00:00",
+          "outcome": "useful",
+          "q": "і давай перейдемо на світлу тему, бо темна для рецепції не кайф; перероби будь ласка і також щоб кольорова палітра не постраждала після переходу, її напевне теж потрібно буде змінити"
+        },
+        {
+          "date": "2026-07-16T20:32:37.350856+00:00",
+          "outcome": "useful",
+          "q": "шо ти думаєш про шось таке?"
+        },
+        {
+          "date": "2026-07-16T20:11:45.190389+00:00",
+          "outcome": "useful",
+          "q": "мені не подобається поточний вигляд інтерфейсу, він не практичний та щоб наприклад додати нового клієнта потрібно виконати пошук і не знайти його, як на мене це з точки зору ux не правильно, які шаблони ти можеш запропонувти, щоб воно якось стильово ше виглядало. поки робимо чисто шаблони без змін коду"
+        }
+      ],
+      "score": 1.691003999,
+      "source_file": "docs/ui-design-foundation.md",
+      "status": "preferred",
+      "uses": 3
     },
     "docs_ui_workflows_reception_dashboard": {
       "code_fingerprint": "b559cd42c48b427c4863590398491c3bfe940cff9446b2f3469901f4f7823594",
@@ -246,10 +304,44 @@
           "q": "мені не подобається поточний вигляд інтерфейсу, він не практичний та щоб наприклад додати нового клієнта потрібно виконати пошук і не знайти його, як на мене це з точки зору ux не правильно, які шаблони ти можеш запропонувти, щоб воно якось стильово ше виглядало. поки робимо чисто шаблони без змін коду"
         }
       ],
-      "score": 1.274308988,
+      "score": 1.122462192,
       "source_file": "docs/ui-workflows.md",
       "status": "preferred",
       "uses": 2
+    },
+    "docs_vertical_slice_plan": {
+      "code_fingerprint": "8c9d8ad6c8fc2bfea25b7d94af4b9a3259dc95e2c988ccd4d9d29c7e1c8bfce5",
+      "label": "vertical-slice-plan.md",
+      "last": "2026-07-07T21:38:06.760175+00:00",
+      "provenance": [
+        {
+          "date": "2026-07-07T21:38:06.760175+00:00",
+          "outcome": "useful",
+          "q": "На основі всіх post-ADR документів сформуй docs/implementation-roadmap.md"
+        }
+      ],
+      "score": 0.456416974,
+      "source_file": "docs/vertical-slice-plan.md",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_bodylife_crm_web_pages_reception_receptionworkspace": {
+      "code_fingerprint": "03c783dad9ad45fa8e3e7025afdc3fd67b0a3251d998ad3eb4660d284b358b2e",
+      "label": "_ReceptionWorkspace.cshtml",
+      "last": "2026-08-10T20:08:18.097397+00:00",
+      "neg": 2,
+      "provenance": [
+        {
+          "date": "2026-08-10T20:08:18.097397+00:00",
+          "outcome": "useful",
+          "q": "добре я згоден починай виконання плану для міграції всіх шаблонів на погоджений current Home стиль"
+        }
+      ],
+      "score": -0.41998735,
+      "source_file": "src/BodyLife.Crm.Web/Pages/Reception/_ReceptionWorkspace.cshtml",
+      "status": "contested",
+      "uses": 1,
+      "verdict": "dead end"
     }
   },
   "version": 1
