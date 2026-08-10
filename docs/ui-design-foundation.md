@@ -1,25 +1,29 @@
 # BodyLife CRM UI design foundation
 
 Дата: 2026-07-09
-Оновлено: 2026-07-22
-Статус: accepted visual target specified; visual-fidelity migration not started
+Оновлено: 2026-08-10
+Статус: accepted editable-lab current-Home baseline; production visual-fidelity approval not yet proven
 
 Цей документ задає мінімальну design-system основу для BodyLife CRM v1. Він доповнює `docs/ui-workflows.md`: workflows описують, які screen/state/actions потрібні, а цей документ описує, як сторінки мають виглядати, повторюватися і поводитися на tablet/phone без хаотичної імпровізації.
 
-Locked reference package задає binding composition і visual direction, але
-pixel-diff не замінює workflow, accessibility або explicit user approval.
-Accepted ADR package у `docs/adr/` лишається вищим джерелом правди. Якщо цей
-документ конфліктує з ADR, перемагає ADR.
+Погоджений evolved Home у `docs/ui-prototype/index.html` задає binding
+composition для editable lab і міграції його шаблонів. Locked reference
+package лишається immutable historical/audit provenance, а не вимогою
+повернути відхилену ранню композицію. Pixel-diff не замінює workflow,
+accessibility або explicit production approval. Accepted ADR package у
+`docs/adr/` лишається вищим джерелом правди; якщо цей документ конфліктує з
+ADR, перемагає ADR.
 
 ## Current functional baseline and accepted target
 
 Поточна реалізація має функціональну та behavioral validation, але user не
 прийняв її як visual-fidelity реалізацію. Вона не є візуальним authority.
-Затверджений зовнішній reference package, його locked repository copy і
-`docs/ui-visual-fidelity-migration-plan.md` визначають accepted target,
-структурну композицію, migration waves та explicit visual approval. До
-завершення цього плану не називати поточний shell, palette або responsive
-composition accepted visual baseline.
+`docs/ui-prototype/index.html` визначає approved evolved composition для
+editable lab і подальшої template migration. Locked reference package та його
+repository copy залишаються immutable historical/audit provenance, а не вимогою
+повернути стару композицію. Production Razor target, waves і explicit visual
+approval визначає `docs/ui-visual-fidelity-migration-plan.md`; lab не є доказом
+production acceptance.
 
 ## 1. Product posture
 
@@ -45,8 +49,8 @@ UI implementation має читати документи в такому пор�
 2. Domain/data/interaction contracts for behavior, ownership, commands,
    queries, errors, authorization, time and canonical rereads.
 3. `docs/ui-workflows.md` for workflow behavior and required states.
-4. Locked approved visual reference package for composition and visual
-   direction.
+4. Approved evolved `docs/ui-prototype/index.html` composition for editable-lab
+   template work; locked references only for historical audit provenance.
 5. `docs/ui-visual-fidelity-migration-plan.md` and its coverage matrix for
    ordering, exact scope and acceptance.
 6. This document for shared semantic/accessibility constraints.
@@ -55,9 +59,9 @@ UI implementation має читати документи в такому пор�
 
 ## 3. Information hierarchy
 
-Reception Home follows the reference order: area/date and honest session
-context, `Activity now`, `Quick search` with direct `Create Client`, then
-`Today` metrics and attention warnings. Clients/Profile follows: selected
+Reception Home keeps `Activity now` focal; global header Search and direct
+`Create Client` are immediate entry points, while `Attention` and `Today` are
+context. Clients/Profile follows: selected
 identity, critical warnings, Membership state, allowed quick actions, Context
 and recent history. Secondary reports, audit and Owner tools remain reachable
 without crowding the primary four-item navigation.
@@ -66,14 +70,13 @@ Critical warnings must not be visually weaker than ordinary metadata. A compact 
 
 ## 4. Layout model
 
-Use the stable reference shell:
+Use the approved current-Home shell:
 
-- Compact rounded brand/navigation rail with the large transparent BodyLife
-  mark and Home/Clients/Report/History mapping from the migration plan.
-- Workspace context row with current area, Kyiv business date and honest
-  account/session/device information; do not add the current persistent utility
-  top bar back above the reference composition.
-- Reception Home: wide Activity card plus narrow Quick Search/Today rail.
+- Desktop navigation rail, sticky header with logo, global Search, direct
+  Create Client and honest account menu; tablet uses the drawer.
+- Workspace context carries current area, Kyiv date and accountable account;
+  device/session remains available from the menu.
+- Reception Home: wide Activity card plus narrow Attention/Today context rail.
 - Client/Profile: main identity/Membership/history column plus Quick
   actions/Context rail.
 - Report/Audit/Owner pages retain the same shell and use local secondary
@@ -81,7 +84,7 @@ Use the stable reference shell:
 
 Tablet is the primary reception target:
 
-- Use the reference two-area proportions when space allows; Home and Profile
+- Use the current-Home two-area proportions when space allows; Home and Profile
   have different content compositions but the same shell rhythm.
 - Keep the active client, warnings and primary actions in the first visible viewport.
 - Avoid wide empty marketing-like space; density should help repeated operational use.
@@ -105,7 +108,7 @@ Use a neutral operational base with semantic color accents:
 - Surfaces: white or very light neutral.
 - Text: high-contrast dark neutral, muted neutral for secondary metadata.
 - Border/divider: visible but quiet neutral.
-- Primary CTA: near-black reference treatment for the one dominant action.
+- Primary CTA: near-black current-Home treatment for the one dominant action.
 - Navigation/selection/focus/info: clear blue accent.
 - Success/active: green.
 - Warning/ending/low/zero: amber.
@@ -119,11 +122,11 @@ Status color is never the only signal. Pair color with icon/label/text such as `
 
 ## 6. Spacing, shape and typography
 
-Phase 0 extracts and locks the exact spacing, radius, typography and shell
-proportions from the approved HTML/PNG package. Until that token contract is
-approved, neither the current `site.css` values nor the old `8px or less`
-radius rule is a target. Implementation then uses the locked compact scale
-consistently rather than page-local guesses.
+Use the current-Home product tokens: warm-neutral/blue-gray canvas, graphite
+primary, check-in blue navigation/info, green success, amber review, red stop,
+violet Owner. Use 4px spacing, 10/16/18px control/card/popover radii, quiet
+translucent borders and one subtle-shadow elevation system. These templates
+must not create a parallel page-local palette.
 
 Invariant constraints:
 
@@ -133,10 +136,11 @@ Invariant constraints:
 
 Typography:
 
-- Use the font stack recorded in the reference manifest with a local/system
-  fallback; do not add an external runtime font dependency.
+- Use `Segoe UI Variable`, `Segoe UI`, then the local system fallback; do not
+  add an external runtime font dependency.
 - Do not scale font sizes with viewport width.
-- Do not use negative letter spacing.
+- Keep body copy at normal tracking; only page/panel headings may use the
+  restrained current-Home optical tightening recorded in the token system.
 - Use large type only for true page-level context, not inside compact cards/panels.
 - Align numeric values such as visits, money and dates for easy comparison.
 
@@ -275,9 +279,10 @@ Empty states should be operational, not promotional:
 
 Errors render near the action that caused them. `stale_state` and `concurrency_conflict` states should ask for refresh and keep the previous canonical state visible until the reread succeeds.
 
-## 11. Locked visual exemplars
+## 11. Editable-lab composition anchors
 
-Implement in stop/go order, never as one broad CSS pass:
+Use these review anchors to preserve the current-Home composition while pages
+are migrated:
 
 1. Reception Home desktop and phone.
 2. Client search/results desktop.
@@ -285,10 +290,11 @@ Implement in stop/go order, never as one broad CSS pass:
 4. Client Profile desktop and phone.
 5. expanded Cancel Visit desktop and phone.
 
-The exact eight reference files, hashes, migration waves and user approval
-rules are in `docs/ui-visual-fidelity-migration-plan.md`. Owner, Reports,
-Audit/History and public pages inherit only after the related anchor is
-explicitly approved.
+The former eight locked reference files and hashes remain recorded in
+`docs/ui-visual-fidelity-migration-plan.md` as historical delivery provenance.
+They may explain earlier decisions, but they are not an exact composition or
+pixel target for the editable lab. Production Razor acceptance remains a
+separate route/state gallery with explicit product-owner approval.
 
 ## 12. Implementation notes
 
@@ -348,8 +354,9 @@ rejected; none of these shell/layout/token choices is canonical target input.
 - State-changing buttons show busy/disabled state and prevent duplicate submits.
 - Destructive/correction actions require confirmation plus reason/comment when contracts require it.
 - Owner/shared account/session context is visible and honest.
-- Locked references, manifest hashes and deterministic capture metadata exist
-  in the repository before production UI writes.
+- Historical locked references, manifest hashes and deterministic capture
+  metadata remain unchanged for audit provenance; current-Home composition is
+  the editable-lab target.
 - Every route and partial row in the visual-fidelity matrix has evidence;
   anchors and the final gallery have explicit user/product-owner approval.
 - WCAG AA contrast, visible keyboard focus, 44x44 targets and zero blocking

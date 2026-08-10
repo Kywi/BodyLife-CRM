@@ -14809,3 +14809,64 @@ Stop point:
 
 - The editable negative-coverage template is ready for product review. The
   production Razor workflow remains unchanged, and Milestone 11 has not started.
+
+## Step 232 - Migrated the editable UI lab to the evolved current-Home system
+
+Status: completed and validated for all 16 review-only HTML templates.
+Production Razor pages, production visual-fidelity Wave statuses and Milestone
+11 are unchanged.
+
+Completed:
+
+- Recorded the accepted editable-lab contract in
+  `.interface-design/system.md`: a light operational desk canvas, restrained
+  paper surfaces, one quiet elevation ladder, near-black primary action,
+  check-in blue navigation/info, green success, amber review, red stop and
+  violet Owner/restricted context. Color always keeps a text/icon cue.
+- Applied one current-Home token layer and shared shell treatment across Home,
+  Clients/Profile, five Reports, Audit, Client History, three Owner pages and
+  four public/status pages. The transparent BodyLife logo, global Search,
+  direct Create Client, honest account menu, compact rail/drawer and phone
+  ordering remain consistent across the lab.
+- Added dedicated stateful CreateClient and CancelVisit anchors. CreateClient
+  is reachable without a failed search; its duplicate warning is an explicit
+  fixed server-response fixture and is never inferred from typed browser data.
+  CancelVisit requires reason and confirmation, retains the immutable original
+  fact, exposes a stale/conflict state and relabels the original as canceled in
+  the successful preview.
+- Preserved profile warnings, ADR-018 negative-coverage and issued-sale
+  correction context. On phone, Visit history now becomes labelled stacked
+  rows without hiding status/cancel actions; Daily uses labelled ledger cards
+  instead of a clipped horizontal table.
+- Updated the design foundation, migration plan, coverage matrix and lab README
+  so the evolved Home is the editable-template composition authority. The
+  locked v1 package remains immutable historical/hash provenance, not an exact
+  layout target. Real authenticated Razor routes still require their separate
+  route/state acceptance ledger and explicit product-owner approval.
+
+Validation:
+
+- Bundled Node syntax and strict static contracts passed for all 16 HTML pages:
+  parseability, unique ids, ARIA/local targets, local assets and one main
+  landmark per page.
+- Playwright Chromium passed the representative all-route matrix at 1440px,
+  1024x768 tablet and 390x844 phone with no console/page errors or horizontal
+  page overflow. A final focused pass verified direct Create navigation,
+  default/duplicate fixture gating, required acknowledgement, busy/success
+  focus, CancelVisit confirmation/history retention/status relabel, the Home
+  shell and Daily mobile ledger.
+- Two independent read-only review rounds closed the initial server-ownership,
+  anchor, authority and focus findings. The closure review reports no remaining
+  evidence-backed P0-P3 issue.
+- All 12 historical reference SHA-256 hashes and `git diff --check` pass.
+- The Graphify query result was saved to `graphify-out/memory`. Full semantic
+  `graphify . --update --no-viz` detected 15 changed documentation files but
+  could not extract them because no supported LLM API key is configured; it
+  changed no tracked graph artifact beyond the intentional query memory.
+
+Stop point:
+
+- Use the migrated editable templates for product review and as the agreed
+  composition contract for a later, separately authorized production Razor
+  migration. Do not mark production Waves 2-6 approved from static lab
+  evidence, and do not start Milestone 11 without a separate explicit request.

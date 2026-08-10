@@ -161,7 +161,9 @@
   window.addEventListener('hashchange', focusSearchContext);
   focusSearchContext();
 
-  const showCreatePreview = () => showDialog('Створити клієнта — лише візуальний review state. Жодна форма, команда або дані не існують у цьому прототипі.');
+  const showCreatePreview = () => {
+    window.location.href = './clients.html?state=create-client#client-create';
+  };
   document.querySelector('#create-client')?.addEventListener('click', showCreatePreview);
   document.querySelector('#search-form')?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -218,6 +220,70 @@
       panel.hidden = preserveDefault
         ? (!isDefault && panel.dataset.statePanel !== activeState)
         : panel.dataset.statePanel !== activeState;
+    });
+  }
+
+  // Direct CreateClient and CancelVisit are accessible review anchors. They use
+  // native form semantics, focus the result, and never calculate or persist
+  // business state in the browser.
+  const createClientPreview = document.querySelector('[data-create-client-preview]');
+  if (createClientPreview) {
+    const duplicate = createClientPreview.querySelector('[data-create-duplicate]');
+    const acknowledgement = createClientPreview.querySelector('[data-create-ack]');
+    const acknowledgementWrap = createClientPreview.querySelector('[data-create-acknowledgement]');
+    const live = createClientPreview.querySelector('.client-action-live');
+    const duplicateFixture = new URLSearchParams(window.location.search).get('fixture') === 'duplicate';
+    if (duplicate) duplicate.hidden = !duplicateFixture;
+    if (acknowledgementWrap) acknowledgementWrap.hidden = !duplicateFixture;
+    if (acknowledgement) acknowledgement.required = duplicateFixture;
+    createClientPreview.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!createClientPreview.reportValidity()) return;
+      const submit = createClientPreview.querySelector('button[type="submit"]');
+      if (!submit || submit.disabled) return;
+      const label = submit.textContent;
+      submit.disabled = true;
+      createClientPreview.setAttribute('aria-busy', 'true');
+      submit.textContent = 'Перевіряємо демо-стан…';
+      if (live) live.textContent = 'Дані перевіряються; у CRM це виконує серверна команда.';
+      window.setTimeout(() => {
+        createClientPreview.setAttribute('aria-busy', 'false');
+        submit.disabled = false;
+        submit.textContent = label;
+        if (live) {
+          live.textContent = 'Preview успішний: у CRM профіль відкрився б після canonical reread; цей lab нічого не записав.';
+          live.focus?.();
+        }
+      }, 320);
+    });
+  }
+  const cancelVisitPreview = document.querySelector('[data-cancel-visit-preview]');
+  if (cancelVisitPreview) {
+    const live = cancelVisitPreview.querySelector('.client-action-live');
+    const originalStatus = document.querySelector('[data-cancel-original-status]');
+    cancelVisitPreview.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!cancelVisitPreview.reportValidity()) return;
+      const submit = cancelVisitPreview.querySelector('button[type="submit"]');
+      if (!submit || submit.disabled) return;
+      const label = submit.textContent;
+      submit.disabled = true;
+      cancelVisitPreview.setAttribute('aria-busy', 'true');
+      submit.textContent = 'Скасовуємо демо-візит…';
+      if (live) live.textContent = 'Захищений preview виконується…';
+      window.setTimeout(() => {
+        cancelVisitPreview.setAttribute('aria-busy', 'false');
+        submit.disabled = false;
+        submit.textContent = label;
+        if (originalStatus) {
+          originalStatus.className = 'chip danger';
+          originalStatus.textContent = 'Скасовано · оригінал збережено';
+        }
+        if (live) {
+          live.textContent = 'Preview успішний: оригінальний VIS-510 лишився б в історії з міткою «скасовано» після серверного canonical reread.';
+          live.focus?.();
+        }
+      }, 360);
     });
   }
 

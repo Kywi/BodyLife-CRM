@@ -1,11 +1,34 @@
 # Матриця охоплення візуальної відповідності UI
 
 Дата: 2026-07-22
-Оновлено: 2026-08-06 — додано acceptance coverage для Milestone 10.5 / ADR-018.
+Оновлено: 2026-08-10 — editable-lab anchors aligned to the accepted evolved
+current-Home composition; production route statuses remain unchanged.
 Статус: **in progress — Wave 1 candidate awaiting product-owner approval**.
 Phase 0 is locked; Waves 2–6 are not started. Це acceptance ledger для плану
 `ui-visual-fidelity-migration-plan.md`; `approved` означає explicit side-by-side
 product-owner approval, не лише green automated tests.
+
+## Editable-lab migration inventory (non-acceptance)
+
+All 16 static HTML pages are in the current-Home system migration: Home;
+Clients/Profile; Daily, Ending soon, Low remaining, Negative clients and
+Inactive clients reports; Audit timeline; Client history; Membership types,
+Non-working days and Staff accounts Owner pages; Login, Access denied, Logged
+out and Error public states.
+`clients.html?state=create-client#client-create` is the direct CreateClient
+anchor (header and no-result reachable);
+`clients.html?state=cancel-visit#cancel-visit` is the CancelVisit anchor from an
+eligible history row, with
+`clients.html?state=cancel-visit-stale#cancel-visit-stale` preserving prior
+canonical context. This is template-lab
+coverage only: all existing production Wave statuses and approvals remain
+unchanged.
+
+Production acceptance compares each real authenticated Razor route/state with
+the evolved current-Home composition and its shared token contract. Locked
+PNGs remain immutable historical context and hash provenance; they are not an
+exact layout or pixel target for the editable lab or a substitute for explicit
+product-owner review.
 
 ## Обов'язкові осі для кожного route/partial row
 
@@ -21,16 +44,16 @@ product-owner approval, не лише green automated tests.
 
 ## Anchor acceptance ledger
 
-| Anchor | Reference | Required canonical state | Status | Required approval |
+| Anchor | Historical reference context | Required canonical state | Status | Required approval |
 | --- | --- | --- | --- | --- |
-| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | candidate — awaiting approval | User/product-owner side-by-side of the locked reference and `/tmp/bodylife-wave1-captures/wave1-home-tablet-1024x768-uk.png`; native-width diagnostic: `wave1-home-reference-desktop-736x526-uk.png` |
-| Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | not started | User/product-owner side-by-side |
-| Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | not started | User/product-owner side-by-side |
-| Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | not started | User/product-owner side-by-side |
-| Cancel Visit desktop | `branded-light-5-cancel-visit.png` 1104x861 | reason/confirmation, permission, stale/concurrency, canceled and backfill/fallback labels | not started | User/product-owner side-by-side |
-| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus Quick Search and Today | candidate — awaiting approval | User/product-owner side-by-side of the locked reference and `/tmp/bodylife-wave1-captures/wave1-home-phone-390x844-uk.png`; native-width diagnostic: `wave1-home-reference-phone-320x844-uk.png` |
-| Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | not started | User/product-owner side-by-side |
-| Cancel Visit phone | `branded-mobile-cancel.png` 480x1818 | expanded danger/correction card and keyboard/focus order | not started | User/product-owner side-by-side |
+| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | candidate — awaiting approval | User/product-owner comparison of the real Razor candidate with the evolved current-Home baseline at `1024x768`; locked capture is context only |
+| Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | not started | Current-Home composition + real canonical route/state gallery |
+| Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | not started | Current-Home composition + real canonical route/state gallery |
+| Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | not started | Dedicated current-Home anchor + real command states |
+| Cancel Visit desktop | `branded-light-5-cancel-visit.png` 1104x861 | reason/confirmation, permission, stale/concurrency, canceled and backfill/fallback labels | not started | Dedicated current-Home correction anchor + real command states |
+| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | candidate — awaiting approval | User/product-owner comparison of the real Razor candidate with the evolved current-Home baseline at `390x844`; locked capture is context only |
+| Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | not started | Current-Home single-column composition + real canonical states |
+| Cancel Visit phone | `branded-mobile-cancel.png` 480x1818 | expanded danger/correction card and keyboard/focus order | not started | Current-Home single-column correction anchor + real command states |
 
 ## Visual route ledger — 15 pages / 16 route entries
 
@@ -114,6 +137,8 @@ artifact paths in the Evidence column; `—` never means approved.
 - [ ] Assert contrast and no horizontal/page overflow for long labels and IDs.
 - [ ] Assert stable IDs, routes, input names, antiforgery, `hx-*` and `data-busy-*` contracts remain unchanged.
 - [ ] Mask volatile values; capture named artifact; use stable-region diff only as diagnostic.
-- [ ] Run behavioral checks; inspect side-by-side against locked reference at native and target viewport.
+- [ ] Run behavioral checks; compare against the evolved current-Home
+  composition at target viewports and use locked references only as historical
+  decision context.
 - [ ] Record evidence paths, review finding and P0/P1 result; P0/P1 must be zero.
 - [ ] Record anchor approval or final gallery product-owner approval before marking `approved`.
