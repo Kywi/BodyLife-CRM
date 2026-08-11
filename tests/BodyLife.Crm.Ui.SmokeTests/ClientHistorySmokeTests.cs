@@ -78,7 +78,7 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
                 viewportName,
                 "client history heading");
             await ExpectVisibleAsync(
-                page.GetByText(
+                page.Locator("details.account-menu .account-menu-summary-copy").GetByText(
                     useOwner ? "BodyLife Owner" : "Smoke Named Admin",
                     new() { Exact = true }),
                 viewportName,
@@ -543,7 +543,7 @@ public sealed class ClientHistorySmokeTests : IClassFixture<ReceptionAppFixture>
         string cardNumber,
         string displayName)
     {
-        await page.GetByRole(
+        await page.Locator("#reception-search").GetByRole(
                 AriaRole.Searchbox,
                 new() { Name = "Client search" })
             .FillAsync(cardNumber);

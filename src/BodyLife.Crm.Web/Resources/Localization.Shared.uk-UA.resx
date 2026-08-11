@@ -21,6 +21,12 @@
   <data name="Navigation.Home" xml:space="preserve"><value>Головна</value></data>
   <data name="Navigation.Clients" xml:space="preserve"><value>Клієнти</value></data>
   <data name="Navigation.History" xml:space="preserve"><value>Історія</value></data>
+  <data name="Navigation.OpenMenu" xml:space="preserve"><value>Відкрити меню навігації</value></data>
+  <data name="Navigation.CloseMenu" xml:space="preserve"><value>Закрити меню навігації</value></data>
+  <data name="Navigation.GlobalSearch" xml:space="preserve"><value>Пошук клієнтів</value></data>
+  <data name="Navigation.GlobalSearchPlaceholder" xml:space="preserve"><value>Картка, ім’я, телефон або останні 4 цифри</value></data>
+  <data name="Navigation.Search" xml:space="preserve"><value>Знайти</value></data>
+  <data name="Navigation.CreateClient" xml:space="preserve"><value>Створити клієнта</value></data>
   <data name="Home.Title" xml:space="preserve"><value>Рецепція</value></data>
   <data name="Home.BusinessDay" xml:space="preserve"><value>Поточний бізнес-день</value></data>
   <data name="Home.Activity" xml:space="preserve"><value>Активність зараз</value></data>
@@ -32,6 +38,7 @@
   <data name="Home.Search" xml:space="preserve"><value>Знайти клієнта</value></data>
   <data name="Home.Create" xml:space="preserve"><value>Створити клієнта</value></data>
   <data name="Home.Today" xml:space="preserve"><value>Сьогодні</value></data>
+  <data name="Home.Attention" xml:space="preserve"><value>Потребує уваги</value></data>
   <data name="Home.Visits" xml:space="preserve"><value>Візити</value></data>
   <data name="Home.Payments" xml:space="preserve"><value>Оплати</value></data>
   <data name="Home.Cash" xml:space="preserve"><value>Готівка</value></data>

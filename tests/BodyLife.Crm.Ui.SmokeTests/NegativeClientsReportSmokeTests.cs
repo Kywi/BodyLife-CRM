@@ -64,7 +64,8 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                 _app.LoginName,
                 _app.Password,
                 $"{viewportName} negative-clients report smoke");
-            await page.GetByRole(
+            var navigationDrawer = await AppNavigationTestHelper.OpenDrawerAsync(page);
+            await navigationDrawer.GetByRole(
                     AriaRole.Link,
                     new() { Name = "Reports", Exact = true })
                 .ClickAsync();

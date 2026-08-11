@@ -424,7 +424,15 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
         }
 
         var form = page.Locator($"form.language-selector-form:has(input[name='culture'][value='{culture}'])");
-        await form.Locator("button[type='submit']").ClickAsync();
+        var submit = form.Locator("button[type='submit']");
+        if (!await submit.IsVisibleAsync())
+        {
+            var accountMenu = page.Locator("details.account-menu");
+            Assert.Equal(1, await accountMenu.CountAsync());
+            await accountMenu.Locator("summary").ClickAsync();
+        }
+
+        await submit.ClickAsync();
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 

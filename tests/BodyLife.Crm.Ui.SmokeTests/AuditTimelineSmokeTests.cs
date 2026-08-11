@@ -1055,7 +1055,8 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 useOwner ? _app.Password : _app.AdminPassword,
                 $"{viewportName} audit timeline smoke");
 
-            var auditNavigation = page.GetByRole(
+            var navigationDrawer = await AppNavigationTestHelper.OpenDrawerAsync(page);
+            var auditNavigation = navigationDrawer.GetByRole(
                 AriaRole.Link,
                 new() { Name = "History", Exact = true });
             await AssertMinimumTouchTargetAsync(
@@ -1073,7 +1074,7 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                 viewportName,
                 "audit timeline heading");
             await ExpectVisibleAsync(
-                page.GetByLabel("Current session").GetByText(
+                page.Locator("details.account-menu .account-menu-summary-copy").GetByText(
                     useOwner ? "BodyLife Owner" : "Smoke Named Admin",
                     new() { Exact = true }),
                 viewportName,

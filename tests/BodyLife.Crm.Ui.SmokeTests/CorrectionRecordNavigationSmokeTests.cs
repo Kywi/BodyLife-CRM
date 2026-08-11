@@ -222,7 +222,7 @@ public sealed class CorrectionRecordNavigationSmokeTests
         string cardNumber,
         string displayName)
     {
-        await page.GetByRole(
+        await page.Locator("#reception-search").GetByRole(
                 AriaRole.Searchbox,
                 new() { Name = "Client search" })
             .FillAsync(cardNumber);

@@ -4,7 +4,6 @@
 @{
     var isLogoutRoute = Context.Request.Path.StartsWithSegments("/Logout");
     var isAuthenticated = RequestContextResolver.TryResolve(out _) && !isLogoutRoute;
-    var isHome = ViewData["IsHome"] as bool? == true;
 }
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.Name">
@@ -13,18 +12,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - BodyLife CRM</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @* Wave 1 compatibility layer. Remove the matching legacy shell rules from site.css as later routes migrate. *@
+    <link rel="stylesheet" href="~/css/production-shell.css" asp-append-version="true" />
 </head>
 <body class="@(isAuthenticated ? "app-body" : "public-body")">
     <a class="skip-link" href="#main-content">@SharedLocalizer["Navigation.SkipToMain"]</a>
     @if (isAuthenticated)
     {
-        <div class="app-frame">
+        <div class="app-frame production-app-frame">
+            <div class="app-drawer-scrim" data-drawer-scrim hidden></div>
             <partial name="_AppNavigation" />
             <div class="app-main-column">
-                @if (!isHome)
-                {
+                <header class="app-global-header">
+                    <button class="drawer-toggle"
+                            type="button"
+                            data-drawer-toggle
+                            aria-controls="app-navigation-drawer"
+                            aria-expanded="false">
+                        <span aria-hidden="true">☰</span>
+                        <span class="visually-hidden">@SharedLocalizer["Navigation.OpenMenu"]</span>
+                    </button>
+                    <a class="app-header-brand" asp-page="/Index">
+                        <img src="~/images/bodylife-logo.png" width="338" height="480" alt="@SharedLocalizer["Brand.LogoAlt"]" />
+                        <span>BodyLife CRM</span>
+                    </a>
+                    <form class="global-client-search" method="get" asp-page="/Reception/Index" role="search">
+                        <label class="visually-hidden" for="global-client-search">@SharedLocalizer["Navigation.GlobalSearch"]</label>
+                        <input id="global-client-search"
+                               name="q"
+                               type="search"
+                               maxlength="200"
+                               autocomplete="off"
+                               placeholder="@SharedLocalizer["Navigation.GlobalSearchPlaceholder"]" />
+                        <input name="mode" type="hidden" value="Auto" />
+                        <button type="submit" aria-label="@SharedLocalizer["Navigation.GlobalSearch"]">
+                            <partial name="_Icon" model='@("search")' />
+                            <span class="global-search-submit-label">@SharedLocalizer["Navigation.Search"]</span>
+                        </button>
+                    </form>
+                    <a class="button-link global-create-client" asp-page="/Reception/Index" asp-route-create="true">
+                        <partial name="_Icon" model='@("plus")' />
+                        <span>@SharedLocalizer["Navigation.CreateClient"]</span>
+                    </a>
                     <partial name="_CurrentSession" />
-                }
+                </header>
                 <div id="main-content" class="app-content" tabindex="-1">
                     @RenderBody()
                 </div>

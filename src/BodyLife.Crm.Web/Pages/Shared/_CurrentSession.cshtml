@@ -7,41 +7,30 @@
     var displayName = User.Identity?.Name ?? AccountTypeLabel(actor.AccountKind);
     var deviceLabel = actor.DeviceLabel ?? SharedLocalizer["Session.DeviceUnavailable"];
     var sessionId = actor.SessionId.Value.ToString("N")[..8];
-    var isHome = ViewData["IsHome"] as bool? == true;
-
-    @if (isHome)
-    {
-        <section class="top-context-bar home-session" aria-label="@SharedLocalizer["Session.Current"]">
-            <span class="home-session-account">
-                <partial name="_Icon" model='@("account")' />
+    <details class="account-menu" data-account-menu>
+        <summary aria-label="@SharedLocalizer["Session.Current"]">
+            <span class="account-menu-avatar" aria-hidden="true">@Initials(displayName)</span>
+            <span class="account-menu-summary-copy">
                 <strong>@displayName</strong>
-                <span aria-hidden="true">·</span>
-                @RoleLabel(actor.Role)
+                <span>@AccountTypeLabel(actor.AccountKind)</span>
             </span>
-            <span class="home-session-device">
-                <partial name="_Icon" model='@("device")' />
-                @deviceLabel
-                <span aria-hidden="true">·</span>
-                <span class="session-id">@SharedLocalizer["Session.Identifier", sessionId]</span>
-            </span>
-        </section>
-    }
-    else
-    {
-        <section class="top-context-bar" aria-label="@SharedLocalizer["Session.Current"]">
-            <div class="top-context-identity">
-                <partial name="_Icon" model='@("account")' />
-                <div>
-                    <span class="top-context-name">@displayName</span>
-                    <span class="top-context-account">@AccountTypeLabel(actor.AccountKind) / @RoleLabel(actor.Role)</span>
-                </div>
+            <span class="account-menu-marker" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="account-menu-popover">
+            <div class="account-menu-identity">
+                <strong>@displayName</strong>
+                <span>@AccountTypeLabel(actor.AccountKind) / @RoleLabel(actor.Role)</span>
             </div>
-            <div class="top-context-meta" aria-label="@SharedLocalizer["Session.CurrentAccountAndDevice"]">
+            <div class="account-menu-session" aria-label="@SharedLocalizer["Session.CurrentAccountAndDevice"]">
                 <span><partial name="_Icon" model='@("device")' /> @deviceLabel</span>
                 <span class="session-id">@SharedLocalizer["Session.Identifier", sessionId]</span>
             </div>
-        </section>
-    }
+            <partial name="_LanguageSelector" />
+            <form class="logout-form" asp-page="/Logout" method="post">
+                <button type="submit"><partial name="_Icon" model='@("logout")' /><span>@SharedLocalizer["Navigation.Logout"]</span></button>
+            </form>
+        </div>
+    </details>
 }
 
 @functions {
@@ -59,4 +48,9 @@
         ActorRole.Admin => SharedLocalizer["Role.Admin"],
         _ => SharedLocalizer["Role.Unknown"],
     };
+
+    private static string Initials(string name) => string.Concat(name
+        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        .Take(2)
+        .Select(part => char.ToUpperInvariant(part[0])));
 }

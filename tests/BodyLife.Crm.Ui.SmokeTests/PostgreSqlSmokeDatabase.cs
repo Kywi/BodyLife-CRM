@@ -59,6 +59,162 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         return new BodyLifeDbContext(optionsBuilder.Options);
     }
 
+    public async Task SeedMalformedReceptionActivityAsync(Guid actorAccountId)
+    {
+        var auditEntryId = Guid.NewGuid();
+        var recordedAt = DateTimeOffset.UtcNow;
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            with active_session as (
+                select id, device_label
+                from bodylife.sessions
+                where account_id = @actor_account_id
+                  and ended_at is null
+                order by started_at desc, id desc
+                limit 1
+            )
+            insert into bodylife.business_audit_entries (
+                id,
+                action_type,
+                entity_type,
+                entity_id,
+                related_entity_refs,
+                actor_account_id,
+                actor_account_type,
+                actor_role,
+                session_id,
+                device_label,
+                occurred_at,
+                recorded_at,
+                reason,
+                comment,
+                before_summary,
+                after_summary,
+                request_correlation_id,
+                entry_origin,
+                idempotency_key,
+                changed_after_close)
+            select
+                @audit_entry_id,
+                'visit.marked',
+                'visit',
+                @entity_id,
+                '{}'::jsonb,
+                account.id,
+                account.account_type,
+                account.role,
+                active_session.id,
+                active_session.device_label,
+                @recorded_at,
+                @recorded_at,
+                null,
+                null,
+                '{}'::jsonb,
+                '{}'::jsonb,
+                @request_correlation_id,
+                'normal',
+                @idempotency_key,
+                false
+            from bodylife.accounts account
+            cross join active_session
+            where account.id = @actor_account_id
+            """;
+        command.Parameters.AddWithValue("audit_entry_id", auditEntryId);
+        command.Parameters.AddWithValue("entity_id", Guid.NewGuid());
+        command.Parameters.AddWithValue("actor_account_id", actorAccountId);
+        command.Parameters.AddWithValue("recorded_at", recordedAt);
+        command.Parameters.AddWithValue(
+            "request_correlation_id",
+            $"ui-home-unavailable-{auditEntryId:N}");
+        command.Parameters.AddWithValue(
+            "idempotency_key",
+            $"ui-home-unavailable-{auditEntryId:N}");
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    public async Task SeedMissingReceptionAttentionCacheAsync()
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            with target as (
+                select cache.membership_id
+                from bodylife.membership_state_cache cache
+                join bodylife.issued_memberships membership
+                  on membership.id = cache.membership_id
+                where membership.status = 'active'
+                order by cache.membership_id
+                limit 1
+            )
+            delete from bodylife.membership_state_cache cache
+            using target
+            where cache.membership_id = target.membership_id
+            """;
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
+    public async Task SeedMalformedDailyVisitAsync(Guid actorAccountId)
+    {
+        var visitId = Guid.NewGuid();
+        var recordedAt = DateTimeOffset.UtcNow;
+
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            with active_session as (
+                select id
+                from bodylife.sessions
+                where account_id = @actor_account_id
+                  and ended_at is null
+                order by started_at desc, id desc
+                limit 1
+            ), existing_client as (
+                select id
+                from bodylife.clients
+                order by created_at, id
+                limit 1
+            )
+            insert into bodylife.visits (
+                id,
+                client_id,
+                occurred_at,
+                recorded_at,
+                recorded_by_account_id,
+                session_id,
+                visit_kind,
+                entry_origin,
+                entry_batch_id,
+                comment,
+                status)
+            select
+                @visit_id,
+                existing_client.id,
+                @recorded_at,
+                @recorded_at,
+                @actor_account_id,
+                active_session.id,
+                'membership',
+                'normal',
+                null,
+                'Malformed daily report UI fixture',
+                'active'
+            from active_session
+            cross join existing_client
+            """;
+        command.Parameters.AddWithValue("visit_id", visitId);
+        command.Parameters.AddWithValue("actor_account_id", actorAccountId);
+        command.Parameters.AddWithValue("recorded_at", recordedAt);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+    }
+
     public async Task<Guid> SeedMembershipTypeAsync(
         string name,
         int durationDays,

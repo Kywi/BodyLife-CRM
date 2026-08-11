@@ -248,7 +248,7 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         var responseTask = page.WaitForResponseAsync(response =>
             response.Request.Method == "GET"
             && response.Url.Contains("handler=Search", StringComparison.OrdinalIgnoreCase));
-        await page.GetByRole(AriaRole.Button, new() { Name = "Search" }).ClickAsync();
+        await page.Locator("#reception-search").GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }).ClickAsync();
         AssertHtmxResponse(await responseTask);
         await WaitForHtmxSettleAsync(page);
     }

@@ -56,7 +56,8 @@ public sealed class TechnicalLogCorrelationSmokeTests :
         {
             var page = await context.NewPageAsync();
             await LoginAsync(page);
-            await page.GetByRole(AriaRole.Link, new() { Name = "Staff accounts" })
+            var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
+            await ownerNavigation.GetByRole(AriaRole.Link, new() { Name = "Staff accounts", Exact = true })
                 .ClickAsync();
             await page.WaitForURLAsync("**/Owner/StaffAccounts");
 
@@ -148,6 +149,6 @@ public sealed class TechnicalLogCorrelationSmokeTests :
             .FillAsync("support correlation tablet");
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
-        await page.Locator("details.owner-tools > summary").ClickAsync();
+        await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
     }
 }

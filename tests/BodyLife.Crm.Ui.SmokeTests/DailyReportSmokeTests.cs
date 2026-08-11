@@ -60,7 +60,8 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
                 _app.Password,
                 $"{viewportName} daily report smoke");
 
-            var dailyReportLink = page.GetByRole(
+            var navigationDrawer = await AppNavigationTestHelper.OpenDrawerAsync(page);
+            var dailyReportLink = navigationDrawer.GetByRole(
                 AriaRole.Link,
                 new() { Name = "Reports", Exact = true });
             await ExpectVisibleAsync(

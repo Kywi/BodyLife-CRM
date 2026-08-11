@@ -69,15 +69,17 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             Assert.Equal("Reception - BodyLife CRM", await page.TitleAsync());
 
-            await ExpectVisibleAsync(page.GetByLabel("Current session"), viewportName, "current session shell");
-            await ExpectVisibleAsync(page.GetByText("BodyLife Owner"), viewportName, "current account display name");
-            await ExpectVisibleAsync(page.GetByText("Owner account / Owner"), viewportName, "current account type and role");
-            await ExpectVisibleAsync(page.GetByText(deviceLabel), viewportName, "current device label");
-            await ExpectVisibleAsync(page.GetByText("Session"), viewportName, "current session id");
-            await ExpectVisibleAsync(page.GetByRole(AriaRole.Button, new() { Name = "Log out" }), viewportName, "logout button");
+            var accountMenu = page.Locator("details.account-menu");
+            await ExpectVisibleAsync(accountMenu, viewportName, "current session shell");
+            await ExpectVisibleAsync(accountMenu.Locator(".account-menu-summary-copy").GetByText("BodyLife Owner", new() { Exact = true }), viewportName, "current account display name");
+            await accountMenu.Locator("summary").ClickAsync();
+            await ExpectVisibleAsync(accountMenu.Locator(".account-menu-popover").GetByText("Owner account / Owner", new() { Exact = true }), viewportName, "current account type and role");
+            await ExpectVisibleAsync(accountMenu.Locator(".account-menu-session").GetByText(deviceLabel, new() { Exact = true }), viewportName, "current device label");
+            await ExpectVisibleAsync(accountMenu.Locator(".account-menu-session").GetByText("Session", new() { Exact = false }), viewportName, "current session id");
+            await ExpectVisibleAsync(accountMenu.GetByRole(AriaRole.Button, new() { Name = "Log out", Exact = true }), viewportName, "logout button");
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Reception" }), viewportName, "reception heading");
-            await ExpectVisibleAsync(page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }), viewportName, "client search input");
-            await ExpectVisibleAsync(page.GetByRole(AriaRole.Button, new() { Name = "Search" }), viewportName, "search button");
+            await ExpectVisibleAsync(page.Locator("#reception-search").GetByRole(AriaRole.Searchbox, new() { Name = "Client search", Exact = true }), viewportName, "client search input");
+            await ExpectVisibleAsync(page.Locator("#reception-search").GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }), viewportName, "search button");
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Group, new() { Name = "Search mode" }), viewportName, "search mode control");
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Checkbox, new() { Name = "Include inactive" }), viewportName, "inactive-client control");
             var searchResults = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
@@ -100,11 +102,11 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "Reception should let the operator open client creation without first searching.");
             await initialCreatePanel.Locator("summary").ClickAsync();
             await AssertMinimumTouchTargetAsync(
-                page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }),
+                page.Locator("#reception-search").GetByRole(AriaRole.Searchbox, new() { Name = "Client search", Exact = true }),
                 viewportName,
                 "client search input");
             await AssertMinimumTouchTargetAsync(
-                page.GetByRole(AriaRole.Button, new() { Name = "Search" }),
+                page.Locator("#reception-search").GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }),
                 viewportName,
                 "search button");
             await AssertMinimumTouchTargetAsync(
@@ -1121,8 +1123,8 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 WaitUntil = WaitUntilState.NetworkIdle,
             });
             await LoginAsync(page, _app.LoginName, _app.Password, "no-js smoke");
-            await page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }).FillAsync("BL-1001");
-            await page.GetByRole(AriaRole.Button, new() { Name = "Search" }).ClickAsync();
+            await page.Locator("#reception-search").GetByRole(AriaRole.Searchbox, new() { Name = "Client search", Exact = true }).FillAsync("BL-1001");
+            await page.Locator("#reception-search").GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }).ClickAsync();
             await page.WaitForURLAsync("**?q=BL-1001**");
 
             Assert.Equal("Reception - BodyLife CRM", await page.TitleAsync());
@@ -1219,7 +1221,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         var responseTask = page.WaitForResponseAsync(response =>
             response.Request.Method == "GET"
             && response.Url.Contains("handler=Search", StringComparison.OrdinalIgnoreCase));
-        await page.GetByRole(AriaRole.Button, new() { Name = "Search" }).ClickAsync();
+        await page.Locator("#reception-search").GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }).ClickAsync();
         AssertHtmxResponse(await responseTask);
         await WaitForHtmxSettleAsync(page);
     }

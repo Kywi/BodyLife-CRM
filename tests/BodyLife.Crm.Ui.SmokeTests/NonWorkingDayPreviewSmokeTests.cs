@@ -54,7 +54,8 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 _app.LoginName,
                 _app.Password,
                 $"{viewportName} NonWorkingDay preview");
-            await page.GetByRole(
+            var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
+            await ownerNavigation.GetByRole(
                     AriaRole.Link,
                     new() { Name = "Non-working days", Exact = true })
                 .ClickAsync();
@@ -261,7 +262,8 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 _app.LoginName,
                 _app.Password,
                 $"{viewportName} NonWorkingDay confirmation");
-            await page.GetByRole(
+            var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
+            await ownerNavigation.GetByRole(
                     AriaRole.Link,
                     new() { Name = "Non-working days", Exact = true })
                 .ClickAsync();
@@ -515,7 +517,8 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 _app.LoginName,
                 _app.Password,
                 $"{viewportName} NonWorkingDay correction preview");
-            await page.GetByRole(
+            var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
+            await ownerNavigation.GetByRole(
                     AriaRole.Link,
                     new() { Name = "Non-working days", Exact = true })
                 .ClickAsync();
@@ -842,7 +845,8 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 _app.LoginName,
                 _app.Password,
                 $"{viewportName} NonWorkingDay correction confirmation");
-            await page.GetByRole(
+            var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
+            await ownerNavigation.GetByRole(
                     AriaRole.Link,
                     new() { Name = "Non-working days", Exact = true })
                 .ClickAsync();
@@ -1137,7 +1141,8 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 _app.LoginName,
                 _app.Password,
                 "tablet stale NonWorkingDay correction confirmation");
-            await page.GetByRole(
+            var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
+            await ownerNavigation.GetByRole(
                     AriaRole.Link,
                     new() { Name = "Non-working days", Exact = true })
                 .ClickAsync();
@@ -1245,7 +1250,7 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
                 "admin NonWorkingDay denial");
             Assert.Equal(
                 0,
-                await page.GetByRole(
+                await page.Locator("#app-navigation-drawer").GetByRole(
                         AriaRole.Link,
                         new() { Name = "Non-working days", Exact = true })
                     .CountAsync());
@@ -1300,7 +1305,7 @@ public sealed class NonWorkingDayPreviewSmokeTests : IClassFixture<ReceptionAppF
         await page.WaitForURLAsync("**/");
         if (string.Equals(loginName, _app.LoginName, StringComparison.Ordinal))
         {
-            await page.Locator("details.owner-tools > summary").ClickAsync();
+            await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
         }
         return page;
     }

@@ -68,7 +68,8 @@ public sealed class LowRemainingReportSmokeTests : IClassFixture<ReceptionAppFix
                 _app.LoginName,
                 _app.Password,
                 $"{viewportName} low-remaining report smoke");
-            await page.GetByRole(
+            var navigationDrawer = await AppNavigationTestHelper.OpenDrawerAsync(page);
+            await navigationDrawer.GetByRole(
                     AriaRole.Link,
                     new() { Name = "Reports", Exact = true })
                 .ClickAsync();

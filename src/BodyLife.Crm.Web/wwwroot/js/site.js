@@ -22,6 +22,150 @@ document.addEventListener("submit", (event) => {
   }
 });
 
+const drawer = document.querySelector("[data-app-drawer]");
+const drawerToggle = document.querySelector("[data-drawer-toggle]");
+const drawerScrim = document.querySelector("[data-drawer-scrim]");
+const drawerClose = document.querySelector("[data-drawer-close]");
+const appMainColumn = document.querySelector(".app-main-column");
+let drawerReturnFocus = null;
+
+const drawerFocusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "summary",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
+
+const getDrawerFocusables = () => {
+  if (!(drawer instanceof HTMLElement)) {
+    return [];
+  }
+
+  return Array.from(drawer.querySelectorAll(drawerFocusableSelector))
+    .filter((element) => {
+      if (!(element instanceof HTMLElement)
+        || element.closest("[hidden]")
+        || element.getClientRects().length === 0) {
+        return false;
+      }
+
+      const closedDetails = element.closest("details:not([open])");
+      return !(closedDetails instanceof HTMLDetailsElement)
+        || element === closedDetails.querySelector(":scope > summary");
+    });
+};
+
+const isDrawerViewport = () => window.matchMedia("(max-width: 1099px)").matches;
+
+const setDrawerState = (open) => {
+  if (!(drawer instanceof HTMLElement)
+    || !(drawerToggle instanceof HTMLButtonElement)
+    || !(drawerScrim instanceof HTMLElement)) {
+    return;
+  }
+
+  const useDrawer = isDrawerViewport();
+  const isOpen = useDrawer && open;
+  drawer.classList.toggle("is-open", isOpen);
+  drawerToggle.setAttribute("aria-expanded", String(isOpen));
+  drawerScrim.classList.toggle("is-open", isOpen);
+  drawerScrim.hidden = !isOpen;
+  drawer.inert = useDrawer && !isOpen;
+  if (appMainColumn instanceof HTMLElement) {
+    appMainColumn.inert = isOpen;
+  }
+  document.body.classList.toggle("drawer-open", isOpen);
+};
+
+const closeDrawer = (restoreFocus) => {
+  setDrawerState(false);
+  if (restoreFocus && drawerReturnFocus instanceof HTMLElement) {
+    drawerReturnFocus.focus();
+  }
+};
+
+if (drawerToggle instanceof HTMLButtonElement) {
+  drawerToggle.addEventListener("click", () => {
+    const willOpen = drawerToggle.getAttribute("aria-expanded") !== "true";
+    if (willOpen) {
+      drawerReturnFocus = drawerToggle;
+      setDrawerState(true);
+      getDrawerFocusables()[0]?.focus();
+    } else {
+      closeDrawer(true);
+    }
+  });
+}
+
+drawerScrim?.addEventListener("click", () => closeDrawer(true));
+drawerClose?.addEventListener("click", () => closeDrawer(true));
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && drawerToggle?.getAttribute("aria-expanded") === "true") {
+    event.preventDefault();
+    closeDrawer(true);
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Tab"
+    || drawerToggle?.getAttribute("aria-expanded") !== "true"
+    || !(drawer instanceof HTMLElement)) {
+    return;
+  }
+
+  const focusables = getDrawerFocusables();
+  if (focusables.length === 0) {
+    event.preventDefault();
+    return;
+  }
+
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  const activeElement = document.activeElement;
+
+  if (event.shiftKey && (activeElement === first || !drawer.contains(activeElement))) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && (activeElement === last || !drawer.contains(activeElement))) {
+    event.preventDefault();
+    first.focus();
+  }
+});
+
+window.addEventListener("resize", () => setDrawerState(false));
+setDrawerState(false);
+
+const accountMenus = document.querySelectorAll("details[data-account-menu]");
+
+document.addEventListener("click", (event) => {
+  for (const menu of accountMenus) {
+    if (menu instanceof HTMLDetailsElement && !menu.contains(event.target)) {
+      menu.open = false;
+    }
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape"
+    || drawerToggle?.getAttribute("aria-expanded") === "true") {
+    return;
+  }
+
+  for (const menu of accountMenus) {
+    if (!(menu instanceof HTMLDetailsElement) || !menu.open) {
+      continue;
+    }
+
+    event.preventDefault();
+    menu.open = false;
+    menu.querySelector("summary")?.focus();
+  }
+});
+
 for (const eventName of ["htmx:responseError", "htmx:sendError", "htmx:timeout"]) {
   document.addEventListener(eventName, (event) => {
     const requestElement = event.detail?.elt;

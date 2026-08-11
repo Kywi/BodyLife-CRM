@@ -15,9 +15,8 @@
 }
 <main class="page-shell home-page" aria-labelledby="home-title">
     <header class="home-context">
+        <p class="eyebrow">@L["Home.BusinessDay"]</p>
         <div class="home-title-line"><h1 id="home-title">@L["Home.Title"]</h1><p class="home-date-badge"><partial name="_Icon" model='@("calendar")' /> @Model.BusinessDate.ToString("d MMMM", culture) · @BusinessTimeZone.ConvertInstantToLocal(Model.Now).ToString("t", culture)</p></div>
-        <p class="home-business-day">@L["Home.BusinessDay"]</p>
-        <partial name="/Pages/Shared/_CurrentSession.cshtml" />
     </header>
     <div class="home-grid">
         <section class="home-activity card" aria-labelledby="activity-title">
@@ -72,26 +71,8 @@
             }
         </section>
         <aside class="home-rail">
-            <section class="card" aria-labelledby="quick-search-title">
-                <h2 id="quick-search-title"><partial name="_Icon" model='@("search")' /> @L["Home.QuickSearch"]</h2>
-                <form method="get" asp-page="/Reception/Index" role="search">
-                    <label class="visually-hidden" for="home-search">@L["Home.SearchLabel"]</label>
-                    <input id="home-search" name="q" type="search" maxlength="200" placeholder="@L["Home.SearchLabel"]" />
-                    <input name="mode" type="hidden" value="Auto" />
-                    <button type="submit">@L["Home.Search"]</button>
-                </form>
-                <a class="button-link home-create" asp-page="/Reception/Index" asp-route-create="true">@L["Home.Create"]</a>
-            </section>
-            <section class="card" aria-labelledby="today-title">
-                <div class="today-heading"><h2 id="today-title">@L["Home.Today"]</h2><a class="home-report-link" asp-page="/Reports/Daily">@L["Home.OpenReport"]</a></div>
-                @if (daily is null)
-                {
-                    <p class="status-message status-danger">@L["Home.Unavailable"]</p>
-                }
-                else
-                {
-                    <dl class="today-metrics"><div><dt>@L["Home.Visits"]</dt><dd>@daily.VisitCount</dd></div><div><dt>@L["Home.Payments"]</dt><dd>@daily.PaymentCount</dd></div><div><dt>@L["Home.Cash"]</dt><dd>@FormatMoney(daily.DailyCashSum.Amount, culture) @(daily.DailyCashSum.Currency == "UAH" ? "₴" : daily.DailyCashSum.Currency)</dd></div></dl>
-                }
+            <section class="card home-attention" aria-labelledby="attention-title">
+                <h2 id="attention-title">@L["Home.Attention"]</h2>
                 @if (attention is null)
                 {
                     <p class="status-message status-danger">@L["Home.Unavailable"]</p>
@@ -100,6 +81,17 @@
                 {
                     <p class="attention-warning"><partial name="_Icon" model='@("calendar")' /> <a asp-page="@AttentionRoute(attention.EndingSoonReportDestination)">@L["Home.EndingSoon", attention.EndingSoonMembershipCount]</a></p>
                     <p class="attention-danger"><partial name="_Icon" model='@("warning")' /> <a asp-page="@AttentionRoute(attention.NegativeClientsReportDestination)">@L["Home.Negative", attention.NegativeClientCount]</a></p>
+                }
+            </section>
+            <section class="card home-today" aria-labelledby="today-title">
+                <div class="today-heading"><h2 id="today-title">@L["Home.Today"]</h2><a class="home-report-link" asp-page="/Reports/Daily">@L["Home.OpenReport"]</a></div>
+                @if (daily is null)
+                {
+                    <p class="status-message status-danger">@L["Home.Unavailable"]</p>
+                }
+                else
+                {
+                    <dl class="today-metrics"><div><dt>@L["Home.Visits"]</dt><dd>@daily.VisitCount</dd></div><div><dt>@L["Home.Payments"]</dt><dd>@daily.PaymentCount</dd></div><div><dt>@L["Home.Cash"]</dt><dd>@FormatMoney(daily.DailyCashSum.Amount, culture) @(daily.DailyCashSum.Currency == "UAH" ? "₴" : daily.DailyCashSum.Currency)</dd></div></dl>
                 }
             </section>
         </aside>

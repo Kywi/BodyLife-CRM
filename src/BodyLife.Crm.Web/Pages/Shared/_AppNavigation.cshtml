@@ -15,25 +15,24 @@
     var nonWorkingDaysActive = path.StartsWithSegments("/Owner/NonWorkingDays");
     var staffAccountsActive = path.StartsWithSegments("/Owner/StaffAccounts");
 }
-<aside class="app-sidebar" aria-label="@SharedLocalizer["Navigation.Label"]">
-    <a class="sidebar-brand" asp-page="/Index">
-        <img src="~/images/bodylife-logo.png" width="338" height="480" alt="@SharedLocalizer["Brand.LogoAlt"]" />
-        <span>BodyLife CRM</span>
-    </a>
-
+<aside id="app-navigation-drawer" class="app-sidebar app-navigation-drawer" data-app-drawer aria-label="@SharedLocalizer["Navigation.Label"]">
+    <div class="drawer-heading">
+        <span>@SharedLocalizer["Navigation.Label"]</span>
+        <button type="button" data-drawer-close aria-label="@SharedLocalizer["Navigation.CloseMenu"]">×</button>
+    </div>
     <nav class="sidebar-navigation" aria-label="@SharedLocalizer["Navigation.Label"]">
         <section class="navigation-group" aria-labelledby="navigation-main">
             <h2 id="navigation-main">@SharedLocalizer["Navigation.Main"]</h2>
-            <a class="navigation-link @(homeActive ? "is-active" : null)" asp-page="/Index" aria-current="@(homeActive ? "page" : null)">
+            <a class="navigation-link @(homeActive ? "is-active" : null)" asp-page="/Index" aria-label="@SharedLocalizer["Navigation.Home"]" aria-current="@(homeActive ? "page" : null)">
                 <partial name="_Icon" model='@("home")' /><span>@SharedLocalizer["Navigation.Home"]</span>
             </a>
-            <a class="navigation-link @(receptionActive ? "is-active" : null)" asp-page="/Reception/Index" aria-current="@(receptionActive ? "page" : null)">
+            <a class="navigation-link @(receptionActive ? "is-active" : null)" asp-page="/Reception/Index" aria-label="@SharedLocalizer["Navigation.Clients"]" aria-current="@(receptionActive ? "page" : null)">
                 <partial name="_Icon" model='@("reception")' /><span>@SharedLocalizer["Navigation.Clients"]</span>
             </a>
-            <a class="navigation-link @(dailyReportActive ? "is-active" : reportsActive ? "is-section-active" : null)" asp-page="/Reports/Daily" aria-current="@(dailyReportActive ? "page" : reportsActive ? "location" : null)">
+            <a class="navigation-link @(dailyReportActive ? "is-active" : reportsActive ? "is-section-active" : null)" asp-page="/Reports/Daily" aria-label="@SharedLocalizer["Navigation.Reports"]" aria-current="@(dailyReportActive ? "page" : reportsActive ? "location" : null)">
                 <partial name="_Icon" model='@("reports")' /><span>@SharedLocalizer["Navigation.Reports"]</span>
             </a>
-            <a class="navigation-link @(auditActive ? "is-active" : historyActive ? "is-section-active" : null)" asp-page="/Audit/Timeline" aria-current="@(auditActive ? "page" : historyActive ? "location" : null)">
+            <a class="navigation-link @(auditActive ? "is-active" : historyActive ? "is-section-active" : null)" asp-page="/Audit/Timeline" aria-label="@SharedLocalizer["Navigation.History"]" aria-current="@(auditActive ? "page" : historyActive ? "location" : null)">
                 <partial name="_Icon" model='@("audit")' /><span>@SharedLocalizer["Navigation.History"]</span>
             </a>
         </section>
@@ -48,13 +47,13 @@
                     <span>@SharedLocalizer["Navigation.More"]</span>
                 </summary>
                 <div class="owner-tools-links">
-                <a class="navigation-link @(membershipTypesActive ? "is-active" : null)" asp-page="/Owner/MembershipTypes" aria-current="@(membershipTypesActive ? "page" : null)">
+                <a class="navigation-link @(membershipTypesActive ? "is-active" : null)" asp-page="/Owner/MembershipTypes" aria-label="@SharedLocalizer["Navigation.MembershipTypes"]" aria-current="@(membershipTypesActive ? "page" : null)">
                     <partial name="_Icon" model='@("membership")' /><span>@SharedLocalizer["Navigation.MembershipTypes"]</span>
                 </a>
-                <a class="navigation-link @(nonWorkingDaysActive ? "is-active" : null)" asp-page="/Owner/NonWorkingDays" aria-current="@(nonWorkingDaysActive ? "page" : null)">
+                <a class="navigation-link @(nonWorkingDaysActive ? "is-active" : null)" asp-page="/Owner/NonWorkingDays" aria-label="@SharedLocalizer["Navigation.NonWorkingDays"]" aria-current="@(nonWorkingDaysActive ? "page" : null)">
                     <partial name="_Icon" model='@("calendar")' /><span>@SharedLocalizer["Navigation.NonWorkingDays"]</span>
                 </a>
-                <a class="navigation-link @(staffAccountsActive ? "is-active" : null)" asp-page="/Owner/StaffAccounts" aria-current="@(staffAccountsActive ? "page" : null)">
+                <a class="navigation-link @(staffAccountsActive ? "is-active" : null)" asp-page="/Owner/StaffAccounts" aria-label="@SharedLocalizer["Navigation.StaffAccounts"]" aria-current="@(staffAccountsActive ? "page" : null)">
                     <partial name="_Icon" model='@("users")' /><span>@SharedLocalizer["Navigation.StaffAccounts"]</span>
                 </a>
                 </div>
@@ -62,10 +61,4 @@
         }
     </nav>
 
-    <div class="sidebar-footer">
-        <partial name="_LanguageSelector" />
-        <form class="logout-form" asp-page="/Logout" method="post">
-            <button class="navigation-link navigation-logout" type="submit"><partial name="_Icon" model='@("logout")' /><span>@SharedLocalizer["Navigation.Logout"]</span></button>
-        </form>
-    </div>
 </aside>

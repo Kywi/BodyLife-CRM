@@ -12,16 +12,73 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
         _app = app;
     }
 
+    [Fact]
+    public async Task PopulatedHomeRendersForEveryActorCultureAndTargetViewport()
+    {
+        await _app.EnsureReceptionHomeScenarioAsync();
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(
+            new BrowserTypeLaunchOptions { Headless = true });
+        var accounts = new[]
+        {
+            (Name: "owner", Login: _app.LoginName, Password: _app.Password),
+            (Name: "named-admin", Login: _app.AdminLoginName, Password: _app.AdminPassword),
+            (Name: "shared-reception", Login: _app.SharedAdminLoginName, Password: _app.SharedAdminPassword),
+        };
+        var cultures = new[] { "uk-UA", "en-US" };
+        var viewports = new[]
+        {
+            (Name: "tablet", Width: 1024, Height: 768),
+            (Name: "phone", Width: 390, Height: 844),
+        };
+
+        foreach (var account in accounts)
+        {
+            foreach (var culture in cultures)
+            {
+                foreach (var viewport in viewports)
+                {
+                    await using var context = await browser.NewContextAsync(
+                        new BrowserNewContextOptions
+                        {
+                            Locale = culture,
+                            ViewportSize = new ViewportSize
+                            {
+                                Width = viewport.Width,
+                                Height = viewport.Height,
+                            },
+                        });
+                    var page = await context.NewPageAsync();
+                    await page.GotoAsync(
+                        _app.BaseAddress.ToString(),
+                        new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+                    await LoginAsync(
+                        page,
+                        account.Login,
+                        account.Password,
+                        $"Home · populated · {account.Name} · {culture} · {viewport.Name}");
+
+                    Assert.Equal(culture, await page.Locator("html").GetAttributeAsync("lang"));
+                    Assert.Equal(5, await page.Locator(".home-activity .activity-list > li").CountAsync());
+                    Assert.Equal(2, await page.Locator(".home-attention a").CountAsync());
+                    Assert.Equal(3, await page.Locator(".home-today .today-metrics dd").CountAsync());
+                    Assert.Equal(0, await page.Locator(".home-page .status-message.status-danger").CountAsync());
+                    await AssertFitsViewportAsync(
+                        page,
+                        $"{account.Name} {culture} {viewport.Name}",
+                        "populated Home");
+                }
+            }
+        }
+    }
+
     [Theory]
-    [InlineData("tablet", 1024, 768, 76, 1)]
-    [InlineData("phone", 390, 844, 56, 1)]
-    [InlineData("reference-desktop", 736, 526, 76, 1.5)]
-    [InlineData("reference-phone", 320, 844, 56, 1.5)]
-    public async Task HomeMatchesTheApprovedReceptionAnchorAndKeepsItsWorkflowsReachable(
+    [InlineData("tablet", 1024, 768, 1)]
+    [InlineData("phone", 390, 844, 1)]
+    public async Task HomeMatchesTheCurrentHomeCandidateAndKeepsItsWorkflowsReachable(
         string viewportName,
         int width,
         int height,
-        int expectedLogoWidth,
         double deviceScaleFactor)
     {
         using var playwright = await Playwright.CreateAsync();
@@ -83,11 +140,11 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             1,
             await navigation.Locator("a[aria-current='page']").CountAsync());
 
-        var logo = page.Locator(".sidebar-brand img");
+        var logo = page.Locator(".app-header-brand img");
         await AssertVisibleAsync(logo, viewportName, "BodyLife logo");
         var logoBounds = await logo.BoundingBoxAsync();
         Assert.NotNull(logoBounds);
-        Assert.InRange(logoBounds.Width, expectedLogoWidth - 1, expectedLogoWidth + 1);
+        Assert.InRange(logoBounds.Width, 27, 29);
         Assert.True(
             logoBounds.Height > logoBounds.Width,
             $"{viewportName} logo should retain the supplied portrait mark.");
@@ -96,19 +153,25 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             await logo.GetAttributeAsync("src") ?? string.Empty,
             StringComparison.Ordinal);
 
-        var currentSession = page.Locator(".top-context-bar");
+        var currentSession = page.Locator("details.account-menu");
         await AssertVisibleAsync(
             currentSession,
             viewportName,
             "truthful current session");
+        Assert.Contains("Обліковий запис власника", await currentSession.InnerTextAsync(), StringComparison.Ordinal);
+        await currentSession.Locator("summary").ClickAsync();
         Assert.Contains(
             deviceLabel,
             await currentSession.InnerTextAsync(),
             StringComparison.Ordinal);
+        await currentSession.Locator("summary").ClickAsync();
+
+        await OpenDrawerAsync(page);
         await AssertVisibleAsync(
             page.Locator("details.owner-tools"),
             viewportName,
             "Owner tools disclosure");
+        await CloseDrawerAsync(page);
 
         var activityRows = page.Locator(".activity-list > li");
         Assert.Equal(5, await activityRows.CountAsync());
@@ -140,6 +203,27 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
         Assert.DoesNotContain("PaperFallback", activityText, StringComparison.Ordinal);
         Assert.Contains("Внесено", activityText, StringComparison.Ordinal);
         Assert.Contains("Подія", activityText, StringComparison.Ordinal);
+
+        var timestampContrast = await activityRows.First
+            .Locator(".activity-times")
+            .EvaluateAsync<double>(
+                """
+                element => {
+                  const channels = (color) => (color.match(/[\d.]+/g) ?? [])
+                    .slice(0, 3)
+                    .map((channel) => Number(channel) / 255);
+                  const luminance = (color) => channels(color)
+                    .map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+                    .reduce((total, channel, index) => total + channel * [0.2126, 0.7152, 0.0722][index], 0);
+                  const foreground = luminance(getComputedStyle(element).color);
+                  const background = luminance(getComputedStyle(element.closest('li')).backgroundColor);
+                  return (Math.max(foreground, background) + 0.05)
+                    / (Math.min(foreground, background) + 0.05);
+                }
+                """);
+        Assert.True(
+            timestampContrast >= 4.5,
+            $"{viewportName} Activity timestamps should meet WCAG AA contrast; actual ratio was {timestampContrast:F2}.");
 
         var provenanceRows = page.Locator(
             ".activity-list > li[data-entry-origin='ManualBackfill'], "
@@ -180,7 +264,7 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
                 scenario.NegativeClientId.ToString(),
                 StringComparison.OrdinalIgnoreCase));
 
-        var searchForm = page.Locator(".home-rail form[role='search']");
+        var searchForm = page.Locator("form.global-client-search");
         Assert.Equal("get", await searchForm.GetAttributeAsync("method"));
         Assert.Equal(
             "/Reception",
@@ -208,6 +292,7 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             viewportName,
             "negative-client attention destination");
 
+        await OpenDrawerAsync(page);
         await AssertMinimumTouchTargetsAsync(
             navigation.Locator("a.navigation-link"),
             viewportName,
@@ -216,16 +301,11 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             page.Locator("details.owner-tools > summary"),
             viewportName,
             "Owner tools");
+        await CloseDrawerAsync(page);
         await AssertMinimumTouchTargetAsync(
-            page.GetByRole(
-                AriaRole.Button,
-                new PageGetByRoleOptions
-                {
-                    Name = "Знайти клієнта",
-                    Exact = true,
-                }),
+            page.Locator(".global-client-search button"),
             viewportName,
-            "quick search");
+            "global search");
         await AssertMinimumTouchTargetAsync(
             page.GetByRole(
                 AriaRole.Link,
@@ -255,13 +335,7 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             viewportName,
             "daily report");
 
-        var searchButton = page.GetByRole(
-            AriaRole.Button,
-            new PageGetByRoleOptions
-            {
-                Name = "Знайти клієнта",
-                Exact = true,
-            });
+        var searchButton = page.Locator(".global-client-search button");
         await searchButton.FocusAsync();
         var outlineStyle = await searchButton.EvaluateAsync<string>(
             "element => getComputedStyle(element).outlineStyle");
@@ -275,21 +349,6 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             "() => document.activeElement instanceof HTMLElement && document.activeElement.blur()");
 
         await AssertFitsViewportAsync(page, viewportName, "Home");
-        if (width <= 720)
-        {
-            Assert.Equal(
-                "1",
-                await page.Locator(".app-frame").EvaluateAsync<string>(
-                    "element => getComputedStyle(element).gridTemplateColumns.split(' ').length.toString()"));
-            var sidebarBounds = await page.Locator(".app-sidebar").BoundingBoxAsync();
-            var homeBounds = await page.Locator(".home-page").BoundingBoxAsync();
-            Assert.NotNull(sidebarBounds);
-            Assert.NotNull(homeBounds);
-            Assert.True(
-                homeBounds.Y >= sidebarBounds.Y + sidebarBounds.Height,
-                "Phone Home should stack below its navigation card.");
-        }
-
         await PrepareDeterministicCaptureAsync(page, scenario.BusinessDate);
         await CaptureVisualAsync(page, viewportName, width, height);
 
@@ -313,16 +372,50 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             await page.Locator("#create-client-action-panel")
                 .EvaluateAsync<bool>("element => element.open"),
             "Direct client creation should open without a failed search.");
+        Assert.Equal(1, await page.Locator("#global-client-search").CountAsync());
+        Assert.Equal(1, await page.Locator("#client-search").CountAsync());
+
+        var fallbackQuery = $"wave1-no-match-{viewportName}";
+        await page.Locator("#global-client-search").FillAsync(fallbackQuery);
+        await page.Locator(".global-client-search button").ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        var fallbackUri = new Uri(page.Url);
+        Assert.Equal("/Reception", fallbackUri.AbsolutePath);
+        Assert.Contains("q=wave1-no-match", fallbackUri.Query, StringComparison.Ordinal);
+        Assert.Equal(fallbackQuery, await page.Locator("#client-search").InputValueAsync());
     }
 
     private async Task LoginAsync(IPage page, string deviceLabel)
     {
-        await page.Locator("#LoginName").FillAsync(_app.LoginName);
-        await page.Locator("#Password").FillAsync(_app.Password);
+        await LoginAsync(page, _app.LoginName, _app.Password, deviceLabel);
+    }
+
+    private static async Task LoginAsync(
+        IPage page,
+        string loginName,
+        string password,
+        string deviceLabel)
+    {
+        await page.Locator("#LoginName").FillAsync(loginName);
+        await page.Locator("#Password").FillAsync(password);
         await page.Locator("#DeviceLabel").FillAsync(deviceLabel);
         await page.Locator("form.auth-form button[type='submit']").ClickAsync();
         await page.WaitForURLAsync("**/");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
+    private static async Task OpenDrawerAsync(IPage page)
+    {
+        var toggle = page.Locator("[data-drawer-toggle]");
+        await toggle.ClickAsync();
+        Assert.Equal("true", await toggle.GetAttributeAsync("aria-expanded"));
+        await AssertVisibleAsync(page.Locator("[data-app-drawer].is-open"), "drawer", "open navigation drawer");
+    }
+
+    private static async Task CloseDrawerAsync(IPage page)
+    {
+        await page.Locator("[data-drawer-close]").ClickAsync();
+        Assert.Equal("false", await page.Locator("[data-drawer-toggle]").GetAttributeAsync("aria-expanded"));
     }
 
     private static async Task AssertVisibleClientAsync(
@@ -441,10 +534,19 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             new PageScreenshotOptions
             {
                 Animations = ScreenshotAnimations.Disabled,
-                FullPage = true,
+                FullPage = false,
                 Path = Path.Combine(
                     screenshotDirectory,
                     $"wave1-home-{viewportName}-{width}x{height}-uk.png"),
+            });
+        await page.ScreenshotAsync(
+            new PageScreenshotOptions
+            {
+                Animations = ScreenshotAnimations.Disabled,
+                FullPage = true,
+                Path = Path.Combine(
+                    screenshotDirectory,
+                    $"wave1-home-{viewportName}-full-{width}x{height}-uk.png"),
             });
     }
 }

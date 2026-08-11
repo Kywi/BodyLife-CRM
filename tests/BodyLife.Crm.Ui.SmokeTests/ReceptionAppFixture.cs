@@ -21,6 +21,8 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public const string SmokePassword = "correct horse battery";
     public const string SmokeAdminLoginName = "named.admin";
     public const string SmokeAdminPassword = "smoke admin password";
+    public const string SmokeSharedAdminLoginName = "shared.reception";
+    public const string SmokeSharedAdminPassword = "smoke shared password";
     public const string WorkflowCulture = "en-US";
     public const string NegativeCoverageTabletCard = "BL-NEG-COVER-TABLET";
     public const string NegativeCoveragePhoneCard = "BL-NEG-COVER-PHONE";
@@ -60,6 +62,10 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
     public string AdminLoginName => SmokeAdminLoginName;
 
     public string AdminPassword => SmokeAdminPassword;
+
+    public string SharedAdminLoginName => SmokeSharedAdminLoginName;
+
+    public string SharedAdminPassword => SmokeSharedAdminPassword;
 
     public Guid TabletEditableClientId { get; private set; }
 
@@ -640,6 +646,22 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
         }
     }
 
+    public Task SeedMalformedReceptionActivityAsync()
+    {
+        return RequireDatabase().SeedMalformedReceptionActivityAsync(
+            _ownerAccountId);
+    }
+
+    public Task SeedMissingReceptionAttentionCacheAsync()
+    {
+        return RequireDatabase().SeedMissingReceptionAttentionCacheAsync();
+    }
+
+    public Task SeedMalformedDailyVisitAsync()
+    {
+        return RequireDatabase().SeedMalformedDailyVisitAsync(_ownerAccountId);
+    }
+
     public Task<LowRemainingReportSmokeScenario> EnsureLowRemainingReportScenarioAsync()
     {
         lock (_lowRemainingReportSeedLock)
@@ -968,6 +990,12 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "Smoke Shared Reception");
         Assert.Equal(StaffAccountLifecycleStatus.Created, sharedAdminResult.Status);
         _sharedAdminAccountId = sharedAdminResult.AccountId!.Value;
+        var sharedCredentialsResult = await staffCredentialsService.SetStaffCredentialsAsync(
+            ownerEnvelope,
+            sharedAdminResult.AccountId.Value,
+            SmokeSharedAdminLoginName,
+            SmokeSharedAdminPassword);
+        Assert.Equal(StaffCredentialsStatus.Configured, sharedCredentialsResult.Status);
     }
 
     private static async Task<Guid> SeedMembershipTypesAsync(PostgreSqlSmokeDatabase database)

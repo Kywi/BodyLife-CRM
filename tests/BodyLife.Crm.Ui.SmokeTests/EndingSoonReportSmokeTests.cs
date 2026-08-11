@@ -60,7 +60,8 @@ public sealed class EndingSoonReportSmokeTests : IClassFixture<ReceptionAppFixtu
                 _app.LoginName,
                 _app.Password,
                 $"{viewportName} ending-soon report smoke");
-            await page.GetByRole(
+            var navigationDrawer = await AppNavigationTestHelper.OpenDrawerAsync(page);
+            await navigationDrawer.GetByRole(
                     AriaRole.Link,
                     new() { Name = "Reports", Exact = true })
                 .ClickAsync();

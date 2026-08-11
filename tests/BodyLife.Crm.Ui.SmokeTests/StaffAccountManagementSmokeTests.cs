@@ -52,7 +52,8 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
                 _app.LoginName,
                 _app.Password,
                 $"{viewportName} owner");
-            await page.GetByRole(AriaRole.Link, new() { Name = "Staff accounts" }).ClickAsync();
+            var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
+            await ownerNavigation.GetByRole(AriaRole.Link, new() { Name = "Staff accounts", Exact = true }).ClickAsync();
             await page.WaitForURLAsync("**/Owner/StaffAccounts");
 
             Assert.Equal("Staff accounts - BodyLife CRM", await page.TitleAsync());
@@ -197,7 +198,7 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
         await page.WaitForURLAsync("**/");
         if (string.Equals(loginName, _app.LoginName, StringComparison.Ordinal))
         {
-            await page.Locator("details.owner-tools > summary").ClickAsync();
+            await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
         }
     }
 

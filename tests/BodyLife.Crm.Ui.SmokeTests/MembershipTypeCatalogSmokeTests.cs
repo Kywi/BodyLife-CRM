@@ -48,7 +48,8 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
         {
             var page = await context.NewPageAsync();
             await LoginAsync(page, _app.LoginName, _app.Password, $"{viewportName} catalog owner");
-            await page.GetByRole(AriaRole.Link, new() { Name = "Membership types" }).ClickAsync();
+            var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
+            await ownerNavigation.GetByRole(AriaRole.Link, new() { Name = "Membership types", Exact = true }).ClickAsync();
             await page.WaitForURLAsync("**/Owner/MembershipTypes");
 
             Assert.Equal("Membership types - BodyLife CRM", await page.TitleAsync());
@@ -154,7 +155,7 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
 
             Assert.Equal(
                 0,
-                await page.GetByRole(AriaRole.Link, new() { Name = "Membership types" }).CountAsync());
+                await page.Locator("#app-navigation-drawer").GetByRole(AriaRole.Link, new() { Name = "Membership types", Exact = true }).CountAsync());
 
             await page.GotoAsync(new Uri(_app.BaseAddress, "/Owner/MembershipTypes").ToString());
 
@@ -200,7 +201,7 @@ public sealed class MembershipTypeCatalogSmokeTests : IClassFixture<ReceptionApp
         await page.WaitForURLAsync("**/");
         if (string.Equals(loginName, _app.LoginName, StringComparison.Ordinal))
         {
-            await page.Locator("details.owner-tools > summary").ClickAsync();
+            await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
         }
     }
 

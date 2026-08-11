@@ -56,7 +56,8 @@ public sealed class MembershipTypeEditingSmokeTests : IClassFixture<ReceptionApp
         {
             var page = await context.NewPageAsync();
             await LoginAsync(page, $"{viewportName} catalog editing");
-            await page.GetByRole(AriaRole.Link, new() { Name = "Membership types" }).ClickAsync();
+            var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
+            await ownerNavigation.GetByRole(AriaRole.Link, new() { Name = "Membership types", Exact = true }).ClickAsync();
             await page.WaitForURLAsync("**/Owner/MembershipTypes");
 
             var form = await OpenEditFormAsync(page, membershipTypeId);
@@ -271,7 +272,7 @@ public sealed class MembershipTypeEditingSmokeTests : IClassFixture<ReceptionApp
         await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
         await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
         await page.WaitForURLAsync("**/");
-        await page.Locator("details.owner-tools > summary").ClickAsync();
+        await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
     }
 
     private static async Task ExpectVisibleAsync(
