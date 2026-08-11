@@ -3,8 +3,9 @@
 Дата: 2026-07-22
 Оновлено: 2026-08-11 — current-Home is the authorized production migration
 target; the earlier production Wave 1 composition is superseded.
-Статус: **Wave 0 completed; Wave 1 not started**. Waves 2–6 are blocked by
-their preceding anchor approvals. Це acceptance ledger для плану
+Статус: **Wave 0 completed; Wave 1 candidate awaiting explicit product-owner
+approval**. Waves 2–6 are blocked by their preceding anchor approvals. Це
+acceptance ledger для плану
 `ui-visual-fidelity-migration-plan.md`; `approved` означає explicit side-by-side
 product-owner approval, не лише green automated tests.
 
@@ -46,12 +47,12 @@ product-owner review.
 
 | Anchor | Historical reference context | Required canonical state | Status | Required approval |
 | --- | --- | --- | --- | --- |
-| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | not started — earlier candidate superseded | User/product-owner comparison of the new real Razor candidate with the evolved current-Home baseline at `1024x768`; locked capture is context only |
+| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | candidate — automated gates green; approval pending | `/tmp/bodylife-production-wave1-candidate/wave1-home-tablet-1024x768-uk.png`; user/product-owner comparison with the evolved current-Home baseline at `1024x768` still required |
 | Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | not started | Current-Home composition + real canonical route/state gallery |
 | Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | not started | Current-Home composition + real canonical route/state gallery |
 | Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | not started | Dedicated current-Home anchor + real command states |
 | Cancel Visit desktop | `branded-light-5-cancel-visit.png` 1104x861 | reason/confirmation, permission, stale/concurrency, canceled and backfill/fallback labels | not started | Dedicated current-Home correction anchor + real command states |
-| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | not started — earlier candidate superseded | User/product-owner comparison of the new real Razor candidate with the evolved current-Home baseline at `390x844`; locked capture is context only |
+| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | candidate — automated gates green; approval pending | `/tmp/bodylife-production-wave1-candidate/wave1-home-phone-390x844-uk.png`; user/product-owner comparison with the evolved current-Home baseline at `390x844` still required |
 | Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | not started | Current-Home single-column composition + real canonical states |
 | Cancel Visit phone | `branded-mobile-cancel.png` 480x1818 | expanded danger/correction card and keyboard/focus order | not started | Current-Home single-column correction anchor + real command states |
 
@@ -65,8 +66,8 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Route | Wave | Actors | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- | --- |
-| `/` (separate Reception Home) | 1 | Owner, named Admin, shared Admin | dashboard default/empty/loading/success; Activity and Attention unavailable; exact Home active state | not started — earlier candidate superseded | New current-Home `ReceptionHomeSmokeTests` target captures and explicit approval required |
-| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale; exact sale Payment, oldest-first negative coverage, sale replace/cancel and their validation/permission/blocker states | not started | Existing direct `?create=true` behavior is the functional baseline; visual shell/search/create/profile waves remain pending |
+| `/` (separate Reception Home) | 1 | Owner, named Admin, shared Admin | dashboard default/empty/loading/success; Activity and Attention unavailable; exact Home active state | candidate — approval pending | PostgreSQL-backed populated/empty/Activity-Attention-Today unavailable matrix, target captures and zero-P0–P3 closure review; explicit approval still required |
+| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale; exact sale Payment, oldest-first negative coverage, sale replace/cancel and their validation/permission/blocker states | Wave 1 shell candidate; Waves 2–3 not started | Global Search fallback/direct Create and unique ids verified; route-local Search/Create/Profile visual migration remains pending |
 | `/Owner/MembershipTypes` | 4 | Owner; Admin denial | empty/catalog/create/edit/deactivate/validation/permission; immutable `ordinary`/`one_off` kind, positive price, one-off visit limit 1; long bilingual names | not started | — |
 | `/Owner/NonWorkingDays` | 4 | Owner; Admin denial | empty/list/preview/confirmation/affected-scope-changed/expired-token/correct/cancel/success | not started | — |
 | `/Owner/StaffAccounts` | 4 | Owner; Admin denial | empty/list/create/activate/deactivate/credentials/validation/permission; named/shared labels | not started | — |
@@ -108,11 +109,33 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Partial | Wave | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- |
-| `_Layout.cshtml` | 1, 5 | authenticated/public shells; skip link; main landmarks; no overflow | not started — earlier candidate superseded | New Home authenticated shell evidence required; public-shell final gallery remains Wave 5 |
-| `_AppNavigation.cshtml` | 1, 4–5 | Home/Clients/Report/History mapping; exact/location state; Owner tools; logout | not started — earlier candidate superseded | New rail/drawer active-state, Owner disclosure and keyboard evidence required |
-| `_CurrentSession.cshtml` | 1 | Owner/named/shared labels; fixed/masked long session/device ids; phone order | not started — earlier candidate superseded | New account-menu evidence for Owner, named Admin and shared Reception/Admin required |
-| `_LanguageSelector.cshtml` | 1, 5 | uk-UA/en-US; long labels; POST success/failure; keyboard/focus | not started — earlier candidate superseded | New account/drawer placement plus localization regression evidence required |
-| `_Icon.cshtml` | 1–5 | local sprite, accessible labels where needed, semantic color not sole signal | not started — earlier candidate superseded | New Home/navigation icon slice required; later waves extend coverage |
+| `_Layout.cshtml` | 1, 5 | authenticated/public shells; skip link; main landmarks; no overflow | Wave 1 authenticated candidate; public final pending Wave 5 | Authenticated tablet/phone shell plus Login/AccessDenied/Error no-regression matrix passed |
+| `_AppNavigation.cshtml` | 1, 4–5 | Home/Clients/Report/History mapping; exact/location state; Owner tools; logout | Wave 1 candidate | Rail/drawer exact/location states, Owner denial, inert/overlay/Escape/forward-reverse focus loop passed |
+| `_CurrentSession.cshtml` | 1 | Owner/named/shared labels; fixed/masked long session/device ids; phone order | candidate — approval pending | Owner, named Admin and shared Reception/Admin account-menu identity/device/session evidence passed |
+| `_LanguageSelector.cshtml` | 1, 5 | uk-UA/en-US; long labels; POST success/failure; keyboard/focus | Wave 1 authenticated candidate; public final pending Wave 5 | Authenticated account-menu placement and full localization regression passed |
+| `_Icon.cshtml` | 1–5 | local sprite, accessible labels where needed, semantic color not sole signal | Wave 1 Home/navigation slice candidate | Local sprite, visible semantic labels and contrast checks passed; later waves extend route coverage |
+
+## Wave 1 candidate evidence — 2026-08-11
+
+- Real Razor/PostgreSQL captures:
+  `/tmp/bodylife-production-wave1-candidate/wave1-home-tablet-1024x768-uk.png`
+  and
+  `/tmp/bodylife-production-wave1-candidate/wave1-home-phone-390x844-uk.png`.
+- `ReceptionHomeSmokeTests` covers the populated canonical Home, exact
+  provenance, workflow reachability, rendered timestamp contrast and the full
+  actor/culture/viewport default matrix.
+- `ReceptionHomeStateSmokeTests` covers all three actor kinds, both cultures
+  and both target viewports, then independently forces Activity, Attention and
+  Today fail-closed states through an isolated real PostgreSQL fixture.
+- `UiStyleCoverageSmokeTests` covers drawer/account keyboard behavior, role
+  navigation, Search contracts, public Login/AccessDenied/Error regression,
+  target sizes, semantic contrast and overflow.
+- The complete authenticated Playwright regression suite passes 140/140; its
+  pre-existing route tests now navigate through the responsive drawer and
+  scope Reception Search/account-menu assertions to their canonical islands.
+- Independent closure review found zero P0–P3 issues. This makes Wave 1 a
+  candidate, not approved; Wave 2 remains blocked until the product owner
+  accepts the two populated anchor captures.
 
 ## Superseded production candidate evidence
 

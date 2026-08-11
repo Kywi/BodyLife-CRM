@@ -2,7 +2,8 @@
 
 Дата: 2026-07-22
 Оновлено: 2026-08-11
-Статус: **production migration authorized; Wave 0 completed; Wave 1 not started**.
+Статус: **production migration authorized; Wave 0 completed; Wave 1 candidate
+awaiting explicit product-owner approval; Wave 2 blocked**.
 
 ## Product decision and reset point
 
@@ -165,7 +166,8 @@ mandatory Wave 1 prerequisite rather than simulated evidence.
 
 ### Wave 1 — canonical system, authenticated shell and Home
 
-Status: **not started**.
+Status: **candidate on 2026-08-11; automated gates green; explicit
+product-owner approval pending**.
 
 Owned production surface:
 
@@ -193,6 +195,27 @@ Login/AccessDenied/Error composition is structurally deferred to Wave 5; run
 tablet/phone no-regression renders for that untouched branch whenever shared
 CSS or script loading changes.
 
+Candidate evidence:
+
+- the authenticated Razor shell uses the current-Home rail/drawer, sticky
+  Search/Create/account header and the existing server-owned Home reads;
+- populated Home is exercised for Owner, named Admin and shared
+  Reception/Admin in `uk-UA` and `en-US` at `1024x768` and `390x844`;
+- a separate PostgreSQL-backed matrix exercises honest Activity empty, Activity
+  unavailable, Attention unavailable and Today unavailable branches for the
+  same actor/culture/viewport matrix;
+- drawer focus containment/return, account Escape, overlay close, exact and
+  location navigation, unique Search ids, direct Create, ordinary GET fallback,
+  44px targets, rendered AA contrast and no horizontal overflow are automated;
+- the complete authenticated Playwright regression suite passes 140/140 after
+  its route locators were aligned with the responsive drawer and distinct
+  Search/account islands;
+- candidate captures are under `/tmp/bodylife-production-wave1-candidate/`;
+  the stable populated anchors are
+  `wave1-home-tablet-1024x768-uk.png` and
+  `wave1-home-phone-390x844-uk.png`;
+- independent closure review reports zero remaining P0–P3 findings.
+
 Stop/go:
 
 - build, focused query tests and production Playwright pass with PostgreSQL;
@@ -202,8 +225,9 @@ Stop/go:
 - authenticated navigation asserts exact Home and Clients states, exact and
   section `/Reports/*` states, exact Timeline and Client History location state,
   plus Owner-tool visibility/denial across the applicable actors;
-- default/empty/unavailable Home states render honestly for all applicable
-  actors and both cultures at `1024x768` and `390x844`;
+- populated/empty and independently unavailable Activity, Attention and Today
+  states render honestly for all applicable actors and both cultures at
+  `1024x768` and `390x844`;
 - no P0/P1 independent-review finding;
 - product owner approves the real Home tablet/phone candidate. Rejection keeps
   Wave 2 blocked and reopens only Wave 1.

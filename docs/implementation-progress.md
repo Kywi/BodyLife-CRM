@@ -14917,3 +14917,70 @@ Stop point:
   rail/drawer/header/account composition and the real Home candidate. Obtain
   PostgreSQL-backed Owner/named Admin/shared Reception evidence at tablet and
   phone, then stop for product-owner approval before Reception Search/Create.
+
+## Step 234 - Implemented the current-Home production Wave 1 candidate
+
+Status: candidate completed on 2026-08-11. Automated gates and independent
+review are green; explicit product-owner approval is pending. Production Wave
+2 remains blocked and Milestone 11 remains unchanged.
+
+Completed:
+
+- Migrated the authenticated Razor shell to the approved current-Home system:
+  compact desktop rail, accessible tablet/phone drawer, sticky global
+  Search/Create/account header, honest Owner/named Admin/shared
+  Reception/Admin identity, device/session disclosure, language POST and
+  logout POST.
+- Added a scoped canonical production token layer with the approved
+  warm-neutral canvas, graphite text, semantic blue/green/amber/red/violet,
+  4px spacing scale, restrained depth and minimum 44px operational controls.
+  Legacy route CSS remains behind the compatibility layer until its final
+  consumer migrates.
+- Re-composed the real Home around server-owned Activity as the focal surface
+  with separate Attention and Today context. Existing
+  `GetReceptionActivity`, `GetReceptionAttentionSummary` and
+  `GenerateDailyReport` contracts, provenance, links and fail-closed behavior
+  were retained.
+- Added an ordinary GET global Search with a distinct
+  `#global-client-search`, preserved the Reception htmx `#client-search`, and
+  kept direct Create Client reachable through the existing authorized server
+  workflow without a failed search.
+- Added accessible drawer inert/overlay behavior, forward/reverse Tab
+  containment, Escape/close focus return, account-menu Escape return and
+  reduced-motion handling. Darkened amber/tertiary metadata and explicitly
+  migrated Activity timestamps to AA-safe text contrast.
+- Added deterministic PostgreSQL-backed Home evidence: the populated state and
+  Activity empty/unavailable, Attention unavailable and Today unavailable for
+  Owner, named Admin and shared Reception/Admin in `uk-UA`/`en-US` at
+  `1024x768` and `390x844`. Public Login/AccessDenied/Error remained a
+  no-regression surface for this wave.
+
+Validation:
+
+- Release solution build passed with zero warnings and errors; Node syntax,
+  XML resources and `git diff --check` passed.
+- Focused Web tests passed 378/378. Focused PostgreSQL Reception Activity and
+  Daily Report query tests passed 10/10.
+- PostgreSQL-backed Playwright passed the populated Home matrix, the full
+  actor/culture/viewport fail-closed state matrix, shared shell/navigation,
+  direct Search/Create, localization and public-shell checks. Candidate
+  screenshots are under `/tmp/bodylife-production-wave1-candidate/`.
+- The complete authenticated Playwright regression suite passed 140/140 after
+  the legacy route tests were scoped to the new responsive drawer, account
+  menu and distinct Reception Search island.
+- The corrected Graphify migration path was saved and reflected. The local
+  code-only rebuild was attempted twice but returned `[Errno 95] Operation not
+  supported`; the semantic update detected 17 changed documents and stopped
+  without an available LLM API key, so no stale topology was presented as
+  validation evidence.
+- Independent closure review reports zero remaining P0–P3 findings and marks
+  the automated candidate ready for product review.
+
+Stop point:
+
+- Show
+  `/tmp/bodylife-production-wave1-candidate/wave1-home-tablet-1024x768-uk.png`
+  and
+  `/tmp/bodylife-production-wave1-candidate/wave1-home-phone-390x844-uk.png`
+  to the product owner. Do not start Wave 2 Reception Search/Create or mark
+  Wave 1 approved until that explicit visual decision is recorded.
