@@ -1,16 +1,17 @@
 # BodyLife CRM UI design foundation
 
 Дата: 2026-07-09
-Оновлено: 2026-08-10
-Статус: accepted editable-lab current-Home baseline; production visual-fidelity approval not yet proven
+Оновлено: 2026-08-11
+Статус: accepted current-Home production migration target; real Razor wave acceptance remains evidence-gated
 
 Цей документ задає мінімальну design-system основу для BodyLife CRM v1. Він доповнює `docs/ui-workflows.md`: workflows описують, які screen/state/actions потрібні, а цей документ описує, як сторінки мають виглядати, повторюватися і поводитися на tablet/phone без хаотичної імпровізації.
 
-Погоджений evolved Home у `docs/ui-prototype/index.html` задає binding
-composition для editable lab і міграції його шаблонів. Locked reference
-package лишається immutable historical/audit provenance, а не вимогою
-повернути відхилену ранню композицію. Pixel-diff не замінює workflow,
-accessibility або explicit production approval. Accepted ADR package у
+Погоджений evolved Home у `docs/ui-prototype/index.html` і повний inventory
+`docs/ui-prototype/` задають binding composition для production Razor
+міграції, авторизованої 2026-08-11. Locked reference package лишається
+immutable historical/audit provenance, а не вимогою повернути відхилену ранню
+production композицію. Pixel-diff не замінює workflow, accessibility або
+explicit acceptance кожної real Razor wave. Accepted ADR package у
 `docs/adr/` лишається вищим джерелом правди; якщо цей документ конфліктує з
 ADR, перемагає ADR.
 
@@ -19,11 +20,11 @@ ADR, перемагає ADR.
 Поточна реалізація має функціональну та behavioral validation, але user не
 прийняв її як visual-fidelity реалізацію. Вона не є візуальним authority.
 `docs/ui-prototype/index.html` визначає approved evolved composition для
-editable lab і подальшої template migration. Locked reference package та його
-repository copy залишаються immutable historical/audit provenance, а не вимогою
-повернути стару композицію. Production Razor target, waves і explicit visual
-approval визначає `docs/ui-visual-fidelity-migration-plan.md`; lab не є доказом
-production acceptance.
+production migration. Locked reference package та його repository copy
+залишаються immutable historical/audit provenance, а не вимогою повернути стару
+композицію. Production waves і explicit visual approval визначає
+`docs/ui-visual-fidelity-migration-plan.md`; static lab є design authority, але
+не доказом коректності майбутнього Razor rendering.
 
 ## 1. Product posture
 
@@ -49,8 +50,8 @@ UI implementation має читати документи в такому пор�
 2. Domain/data/interaction contracts for behavior, ownership, commands,
    queries, errors, authorization, time and canonical rereads.
 3. `docs/ui-workflows.md` for workflow behavior and required states.
-4. Approved evolved `docs/ui-prototype/index.html` composition for editable-lab
-   template work; locked references only for historical audit provenance.
+4. Approved evolved `docs/ui-prototype/` composition for production template
+   migration; locked references only for historical audit provenance.
 5. `docs/ui-visual-fidelity-migration-plan.md` and its coverage matrix for
    ordering, exact scope and acceptance.
 6. This document for shared semantic/accessibility constraints.
@@ -356,7 +357,8 @@ rejected; none of these shell/layout/token choices is canonical target input.
 - Owner/shared account/session context is visible and honest.
 - Historical locked references, manifest hashes and deterministic capture
   metadata remain unchanged for audit provenance; current-Home composition is
-  the editable-lab target.
+  the authorized production migration target, while the static lab itself is
+  not acceptance evidence.
 - Every route and partial row in the visual-fidelity matrix has evidence;
   anchors and the final gallery have explicit user/product-owner approval.
 - WCAG AA contrast, visible keyboard focus, 44x44 targets and zero blocking

@@ -45,11 +45,11 @@ active, disabled, busy and reduced-motion states use this system.
 Authenticated pages use the desktop rail plus sticky header with logo, global
 search, direct Create Client and an honest account menu. Tablet uses a drawer;
 phone becomes one column. The account role remains text-visible at 390px and
-the device/session detail remains in the menu. Review-only controls and banner
-are compact and subordinate, but public-safe disclosure and state access stay
-available. The `check-in signal` is a semantic left rail/status strip on
-Activity, search/results/profile context, report/history/audit rows and
-important action contexts.
+the device/session detail remains in the menu. Review-only controls, demo
+banner, fixture state links and fixture role switch belong only to the static
+lab and do not ship in production. The `check-in signal` is a semantic left
+rail/status strip on Activity, search/results/profile context,
+report/history/audit rows and important action contexts.
 
 ## State requirements
 
@@ -63,7 +63,10 @@ context remain visible.
 
 ## Baseline note
 
-`docs/ui-prototype/index.html` is the approved evolved **editable-lab**
-composition baseline for the current Home and remaining template migration.
-Locked references remain immutable historical/audit inputs only. This does not
-approve production Razor visuals or any production Wave.
+`docs/ui-prototype/index.html` and the complete `docs/ui-prototype/` inventory
+are the approved evolved composition baseline for the production Razor
+migration authorized on 2026-08-11. Locked references remain immutable
+historical/audit inputs only; the earlier production sidebar/top-context/Quick
+Search candidate is a functional baseline, not the visual target. Each real
+Razor anchor still requires PostgreSQL-backed tablet/phone evidence and explicit
+product-owner acceptance before the following migration wave begins.

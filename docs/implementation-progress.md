@@ -14870,3 +14870,50 @@ Stop point:
   composition contract for a later, separately authorized production Razor
   migration. Do not mark production Waves 2-6 approved from static lab
   evidence, and do not start Milestone 11 without a separate explicit request.
+
+## Step 233 - Authorized and planned the current-Home production UI migration
+
+Status: completed for planning and baseline evidence. Production Wave 1 code
+has not started; Milestone 11 remains unchanged.
+
+Completed:
+
+- Recorded the product decision that the evolved current-Home template system
+  is the production migration target. The earlier production
+  sidebar/top-context/Quick Search candidate remains a functional baseline but
+  is superseded as a visual composition and is not approved.
+- Mapped all 16 static template pages to 15 production page files / 16 visual
+  route entries, 16 workflow partials, five shared composition partials,
+  localization resources and the existing smoke/integration test families.
+- Replaced the stale migration ledger with an executable six-wave plan:
+  shared shell/Home; Search/Create; Profile/actions; Owner; Reports/Audit/
+  public; legacy CSS retirement and final all-route acceptance. Each wave now
+  has exact invariants, likely files, states, roles, viewports, stop/go,
+  rollback and explicit product-approval gates.
+- Locked the global/reception Search composition decision: production global
+  Search uses a distinct id and ordinary GET fallback while the existing
+  Reception htmx island and its stable selectors remain unchanged. Direct
+  Create remains server permission-aware.
+- Ran independent architecture, route/state and risk reviews. They identified
+  the duplicate-search-id risk, missing shared Reception/Admin account-menu
+  coverage and hard-coded assertions tied to the rejected candidate; all are
+  explicit Wave 1 gates.
+
+Validation:
+
+- `dotnet build BodyLife.Crm.sln --no-restore --nologo` passed with zero
+  warnings and errors before production UI writes.
+- The approved static Home target rendered successfully at `1024x768` and
+  `390x844`. The focused real-Razor Playwright fixture could not start because
+  `BODYLIFE_TEST_POSTGRES_ADMIN_CONNECTION_STRING` is absent; no screenshot was
+  treated as production evidence.
+- Graphify was queried first for the production/template mapping. The generic
+  query path was insufficient, so the plan uses verified Razor, partial, CSS,
+  test and template evidence from the bounded reviews.
+
+Stop point:
+
+- Begin only production Wave 1: canonical shared tokens, authenticated
+  rail/drawer/header/account composition and the real Home candidate. Obtain
+  PostgreSQL-backed Owner/named Admin/shared Reception evidence at tablet and
+  phone, then stop for product-owner approval before Reception Search/Create.
