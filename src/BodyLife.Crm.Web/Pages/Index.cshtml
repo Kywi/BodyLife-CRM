@@ -56,14 +56,14 @@
                                 @if (item.EntryOrigin != EntryOrigin.Normal) { <span class="activity-meta-info">· @L[$"Home.Origin.{item.EntryOrigin}"]</span> }
                                 @if (item.ChangedAfterClose) { <span class="activity-meta-warning">· @L["Home.ChangedAfterClose"]</span> }
                             </span>
+                            <span class="activity-times">
+                                <span class="activity-recorded-at">@L["Home.RecordedAt"] <time datetime="@item.RecordedAt.ToString("O")">@BusinessTimeZone.ConvertInstantToLocal(item.RecordedAt).ToString("t", culture)</time></span>
+                                @if (item.EntryOrigin != EntryOrigin.Normal)
+                                {
+                                    <span class="activity-occurred-at">@L["Home.OccurredAt"] <time datetime="@item.OccurredAt.ToString("O")">@BusinessTimeZone.ConvertInstantToLocal(item.OccurredAt).ToString("t", culture)</time></span>
+                                }
+                            </span>
                         </div>
-                        <span class="activity-times">
-                            <span class="activity-recorded-at">@L["Home.RecordedAt"] <time datetime="@item.RecordedAt.ToString("O")">@BusinessTimeZone.ConvertInstantToLocal(item.RecordedAt).ToString("t", culture)</time></span>
-                            @if (item.EntryOrigin != EntryOrigin.Normal)
-                            {
-                                <span class="activity-occurred-at">@L["Home.OccurredAt"] <time datetime="@item.OccurredAt.ToString("O")">@BusinessTimeZone.ConvertInstantToLocal(item.OccurredAt).ToString("t", culture)</time></span>
-                            }
-                        </span>
                         <a class="activity-open" asp-page="/Reception/Index" asp-route-clientId="@item.ClientId">@L["Home.OpenClient"]</a>
                     </li>
                 }

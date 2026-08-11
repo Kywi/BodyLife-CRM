@@ -12,7 +12,7 @@
             <span class="account-menu-avatar" aria-hidden="true">@Initials(displayName)</span>
             <span class="account-menu-summary-copy">
                 <strong>@displayName</strong>
-                <span>@AccountTypeLabel(actor.AccountKind)</span>
+                <span>@CompactAccountTypeLabel(actor.AccountKind)</span>
             </span>
             <span class="account-menu-marker" aria-hidden="true">⌄</span>
         </summary>
@@ -47,6 +47,14 @@
         ActorRole.Owner => SharedLocalizer["Role.Owner"],
         ActorRole.Admin => SharedLocalizer["Role.Admin"],
         _ => SharedLocalizer["Role.Unknown"],
+    };
+
+    private string CompactAccountTypeLabel(AccountKind accountKind) => accountKind switch
+    {
+        AccountKind.Owner => SharedLocalizer["AccountKind.OwnerCompact"],
+        AccountKind.NamedAdmin => SharedLocalizer["AccountKind.NamedAdminCompact"],
+        AccountKind.SharedReceptionAdmin => SharedLocalizer["AccountKind.SharedReceptionAdminCompact"],
+        _ => SharedLocalizer["AccountKind.UnknownCompact"],
     };
 
     private static string Initials(string name) => string.Concat(name

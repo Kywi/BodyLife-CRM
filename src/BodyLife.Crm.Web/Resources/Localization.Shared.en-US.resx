@@ -52,10 +52,10 @@
   <data name="Navigation.OwnerTools" xml:space="preserve"><value>Owner tools</value></data>
   <data name="Navigation.More" xml:space="preserve"><value>More</value></data>
   <data name="Brand.LogoAlt" xml:space="preserve"><value>BodyLife logo</value></data>
-  <data name="AccountKind.Owner" xml:space="preserve"><value>Owner account</value></data>
-  <data name="AccountKind.NamedAdmin" xml:space="preserve"><value>Named Admin</value></data>
-  <data name="AccountKind.SharedReceptionAdmin" xml:space="preserve"><value>Shared Reception/Admin</value></data>
-  <data name="AccountKind.Unknown" xml:space="preserve"><value>Account</value></data>
+  <data name="AccountKind.Owner" xml:space="preserve"><value>Owner account</value></data><data name="AccountKind.OwnerCompact" xml:space="preserve"><value>Owner</value></data>
+  <data name="AccountKind.NamedAdmin" xml:space="preserve"><value>Named Admin</value></data><data name="AccountKind.NamedAdminCompact" xml:space="preserve"><value>Admin</value></data>
+  <data name="AccountKind.SharedReceptionAdmin" xml:space="preserve"><value>Shared Reception/Admin</value></data><data name="AccountKind.SharedReceptionAdminCompact" xml:space="preserve"><value>Reception/Admin</value></data>
+  <data name="AccountKind.Unknown" xml:space="preserve"><value>Account</value></data><data name="AccountKind.UnknownCompact" xml:space="preserve"><value>Account</value></data>
   <data name="Role.Owner" xml:space="preserve"><value>Owner</value></data>
   <data name="Role.Admin" xml:space="preserve"><value>Admin</value></data>
   <data name="Role.Unknown" xml:space="preserve"><value>Role</value></data>

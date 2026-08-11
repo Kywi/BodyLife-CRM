@@ -81,13 +81,17 @@ public sealed class UiStyleCoverageSmokeTests : IClassFixture<ReceptionAppFixtur
             Assert.Equal("get", await page.Locator(".global-client-search").GetAttributeAsync("method"));
             var accountMenu = page.Locator("details.account-menu");
             await ExpectVisibleAsync(accountMenu, viewportName, "honest account menu");
+            var accountSummary = accountMenu.Locator("summary");
+            Assert.Contains(
+                isOwner ? "Owner" : isSharedAccount ? "Reception/Admin" : "Admin",
+                await accountSummary.InnerTextAsync(),
+                StringComparison.Ordinal);
+            await accountSummary.ClickAsync();
+            Assert.True(await accountMenu.EvaluateAsync<bool>("element => element.open"));
             Assert.Contains(
                 isOwner ? "Owner account" : isSharedAccount ? "Shared Reception/Admin" : "Named Admin",
                 await accountMenu.InnerTextAsync(),
                 StringComparison.Ordinal);
-            var accountSummary = accountMenu.Locator("summary");
-            await accountSummary.ClickAsync();
-            Assert.True(await accountMenu.EvaluateAsync<bool>("element => element.open"));
             await page.Keyboard.PressAsync("Escape");
             Assert.False(await accountMenu.EvaluateAsync<bool>("element => element.open"));
             Assert.True(await accountSummary.EvaluateAsync<bool>("element => document.activeElement === element"));

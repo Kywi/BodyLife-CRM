@@ -73,6 +73,7 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
     }
 
     [Theory]
+    [InlineData("desktop", 1440, 900, 1)]
     [InlineData("tablet", 1024, 768, 1)]
     [InlineData("phone", 390, 844, 1)]
     public async Task HomeMatchesTheCurrentHomeCandidateAndKeepsItsWorkflowsReachable(
@@ -140,6 +141,20 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             1,
             await navigation.Locator("a[aria-current='page']").CountAsync());
 
+        if (viewportName == "desktop")
+        {
+            var drawer = page.Locator("[data-app-drawer]");
+            var drawerBounds = await drawer.BoundingBoxAsync();
+            Assert.NotNull(drawerBounds);
+            Assert.InRange(drawerBounds.Width, 236, 244);
+            await AssertVisibleAsync(
+                navigation.GetByRole(
+                    AriaRole.Link,
+                    new LocatorGetByRoleOptions { Name = "Клієнти", Exact = true }),
+                viewportName,
+                "desktop navigation labels");
+        }
+
         var logo = page.Locator(".app-header-brand img");
         await AssertVisibleAsync(logo, viewportName, "BodyLife logo");
         var logoBounds = await logo.BoundingBoxAsync();
@@ -158,20 +173,96 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             currentSession,
             viewportName,
             "truthful current session");
-        Assert.Contains("Обліковий запис власника", await currentSession.InnerTextAsync(), StringComparison.Ordinal);
-        await currentSession.Locator("summary").ClickAsync();
+        var currentSessionSummary = currentSession.Locator("summary");
+        var compactAccountLabel = currentSessionSummary
+            .Locator(".account-menu-summary-copy span");
+        Assert.Equal("Власник", await compactAccountLabel.InnerTextAsync());
+        if (viewportName == "phone")
+        {
+            await AssertVisibleAsync(
+                compactAccountLabel,
+                viewportName,
+                "compact account role");
+        }
+
+        await currentSessionSummary.ClickAsync();
+        Assert.Contains(
+            "Обліковий запис власника / Власник",
+            await currentSession.InnerTextAsync(),
+            StringComparison.Ordinal);
         Assert.Contains(
             deviceLabel,
             await currentSession.InnerTextAsync(),
             StringComparison.Ordinal);
-        await currentSession.Locator("summary").ClickAsync();
+        await currentSessionSummary.ClickAsync();
 
-        await OpenDrawerAsync(page);
+        if (viewportName is "tablet" or "phone")
+        {
+            var drawer = page.Locator("[data-app-drawer]");
+            Assert.True(
+                await drawer.EvaluateAsync<bool>("element => element.inert"),
+                $"{viewportName} drawer should be inert while closed.");
+
+            var headerBounds = await page.Locator(".app-global-header")
+                .BoundingBoxAsync();
+            var toggleBounds = await page.Locator("[data-drawer-toggle]")
+                .BoundingBoxAsync();
+            var brandBounds = await page.Locator(".app-header-brand")
+                .BoundingBoxAsync();
+            var searchBounds = await page.Locator(".global-client-search")
+                .BoundingBoxAsync();
+            var createBounds = await page.Locator(".global-create-client")
+                .BoundingBoxAsync();
+            var accountBounds = await currentSession.BoundingBoxAsync();
+            Assert.NotNull(headerBounds);
+            Assert.NotNull(toggleBounds);
+            Assert.NotNull(brandBounds);
+            Assert.NotNull(searchBounds);
+            Assert.NotNull(createBounds);
+            Assert.NotNull(accountBounds);
+
+            if (viewportName == "tablet")
+            {
+                Assert.InRange(headerBounds.Height, 76, 82);
+                Assert.InRange(
+                    searchBounds.X - (brandBounds.X + brandBounds.Width),
+                    8,
+                    20);
+                Assert.True(
+                    searchBounds.Width >= 300,
+                    "Tablet Search should receive the flexible header width.");
+                Assert.InRange(Math.Abs(searchBounds.Y - createBounds.Y), 0, 3);
+                Assert.InRange(Math.Abs(searchBounds.Y - accountBounds.Y), 0, 3);
+            }
+            else
+            {
+                var firstRowBottom = new[]
+                {
+                    toggleBounds.Y + toggleBounds.Height,
+                    brandBounds.Y + brandBounds.Height,
+                    accountBounds.Y + accountBounds.Height,
+                }.Max();
+                Assert.True(
+                    searchBounds.Y >= firstRowBottom,
+                    "Phone Search should start below the brand/account row.");
+                Assert.True(
+                    createBounds.Y >= searchBounds.Y + searchBounds.Height,
+                    "Phone Create client should follow Search on its own row.");
+            }
+        }
+
+        if (viewportName != "desktop")
+        {
+            await OpenDrawerAsync(page);
+        }
         await AssertVisibleAsync(
             page.Locator("details.owner-tools"),
             viewportName,
             "Owner tools disclosure");
-        await CloseDrawerAsync(page);
+        if (viewportName != "desktop")
+        {
+            await CloseDrawerAsync(page);
+        }
 
         var activityRows = page.Locator(".activity-list > li");
         Assert.Equal(5, await activityRows.CountAsync());
@@ -292,7 +383,10 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             viewportName,
             "negative-client attention destination");
 
-        await OpenDrawerAsync(page);
+        if (viewportName != "desktop")
+        {
+            await OpenDrawerAsync(page);
+        }
         await AssertMinimumTouchTargetsAsync(
             navigation.Locator("a.navigation-link"),
             viewportName,
@@ -301,7 +395,10 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             page.Locator("details.owner-tools > summary"),
             viewportName,
             "Owner tools");
-        await CloseDrawerAsync(page);
+        if (viewportName != "desktop")
+        {
+            await CloseDrawerAsync(page);
+        }
         await AssertMinimumTouchTargetAsync(
             page.Locator(".global-client-search button"),
             viewportName,
@@ -345,6 +442,22 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
         Assert.True(
             outlineWidth >= 2,
             $"{viewportName} Home focus outline should be at least 2px.");
+        await page.EvaluateAsync(
+            "() => document.activeElement instanceof HTMLElement && document.activeElement.blur()");
+
+        var skipLink = page.Locator(".skip-link");
+        var hiddenSkipLinkBounds = await skipLink.BoundingBoxAsync();
+        Assert.NotNull(hiddenSkipLinkBounds);
+        Assert.True(
+            hiddenSkipLinkBounds.Y < 0,
+            $"{viewportName} skip link should stay off-canvas before focus.");
+        await skipLink.FocusAsync();
+        var focusedSkipLinkBounds = await skipLink.BoundingBoxAsync();
+        Assert.NotNull(focusedSkipLinkBounds);
+        Assert.True(
+            focusedSkipLinkBounds.Y >= 0,
+            $"{viewportName} skip link should become visible on focus.");
+        Assert.True(await skipLink.EvaluateAsync<bool>("element => element === document.activeElement"));
         await page.EvaluateAsync(
             "() => document.activeElement instanceof HTMLElement && document.activeElement.blur()");
 
@@ -512,8 +625,6 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             stableDate);
         await page.Locator(".session-id").EvaluateAsync(
             "(element) => element.textContent = 'Сеанс 12ab34cd'");
-        await page.Locator(".skip-link").EvaluateAsync(
-            "(element) => element.style.display = 'none'");
     }
 
     private static async Task CaptureVisualAsync(
