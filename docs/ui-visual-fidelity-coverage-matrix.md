@@ -3,8 +3,9 @@
 Дата: 2026-07-22
 Оновлено: 2026-08-11 — current-Home is the authorized production migration
 target; the earlier production Wave 1 composition is superseded.
-Статус: **Wave 0 completed; Wave 1 candidate awaiting explicit product-owner
-approval**. Waves 2–6 are blocked by their preceding anchor approvals. Це
+Статус: **Wave 0 completed; Wave 1 revised candidate awaiting explicit
+product-owner approval after the first production render was rejected**. Waves
+2–6 are blocked by their preceding anchor approvals. Це
 acceptance ledger для плану
 `ui-visual-fidelity-migration-plan.md`; `approved` означає explicit side-by-side
 product-owner approval, не лише green automated tests.
@@ -47,12 +48,12 @@ product-owner review.
 
 | Anchor | Historical reference context | Required canonical state | Status | Required approval |
 | --- | --- | --- | --- | --- |
-| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | candidate — automated gates green; approval pending | `/tmp/bodylife-production-wave1-candidate/wave1-home-tablet-1024x768-uk.png`; user/product-owner comparison with the evolved current-Home baseline at `1024x768` still required |
+| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | revised candidate — automated gates green; approval pending | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-desktop-1440x900-uk.png` and `wave1-home-tablet-1024x768-uk.png`; explicit product-owner comparison still required |
 | Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | not started | Current-Home composition + real canonical route/state gallery |
 | Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | not started | Current-Home composition + real canonical route/state gallery |
 | Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | not started | Dedicated current-Home anchor + real command states |
 | Cancel Visit desktop | `branded-light-5-cancel-visit.png` 1104x861 | reason/confirmation, permission, stale/concurrency, canceled and backfill/fallback labels | not started | Dedicated current-Home correction anchor + real command states |
-| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | candidate — automated gates green; approval pending | `/tmp/bodylife-production-wave1-candidate/wave1-home-phone-390x844-uk.png`; user/product-owner comparison with the evolved current-Home baseline at `390x844` still required |
+| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | revised candidate — automated gates green; approval pending | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-phone-390x844-uk.png`; explicit product-owner comparison at `390x844` still required |
 | Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | not started | Current-Home single-column composition + real canonical states |
 | Cancel Visit phone | `branded-mobile-cancel.png` 480x1818 | expanded danger/correction card and keyboard/focus order | not started | Current-Home single-column correction anchor + real command states |
 
@@ -115,12 +116,11 @@ artifact paths in the Evidence column; `—` never means approved.
 | `_LanguageSelector.cshtml` | 1, 5 | uk-UA/en-US; long labels; POST success/failure; keyboard/focus | Wave 1 authenticated candidate; public final pending Wave 5 | Authenticated account-menu placement and full localization regression passed |
 | `_Icon.cshtml` | 1–5 | local sprite, accessible labels where needed, semantic color not sole signal | Wave 1 Home/navigation slice candidate | Local sprite, visible semantic labels and contrast checks passed; later waves extend route coverage |
 
-## Wave 1 candidate evidence — 2026-08-11
+## Wave 1 revised-candidate evidence — 2026-08-11
 
-- Real Razor/PostgreSQL captures:
-  `/tmp/bodylife-production-wave1-candidate/wave1-home-tablet-1024x768-uk.png`
-  and
-  `/tmp/bodylife-production-wave1-candidate/wave1-home-phone-390x844-uk.png`.
+- Real Razor/PostgreSQL captures under
+  `/tmp/bodylife-production-wave1-refined-v2/`: desktop `1440x900`, tablet
+  `1024x768` and phone `390x844`, plus full-page variants.
 - `ReceptionHomeSmokeTests` covers the populated canonical Home, exact
   provenance, workflow reachability, rendered timestamp contrast and the full
   actor/culture/viewport default matrix.
@@ -130,12 +130,14 @@ artifact paths in the Evidence column; `—` never means approved.
 - `UiStyleCoverageSmokeTests` covers drawer/account keyboard behavior, role
   navigation, Search contracts, public Login/AccessDenied/Error regression,
   target sizes, semantic contrast and overflow.
-- The complete authenticated Playwright regression suite passes 140/140; its
+- The complete authenticated Playwright regression suite passes 141/141; its
   pre-existing route tests now navigate through the responsive drawer and
   scope Reception Search/account-menu assertions to their canonical islands.
-- Independent closure review found zero P0–P3 issues. This makes Wave 1 a
-  candidate, not approved; Wave 2 remains blocked until the product owner
-  accepts the two populated anchor captures.
+- Independent closure review found zero P0–P3 issues after correcting the
+  rejected render's font hierarchy, icon rail, tablet header gap, skip link,
+  account labels and tertiary contrast. This makes Wave 1 a revised candidate,
+  not approved; Wave 2 remains blocked until the product owner accepts the
+  populated anchor captures.
 
 ## Superseded production candidate evidence
 

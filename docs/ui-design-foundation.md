@@ -73,8 +73,10 @@ Critical warnings must not be visually weaker than ordinary metadata. A compact 
 
 Use the approved current-Home shell:
 
-- Desktop navigation rail, sticky header with logo, global Search, direct
-  Create Client and honest account menu; tablet uses the drawer.
+- Desktop uses the approved 240px labeled navigation rail below an 88px sticky
+  header with logo, global Search, direct Create Client and honest account
+  menu; tablet uses the drawer with an intrinsic brand track and flexible
+  Search immediately after it.
 - Workspace context carries current area, Kyiv date and accountable account;
   device/session remains available from the menu.
 - Reception Home: wide Activity card plus narrow Attention/Today context rail.
@@ -139,6 +141,10 @@ Typography:
 
 - Use `Segoe UI Variable`, `Segoe UI`, then the local system fallback; do not
   add an external runtime font dependency.
+- Use the 11/14/17/22/28px scale with 800–850 weight for the wordmark,
+  page/focal headings and client names, 700–750 for operational actions/event
+  labels and 400 for ordinary copy. Small tertiary text must remain AA-safe on
+  paper; do not preserve a lighter prototype value at the cost of contrast.
 - Do not scale font sizes with viewport width.
 - Keep body copy at normal tracking; only page/panel headings may use the
   restrained current-Home optical tightening recorded in the token system.

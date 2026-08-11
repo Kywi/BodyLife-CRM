@@ -14984,3 +14984,59 @@ Stop point:
   `/tmp/bodylife-production-wave1-candidate/wave1-home-phone-390x844-uk.png`
   to the product owner. Do not start Wave 2 Reception Search/Create or mark
   Wave 1 approved until that explicit visual decision is recorded.
+
+## Step 235 - Refined the rejected Wave 1 visual candidate
+
+Status: revised candidate completed on 2026-08-11. Automated gates and
+independent design review are green; explicit product-owner approval is still
+pending. Wave 2 and Milestone 11 remain unchanged and blocked.
+
+Completed:
+
+- Recorded the product owner's rejection of the first production render for
+  visible composition and typography drift instead of treating its green
+  behavioral tests as visual approval.
+- Removed the obsolete 649-line Wave 1 shell/Home override from `site.css` and
+  made `production-shell.css` the self-contained authenticated shell/Home
+  layer. The rejected 104px icon-only rail, weak 430/500 weights, cooler token
+  fork, gray slab cards and flat Activity list no longer participate.
+- Restored the approved 240px labeled desktop rail, 88px desktop header,
+  compact BodyLife/CRM lockup, intrinsic tablet brand plus flexible Search,
+  three-row phone header, warm paper surfaces and bounded Activity rows with
+  restrained semantic rails.
+- Kept full account truth in the popover while adding compact Owner/Admin/
+  Reception/Admin summary labels. Restored self-contained Owner-tools and
+  skip-link focus styles after deleting their legacy source rules.
+- Preserved all server-owned Activity/Attention/Today reads, Kyiv time,
+  correction/backfill/fallback provenance, direct Create, ordinary GET Search,
+  permissions, drawer focus/inert behavior and canonical links.
+- Added stable desktop `1440x900` coverage, the exact 240px rail assertion,
+  tablet brand-to-Search gap/width assertions, phone row-order/visible-role
+  assertions and off-canvas/focus-revealed skip-link coverage. Adjusted
+  tertiary text to the AA-safe `#697780` token.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors; Node syntax,
+  localization XML and `git diff --check` passed.
+- Focused Web regression tests passed 378/378.
+- PostgreSQL-backed populated Home passed 4/4 across desktop, tablet and phone;
+  Home state/localization/style coverage passed 15/15 across actors and
+  cultures.
+- The full PostgreSQL-backed authenticated Playwright suite passed 141/141,
+  with zero failures/skips.
+- Real revised captures are under
+  `/tmp/bodylife-production-wave1-refined-v2/` for `1440x900`, `1024x768` and
+  `390x844`, including full-page variants.
+- Independent design closure reports zero remaining P0–P3 findings.
+- `graphify update .` was attempted after the code change and again returned
+  `[Errno 95] Operation not supported`. The required semantic update detected
+  17 changed documents but stopped because no supported LLM API key is
+  configured; neither attempt produced a tracked graph change, so stale graph
+  output is not presented as validation evidence.
+
+Stop point:
+
+- Present the revised desktop/tablet/phone evidence and live isolated instance
+  to the product owner. Do not mark Wave 1 approved or start Wave 2 until the
+  product owner explicitly accepts this revised composition.

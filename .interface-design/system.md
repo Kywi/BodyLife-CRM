@@ -22,7 +22,10 @@ slightly darker than paper.
 
 **Surfaces, type and spacing.** Canvas → paper/card → raised popover is the
 only elevation ladder. Use `Segoe UI Variable`, `Segoe UI`, system fallback;
-the 11/14/17/22/28px scale, tabular numbers and weight/text-level hierarchy.
+the 11/14/17/22/28px scale, tabular numbers and a weight-led hierarchy:
+800–850 for the wordmark/page/focal names, 700–750 for actions and event
+labels, and 400 for ordinary copy. Tertiary text must still meet WCAG AA on
+paper; production currently uses the accessible `#697780` correction.
 Spacing is a 4px base; controls are at least 44px. Radii are control 10px,
 card 16px and popover 18px.
 
@@ -42,14 +45,17 @@ active, disabled, busy and reduced-motion states use this system.
 
 ## Shared composition and responsive order
 
-Authenticated pages use the desktop rail plus sticky header with logo, global
-search, direct Create Client and an honest account menu. Tablet uses a drawer;
-phone becomes one column. The account role remains text-visible at 390px and
-the device/session detail remains in the menu. Review-only controls, demo
-banner, fixture state links and fixture role switch belong only to the static
-lab and do not ship in production. The `check-in signal` is a semantic left
-rail/status strip on Activity, search/results/profile context,
-report/history/audit rows and important action contexts.
+Authenticated desktop pages at `>=1100px` use a 240px labeled rail below an
+88px sticky header with logo, global Search, direct Create Client and an honest
+account menu. Tablet uses a drawer; its intrinsic wordmark is followed directly
+by the flexible Search track. Phone orders brand/account, Search and Create on
+three compact rows, then becomes one content column. The account role remains
+text-visible at 390px and the device/session detail remains in the menu.
+Review-only controls, demo banner, fixture state links and fixture role switch
+belong only to the static lab and do not ship in production. The `check-in
+signal` is a semantic left rail/status strip on Activity,
+search/results/profile context, report/history/audit rows and important action
+contexts.
 
 ## State requirements
 
@@ -67,6 +73,7 @@ context remain visible.
 are the approved evolved composition baseline for the production Razor
 migration authorized on 2026-08-11. Locked references remain immutable
 historical/audit inputs only; the earlier production sidebar/top-context/Quick
-Search candidate is a functional baseline, not the visual target. Each real
-Razor anchor still requires PostgreSQL-backed tablet/phone evidence and explicit
-product-owner acceptance before the following migration wave begins.
+Search candidate and the first thin-type/icon-rail Wave 1 render are functional
+history, not the visual target. Each real Razor anchor still requires
+PostgreSQL-backed desktop/tablet/phone evidence and explicit product-owner
+acceptance before the following migration wave begins.

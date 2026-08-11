@@ -2,15 +2,15 @@
 
 Дата: 2026-07-22
 Оновлено: 2026-08-11
-Статус: **production migration authorized; Wave 0 completed; Wave 1 candidate
-awaiting explicit product-owner approval; Wave 2 blocked**.
+Статус: **production migration authorized; Wave 0 completed; Wave 1 revised
+candidate awaiting explicit product-owner approval; Wave 2 blocked**.
 
 ## Product decision and reset point
 
 The product owner approved the evolved current-Home template system as the
 composition and visual target for production migration. The target is defined
 by `.interface-design/system.md` together with the complete review inventory in
-`docs/ui-prototype/`. It is a light operational interface with a compact
+`docs/ui-prototype/`. It is a light operational interface with a 240px labeled
 desktop rail, tablet drawer, sticky global header, direct Search/Create Client,
 honest account menu, Activity-first Home and semantic blue/green/amber/red/
 violet guidance.
@@ -166,8 +166,9 @@ mandatory Wave 1 prerequisite rather than simulated evidence.
 
 ### Wave 1 — canonical system, authenticated shell and Home
 
-Status: **candidate on 2026-08-11; automated gates green; explicit
-product-owner approval pending**.
+Status: **revised candidate on 2026-08-11 after the first render was explicitly
+rejected for composition and typography drift; automated gates are green;
+explicit product-owner approval remains pending**.
 
 Owned production surface:
 
@@ -197,8 +198,12 @@ CSS or script loading changes.
 
 Candidate evidence:
 
-- the authenticated Razor shell uses the current-Home rail/drawer, sticky
-  Search/Create/account header and the existing server-owned Home reads;
+- the authenticated Razor shell now uses the exact 240px labeled desktop rail,
+  88px header, intrinsic tablet wordmark/flexible Search composition and compact
+  phone rows from the current-Home contract;
+- the thin 430/500-weight hierarchy, 104px icon-only rail, cooler parallel
+  palette and flat gray Activity rows from the rejected first render were
+  removed; Activity now uses bounded paper rows and restrained semantic rails;
 - populated Home is exercised for Owner, named Admin and shared
   Reception/Admin in `uk-UA` and `en-US` at `1024x768` and `390x844`;
 - a separate PostgreSQL-backed matrix exercises honest Activity empty, Activity
@@ -207,11 +212,12 @@ Candidate evidence:
 - drawer focus containment/return, account Escape, overlay close, exact and
   location navigation, unique Search ids, direct Create, ordinary GET fallback,
   44px targets, rendered AA contrast and no horizontal overflow are automated;
-- the complete authenticated Playwright regression suite passes 140/140 after
-  its route locators were aligned with the responsive drawer and distinct
-  Search/account islands;
-- candidate captures are under `/tmp/bodylife-production-wave1-candidate/`;
-  the stable populated anchors are
+- the complete authenticated Playwright regression suite passes 141/141 after
+  the revised shell, role labels, skip-link focus behavior, AA tertiary text
+  and all legacy route consumers were revalidated;
+- revised candidate captures are under
+  `/tmp/bodylife-production-wave1-refined-v2/`; the populated anchors are
+  `wave1-home-desktop-1440x900-uk.png`,
   `wave1-home-tablet-1024x768-uk.png` and
   `wave1-home-phone-390x844-uk.png`;
 - independent closure review reports zero remaining P0–P3 findings.
@@ -228,6 +234,9 @@ Stop/go:
 - populated/empty and independently unavailable Activity, Attention and Today
   states render honestly for all applicable actors and both cultures at
   `1024x768` and `390x844`;
+- desktop `1440x900` asserts the 240px labeled rail; tablet protects the
+  8–20px brand-to-Search gap and at least 300px flexible Search width; phone
+  protects brand/account → Search → Create ordering and visible role text;
 - no P0/P1 independent-review finding;
 - product owner approves the real Home tablet/phone candidate. Rejection keeps
   Wave 2 blocked and reopens only Wave 1.
