@@ -102,7 +102,7 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
             await SwitchCultureAsync(page, English);
             Assert.Contains("/Reception/Index?q=BL-1001", page.Url, StringComparison.Ordinal);
             await AssertCultureAsync(page, English);
-            await ExpectVisibleAsync(page.Locator("#reception-title"), "Reception", "English reception title");
+            await ExpectVisibleAsync(page.Locator("#reception-title"), "Clients", "English clients title");
 
             await SubmitHtmxSearchAsync(page, "BL-1001");
             await ExpectVisibleAsync(page.Locator("#client-profile"), "Client profile", "English htmx profile heading");
@@ -111,7 +111,7 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
             await SwitchCultureAsync(page, Ukrainian);
             Assert.Contains("q=BL-1001", page.Url, StringComparison.Ordinal);
             await AssertCultureAsync(page, Ukrainian);
-            await ExpectVisibleAsync(page.Locator("#reception-title"), "Панель рецепції", "Ukrainian reception title");
+            await ExpectVisibleAsync(page.Locator("#reception-title"), "Клієнти", "Ukrainian clients title");
 
             await SubmitHtmxSearchAsync(page, "BL-1001");
             await ExpectVisibleAsync(page.Locator("#client-profile"), "Профіль клієнта", "Ukrainian htmx profile heading");

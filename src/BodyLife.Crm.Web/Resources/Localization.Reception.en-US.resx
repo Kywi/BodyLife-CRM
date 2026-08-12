@@ -209,6 +209,9 @@
   <data name="Field.Context" xml:space="preserve"><value>context</value></data>
   <data name="Field.Comment" xml:space="preserve"><value>comment</value></data>
 <data name="Client.Create" xml:space="preserve"><value>Create client</value></data>
+  <data name="Client.CreateDirect" xml:space="preserve"><value>Direct client creation</value></data>
+  <data name="Client.Details" xml:space="preserve"><value>Client details</value></data>
+  <data name="Client.CreateWithoutSearch" xml:space="preserve"><value>Available without a prior search</value></data>
   <data name="Client.NotCreated" xml:space="preserve"><value>Client not created</value></data>
   <data name="Client.Edit" xml:space="preserve"><value>Edit client</value></data>
   <data name="Client.NotUpdated" xml:space="preserve"><value>Client not updated</value></data>

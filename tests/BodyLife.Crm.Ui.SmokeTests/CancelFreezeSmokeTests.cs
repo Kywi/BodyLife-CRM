@@ -256,7 +256,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
         await page.GotoAsync(
             new Uri(_app.BaseAddress, "/Reception/Index").ToString(),
             new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-        await page.GetByRole(AriaRole.Heading, new() { Name = "Reception" }).WaitForAsync();
+        await page.Locator("#reception-title").WaitForAsync();
         return page;
     }
 

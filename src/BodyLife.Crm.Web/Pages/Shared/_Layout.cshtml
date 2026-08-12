@@ -50,7 +50,7 @@
                             <span class="global-search-submit-label">@SharedLocalizer["Navigation.Search"]</span>
                         </button>
                     </form>
-                    <a class="button-link global-create-client" asp-page="/Reception/Index" asp-route-create="true">
+                    <a class="button-link global-create-client" asp-page="/Reception/Index" asp-route-create="true" asp-fragment="create-client-action-panel">
                         <partial name="_Icon" model='@("plus")' />
                         <span>@SharedLocalizer["Navigation.CreateClient"]</span>
                     </a>

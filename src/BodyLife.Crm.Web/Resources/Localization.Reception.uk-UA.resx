@@ -209,6 +209,9 @@
   <data name="Field.Context" xml:space="preserve"><value>контекст</value></data>
   <data name="Field.Comment" xml:space="preserve"><value>коментар</value></data>
 <data name="Client.Create" xml:space="preserve"><value>Створити клієнта</value></data>
+  <data name="Client.CreateDirect" xml:space="preserve"><value>Пряме створення клієнта</value></data>
+  <data name="Client.Details" xml:space="preserve"><value>Дані клієнта</value></data>
+  <data name="Client.CreateWithoutSearch" xml:space="preserve"><value>Доступно без попереднього пошуку</value></data>
   <data name="Client.NotCreated" xml:space="preserve"><value>Клієнта не створено</value></data>
   <data name="Client.Edit" xml:space="preserve"><value>Редагувати клієнта</value></data>
   <data name="Client.NotUpdated" xml:space="preserve"><value>Клієнта не оновлено</value></data>

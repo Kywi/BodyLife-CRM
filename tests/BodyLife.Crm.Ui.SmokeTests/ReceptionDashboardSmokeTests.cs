@@ -33,6 +33,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
     }
 
     [Theory]
+    [InlineData("desktop", 1440, 900)]
     [InlineData("tablet", 1024, 768)]
     [InlineData("phone", 390, 844)]
     public async Task ReceptionSearchAndProfileReadPathWorksOnTargetViewport(
@@ -67,7 +68,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             var deviceLabel = $"{viewportName} smoke";
             await LoginAsync(page, _app.LoginName, _app.Password, deviceLabel);
 
-            Assert.Equal("Reception - BodyLife CRM", await page.TitleAsync());
+            Assert.Equal("Clients - BodyLife CRM", await page.TitleAsync());
 
             var accountMenu = page.Locator("details.account-menu");
             await ExpectVisibleAsync(accountMenu, viewportName, "current session shell");
@@ -77,7 +78,8 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await ExpectVisibleAsync(accountMenu.Locator(".account-menu-session").GetByText(deviceLabel, new() { Exact = true }), viewportName, "current device label");
             await ExpectVisibleAsync(accountMenu.Locator(".account-menu-session").GetByText("Session", new() { Exact = false }), viewportName, "current session id");
             await ExpectVisibleAsync(accountMenu.GetByRole(AriaRole.Button, new() { Name = "Log out", Exact = true }), viewportName, "logout button");
-            await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Reception" }), viewportName, "reception heading");
+            await accountMenu.Locator("summary").ClickAsync();
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Clients", Exact = true }), viewportName, "clients heading");
             await ExpectVisibleAsync(page.Locator("#reception-search").GetByRole(AriaRole.Searchbox, new() { Name = "Client search", Exact = true }), viewportName, "client search input");
             await ExpectVisibleAsync(page.Locator("#reception-search").GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }), viewportName, "search button");
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Group, new() { Name = "Search mode" }), viewportName, "search mode control");
@@ -85,21 +87,55 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             var searchResults = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
             var clientProfile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
             await ExpectVisibleAsync(searchResults, viewportName, "search results region");
+            Assert.Contains(
+                "search-results-surface",
+                await searchResults.GetAttributeAsync("class") ?? string.Empty,
+                StringComparison.Ordinal);
+            await ExpectVisibleAsync(
+                searchResults.Locator(".search-state-idle"),
+                viewportName,
+                "honest idle search state");
             await ExpectVisibleAsync(clientProfile, viewportName, "client profile region");
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "No client selected" }), viewportName, "initial profile state");
+            await CaptureViewportVisualAsync(page, viewportName, "search-idle");
+
+            var directCreateLink = page.Locator(".global-create-client");
+            var directCreateHref = await directCreateLink.GetAttributeAsync("href");
+            Assert.NotNull(directCreateHref);
+            Assert.Contains("create=true", directCreateHref, StringComparison.OrdinalIgnoreCase);
+            Assert.EndsWith("#create-client-action-panel", directCreateHref, StringComparison.Ordinal);
+            await directCreateLink.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            Assert.EndsWith("#create-client-action-panel", page.Url, StringComparison.Ordinal);
+
             var initialCreatePanel = page.Locator("#create-client-action-panel");
             await ExpectVisibleAsync(initialCreatePanel.Locator("summary"), viewportName, "always available create-client action");
-            Assert.False(
+            Assert.True(
                 await initialCreatePanel.EvaluateAsync<bool>("element => element.open"),
-                "The direct create-client action should start collapsed before a search.");
+                "The header direct-create entry should open the existing server form.");
+            var directPanelBounds = await initialCreatePanel.BoundingBoxAsync();
+            var stickyHeaderBounds = await page.Locator(".app-global-header").BoundingBoxAsync();
+            Assert.NotNull(directPanelBounds);
+            Assert.NotNull(stickyHeaderBounds);
+            Assert.True(
+                directPanelBounds.Y >= stickyHeaderBounds.Y + stickyHeaderBounds.Height - 1,
+                $"Direct Create should not be hidden under the sticky header on {viewportName}.");
+            Assert.True(
+                directPanelBounds.Y < height,
+                $"Direct Create should land inside the {viewportName} viewport.");
             await AssertMinimumTouchTargetAsync(
                 initialCreatePanel.Locator("summary"),
                 viewportName,
                 "create-client action");
-            await initialCreatePanel.Locator("summary").ClickAsync();
-            Assert.True(
-                await initialCreatePanel.EvaluateAsync<bool>("element => element.open"),
-                "Reception should let the operator open client creation without first searching.");
+            await ExpectVisibleAsync(
+                initialCreatePanel.GetByRole(AriaRole.Heading, new() { Name = "Client details", Exact = true }),
+                viewportName,
+                "direct create-client heading");
+            Assert.Contains(
+                "create-client-surface",
+                await initialCreatePanel.GetAttributeAsync("class") ?? string.Empty,
+                StringComparison.Ordinal);
+            await CaptureViewportVisualAsync(page, viewportName, "direct-create");
             await initialCreatePanel.Locator("summary").ClickAsync();
             await AssertMinimumTouchTargetAsync(
                 page.Locator("#reception-search").GetByRole(AriaRole.Searchbox, new() { Name = "Client search", Exact = true }),
@@ -131,6 +167,10 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "BL-1001",
                 await page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }).InputValueAsync());
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "Kovalenko Olena" }), viewportName, "exact-card profile");
+            Assert.Contains(
+                "search-results-surface",
+                await searchResults.GetAttributeAsync("class") ?? string.Empty,
+                StringComparison.Ordinal);
             await ExpectVisibleAsync(
                 clientProfile.Locator(".client-profile-meta")
                     .GetByText("BL-1001", new() { Exact = true }),
@@ -142,7 +182,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 viewportName,
                 "profile action");
             await AssertFitsViewportAsync(page, viewportName, "exact-card profile");
-            await CaptureVisualAsync(page, viewportName, "exact-profile");
+            await CaptureViewportVisualAsync(page, viewportName, "exact-profile");
 
             await SubmitHtmxSearchAsync(page, "BL-PAYMENT-HISTORY");
 
@@ -255,6 +295,11 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             await SubmitHtmxSearchAsync(page, "Kovalenko");
 
+            await ExpectVisibleAsync(
+                searchResults.Locator(".search-result-row").First,
+                viewportName,
+                "compact semantic search result row");
+
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "No client selected" }), viewportName, "ambiguous search profile state");
             Assert.Equal(3, await searchResults.Locator(".client-result-row").CountAsync());
             await ExpectVisibleAsync(searchResults.GetByRole(AriaRole.Link, new() { Name = "Open Kovalenko Marta", Exact = true }), viewportName, "Marta result");
@@ -265,7 +310,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 viewportName,
                 "client result row");
             await AssertFitsViewportAsync(page, viewportName, "multiple results");
-            await CaptureVisualAsync(page, viewportName, "multiple-results");
+            await CaptureViewportVisualAsync(page, viewportName, "multiple-results");
 
             await ClickHtmxProfileAsync(
                 page,
@@ -293,6 +338,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.True(
                 await noMatchCreatePanel.EvaluateAsync<bool>("element => element.open"),
                 "A successful no-match search should open the direct create-client action.");
+            await CaptureViewportVisualAsync(page, viewportName, "no-results-create");
 
             await page.Locator("input[name='mode'][value='Card']").CheckAsync();
             await SubmitHtmxSearchAsync(page, "BL-CARD-PREFILL-NO-MATCH");
@@ -302,6 +348,58 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "BL-CARD-PREFILL-NO-MATCH",
                 await cardNoMatchCreatePanel.GetByLabel("Card number", new() { Exact = true }).InputValueAsync());
             await AssertFitsViewportAsync(page, viewportName, "no-match state");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData("tablet", 1024, 768)]
+    [InlineData("phone", 390, 844)]
+    public async Task ReceptionSearchFailureKeepsTheCanonicalSearchAvailable(
+        string viewportName,
+        int width,
+        int height)
+    {
+        Assert.NotNull(_browser);
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            Locale = ReceptionAppFixture.WorkflowCulture,
+            ViewportSize = new ViewportSize { Width = width, Height = height },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            var invalidQuery = new string('X', 201);
+            var target = new Uri(
+                _app.BaseAddress,
+                $"/Reception/Index?q={Uri.EscapeDataString(invalidQuery)}");
+            await page.GotoAsync(_app.BaseAddress.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+            await LoginAsync(page, _app.LoginName, _app.Password, $"{viewportName} failed search");
+            await page.GotoAsync(target.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+
+            var receptionSearch = page.Locator("#reception-search");
+            var failure = page.Locator("#reception-workspace .search-state-failure");
+            await ExpectVisibleAsync(failure, viewportName, "search failure state");
+            await ExpectVisibleAsync(
+                failure.GetByText("Search unavailable", new() { Exact = true }),
+                viewportName,
+                "honest search failure heading");
+            await ExpectVisibleAsync(
+                receptionSearch.GetByRole(AriaRole.Searchbox, new() { Name = "Client search", Exact = true }),
+                viewportName,
+                "search remains available after failure");
+            await AssertFitsViewportAsync(page, viewportName, "search failure");
+            await CaptureViewportVisualAsync(page, viewportName, "search-failure");
         }
         finally
         {
@@ -1127,7 +1225,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await page.Locator("#reception-search").GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }).ClickAsync();
             await page.WaitForURLAsync("**?q=BL-1001**");
 
-            Assert.Equal("Reception - BodyLife CRM", await page.TitleAsync());
+            Assert.Equal("Clients - BodyLife CRM", await page.TitleAsync());
             await ExpectVisibleAsync(
                 page.GetByRole(AriaRole.Region, new() { Name = "Client profile" })
                     .GetByRole(AriaRole.Heading, new() { Name = "Kovalenko Olena" }),
@@ -1399,6 +1497,27 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         await page.ScreenshotAsync(new PageScreenshotOptions
         {
             FullPage = true,
+            Path = Path.Combine(screenshotDirectory, $"{viewportName}-{state}.png"),
+        });
+    }
+
+    private static async Task CaptureViewportVisualAsync(
+        IPage page,
+        string viewportName,
+        string state)
+    {
+        var screenshotDirectory = Environment.GetEnvironmentVariable("BODYLIFE_UI_SCREENSHOT_DIR");
+
+        if (string.IsNullOrWhiteSpace(screenshotDirectory))
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(screenshotDirectory);
+        await page.EvaluateAsync("document.activeElement?.blur()");
+        await page.ScreenshotAsync(new PageScreenshotOptions
+        {
+            FullPage = false,
             Path = Path.Combine(screenshotDirectory, $"{viewportName}-{state}.png"),
         });
     }

@@ -6,40 +6,41 @@
     var searchResult = Model.SearchResult;
 }
 
-<section id="reception-workspace" class="reception-workspace">
-    <section class="search-results-region" aria-label="@L["Workspace.SearchResults"]" aria-live="polite">
-        <header class="region-header">
-            <h2 class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Workspace.SearchResults"]</h2>
-            @if (searchResult is { Status: SearchClientsStatus.Success })
-            {
-                var matchCount = searchResult.Items.Count;
-                <span class="result-count">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Workspace.MatchCount"], matchCount)</span>
-            }
-        </header>
+<section id="reception-workspace" class="reception-workspace reception-search-workspace">
+    <div class="reception-lookup-column">
+        <section class="search-results-region search-results-surface" aria-label="@L["Workspace.SearchResults"]" aria-live="polite">
+            <header class="region-header search-results-heading">
+                <h2 class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Workspace.SearchResults"]</h2>
+                @if (searchResult is { Status: SearchClientsStatus.Success })
+                {
+                    var matchCount = searchResult.Items.Count;
+                    <span class="result-count">@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Workspace.MatchCount"], matchCount)</span>
+                }
+            </header>
 
         @if (searchResult is null)
         {
-            <div class="operational-empty">
+            <div class="operational-empty search-state-surface search-state-idle">
                 <strong>@L["Workspace.Ready"]</strong>
             </div>
         }
         else if (searchResult.Status != SearchClientsStatus.Success)
         {
-            <div class="warning-block warning-danger" role="alert">
+            <div class="warning-block warning-danger search-state-surface search-state-failure" role="alert">
                 <strong><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["Workspace.Unavailable"]</strong>
                 <span>@L["Error.Generic"]</span>
             </div>
         }
         else if (searchResult.Items.Count == 0)
         {
-            <div class="operational-empty no-search-results">
+            <div class="operational-empty no-search-results search-state-surface search-state-empty">
                 <strong>@L["Workspace.Empty"]</strong>
             </div>
 
         }
         else
         {
-            <div class="client-result-list">
+            <div class="client-result-list search-result-list">
                 @foreach (var item in searchResult.Items)
                 {
                     var fullProfileUrl = Url.Page(
@@ -64,7 +65,7 @@
                             clientId = item.ClientId,
                         });
 
-                    <a class="client-result-row"
+                    <a class="client-result-row search-result-row"
                        href="@fullProfileUrl"
                        aria-label="@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Workspace.OpenClient"], item.DisplayName)"
                        hx-get="@htmxProfileUrl"
@@ -72,7 +73,7 @@
                        hx-swap="outerHTML show:top"
                        hx-sync="#client-profile:replace"
                        hx-indicator="#profile-loading">
-                        <header class="client-result-header">
+                        <header class="client-result-header search-result-row-header">
                             <h3>@item.DisplayName</h3>
                             <span class="status-chip @OperationalStatusClass(item.OperationalStatus)">
                                 @OperationalStatusLabel(item.OperationalStatus)
@@ -150,11 +151,13 @@
             }
         }
 
+        </section>
+
         @if (Model.CreateClientForm is not null)
         {
             <partial name="_CreateClientForm" model="Model.CreateClientForm" />
         }
-    </section>
+    </div>
 
     <partial name="_ClientProfile" model="Model.Profile" />
 </section>

@@ -2,22 +2,23 @@
 @model BodyLife.Crm.Web.Pages.Reception.IndexModel
 @using BodyLife.Crm.Web.Localization
 @inject Microsoft.Extensions.Localization.IStringLocalizer<Reception> L
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Shared> SharedL
 @{
-    ViewData["Title"] = L["Dashboard.Title"];
+    ViewData["Title"] = SharedL["Navigation.Clients"];
 }
 
 <main class="page-shell reception-page">
     <section class="reception-layout" aria-labelledby="reception-title">
-        <header class="reception-header">
+        <header class="reception-header reception-route-heading">
             <div>
-                <p class="eyebrow">BodyLife CRM</p>
-                <h1 id="reception-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"account"' />@L["Dashboard.Title"]</h1>
+                <p class="eyebrow">@L["Search.Label"]</p>
+                <h1 id="reception-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"account"' />@SharedL["Navigation.Clients"]</h1>
             </div>
         </header>
 
-        <section class="search-island" aria-labelledby="client-search-label">
+        <section class="search-island search-focal-surface" aria-labelledby="client-search-label">
             <form id="reception-search"
-                  class="search-panel"
+                  class="search-panel reception-search-panel"
                   method="get"
                   asp-page="/Reception/Index"
                   role="search"
@@ -27,7 +28,7 @@
                   hx-sync="this:replace"
                   hx-indicator="#search-loading"
                   hx-disabled-elt="find button">
-                <div class="search-primary-row">
+                <div class="search-primary-row reception-search-primary-row">
                     <div class="search-field">
                         <label id="client-search-label" for="client-search"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Search.Label"]</label>
                         <input id="client-search"
@@ -39,13 +40,13 @@
                                placeholder="@L["Search.Placeholder"]"
                                required />
                     </div>
-                    <div class="search-command-group">
+                    <div class="search-command-group search-primary-actions">
                         <button type="submit"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Action.Search"]</button>
                         <a class="secondary-link" asp-page="/Reception/Index">@L["Action.Clear"]</a>
                     </div>
                 </div>
 
-                <div class="search-options">
+                <div class="search-options reception-search-options">
                     <fieldset class="search-mode-control">
                         <legend>@L["Search.Mode"]</legend>
                         <div class="search-mode-segments">

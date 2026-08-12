@@ -6,13 +6,20 @@
 }
 
 <details id="create-client-action-panel"
-         class="profile-action-panel search-create-panel"
+         class="profile-action-panel search-create-panel create-client-surface"
          open="@(Model.IsOpen ? "open" : null)">
-    <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"plus"' />@L["Client.Create"]</summary>
-    <div class="profile-action-content">
+    <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"plus"' /><span>@L["Client.Create"]</span></summary>
+    <div class="profile-action-content create-client-content">
+        <header class="create-client-heading">
+            <div>
+                <p class="eyebrow">@L["Client.CreateDirect"]</p>
+                <h2 id="create-client-form-title">@L["Client.Details"]</h2>
+            </div>
+            <span class="create-client-context"><partial name="/Pages/Shared/_Icon.cshtml" model='"account"' />@L["Client.CreateWithoutSearch"]</span>
+        </header>
         @if (Model.Errors.Count > 0)
         {
-            <div class="command-error-summary" role="alert">
+            <div class="command-error-summary create-client-error" role="alert">
                 <strong>@L["Client.NotCreated"]</strong>
                 <ul>
                     @foreach (var message in Model.Errors.Select(error => ReceptionCommandErrorLocalizer.Display(L, error)).Distinct(StringComparer.Ordinal))
@@ -28,6 +35,7 @@
               method="post"
               asp-page="/Reception/Index"
               asp-page-handler="CreateClient"
+              aria-labelledby="create-client-form-title"
               data-busy-form
               hx-post="@Url.Page("/Reception/Index", "CreateClient")"
               hx-target="#create-client-action-panel"
@@ -41,7 +49,7 @@
             <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
             <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
 
-            <div class="action-form-grid">
+            <div class="action-form-grid create-client-grid">
                 <div class="form-field">
                     <label for="create-surname">@L["Client.Surname"]</label>
                     <input id="create-surname"
@@ -102,7 +110,7 @@
 
             @if (Model.DuplicateWarnings.Count > 0)
             {
-                <section class="duplicate-warning-section" aria-labelledby="create-duplicate-warning-title">
+                <section class="duplicate-warning-section create-duplicate-review" aria-labelledby="create-duplicate-warning-title">
                     <header>
                         <h3 id="create-duplicate-warning-title">@L["Duplicate.Review"]</h3>
                     </header>
