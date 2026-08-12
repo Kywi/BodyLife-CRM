@@ -158,6 +158,33 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
                 $"Issue Membership success message should be visible on {viewportName} " +
                 $"viewport.{Environment.NewLine}{await profile.InnerTextAsync()}" +
                 $"{Environment.NewLine}{_app.ReadCapturedOutputForDiagnostics()}");
+            var successMessageGeometry = await successMessage.EvaluateAsync<string>(
+                """
+                message => {
+                    const style = getComputedStyle(message);
+                    const profile = message.closest('#client-profile');
+                    const messageBox = message.getBoundingClientRect();
+                    const profileBox = profile.getBoundingClientRect();
+                    return JSON.stringify({
+                        rail: style.borderInlineStartWidth,
+                        radius: style.borderTopLeftRadius,
+                        position: style.position,
+                        top: messageBox.top,
+                        profileTop: profileBox.top,
+                        profileBottom: profileBox.bottom,
+                        contained: messageBox.left >= profileBox.left
+                            && messageBox.right <= profileBox.right
+                            && messageBox.top >= profileBox.top
+                            && messageBox.bottom <= profileBox.bottom,
+                        inset: messageBox.width < profileBox.width - 8,
+                    });
+                }
+                """);
+            Assert.Contains("\"rail\":\"0px\"", successMessageGeometry, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"radius\":\"0px\"", successMessageGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"position\":\"static\"", successMessageGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"contained\":true", successMessageGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"inset\":true", successMessageGeometry, StringComparison.Ordinal);
             Assert.Equal(
                 membershipCountBefore + 1,
                 await _app.CountIssuedMembershipsAsync(clientId));

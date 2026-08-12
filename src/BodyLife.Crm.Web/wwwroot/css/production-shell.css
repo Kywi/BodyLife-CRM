@@ -410,22 +410,19 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   background: var(--desk-inset);
 }
 .reception-page #client-profile .membership-signal {
-  border-inline-start: 3px solid var(--line-quiet);
+  border-inline-start: 0;
+  border-radius: var(--radius-control);
 }
 .reception-page #client-profile .membership-signal-info {
-  border-inline-start-color: var(--checkin-blue);
   background: color-mix(in srgb, var(--checkin-blue-soft) 64%, var(--desk-inset));
 }
 .reception-page #client-profile .membership-signal-good {
-  border-inline-start-color: var(--checkin-green);
   background: color-mix(in srgb, var(--checkin-green-soft) 70%, var(--desk-inset));
 }
 .reception-page #client-profile .membership-signal-caution {
-  border-inline-start-color: var(--attention-amber);
   background: color-mix(in srgb, var(--attention-amber-soft) 72%, var(--desk-inset));
 }
 .reception-page #client-profile .membership-signal-danger {
-  border-inline-start-color: var(--stop-red);
   background: color-mix(in srgb, var(--stop-red-soft) 78%, var(--desk-inset));
 }
 .reception-page #client-profile .membership-signal-good dd { color: var(--checkin-green); }
@@ -445,7 +442,11 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
-.reception-page #client-profile .client-comment { margin: 0; }
+.reception-page #client-profile .client-comment {
+  margin: 0;
+  border-inline-start: 0;
+  background: color-mix(in srgb, var(--desk-inset) 20%, var(--desk-paper));
+}
 .reception-page #client-profile .client-comment .section-heading { margin: 0 0 var(--space-1); font-size: var(--type-section); }
 .reception-page #client-profile .client-comment p { margin: 0; color: var(--text-secondary); }
 .reception-page #client-profile .membership-panel,
@@ -472,18 +473,24 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
 .reception-page #client-profile .membership-panel-header .section-heading,
 .reception-page #client-profile .profile-region-heading .section-heading { margin: 0; font-size: var(--type-section); }
 .reception-page #client-profile .membership-panel {
-  border-inline-start: 4px solid var(--checkin-blue);
+  border-inline-start: 0;
   background: color-mix(in srgb, var(--checkin-blue-soft) 34%, var(--desk-paper));
 }
 .reception-page #client-profile .membership-panel-header .section-heading { color: var(--checkin-blue); }
 .reception-page #client-profile .profile-region-heading .eyebrow { margin: 0; color: var(--checkin-blue); font-size: var(--type-meta); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .reception-page #client-profile .membership-extension-history { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--line-quiet); }
-.reception-page #client-profile .profile-danger-context { background: var(--stop-red-soft); }
+.reception-page #client-profile .profile-danger-context {
+  border-inline-start: 0;
+  background: var(--stop-red-soft);
+}
 .reception-page #client-profile .profile-danger-context > * { margin: 0; }
-.reception-page #client-profile .profile-review-context { background: var(--attention-amber-soft); }
+.reception-page #client-profile .profile-review-context {
+  border-inline-start: 0;
+  background: var(--attention-amber-soft);
+}
 .reception-page #client-profile .profile-review-context > * { margin: 0; }
 .reception-page #client-profile .profile-action-workspace {
-  border-inline-start: 4px solid var(--text-primary);
+  border-inline-start: 0;
   background: color-mix(in srgb, var(--text-primary) 5%, var(--desk-paper));
 }
 .reception-page #client-profile .profile-action-workspace .profile-region-heading .eyebrow { color: var(--text-primary); }
@@ -636,17 +643,89 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
 }
 .reception-page #client-profile .profile-activity-ledger {
   display: grid;
+  align-items: start;
   gap: var(--space-4);
-  border-inline-start: 3px solid color-mix(in srgb, var(--text-tertiary) 44%, var(--line-quiet));
-  background: color-mix(in srgb, var(--desk-inset) 54%, var(--desk-paper));
+  border-inline-start: 0;
+  background: var(--desk-paper);
 }
 .reception-page #client-profile .profile-activity-ledger .profile-region-heading .eyebrow { color: var(--text-tertiary); }
+.reception-page #client-profile .profile-operation-message {
+  position: static;
+  z-index: auto;
+  justify-self: start;
+  width: calc(100% - (var(--space-4) * 2));
+  max-width: 760px;
+  margin: var(--space-3) var(--space-4) 0;
+  border: 1px solid color-mix(in srgb, var(--checkin-green) 32%, var(--line-quiet));
+  border-inline-start: 0;
+  border-radius: var(--radius-control);
+  padding: var(--space-3);
+  background: color-mix(in srgb, var(--checkin-green-soft) 56%, var(--desk-paper));
+  box-shadow: none;
+}
+.reception-page #client-profile .profile-operation-message.operation-error {
+  border-color: color-mix(in srgb, var(--stop-red) 46%, var(--line-quiet));
+  background: color-mix(in srgb, var(--stop-red-soft) 74%, var(--desk-paper));
+  color: var(--stop-red);
+}
+.reception-page #client-profile .recent-visits,
+.reception-page #client-profile .recent-payments {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--checkin-blue) 18%, var(--line-quiet));
+  border-inline-start: 0;
+  border-radius: var(--radius-card);
+  padding: var(--space-3);
+  background: color-mix(in srgb, var(--checkin-blue-soft) 38%, var(--desk-paper));
+}
+.reception-page #client-profile .recent-payments {
+  border-color: color-mix(in srgb, var(--checkin-green) 18%, var(--line-quiet));
+  background: color-mix(in srgb, var(--checkin-green-soft) 32%, var(--desk-paper));
+}
+.reception-page #client-profile .recent-visits-header,
+.reception-page #client-profile .recent-payments-header {
+  margin: 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-quiet);
+}
+.reception-page #client-profile .recent-visits-header .section-heading { color: var(--checkin-blue); }
+.reception-page #client-profile .recent-payments-header .section-heading { color: var(--checkin-green); }
+.reception-page #client-profile :is(.recent-visit-list, .recent-payment-list) {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
 .reception-page #client-profile .recent-visit-row,
 .reception-page #client-profile .recent-payment-row,
 .reception-page #client-profile .membership-extension-row {
-  border-radius: 0;
+  border: 1px solid var(--line-quiet);
+  border-inline-start: 1px solid var(--line-quiet);
+  border-radius: var(--radius-control);
+  padding: var(--space-3);
+  background: var(--desk-paper);
   box-shadow: none;
 }
+.reception-page #client-profile .recent-visit-row:last-child,
+.reception-page #client-profile .recent-payment-row:last-child { padding-bottom: var(--space-3); }
+.reception-page #client-profile :is(.recent-visit-cancellation, .recent-payment-cancellation, .recent-payment-correction) {
+  border: 1px solid color-mix(in srgb, var(--stop-red) 20%, var(--line-quiet));
+  border-inline-start: 0;
+  border-radius: var(--radius-control);
+  padding: var(--space-2) var(--space-3);
+  background: color-mix(in srgb, var(--stop-red-soft) 52%, var(--desk-paper));
+}
+.reception-page #client-profile .recent-payment-correction {
+  border-color: color-mix(in srgb, var(--checkin-blue) 20%, var(--line-quiet));
+  background: color-mix(in srgb, var(--checkin-blue-soft) 50%, var(--desk-paper));
+}
+.reception-page #client-profile .recent-payment-correction.correction-outgoing {
+  border-color: color-mix(in srgb, var(--attention-amber) 22%, var(--line-quiet));
+  background: color-mix(in srgb, var(--attention-amber-soft) 58%, var(--desk-paper));
+}
+.reception-page #client-profile :is(.recent-visit-row, .recent-payment-row) form { width: 100%; }
+.reception-page #client-profile :is(.recent-visit-row, .recent-payment-row) form :is(button, input[type="submit"]) { min-height: 44px; }
 .reception-page #client-profile .profile-record-links { padding-top: var(--space-3); }
 .reception-page #client-profile .profile-management-actions { display: grid; }
 .reception-page #client-profile .profile-management-actions > .profile-action-panel {
@@ -674,9 +753,18 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   .reception-page #client-profile .profile-action-switcher { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .reception-page #client-profile .client-profile-meta,
   .reception-page #client-profile .membership-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reception-page #client-profile .profile-activity-ledger { grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+}
+@media (min-width: 1100px) {
+  .reception-page #client-profile .profile-activity-ledger { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+  .reception-page #client-profile .profile-activity-ledger > .profile-region-heading { grid-column: 1 / -1; }
 }
 @media (max-width: 720px) {
   .reception-page #client-profile > :not(.profile-loading) { padding: var(--space-3); }
+  .reception-page #client-profile .profile-operation-message {
+    width: calc(100% - (var(--space-3) * 2));
+    margin: var(--space-3) var(--space-3) 0;
+  }
   .reception-page #client-profile .client-identity-header { align-items: start; }
   .reception-page #client-profile .client-identity-header .section-heading { font-size: var(--type-section); }
   .reception-page #client-profile .profile-action-content { padding: var(--space-3); }

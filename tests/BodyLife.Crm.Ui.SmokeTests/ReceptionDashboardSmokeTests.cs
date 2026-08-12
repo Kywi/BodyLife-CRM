@@ -276,7 +276,9 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 """
                 profile => {
                     const style = (selector) => {
-                        const region = profile.querySelector(selector);
+                        const region = selector === '#client-profile'
+                            ? profile
+                            : profile.querySelector(selector);
                         const computed = getComputedStyle(region);
                         return {
                             background: computed.backgroundColor,
@@ -285,29 +287,28 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                         };
                     };
                     return [
+                        style('#client-profile'),
                         style('.profile-identity-facts'),
+                        style('.client-comment'),
                         style('.membership-panel'),
                         style('.profile-action-workspace'),
                         style('.profile-activity-ledger'),
                     ].flatMap(region => [region.background, region.rail, region.railColor]);
                 }
                 """);
-            Assert.Equal(12, profileRegions.Length);
+            Assert.Equal(18, profileRegions.Length);
             Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[0]);
-            Assert.Equal("0px", profileRegions[1]);
-            Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[3]);
-            Assert.Equal("4px", profileRegions[4]);
-            Assert.Equal("rgb(20, 109, 168)", profileRegions[5]);
-            Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[6]);
-            Assert.Equal("4px", profileRegions[7]);
-            Assert.Equal("rgb(32, 38, 43)", profileRegions[8]);
-            Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[9]);
-            Assert.Equal("3px", profileRegions[10]);
-            Assert.NotEqual(profileRegions[5], profileRegions[11]);
-            Assert.NotEqual(profileRegions[8], profileRegions[11]);
-            Assert.NotEqual(profileRegions[0], profileRegions[3]);
+            Assert.Equal("4px", profileRegions[1]);
+            Assert.Equal("rgb(20, 109, 168)", profileRegions[2]);
+            for (var regionIndex = 1; regionIndex < 6; regionIndex++)
+            {
+                Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[regionIndex * 3]);
+                Assert.Equal("0px", profileRegions[(regionIndex * 3) + 1]);
+            }
             Assert.NotEqual(profileRegions[3], profileRegions[6]);
             Assert.NotEqual(profileRegions[6], profileRegions[9]);
+            Assert.NotEqual(profileRegions[9], profileRegions[12]);
+            Assert.NotEqual(profileRegions[12], profileRegions[15]);
             await AssertFitsViewportAsync(page, viewportName, "exact-card profile");
             await CaptureViewportVisualAsync(page, viewportName, "exact-profile");
 
@@ -417,6 +418,42 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.Equal(
                 0,
                 await originalPayment.Locator("[data-correct-payment-panel]").CountAsync());
+            var ledgerGeometry = await clientProfile.EvaluateAsync<string>(
+                """
+                profile => {
+                    const ledger = profile.querySelector('.profile-activity-ledger');
+                    const visits = profile.querySelector('.recent-visits');
+                    const payments = profile.querySelector('.recent-payments');
+                    const row = profile.querySelector('.recent-payment-row');
+                    const ledgerStyle = getComputedStyle(ledger);
+                    const rowStyle = getComputedStyle(row);
+                    const visitBox = visits?.getBoundingClientRect();
+                    const paymentBox = payments?.getBoundingClientRect();
+                    return JSON.stringify({
+                        ledgerColumns: ledgerStyle.gridTemplateColumns,
+                        ledgerGap: ledgerStyle.gap,
+                        sideBySide: Boolean(visitBox && paymentBox && Math.abs(visitBox.left - paymentBox.left) > 1 && Math.abs(visitBox.top - paymentBox.top) < 1),
+                        stacked: Boolean(visitBox && paymentBox && Math.abs(visitBox.top - paymentBox.top) > 1),
+                        stretched: Boolean(visitBox && paymentBox && Math.abs(visitBox.height - paymentBox.height) < 1),
+                        rowRadius: rowStyle.borderTopLeftRadius,
+                        rowBorder: rowStyle.borderTopWidth,
+                        rowShadow: rowStyle.boxShadow,
+                    });
+                }
+                """);
+            Assert.Contains("\"rowBorder\":\"1px\"", ledgerGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"rowShadow\":\"none\"", ledgerGeometry, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"rowRadius\":\"0px\"", ledgerGeometry, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"ledgerGap\":\"0px\"", ledgerGeometry, StringComparison.Ordinal);
+            if (viewportName == "desktop")
+            {
+                Assert.Contains("\"sideBySide\":true", ledgerGeometry, StringComparison.Ordinal);
+                Assert.Contains("\"stretched\":false", ledgerGeometry, StringComparison.Ordinal);
+            }
+            else
+            {
+                Assert.Contains("\"stacked\":true", ledgerGeometry, StringComparison.Ordinal);
+            }
             await AssertFitsViewportAsync(page, viewportName, "Payment history profile");
             await CaptureVisualAsync(page, viewportName, "payment-history");
 
