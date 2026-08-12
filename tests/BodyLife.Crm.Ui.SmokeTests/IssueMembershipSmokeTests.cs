@@ -424,13 +424,16 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
         ILocator panel,
         string viewportName)
     {
+        var panelId = await panel.GetAttributeAsync("id");
+        var workspace = panel.Locator("xpath=ancestor::*[@data-profile-action-workspace][1]");
+        var trigger = workspace.Locator($"[data-profile-action-target='{panelId}']");
         await ExpectVisibleAsync(
-            panel.Locator("summary"),
+            trigger,
             viewportName,
             "Issue Membership action");
         if (await panel.GetAttributeAsync("open") is null)
         {
-            await panel.Locator("summary").ClickAsync();
+            await trigger.ClickAsync();
         }
 
         await ExpectVisibleAsync(panel.Locator("form"), viewportName, "Issue Membership form");

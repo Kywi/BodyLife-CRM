@@ -10,7 +10,8 @@
 }
 
 <details id="add-payment-action-panel"
-         class="profile-action-panel"
+         class="profile-action-panel profile-action-add-payment"
+         name="profile-action"
          open="@(Model.IsOpen ? "open" : null)">
     <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"payment"' />@L["Payment.Add"]</summary>
     <div class="profile-action-content">

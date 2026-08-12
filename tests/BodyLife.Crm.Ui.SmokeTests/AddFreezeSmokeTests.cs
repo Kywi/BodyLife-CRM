@@ -257,10 +257,13 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         ILocator panel,
         string viewportName)
     {
-        await ExpectVisibleAsync(panel.Locator("summary"), viewportName, "Add Freeze action");
+        var panelId = await panel.GetAttributeAsync("id");
+        var workspace = panel.Locator("xpath=ancestor::*[@data-profile-action-workspace][1]");
+        var trigger = workspace.Locator($"[data-profile-action-target='{panelId}']");
+        await ExpectVisibleAsync(trigger, viewportName, "Add Freeze action");
         if (await panel.GetAttributeAsync("open") is null)
         {
-            await panel.Locator("summary").ClickAsync();
+            await trigger.ClickAsync();
         }
 
         await ExpectVisibleAsync(panel.Locator("form"), viewportName, "Add Freeze form");

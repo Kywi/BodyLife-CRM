@@ -15,7 +15,8 @@
 }
 
 <details id="mark-visit-action-panel"
-         class="profile-action-panel"
+         class="profile-action-panel profile-action-mark-visit"
+         name="profile-action"
          open="@(Model.IsOpen ? "open" : null)">
     <summary><partial name="/Pages/Shared/_Icon.cshtml" model='"visit"' />@L["Visit.Mark"]</summary>
     <div class="profile-action-content">

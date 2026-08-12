@@ -2621,9 +2621,22 @@ public sealed class IndexModel(
                     IsOpen = payment.PaymentId == CorrectPaymentId,
                 })
                 .ToArray() ?? [];
-            negativeVisitCoveragePanel = await BuildNegativeVisitCoveragePanelAsync(
+            var candidateNegativeCoveragePanel = await BuildNegativeVisitCoveragePanelAsync(
                 profile.ClientId,
                 cancellationToken);
+            if (!candidateNegativeCoveragePanel.IsSafe
+                || candidateNegativeCoveragePanel.HasErrors
+                || candidateNegativeCoveragePanel.CoverageResult.Coverage is
+                {
+                    TotalNegativeBalance: > 0,
+                }
+                || candidateNegativeCoveragePanel.CoverageResult.Coverage is
+                {
+                    ActiveClosures.Count: > 0,
+                })
+            {
+                negativeVisitCoveragePanel = candidateNegativeCoveragePanel;
+            }
             if (profile.AllowedActions.IsAllowed(MembershipActionKeys.ReplaceIssuedSale)
                 && profile.AllowedActions.IsAllowed(MembershipActionKeys.CancelIssuedSale))
             {

@@ -228,10 +228,50 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 viewportName,
                 "exact-card profile number");
             await ExpectVisibleAsync(clientProfile.GetByText("No current membership", new() { Exact = true }), viewportName, "membership placeholder");
+            Assert.Equal(1, await clientProfile.Locator(".profile-action-workspace").CountAsync());
+            Assert.Equal(3, await clientProfile.Locator(".profile-action-dock > .profile-action-panel").CountAsync());
+            var actionSwitcher = clientProfile.Locator("[data-profile-action-switcher]");
+            await ExpectVisibleAsync(actionSwitcher, viewportName, "profile action switcher");
+            Assert.Equal(3, await actionSwitcher.Locator("[data-profile-action-target]").CountAsync());
+            Assert.True(
+                await clientProfile.Locator("#mark-visit-action-panel").EvaluateAsync<bool>("element => element.open"),
+                "Mark Visit should be the initially open reception action.");
+            Assert.Equal(0, await clientProfile.Locator("#negative-visit-coverage-panel").CountAsync());
+            foreach (var actionPanelId in new[]
+                     {
+                         "mark-visit-action-panel",
+                         "issue-membership-action-panel",
+                         "add-payment-action-panel",
+                     })
+            {
+                var actionPanel = clientProfile.Locator($"#{actionPanelId}");
+                Assert.Equal("profile-action", await actionPanel.GetAttributeAsync("name"));
+                Assert.Equal(1, await actionPanel.Locator("form[hx-swap='outerHTML']").CountAsync());
+            }
             await AssertMinimumTouchTargetsAsync(
-                clientProfile.Locator(".profile-action-panel summary"),
+                actionSwitcher.Locator("[data-profile-action-target]"),
                 viewportName,
                 "profile action");
+            var actionContentBox = await clientProfile
+                .Locator("#mark-visit-action-panel > .profile-action-content")
+                .BoundingBoxAsync();
+            Assert.NotNull(actionContentBox);
+            var triggerCount = await actionSwitcher.Locator("[data-profile-action-target]").CountAsync();
+            for (var triggerIndex = 0; triggerIndex < triggerCount; triggerIndex++)
+            {
+                var triggerBox = await actionSwitcher
+                    .Locator("[data-profile-action-target]")
+                    .Nth(triggerIndex)
+                    .BoundingBoxAsync();
+                Assert.NotNull(triggerBox);
+                Assert.True(
+                    triggerBox.Y + triggerBox.Height <= actionContentBox.Y + 1,
+                    $"{viewportName}: every action trigger must remain above the active form.");
+            }
+            Assert.Equal(
+                "rgb(32, 38, 43)",
+                await clientProfile.Locator("[data-mark-visit-submit]")
+                    .EvaluateAsync<string>("element => getComputedStyle(element).backgroundColor"));
             await AssertFitsViewportAsync(page, viewportName, "exact-card profile");
             await CaptureViewportVisualAsync(page, viewportName, "exact-profile");
 
@@ -1323,6 +1363,25 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                     .GetByRole(AriaRole.Heading, new() { Name = "Kovalenko Olena" }),
                 "tablet",
                 "full-page exact-card profile");
+            var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            Assert.True(await profile.Locator("[data-profile-action-switcher]").IsHiddenAsync());
+            var markVisitPanel = profile.Locator("#mark-visit-action-panel");
+            Assert.True(await markVisitPanel.EvaluateAsync<bool>("element => element.open"));
+            await ExpectVisibleAsync(markVisitPanel.Locator("summary"), "tablet", "no-JavaScript Mark Visit summary");
+            await ExpectVisibleAsync(markVisitPanel.Locator("form"), "tablet", "no-JavaScript Mark Visit form");
+            foreach (var panelId in new[]
+                     {
+                         "issue-membership-action-panel",
+                         "add-payment-action-panel",
+                     })
+            {
+                var panel = profile.Locator($"#{panelId}");
+                await ExpectVisibleAsync(panel.Locator("summary"), "tablet", $"no-JavaScript {panelId} summary");
+                await panel.Locator("summary").ClickAsync();
+                await ExpectVisibleAsync(panel.Locator("form"), "tablet", $"no-JavaScript {panelId} form");
+                Assert.Equal("post", await panel.Locator("form").GetAttributeAsync("method"));
+                Assert.Contains("handler=", await panel.Locator("form").GetAttributeAsync("action"));
+            }
             await AssertFitsViewportAsync(page, "tablet", "no-JavaScript fallback");
         }
         finally

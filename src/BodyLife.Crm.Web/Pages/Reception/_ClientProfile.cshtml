@@ -35,6 +35,20 @@
         var extensionMemberships = profile.Membership.Timeline
             .Where(membership => membership.ExtensionExplanations.Count > 0)
             .ToArray();
+        var membershipWarnings = profile.Membership.Warnings;
+        var selectedActionPanelId = Model.IssueMembershipForm?.IsOpen == true
+            ? "issue-membership-action-panel"
+            : Model.AddPaymentForm?.IsOpen == true
+                ? "add-payment-action-panel"
+                : Model.AddFreezeForm?.IsOpen == true
+                    ? "add-freeze-action-panel"
+                    : Model.MarkVisitForm is not null
+                        ? "mark-visit-action-panel"
+                        : Model.IssueMembershipForm is not null
+                            ? "issue-membership-action-panel"
+                            : Model.AddPaymentForm is not null
+                                ? "add-payment-action-panel"
+                                : "add-freeze-action-panel";
 
         <header class="client-identity-header">
             <div>
@@ -54,19 +68,27 @@
             </div>
         }
 
-        @if (profile.Warnings.Count > 0)
+        @if (profile.Warnings.Count > 0 || membershipWarnings.Count > 0)
         {
-            <div class="profile-warning-list" aria-label="@L["Profile.Warnings"]">
+            <section class="profile-warning-list" aria-label="@L["Profile.Warnings"]">
                 @foreach (var warning in profile.Warnings)
                 {
-                    <div class="warning-block warning-caution">
+                    <div class="warning-block @ProfileWarningClass(warning.Code)">
                         <strong><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@WarningLabel(warning.Code)</strong>
                         <span>@WarningMessage(warning.Code)</span>
                     </div>
                 }
-            </div>
+                @foreach (var warning in membershipWarnings)
+                {
+                    <div class="warning-block @ProfileWarningClass(warning.Code)">
+                        <strong><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@WarningLabel(warning.Code)</strong>
+                        <span>@WarningMessage(warning.Code)</span>
+                    </div>
+                }
+            </section>
         }
 
+        <div class="profile-identity-facts">
         <dl class="client-profile-meta">
             <div>
                 <dt>@L["Profile.CurrentCard"]</dt>
@@ -96,8 +118,9 @@
                 <p>@profile.Comment</p>
             </section>
         }
+        </div>
 
-        <section class="membership-panel" aria-labelledby="membership-panel-title">
+        <section class="membership-panel membership-readiness-strip" aria-labelledby="membership-panel-title">
             <header class="membership-panel-header">
                 <h3 id="membership-panel-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@L["Profile.CurrentMembership"]</h3>
             </header>
@@ -110,32 +133,23 @@
             {
                 var membership = profile.Membership.CurrentMembership;
                 <dl class="membership-summary-grid">
-                    <div>
+                    <div class="membership-signal membership-signal-info">
+                        <dt>@L["Membership.SnapshotName"]</dt>
+                        <dd>@membership.TypeNameSnapshot</dd>
+                    </div>
+                    <div class="membership-signal @MembershipStatusSignalClass(membership.Status)">
                         <dt>@L["Profile.Status"]</dt>
                         <dd>@MembershipStatusLabel(membership.Status)</dd>
                     </div>
-                    <div>
+                    <div class="membership-signal @MembershipRemainingSignalClass(membershipWarnings)">
                         <dt>@L["Profile.RemainingVisits"]</dt>
                         <dd>@membership.RemainingVisits</dd>
                     </div>
-                    <div>
+                    <div class="membership-signal @MembershipEndSignalClass(membershipWarnings)">
                         <dt>@L["Profile.EffectiveEnd"]</dt>
                         <dd>@ReceptionDisplayFormatter.Date(membership.EffectiveEndDate)</dd>
                     </div>
                 </dl>
-            }
-
-            @if (profile.Membership.Warnings.Count > 0)
-            {
-                <div class="profile-warning-list" aria-label="@L["Membership.Warnings"]">
-                    @foreach (var warning in profile.Membership.Warnings)
-                    {
-                        <div class="warning-block warning-caution">
-                            <strong><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@WarningLabel(warning.Code)</strong>
-                            <span>@WarningMessage(warning.Code)</span>
-                        </div>
-                    }
-                </div>
             }
 
             @if (extensionMemberships.Length > 0)
@@ -208,36 +222,101 @@
             }
         </section>
 
-        @if (Model.IssueMembershipForm is not null)
-        {
-            <partial name="_IssueMembershipForm" model="Model.IssueMembershipForm" />
-        }
-
-        @if (Model.MarkVisitForm is not null)
-        {
-            <partial name="_MarkVisitForm" model="Model.MarkVisitForm" />
-        }
-
-        @if (Model.AddFreezeForm is not null)
-        {
-            <partial name="_AddFreezeForm" model="Model.AddFreezeForm" />
-        }
-
-        @if (Model.AddPaymentForm is not null)
-        {
-            <partial name="_AddPaymentForm" model="Model.AddPaymentForm" />
-        }
-
         @if (Model.NegativeVisitCoveragePanel is not null)
         {
-            <partial name="_NegativeVisitCoveragePanel" model="Model.NegativeVisitCoveragePanel" />
+            <section class="profile-danger-context" aria-label="@L["Profile.NegativeCoverage"]">
+                <partial name="_NegativeVisitCoveragePanel" model="Model.NegativeVisitCoveragePanel" />
+            </section>
         }
 
         @foreach (var issuedSaleCorrectionForm in Model.IssuedMembershipSaleCorrectionForms)
         {
-            <partial name="_IssuedMembershipSaleCorrectionForm" model="issuedSaleCorrectionForm" />
+            <section class="profile-review-context" aria-label="@L["Profile.SaleCorrections"]">
+                <partial name="_IssuedMembershipSaleCorrectionForm" model="issuedSaleCorrectionForm" />
+            </section>
         }
 
+        <section class="profile-action-workspace"
+                 aria-labelledby="profile-action-workspace-title"
+                 data-profile-action-workspace>
+            <header class="profile-region-heading">
+                <p class="eyebrow">@L["Profile.ActionWorkspace"]</p>
+                <h3 id="profile-action-workspace-title" class="section-heading">@L["Profile.ActionWorkspaceHint"]</h3>
+            </header>
+            <div class="profile-action-switcher"
+                 role="group"
+                 aria-label="@L["Profile.ActionWorkspace"]"
+                 data-profile-action-switcher
+                 hidden>
+                @if (Model.MarkVisitForm is not null)
+                {
+                    <button type="button"
+                            class="profile-action-trigger profile-action-trigger-primary"
+                            aria-controls="mark-visit-action-panel"
+                            aria-pressed="@(selectedActionPanelId == "mark-visit-action-panel" ? "true" : "false")"
+                            data-profile-action-target="mark-visit-action-panel">
+                        <partial name="/Pages/Shared/_Icon.cshtml" model='"visit"' />@L["Visit.Mark"]
+                    </button>
+                }
+                @if (Model.IssueMembershipForm is not null)
+                {
+                    <button type="button"
+                            class="profile-action-trigger"
+                            aria-controls="issue-membership-action-panel"
+                            aria-pressed="@(selectedActionPanelId == "issue-membership-action-panel" ? "true" : "false")"
+                            data-profile-action-target="issue-membership-action-panel">
+                        <partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@L["Membership.Issue"]
+                    </button>
+                }
+                @if (Model.AddPaymentForm is not null)
+                {
+                    <button type="button"
+                            class="profile-action-trigger"
+                            aria-controls="add-payment-action-panel"
+                            aria-pressed="@(selectedActionPanelId == "add-payment-action-panel" ? "true" : "false")"
+                            data-profile-action-target="add-payment-action-panel">
+                        <partial name="/Pages/Shared/_Icon.cshtml" model='"payment"' />@L["Payment.Add"]
+                    </button>
+                }
+                @if (Model.AddFreezeForm is not null)
+                {
+                    <button type="button"
+                            class="profile-action-trigger"
+                            aria-controls="add-freeze-action-panel"
+                            aria-pressed="@(selectedActionPanelId == "add-freeze-action-panel" ? "true" : "false")"
+                            data-profile-action-target="add-freeze-action-panel">
+                        <partial name="/Pages/Shared/_Icon.cshtml" model='"freeze"' />@L["Freeze.Add"]
+                    </button>
+                }
+            </div>
+            <div class="profile-action-dock">
+                @if (Model.MarkVisitForm is not null)
+                {
+                    <partial name="_MarkVisitForm" model="Model.MarkVisitForm" />
+                }
+
+                @if (Model.IssueMembershipForm is not null)
+                {
+                    <partial name="_IssueMembershipForm" model="Model.IssueMembershipForm" />
+                }
+
+                @if (Model.AddPaymentForm is not null)
+                {
+                    <partial name="_AddPaymentForm" model="Model.AddPaymentForm" />
+                }
+
+                @if (Model.AddFreezeForm is not null)
+                {
+                    <partial name="_AddFreezeForm" model="Model.AddFreezeForm" />
+                }
+            </div>
+        </section>
+
+        <section class="profile-activity-ledger" aria-labelledby="profile-activity-ledger-title">
+            <header class="profile-region-heading">
+                <p class="eyebrow">@L["Profile.Activity"]</p>
+                <h3 id="profile-activity-ledger-title" class="section-heading">@L["Profile.ActivityHint"]</h3>
+            </header>
         @if (profile.RecentVisits is { } recentVisits)
         {
             <section class="recent-visits" aria-labelledby="recent-visits-title">
@@ -467,6 +546,7 @@
                 }
             </section>
         }
+        </section>
 
         <nav class="profile-record-links"
              aria-label="@L["Profile.Records"]"
@@ -485,14 +565,21 @@
             </a>
         </nav>
 
-        @if (Model.UpdateClientForm is not null)
+        @if (Model.UpdateClientForm is not null || Model.CardAssignmentForm is not null)
         {
-            <partial name="_UpdateClientForm" model="Model.UpdateClientForm" />
-        }
+            <section class="profile-management" aria-label="@L["Client.Details"]">
+                <div class="profile-management-actions">
+                    @if (Model.UpdateClientForm is not null)
+                    {
+                        <partial name="_UpdateClientForm" model="Model.UpdateClientForm" />
+                    }
 
-        @if (Model.CardAssignmentForm is not null)
-        {
-            <partial name="_CardAssignmentForm" model="Model.CardAssignmentForm" />
+                    @if (Model.CardAssignmentForm is not null)
+                    {
+                        <partial name="_CardAssignmentForm" model="Model.CardAssignmentForm" />
+                    }
+                </div>
+            </section>
         }
     }
 </section>
@@ -528,6 +615,52 @@
             ClientProfileMembershipWarningCodes.AmbiguousCurrentMembership => L["Warning.AmbiguousMembership.Message"],
             _ => L["Warning.Generic.Message"],
         };
+    }
+
+    private static string ProfileWarningClass(string code)
+    {
+        return code is "client_inactive"
+            or MembershipWarningCodes.NegativeBalance
+            or MembershipWarningCodes.ExpiredByDate
+                ? "warning-danger"
+                : "warning-caution";
+    }
+
+    private static string MembershipStatusSignalClass(string status)
+    {
+        return status switch
+        {
+            ClientMembershipSummaryStatusCodes.Active => "membership-signal-good",
+            ClientMembershipSummaryStatusCodes.Expired => "membership-signal-danger",
+            ClientMembershipSummaryStatusCodes.Canceled or ClientMembershipSummaryStatusCodes.Corrected =>
+                "membership-signal-caution",
+            _ => "membership-signal-neutral",
+        };
+    }
+
+    private static string MembershipRemainingSignalClass(IReadOnlyList<ClientWarning> warnings)
+    {
+        if (warnings.Any(warning => warning.Code == MembershipWarningCodes.NegativeBalance))
+        {
+            return "membership-signal-danger";
+        }
+
+        return warnings.Any(warning => warning.Code is MembershipWarningCodes.ZeroRemaining
+            or MembershipWarningCodes.LowRemaining)
+                ? "membership-signal-caution"
+                : "membership-signal-good";
+    }
+
+    private static string MembershipEndSignalClass(IReadOnlyList<ClientWarning> warnings)
+    {
+        if (warnings.Any(warning => warning.Code == MembershipWarningCodes.ExpiredByDate))
+        {
+            return "membership-signal-danger";
+        }
+
+        return warnings.Any(warning => warning.Code == MembershipWarningCodes.EndingSoon)
+            ? "membership-signal-caution"
+            : "membership-signal-good";
     }
 
     private string VisitKindLabel(VisitKind visitKind)

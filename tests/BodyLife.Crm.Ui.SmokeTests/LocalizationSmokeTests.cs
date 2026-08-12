@@ -189,7 +189,8 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
             var panel = page.Locator("#add-payment-action-panel");
             if (await panel.GetAttributeAsync("open") is null)
             {
-                await panel.Locator("summary").ClickAsync();
+                await page.Locator("[data-profile-action-target='add-payment-action-panel']")
+                    .ClickAsync();
             }
 
             var form = panel.Locator("form");
@@ -297,19 +298,19 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
                 $"/Reception/Index?clientId={_app.FreezeTabletClientId}").ToString());
             var profile = page.Locator("#client-profile");
             await ExpectLocatorTextAsync(
-                profile.Locator("#issue-membership-action-panel > summary"),
+                profile.Locator("[data-profile-action-target='issue-membership-action-panel']"),
                 issueMembership,
                 "localized issue Membership action");
             await ExpectLocatorTextAsync(
-                profile.Locator("#mark-visit-action-panel > summary"),
+                profile.Locator("[data-profile-action-target='mark-visit-action-panel']"),
                 markVisit,
                 "localized mark Visit action");
             await ExpectLocatorTextAsync(
-                profile.Locator("#add-payment-action-panel > summary"),
+                profile.Locator("[data-profile-action-target='add-payment-action-panel']"),
                 addPayment,
                 "localized add Payment action");
             await ExpectLocatorTextAsync(
-                profile.Locator("#add-freeze-action-panel > summary"),
+                profile.Locator("[data-profile-action-target='add-freeze-action-panel']"),
                 addFreeze,
                 "localized add Freeze action");
 

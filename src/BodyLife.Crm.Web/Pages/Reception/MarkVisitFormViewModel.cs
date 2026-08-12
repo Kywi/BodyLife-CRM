@@ -48,7 +48,7 @@ public sealed record MarkVisitFormViewModel(
             input,
             optionsResult,
             Errors: [],
-            IsOpen: false);
+            IsOpen: true);
     }
 
     public static MarkVisitFormViewModel FromSubmission(

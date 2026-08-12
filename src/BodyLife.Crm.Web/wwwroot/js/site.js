@@ -487,12 +487,95 @@ document.addEventListener("change", (event) => {
   syncMarkVisitForm(form);
 });
 
+const profileActionWorkspaceSelector = "[data-profile-action-workspace]";
+
+const getProfileActionWorkspaces = (root) => {
+  const workspaces = new Set();
+
+  if (root instanceof Element) {
+    if (root.matches(profileActionWorkspaceSelector)) {
+      workspaces.add(root);
+    }
+
+    const ancestor = root.closest(profileActionWorkspaceSelector);
+    if (ancestor instanceof HTMLElement) {
+      workspaces.add(ancestor);
+    }
+  }
+
+  for (const workspace of root.querySelectorAll?.(profileActionWorkspaceSelector) ?? []) {
+    workspaces.add(workspace);
+  }
+
+  return workspaces;
+};
+
+const activateProfileAction = (workspace, targetId) => {
+  const panels = Array.from(workspace.querySelectorAll(
+    ".profile-action-dock > details.profile-action-panel"));
+  const selectedPanel = panels.find((panel) => panel.id === targetId) ?? panels[0];
+  if (!(selectedPanel instanceof HTMLDetailsElement)) {
+    return;
+  }
+
+  for (const panel of panels) {
+    panel.open = panel === selectedPanel;
+  }
+
+  for (const trigger of workspace.querySelectorAll("[data-profile-action-target]")) {
+    trigger.setAttribute(
+      "aria-pressed",
+      String(trigger.dataset.profileActionTarget === selectedPanel.id));
+  }
+};
+
+const syncProfileActionWorkspace = (workspace) => {
+  if (!(workspace instanceof HTMLElement)) {
+    return;
+  }
+
+  const switcher = workspace.querySelector("[data-profile-action-switcher]");
+  const panels = Array.from(workspace.querySelectorAll(
+    ".profile-action-dock > details.profile-action-panel"));
+  if (!(switcher instanceof HTMLElement) || panels.length === 0) {
+    return;
+  }
+
+  const openPanel = panels.find((panel) => panel.open);
+  const pressedTarget = workspace.querySelector(
+    "[data-profile-action-target][aria-pressed='true']")?.dataset.profileActionTarget;
+  activateProfileAction(workspace, openPanel?.id ?? pressedTarget ?? panels[0].id);
+  workspace.classList.add("is-enhanced");
+  switcher.hidden = false;
+};
+
+const syncProfileActionWorkspaces = (root) => {
+  for (const workspace of getProfileActionWorkspaces(root)) {
+    syncProfileActionWorkspace(workspace);
+  }
+};
+
+document.addEventListener("click", (event) => {
+  if (!(event.target instanceof Element)) {
+    return;
+  }
+
+  const trigger = event.target.closest("[data-profile-action-target]");
+  const workspace = trigger?.closest(profileActionWorkspaceSelector);
+  if (!(trigger instanceof HTMLButtonElement) || !(workspace instanceof HTMLElement)) {
+    return;
+  }
+
+  activateProfileAction(workspace, trigger.dataset.profileActionTarget);
+});
+
 document.addEventListener("htmx:load", (event) => {
   syncCardIntentForms(event.detail?.elt ?? document);
   syncMarkVisitForms(event.detail?.elt ?? document);
   syncIssueMembershipForms(event.detail?.elt ?? document);
   syncCorrectPaymentForms(event.detail?.elt ?? document);
   syncNonWorkingDayCorrectionForms(event.detail?.elt ?? document);
+  syncProfileActionWorkspaces(event.detail?.elt ?? document);
 });
 
 syncCardIntentForms(document);
@@ -500,3 +583,4 @@ syncMarkVisitForms(document);
 syncIssueMembershipForms(document);
 syncCorrectPaymentForms(document);
 syncNonWorkingDayCorrectionForms(document);
+syncProfileActionWorkspaces(document);

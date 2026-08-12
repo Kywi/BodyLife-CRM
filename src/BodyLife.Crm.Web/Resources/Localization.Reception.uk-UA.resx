@@ -72,6 +72,12 @@
   <data name="Profile.Status" xml:space="preserve"><value>Статус</value></data>
   <data name="Profile.RemainingVisits" xml:space="preserve"><value>Залишок відвідувань</value></data>
   <data name="Profile.EffectiveEnd" xml:space="preserve"><value>Фактична дата завершення</value></data>
+  <data name="Profile.ActionWorkspace" xml:space="preserve"><value>Дії рецепції</value></data>
+  <data name="Profile.ActionWorkspaceHint" xml:space="preserve"><value>Оберіть одну дію</value></data>
+  <data name="Profile.Activity" xml:space="preserve"><value>Журнал дій</value></data>
+  <data name="Profile.ActivityHint" xml:space="preserve"><value>Відвідування й платежі</value></data>
+  <data name="Profile.NegativeCoverage" xml:space="preserve"><value>Покриття від’ємних відвідувань</value></data>
+  <data name="Profile.SaleCorrections" xml:space="preserve"><value>Виправлення продажу абонемента</value></data>
 <data name="Freeze.Add" xml:space="preserve"><value>Додати замороження</value></data>
   <data name="Freeze.NotAdded" xml:space="preserve"><value>Замороження не додано</value></data>
   <data name="Freeze.Range" xml:space="preserve"><value>Діапазон абонемента (обидві дати включно)</value></data>

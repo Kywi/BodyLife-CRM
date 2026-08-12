@@ -72,6 +72,12 @@
   <data name="Profile.Status" xml:space="preserve"><value>Status</value></data>
   <data name="Profile.RemainingVisits" xml:space="preserve"><value>Remaining visits</value></data>
   <data name="Profile.EffectiveEnd" xml:space="preserve"><value>Effective end date</value></data>
+  <data name="Profile.ActionWorkspace" xml:space="preserve"><value>Reception actions</value></data>
+  <data name="Profile.ActionWorkspaceHint" xml:space="preserve"><value>Choose one action</value></data>
+  <data name="Profile.Activity" xml:space="preserve"><value>Activity ledger</value></data>
+  <data name="Profile.ActivityHint" xml:space="preserve"><value>Visits and payments</value></data>
+  <data name="Profile.NegativeCoverage" xml:space="preserve"><value>Negative visit coverage</value></data>
+  <data name="Profile.SaleCorrections" xml:space="preserve"><value>Issued sale corrections</value></data>
 <data name="Freeze.Add" xml:space="preserve"><value>Add freeze</value></data>
   <data name="Freeze.NotAdded" xml:space="preserve"><value>Freeze not added</value></data>
   <data name="Freeze.Range" xml:space="preserve"><value>Inclusive membership range</value></data>

@@ -369,7 +369,8 @@ public sealed class IssuedMembershipSaleCorrectionSmokeTests
         var panel = page.Locator("#issue-membership-action-panel");
         if (await panel.GetAttributeAsync("open") is null)
         {
-            await panel.Locator("summary").ClickAsync();
+            await page.Locator("[data-profile-action-target='issue-membership-action-panel']")
+                .ClickAsync();
         }
 
         var responseTask = page.WaitForResponseAsync(response =>
