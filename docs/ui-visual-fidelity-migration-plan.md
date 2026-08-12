@@ -1,9 +1,10 @@
 # План міграції current-Home шаблону в production Razor UI
 
 Дата: 2026-07-22
-Оновлено: 2026-08-11
-Статус: **production migration authorized; Wave 0 completed; Wave 1 revised
-candidate awaiting explicit product-owner approval; Wave 2 blocked**.
+Оновлено: 2026-08-12
+Статус: **production migration authorized; Waves 0–1 approved; Wave 2
+Search/Create candidate completed and awaiting explicit product-owner
+approval; Wave 3 blocked**.
 
 ## Product decision and reset point
 
@@ -166,9 +167,8 @@ mandatory Wave 1 prerequisite rather than simulated evidence.
 
 ### Wave 1 — canonical system, authenticated shell and Home
 
-Status: **revised candidate on 2026-08-11 after the first render was explicitly
-rejected for composition and typography drift; automated gates are green;
-explicit product-owner approval remains pending**.
+Status: **approved by the product owner on 2026-08-12 after the revised
+desktop/tablet/phone composition replaced the rejected first render**.
 
 Owned production surface:
 
@@ -238,12 +238,14 @@ Stop/go:
   8–20px brand-to-Search gap and at least 300px flexible Search width; phone
   protects brand/account → Search → Create ordering and visible role text;
 - no P0/P1 independent-review finding;
-- product owner approves the real Home tablet/phone candidate. Rejection keeps
-  Wave 2 blocked and reopens only Wave 1.
+- product owner approved the real Home desktop/tablet/phone candidate on
+  2026-08-12, opening Wave 2. Any later shell regression reopens only Wave 1.
 
 ### Wave 2 — Reception Search and Create Client
 
-Status: **not started; blocked by Wave 1 approval**.
+Status: **candidate completed on 2026-08-12; automated gates and independent
+correctness/design reviews are green; explicit product-owner Search/Create
+approval remains pending**.
 
 Migrate `/Reception/Index`, `_ReceptionWorkspace` and `_CreateClientForm` to
 the approved shell/components. Cover idle/loading, exact, multiple, no-result,
@@ -254,6 +256,38 @@ duplicate ids.
 
 Gate: all search/create states and roles at tablet/phone, stable selectors and
 fallback hrefs intact, zero P0/P1, explicit Search/Create anchor approval.
+
+Candidate evidence:
+
+- `/Reception/Index` now names the Clients task and presents one focal Search
+  surface followed by peer-level Results and direct Create surfaces; the
+  deferred Wave 3 profile remains deliberately subordinate and unchanged;
+- global GET Search and the route-local htmx Search retain distinct ids,
+  fallback URLs, `hx-*` targets/sync/indicators and server-owned exact-match
+  auto-open behavior;
+- direct Create uses the existing permission-aware server workflow and lands
+  at `#create-client-action-panel`; validation, duplicate review with required
+  acknowledgement/reason, busy protection, idempotency and canonical reread
+  remain unchanged;
+- real Playwright states cover idle, exact, multiple, no-result, typed query
+  failure, direct Create, duplicate review, busy/success and no-JavaScript GET
+  fallback at `1440x900`, `1024x768` and `390x844` as applicable;
+- post-fix viewport captures are under
+  `/tmp/bodylife-production-wave2-candidate-v3/`; independent correctness and
+  interface-design closure report zero remaining P0–P3 findings;
+- Release build, 378/378 Web tests, the focused 8/8 Search/Create matrix,
+  14/14 style/localization checks and the complete authenticated Playwright
+  regression suite at 144/144 pass. Focused PostgreSQL Search/Create assertions
+  passed 17/18; the sole failure occurred in test-database teardown because the
+  local `genik` role cannot call `pg_terminate_backend` (`42501`), not in a
+  product assertion.
+
+Stop/go:
+
+- present the real desktop/tablet/phone Search/Create anchor and live isolated
+  instance to the product owner;
+- rejection reopens only Wave 2; approval opens Wave 3 without changing any
+  server contract or accepting the still-unmigrated profile/action visuals.
 
 ### Wave 3 — Client profile and all Reception actions
 
@@ -349,7 +383,7 @@ Severity:
 
 ## Current next action
 
-Begin Wave 1 only: implement the canonical production token layer plus the
-authenticated shell/Home candidate, obtain real PostgreSQL-backed tablet/phone
-captures, run independent review and stop for product-owner approval before
-touching the Reception Search/Create composition.
+Present the real Wave 2 Search/Create candidate from
+`/tmp/bodylife-production-wave2-candidate-v3/` in a live isolated instance and
+obtain explicit product-owner approval. Do not start Wave 3 Client
+Profile/actions until that decision is recorded.

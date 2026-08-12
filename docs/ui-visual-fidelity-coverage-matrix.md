@@ -1,11 +1,11 @@
 # Матриця охоплення візуальної відповідності UI
 
 Дата: 2026-07-22
-Оновлено: 2026-08-11 — current-Home is the authorized production migration
-target; the earlier production Wave 1 composition is superseded.
-Статус: **Wave 0 completed; Wave 1 revised candidate awaiting explicit
-product-owner approval after the first production render was rejected**. Waves
-2–6 are blocked by their preceding anchor approvals. Це
+Оновлено: 2026-08-12 — current-Home is the authorized production migration
+target; revised Wave 1 is approved and Wave 2 Search/Create is a reviewed
+candidate.
+Статус: **Waves 0–1 approved; Wave 2 candidate awaiting explicit product-owner
+approval**. Waves 3–6 are blocked by their preceding anchor approvals. Це
 acceptance ledger для плану
 `ui-visual-fidelity-migration-plan.md`; `approved` означає explicit side-by-side
 product-owner approval, не лише green automated tests.
@@ -23,8 +23,8 @@ anchor (header and no-result reachable);
 eligible history row, with
 `clients.html?state=cancel-visit-stale#cancel-visit-stale` preserving prior
 canonical context. This is template-lab
-coverage only. Production migration is now authorized, but every real Razor
-row still starts unapproved and requires the evidence below.
+coverage only. Production migration is now authorized, but each remaining
+unapproved real Razor row requires the evidence below.
 
 Production acceptance compares each real authenticated Razor route/state with
 the evolved current-Home composition and its shared token contract. Locked
@@ -48,12 +48,12 @@ product-owner review.
 
 | Anchor | Historical reference context | Required canonical state | Status | Required approval |
 | --- | --- | --- | --- | --- |
-| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | revised candidate — automated gates green; approval pending | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-desktop-1440x900-uk.png` and `wave1-home-tablet-1024x768-uk.png`; explicit product-owner comparison still required |
-| Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | not started | Current-Home composition + real canonical route/state gallery |
+| Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | approved 2026-08-12 | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-desktop-1440x900-uk.png` and `wave1-home-tablet-1024x768-uk.png`; explicit product-owner approval recorded |
+| Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | candidate — approval pending | `/tmp/bodylife-production-wave2-candidate-v3/desktop-search-idle.png`, `desktop-multiple-results.png`, `desktop-no-results-create.png` and `desktop-direct-create.png`; zero-P0–P3 closure review |
 | Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | not started | Current-Home composition + real canonical route/state gallery |
-| Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | not started | Dedicated current-Home anchor + real command states |
+| Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | candidate — approval pending | `/tmp/bodylife-production-wave2-candidate-v3/desktop-direct-create.png` and `tablet-create-client-duplicate-review.png`; real command validation/busy/success/canonical-reread coverage |
 | Cancel Visit desktop | `branded-light-5-cancel-visit.png` 1104x861 | reason/confirmation, permission, stale/concurrency, canceled and backfill/fallback labels | not started | Dedicated current-Home correction anchor + real command states |
-| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | revised candidate — automated gates green; approval pending | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-phone-390x844-uk.png`; explicit product-owner comparison at `390x844` still required |
+| Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | approved 2026-08-12 | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-phone-390x844-uk.png`; explicit product-owner approval recorded |
 | Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | not started | Current-Home single-column composition + real canonical states |
 | Cancel Visit phone | `branded-mobile-cancel.png` 480x1818 | expanded danger/correction card and keyboard/focus order | not started | Current-Home single-column correction anchor + real command states |
 
@@ -67,8 +67,8 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Route | Wave | Actors | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- | --- |
-| `/` (separate Reception Home) | 1 | Owner, named Admin, shared Admin | dashboard default/empty/loading/success; Activity and Attention unavailable; exact Home active state | candidate — approval pending | PostgreSQL-backed populated/empty/Activity-Attention-Today unavailable matrix, target captures and zero-P0–P3 closure review; explicit approval still required |
-| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale; exact sale Payment, oldest-first negative coverage, sale replace/cancel and their validation/permission/blocker states | Wave 1 shell candidate; Waves 2–3 not started | Global Search fallback/direct Create and unique ids verified; route-local Search/Create/Profile visual migration remains pending |
+| `/` (separate Reception Home) | 1 | Owner, named Admin, shared Admin | dashboard default/empty/loading/success; Activity and Attention unavailable; exact Home active state | approved 2026-08-12 | PostgreSQL-backed populated/empty/Activity-Attention-Today unavailable matrix, target captures, zero-P0–P3 closure review and explicit product-owner approval |
+| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale; exact sale Payment, oldest-first negative coverage, sale replace/cancel and their validation/permission/blocker states | Wave 1 approved; Wave 2 Search/Create candidate; Wave 3 not started | Search/Create real route gallery at 1440/1024/390, full 144/144 UI regression and zero-P0–P3 review; Profile/action visual migration remains pending |
 | `/Owner/MembershipTypes` | 4 | Owner; Admin denial | empty/catalog/create/edit/deactivate/validation/permission; immutable `ordinary`/`one_off` kind, positive price, one-off visit limit 1; long bilingual names | not started | — |
 | `/Owner/NonWorkingDays` | 4 | Owner; Admin denial | empty/list/preview/confirmation/affected-scope-changed/expired-token/correct/cancel/success | not started | — |
 | `/Owner/StaffAccounts` | 4 | Owner; Admin denial | empty/list/create/activate/deactivate/credentials/validation/permission; named/shared labels | not started | — |
@@ -89,9 +89,9 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Partial | Wave | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- |
-| Reception `_ReceptionWorkspace.cshtml` | 2–3 | Clients workspace empty/loading/exact/multiple/no-result/error; stable targets; Home is now the separate root page | not started | — |
+| Reception `_ReceptionWorkspace.cshtml` | 2–3 | Clients workspace empty/loading/exact/multiple/no-result/error; stable targets; Home is now the separate root page | Wave 2 Search/Results candidate; Wave 3 profile pending | Real idle/exact/multiple/no-result/failure states at desktop/tablet/phone; stable ids/hx/fallback and no-JS checks pass |
 | Reception `_ClientProfile.cshtml` | 3 | unavailable/active/zero/negative/expired/ending/low/inactive; actions/history/context; ADR-018 coverage and issued-sale correction reachability | not started | — |
-| Reception `_CreateClientForm.cshtml` | 2 | direct open; validation; duplicate review/ack; permission; busy; success collapse | not started | — |
+| Reception `_CreateClientForm.cshtml` | 2 | direct open; validation; duplicate review/ack; permission; busy; success collapse | candidate — approval pending | Direct fragment landing, validation, duplicate acknowledgement/reason, busy/idempotency and canonical success reread pass; v3 desktop/tablet/phone captures |
 | Reception `_UpdateClientForm.cshtml` | 3 | validation; duplicate review/ack; busy; success; permission | not started | — |
 | Reception `_CardAssignmentForm.cshtml` | 3 | assign/change/clear; duplicate block; reason; permission/stale/success | not started | — |
 | Reception `_MarkVisitForm.cshtml` | 3 | membership/one-off/trial; zero/negative/expired acknowledgement; freeze block; busy/stale | not started | — |
@@ -110,13 +110,13 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Partial | Wave | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- |
-| `_Layout.cshtml` | 1, 5 | authenticated/public shells; skip link; main landmarks; no overflow | Wave 1 authenticated candidate; public final pending Wave 5 | Authenticated tablet/phone shell plus Login/AccessDenied/Error no-regression matrix passed |
-| `_AppNavigation.cshtml` | 1, 4–5 | Home/Clients/Report/History mapping; exact/location state; Owner tools; logout | Wave 1 candidate | Rail/drawer exact/location states, Owner denial, inert/overlay/Escape/forward-reverse focus loop passed |
-| `_CurrentSession.cshtml` | 1 | Owner/named/shared labels; fixed/masked long session/device ids; phone order | candidate — approval pending | Owner, named Admin and shared Reception/Admin account-menu identity/device/session evidence passed |
-| `_LanguageSelector.cshtml` | 1, 5 | uk-UA/en-US; long labels; POST success/failure; keyboard/focus | Wave 1 authenticated candidate; public final pending Wave 5 | Authenticated account-menu placement and full localization regression passed |
-| `_Icon.cshtml` | 1–5 | local sprite, accessible labels where needed, semantic color not sole signal | Wave 1 Home/navigation slice candidate | Local sprite, visible semantic labels and contrast checks passed; later waves extend route coverage |
+| `_Layout.cshtml` | 1, 5 | authenticated/public shells; skip link; main landmarks; no overflow | Wave 1 authenticated approved; public final pending Wave 5 | Authenticated tablet/phone shell plus Login/AccessDenied/Error no-regression matrix passed |
+| `_AppNavigation.cshtml` | 1, 4–5 | Home/Clients/Report/History mapping; exact/location state; Owner tools; logout | Wave 1 approved | Rail/drawer exact/location states, Owner denial, inert/overlay/Escape/forward-reverse focus loop passed |
+| `_CurrentSession.cshtml` | 1 | Owner/named/shared labels; fixed/masked long session/device ids; phone order | approved 2026-08-12 | Owner, named Admin and shared Reception/Admin account-menu identity/device/session evidence passed |
+| `_LanguageSelector.cshtml` | 1, 5 | uk-UA/en-US; long labels; POST success/failure; keyboard/focus | Wave 1 authenticated approved; public final pending Wave 5 | Authenticated account-menu placement and full localization regression passed |
+| `_Icon.cshtml` | 1–5 | local sprite, accessible labels where needed, semantic color not sole signal | Wave 1 Home/navigation slice approved | Local sprite, visible semantic labels and contrast checks passed; later waves extend route coverage |
 
-## Wave 1 revised-candidate evidence — 2026-08-11
+## Wave 1 revised and approved evidence — 2026-08-11/12
 
 - Real Razor/PostgreSQL captures under
   `/tmp/bodylife-production-wave1-refined-v2/`: desktop `1440x900`, tablet
@@ -135,9 +135,29 @@ artifact paths in the Evidence column; `—` never means approved.
   scope Reception Search/account-menu assertions to their canonical islands.
 - Independent closure review found zero P0–P3 issues after correcting the
   rejected render's font hierarchy, icon rail, tablet header gap, skip link,
-  account labels and tertiary contrast. This makes Wave 1 a revised candidate,
-  not approved; Wave 2 remains blocked until the product owner accepts the
-  populated anchor captures.
+  account labels and tertiary contrast. The product owner explicitly approved
+  the revised Wave 1 composition on 2026-08-12.
+
+## Wave 2 Search/Create candidate evidence — 2026-08-12
+
+- Post-fix Razor/PostgreSQL viewport captures under
+  `/tmp/bodylife-production-wave2-candidate-v3/` cover Search idle, exact,
+  multiple, no-result and failure plus direct Create at `1440x900`,
+  `1024x768` and `390x844` as applicable.
+- Search Results and Create are peer surfaces; no nested raised card remains.
+  Direct Create lands at the existing permission-aware
+  `#create-client-action-panel`, while Profile/actions remain Wave 3.
+- Stable search ids, fallback links, htmx targets/sync/indicators, input names,
+  antiforgery, duplicate acknowledgement, busy/idempotency and canonical
+  reread contracts remain covered.
+- Release build and 378/378 Web tests pass. Focused Search/Create passes 8/8,
+  style/localization passes 14/14 and the complete authenticated Playwright
+  regression passes 144/144.
+- Focused PostgreSQL Search/Create assertions pass 17/18; the only failure is
+  teardown permission `42501` for `pg_terminate_backend` under the local
+  `genik` role. No product assertion failed.
+- Independent correctness and interface-design closure report zero remaining
+  P0–P3 findings. This is a candidate, not an approval; Wave 3 remains blocked.
 
 ## Superseded production candidate evidence
 

@@ -67,6 +67,25 @@ the original visible fact and labels it canceled after success. Kyiv time,
 paper origin, cancellation/correction and ADR-018 sale/negative-coverage
 context remain visible.
 
+## Reception Search and Create pattern
+
+The Clients route names the task directly, then orders one focal Search surface
+before a two-column workspace: a Search Results/Create column and a subordinate
+Profile column. Search Results and Create are peer paper surfaces; never put a
+raised Create card inside a raised Results card. At tablet and phone widths the
+workspace becomes one semantic column without reordering or hiding warnings.
+
+The route-local htmx Search keeps compact secondary mode controls and honest
+idle, exact, multiple, no-result and unavailable states. Result rows expose
+identity, current card, phone, operational status, match kind, membership and
+warnings with a semantic left rail. Direct Create is always a separate
+permission-aware path: the header CTA targets
+`#create-client-action-panel`, opens the real server form in the initial
+viewport and never requires a failed search. Duplicate review is amber;
+validation/failure is red; confirmed status is green; the safe Create submit is
+graphite. Busy/idempotency, acknowledgement/reason and canonical reread remain
+server-owned contracts, not visual-only states.
+
 ## Baseline note
 
 `docs/ui-prototype/index.html` and the complete `docs/ui-prototype/` inventory
@@ -76,4 +95,6 @@ historical/audit inputs only; the earlier production sidebar/top-context/Quick
 Search candidate and the first thin-type/icon-rail Wave 1 render are functional
 history, not the visual target. Each real Razor anchor still requires
 PostgreSQL-backed desktop/tablet/phone evidence and explicit product-owner
-acceptance before the following migration wave begins.
+acceptance before the following migration wave begins. Wave 1 is approved;
+Wave 2 Search/Create is the current production candidate awaiting that explicit
+acceptance.

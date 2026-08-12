@@ -15040,3 +15040,55 @@ Stop point:
 - Present the revised desktop/tablet/phone evidence and live isolated instance
   to the product owner. Do not mark Wave 1 approved or start Wave 2 until the
   product owner explicitly accepts this revised composition.
+
+## Step 236 - Approved Wave 1 and implemented the Wave 2 Search/Create candidate
+
+Status: Wave 1 was explicitly approved by the product owner on 2026-08-12.
+Wave 2 is implemented, automated and independently reviewed as a candidate;
+explicit Search/Create visual approval is pending. Wave 3 and Milestone 11
+remain unchanged and blocked.
+
+Completed:
+
+- Recorded the product-owner approval of the revised 240px rail, responsive
+  header/drawer and Home composition, then opened only the bounded Wave 2
+  surface.
+- Migrated `/Reception/Index`, `_ReceptionWorkspace` Search/Results and
+  `_CreateClientForm` to the current-Home visual system. Search is the focal
+  task; Results and direct Create are peer surfaces; Profile and its actions
+  remain deliberately deferred to Wave 3.
+- Kept global GET Search and Reception htmx Search distinct. Preserved exact
+  match auto-open, all stable targets and fallback URLs, permission-aware
+  Create, antiforgery, validation, duplicate acknowledgement/reason,
+  busy/idempotency and success canonical reread.
+- Added direct fragment landing at `#create-client-action-panel`, localized
+  Clients/Client details hierarchy and honest idle, multiple, no-result and
+  typed failure presentations. Scoped the Wave 2 CSS so it cannot recolor or
+  clip still-unmigrated Wave 3 action controls.
+- Expanded real Playwright evidence to desktop `1440x900`, tablet `1024x768`
+  and phone `390x844`, including viewport captures without the full-page
+  sticky-header artifact.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors; Node syntax,
+  localization XML and `git diff --check` passed.
+- Web tests passed 378/378. Focused Search/Create Playwright passed 8/8;
+  style/localization passed 14/14; the full authenticated Playwright suite
+  passed 144/144 with zero failures/skips.
+- Focused PostgreSQL Search/Create product assertions passed 17/18. One test
+  failed only in temporary-database teardown because the local `genik` role
+  cannot call `pg_terminate_backend` (`42501`); there was no assertion failure
+  and no persistence implementation changed in this wave.
+- Post-fix captures are under
+  `/tmp/bodylife-production-wave2-candidate-v3/`. Independent correctness and
+  interface-design closure report zero remaining P0–P3 findings.
+- `graphify update .` was attempted after the code/documentation change and
+  returned `[Errno 95] Operation not supported`; no graph artifact was changed,
+  so stale topology is not presented as validation evidence.
+
+Stop point:
+
+- Present the live isolated Wave 2 Search/Create candidate and the real
+  desktop/tablet/phone captures to the product owner. Do not start Wave 3 or
+  mark Wave 2 approved until that explicit decision is recorded.
