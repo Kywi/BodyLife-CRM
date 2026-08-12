@@ -79,9 +79,10 @@ Done means all of the following are true:
 - Search keeps exact/multiple/no-result/error behavior and the stable
   `#reception-search`, `#client-search`, `#search-loading`,
   `#reception-workspace`, `#client-profile` and `#profile-loading` contracts.
-- Global Search uses a distinct `#global-client-search` id and an ordinary GET
-  fallback to `/Reception/Index`; it must never duplicate the reception input
-  id or replace the htmx search island.
+- On `/Reception/Index`, the route-local `#reception-search` htmx form owns the
+  flexible header Search track. Other routes use the distinct
+  `#global-client-search` ordinary GET fallback. They are compatible entry
+  points but never render together or duplicate the Clients input.
 - Direct Create Client remains permission-aware and reaches the existing
   CreateClient workflow without requiring a failed search.
 - Cancel/correct workflows retain the visible original fact, reason,
@@ -251,36 +252,36 @@ Migrate `/Reception/Index`, `_ReceptionWorkspace` and `_CreateClientForm` to
 the approved shell/components. Cover idle/loading, exact, multiple, no-result,
 query failure, direct open, validation, duplicate warning/acknowledgement,
 permission, busy/duplicate submit and success canonical reread. Keep the global
-GET search and reception htmx search as two compatible entry points with no
-duplicate ids.
+GET search on other routes and the reception htmx search on Clients as two
+compatible, mutually exclusive header entry points.
 
 Gate: all search/create states and roles at tablet/phone, stable selectors and
 fallback hrefs intact, zero P0/P1, explicit Search/Create anchor approval.
 
-Candidate evidence:
+Replacement candidate evidence:
 
-- `/Reception/Index` now names the Clients task and presents one focal Search
-  surface followed by peer-level Results and direct Create surfaces; the
-  deferred Wave 3 profile remains deliberately subordinate and unchanged;
-- global GET Search and the route-local htmx Search retain distinct ids,
-  fallback URLs, `hx-*` targets/sync/indicators and server-owned exact-match
-  auto-open behavior;
-- direct Create uses the existing permission-aware server workflow and lands
-  at `#create-client-action-panel`; validation, duplicate review with required
-  acknowledgement/reason, busy protection, idempotency and canonical reread
-  remain unchanged;
-- real Playwright states cover idle, exact, multiple, no-result, typed query
-  failure, direct Create, duplicate review, busy/success and no-JavaScript GET
-  fallback at `1440x900`, `1024x768` and `390x844` as applicable;
-- post-fix viewport captures are under
-  `/tmp/bodylife-production-wave2-candidate-v3/`; independent correctness and
-  interface-design closure report zero remaining P0–P3 findings;
-- Release build, 378/378 Web tests, the focused 8/8 Search/Create matrix,
-  14/14 style/localization checks and the complete authenticated Playwright
-  regression suite at 144/144 pass. Focused PostgreSQL Search/Create assertions
-  passed 17/18; the sole failure occurred in test-database teardown because the
-  local `genik` role cannot call `pg_terminate_backend` (`42501`), not in a
-  product assertion.
+- the product owner rejected the first Wave 2 render because it capped the
+  header Search and fragmented Clients into separate Search, Results, Create
+  and empty Profile surfaces. That candidate and its `v3` captures are
+  superseded, not acceptance evidence;
+- `/Reception/Index` now renders exactly one visible Search: the real
+  `#reception-search` htmx form fills the shared header track beside Create.
+  Non-Clients routes retain the distinct ordinary GET global Search;
+- one full-width `#reception-workspace` Clients canvas now owns idle/failure/
+  results, direct/no-result Create and selected Profile states. These states
+  replace one another without peer raised cards or an empty Profile column;
+- direct Create keeps the existing permission-aware workflow and lands at
+  `#create-client-action-panel`; validation, duplicate acknowledgement/reason,
+  busy/idempotency and canonical reread are unchanged;
+- both header Search and result-to-Profile htmx swaps return the canvas below
+  the sticky header, including after the operator has scrolled deep into a
+  long profile;
+- real viewport captures are under `/tmp/bodylife-wave2-unified-final-root/`
+  for `1440x900`, `1024x768` and `390x844`; independent interface review
+  reports zero remaining P0–P3 findings;
+- Release build passed with zero warnings/errors, the focused responsive
+  Search/Profile path passed 3/3, Home compatibility passed 4/4, and the full
+  authenticated Playwright regression suite passed 144/144.
 
 Stop/go:
 
@@ -384,6 +385,6 @@ Severity:
 ## Current next action
 
 Present the real Wave 2 Search/Create candidate from
-`/tmp/bodylife-production-wave2-candidate-v3/` in a live isolated instance and
+`/tmp/bodylife-wave2-unified-final-root/` in a live isolated instance and
 obtain explicit product-owner approval. Do not start Wave 3 Client
 Profile/actions until that decision is recorded.

@@ -69,22 +69,27 @@ context remain visible.
 
 ## Reception Search and Create pattern
 
-The Clients route names the task directly, then orders one focal Search surface
-before a two-column workspace: a Search Results/Create column and a subordinate
-Profile column. Search Results and Create are peer paper surfaces; never put a
-raised Create card inside a raised Results card. At tablet and phone widths the
-workspace becomes one semantic column without reordering or hiding warnings.
+The Clients route owns the real route-local htmx Search inside the flexible
+header track. Its Search submit and direct Create Client action are adjacent;
+there is no duplicate page-local Search card. Other routes keep the compatible
+ordinary GET global Search, but the two forms are mutually exclusive in the
+rendered header. At phone width the order remains brand/account → Search →
+Create.
 
-The route-local htmx Search keeps compact secondary mode controls and honest
-idle, exact, multiple, no-result and unavailable states. Result rows expose
-identity, current card, phone, operational status, match kind, membership and
-warnings with a semantic left rail. Direct Create is always a separate
-permission-aware path: the header CTA targets
-`#create-client-action-panel`, opens the real server form in the initial
-viewport and never requires a failed search. Duplicate review is amber;
-validation/failure is red; confirmed status is green; the safe Create submit is
-graphite. Busy/idempotency, acknowledgement/reason and canonical reread remain
-server-owned contracts, not visual-only states.
+Beneath the Clients heading is one full-width paper canvas with one quiet
+elevation and one blue check-in rail. Idle, failure and multiple results;
+direct/no-result Create; and the selected canonical Profile replace one another
+inside that same canvas. Do not split them into peer raised cards or reserve an
+empty Profile column. Search modes remain a compact secondary disclosure.
+
+Result rows expose identity, current card, phone, operational status, match
+kind, membership and warnings with a semantic left rail. Direct Create targets
+`#create-client-action-panel`, opens the real permission-aware server form in
+the same canvas and never requires a failed search. Search and result htmx
+swaps return the replaced canvas below the sticky header. Duplicate review is
+amber; validation/failure is red; confirmed status is green; the safe Create
+submit is graphite. Busy/idempotency, acknowledgement/reason and canonical
+reread remain server-owned contracts, not visual-only states.
 
 ## Baseline note
 
@@ -96,5 +101,6 @@ Search candidate and the first thin-type/icon-rail Wave 1 render are functional
 history, not the visual target. Each real Razor anchor still requires
 PostgreSQL-backed desktop/tablet/phone evidence and explicit product-owner
 acceptance before the following migration wave begins. Wave 1 is approved;
-Wave 2 Search/Create is the current production candidate awaiting that explicit
-acceptance.
+the first fragmented Wave 2 render was rejected and is not a visual target.
+The unified header-Search/Clients-canvas replacement is the current production
+candidate awaiting explicit acceptance.

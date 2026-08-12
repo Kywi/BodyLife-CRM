@@ -15092,3 +15092,57 @@ Stop point:
 - Present the live isolated Wave 2 Search/Create candidate and the real
   desktop/tablet/phone captures to the product owner. Do not start Wave 3 or
   mark Wave 2 approved until that explicit decision is recorded.
+
+## Step 237 - Replaced the rejected Wave 2 composition with one Clients canvas
+
+Status: replacement candidate completed on 2026-08-12. The product owner
+rejected the Step 236 visual composition; the new candidate is automated and
+independently reviewed, but still awaits explicit visual approval. Wave 3 and
+Milestone 11 remain unchanged and blocked.
+
+Completed:
+
+- Recorded the product owner's rejection of the capped header Search,
+  duplicated page-local Search card and fragmented Results/Create/empty-Profile
+  composition. Step 236 remains historical evidence, not an accepted target.
+- Moved the real `#reception-search` htmx form into the shared flexible header
+  track on `/Reception/Index`, immediately beside direct Create Client. Other
+  routes retain the distinct ordinary GET global Search; both are never
+  rendered together.
+- Replaced separate raised Search, Results, Create and Profile columns with one
+  full-width `#reception-workspace` Clients canvas. Idle/failure/multiple,
+  direct/no-result Create and selected canonical Profile states replace one
+  another within that single surface.
+- Preserved exact-match auto-open, fallback URLs, stable ids/input names,
+  permission-aware Create, antiforgery, duplicate acknowledgement/reason,
+  busy/idempotency and mutation canonical rereads. No command, domain,
+  persistence, authorization or localization contract changed.
+- Added responsive header geometry and topology assertions at `1440x900`,
+  `1024x768` and `390x844`. Both header Search and result-to-Profile swaps now
+  return the canvas below the sticky header, including after deep profile
+  scrolling.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors; `git diff --check`
+  passed.
+- Focused responsive Search/Profile passed 3/3; Home compatibility passed 4/4;
+  the full PostgreSQL-backed authenticated Playwright suite passed 144/144.
+- Current viewport captures are under
+  `/tmp/bodylife-wave2-unified-final-root/`; additional unified failure and
+  command-state captures are under `/tmp/bodylife-production-wave2-unified-v5/`.
+- Independent interface review reports zero remaining P0–P3 findings. A
+  separate read-only verifier also found no visual/static P0–P3 issue; its
+  environment lacked a discoverable `dotnet`, so root performed and recorded
+  the executable Release/full-suite gates with `/home/genik/.dotnet/dotnet`.
+- `graphify update .` was attempted after the code change and again returned
+  `[Errno 95] Operation not supported`. The required semantic update detected
+  17 changed documents and one deletion but stopped without a configured LLM
+  API key; neither command changed tracked graph artifacts, so stale topology
+  is not presented as validation evidence.
+
+Stop point:
+
+- Present the replacement candidate and a live isolated instance to the
+  product owner. Do not mark Wave 2 approved or begin Wave 3 until explicit
+  visual acceptance is recorded.
