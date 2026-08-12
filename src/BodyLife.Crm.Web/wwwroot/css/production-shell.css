@@ -228,22 +228,6 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
 .reception-page .reception-layout { width: 100%; max-width: none; margin: 0; gap: var(--space-4); }
 .reception-page .reception-route-heading { min-height: auto; padding: 0; }
 .reception-page .reception-route-heading .eyebrow { margin-bottom: var(--space-1); }
-.reception-page .reception-search-workspace {
-  display: grid;
-  width: 100%;
-  min-height: 220px;
-  scroll-margin-top: 104px;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-5);
-  align-content: start;
-  align-items: start;
-  border: 1px solid var(--line-quiet);
-  border-left: 4px solid var(--checkin-blue);
-  border-radius: var(--radius-card);
-  padding: clamp(var(--space-4), 2.5vw, var(--space-6));
-  background: var(--desk-paper);
-  box-shadow: var(--elevation-card);
-}
 .reception-page .clients-search-controls { position: relative; }
 .reception-page .clients-search-controls summary { min-height: 44px; padding: 10px var(--space-3); color: var(--text-secondary); font-size: var(--type-meta); font-weight: 750; cursor: pointer; }
 .reception-page .clients-search-controls[open] { width: min(100%, 640px); border: 1px solid var(--line-quiet); border-radius: var(--radius-control); padding: var(--space-2) var(--space-3); background: var(--desk-inset); }
@@ -252,32 +236,116 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
 .reception-page .clients-search-controls .search-mode-segments { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 .reception-page .clients-search-controls .search-mode-segments span { min-height: 44px; padding-inline: var(--space-2); }
 .reception-page .clients-search-clear { width: fit-content; min-height: 44px; }
-.reception-page .search-results-region { display: grid; min-height: 132px; gap: var(--space-3); }
-.reception-page .search-results-heading { min-height: 28px; margin: 0; padding: 0; }
-.reception-page .search-results-heading .section-heading { font-size: 20px; font-weight: 800; }
-.reception-page .search-state-surface { min-height: 112px; border: 0; border-radius: var(--radius-control); padding: var(--space-4); background: var(--desk-inset); }
-.reception-page .search-result-list { display: grid; gap: var(--space-2); }
 .reception-page .search-result-row-header h3 { font-weight: 750; }
 .reception-page .clients-create-context { min-height: auto; }
-.reception-page .clients-create-panel { margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; scroll-margin-top: 112px; }
-.reception-page .clients-create-panel::before { display: none; }
-.reception-page .clients-create-panel summary { min-height: 48px; border: 0; padding-inline: 0; color: var(--text-primary); font-weight: 800; }
-.reception-page .clients-create-panel[open] summary { border-bottom: 0; }
-.reception-page .clients-create-panel .create-client-content { border-top: 1px solid var(--line-quiet); padding: var(--space-4) 0 0; }
-.reception-page #client-profile { min-height: 0; border: 0; border-radius: 0; padding: 0; background: transparent; box-shadow: none; }
-.reception-page #client-profile::before { display: none; }
-.reception-page #client-profile .client-identity-header { border-top: 0; padding-top: 0; }
 
+/* Wave 2 ledger refinement — results are independent check-in bands, not a nested card. */
+.reception-page .reception-search-workspace {
+  display: block;
+  min-height: 0;
+  scroll-margin-top: 104px;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.reception-page .search-results-region {
+  display: grid;
+  min-height: 0;
+  gap: var(--space-3);
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.reception-page .search-results-heading {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0 var(--space-1);
+}
+.reception-page .search-results-heading .section-heading { font-size: var(--type-section); font-weight: 800; }
+.reception-page .search-state-surface,
+.reception-page .clients-create-panel,
+.reception-page #client-profile {
+  border: 1px solid var(--line-quiet);
+  border-inline-start: 4px solid var(--checkin-blue);
+  border-radius: var(--radius-card);
+  background: var(--desk-paper);
+  box-shadow: var(--elevation-card);
+}
+.reception-page .search-state-surface {
+  min-height: 112px;
+  padding: var(--space-4);
+}
+.reception-page .search-state-idle {
+  min-height: 0;
+  border: 0;
+  padding: var(--space-2) var(--space-1);
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-tertiary);
+}
+.reception-page .search-state-empty {
+  border-color: color-mix(in srgb, var(--attention-amber) 35%, var(--line-quiet));
+  border-inline-start-color: var(--attention-amber);
+  background: var(--attention-amber-soft);
+}
+.reception-page .search-state-failure {
+  border-color: color-mix(in srgb, var(--stop-red) 35%, var(--line-quiet));
+  border-inline-start-color: var(--stop-red);
+  background: var(--stop-red-soft);
+}
+.reception-page .search-result-list { display: grid; gap: var(--space-2); }
+.reception-page .search-result-row {
+  min-height: 44px;
+  border: 1px solid var(--line-quiet);
+  border-inline-start: 4px solid var(--checkin-blue);
+  border-radius: var(--radius-card);
+  padding: var(--space-3) var(--space-4);
+  background: var(--desk-paper);
+  box-shadow: var(--elevation-card);
+}
+.reception-page .search-result-row::before { content: none; }
+.reception-page .search-result-row:hover,
+.reception-page .search-result-row:focus-visible {
+  border-color: color-mix(in srgb, var(--checkin-blue) 45%, var(--line-quiet));
+  border-inline-start-color: var(--checkin-blue);
+  background: color-mix(in srgb, var(--checkin-blue-soft) 58%, var(--desk-paper));
+}
+.reception-page .clients-create-panel {
+  margin: 0;
+  scroll-margin-top: 112px;
+}
+.reception-page .clients-create-panel summary { min-height: 48px; padding-inline: var(--space-4); }
+.reception-page .clients-create-panel .create-client-content { border-top: 1px solid var(--line-quiet); padding: var(--space-4); }
+.reception-page .clients-create-context {
+  min-height: 0;
+  margin: 0 0 var(--space-4);
+  border: 0;
+  border-inline-start: 4px solid var(--attention-amber);
+  border-radius: 0;
+  padding: var(--space-3);
+  background: var(--attention-amber-soft);
+  color: color-mix(in srgb, var(--attention-amber) 78%, var(--text-primary));
+}
+.reception-page #client-profile { min-height: 0; padding: var(--space-4); }
+.reception-page #client-profile::before { content: none; }
+.reception-page #client-profile .client-identity-header { padding-top: 0; }
 @media (max-width: 1099px) {
   .app-global-header { grid-template-columns: 44px max-content minmax(0, 1fr) auto; min-height: 78px; }
   .header-client-actions { display: flex; width: 100%; }
   .header-client-actions .global-client-search { width: 100%; }
-  .reception-page .reception-search-workspace { scroll-margin-top: 94px; }
+  .reception-page .reception-search-workspace { scroll-margin-top: 148px; }
 }
 @media (max-width: 899px) {
   .app-global-header { min-height: 132px; grid-template-columns: 44px minmax(0, 1fr) auto; }
   .header-client-actions { grid-column: 1 / -1; grid-row: 2; }
-  .reception-page .reception-search-workspace { scroll-margin-top: 148px; }
 }
 @media (max-width: 720px) {
   .app-global-header { min-height: 176px; }
@@ -286,12 +354,14 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   .header-client-actions .global-create-client { grid-row: 3; }
   .app-content > .reception-page { padding: var(--space-5) var(--space-4); }
   .reception-page .reception-route-heading { align-items: stretch; flex-direction: column; }
-  .reception-page .reception-search-workspace { gap: var(--space-4); padding: var(--space-4); }
+  .reception-page .reception-search-workspace { gap: var(--space-4); padding: 0; }
   .reception-page .clients-search-controls { width: 100%; }
   .reception-page .clients-search-controls summary { width: 100%; }
   .reception-page .clients-search-controls[open] { width: 100%; }
   .reception-page .clients-search-controls .search-mode-segments { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .reception-page .clients-search-controls .search-mode-segments span { width: 100%; min-height: 44px; }
   .reception-page .reception-search-workspace { scroll-margin-top: 192px; }
+  .reception-page .search-result-row { padding: var(--space-3); }
   .reception-page .clients-create-panel { scroll-margin-top: 208px; }
+  .reception-page #client-profile { padding: var(--space-3); }
 }

@@ -17,6 +17,12 @@
             </div>
             <span class="create-client-context"><partial name="/Pages/Shared/_Icon.cshtml" model='"account"' />@L["Client.CreateWithoutSearch"]</span>
         </header>
+        @if (Model.ShowNoSearchContext)
+        {
+            <div class="operational-empty no-search-results clients-create-context">
+                <strong>@L["Workspace.Empty"]</strong>
+            </div>
+        }
         @if (Model.Errors.Count > 0)
         {
             <div class="command-error-summary create-client-error" role="alert">
@@ -48,6 +54,7 @@
             <input type="hidden" name="form.SearchMode" value="@input.SearchMode" />
             <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive.ToString().ToLowerInvariant()" />
             <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
+            <input type="hidden" name="form.SearchHadNoResults" value="@input.SearchHadNoResults.ToString().ToLowerInvariant()" />
 
             <div class="action-form-grid create-client-grid">
                 <div class="form-field">

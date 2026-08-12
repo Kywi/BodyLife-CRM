@@ -7,11 +7,13 @@ public sealed record CreateClientFormViewModel(
     CreateClientFormInput Input,
     IReadOnlyList<CreateClientDuplicateWarningViewModel> DuplicateWarnings,
     IReadOnlyList<CommandError> Errors,
-    bool IsOpen)
+    bool IsOpen,
+    bool ShowNoSearchContext)
 {
     public static CreateClientFormViewModel FromSearchContext(
         ReceptionSearchContext searchContext,
-        bool isOpen = false)
+        bool isOpen = false,
+        bool showNoSearchContext = false)
     {
         return new CreateClientFormViewModel(
             new CreateClientFormInput
@@ -25,10 +27,12 @@ public sealed record CreateClientFormViewModel(
                 SearchMode = searchContext.Mode,
                 SearchIncludeInactive = searchContext.IncludeInactive,
                 SearchPageCursor = searchContext.PageCursor,
+                SearchHadNoResults = showNoSearchContext,
             },
             DuplicateWarnings: [],
             Errors: [],
-            IsOpen: isOpen);
+            IsOpen: isOpen,
+            ShowNoSearchContext: showNoSearchContext);
     }
 
     public static CreateClientFormViewModel FromSubmission(
@@ -65,7 +69,8 @@ public sealed record CreateClientFormViewModel(
             input,
             warnings,
             errors,
-            IsOpen: true);
+            IsOpen: true,
+            ShowNoSearchContext: input.SearchHadNoResults);
     }
 }
 
@@ -94,6 +99,8 @@ public sealed class CreateClientFormInput
     public bool SearchIncludeInactive { get; set; }
 
     public string? SearchPageCursor { get; set; }
+
+    public bool SearchHadNoResults { get; set; }
 
     public List<CreateClientDuplicateAcknowledgementInput>? DuplicateAcknowledgements { get; set; }
 }

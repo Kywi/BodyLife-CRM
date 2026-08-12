@@ -100,6 +100,19 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 searchResults.Locator(".search-state-idle"),
                 viewportName,
                 "honest idle search state");
+            var idleTopology = await searchResults.Locator(".search-state-idle").EvaluateAsync<string>("""
+                state => {
+                    const style = getComputedStyle(state);
+                    return JSON.stringify({
+                        border: style.borderTopWidth,
+                        background: style.backgroundColor,
+                        shadow: style.boxShadow,
+                    });
+                }
+                """);
+            Assert.Contains("\"border\":\"0px\"", idleTopology, StringComparison.Ordinal);
+            Assert.Contains("\"background\":\"rgba(0, 0, 0, 0)\"", idleTopology, StringComparison.Ordinal);
+            Assert.Contains("\"shadow\":\"none\"", idleTopology, StringComparison.Ordinal);
             Assert.Equal(0, await clientProfile.CountAsync());
 
             var headerBounds = await page.Locator(".app-global-header").BoundingBoxAsync();
@@ -362,6 +375,33 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 searchResults.Locator(".client-result-row"),
                 viewportName,
                 "client result row");
+            var resultTopology = await searchResults.EvaluateAsync<string>("""
+                region => {
+                    const style = getComputedStyle(region);
+                    const workspace = getComputedStyle(document.querySelector('#reception-workspace'));
+                    const row = region.querySelector('.search-result-row');
+                    const rowStyle = getComputedStyle(row);
+                    const rail = getComputedStyle(row, '::before');
+                    return JSON.stringify({
+                        workspaceBorder: workspace.borderTopWidth,
+                        workspaceBackground: workspace.backgroundColor,
+                        regionBorder: style.borderTopWidth,
+                        regionBackground: style.backgroundColor,
+                        rowBorderStart: rowStyle.borderInlineStartWidth,
+                        rowRadius: rowStyle.borderTopLeftRadius,
+                        rowShadow: rowStyle.boxShadow,
+                        rowPseudoContent: rail.content,
+                    });
+                }
+                """);
+            Assert.Contains("\"workspaceBorder\":\"0px\"", resultTopology, StringComparison.Ordinal);
+            Assert.Contains("\"workspaceBackground\":\"rgba(0, 0, 0, 0)\"", resultTopology, StringComparison.Ordinal);
+            Assert.Contains("\"regionBorder\":\"0px\"", resultTopology, StringComparison.Ordinal);
+            Assert.Contains("\"regionBackground\":\"rgba(0, 0, 0, 0)\"", resultTopology, StringComparison.Ordinal);
+            Assert.Contains("\"rowBorderStart\":\"4px\"", resultTopology, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"rowRadius\":\"0px\"", resultTopology, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"rowShadow\":\"none\"", resultTopology, StringComparison.Ordinal);
+            Assert.Contains("\"rowPseudoContent\":\"none\"", resultTopology, StringComparison.Ordinal);
             await AssertFitsViewportAsync(page, viewportName, "multiple results");
             await CaptureViewportVisualAsync(page, viewportName, "multiple-results");
 
@@ -399,7 +439,30 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.True(
                 await noMatchCreatePanel.EvaluateAsync<bool>("element => element.open"),
                 "A successful no-match search should open the direct create-client action.");
+            if (viewportName == "tablet")
+            {
+                var noMatchHeadingBounds = await page.Locator("#reception-title").BoundingBoxAsync();
+                var noMatchHeaderBounds = await page.Locator(".app-global-header").BoundingBoxAsync();
+                Assert.NotNull(noMatchHeadingBounds);
+                Assert.NotNull(noMatchHeaderBounds);
+                Assert.True(
+                    noMatchHeadingBounds.Y >= noMatchHeaderBounds.Y + noMatchHeaderBounds.Height - 1,
+                    "The Clients heading should remain below the sticky tablet header after a no-result swap.");
+            }
             await CaptureViewportVisualAsync(page, viewportName, "no-results-create");
+
+            await noMatchCreatePanel.GetByLabel("Surname", new() { Exact = true }).FillAsync("No result");
+            await noMatchCreatePanel.GetByLabel("Name", new() { Exact = true }).FillAsync("Context");
+            await noMatchCreatePanel.GetByLabel("Card number", new() { Exact = true }).FillAsync("BL-CREATE-TAKEN");
+            await noMatchCreatePanel.GetByRole(AriaRole.Button, new() { Name = "Create client", Exact = true }).ClickAsync();
+            await ExpectVisibleAsync(
+                page.Locator("#create-client-action-panel").GetByText("Client not created", new() { Exact = true }),
+                viewportName,
+                "no-match create validation error");
+            await ExpectVisibleAsync(
+                page.Locator("#create-client-action-panel").GetByText("No clients found", new() { Exact = true }),
+                viewportName,
+                "no-match context after create validation swap");
 
             await page.Locator(".clients-search-controls > summary").ClickAsync();
             await page.Locator("input[name='mode'][value='Card']").CheckAsync();

@@ -2501,14 +2501,17 @@ public sealed class IndexModel(
                 ClientSearchActionKeys.CreateClient,
                 ClientSearchActionKeys.AdminOrOwnerPolicy)],
             cancellationToken);
+        var noClientsFound = !profileClientId.HasValue
+            && searchResult is { Status: SearchClientsStatus.Success }
+            && searchResult.Items.Count == 0;
         var shouldOpenCreateClientForm = !profileClientId.HasValue
-            && (Create || (searchResult is { Status: SearchClientsStatus.Success }
-                && searchResult.Items.Count == 0));
+            && (Create || noClientsFound);
         var createClientForm = !profileClientId.HasValue
             && createClientPermissions.IsAllowed(ClientSearchActionKeys.CreateClient)
             ? CreateClientFormViewModel.FromSearchContext(
                 searchContext,
-                isOpen: shouldOpenCreateClientForm)
+                isOpen: shouldOpenCreateClientForm,
+                showNoSearchContext: noClientsFound)
             : null;
         var profileViewModel = await BuildProfileViewModelAsync(
             profileResult,
