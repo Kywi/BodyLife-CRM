@@ -76,17 +76,21 @@ ordinary GET global Search, but the two forms are mutually exclusive in the
 rendered header. At phone width the order remains brand/account → Search →
 Create.
 
-Beneath the Clients heading is one full-width paper canvas with one quiet
-elevation and one blue check-in rail. Idle, failure and multiple results;
-direct/no-result Create; and the selected canonical Profile replace one another
-inside that same canvas. Do not split them into peer raised cards or reserve an
-empty Profile column. Search modes remain a compact secondary disclosure.
+Beneath the Clients heading, `#reception-workspace` is a transparent htmx state
+outlet, not a card. Idle is a quiet text cue. A non-empty result set uses a
+lightweight heading/count followed by independent compact paper bands; there is
+no raised Results wrapper around those rows. Create and the selected canonical
+Profile each own one full-width paper surface when active. Never nest raised
+result cards inside another raised workspace card or reserve an empty Profile
+column. Search modes remain a compact secondary disclosure.
 
-Result rows expose identity, current card, phone, operational status, match
-kind, membership and warnings with a semantic left rail. Direct Create targets
-`#create-client-action-panel`, opens the real permission-aware server form in
-the same canvas and never requires a failed search. Search and result htmx
-swaps return the replaced canvas below the sticky header. Duplicate review is
+Each result band exposes identity, current card, phone, operational status,
+match kind, membership and warnings. Its blue check-in signal is a real 4px
+`border-inline-start` on the rounded band, so it follows both corners; do not
+recreate it with a shortened pseudo-element. Direct Create targets
+`#create-client-action-panel`, opens the real permission-aware server form as
+the active surface and never requires a failed search. Search and result htmx
+swaps return the replaced outlet below the sticky header. Duplicate review is
 amber; validation/failure is red; confirmed status is green; the safe Create
 submit is graphite. Busy/idempotency, acknowledgement/reason and canonical
 reread remain server-owned contracts, not visual-only states.
@@ -102,5 +106,6 @@ history, not the visual target. Each real Razor anchor still requires
 PostgreSQL-backed desktop/tablet/phone evidence and explicit product-owner
 acceptance before the following migration wave begins. Wave 1 is approved;
 the first fragmented Wave 2 render was rejected and is not a visual target.
-The unified header-Search/Clients-canvas replacement is the current production
+The later large Clients-canvas replacement was also rejected. The transparent
+state outlet with a flat independent-result ledger is the current production
 candidate awaiting explicit acceptance.

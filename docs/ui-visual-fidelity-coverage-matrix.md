@@ -2,8 +2,8 @@
 
 Дата: 2026-07-22
 Оновлено: 2026-08-12 — current-Home is the authorized production migration
-target; revised Wave 1 is approved, the fragmented Wave 2 render is rejected,
-and the unified Search/Clients-canvas replacement is the reviewed candidate.
+target; revised Wave 1 is approved, both earlier Wave 2 compositions are
+rejected, and the flat Search/result-ledger replacement is the reviewed candidate.
 Статус: **Waves 0–1 approved; Wave 2 candidate awaiting explicit product-owner
 approval**. Waves 3–6 are blocked by their preceding anchor approvals. Це
 acceptance ledger для плану
@@ -49,9 +49,9 @@ product-owner review.
 | Anchor | Historical reference context | Required canonical state | Status | Required approval |
 | --- | --- | --- | --- | --- |
 | Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | approved 2026-08-12 | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-desktop-1440x900-uk.png` and `wave1-home-tablet-1024x768-uk.png`; explicit product-owner approval recorded |
-| Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | replacement candidate — approval pending | `/tmp/bodylife-wave2-unified-final-root/desktop-search-idle.png`, `desktop-multiple-results.png`, `desktop-no-results-create.png` and `desktop-direct-create.png`; one header Search + one Clients canvas; zero-P0–P3 closure review |
+| Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | replacement candidate — approval pending | `/tmp/bodylife-wave2-flat-ledger-final-v6/desktop-search-idle.png`, `desktop-multiple-results.png`, `desktop-no-results-create.png` and `desktop-direct-create.png`; one header Search + transparent state outlet + independent rounded result bands |
 | Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | not started | Current-Home composition + real canonical route/state gallery |
-| Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | replacement candidate — approval pending | `/tmp/bodylife-wave2-unified-final-root/desktop-direct-create.png` plus `/tmp/bodylife-production-wave2-unified-v5/tablet-create-client-duplicate-review.png`; real command validation/busy/success/canonical-reread coverage |
+| Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | replacement candidate — approval pending | `/tmp/bodylife-wave2-flat-ledger-final-v6/desktop-direct-create.png` plus existing real command validation/busy/success/canonical-reread coverage |
 | Cancel Visit desktop | `branded-light-5-cancel-visit.png` 1104x861 | reason/confirmation, permission, stale/concurrency, canceled and backfill/fallback labels | not started | Dedicated current-Home correction anchor + real command states |
 | Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | approved 2026-08-12 | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-phone-390x844-uk.png`; explicit product-owner approval recorded |
 | Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | not started | Current-Home single-column composition + real canonical states |
@@ -68,7 +68,7 @@ artifact paths in the Evidence column; `—` never means approved.
 | Route | Wave | Actors | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- | --- |
 | `/` (separate Reception Home) | 1 | Owner, named Admin, shared Admin | dashboard default/empty/loading/success; Activity and Attention unavailable; exact Home active state | approved 2026-08-12 | PostgreSQL-backed populated/empty/Activity-Attention-Today unavailable matrix, target captures, zero-P0–P3 closure review and explicit product-owner approval |
-| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale; exact sale Payment, oldest-first negative coverage, sale replace/cancel and their validation/permission/blocker states | Wave 1 approved; Wave 2 unified replacement candidate; Wave 3 not started | Exactly one header-owned Search and one mutually exclusive-state Clients canvas at 1440/1024/390, full 144/144 UI regression and zero-P0–P3 review; Profile/action visual migration remains pending |
+| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale; exact sale Payment, oldest-first negative coverage, sale replace/cancel and their validation/permission/blocker states | Wave 1 approved; Wave 2 flat-ledger replacement candidate; Wave 3 not started | Exactly one header-owned Search, a transparent htmx state outlet and independently rounded result bands at 1440/1024/390; Profile/action visual migration remains pending |
 | `/Owner/MembershipTypes` | 4 | Owner; Admin denial | empty/catalog/create/edit/deactivate/validation/permission; immutable `ordinary`/`one_off` kind, positive price, one-off visit limit 1; long bilingual names | not started | — |
 | `/Owner/NonWorkingDays` | 4 | Owner; Admin denial | empty/list/preview/confirmation/affected-scope-changed/expired-token/correct/cancel/success | not started | — |
 | `/Owner/StaffAccounts` | 4 | Owner; Admin denial | empty/list/create/activate/deactivate/credentials/validation/permission; named/shared labels | not started | — |
@@ -89,9 +89,9 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Partial | Wave | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- |
-| Reception `_ReceptionWorkspace.cshtml` | 2–3 | Clients workspace empty/loading/exact/multiple/no-result/error; stable targets; Home is now the separate root page | Wave 2 unified canvas candidate; Wave 3 profile/actions pending | Real idle/exact/multiple/no-result/failure states replace inside one canvas at desktop/tablet/phone; stable ids/hx/fallback, sticky-header scroll recovery and no-JS checks pass |
+| Reception `_ReceptionWorkspace.cshtml` | 2–3 | Clients workspace empty/loading/exact/multiple/no-result/error; stable targets; Home is now the separate root page | Wave 2 flat-ledger candidate; Wave 3 profile/actions pending | Real idle/exact/multiple/no-result/failure states replace in a transparent outlet at desktop/tablet/phone; result bands own their rounded blue border; stable ids/hx/fallback, sticky-header scroll recovery and no-JS checks pass |
 | Reception `_ClientProfile.cshtml` | 3 | unavailable/active/zero/negative/expired/ending/low/inactive; actions/history/context; ADR-018 coverage and issued-sale correction reachability | not started | — |
-| Reception `_CreateClientForm.cshtml` | 2 | direct open; validation; duplicate review/ack; permission; busy; success collapse | replacement candidate — approval pending | Direct fragment landing inside the unified canvas, validation, duplicate acknowledgement/reason, busy/idempotency and canonical success reread pass; final desktop/tablet/phone captures |
+| Reception `_CreateClientForm.cshtml` | 2 | direct open; validation; duplicate review/ack; permission; busy; success collapse | replacement candidate — approval pending | Direct fragment lands on the one active Create surface; no-result context persists across htmx validation swaps; duplicate acknowledgement/reason, busy/idempotency and canonical success reread remain covered |
 | Reception `_UpdateClientForm.cshtml` | 3 | validation; duplicate review/ack; busy; success; permission | not started | — |
 | Reception `_CardAssignmentForm.cshtml` | 3 | assign/change/clear; duplicate block; reason; permission/stale/success | not started | — |
 | Reception `_MarkVisitForm.cshtml` | 3 | membership/one-off/trial; zero/negative/expired acknowledgement; freeze block; busy/stale | not started | — |
@@ -138,21 +138,24 @@ artifact paths in the Evidence column; `—` never means approved.
   account labels and tertiary contrast. The product owner explicitly approved
   the revised Wave 1 composition on 2026-08-12.
 
-## Wave 2 unified Search/Create replacement evidence — 2026-08-12
+## Wave 2 flat Search/Create ledger replacement evidence — 2026-08-12
 
 - The product owner rejected the first Wave 2 candidate because its Search was
   capped in the header and duplicated by a page-local focal card, while
   Results, Create and an empty Profile column were fragmented into peer
   surfaces. The old `candidate-v3` gallery is superseded.
-- Final Razor/PostgreSQL viewport captures under
-  `/tmp/bodylife-wave2-unified-final-root/` cover Search idle, exact, multiple,
+- The later one-canvas candidate was also rejected because it nested result
+  cards inside a raised workspace and used shortened blue pseudo-rails.
+- Current Razor/PostgreSQL viewport captures under
+  `/tmp/bodylife-wave2-flat-ledger-final-v6/` cover Search idle, exact, multiple,
   no-result and direct Create at `1440x900`, `1024x768` and `390x844`.
   Typed failure and command-state evidence remains under
   `/tmp/bodylife-production-wave2-unified-v5/` from the same unified layout.
-- Clients now renders exactly one route-local header Search beside Create and
-  one full-width canvas whose Results, Create and Profile states replace one
-  another. No duplicate Search, peer raised state cards or empty Profile
-  column remains.
+- Clients now renders exactly one route-local header Search beside Create.
+  Results flow through a transparent state outlet as separate compact rounded
+  paper bands with a real 4px blue border; idle has no card. Create and Profile
+  each own one raised surface only while active. No outer result canvas,
+  duplicate Search or empty Profile column remains.
 - Stable ids, fallback links, htmx targets/sync/indicators, input names,
   antiforgery, duplicate acknowledgement, busy/idempotency and canonical
   reread contracts remain covered. Search and Profile swaps recover below the

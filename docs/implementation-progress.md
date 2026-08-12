@@ -15146,3 +15146,61 @@ Stop point:
 - Present the replacement candidate and a live isolated instance to the
   product owner. Do not mark Wave 2 approved or begin Wave 3 until explicit
   visual acceptance is recorded.
+
+## Step 238 - Replaced the rejected Clients canvas with a flat result ledger
+
+Status: revised Wave 2 candidate completed on 2026-08-12. The product owner
+rejected the Step 237 large-canvas composition; the flat-ledger candidate is
+implemented, fully automated and independently reviewed, but still awaits
+explicit visual approval. Wave 3 and Milestone 11 remain blocked.
+
+Completed:
+
+- Recorded the product owner's rejection of the raised Clients canvas around
+  nested rounded result cards and the shortened blue pseudo-rails. Step 237 is
+  historical evidence, not the current visual target.
+- Kept the real route-local htmx Search in the full flexible header track next
+  to direct Create Client. Made `#reception-workspace` and the Results region
+  transparent state outlets instead of visible cards.
+- Rendered successful matches as independent compact rounded paper bands. Each
+  band owns a real 4px blue inline-start border that follows both rounded
+  corners; the shortened pseudo-element rail is disabled. Idle is now a quiet
+  text cue without an empty card.
+- Kept direct/no-result Create and selected Profile as one active raised
+  surface each. Attached the amber no-result context inside Create and moved
+  that context into the server view-model so it persists across htmx
+  validation and duplicate-review swaps.
+- Preserved exact-match auto-open, fallback URLs, stable ids/input names,
+  permission-aware Create, antiforgery, duplicate acknowledgement/reason,
+  busy/idempotency, sticky-header scroll recovery and canonical rereads. No
+  command, domain, persistence, authorization or localization contract changed.
+- Updated `.interface-design/system.md`, the migration plan and coverage matrix
+  so future waves cannot restore either rejected Wave 2 composition. The live
+  product-review instance now has one stable external contract:
+  `http://127.0.0.1:41881/`; prior BodyLife instances are stopped before it is
+  replaced.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors; Node syntax, all 14
+  localization XML files and `git diff --check` passed.
+- Web regression passed 378/378. Responsive PostgreSQL-backed Search/Profile,
+  including no-result Create validation context, passed 3/3 at `1440x900`,
+  `1024x768` and `390x844`.
+- The full PostgreSQL-backed authenticated Playwright suite passed 144/144
+  with zero failures/skips.
+- Fresh viewport captures are under
+  `/tmp/bodylife-wave2-flat-ledger-final-v6/`. Independent interface review
+  reports zero remaining P0-P3 findings after both review observations were
+  closed.
+- `graphify update .` was attempted and again returned `[Errno 95] Operation
+  not supported`. The semantic update detected 17 changed documents and one
+  deletion but stopped without a configured LLM API key. Neither command
+  changed tracked graph artifacts, so stale topology is not presented as
+  validation evidence.
+
+Stop point:
+
+- Present the single live `41881` instance and the flat-ledger desktop/tablet/
+  phone evidence to the product owner. Do not mark Wave 2 approved or begin
+  Wave 3 until the product owner explicitly accepts this revised composition.

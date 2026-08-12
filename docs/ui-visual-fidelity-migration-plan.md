@@ -258,7 +258,7 @@ compatible, mutually exclusive header entry points.
 Gate: all search/create states and roles at tablet/phone, stable selectors and
 fallback hrefs intact, zero P0/P1, explicit Search/Create anchor approval.
 
-Replacement candidate evidence:
+Current replacement candidate evidence:
 
 - the product owner rejected the first Wave 2 render because it capped the
   header Search and fragmented Clients into separate Search, Results, Create
@@ -267,16 +267,21 @@ Replacement candidate evidence:
 - `/Reception/Index` now renders exactly one visible Search: the real
   `#reception-search` htmx form fills the shared header track beside Create.
   Non-Clients routes retain the distinct ordinary GET global Search;
-- one full-width `#reception-workspace` Clients canvas now owns idle/failure/
-  results, direct/no-result Create and selected Profile states. These states
-  replace one another without peer raised cards or an empty Profile column;
+- the product owner also rejected the later large `#reception-workspace`
+  Clients canvas because it placed rounded result cards inside another raised
+  card and its shortened blue row accents did not follow the rounded corners;
+- `#reception-workspace` and the Results region are now transparent htmx state
+  outlets. Idle is a quiet text cue; non-empty results use a lightweight
+  heading/count plus independent compact rounded paper bands. Every result
+  owns a real 4px blue inline-start border that follows the radius. Create and
+  selected Profile each own one raised surface only while active;
 - direct Create keeps the existing permission-aware workflow and lands at
   `#create-client-action-panel`; validation, duplicate acknowledgement/reason,
   busy/idempotency and canonical reread are unchanged;
-- both header Search and result-to-Profile htmx swaps return the canvas below
+- both header Search and result-to-Profile htmx swaps return the active state below
   the sticky header, including after the operator has scrolled deep into a
   long profile;
-- real viewport captures are under `/tmp/bodylife-wave2-unified-final-root/`
+- real viewport captures are under `/tmp/bodylife-wave2-flat-ledger-final-v6/`
   for `1440x900`, `1024x768` and `390x844`; independent interface review
   reports zero remaining P0–P3 findings;
 - Release build passed with zero warnings/errors, the focused responsive
@@ -385,6 +390,6 @@ Severity:
 ## Current next action
 
 Present the real Wave 2 Search/Create candidate from
-`/tmp/bodylife-wave2-unified-final-root/` in a live isolated instance and
+`/tmp/bodylife-wave2-flat-ledger-final-v6/` in the single live review instance and
 obtain explicit product-owner approval. Do not start Wave 3 Client
 Profile/actions until that decision is recorded.
