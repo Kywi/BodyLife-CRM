@@ -108,11 +108,13 @@ risk-specific correction context; reception actions; visit/payment activity;
 record links; quiet identity/card management. Do not rebuild the profile as a
 stack of equally raised nested cards.
 
-Identity, membership, actions and activity stay inside the one Profile paper
-but use restrained tonal zones and semantic inline-start rails: neutral inset
-identity, blue membership readiness, graphite actions and a quiet neutral
-activity ledger. Risk-specific contexts alone use amber or red. This is
-section separation, not a nested-card or rainbow treatment.
+The Profile's blue inline-start signal belongs only to the outer paper. Inner
+identity, note, membership, action and activity regions must not repeat or
+stack decorative inline-start rails. Separate them with quiet dividers,
+spacing and restrained tonal zones: neutral identity/note, blue membership
+readiness, graphite actions and a paper activity board. Risk-specific contexts
+alone use amber or red. This is section separation, not a nested-card or
+rainbow treatment.
 
 Identity facts and membership readiness use flat inset cells. The membership
 strip presents the human membership name, status, signed remaining visits and
@@ -135,6 +137,15 @@ selected. The active safe submit is graphite; blue is reserved for selection
 and information. Cancel Visit, Correct Payment and Cancel Freeze remain
 contextual to their original source rows; negative coverage and issued-sale
 correction are separate risk contexts rather than ordinary quick actions.
+
+A canonical command result appears as a compact inset status row immediately
+below the identity header. It stays in normal document flow, does not overlap
+or become a new full-width semantic zone, and never introduces another left
+rail. The activity area is not one continuous gray feed: Recent Visits and
+Recent Payments are independent softly tinted groups, arranged side by side at
+desktop and stacked at tablet/phone. Every source event is a flat bordered row;
+cancellation/correction facts remain nested inside their source event with
+text-backed red, amber or blue context and no extra elevation or rail.
 
 ## Baseline note
 

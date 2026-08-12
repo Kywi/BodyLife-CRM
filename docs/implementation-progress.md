@@ -15317,3 +15317,53 @@ Stop point:
 - Replace the single live `41881` instance with this refined candidate and
   present the active-membership Profile/Mark Visit path. Do not mark Wave 3
   approved or start Wave 4 until explicit product-owner acceptance.
+
+## Step 241 - Reworked Profile signals and the client activity ledger
+
+Status: the product owner rejected the Step 240 visual separation on
+2026-08-12 because nested left rails overlapped, the post-Issue Membership
+message read as a competing layer and the activity ledger remained a
+continuous gray list. The corrected Wave 3 candidate is implemented and
+automated; explicit Profile and Cancel Visit approval is still pending.
+
+Completed:
+
+- Kept the blue inline-start signal only on the outer Profile paper. Removed
+  decorative inner rails from the note, membership, action, risk and activity
+  regions and from readiness cells; their hierarchy now comes from restrained
+  fills, dividers and spacing.
+- Converted the canonical post-command message into a compact, inset, static
+  status row below client identity. It remains part of the server-rendered
+  canonical reread and does not overlap other Profile regions.
+- Rebuilt the activity area as independent Recent Visits and Recent Payments
+  groups. Desktop uses two non-stretched columns; tablet and phone stack them.
+  Each source event is a flat bordered row, while cancellation/correction facts
+  remain visibly nested inside the source event.
+- Added regression coverage for the single outer rail, Reception note, tonal
+  region differences, responsive ledger geometry, non-stretched desktop
+  groups, flat event rows and contained Issue Membership success status.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors and
+  `git diff --check` passed.
+- Web tests passed 378/378. The final focused Profile/Issue Membership set
+  passed 5/5 at `1440x900`, `1024x768` and `390x844`; the complete authenticated
+  PostgreSQL-backed Playwright suite passed 146/146 with zero failures/skips.
+- Final Profile/status captures are under
+  `/tmp/bodylife-wave3-ledger-redesign-root-v6/`; long activity-ledger captures
+  are under `/tmp/bodylife-wave3-ledger-redesign-root-v4/`.
+- Independent review found no remaining P0–P3 after its legacy Reception-note
+  rail and missing regression assertion observations were closed.
+- `graphify update .` was attempted after the code change and returned
+  `[Errno 95] Operation not supported`. The semantic update detected 142
+  changed code files, 17 changed documents and one deletion but the installed
+  CLI stopped without a configured semantic backend. Neither attempt changed
+  tracked graph artifacts, so stale graph output is not claimed as evidence.
+
+Stop point:
+
+- Replace the single live `41881` instance with this corrected candidate and
+  present the Profile, Issue Membership success and activity-ledger paths. Do
+  not mark Wave 3 approved or start Wave 4 until explicit product-owner
+  acceptance.

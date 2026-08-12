@@ -321,9 +321,10 @@ Current candidate evidence:
 - the real server-rendered Profile is one raised paper surface ordered as
   identity/status → warnings → membership readiness → risk contexts → actions
   → visit/payment ledger → records → quiet identity/card management;
-- restrained internal zones now separate neutral identity, blue membership,
-  graphite actions and the quiet activity ledger without introducing nested
-  raised cards. Amber/red remain reserved for review/danger contexts;
+- one blue rail now belongs only to the outer Profile paper. Neutral identity
+  and note, blue membership and graphite actions use tonal fills/dividers,
+  never competing inner left rails. Amber/red remain reserved for
+  review/danger contexts;
 - the membership readiness strip exposes the human membership name, status,
   signed remaining visits and effective end date with semantic text-backed
   signals. The server still reads the immutable issue-time snapshot, but the
@@ -339,17 +340,23 @@ Current candidate evidence:
 - Cancel Visit, Correct Payment and Cancel Freeze remain contextual to their
   source rows. Negative coverage and issued-sale correction remain explicit
   danger/review contexts rather than ordinary quick actions;
+- a successful canonical mutation now renders a compact inset status row in
+  normal flow below identity instead of a full-width highlighted region;
+- the activity ledger is split into independent Recent Visits and Recent
+  Payments groups. Desktop uses two columns without stretching an empty group;
+  tablet/phone stack the groups. Each source event is a flat readable row and
+  its cancellation/correction remains nested inside that row;
 - the shared rail now has explicit Operations, Records & history and
   role-gated Owner tools groups rather than one flat list/More disclosure;
-- refined Profile captures are under `/tmp/bodylife-wave3-refinement-root-v1/`
-  at `1440x900`, `1024x768` and `390x844`; the exact active-membership Mark
-  Visit wording is captured under `/tmp/bodylife-wave3-refinement-root-v2/`;
+- corrected Profile/status captures are under
+  `/tmp/bodylife-wave3-ledger-redesign-root-v6/` at `1440x900`, `1024x768`
+  and `390x844`; long activity-ledger captures are under
+  `/tmp/bodylife-wave3-ledger-redesign-root-v4/`;
 - Release build passed with zero warnings/errors, Web tests passed 378/378,
   focused responsive Profile and no-JavaScript coverage passed 4/4, focused
-  action workflows passed 24/24 and the refined complete authenticated
-  Playwright suite passed 146/146. Independent refinement review found no
-  P0–P2; its two P3 assertion gaps were closed with explicit semantic-region
-  color/rail mappings and bilingual navigation-group checks.
+  action workflows passed 24/24 and the final complete authenticated
+  Playwright suite passed 146/146. The independent redesign review found no
+  remaining P0–P3 after its note-rail and coverage observations were closed.
 
 Stop/go:
 

@@ -51,11 +51,11 @@ product-owner review.
 | --- | --- | --- | --- | --- |
 | Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | approved 2026-08-12 | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-desktop-1440x900-uk.png` and `wave1-home-tablet-1024x768-uk.png`; explicit product-owner approval recorded |
 | Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | approved 2026-08-12 | `/tmp/bodylife-wave2-flat-ledger-final-v6/desktop-search-idle.png`, `desktop-multiple-results.png`, `desktop-no-results-create.png` and `desktop-direct-create.png`; explicit product-owner approval recorded |
-| Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | Wave 3 candidate — approval pending | `/tmp/bodylife-wave3-profile-root-v5/desktop-exact-profile.png` and command galleries; one Profile paper, readiness strip, action workstation and contextual corrections |
+| Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | Wave 3 candidate — approval pending | `/tmp/bodylife-wave3-ledger-redesign-root-v6/desktop-exact-profile.png` plus the v4 payment ledger; one outer rail, inset command status, two-column visit/payment board and contextual corrections |
 | Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | approved 2026-08-12 | `/tmp/bodylife-wave2-flat-ledger-final-v6/desktop-direct-create.png` plus command validation/busy/success/canonical-reread coverage; explicit approval recorded |
 | Cancel Visit desktop | `branded-light-5-cancel-visit.png` 1104x861 | reason/confirmation, permission, stale/concurrency, canceled and backfill/fallback labels | not started | Dedicated current-Home correction anchor + real command states |
 | Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | approved 2026-08-12 | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-phone-390x844-uk.png`; explicit product-owner approval recorded |
-| Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | Wave 3 candidate — approval pending | `/tmp/bodylife-wave3-profile-root-v5/phone-exact-profile.png`, `phone-payment-history.png` and focused action galleries; 2×2 actions above one active form |
+| Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | Wave 3 candidate — approval pending | `/tmp/bodylife-wave3-ledger-redesign-root-v6/phone-exact-profile.png`, `phone-issue-membership-success.png` and v4 `phone-payment-history.png`; one outer rail, 2×2 actions and stacked event groups |
 | Cancel Visit phone | `branded-mobile-cancel.png` 480x1818 | expanded danger/correction card and keyboard/focus order | not started | Current-Home single-column correction anchor + real command states |
 
 ## Visual route ledger — 15 pages / 16 route entries
@@ -91,7 +91,7 @@ artifact paths in the Evidence column; `—` never means approved.
 | Partial | Wave | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- |
 | Reception `_ReceptionWorkspace.cshtml` | 2–3 | Clients workspace empty/loading/exact/multiple/no-result/error; stable targets; Home is now the separate root page | Wave 2 approved; Wave 3 candidate | Transparent state outlet, rounded result bands, stable ids/hx/fallback, sticky-header recovery and no-JS checks pass |
-| Reception `_ClientProfile.cshtml` | 3 | unavailable/active/zero/negative/expired/ending/low/inactive; actions/history/context; ADR-018 coverage and issued-sale correction reachability | candidate — approval pending | One Profile paper with identity/warnings/readiness/actions/activity order; 1440/1024/390 Profile and command captures under `/tmp/bodylife-wave3-profile-root-v5/` and `/tmp/bodylife-wave3-profile-actions-v3/` |
+| Reception `_ClientProfile.cshtml` | 3 | unavailable/active/zero/negative/expired/ending/low/inactive; actions/history/context; ADR-018 coverage and issued-sale correction reachability | candidate — approval pending | One Profile paper and one outer signal; quiet internal regions, compact command status and responsive grouped event ledger under `/tmp/bodylife-wave3-ledger-redesign-root-v6/` and v4 |
 | Reception `_CreateClientForm.cshtml` | 2 | direct open; validation; duplicate review/ack; permission; busy; success collapse | approved 2026-08-12 | Direct fragment and persistent no-result context; duplicate acknowledgement/reason, busy/idempotency and canonical reread covered |
 | Reception `_UpdateClientForm.cshtml` | 3 | validation; duplicate review/ack; busy; success; permission | candidate — approval pending | Quiet Profile-management disclosure; stable update/duplicate/stale/canonical-reread tests remain green |
 | Reception `_CardAssignmentForm.cshtml` | 3 | assign/change/clear; duplicate block; reason; permission/stale/success | candidate — approval pending | Quiet Profile-management disclosure; assign/change/clear/stale tests remain green |
@@ -173,9 +173,10 @@ artifact paths in the Evidence column; `—` never means approved.
 - The selected Profile is one full-width paper surface with divider-separated
   identity, warnings, readiness, risk, action, activity, record and management
   regions; nested equal-elevation action cards are removed.
-- Neutral identity, blue membership, graphite actions and the quiet activity
-  ledger now have restrained tonal separation/semantic rails inside that one
-  paper. Amber/red remain specific to review/danger contexts.
+- The blue inline-start signal belongs only to the outer Profile paper.
+  Neutral identity/note, blue membership and graphite actions use restrained
+  tonal separation/dividers without stacked inner rails. Amber/red remain
+  specific to review/danger contexts.
 - Membership readiness uses the human membership name plus text-backed status,
   signed visits and effective end signals. Its source remains the immutable
   issue-time snapshot, but Reception labels no longer expose `snapshot` or
@@ -188,15 +189,19 @@ artifact paths in the Evidence column; `—` never means approved.
 - Cancel Visit, Correct Payment and Cancel Freeze remain attached to source
   rows. Negative coverage and issued-sale correction remain explicit risk
   contexts.
+- Canonical mutation success is a compact inset row below identity. Recent
+  Visits and Recent Payments are separate softly tinted groups: two columns on
+  desktop, stacked on tablet/phone, with flat event rows and nested correction
+  facts instead of one continuous gray ledger.
 - Navigation is split into Operations, Records & history and role-gated Owner
   tools groups with bilingual headings and responsive drawer coverage.
-- Refined viewport captures are under
-  `/tmp/bodylife-wave3-refinement-root-v1/`; the active-membership Mark Visit
-  wording is under `/tmp/bodylife-wave3-refinement-root-v2/`. Release build is
-  clean; Web 378/378 and full authenticated Playwright 146/146 pass. Independent
-  refinement review found no P0–P2; both P3 test-hardening observations were
-  closed. Explicit product-owner Profile/Cancel Visit approval remains required
-  before Wave 4.
+- Final viewport/status captures are under
+  `/tmp/bodylife-wave3-ledger-redesign-root-v6/`; long activity-ledger evidence
+  is under `/tmp/bodylife-wave3-ledger-redesign-root-v4/`. Release build is
+  clean; Web 378/378 and full authenticated Playwright 146/146 pass. The
+  independent redesign review found no remaining P0–P3 after its note-rail and
+  assertion observations were closed. Explicit product-owner Profile/Cancel
+  Visit approval remains required before Wave 4.
 
 ## Superseded production candidate evidence
 
