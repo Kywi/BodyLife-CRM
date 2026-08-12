@@ -51,6 +51,10 @@ account menu. Tablet uses a drawer; its intrinsic wordmark is followed directly
 by the flexible Search track. Phone orders brand/account, Search and Create on
 three compact rows, then becomes one content column. The account role remains
 text-visible at 390px and the device/session detail remains in the menu.
+The navigation rail is grouped for scanning: Operations contains Home and
+Clients; Records & history contains Reports and History; Owner tools is a
+separate violet, role-gated group with direct destinations rather than an
+ambiguous More disclosure.
 Review-only controls, demo banner, fixture state links and fixture role switch
 belong only to the static lab and do not ship in production. The `check-in
 signal` is a semantic left rail/status strip on Activity,
@@ -104,10 +108,18 @@ risk-specific correction context; reception actions; visit/payment activity;
 record links; quiet identity/card management. Do not rebuild the profile as a
 stack of equally raised nested cards.
 
+Identity, membership, actions and activity stay inside the one Profile paper
+but use restrained tonal zones and semantic inline-start rails: neutral inset
+identity, blue membership readiness, graphite actions and a quiet neutral
+activity ledger. Risk-specific contexts alone use amber or red. This is
+section separation, not a nested-card or rainbow treatment.
+
 Identity facts and membership readiness use flat inset cells. The membership
-strip names the immutable type snapshot, status, signed remaining visits and
-effective end date. Green, amber or red belongs only to the affected value and
-is always paired with a label. Negative, expired and inactive warnings appear
+strip presents the human membership name, status, signed remaining visits and
+effective end date. The name still comes from the immutable issue-time type
+snapshot, but persistence vocabulary such as `snapshot` or `знімок` is never a
+Reception label. Green, amber or red belongs only to the affected value and is
+always paired with a label. Negative, expired and inactive warnings appear
 before the action they constrain. A safe zero negative balance does not render
 the negative-coverage workstation; query failure, concrete negative balance,
 active closure and correction/error states keep it visible.

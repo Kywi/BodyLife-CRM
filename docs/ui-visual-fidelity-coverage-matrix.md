@@ -173,8 +173,13 @@ artifact paths in the Evidence column; `—` never means approved.
 - The selected Profile is one full-width paper surface with divider-separated
   identity, warnings, readiness, risk, action, activity, record and management
   regions; nested equal-elevation action cards are removed.
-- Membership readiness uses text-backed semantic signals for snapshot/status,
-  signed visits and effective end. Server-confirmed safe zero negative
+- Neutral identity, blue membership, graphite actions and the quiet activity
+  ledger now have restrained tonal separation/semantic rails inside that one
+  paper. Amber/red remain specific to review/danger contexts.
+- Membership readiness uses the human membership name plus text-backed status,
+  signed visits and effective end signals. Its source remains the immutable
+  issue-time snapshot, but Reception labels no longer expose `snapshot` or
+  `знімок`. Server-confirmed safe zero negative
   coverage is omitted; failures, concrete negatives, active closures and
   correction/error states remain explicit.
 - Mark Visit, Issue Membership, Add Payment and Add Freeze remain visible above
@@ -183,13 +188,15 @@ artifact paths in the Evidence column; `—` never means approved.
 - Cancel Visit, Correct Payment and Cancel Freeze remain attached to source
   rows. Negative coverage and issued-sale correction remain explicit risk
   contexts.
-- Real viewport captures are under `/tmp/bodylife-wave3-profile-root-v5/` and
-  command captures under `/tmp/bodylife-wave3-profile-actions-v3/`. Release
-  build is clean; Web 378/378, responsive Profile/no-JavaScript 4/4, focused
-  actions 24/24 and full authenticated Playwright 144/144 pass. Independent
-  review found no P0/P1; its single P2 primary-submit color finding was fixed
-  and covered. Explicit product-owner Profile/Cancel Visit approval remains
-  required before Wave 4.
+- Navigation is split into Operations, Records & history and role-gated Owner
+  tools groups with bilingual headings and responsive drawer coverage.
+- Refined viewport captures are under
+  `/tmp/bodylife-wave3-refinement-root-v1/`; the active-membership Mark Visit
+  wording is under `/tmp/bodylife-wave3-refinement-root-v2/`. Release build is
+  clean; Web 378/378 and full authenticated Playwright 146/146 pass. Independent
+  refinement review found no P0–P2; both P3 test-hardening observations were
+  closed. Explicit product-owner Profile/Cancel Visit approval remains required
+  before Wave 4.
 
 ## Superseded production candidate evidence
 

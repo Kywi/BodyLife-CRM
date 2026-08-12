@@ -321,8 +321,13 @@ Current candidate evidence:
 - the real server-rendered Profile is one raised paper surface ordered as
   identity/status → warnings → membership readiness → risk contexts → actions
   → visit/payment ledger → records → quiet identity/card management;
-- the membership readiness strip exposes snapshot name, status, signed
-  remaining visits and effective end date with semantic text-backed signals;
+- restrained internal zones now separate neutral identity, blue membership,
+  graphite actions and the quiet activity ledger without introducing nested
+  raised cards. Amber/red remain reserved for review/danger contexts;
+- the membership readiness strip exposes the human membership name, status,
+  signed remaining visits and effective end date with semantic text-backed
+  signals. The server still reads the immutable issue-time snapshot, but the
+  Reception UI no longer exposes `snapshot`/`знімок` persistence vocabulary;
   zero-safe negative coverage is omitted by a server-owned presentation
   decision, while query failure, concrete negative balance, active closure and
   correction/error states remain visible;
@@ -334,14 +339,17 @@ Current candidate evidence:
 - Cancel Visit, Correct Payment and Cancel Freeze remain contextual to their
   source rows. Negative coverage and issued-sale correction remain explicit
   danger/review contexts rather than ordinary quick actions;
-- real Profile captures are under `/tmp/bodylife-wave3-profile-root-v5/` at
-  `1440x900`, `1024x768` and `390x844`; command-state captures are under
-  `/tmp/bodylife-wave3-profile-actions-v3/`;
+- the shared rail now has explicit Operations, Records & history and
+  role-gated Owner tools groups rather than one flat list/More disclosure;
+- refined Profile captures are under `/tmp/bodylife-wave3-refinement-root-v1/`
+  at `1440x900`, `1024x768` and `390x844`; the exact active-membership Mark
+  Visit wording is captured under `/tmp/bodylife-wave3-refinement-root-v2/`;
 - Release build passed with zero warnings/errors, Web tests passed 378/378,
   focused responsive Profile and no-JavaScript coverage passed 4/4, focused
-  action workflows passed 24/24 and the complete authenticated Playwright
-  suite passed 144/144. Independent review found no P0/P1; its one P2 submit
-  color observation was corrected and covered by computed-style assertions.
+  action workflows passed 24/24 and the refined complete authenticated
+  Playwright suite passed 146/146. Independent refinement review found no
+  P0–P2; its two P3 assertion gaps were closed with explicit semantic-region
+  color/rail mappings and bilingual navigation-group checks.
 
 Stop/go:
 

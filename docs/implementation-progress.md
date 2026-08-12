@@ -15262,3 +15262,58 @@ Stop point:
 - Replace the single live `41881` review instance with this candidate and
   present Profile plus Cancel Visit desktop/tablet/phone evidence. Do not mark
   Wave 3 approved or begin Wave 4 until explicit product-owner acceptance.
+
+## Step 240 - Refined Wave 3 Profile separation, navigation and membership wording
+
+Status: refinement candidate completed on 2026-08-12 after product-owner
+feedback. Wave 3 still awaits explicit Profile and Cancel Visit visual
+approval; Wave 4 and Milestone 11 remain blocked.
+
+Completed:
+
+- Recorded that the first Wave 3 Profile was directionally acceptable but too
+  visually uniform: identity, membership, actions and history read as one
+  undifferentiated stack, and the application rail read as one flat list.
+- Kept exactly one raised Profile paper and added restrained internal semantic
+  zones: neutral identity, blue membership readiness, graphite actions and a
+  quiet neutral activity ledger. Amber/red remain reserved for review/danger;
+  no equal-elevation nested cards or decorative rainbow palette was added.
+- Split authenticated navigation into explicit Operations, Records & history
+  and role-gated Owner tools groups. Owner destinations are direct links rather
+  than an ambiguous More disclosure; active route, role visibility, drawer,
+  keyboard and touch contracts remain intact.
+- Replaced Reception labels `Snapshot name`/`Назва у знімку` and snapshot price
+  with human `Membership`/`Абонемент` and `Price`/`Ціна`. The immutable
+  issue-time snapshot remains the server/domain source of truth. Replaced the
+  complained `Home active snapshot` fixture display with the realistic
+  `Eight visits / 30 days` membership name and verified it in both the Profile
+  readiness strip and Mark Visit membership selector.
+- Added exact semantic-region rail/color assertions and bilingual navigation
+  group assertions so the new hierarchy cannot silently collapse.
+
+Validation:
+
+- Release solution and focused UI project builds passed with zero warnings or
+  errors; JavaScript syntax, all 14 localization XML files and
+  `git diff --check` passed.
+- Web tests passed 378/378. The complete PostgreSQL-backed authenticated
+  Playwright suite passed 146/146; the post-review profile/navigation
+  hardening subset passed 5/5.
+- Refined desktop/tablet/phone evidence is under
+  `/tmp/bodylife-wave3-refinement-root-v1/`; the exact Ukrainian active
+  membership/Mark Visit evidence is
+  `/tmp/bodylife-wave3-refinement-root-v2/membership-human-labels-uk-UA.png`.
+- Independent refinement review found no P0–P2. Its two P3 test gaps were
+  closed before handoff.
+- `graphify update .` was attempted after the code/documentation change and
+  again returned `[Errno 95] Operation not supported`. The semantic update
+  detected 142 changed code files, 17 changed documents and one deletion but
+  the installed CLI stopped without a configured LLM backend. Neither command
+  changed tracked graph artifacts, so stale topology is not claimed as
+  validation evidence.
+
+Stop point:
+
+- Replace the single live `41881` instance with this refined candidate and
+  present the active-membership Profile/Mark Visit path. Do not mark Wave 3
+  approved or start Wave 4 until explicit product-owner acceptance.
