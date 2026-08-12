@@ -1178,7 +1178,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             _ownerAccountId,
             activeClientId,
             _activeMembershipTypeId,
-            "Home active snapshot",
+            "Eight visits / 30 days",
             visitsLimitSnapshot: 8,
             startDate: businessDate.AddDays(-7),
             durationDays: 30);
@@ -1193,7 +1193,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             _ownerAccountId,
             endingSoonClientId,
             _activeMembershipTypeId,
-            "Home ending-soon snapshot",
+            "Two visits / 10 days",
             visitsLimitSnapshot: 2,
             startDate: businessDate.AddDays(-7),
             durationDays: 10);
@@ -1208,7 +1208,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             _ownerAccountId,
             negativeClientId,
             _activeMembershipTypeId,
-            "Home negative snapshot",
+            "Open visit pass",
             visitsLimitSnapshot: 0,
             startDate: businessDate.AddDays(-7),
             durationDays: 30);

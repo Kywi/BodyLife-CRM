@@ -17,6 +17,8 @@
   <data name="Navigation.Logout" xml:space="preserve"><value>Log out</value></data>
   <data name="Navigation.Label" xml:space="preserve"><value>Main navigation</value></data>
   <data name="Navigation.Main" xml:space="preserve"><value>Main</value></data>
+  <data name="Navigation.Operations" xml:space="preserve"><value>Operations</value></data>
+  <data name="Navigation.RecordsHistory" xml:space="preserve"><value>Records &amp; history</value></data>
   <data name="Navigation.Reception" xml:space="preserve"><value>Reception</value></data>
   <data name="Navigation.Home" xml:space="preserve"><value>Home</value></data>
   <data name="Navigation.Clients" xml:space="preserve"><value>Clients</value></data>

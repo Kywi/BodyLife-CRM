@@ -126,6 +126,50 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
         }
     }
 
+    [Theory]
+    [InlineData(English, "Client profile", "Membership", "Operations", "Records & history", "Owner tools")]
+    [InlineData(Ukrainian, "Профіль клієнта", "Абонемент", "Робота", "Звіти та історія", "Інструменти власника")]
+    public async Task MembershipPresentationUsesHumanLabelsInsteadOfSnapshotVocabulary(
+        string culture,
+        string profileLabel,
+        string membershipLabel,
+        string operationsHeading,
+        string recordsHeading,
+        string ownerHeading)
+    {
+        var scenario = await _app.EnsureReceptionHomeScenarioAsync();
+        var context = await CreateContextAsync(1024, 768, culture);
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await page.GotoAsync(_app.BaseAddress.ToString());
+            await LoginAsync(page, _app.LoginName, _app.Password, $"snapshot vocabulary {culture}");
+            await page.GotoAsync(new Uri(
+                _app.BaseAddress,
+                $"/Reception/Index?clientId={scenario.ActiveClientId}").ToString(),
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+
+            var profile = page.Locator("#client-profile");
+            await ExpectVisibleAsync(profile, profileLabel, $"{culture} membership profile");
+            await ExpectVisibleAsync(profile.Locator(".membership-summary-grid"), membershipLabel, $"{culture} membership label");
+            await ExpectVisibleAsync(profile.Locator(".membership-summary-grid"), "Eight visits / 30 days", $"{culture} membership name");
+            await ExpectVisibleAsync(profile.Locator("#mark-visit-action-panel .visit-membership-choice"), "Eight visits / 30 days", $"{culture} Mark Visit membership choice");
+            Assert.DoesNotContain("snapshot", await profile.InnerTextAsync(), StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("знімку", await profile.InnerTextAsync(), StringComparison.OrdinalIgnoreCase);
+            await CaptureAndAssertFitsAsync(page, $"membership-human-labels-{culture}");
+
+            await page.Locator("[data-drawer-toggle]").ClickAsync();
+            await ExpectVisibleAsync(page.Locator("[data-nav-group='operations']"), operationsHeading, $"{culture} Operations heading");
+            await ExpectVisibleAsync(page.Locator("[data-nav-group='records']"), recordsHeading, $"{culture} Records heading");
+            await ExpectVisibleAsync(page.Locator("[data-nav-group='owner']"), ownerHeading, $"{culture} Owner heading");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     [Fact]
     public async Task BrowserContextsDoNotLeakCultureCookies()
     {

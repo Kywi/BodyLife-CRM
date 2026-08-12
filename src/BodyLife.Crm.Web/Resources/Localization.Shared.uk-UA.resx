@@ -9,7 +9,7 @@
   <data name="Session.DeviceUnavailable" xml:space="preserve"><value>Пристрій не вказано</value></data>
   <data name="Session.Identifier" xml:space="preserve"><value>Сеанс {0}</value></data>
   <data name="Navigation.DailyReport" xml:space="preserve"><value>Щоденний звіт</value></data>
-  <data name="Navigation.Reports" xml:space="preserve"><value>Звіт</value></data>
+  <data name="Navigation.Reports" xml:space="preserve"><value>Звіти</value></data>
   <data name="Navigation.AuditTimeline" xml:space="preserve"><value>Журнал аудиту</value></data>
   <data name="Navigation.MembershipTypes" xml:space="preserve"><value>Типи абонементів</value></data>
   <data name="Navigation.NonWorkingDays" xml:space="preserve"><value>Неробочі дні</value></data>
@@ -17,6 +17,8 @@
   <data name="Navigation.Logout" xml:space="preserve"><value>Вийти</value></data>
   <data name="Navigation.Label" xml:space="preserve"><value>Основна навігація</value></data>
   <data name="Navigation.Main" xml:space="preserve"><value>Основне</value></data>
+  <data name="Navigation.Operations" xml:space="preserve"><value>Робота</value></data>
+  <data name="Navigation.RecordsHistory" xml:space="preserve"><value>Звіти та історія</value></data>
   <data name="Navigation.Reception" xml:space="preserve"><value>Рецепція</value></data>
   <data name="Navigation.Home" xml:space="preserve"><value>Головна</value></data>
   <data name="Navigation.Clients" xml:space="preserve"><value>Клієнти</value></data>

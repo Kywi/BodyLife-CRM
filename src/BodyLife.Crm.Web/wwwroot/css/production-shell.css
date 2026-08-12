@@ -42,10 +42,7 @@
 .navigation-link.is-active,.navigation-link[aria-current="page"] { border-color: transparent; background: var(--checkin-blue-soft); color: var(--checkin-blue); }
 .navigation-link.is-section-active,.navigation-link[aria-current="location"] { border-color: transparent; box-shadow: inset 3px 0 0 var(--checkin-blue); background: color-mix(in srgb, var(--checkin-blue-soft) 56%, var(--desk-paper)); color: var(--checkin-blue); }
 .owner-tools { width: 100%; border: 0; background: transparent; }
-.owner-tools summary { display: flex; min-height: 44px; align-items: center; justify-content: flex-start; gap: var(--space-2); border: 1px solid transparent; border-radius: var(--radius-control); padding: var(--space-2); color: var(--owner-violet); font-weight: 700; cursor: pointer; list-style: none; }
-.owner-tools summary::-webkit-details-marker { display: none; }
-.owner-tools summary:hover,.owner-tools[open] > summary { border-color: color-mix(in srgb, var(--owner-violet) 18%, transparent); background: var(--owner-violet-soft); }
-.owner-tools-links { display: grid; gap: var(--space-1); margin-top: var(--space-1); padding-left: var(--space-3); }
+.owner-tools h2 { color: var(--owner-violet); }
 .owner-tools .navigation-link { color: var(--owner-violet); }
 .owner-tools .navigation-link.is-active,.owner-tools .navigation-link[aria-current="page"] { background: var(--owner-violet-soft); color: var(--owner-violet); }
 .app-content { margin-left: 240px; }
@@ -394,7 +391,11 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
 }
 .reception-page #client-profile .profile-warning-list { display: grid; gap: var(--space-2); }
 .reception-page #client-profile .profile-warning-list .warning-block { margin: 0; border-radius: 0; }
-.reception-page #client-profile .profile-identity-facts { display: grid; gap: var(--space-3); }
+.reception-page #client-profile .profile-identity-facts {
+  display: grid;
+  gap: var(--space-3);
+  background: color-mix(in srgb, var(--desk-inset) 42%, var(--desk-paper));
+}
 .reception-page #client-profile .client-profile-meta,
 .reception-page #client-profile .membership-summary-grid {
   display: grid;
@@ -470,13 +471,22 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
 }
 .reception-page #client-profile .membership-panel-header .section-heading,
 .reception-page #client-profile .profile-region-heading .section-heading { margin: 0; font-size: var(--type-section); }
+.reception-page #client-profile .membership-panel {
+  border-inline-start: 4px solid var(--checkin-blue);
+  background: color-mix(in srgb, var(--checkin-blue-soft) 34%, var(--desk-paper));
+}
+.reception-page #client-profile .membership-panel-header .section-heading { color: var(--checkin-blue); }
 .reception-page #client-profile .profile-region-heading .eyebrow { margin: 0; color: var(--checkin-blue); font-size: var(--type-meta); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .reception-page #client-profile .membership-extension-history { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--line-quiet); }
 .reception-page #client-profile .profile-danger-context { background: var(--stop-red-soft); }
 .reception-page #client-profile .profile-danger-context > * { margin: 0; }
 .reception-page #client-profile .profile-review-context { background: var(--attention-amber-soft); }
 .reception-page #client-profile .profile-review-context > * { margin: 0; }
-.reception-page #client-profile .profile-action-workspace { background: color-mix(in srgb, var(--checkin-blue-soft) 28%, var(--desk-paper)); }
+.reception-page #client-profile .profile-action-workspace {
+  border-inline-start: 4px solid var(--text-primary);
+  background: color-mix(in srgb, var(--text-primary) 5%, var(--desk-paper));
+}
+.reception-page #client-profile .profile-action-workspace .profile-region-heading .eyebrow { color: var(--text-primary); }
 .reception-page #client-profile :is(.profile-action-workspace, .profile-activity-ledger) > .profile-region-heading {
   display: grid;
   justify-content: start;
@@ -624,7 +634,13 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
 ):hover:not(:disabled) {
   background: color-mix(in srgb, var(--text-primary) 82%, black);
 }
-.reception-page #client-profile .profile-activity-ledger { display: grid; gap: var(--space-4); }
+.reception-page #client-profile .profile-activity-ledger {
+  display: grid;
+  gap: var(--space-4);
+  border-inline-start: 3px solid color-mix(in srgb, var(--text-tertiary) 44%, var(--line-quiet));
+  background: color-mix(in srgb, var(--desk-inset) 54%, var(--desk-paper));
+}
+.reception-page #client-profile .profile-activity-ledger .profile-region-heading .eyebrow { color: var(--text-tertiary); }
 .reception-page #client-profile .recent-visit-row,
 .reception-page #client-profile .recent-payment-row,
 .reception-page #client-profile .membership-extension-row {

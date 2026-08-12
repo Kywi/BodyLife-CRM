@@ -70,9 +70,10 @@ public sealed class UiStyleCoverageSmokeTests : IClassFixture<ReceptionAppFixtur
                 await logo.GetAttributeAsync("src") ?? string.Empty,
                 StringComparison.Ordinal);
 
-            var mainNavigation = page.Locator("section[aria-labelledby='navigation-main']");
-            var homeLink = mainNavigation.GetByRole(AriaRole.Link, new() { Name = "Home", Exact = true });
-            var receptionLink = mainNavigation.GetByRole(AriaRole.Link, new() { Name = "Clients", Exact = true });
+            var operationsNavigation = page.Locator("[data-nav-group='operations']");
+            var recordsNavigation = page.Locator("[data-nav-group='records']");
+            var homeLink = operationsNavigation.GetByRole(AriaRole.Link, new() { Name = "Home", Exact = true });
+            var receptionLink = operationsNavigation.GetByRole(AriaRole.Link, new() { Name = "Clients", Exact = true });
             var globalSearch = page.Locator("#global-client-search");
             await ExpectVisibleAsync(globalSearch, viewportName, "global client search");
             Assert.Equal(1, await page.Locator("#global-client-search").CountAsync());
@@ -121,27 +122,27 @@ public sealed class UiStyleCoverageSmokeTests : IClassFixture<ReceptionAppFixtur
             await page.Keyboard.PressAsync("Shift+Tab");
             Assert.True(await lastDrawerFocusable.EvaluateAsync<bool>("element => document.activeElement === element"));
             await ExpectVisibleAsync(homeLink, viewportName, "Home navigation");
+            await ExpectVisibleAsync(operationsNavigation.GetByRole(AriaRole.Heading, new() { Name = "Operations", Exact = true }), viewportName, "Operations navigation heading");
+            await ExpectVisibleAsync(recordsNavigation.GetByRole(AriaRole.Heading, new() { Name = "Records & history", Exact = true }), viewportName, "Records navigation heading");
+            Assert.Equal(2, await operationsNavigation.Locator("a.navigation-link").CountAsync());
+            Assert.Equal(2, await recordsNavigation.Locator("a.navigation-link").CountAsync());
             Assert.Equal("page", await homeLink.GetAttributeAsync("aria-current"));
             Assert.Null(await receptionLink.GetAttributeAsync("aria-current"));
             Assert.Equal(
                 1,
                 await page.Locator(".sidebar-navigation a[aria-current='page']").CountAsync());
             await AssertMinimumTouchTargetsAsync(
-                mainNavigation.Locator(".navigation-link"),
+                page.Locator("[data-nav-group='operations'] .navigation-link, [data-nav-group='records'] .navigation-link"),
                 viewportName,
                 "primary navigation action");
 
             if (isOwner)
             {
-                var ownerGroup = page.Locator("[aria-labelledby='navigation-owner']");
+                var ownerGroup = page.Locator("[data-nav-group='owner']");
                 await ExpectVisibleAsync(ownerGroup, viewportName, "Owner tools navigation");
-                Assert.Equal("DETAILS", await ownerGroup.EvaluateAsync<string>("element => element.tagName"));
+                Assert.Equal("SECTION", await ownerGroup.EvaluateAsync<string>("element => element.tagName"));
+                await ExpectVisibleAsync(ownerGroup.GetByRole(AriaRole.Heading, new() { Name = "Owner tools", Exact = true }), viewportName, "Owner tools heading");
                 Assert.Equal(3, await ownerGroup.Locator("a.navigation-link").CountAsync());
-                await AssertMinimumTouchTargetsAsync(
-                    ownerGroup.Locator("summary"),
-                    viewportName,
-                    "Owner tools disclosure");
-                await ownerGroup.Locator("summary").ClickAsync();
                 await ExpectVisibleAsync(
                     ownerGroup.GetByRole(AriaRole.Link).First,
                     viewportName,
@@ -150,7 +151,7 @@ public sealed class UiStyleCoverageSmokeTests : IClassFixture<ReceptionAppFixtur
                     ownerGroup.GetByRole(AriaRole.Link),
                     viewportName,
                     "Owner tools destination");
-                await ownerGroup.Locator("summary").ClickAsync();
+                Assert.Equal(0, await ownerGroup.Locator("details, summary").CountAsync());
             }
             else
             {
@@ -176,7 +177,7 @@ public sealed class UiStyleCoverageSmokeTests : IClassFixture<ReceptionAppFixtur
             await page.GotoAsync(
                 new Uri(_app.BaseAddress, "/Reports/EndingSoon").ToString(),
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            var reportsLink = page.Locator("section[aria-labelledby='navigation-main']")
+            var reportsLink = page.Locator("[data-nav-group='records']")
                 .GetByRole(AriaRole.Link, new() { Name = "Reports", Exact = true });
             await page.Locator("[data-drawer-toggle]").ClickAsync();
             await ExpectVisibleAsync(reportsLink, viewportName, "Reports section navigation");
@@ -191,7 +192,7 @@ public sealed class UiStyleCoverageSmokeTests : IClassFixture<ReceptionAppFixtur
                 new Uri(_app.BaseAddress, $"/Audit/ClientHistory?clientId={_app.FreezeTabletClientId}").ToString(),
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
             await page.Locator("[data-drawer-toggle]").ClickAsync();
-            var historyLink = page.Locator("section[aria-labelledby='navigation-main']")
+            var historyLink = page.Locator("[data-nav-group='records']")
                 .GetByRole(AriaRole.Link, new() { Name = "History", Exact = true });
             Assert.Equal("location", await historyLink.GetAttributeAsync("aria-current"));
             await page.Locator("[data-drawer-close]").ClickAsync();
@@ -279,7 +280,7 @@ public sealed class UiStyleCoverageSmokeTests : IClassFixture<ReceptionAppFixtur
             WaitUntil = WaitUntilState.NetworkIdle,
         });
         await page.Locator("[data-drawer-toggle]").ClickAsync();
-        var link = page.Locator("section[aria-labelledby='navigation-main']")
+        var link = page.Locator(linkName is "Home" or "Clients" ? "[data-nav-group='operations']" : "[data-nav-group='records']")
             .GetByRole(AriaRole.Link, new() { Name = linkName, Exact = true });
         Assert.Equal(expectedState, await link.GetAttributeAsync("aria-current"));
         await page.Locator("[data-drawer-close]").ClickAsync();

@@ -126,8 +126,7 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
         Assert.Equal("/", new Uri(page.Url).AbsolutePath);
         Assert.Equal(1, await page.Locator("main").CountAsync());
 
-        var navigation = page.Locator(
-            "section[aria-labelledby='navigation-main']");
+        var navigation = page.Locator("[data-nav-group='operations']");
         var homeLink = navigation.GetByRole(
             AriaRole.Link,
             new LocatorGetByRoleOptions { Name = "Головна", Exact = true });
@@ -139,7 +138,7 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
         Assert.Null(await clientsLink.GetAttributeAsync("aria-current"));
         Assert.Equal(
             1,
-            await navigation.Locator("a[aria-current='page']").CountAsync());
+            await page.Locator(".sidebar-navigation a[aria-current='page']").CountAsync());
 
         if (viewportName == "desktop")
         {
@@ -256,9 +255,9 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             await OpenDrawerAsync(page);
         }
         await AssertVisibleAsync(
-            page.Locator("details.owner-tools"),
+            page.Locator("[data-nav-group='owner']"),
             viewportName,
-            "Owner tools disclosure");
+            "Owner tools navigation");
         if (viewportName != "desktop")
         {
             await CloseDrawerAsync(page);
@@ -391,8 +390,8 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             navigation.Locator("a.navigation-link"),
             viewportName,
             "primary navigation");
-        await AssertMinimumTouchTargetAsync(
-            page.Locator("details.owner-tools > summary"),
+        await AssertMinimumTouchTargetsAsync(
+            page.Locator("[data-nav-group='owner'] a.navigation-link"),
             viewportName,
             "Owner tools");
         if (viewportName != "desktop")

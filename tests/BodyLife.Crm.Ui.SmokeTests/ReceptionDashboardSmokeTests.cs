@@ -272,6 +272,42 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "rgb(32, 38, 43)",
                 await clientProfile.Locator("[data-mark-visit-submit]")
                     .EvaluateAsync<string>("element => getComputedStyle(element).backgroundColor"));
+            var profileRegions = await clientProfile.EvaluateAsync<string[]>(
+                """
+                profile => {
+                    const style = (selector) => {
+                        const region = profile.querySelector(selector);
+                        const computed = getComputedStyle(region);
+                        return {
+                            background: computed.backgroundColor,
+                            rail: computed.borderInlineStartWidth,
+                            railColor: computed.borderInlineStartColor,
+                        };
+                    };
+                    return [
+                        style('.profile-identity-facts'),
+                        style('.membership-panel'),
+                        style('.profile-action-workspace'),
+                        style('.profile-activity-ledger'),
+                    ].flatMap(region => [region.background, region.rail, region.railColor]);
+                }
+                """);
+            Assert.Equal(12, profileRegions.Length);
+            Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[0]);
+            Assert.Equal("0px", profileRegions[1]);
+            Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[3]);
+            Assert.Equal("4px", profileRegions[4]);
+            Assert.Equal("rgb(20, 109, 168)", profileRegions[5]);
+            Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[6]);
+            Assert.Equal("4px", profileRegions[7]);
+            Assert.Equal("rgb(32, 38, 43)", profileRegions[8]);
+            Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[9]);
+            Assert.Equal("3px", profileRegions[10]);
+            Assert.NotEqual(profileRegions[5], profileRegions[11]);
+            Assert.NotEqual(profileRegions[8], profileRegions[11]);
+            Assert.NotEqual(profileRegions[0], profileRegions[3]);
+            Assert.NotEqual(profileRegions[3], profileRegions[6]);
+            Assert.NotEqual(profileRegions[6], profileRegions[9]);
             await AssertFitsViewportAsync(page, viewportName, "exact-card profile");
             await CaptureViewportVisualAsync(page, viewportName, "exact-profile");
 

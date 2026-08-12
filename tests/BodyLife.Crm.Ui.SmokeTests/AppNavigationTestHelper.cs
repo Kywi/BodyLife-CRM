@@ -21,12 +21,8 @@ internal static class AppNavigationTestHelper
     public static async Task<ILocator> OpenOwnerToolsAsync(IPage page)
     {
         var drawer = await OpenDrawerAsync(page);
-        var ownerTools = drawer.Locator("details.owner-tools");
-        if (await ownerTools.GetAttributeAsync("open") is null)
-        {
-            await ownerTools.Locator("summary").ClickAsync();
-        }
-
+        var ownerTools = drawer.Locator("[data-nav-group='owner']");
+        await ownerTools.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
         return drawer;
     }
 }
