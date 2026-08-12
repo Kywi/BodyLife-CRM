@@ -95,6 +95,35 @@ amber; validation/failure is red; confirmed status is green; the safe Create
 submit is graphite. Busy/idempotency, acknowledgement/reason and canonical
 reread remain server-owned contracts, not visual-only states.
 
+## Client profile and reception action pattern
+
+The selected canonical Profile owns exactly one raised full-width paper
+surface. Inside it, use divider-separated regions in this order: identity and
+operational status; critical server warnings; current membership readiness;
+risk-specific correction context; reception actions; visit/payment activity;
+record links; quiet identity/card management. Do not rebuild the profile as a
+stack of equally raised nested cards.
+
+Identity facts and membership readiness use flat inset cells. The membership
+strip names the immutable type snapshot, status, signed remaining visits and
+effective end date. Green, amber or red belongs only to the affected value and
+is always paired with a label. Negative, expired and inactive warnings appear
+before the action they constrain. A safe zero negative balance does not render
+the negative-coverage workstation; query failure, concrete negative balance,
+active closure and correction/error states keep it visible.
+
+The core action workstation presents every currently allowed action first,
+then one full-width active server form. Mark Visit is the initial reception
+primary; Issue Membership, Add Payment and Add Freeze are adjacent secondary
+choices. Desktop may use four choices across; tablet and phone use a readable
+2×2 arrangement. The enhanced switcher is presentation-only: native
+`details` summaries remain the no-JavaScript fallback, the existing partial
+ids and htmx `outerHTML` targets remain stable, and a failed/swapped form stays
+selected. The active safe submit is graphite; blue is reserved for selection
+and information. Cancel Visit, Correct Payment and Cancel Freeze remain
+contextual to their original source rows; negative coverage and issued-sale
+correction are separate risk contexts rather than ordinary quick actions.
+
 ## Baseline note
 
 `docs/ui-prototype/index.html` and the complete `docs/ui-prototype/` inventory
@@ -107,5 +136,7 @@ PostgreSQL-backed desktop/tablet/phone evidence and explicit product-owner
 acceptance before the following migration wave begins. Wave 1 is approved;
 the first fragmented Wave 2 render was rejected and is not a visual target.
 The later large Clients-canvas replacement was also rejected. The transparent
-state outlet with a flat independent-result ledger is the current production
-candidate awaiting explicit acceptance.
+state outlet with a flat independent-result ledger was explicitly approved by
+the product owner on 2026-08-12. Wave 3 Profile/actions now has a real Razor
+candidate; it still requires explicit Profile and Cancel Visit visual approval
+before Wave 4 may begin.

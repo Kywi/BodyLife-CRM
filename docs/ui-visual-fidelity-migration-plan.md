@@ -2,9 +2,9 @@
 
 Дата: 2026-07-22
 Оновлено: 2026-08-12
-Статус: **production migration authorized; Waves 0–1 approved; Wave 2
-Search/Create candidate completed and awaiting explicit product-owner
-approval; Wave 3 blocked**.
+Статус: **production migration authorized; Waves 0–2 approved; Wave 3
+Profile/actions candidate completed and awaiting explicit product-owner
+approval; Wave 4 blocked**.
 
 ## Product decision and reset point
 
@@ -244,9 +244,9 @@ Stop/go:
 
 ### Wave 2 — Reception Search and Create Client
 
-Status: **candidate completed on 2026-08-12; automated gates and independent
-correctness/design reviews are green; explicit product-owner Search/Create
-approval remains pending**.
+Status: **approved by the product owner on 2026-08-12 after the flat-ledger
+replacement; automated gates and independent correctness/design reviews are
+green**.
 
 Migrate `/Reception/Index`, `_ReceptionWorkspace` and `_CreateClientForm` to
 the approved shell/components. Cover idle/loading, exact, multiple, no-result,
@@ -294,10 +294,15 @@ Stop/go:
   instance to the product owner;
 - rejection reopens only Wave 2; approval opens Wave 3 without changing any
   server contract or accepting the still-unmigrated profile/action visuals.
+- the product owner explicitly approved the flat result-ledger replacement on
+  2026-08-12, opening Wave 3. Any later Search/Create regression reopens only
+  Wave 2.
 
 ### Wave 3 — Client profile and all Reception actions
 
-Status: **not started; blocked by Wave 2 approval**.
+Status: **candidate completed on 2026-08-12; automated gates and independent
+review are green; explicit Profile and Cancel Visit visual approval remains
+pending**.
 
 Migrate `_ClientProfile` and the remaining 12 Reception action partials in
 small related slices: identity/membership/warnings; visit and Cancel Visit;
@@ -310,6 +315,40 @@ replace/cancel stay explicit.
 Gate: focused command/PostgreSQL/UI tests per slice, no hidden warning/action,
 canonical reread after every mutation, explicit Profile and Cancel Visit
 tablet/phone approval.
+
+Current candidate evidence:
+
+- the real server-rendered Profile is one raised paper surface ordered as
+  identity/status → warnings → membership readiness → risk contexts → actions
+  → visit/payment ledger → records → quiet identity/card management;
+- the membership readiness strip exposes snapshot name, status, signed
+  remaining visits and effective end date with semantic text-backed signals;
+  zero-safe negative coverage is omitted by a server-owned presentation
+  decision, while query failure, concrete negative balance, active closure and
+  correction/error states remain visible;
+- the reception action workstation exposes Mark Visit, Issue Membership, Add
+  Payment and Add Freeze before a single full-width active server form. Mark
+  Visit is initial; the JavaScript switcher is presentation-only and preserves
+  native `details` no-JavaScript fallback, stable partial ids, htmx swap
+  targets, busy/idempotency and canonical rereads;
+- Cancel Visit, Correct Payment and Cancel Freeze remain contextual to their
+  source rows. Negative coverage and issued-sale correction remain explicit
+  danger/review contexts rather than ordinary quick actions;
+- real Profile captures are under `/tmp/bodylife-wave3-profile-root-v5/` at
+  `1440x900`, `1024x768` and `390x844`; command-state captures are under
+  `/tmp/bodylife-wave3-profile-actions-v3/`;
+- Release build passed with zero warnings/errors, Web tests passed 378/378,
+  focused responsive Profile and no-JavaScript coverage passed 4/4, focused
+  action workflows passed 24/24 and the complete authenticated Playwright
+  suite passed 144/144. Independent review found no P0/P1; its one P2 submit
+  color observation was corrected and covered by computed-style assertions.
+
+Stop/go:
+
+- present Profile and Cancel Visit desktop/tablet/phone evidence in the single
+  live instance;
+- rejection reopens only Wave 3; explicit acceptance opens Wave 4 without
+  changing any command/domain/persistence contract.
 
 ### Wave 4 — Owner tools
 
@@ -389,7 +428,7 @@ Severity:
 
 ## Current next action
 
-Present the real Wave 2 Search/Create candidate from
-`/tmp/bodylife-wave2-flat-ledger-final-v6/` in the single live review instance and
-obtain explicit product-owner approval. Do not start Wave 3 Client
-Profile/actions until that decision is recorded.
+Present the real Wave 3 Profile/actions candidate from
+`/tmp/bodylife-wave3-profile-root-v5/` and
+`/tmp/bodylife-wave3-profile-actions-v3/` in the single live review instance.
+Obtain explicit Profile and Cancel Visit approval before starting Wave 4.

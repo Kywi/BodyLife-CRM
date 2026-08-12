@@ -2,10 +2,11 @@
 
 Дата: 2026-07-22
 Оновлено: 2026-08-12 — current-Home is the authorized production migration
-target; revised Wave 1 is approved, both earlier Wave 2 compositions are
-rejected, and the flat Search/result-ledger replacement is the reviewed candidate.
-Статус: **Waves 0–1 approved; Wave 2 candidate awaiting explicit product-owner
-approval**. Waves 3–6 are blocked by their preceding anchor approvals. Це
+target; revised Wave 1 and flat Search/result-ledger Wave 2 are approved, both
+earlier Wave 2 compositions are rejected, and Wave 3 Profile/actions is the
+reviewed candidate.
+Статус: **Waves 0–2 approved; Wave 3 candidate awaiting explicit product-owner
+approval**. Waves 4–6 are blocked by their preceding anchor approvals. Це
 acceptance ledger для плану
 `ui-visual-fidelity-migration-plan.md`; `approved` означає explicit side-by-side
 product-owner approval, не лише green automated tests.
@@ -49,12 +50,12 @@ product-owner review.
 | Anchor | Historical reference context | Required canonical state | Status | Required approval |
 | --- | --- | --- | --- | --- |
 | Reception home desktop | `branded-light-1-reception-home.png` 1104x789 | Activity query fulfilled; Today metrics via Kyiv `GenerateDailyReport`; Attention counts via `GetReceptionAttentionSummary`; unavailable is not zero; account/session/device visible | approved 2026-08-12 | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-desktop-1440x900-uk.png` and `wave1-home-tablet-1024x768-uk.png`; explicit product-owner approval recorded |
-| Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | replacement candidate — approval pending | `/tmp/bodylife-wave2-flat-ledger-final-v6/desktop-search-idle.png`, `desktop-multiple-results.png`, `desktop-no-results-create.png` and `desktop-direct-create.png`; one header Search + transparent state outlet + independent rounded result bands |
-| Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | not started | Current-Home composition + real canonical route/state gallery |
-| Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | replacement candidate — approval pending | `/tmp/bodylife-wave2-flat-ledger-final-v6/desktop-direct-create.png` plus existing real command validation/busy/success/canonical-reread coverage |
+| Client search desktop | `branded-light-2-client-search.png` 1104x773 | `SearchClients`: exact, multiple, no-result, query error; direct Create Client | approved 2026-08-12 | `/tmp/bodylife-wave2-flat-ledger-final-v6/desktop-search-idle.png`, `desktop-multiple-results.png`, `desktop-no-results-create.png` and `desktop-direct-create.png`; explicit product-owner approval recorded |
+| Client profile desktop | `branded-light-3-client-profile.png` 1104x1134 | `GetClientProfile`, warnings, allowed actions, active/zero/negative/expired/ending/low/inactive; exact ordinary sale, oldest-first negative coverage and issued-sale correction remain visible | Wave 3 candidate — approval pending | `/tmp/bodylife-wave3-profile-root-v5/desktop-exact-profile.png` and command galleries; one Profile paper, readiness strip, action workstation and contextual corrections |
+| Create Client desktop | `branded-light-4-create-client.png` 1104x1011 | Create validation, duplicate acknowledgement, permission, success canonical reread | approved 2026-08-12 | `/tmp/bodylife-wave2-flat-ledger-final-v6/desktop-direct-create.png` plus command validation/busy/success/canonical-reread coverage; explicit approval recorded |
 | Cancel Visit desktop | `branded-light-5-cancel-visit.png` 1104x861 | reason/confirmation, permission, stale/concurrency, canceled and backfill/fallback labels | not started | Dedicated current-Home correction anchor + real command states |
 | Reception home phone | `branded-mobile-home.png` 480x2450 | single operational column; preserved activity warning/provenance/action order plus global Search/direct Create and Today | approved 2026-08-12 | `/tmp/bodylife-production-wave1-refined-v2/wave1-home-phone-390x844-uk.png`; explicit product-owner approval recorded |
-| Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | not started | Current-Home single-column composition + real canonical states |
+| Client profile phone | `branded-mobile-profile.png` 480x2381 | warnings/actions/context order and wrapping, including negative coverage and sale correction with no hidden consequences | Wave 3 candidate — approval pending | `/tmp/bodylife-wave3-profile-root-v5/phone-exact-profile.png`, `phone-payment-history.png` and focused action galleries; 2×2 actions above one active form |
 | Cancel Visit phone | `branded-mobile-cancel.png` 480x1818 | expanded danger/correction card and keyboard/focus order | not started | Current-Home single-column correction anchor + real command states |
 
 ## Visual route ledger — 15 pages / 16 route entries
@@ -68,7 +69,7 @@ artifact paths in the Evidence column; `—` never means approved.
 | Route | Wave | Actors | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- | --- |
 | `/` (separate Reception Home) | 1 | Owner, named Admin, shared Admin | dashboard default/empty/loading/success; Activity and Attention unavailable; exact Home active state | approved 2026-08-12 | PostgreSQL-backed populated/empty/Activity-Attention-Today unavailable matrix, target captures, zero-P0–P3 closure review and explicit product-owner approval |
-| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale; exact sale Payment, oldest-first negative coverage, sale replace/cancel and their validation/permission/blocker states | Wave 1 approved; Wave 2 flat-ledger replacement candidate; Wave 3 not started | Exactly one header-owned Search, a transparent htmx state outlet and independently rounded result bands at 1440/1024/390; Profile/action visual migration remains pending |
+| `/Reception/Index` | 1–3 | Owner, named Admin, shared Admin | Clients active state; search/profile/direct-create anchors; exact/multiple/no-result/error/stale; exact sale Payment, oldest-first negative coverage, sale replace/cancel and their validation/permission/blocker states | Waves 1–2 approved; Wave 3 candidate | Flat Search/result ledger plus one Profile paper/readiness strip/action workstation at 1440/1024/390; explicit Profile/Cancel Visit approval pending |
 | `/Owner/MembershipTypes` | 4 | Owner; Admin denial | empty/catalog/create/edit/deactivate/validation/permission; immutable `ordinary`/`one_off` kind, positive price, one-off visit limit 1; long bilingual names | not started | — |
 | `/Owner/NonWorkingDays` | 4 | Owner; Admin denial | empty/list/preview/confirmation/affected-scope-changed/expired-token/correct/cancel/success | not started | — |
 | `/Owner/StaffAccounts` | 4 | Owner; Admin denial | empty/list/create/activate/deactivate/credentials/validation/permission; named/shared labels | not started | — |
@@ -89,20 +90,20 @@ artifact paths in the Evidence column; `—` never means approved.
 
 | Partial | Wave | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- |
-| Reception `_ReceptionWorkspace.cshtml` | 2–3 | Clients workspace empty/loading/exact/multiple/no-result/error; stable targets; Home is now the separate root page | Wave 2 flat-ledger candidate; Wave 3 profile/actions pending | Real idle/exact/multiple/no-result/failure states replace in a transparent outlet at desktop/tablet/phone; result bands own their rounded blue border; stable ids/hx/fallback, sticky-header scroll recovery and no-JS checks pass |
-| Reception `_ClientProfile.cshtml` | 3 | unavailable/active/zero/negative/expired/ending/low/inactive; actions/history/context; ADR-018 coverage and issued-sale correction reachability | not started | — |
-| Reception `_CreateClientForm.cshtml` | 2 | direct open; validation; duplicate review/ack; permission; busy; success collapse | replacement candidate — approval pending | Direct fragment lands on the one active Create surface; no-result context persists across htmx validation swaps; duplicate acknowledgement/reason, busy/idempotency and canonical success reread remain covered |
-| Reception `_UpdateClientForm.cshtml` | 3 | validation; duplicate review/ack; busy; success; permission | not started | — |
-| Reception `_CardAssignmentForm.cshtml` | 3 | assign/change/clear; duplicate block; reason; permission/stale/success | not started | — |
-| Reception `_MarkVisitForm.cshtml` | 3 | membership/one-off/trial; zero/negative/expired acknowledgement; freeze block; busy/stale | not started | — |
-| Reception `_IssueMembershipForm.cshtml` | 3 | active ordinary type; immutable snapshot; one read-only exact cash Payment with no omit/under/over input; leave-visible/new-Membership negative decision; forced oldest start, remainder/expired consequence; busy/stale/success | not started | — |
-| Reception `_NegativeVisitCoveragePanel.cshtml` | 3 | no preselected/recommended method; oldest-first concrete Visits; one-off quantities and exact Payment; leave-visible/new-Membership path; closure cancel/same-method replace, restored/replacement facts, reason/confirmation, no refund/delta, permission/stale/success | not started | — |
-| Reception `_IssuedMembershipSaleCorrectionForm.cshtml` | 3 | original snapshot/exact Payment; cancel/replace with no default; replacement ordinary type/start; visits/freezes/non-working/coverage dependencies and blockers; reason/confirmation; no refund/delta; paper provenance; permission/stale/changed-after-close/success | not started | — |
-| Reception `_AddPaymentForm.cshtml` | 3 | one-off/trial/other only; ordinary sale and negative closure rejected in favor of their full workflows; normal/backfill/fallback; decimal validation; busy/duplicate/success | not started | — |
-| Reception `_CorrectPaymentForm.cshtml` | 3 | standalone accepted contexts only; sale/negative-closure correction redirected to full workflows; replace/cancel; reason/confirmation; permission/stale/changed-after-close/success | not started | — |
-| Reception `_AddFreezeForm.cshtml` | 3 | eligible/overlap/visit block; backfill; busy/stale/success | not started | — |
-| Reception `_CancelFreezeForm.cshtml` | 3 | reason/confirmation; permission/stale/changed-after-close/success | not started | — |
-| Reception `_CancelVisitForm.cshtml` | 3 | expanded reference state; reason/confirmation; permission/stale/concurrency/backfill/fallback/success | not started | — |
+| Reception `_ReceptionWorkspace.cshtml` | 2–3 | Clients workspace empty/loading/exact/multiple/no-result/error; stable targets; Home is now the separate root page | Wave 2 approved; Wave 3 candidate | Transparent state outlet, rounded result bands, stable ids/hx/fallback, sticky-header recovery and no-JS checks pass |
+| Reception `_ClientProfile.cshtml` | 3 | unavailable/active/zero/negative/expired/ending/low/inactive; actions/history/context; ADR-018 coverage and issued-sale correction reachability | candidate — approval pending | One Profile paper with identity/warnings/readiness/actions/activity order; 1440/1024/390 Profile and command captures under `/tmp/bodylife-wave3-profile-root-v5/` and `/tmp/bodylife-wave3-profile-actions-v3/` |
+| Reception `_CreateClientForm.cshtml` | 2 | direct open; validation; duplicate review/ack; permission; busy; success collapse | approved 2026-08-12 | Direct fragment and persistent no-result context; duplicate acknowledgement/reason, busy/idempotency and canonical reread covered |
+| Reception `_UpdateClientForm.cshtml` | 3 | validation; duplicate review/ack; busy; success; permission | candidate — approval pending | Quiet Profile-management disclosure; stable update/duplicate/stale/canonical-reread tests remain green |
+| Reception `_CardAssignmentForm.cshtml` | 3 | assign/change/clear; duplicate block; reason; permission/stale/success | candidate — approval pending | Quiet Profile-management disclosure; assign/change/clear/stale tests remain green |
+| Reception `_MarkVisitForm.cshtml` | 3 | membership/one-off/trial; zero/negative/expired acknowledgement; freeze block; busy/stale | candidate — approval pending | Initial graphite action; native details fallback; stable htmx target; focused command coverage green |
+| Reception `_IssueMembershipForm.cshtml` | 3 | active ordinary type; immutable snapshot; one read-only exact cash Payment with no omit/under/over input; leave-visible/new-Membership negative decision; forced oldest start, remainder/expired consequence; busy/stale/success | candidate — approval pending | Secondary action above one active server form; exact-sale/negative contracts and focused suite green |
+| Reception `_NegativeVisitCoveragePanel.cshtml` | 3 | no preselected/recommended method; oldest-first concrete Visits; one-off quantities and exact Payment; leave-visible/new-Membership path; closure cancel/same-method replace, restored/replacement facts, reason/confirmation, no refund/delta, permission/stale/success | candidate — approval pending | Danger context before actions; omitted only for server-confirmed safe zero without closure/error; focused suite green |
+| Reception `_IssuedMembershipSaleCorrectionForm.cshtml` | 3 | original snapshot/exact Payment; cancel/replace with no default; replacement ordinary type/start; visits/freezes/non-working/coverage dependencies and blockers; reason/confirmation; no refund/delta; paper provenance; permission/stale/changed-after-close/success | candidate — approval pending | Explicit amber review context before routine actions; dependency/blocker/canonical-reread suite green |
+| Reception `_AddPaymentForm.cshtml` | 3 | one-off/trial/other only; ordinary sale and negative closure rejected in favor of their full workflows; normal/backfill/fallback; decimal validation; busy/duplicate/success | candidate — approval pending | Secondary action in shared workstation; workflow/localization coverage green |
+| Reception `_CorrectPaymentForm.cshtml` | 3 | standalone accepted contexts only; sale/negative-closure correction redirected to full workflows; replace/cancel; reason/confirmation; permission/stale/changed-after-close/success | candidate — approval pending | Contextual disclosure inside source payment row; correction/cancel suite and history captures green |
+| Reception `_AddFreezeForm.cshtml` | 3 | eligible/overlap/visit block; backfill; busy/stale/success | candidate — approval pending | Permission/eligibility-aware secondary action; focused suite green |
+| Reception `_CancelFreezeForm.cshtml` | 3 | reason/confirmation; permission/stale/changed-after-close/success | candidate — approval pending | Contextual disclosure inside source extension row; focused cancel/stale suite green |
+| Reception `_CancelVisitForm.cshtml` | 3 | expanded reference state; reason/confirmation; permission/stale/concurrency/backfill/fallback/success | candidate — approval pending | Contextual disclosure inside original visit row; cancellation/stale/provenance suite green; explicit visual approval pending |
 | Owner `_NonWorkingDayPreviewWorkspace.cshtml` | 4 | input/preview/impact/confirmation/token expiry/scope change/success | not started | — |
 | Owner `_NonWorkingDayCorrectionWorkspace.cshtml` | 4 | replace/cancel preview/confirmation/token expiry/scope change/success | not started | — |
 
@@ -164,8 +165,31 @@ artifact paths in the Evidence column; `—` never means approved.
   Search/Profile passes 3/3, Home compatibility passes 4/4 and the complete
   authenticated Playwright regression passes 144/144.
 - Independent correctness/interface review reports zero remaining P0–P3
-  findings. This replacement is a candidate, not an approval; Wave 3 remains
-  blocked.
+  findings. The product owner explicitly approved this replacement on
+  2026-08-12, opening Wave 3.
+
+## Wave 3 Profile/action candidate evidence — 2026-08-12
+
+- The selected Profile is one full-width paper surface with divider-separated
+  identity, warnings, readiness, risk, action, activity, record and management
+  regions; nested equal-elevation action cards are removed.
+- Membership readiness uses text-backed semantic signals for snapshot/status,
+  signed visits and effective end. Server-confirmed safe zero negative
+  coverage is omitted; failures, concrete negatives, active closures and
+  correction/error states remain explicit.
+- Mark Visit, Issue Membership, Add Payment and Add Freeze remain visible above
+  one full-width active form. The switcher enhances rather than replaces
+  native details; stable ids/hx targets and no-JavaScript reachability remain.
+- Cancel Visit, Correct Payment and Cancel Freeze remain attached to source
+  rows. Negative coverage and issued-sale correction remain explicit risk
+  contexts.
+- Real viewport captures are under `/tmp/bodylife-wave3-profile-root-v5/` and
+  command captures under `/tmp/bodylife-wave3-profile-actions-v3/`. Release
+  build is clean; Web 378/378, responsive Profile/no-JavaScript 4/4, focused
+  actions 24/24 and full authenticated Playwright 144/144 pass. Independent
+  review found no P0/P1; its single P2 primary-submit color finding was fixed
+  and covered. Explicit product-owner Profile/Cancel Visit approval remains
+  required before Wave 4.
 
 ## Superseded production candidate evidence
 

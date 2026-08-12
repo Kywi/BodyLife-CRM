@@ -15204,3 +15204,61 @@ Stop point:
 - Present the single live `41881` instance and the flat-ledger desktop/tablet/
   phone evidence to the product owner. Do not mark Wave 2 approved or begin
   Wave 3 until the product owner explicitly accepts this revised composition.
+
+## Step 239 - Approved Wave 2 and implemented the Wave 3 Profile/actions candidate
+
+Status: the product owner explicitly approved the Step 238 flat Search/result
+ledger on 2026-08-12. Wave 3 Profile/actions is implemented and automated as a
+candidate; explicit Profile and Cancel Visit visual approval is pending. Wave
+4 and Milestone 11 remain unchanged and blocked.
+
+Completed:
+
+- Recorded explicit Wave 2 acceptance and opened only the bounded Wave 3
+  Profile/action surface.
+- Rebuilt the selected canonical Profile as one raised paper surface ordered
+  identity/status, server warnings, membership readiness, risk contexts,
+  reception actions, visit/payment activity, record links and quiet client/card
+  management. Removed the nested equal-weight card stack.
+- Added a four-fact membership readiness strip for immutable type snapshot,
+  canonical status, signed remaining visits and effective end date. Semantic
+  blue/green/amber/red signals remain paired with text.
+- Made safe zero negative coverage disappear through a server-owned
+  presentation decision while preserving query failure, concrete negative
+  balance, active closure and correction/error workspaces.
+- Added one action workstation: Mark Visit is the initial graphite primary;
+  Issue Membership, Add Payment and Add Freeze remain visible secondary
+  choices above one full-width active server form. The switcher progressively
+  enhances native `details`, so no-JavaScript access, stable ids, htmx
+  outerHTML targets, busy/idempotency and canonical rereads remain intact.
+- Kept Cancel Visit, Correct Payment and Cancel Freeze attached to their source
+  rows and kept negative coverage/issued-sale correction as explicit risk
+  contexts.
+- Added responsive geometry, touch-target, computed primary-color,
+  zero-negative and stable-contract assertions; updated action/localization
+  tests for the enhanced switcher.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors; Node syntax,
+  localization XML and `git diff --check` passed.
+- Web tests passed 378/378. Responsive Profile plus no-JavaScript fallback
+  passed 4/4 at `1440x900`, `1024x768` and `390x844`; focused visit/
+  membership/payment/freeze/correction UI workflows passed 24/24; the complete
+  PostgreSQL-backed authenticated Playwright suite passed 144/144.
+- Profile captures are under `/tmp/bodylife-wave3-profile-root-v5/`; focused
+  command-state captures are under `/tmp/bodylife-wave3-profile-actions-v3/`.
+- Independent review found no P0/P1. Its one P2 finding—blue submits competing
+  with the graphite safe-primary hierarchy—was fixed and covered by computed
+  style assertions. The no-JavaScript residual gap was also closed.
+- `graphify update .` was attempted after the code change and again returned
+  `[Errno 95] Operation not supported`. The required semantic update detected
+  17 changed documents and one deletion but stopped without a configured LLM
+  API key. Neither command produced tracked graph evidence, so stale graph
+  output is not presented as validation.
+
+Stop point:
+
+- Replace the single live `41881` review instance with this candidate and
+  present Profile plus Cancel Visit desktop/tablet/phone evidence. Do not mark
+  Wave 3 approved or begin Wave 4 until explicit product-owner acceptance.
