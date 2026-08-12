@@ -4,11 +4,31 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<Shared> SharedL
 @{
     var searchResult = Model.SearchResult;
+    var profileWasRequested = Model.Profile.Result is not null;
+    var createClientIsOpen = Model.CreateClientForm?.IsOpen == true;
+    var noClientsFound = searchResult is { Status: SearchClientsStatus.Success }
+        && searchResult.Items.Count == 0;
 }
 
-<section id="reception-workspace" class="reception-workspace reception-search-workspace">
-    <div class="reception-lookup-column">
-        <section class="search-results-region search-results-surface" aria-label="@L["Workspace.SearchResults"]" aria-live="polite">
+<section id="reception-workspace" class="reception-workspace reception-search-workspace" data-visual-role="clients-canvas">
+    @if (profileWasRequested)
+    {
+        <partial name="_ClientProfile" model="Model.Profile" />
+    }
+    else if (createClientIsOpen)
+    {
+        @if (noClientsFound)
+        {
+            <div class="operational-empty no-search-results search-state-surface search-state-empty clients-create-context">
+                <strong>@L["Workspace.Empty"]</strong>
+            </div>
+        }
+
+        <partial name="_CreateClientForm" model="Model.CreateClientForm" />
+    }
+    else
+    {
+    <section class="search-results-region" aria-label="@L["Workspace.SearchResults"]" aria-live="polite">
             <header class="region-header search-results-heading">
                 <h2 class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Workspace.SearchResults"]</h2>
                 @if (searchResult is { Status: SearchClientsStatus.Success })
@@ -69,10 +89,10 @@
                        href="@fullProfileUrl"
                        aria-label="@string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Workspace.OpenClient"], item.DisplayName)"
                        hx-get="@htmxProfileUrl"
-                       hx-target="#client-profile"
+                       hx-target="#reception-workspace"
                        hx-swap="outerHTML show:top"
-                       hx-sync="#client-profile:replace"
-                       hx-indicator="#profile-loading">
+                       hx-sync="#reception-workspace:replace"
+                       hx-indicator="#search-loading">
                         <header class="client-result-header search-result-row-header">
                             <h3>@item.DisplayName</h3>
                             <span class="status-chip @OperationalStatusClass(item.OperationalStatus)">
@@ -151,15 +171,8 @@
             }
         }
 
-        </section>
-
-        @if (Model.CreateClientForm is not null)
-        {
-            <partial name="_CreateClientForm" model="Model.CreateClientForm" />
-        }
-    </div>
-
-    <partial name="_ClientProfile" model="Model.Profile" />
+    </section>
+    }
 </section>
 
 @functions {
@@ -213,4 +226,5 @@
             _ => L["Warning.Generic.Message"],
         };
     }
+
 }

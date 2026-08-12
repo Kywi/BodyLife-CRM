@@ -80,23 +80,60 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await ExpectVisibleAsync(accountMenu.GetByRole(AriaRole.Button, new() { Name = "Log out", Exact = true }), viewportName, "logout button");
             await accountMenu.Locator("summary").ClickAsync();
             await ExpectVisibleAsync(page.GetByRole(AriaRole.Heading, new() { Name = "Clients", Exact = true }), viewportName, "clients heading");
-            await ExpectVisibleAsync(page.Locator("#reception-search").GetByRole(AriaRole.Searchbox, new() { Name = "Client search", Exact = true }), viewportName, "client search input");
-            await ExpectVisibleAsync(page.Locator("#reception-search").GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }), viewportName, "search button");
-            await ExpectVisibleAsync(page.GetByRole(AriaRole.Group, new() { Name = "Search mode" }), viewportName, "search mode control");
-            await ExpectVisibleAsync(page.GetByRole(AriaRole.Checkbox, new() { Name = "Include inactive" }), viewportName, "inactive-client control");
+            var receptionSearch = page.Locator("#reception-search");
+            await ExpectVisibleAsync(receptionSearch.GetByRole(AriaRole.Searchbox, new() { Name = "Client search", Exact = true }), viewportName, "client search input");
+            await ExpectVisibleAsync(receptionSearch.GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }), viewportName, "search button");
+            Assert.Equal(1, await page.Locator("form.global-client-search").CountAsync());
+            Assert.Equal(1, await page.Locator("input[type='search']").CountAsync());
+            Assert.Equal(0, await page.Locator("#global-client-search").CountAsync());
+            var canvas = page.Locator("[data-visual-role='clients-canvas']");
+            Assert.Equal(1, await canvas.CountAsync());
+            Assert.Equal(0, await page.Locator(".search-focal-surface, .search-results-surface, .create-client-surface").CountAsync());
+            await ExpectVisibleAsync(
+                page.Locator(".clients-search-controls > summary"),
+                viewportName,
+                "compact search options control");
             var searchResults = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
             var clientProfile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
             await ExpectVisibleAsync(searchResults, viewportName, "search results region");
-            Assert.Contains(
-                "search-results-surface",
-                await searchResults.GetAttributeAsync("class") ?? string.Empty,
-                StringComparison.Ordinal);
             await ExpectVisibleAsync(
                 searchResults.Locator(".search-state-idle"),
                 viewportName,
                 "honest idle search state");
-            await ExpectVisibleAsync(clientProfile, viewportName, "client profile region");
-            await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "No client selected" }), viewportName, "initial profile state");
+            Assert.Equal(0, await clientProfile.CountAsync());
+
+            var headerBounds = await page.Locator(".app-global-header").BoundingBoxAsync();
+            var brandBounds = await page.Locator(".app-header-brand").BoundingBoxAsync();
+            var searchBounds = await receptionSearch.BoundingBoxAsync();
+            var createBounds = await page.Locator(".global-create-client").BoundingBoxAsync();
+            var accountBounds = await accountMenu.BoundingBoxAsync();
+            Assert.NotNull(headerBounds);
+            Assert.NotNull(brandBounds);
+            Assert.NotNull(searchBounds);
+            Assert.NotNull(createBounds);
+            Assert.NotNull(accountBounds);
+            if (viewportName == "desktop")
+            {
+                Assert.True(searchBounds.Width >= 420, "Desktop Clients Search should own the flexible header track.");
+                Assert.InRange(createBounds.X - (searchBounds.X + searchBounds.Width), 6, 16);
+                Assert.True(searchBounds.X >= brandBounds.X + brandBounds.Width);
+                Assert.True(createBounds.X + createBounds.Width <= accountBounds.X);
+            }
+            else if (viewportName == "tablet")
+            {
+                Assert.InRange(headerBounds.Height, 76, 82);
+                Assert.True(searchBounds.Width >= 300, "Tablet Clients Search should retain the flexible header width.");
+                Assert.InRange(Math.Abs(searchBounds.Y - createBounds.Y), 0, 3);
+                Assert.InRange(Math.Abs(searchBounds.Y - accountBounds.Y), 0, 3);
+            }
+            else
+            {
+                var firstRowBottom = Math.Max(
+                    brandBounds.Y + brandBounds.Height,
+                    accountBounds.Y + accountBounds.Height);
+                Assert.True(searchBounds.Y >= firstRowBottom);
+                Assert.True(createBounds.Y >= searchBounds.Y + searchBounds.Height);
+            }
             await CaptureViewportVisualAsync(page, viewportName, "search-idle");
 
             var directCreateLink = page.Locator(".global-create-client");
@@ -132,9 +169,10 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 viewportName,
                 "direct create-client heading");
             Assert.Contains(
-                "create-client-surface",
+                "clients-create-panel",
                 await initialCreatePanel.GetAttributeAsync("class") ?? string.Empty,
                 StringComparison.Ordinal);
+            Assert.Equal(1, await canvas.Locator("#create-client-action-panel").CountAsync());
             await CaptureViewportVisualAsync(page, viewportName, "direct-create");
             await initialCreatePanel.Locator("summary").ClickAsync();
             await AssertMinimumTouchTargetAsync(
@@ -145,10 +183,11 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 page.Locator("#reception-search").GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true }),
                 viewportName,
                 "search button");
-            await AssertMinimumTouchTargetAsync(
-                page.GetByRole(AriaRole.Link, new() { Name = "Clear", Exact = true }),
-                viewportName,
-                "clear search link");
+            var searchControls = page.Locator(".clients-search-controls");
+            await searchControls.Locator("summary").ClickAsync();
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Group, new() { Name = "Search mode" }), viewportName, "search mode control");
+            await ExpectVisibleAsync(page.GetByRole(AriaRole.Checkbox, new() { Name = "Include inactive" }), viewportName, "inactive-client control");
+            await AssertMinimumTouchTargetAsync(page.GetByRole(AriaRole.Link, new() { Name = "Clear", Exact = true }), viewportName, "clear search link");
             await AssertMinimumTouchTargetsAsync(
                 page.Locator(".search-mode-segments span"),
                 viewportName,
@@ -157,6 +196,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 page.Locator(".checkbox-control"),
                 viewportName,
                 "include inactive control");
+            await searchControls.Locator("summary").ClickAsync();
             await AssertFitsViewportAsync(page, viewportName, "initial dashboard");
 
             await SubmitHtmxSearchAsync(page, "BL-1001");
@@ -167,10 +207,8 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "BL-1001",
                 await page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }).InputValueAsync());
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "Kovalenko Olena" }), viewportName, "exact-card profile");
-            Assert.Contains(
-                "search-results-surface",
-                await searchResults.GetAttributeAsync("class") ?? string.Empty,
-                StringComparison.Ordinal);
+            Assert.Equal(0, await searchResults.CountAsync());
+            Assert.Equal(1, await canvas.Locator("#client-profile").CountAsync());
             await ExpectVisibleAsync(
                 clientProfile.Locator(".client-profile-meta")
                     .GetByText("BL-1001", new() { Exact = true }),
@@ -293,14 +331,29 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await AssertFitsViewportAsync(page, viewportName, "Payment history profile");
             await CaptureVisualAsync(page, viewportName, "payment-history");
 
+            await page.EvaluateAsync("window.scrollTo(0, document.documentElement.scrollHeight)");
+            Assert.True(
+                await page.EvaluateAsync<double>("window.scrollY") > 0,
+                $"The {viewportName} profile fixture should be scrollable before testing header Search recovery.");
             await SubmitHtmxSearchAsync(page, "Kovalenko");
+
+            var searchedWorkspaceBounds = await canvas.BoundingBoxAsync();
+            var searchedHeaderBounds = await page.Locator(".app-global-header").BoundingBoxAsync();
+            Assert.NotNull(searchedWorkspaceBounds);
+            Assert.NotNull(searchedHeaderBounds);
+            Assert.True(
+                searchedWorkspaceBounds.Y >= searchedHeaderBounds.Y + searchedHeaderBounds.Height - 1,
+                $"Header Search results should return below the sticky header on {viewportName}.");
+            Assert.True(
+                searchedWorkspaceBounds.Y < height,
+                $"Header Search results should return inside the {viewportName} viewport.");
 
             await ExpectVisibleAsync(
                 searchResults.Locator(".search-result-row").First,
                 viewportName,
                 "compact semantic search result row");
 
-            await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "No client selected" }), viewportName, "ambiguous search profile state");
+            Assert.Equal(0, await clientProfile.CountAsync());
             Assert.Equal(3, await searchResults.Locator(".client-result-row").CountAsync());
             await ExpectVisibleAsync(searchResults.GetByRole(AriaRole.Link, new() { Name = "Open Kovalenko Marta", Exact = true }), viewportName, "Marta result");
             await ExpectVisibleAsync(searchResults.GetByRole(AriaRole.Link, new() { Name = "Open Kovalenko Olena", Exact = true }), viewportName, "Olena result");
@@ -319,7 +372,15 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "Kovalenko Marta" }), viewportName, "selected profile");
             Assert.Contains("clientId=", page.Url, StringComparison.Ordinal);
             Assert.DoesNotContain("handler=Profile", page.Url, StringComparison.OrdinalIgnoreCase);
+            var selectedWorkspaceBounds = await canvas.BoundingBoxAsync();
+            var selectedHeaderBounds = await page.Locator(".app-global-header").BoundingBoxAsync();
+            Assert.NotNull(selectedWorkspaceBounds);
+            Assert.NotNull(selectedHeaderBounds);
+            Assert.True(
+                selectedWorkspaceBounds.Y >= selectedHeaderBounds.Y + selectedHeaderBounds.Height - 1,
+                $"Selected profile should remain below the sticky header on {viewportName}.");
 
+            await SubmitHtmxSearchAsync(page, "Kovalenko");
             await ClickHtmxProfileAsync(
                 page,
                 searchResults.GetByRole(AriaRole.Link, new() { Name = "Open Kovalenko Taras", Exact = true }));
@@ -332,14 +393,15 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             await SubmitHtmxSearchAsync(page, "NO-SUCH-CLIENT");
 
-            await ExpectVisibleAsync(searchResults.GetByText("No clients found", new() { Exact = true }), viewportName, "no-match state");
-            await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "No client selected" }), viewportName, "no-match profile state");
+            await ExpectVisibleAsync(canvas.GetByText("No clients found", new() { Exact = true }), viewportName, "no-match state");
+            Assert.Equal(0, await clientProfile.CountAsync());
             var noMatchCreatePanel = page.Locator("#create-client-action-panel");
             Assert.True(
                 await noMatchCreatePanel.EvaluateAsync<bool>("element => element.open"),
                 "A successful no-match search should open the direct create-client action.");
             await CaptureViewportVisualAsync(page, viewportName, "no-results-create");
 
+            await page.Locator(".clients-search-controls > summary").ClickAsync();
             await page.Locator("input[name='mode'][value='Card']").CheckAsync();
             await SubmitHtmxSearchAsync(page, "BL-CARD-PREFILL-NO-MATCH");
             var cardNoMatchCreatePanel = page.Locator("#create-client-action-panel");
@@ -545,7 +607,6 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await LoginAsync(page, _app.LoginName, _app.Password, "tablet create smoke");
             await SubmitHtmxSearchAsync(page, "RETAINED-NONMATCHING-CREATE-CONTEXT");
 
-            var results = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
             var createPanel = page.Locator("#create-client-action-panel");
             await ExpectVisibleAsync(
@@ -627,18 +688,11 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 profile.GetByText("Client created."),
                 "tablet",
                 "create success message");
-            await ExpectVisibleAsync(
-                results.GetByText("No clients found", new() { Exact = true }),
-                "tablet",
-                "retained nonmatching search context");
-            var canonicalCreatePanel = page.Locator("#create-client-action-panel");
-            await ExpectVisibleAsync(
-                canonicalCreatePanel.Locator("summary"),
-                "tablet",
-                "post-create direct create-client action");
-            Assert.False(
-                await canonicalCreatePanel.EvaluateAsync<bool>("element => element.open"),
-                "The direct create-client action should collapse after the canonical profile reread.");
+            Assert.Equal(
+                "RETAINED-NONMATCHING-CREATE-CONTEXT",
+                await page.Locator("#client-search").InputValueAsync());
+            Assert.Equal(0, await page.Locator("#create-client-action-panel").CountAsync());
+            await ExpectVisibleAsync(page.Locator(".global-create-client"), "tablet", "persistent header create action");
             Assert.Contains("clientId=", page.Url, StringComparison.Ordinal);
             var clientId = await _app.FindClientIdByCurrentCardAsync("BL-CREATE-TABLET");
             Assert.NotNull(clientId);
@@ -683,7 +737,6 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await LoginAsync(page, _app.LoginName, _app.Password, "phone create smoke");
             await SubmitHtmxSearchAsync(page, "Brandnew Phone");
 
-            var results = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
             var createPanel = page.Locator("#create-client-action-panel");
             await ExpectVisibleAsync(
@@ -712,12 +765,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                     .GetByText("No current card", new() { Exact = true }),
                 "phone",
                 "created no-card warning");
-            await ExpectVisibleAsync(
-                results.GetByRole(
-                    AriaRole.Link,
-                    new() { Name = "Open Brandnew Phone", Exact = true }),
-                "phone",
-                "canonical phone create search row");
+            Assert.Equal(0, await page.GetByRole(AriaRole.Region, new() { Name = "Search results" }).CountAsync());
             var clientId = await _app.FindClientIdByPhoneAsync(phone);
             Assert.NotNull(clientId);
             Assert.Equal(initialClientCount + 1, await _app.CountClientsAsync());
@@ -828,13 +876,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 profile.GetByText("Client updated."),
                 viewportName,
                 "update success message");
-            await ExpectVisibleAsync(
-                page.GetByRole(AriaRole.Region, new() { Name = "Search results" })
-                    .GetByRole(
-                        AriaRole.Link,
-                        new() { Name = $"Open Duplicate {duplicateName}", Exact = true }),
-                viewportName,
-                "canonical updated search row");
+            Assert.Equal(0, await page.GetByRole(AriaRole.Region, new() { Name = "Search results" }).CountAsync());
             Assert.Equal(1L, await _app.CountClientUpdateAuditEntriesAsync(clientId));
             Assert.Equal(1L, await _app.CountUpdateClientIdempotencyKeysAsync(clientId));
             Assert.Equal(2L, await _app.CountDuplicateAcknowledgementsAsync(clientId));
@@ -874,7 +916,6 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await SubmitHtmxSearchAsync(page, "BL-CARD-OLD");
 
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
-            var results = page.GetByRole(AriaRole.Region, new() { Name = "Search results" });
             var cardPanel = profile.Locator("#card-action-panel");
             await ExpectVisibleAsync(cardPanel.Locator("summary"), "tablet", "manage-card action");
             await cardPanel.Locator("summary").ClickAsync();
@@ -913,10 +954,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.Equal(
                 "BL-CARD-NEW",
                 await profile.Locator(".client-profile-meta dd").First.TextContentAsync());
-            await ExpectVisibleAsync(
-                results.GetByText("No clients found", new() { Exact = true }),
-                "tablet",
-                "old-card canonical no-match");
+            Assert.Equal(0, await page.GetByRole(AriaRole.Region, new() { Name = "Search results" }).CountAsync());
             Assert.Equal("BL-CARD-NEW", await _app.ReadCurrentCardNumberAsync(clientId));
             Assert.Equal(2L, await _app.CountCardAssignmentsAsync(clientId));
             Assert.Equal(1L, await _app.CountCardAuditEntriesAsync(clientId, "card.changed"));
@@ -951,10 +989,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                     .GetByText("No current card", new() { Exact = true }),
                 "tablet",
                 "no-current-card warning");
-            await ExpectVisibleAsync(
-                results.GetByText("No clients found", new() { Exact = true }),
-                "tablet",
-                "cleared-card canonical no-match");
+            Assert.Equal(0, await page.GetByRole(AriaRole.Region, new() { Name = "Search results" }).CountAsync());
             Assert.Null(await _app.ReadCurrentCardNumberAsync(clientId));
             Assert.Equal(2L, await _app.CountCardAssignmentsAsync(clientId));
             Assert.Equal(1L, await _app.CountCardAuditEntriesAsync(clientId, "card.cleared"));
@@ -1024,13 +1059,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.Equal(
                 "BL-CARD-PHONE",
                 await profile.Locator(".client-profile-meta dd").First.TextContentAsync());
-            await ExpectVisibleAsync(
-                results.GetByRole(
-                    AriaRole.Link,
-                    new() { Name = "Open Cardless Phone", Exact = true })
-                    .GetByText("BL-CARD-PHONE", new() { Exact = true }),
-                "phone",
-                "canonical phone search row");
+            Assert.Equal(0, await page.GetByRole(AriaRole.Region, new() { Name = "Search results" }).CountAsync());
             Assert.Equal("BL-CARD-PHONE", await _app.ReadCurrentCardNumberAsync(clientId));
             Assert.Equal(1L, await _app.CountCardAssignmentsAsync(clientId));
             Assert.Equal(1L, await _app.CountCardAuditEntriesAsync(clientId, "card.assigned"));

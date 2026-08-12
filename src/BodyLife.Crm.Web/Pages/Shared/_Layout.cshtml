@@ -36,24 +36,33 @@
                         <img src="~/images/bodylife-logo.png" width="338" height="480" alt="@SharedLocalizer["Brand.LogoAlt"]" />
                         <span class="brand-lockup"><span class="brand-body">BodyLife</span><span class="brand-crm">CRM</span></span>
                     </a>
-                    <form class="global-client-search" method="get" asp-page="/Reception/Index" role="search">
-                        <label class="visually-hidden" for="global-client-search">@SharedLocalizer["Navigation.GlobalSearch"]</label>
-                        <input id="global-client-search"
-                               name="q"
-                               type="search"
-                               maxlength="200"
-                               autocomplete="off"
-                               placeholder="@SharedLocalizer["Navigation.GlobalSearchPlaceholder"]" />
-                        <input name="mode" type="hidden" value="Auto" />
-                        <button type="submit" aria-label="@SharedLocalizer["Navigation.GlobalSearch"]">
-                            <partial name="_Icon" model='@("search")' />
-                            <span class="global-search-submit-label">@SharedLocalizer["Navigation.Search"]</span>
-                        </button>
-                    </form>
-                    <a class="button-link global-create-client" asp-page="/Reception/Index" asp-route-create="true" asp-fragment="create-client-action-panel">
-                        <partial name="_Icon" model='@("plus")' />
-                        <span>@SharedLocalizer["Navigation.CreateClient"]</span>
-                    </a>
+                    <div class="header-client-actions">
+                        @if (IsSectionDefined("HeaderClientSearch"))
+                        {
+                            @await RenderSectionAsync("HeaderClientSearch", required: false)
+                        }
+                        else
+                        {
+                            <form class="global-client-search" method="get" asp-page="/Reception/Index" role="search">
+                                <label class="visually-hidden" for="global-client-search">@SharedLocalizer["Navigation.GlobalSearch"]</label>
+                                <input id="global-client-search"
+                                       name="q"
+                                       type="search"
+                                       maxlength="200"
+                                       autocomplete="off"
+                                       placeholder="@SharedLocalizer["Navigation.GlobalSearchPlaceholder"]" />
+                                <input name="mode" type="hidden" value="Auto" />
+                                <button type="submit" aria-label="@SharedLocalizer["Navigation.GlobalSearch"]">
+                                    <partial name="_Icon" model='@("search")' />
+                                    <span class="global-search-submit-label">@SharedLocalizer["Navigation.Search"]</span>
+                                </button>
+                            </form>
+                        }
+                        <a class="button-link global-create-client" asp-page="/Reception/Index" asp-route-create="true" asp-fragment="create-client-action-panel">
+                            <partial name="_Icon" model='@("plus")' />
+                            <span>@SharedLocalizer["Navigation.CreateClient"]</span>
+                        </a>
+                    </div>
                     <partial name="_CurrentSession" />
                 </header>
                 <div id="main-content" class="app-content" tabindex="-1">

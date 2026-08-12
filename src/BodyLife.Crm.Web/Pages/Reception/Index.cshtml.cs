@@ -113,22 +113,10 @@ public sealed class IndexModel(
             return RedirectToCanonicalPage(ClientId);
         }
 
-        var actor = requestContextResolver.Require().Actor;
-        var result = await getClientProfile.ExecuteAsync(
-            new GetClientProfileQuery(
-                actor,
-                ClientId ?? Guid.Empty,
-                IncludeHistory: true,
-                RequiredPaymentId: CorrectPaymentId),
-            cancellationToken);
-        SetHtmxPushUrl(result.Profile?.ClientId ?? ClientId);
+        Workspace = await BuildWorkspaceAsync(cancellationToken);
+        SetHtmxPushUrl(Workspace.Profile.Result?.Profile?.ClientId ?? ClientId);
 
-        return Partial(
-            "_ClientProfile",
-            await BuildProfileViewModelAsync(
-                result,
-                CurrentSearchContext(),
-                cancellationToken));
+        return Partial("_ReceptionWorkspace", Workspace);
     }
 
     public async Task<IActionResult> OnGetIssueMembershipPreviewAsync(
@@ -2516,7 +2504,8 @@ public sealed class IndexModel(
         var shouldOpenCreateClientForm = !profileClientId.HasValue
             && (Create || (searchResult is { Status: SearchClientsStatus.Success }
                 && searchResult.Items.Count == 0));
-        var createClientForm = createClientPermissions.IsAllowed(ClientSearchActionKeys.CreateClient)
+        var createClientForm = !profileClientId.HasValue
+            && createClientPermissions.IsAllowed(ClientSearchActionKeys.CreateClient)
             ? CreateClientFormViewModel.FromSearchContext(
                 searchContext,
                 isOpen: shouldOpenCreateClientForm)

@@ -7,102 +7,56 @@
     ViewData["Title"] = SharedL["Navigation.Clients"];
 }
 
+@section HeaderClientSearch {
+    <form id="reception-search"
+          class="global-client-search reception-global-search"
+          method="get"
+          asp-page="/Reception/Index"
+          role="search"
+          hx-get="@Url.Page("/Reception/Index", "Search")"
+          hx-target="#reception-workspace"
+          hx-swap="outerHTML show:top"
+          hx-sync="this:replace"
+          hx-indicator="#search-loading"
+          hx-disabled-elt="find button">
+        <label class="visually-hidden" id="client-search-label" for="client-search">@L["Search.Label"]</label>
+        <input id="client-search" name="q" type="search" value="@Model.Query" autocomplete="off" maxlength="200" placeholder="@L["Search.Placeholder"]" required />
+        <button type="submit" aria-label="@L["Action.Search"]">
+            <partial name="/Pages/Shared/_Icon.cshtml" model='@("search")' />
+            <span class="global-search-submit-label">@L["Action.Search"]</span>
+        </button>
+        <span id="search-loading" class="request-indicator htmx-indicator" role="status" aria-live="polite">@L["Search.Loading"]</span>
+    </form>
+}
+
 <main class="page-shell reception-page">
     <section class="reception-layout" aria-labelledby="reception-title">
         <header class="reception-header reception-route-heading">
             <div>
                 <p class="eyebrow">@L["Search.Label"]</p>
-                <h1 id="reception-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"account"' />@SharedL["Navigation.Clients"]</h1>
+                <h1 id="reception-title" class="page-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='@("account")' />@SharedL["Navigation.Clients"]</h1>
             </div>
-        </header>
-
-        <section class="search-island search-focal-surface" aria-labelledby="client-search-label">
-            <form id="reception-search"
-                  class="search-panel reception-search-panel"
-                  method="get"
-                  asp-page="/Reception/Index"
-                  role="search"
-                  hx-get="@Url.Page("/Reception/Index", "Search")"
-                  hx-target="#reception-workspace"
-                  hx-swap="outerHTML"
-                  hx-sync="this:replace"
-                  hx-indicator="#search-loading"
-                  hx-disabled-elt="find button">
-                <div class="search-primary-row reception-search-primary-row">
-                    <div class="search-field">
-                        <label id="client-search-label" for="client-search"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Search.Label"]</label>
-                        <input id="client-search"
-                               name="q"
-                               type="search"
-                               value="@Model.Query"
-                               autocomplete="off"
-                               maxlength="200"
-                               placeholder="@L["Search.Placeholder"]"
-                               required />
-                    </div>
-                    <div class="search-command-group search-primary-actions">
-                        <button type="submit"><partial name="/Pages/Shared/_Icon.cshtml" model='"search"' />@L["Action.Search"]</button>
-                        <a class="secondary-link" asp-page="/Reception/Index">@L["Action.Clear"]</a>
-                    </div>
-                </div>
-
+            <details class="clients-search-controls">
+                <summary>@L["Search.Mode"]</summary>
                 <div class="search-options reception-search-options">
                     <fieldset class="search-mode-control">
                         <legend>@L["Search.Mode"]</legend>
                         <div class="search-mode-segments">
-                            <label>
-                                <input type="radio"
-                                       name="mode"
-                                       value="Auto"
-                                       checked="@(Model.Mode == ClientSearchMode.Auto ? "checked" : null)" />
-                                <span>@L["Search.Mode.Auto"]</span>
-                            </label>
-                            <label>
-                                <input type="radio"
-                                       name="mode"
-                                       value="Card"
-                                       checked="@(Model.Mode == ClientSearchMode.Card ? "checked" : null)" />
-                                <span>@L["Search.Mode.Card"]</span>
-                            </label>
-                            <label>
-                                <input type="radio"
-                                       name="mode"
-                                       value="Name"
-                                       checked="@(Model.Mode == ClientSearchMode.Name ? "checked" : null)" />
-                                <span>@L["Search.Mode.Name"]</span>
-                            </label>
-                            <label>
-                                <input type="radio"
-                                       name="mode"
-                                       value="Phone"
-                                       checked="@(Model.Mode == ClientSearchMode.Phone ? "checked" : null)" />
-                                <span>@L["Search.Mode.Phone"]</span>
-                            </label>
-                            <label>
-                                <input type="radio"
-                                       name="mode"
-                                       value="LastFour"
-                                       checked="@(Model.Mode == ClientSearchMode.LastFour ? "checked" : null)" />
-                                <span>@L["Search.Mode.LastFour"]</span>
-                            </label>
+                            <label><input form="reception-search" type="radio" name="mode" value="Auto" checked="@(Model.Mode == ClientSearchMode.Auto ? "checked" : null)" /><span>@L["Search.Mode.Auto"]</span></label>
+                            <label><input form="reception-search" type="radio" name="mode" value="Card" checked="@(Model.Mode == ClientSearchMode.Card ? "checked" : null)" /><span>@L["Search.Mode.Card"]</span></label>
+                            <label><input form="reception-search" type="radio" name="mode" value="Name" checked="@(Model.Mode == ClientSearchMode.Name ? "checked" : null)" /><span>@L["Search.Mode.Name"]</span></label>
+                            <label><input form="reception-search" type="radio" name="mode" value="Phone" checked="@(Model.Mode == ClientSearchMode.Phone ? "checked" : null)" /><span>@L["Search.Mode.Phone"]</span></label>
+                            <label><input form="reception-search" type="radio" name="mode" value="LastFour" checked="@(Model.Mode == ClientSearchMode.LastFour ? "checked" : null)" /><span>@L["Search.Mode.LastFour"]</span></label>
                         </div>
                     </fieldset>
-
                     <label class="checkbox-control">
-                        <input type="checkbox"
-                               name="includeInactive"
-                               value="true"
-                               checked="@(Model.IncludeInactive ? "checked" : null)" />
+                        <input form="reception-search" type="checkbox" name="includeInactive" value="true" checked="@(Model.IncludeInactive ? "checked" : null)" />
                         <span>@L["Search.IncludeInactive"]</span>
                     </label>
-
-                    <span id="search-loading"
-                          class="request-indicator htmx-indicator"
-                          role="status"
-                          aria-live="polite">@L["Search.Loading"]</span>
+                    <a class="secondary-link clients-search-clear" asp-page="/Reception/Index">@L["Action.Clear"]</a>
                 </div>
-            </form>
-        </section>
+            </details>
+        </header>
 
         <partial name="_ReceptionWorkspace" model="Model.Workspace" />
     </section>

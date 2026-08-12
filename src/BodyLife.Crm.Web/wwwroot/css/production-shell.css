@@ -215,3 +215,83 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   .reception-page .search-results-surface { padding: var(--space-4); }.reception-page .client-result-meta { grid-template-columns: 1fr; }.reception-page .create-client-heading { align-items: start; flex-direction: column; }.reception-page .create-client-context { max-width: none; text-align: left; }.reception-page .create-client-content { padding: var(--space-4); }
   .reception-page .create-client-surface { scroll-margin-top: 220px; }.reception-page .create-client-form .action-form-footer { align-items: stretch; flex-direction: column; }.reception-page .create-client-form .action-form-footer .request-indicator { margin-right: 0; }.reception-page .create-client-form .action-form-footer button { width: 100%; }
 }
+
+/* Wave 2 replacement — one quiet Clients canvas, with the real search in the shared header. */
+.app-global-header { grid-template-columns: 240px minmax(420px, 1fr) auto; }
+.header-client-actions { display: flex; min-width: 0; align-items: center; gap: var(--space-2); }
+.header-client-actions .global-client-search { width: auto; max-width: none; flex: 1 1 auto; }
+.header-client-actions .global-create-client { flex: 0 0 auto; }
+.reception-global-search { position: relative; }
+.reception-global-search .header-search-loading,
+.reception-global-search > .request-indicator { position: absolute; top: calc(100% + 2px); left: 0; min-height: 18px; pointer-events: none; }
+.app-content > .reception-page { width: 100%; max-width: none; padding: 18px var(--space-6) var(--space-6); }
+.reception-page .reception-layout { width: 100%; max-width: none; margin: 0; gap: var(--space-4); }
+.reception-page .reception-route-heading { min-height: auto; padding: 0; }
+.reception-page .reception-route-heading .eyebrow { margin-bottom: var(--space-1); }
+.reception-page .reception-search-workspace {
+  display: grid;
+  width: 100%;
+  min-height: 220px;
+  scroll-margin-top: 104px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-content: start;
+  align-items: start;
+  border: 1px solid var(--line-quiet);
+  border-left: 4px solid var(--checkin-blue);
+  border-radius: var(--radius-card);
+  padding: clamp(var(--space-4), 2.5vw, var(--space-6));
+  background: var(--desk-paper);
+  box-shadow: var(--elevation-card);
+}
+.reception-page .clients-search-controls { position: relative; }
+.reception-page .clients-search-controls summary { min-height: 44px; padding: 10px var(--space-3); color: var(--text-secondary); font-size: var(--type-meta); font-weight: 750; cursor: pointer; }
+.reception-page .clients-search-controls[open] { width: min(100%, 640px); border: 1px solid var(--line-quiet); border-radius: var(--radius-control); padding: var(--space-2) var(--space-3); background: var(--desk-inset); }
+.reception-page .clients-search-controls .reception-search-options { display: grid; gap: var(--space-2); margin: var(--space-2) 0 0; }
+.reception-page .clients-search-controls .search-mode-control { min-width: 0; }
+.reception-page .clients-search-controls .search-mode-segments { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.reception-page .clients-search-controls .search-mode-segments span { min-height: 44px; padding-inline: var(--space-2); }
+.reception-page .clients-search-clear { width: fit-content; min-height: 44px; }
+.reception-page .search-results-region { display: grid; min-height: 132px; gap: var(--space-3); }
+.reception-page .search-results-heading { min-height: 28px; margin: 0; padding: 0; }
+.reception-page .search-results-heading .section-heading { font-size: 20px; font-weight: 800; }
+.reception-page .search-state-surface { min-height: 112px; border: 0; border-radius: var(--radius-control); padding: var(--space-4); background: var(--desk-inset); }
+.reception-page .search-result-list { display: grid; gap: var(--space-2); }
+.reception-page .search-result-row-header h3 { font-weight: 750; }
+.reception-page .clients-create-context { min-height: auto; }
+.reception-page .clients-create-panel { margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; scroll-margin-top: 112px; }
+.reception-page .clients-create-panel::before { display: none; }
+.reception-page .clients-create-panel summary { min-height: 48px; border: 0; padding-inline: 0; color: var(--text-primary); font-weight: 800; }
+.reception-page .clients-create-panel[open] summary { border-bottom: 0; }
+.reception-page .clients-create-panel .create-client-content { border-top: 1px solid var(--line-quiet); padding: var(--space-4) 0 0; }
+.reception-page #client-profile { min-height: 0; border: 0; border-radius: 0; padding: 0; background: transparent; box-shadow: none; }
+.reception-page #client-profile::before { display: none; }
+.reception-page #client-profile .client-identity-header { border-top: 0; padding-top: 0; }
+
+@media (max-width: 1099px) {
+  .app-global-header { grid-template-columns: 44px max-content minmax(0, 1fr) auto; min-height: 78px; }
+  .header-client-actions { display: flex; width: 100%; }
+  .header-client-actions .global-client-search { width: 100%; }
+  .reception-page .reception-search-workspace { scroll-margin-top: 94px; }
+}
+@media (max-width: 899px) {
+  .app-global-header { min-height: 132px; grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .header-client-actions { grid-column: 1 / -1; grid-row: 2; }
+  .reception-page .reception-search-workspace { scroll-margin-top: 148px; }
+}
+@media (max-width: 720px) {
+  .app-global-header { min-height: 176px; }
+  .header-client-actions { display: contents; }
+  .header-client-actions .global-client-search { grid-row: 2; }
+  .header-client-actions .global-create-client { grid-row: 3; }
+  .app-content > .reception-page { padding: var(--space-5) var(--space-4); }
+  .reception-page .reception-route-heading { align-items: stretch; flex-direction: column; }
+  .reception-page .reception-search-workspace { gap: var(--space-4); padding: var(--space-4); }
+  .reception-page .clients-search-controls { width: 100%; }
+  .reception-page .clients-search-controls summary { width: 100%; }
+  .reception-page .clients-search-controls[open] { width: 100%; }
+  .reception-page .clients-search-controls .search-mode-segments { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .reception-page .clients-search-controls .search-mode-segments span { width: 100%; min-height: 44px; }
+  .reception-page .reception-search-workspace { scroll-margin-top: 192px; }
+  .reception-page .clients-create-panel { scroll-margin-top: 208px; }
+}

@@ -485,13 +485,17 @@ public sealed class ReceptionHomeSmokeTests : IClassFixture<ReceptionAppFixture>
             await page.Locator("#create-client-action-panel")
                 .EvaluateAsync<bool>("element => element.open"),
             "Direct client creation should open without a failed search.");
-        Assert.Equal(1, await page.Locator("#global-client-search").CountAsync());
+        Assert.Equal(0, await page.Locator("#global-client-search").CountAsync());
         Assert.Equal(1, await page.Locator("#client-search").CountAsync());
+        Assert.Equal(1, await page.Locator("form.global-client-search").CountAsync());
 
         var fallbackQuery = $"wave1-no-match-{viewportName}";
-        await page.Locator("#global-client-search").FillAsync(fallbackQuery);
-        await page.Locator(".global-client-search button").ClickAsync();
-        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await page.Locator("#client-search").FillAsync(fallbackQuery);
+        var searchResponse = page.WaitForResponseAsync(response =>
+            response.Url.Contains("handler=Search", StringComparison.OrdinalIgnoreCase));
+        await page.Locator("#reception-search button").ClickAsync();
+        Assert.True((await searchResponse).Ok);
+        await page.WaitForURLAsync($"**q={fallbackQuery}**");
         var fallbackUri = new Uri(page.Url);
         Assert.Equal("/Reception", fallbackUri.AbsolutePath);
         Assert.Contains("q=wave1-no-match", fallbackUri.Query, StringComparison.Ordinal);
