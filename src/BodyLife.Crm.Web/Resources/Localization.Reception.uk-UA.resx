@@ -76,6 +76,10 @@
   <data name="Profile.ActionWorkspaceHint" xml:space="preserve"><value>Оберіть одну дію</value></data>
   <data name="Profile.Activity" xml:space="preserve"><value>Журнал дій</value></data>
   <data name="Profile.ActivityHint" xml:space="preserve"><value>Відвідування й платежі</value></data>
+  <data name="Profile.MembershipPassport" xml:space="preserve"><value>Паспорт абонемента</value></data>
+  <data name="Profile.ClientDetails" xml:space="preserve"><value>Дані клієнта</value></data>
+  <data name="Profile.FullVisitHistory" xml:space="preserve"><value>Повна історія відвідувань</value></data>
+  <data name="Profile.FullPaymentHistory" xml:space="preserve"><value>Повна історія платежів</value></data>
   <data name="Profile.NegativeCoverage" xml:space="preserve"><value>Покриття від’ємних відвідувань</value></data>
   <data name="Profile.SaleCorrections" xml:space="preserve"><value>Виправлення продажу абонемента</value></data>
 <data name="Freeze.Add" xml:space="preserve"><value>Додати замороження</value></data>
@@ -432,4 +436,6 @@
   <data name="IssuedSaleCorrection.Applying" xml:space="preserve"><value>Застосування…</value></data>
   <data name="Operation.IssuedMembershipSaleReplaced" xml:space="preserve"><value>Продаж виданого абонемента замінено</value></data>
   <data name="Operation.IssuedMembershipSaleCanceled" xml:space="preserve"><value>Продаж виданого абонемента скасовано</value></data>
+  <data name="List.ShowMore" xml:space="preserve"><value>Показати всі</value></data>
+  <data name="List.ShowLess" xml:space="preserve"><value>Показати менше</value></data>
 </root>

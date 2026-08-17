@@ -1039,7 +1039,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             VisitTabletClientId,
             membershipTypeId,
-            "Tablet four-visit snapshot",
+            "Four visits / 30 days",
             visitsLimitSnapshot: 4);
 
         VisitPhoneClientId = await database.SeedClientAsync(
@@ -1052,7 +1052,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             VisitPhoneClientId,
             membershipTypeId,
-            "Phone three-visit snapshot",
+            "Three visits / 30 days",
             visitsLimitSnapshot: 3);
 
         VisitZeroClientId = await database.SeedClientAsync(
@@ -1065,7 +1065,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             VisitZeroClientId,
             membershipTypeId,
-            "Zero-remaining snapshot",
+            "Open visit pass",
             visitsLimitSnapshot: 0);
 
         VisitNoMembershipClientId = await database.SeedClientAsync(
@@ -1085,7 +1085,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             VisitStaleClientId,
             membershipTypeId,
-            "Single-visit stale snapshot",
+            "Single visit / 30 days",
             visitsLimitSnapshot: 1);
 
         VisitFreezeClientId = await database.SeedClientAsync(
@@ -1098,7 +1098,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             VisitFreezeClientId,
             membershipTypeId,
-            "Freeze-block snapshot",
+            "Two visits / 30 days",
             visitsLimitSnapshot: 2);
 
         VisitAdminClientId = await database.SeedClientAsync(
@@ -1111,7 +1111,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             VisitAdminClientId,
             membershipTypeId,
-            "Admin cancel snapshot",
+            "Two visits / 30 days",
             visitsLimitSnapshot: 2);
     }
 
@@ -1130,7 +1130,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             PaymentHistoryClientId,
             membershipTypeId,
-            "Payment history snapshot",
+            "Eight visits / 30 days",
             visitsLimitSnapshot: 8);
         await database.SeedPaymentHistoryAsync(
             ownerAccountId,
@@ -1618,7 +1618,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             clientId,
             membershipTypeId,
-            "Extended membership snapshot",
+            "Eight visits / 30 days",
             visitsLimitSnapshot: 8);
         await database.SeedMembershipExtensionHistoryAsync(
             ownerAccountId,
@@ -1641,7 +1641,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             PaymentTabletClientId,
             membershipTypeId,
-            "Payment tablet snapshot",
+            "Six visits / 30 days",
             visitsLimitSnapshot: 6);
 
         PaymentPhoneClientId = await database.SeedClientAsync(
@@ -1667,7 +1667,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             FreezeTabletClientId,
             membershipTypeId,
-            "Freeze tablet snapshot",
+            "Eight visits / 30 days",
             visitsLimitSnapshot: 8);
 
         FreezePhoneClientId = await database.SeedClientAsync(
@@ -1680,7 +1680,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             FreezePhoneClientId,
             membershipTypeId,
-            "Freeze phone snapshot",
+            "Eight visits / 30 days",
             visitsLimitSnapshot: 8);
     }
 
@@ -1699,7 +1699,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             CancelFreezeTabletClientId,
             membershipTypeId,
-            "Cancelable tablet snapshot",
+            "Eight visits / 30 days",
             visitsLimitSnapshot: 8);
         CancelFreezeTabletFreezeId = await database.SeedCancelableFreezeAsync(
             ownerAccountId,
@@ -1717,7 +1717,7 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             ownerAccountId,
             CancelFreezePhoneClientId,
             membershipTypeId,
-            "Cancelable phone snapshot",
+            "Eight visits / 30 days",
             visitsLimitSnapshot: 8);
         CancelFreezePhoneFreezeId = await database.SeedCancelableFreezeAsync(
             ownerAccountId,

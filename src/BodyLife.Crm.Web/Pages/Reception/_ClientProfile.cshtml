@@ -10,7 +10,8 @@
         form => form.Input.FreezeId);
 }
 
-<section id="client-profile" class="client-profile-region" aria-label="@L["Profile.Title"]" aria-live="polite">
+<section id="client-profile" class="client-profile-region" aria-label="@L["Profile.Title"]" aria-live="polite"
+         data-client-profile-client-id="@(profile?.ClientId)">
     <span id="profile-loading"
           class="request-indicator profile-loading htmx-indicator"
           role="status"
@@ -49,16 +50,59 @@
                             : Model.AddPaymentForm is not null
                                 ? "add-payment-action-panel"
                                 : "add-freeze-action-panel";
+        var clientDetailsOpen = Model.UpdateClientForm?.IsOpen == true
+            || Model.CardAssignmentForm?.IsOpen == true;
 
-        <header class="client-identity-header">
-            <div>
-                <p class="eyebrow">@L["Profile.Title"]</p>
-                <h2 class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"account"' />@profile.DisplayName</h2>
-            </div>
-            <span class="status-chip @(profile.OperationalStatus == ClientOperationalStatus.Active ? "status-active" : "status-inactive")">
-                @(profile.OperationalStatus == ClientOperationalStatus.Active ? L["Status.Active"] : L["Status.Inactive"])
-            </span>
-        </header>
+        <section class="profile-success-layout">
+        <aside class="profile-passport" aria-labelledby="profile-passport-title" data-profile-passport>
+            <header class="client-identity-header">
+                <div>
+                    <p class="eyebrow">@L["Profile.MembershipPassport"]</p>
+                    <h2 id="profile-passport-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"account"' />@profile.DisplayName</h2>
+                </div>
+                <span class="status-chip @(profile.OperationalStatus == ClientOperationalStatus.Active ? "status-active" : "status-inactive")">
+                    @(profile.OperationalStatus == ClientOperationalStatus.Active ? L["Status.Active"] : L["Status.Inactive"])
+                </span>
+            </header>
+            <section class="profile-passport-membership" aria-labelledby="passport-membership-title">
+                <h3 id="passport-membership-title" class="visually-hidden">@L["Profile.CurrentMembership"]</h3>
+                @if (profile.Membership.CurrentMembership is null)
+                {
+                    <p class="membership-empty">@L["Value.NoCurrentMembership"]</p>
+                }
+                else
+                {
+                    var passportMembership = profile.Membership.CurrentMembership;
+                    <p class="profile-passport-membership-name">
+                        @passportMembership.TypeNameSnapshot
+                        <span class="status-chip @MembershipStatusClass(passportMembership.Status)">@MembershipStatusLabel(passportMembership.Status)</span>
+                    </p>
+                    <dl class="profile-passport-membership-facts">
+                        <div><dt>@L["Profile.RemainingVisits"]</dt><dd>@passportMembership.RemainingVisits</dd></div>
+                        <div><dt>@L["Profile.EffectiveEnd"]</dt><dd>@ReceptionDisplayFormatter.Date(passportMembership.EffectiveEndDate)</dd></div>
+                    </dl>
+                }
+            </section>
+            @if (Model.MarkVisitForm is not null)
+            {
+                <a class="profile-passport-mark-visit" href="#mark-visit-action-panel" data-profile-passport-mark-visit>@L["Visit.Mark"]</a>
+            }
+            <details class="profile-passport-details" open="@(clientDetailsOpen ? "open" : null)">
+                <summary>@L["Profile.ClientDetails"]</summary>
+                <dl class="client-profile-meta">
+                    <div><dt>@L["Profile.CurrentCard"]</dt><dd>@(profile.CurrentCard?.CardNumber ?? L["Value.NoCurrentCard"])</dd></div>
+                    <div><dt>@L["Field.Phone"]</dt><dd>@(profile.Phone ?? L["Value.NoPhone"])</dd></div>
+                    <div><dt>@L["Profile.Updated"]</dt><dd>@ReceptionDisplayFormatter.DateTime(profile.UpdatedAt)</dd></div>
+                    @if (profile.CurrentCard is not null) { <div><dt>@L["Profile.CardAssigned"]</dt><dd>@ReceptionDisplayFormatter.DateTime(profile.CurrentCard.AssignedAt)</dd></div> }
+                </dl>
+                @if (profile.Comment is not null) { <p class="client-comment">@profile.Comment</p> }
+                <div class="profile-management-actions">
+                    @if (Model.UpdateClientForm is not null) { <partial name="_UpdateClientForm" model="Model.UpdateClientForm" /> }
+                    @if (Model.CardAssignmentForm is not null) { <partial name="_CardAssignmentForm" model="Model.CardAssignmentForm" /> }
+                </div>
+            </details>
+        </aside>
+        <div class="profile-workflow-column">
 
         @if (!string.IsNullOrWhiteSpace(Model.OperationMessage))
         {
@@ -88,75 +132,12 @@
             </section>
         }
 
-        <div class="profile-identity-facts">
-        <dl class="client-profile-meta">
-            <div>
-                <dt>@L["Profile.CurrentCard"]</dt>
-                <dd>@(profile.CurrentCard?.CardNumber ?? L["Value.NoCurrentCard"])</dd>
-            </div>
-            <div>
-                <dt>@L["Field.Phone"]</dt>
-                <dd>@(profile.Phone ?? L["Value.NoPhone"])</dd>
-            </div>
-            <div>
-                <dt>@L["Profile.Updated"]</dt>
-                <dd>@ReceptionDisplayFormatter.DateTime(profile.UpdatedAt)</dd>
-            </div>
-            @if (profile.CurrentCard is not null)
-            {
-                <div>
-                <dt>@L["Profile.CardAssigned"]</dt>
-                    <dd>@ReceptionDisplayFormatter.DateTime(profile.CurrentCard.AssignedAt)</dd>
-                </div>
-            }
-        </dl>
-
-        @if (profile.Comment is not null)
+        @if (extensionMemberships.Length > 0)
         {
-            <section class="client-comment" aria-labelledby="client-comment-title">
-                <h3 id="client-comment-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"info"' />@L["Profile.Note"]</h3>
-                <p>@profile.Comment</p>
-            </section>
-        }
-        </div>
-
-        <section class="membership-panel membership-readiness-strip" aria-labelledby="membership-panel-title">
-            <header class="membership-panel-header">
-                <h3 id="membership-panel-title" class="section-heading"><partial name="/Pages/Shared/_Icon.cshtml" model='"membership"' />@L["Profile.CurrentMembership"]</h3>
-            </header>
-
-            @if (profile.Membership.CurrentMembership is null)
-            {
-                <p class="membership-empty">@L["Value.NoCurrentMembership"]</p>
-            }
-            else
-            {
-                var membership = profile.Membership.CurrentMembership;
-                <dl class="membership-summary-grid">
-                    <div class="membership-signal membership-signal-info">
-                        <dt>@L["Membership.SnapshotName"]</dt>
-                        <dd>@membership.TypeNameSnapshot</dd>
-                    </div>
-                    <div class="membership-signal @MembershipStatusSignalClass(membership.Status)">
-                        <dt>@L["Profile.Status"]</dt>
-                        <dd>@MembershipStatusLabel(membership.Status)</dd>
-                    </div>
-                    <div class="membership-signal @MembershipRemainingSignalClass(membershipWarnings)">
-                        <dt>@L["Profile.RemainingVisits"]</dt>
-                        <dd>@membership.RemainingVisits</dd>
-                    </div>
-                    <div class="membership-signal @MembershipEndSignalClass(membershipWarnings)">
-                        <dt>@L["Profile.EffectiveEnd"]</dt>
-                        <dd>@ReceptionDisplayFormatter.Date(membership.EffectiveEndDate)</dd>
-                    </div>
-                </dl>
-            }
-
-            @if (extensionMemberships.Length > 0)
-            {
+                <details class="profile-membership-history" data-membership-extension-history>
+                    <summary>@L["Membership.ExtensionHistory"]</summary>
                 <section class="membership-extension-history"
-                         aria-labelledby="membership-extension-history-title"
-                         data-membership-extension-history>
+                         aria-labelledby="membership-extension-history-title">
                     <header class="membership-extension-history-header">
                         <div>
                             <p class="eyebrow">@L["Membership.Timeline"]</p>
@@ -219,8 +200,8 @@
                         </div>
                     }
                 </section>
-            }
-        </section>
+                </details>
+        }
 
         @if (Model.NegativeVisitCoveragePanel is not null)
         {
@@ -317,6 +298,11 @@
                 <p class="eyebrow">@L["Profile.Activity"]</p>
                 <h3 id="profile-activity-ledger-title" class="section-heading">@L["Profile.ActivityHint"]</h3>
             </header>
+            <div class="profile-history-tabs" role="tablist" aria-label="@L["Profile.Activity"]" data-profile-history-tabs hidden>
+                <button type="button" id="profile-visits-tab" role="tab" aria-selected="true" aria-controls="profile-visits-panel" data-profile-history-tab="visits">@L["Visit.Recent"]</button>
+                <button type="button" id="profile-payments-tab" role="tab" aria-selected="false" aria-controls="profile-payments-panel" data-profile-history-tab="payments">@L["Payment.Recent"]</button>
+            </div>
+            <div id="profile-visits-panel" data-profile-history-panel="visits">
         @if (profile.RecentVisits is { } recentVisits)
         {
             <section class="recent-visits" aria-labelledby="recent-visits-title">
@@ -327,7 +313,6 @@
                         <span class="result-count">@L["List.LatestCount", recentVisits.Items.Count]</span>
                     }
                 </header>
-
                 @if (recentVisits.Items.Count == 0)
                 {
                     <p class="recent-visits-empty">@L["Visit.NoneRecorded"]</p>
@@ -346,16 +331,21 @@
                             <li class="recent-visit-row"
                                 data-visit-id="@visit.VisitId"
                                 data-visit-status="@visit.Status.ToString().ToLowerInvariant()"
-                                data-can-cancel="@canCancel.ToString().ToLowerInvariant()">
-                                <header class="recent-visit-row-header">
-                                    <div>
-                                        <p class="recent-visit-kind">@VisitKindLabel(visit.VisitKind)</p>
-                                        <h4>@VisitContextLabel(visit)</h4>
-                                    </div>
+                                data-can-cancel="@canCancel.ToString().ToLowerInvariant()"
+                                data-profile-history-row>
+                                <details class="profile-history-disclosure" data-profile-history-disclosure @(cancelVisitForm?.IsOpen == true ? "open" : null)>
+                                <summary>
+                                <span class="recent-visit-row-header">
+                                    <span>
+                                        <span class="recent-visit-kind">@VisitKindLabel(visit.VisitKind)</span>
+                                        <strong>@VisitContextLabel(visit)</strong>
+                                    </span>
                                     <span class="status-chip @(visit.Status == ClientVisitRowStatus.Active ? "status-active" : "status-canceled")">
                                         @(visit.Status == ClientVisitRowStatus.Active ? L["Status.Active"] : L["Status.Canceled"])
                                     </span>
-                                </header>
+                                </span>
+                                <span class="profile-history-summary-time">@ReceptionDisplayFormatter.DateTime(visit.OccurredAt)</span>
+                                </summary>
 
                                 <dl class="recent-visit-meta">
                                     <div>
@@ -407,13 +397,19 @@
                                             : L["Visit.CancelRestricted"])
                                     </p>
                                 }
+                                </details>
                             </li>
                         }
                     </ol>
                 }
+                <button type="button" class="secondary-link profile-history-more" hidden
+                        data-profile-history-more data-show-more-label="@L["List.ShowMore"]" data-show-less-label="@L["List.ShowLess"]"></button>
             </section>
         }
+            <a class="secondary-link profile-history-link" asp-page="/Audit/ClientHistory" asp-route-clientId="@profile.ClientId" asp-route-entity="@ClientHistoryEntityFilter.Visit">@L["Profile.FullVisitHistory"]</a>
+            </div>
 
+            <div id="profile-payments-panel" data-profile-history-panel="payments">
         @if (profile.RecentPayments is { } recentPayments)
         {
             <section class="recent-payments" aria-labelledby="recent-payments-title">
@@ -424,7 +420,6 @@
                         <span class="result-count">@L["List.LatestCount", recentPayments.Items.Count]</span>
                     }
                 </header>
-
                 @if (recentPayments.Items.Count == 0)
                 {
                     <p class="recent-payments-empty">@L["Payment.NoneRecorded"]</p>
@@ -434,18 +429,24 @@
                     <ol class="recent-payment-list">
                         @foreach (var payment in recentPayments.Items)
                         {
+                            var correctPaymentForm = correctPaymentFormsByPaymentId.GetValueOrDefault(payment.PaymentId);
                             <li class="recent-payment-row"
                                 data-payment-id="@payment.PaymentId"
-                                data-payment-status="@payment.Status.ToString().ToLowerInvariant()">
-                                <header class="recent-payment-row-header">
-                                    <div>
-                                        <p class="recent-payment-context">@PaymentContextLabel(payment.PaymentContext)</p>
-                                        <h4>@MoneyLabel(payment.Amount)</h4>
-                                    </div>
+                                data-payment-status="@payment.Status.ToString().ToLowerInvariant()"
+                                data-profile-history-row>
+                                <details class="profile-history-disclosure" data-profile-history-disclosure @(correctPaymentForm?.IsOpen == true ? "open" : null)>
+                                <summary>
+                                <span class="recent-payment-row-header">
+                                    <span>
+                                        <span class="recent-payment-context">@PaymentContextLabel(payment.PaymentContext)</span>
+                                        <strong>@MoneyLabel(payment.Amount)</strong>
+                                    </span>
                                     <span class="status-chip @PaymentStatusClass(payment.Status)">
                                         @PaymentStatusLabel(payment.Status)
                                     </span>
-                                </header>
+                                </span>
+                                <span class="profile-history-summary-time">@ReceptionDisplayFormatter.DateTime(payment.OccurredAt)</span>
+                                </summary>
 
                                 <dl class="recent-payment-meta">
                                     <div>
@@ -534,18 +535,21 @@
                                     </div>
                                 }
 
-                                @if (correctPaymentFormsByPaymentId.TryGetValue(
-                                    payment.PaymentId,
-                                    out var correctPaymentForm))
+                                @if (correctPaymentForm is not null)
                                 {
                                     <partial name="_CorrectPaymentForm" model="correctPaymentForm" />
                                 }
+                                </details>
                             </li>
                         }
                     </ol>
                 }
+                <button type="button" class="secondary-link profile-history-more" hidden
+                        data-profile-history-more data-show-more-label="@L["List.ShowMore"]" data-show-less-label="@L["List.ShowLess"]"></button>
             </section>
         }
+            <a class="secondary-link profile-history-link" asp-page="/Audit/ClientHistory" asp-route-clientId="@profile.ClientId" asp-route-entity="@ClientHistoryEntityFilter.Payment">@L["Profile.FullPaymentHistory"]</a>
+            </div>
         </section>
 
         <nav class="profile-record-links"
@@ -565,22 +569,8 @@
             </a>
         </nav>
 
-        @if (Model.UpdateClientForm is not null || Model.CardAssignmentForm is not null)
-        {
-            <section class="profile-management" aria-label="@L["Client.Details"]">
-                <div class="profile-management-actions">
-                    @if (Model.UpdateClientForm is not null)
-                    {
-                        <partial name="_UpdateClientForm" model="Model.UpdateClientForm" />
-                    }
-
-                    @if (Model.CardAssignmentForm is not null)
-                    {
-                        <partial name="_CardAssignmentForm" model="Model.CardAssignmentForm" />
-                    }
-                </div>
-            </section>
-        }
+        </div>
+        </section>
     }
 </section>
 

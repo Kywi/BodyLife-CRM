@@ -273,6 +273,23 @@ public sealed class CorrectionRecordNavigationSmokeTests
         string viewportName,
         string label)
     {
+        var profile = panel.Locator("xpath=ancestor::*[@id='client-profile'][1]");
+        var isPaymentPanel = await panel.EvaluateAsync<bool>(
+            "element => element.matches('[data-correct-payment-panel]')");
+        var tabName = isPaymentPanel ? "payments" : "visits";
+        var tab = profile.Locator($"[data-profile-history-tab='{tabName}']");
+        if (await tab.GetAttributeAsync("aria-selected") != "true")
+        {
+            await tab.ClickAsync();
+        }
+
+        var rowDisclosure = panel.Locator(
+            "xpath=ancestor::details[@data-profile-history-disclosure][1]");
+        if (await rowDisclosure.GetAttributeAsync("open") is null)
+        {
+            await rowDisclosure.Locator(":scope > summary").ClickAsync();
+        }
+
         await ExpectVisibleAsync(panel.Locator("summary"), viewportName, label);
         if (await panel.GetAttributeAsync("open") is null)
         {

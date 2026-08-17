@@ -108,17 +108,16 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 viewportName,
                 "membership Visit kind");
             await ExpectVisibleAsync(
-                activeVisit.GetByRole(
-                    AriaRole.Heading,
-                    new()
-                    {
-                        Name = viewportName == "tablet"
-                            ? "Tablet four-visit snapshot"
-                            : "Phone three-visit snapshot",
-                        Exact = true,
-                    }),
+                activeVisit.Locator(".recent-visit-row-header strong").GetByText(
+                    viewportName == "tablet"
+                        ? "Four visits / 30 days"
+                        : "Three visits / 30 days",
+                    new() { Exact = true }),
                 viewportName,
                 "issued membership snapshot");
+            var activeVisitDisclosure = activeVisit.Locator(
+                ":scope > [data-profile-history-disclosure]");
+            await activeVisitDisclosure.Locator(":scope > summary").ClickAsync();
             await ExpectVisibleAsync(
                 activeVisit.GetByText($"Marked from {viewportName} reception."),
                 viewportName,
@@ -177,6 +176,8 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 canceledVisit.GetByText("Canceled", new() { Exact = true }),
                 viewportName,
                 "canceled Visit status");
+            await canceledVisit.Locator(":scope > [data-profile-history-disclosure] > summary")
+                .ClickAsync();
             await ExpectVisibleAsync(
                 canceledVisit.GetByText(cancellationReason, new() { Exact = true }),
                 viewportName,
@@ -647,6 +648,12 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         ILocator visitRow,
         string viewportName)
     {
+        var disclosure = visitRow.Locator(":scope > [data-profile-history-disclosure]");
+        if (await disclosure.GetAttributeAsync("open") is null)
+        {
+            await disclosure.Locator(":scope > summary").ClickAsync();
+        }
+
         var panel = visitRow.Locator("details[data-cancel-visit-panel]");
         await ExpectVisibleAsync(
             panel.Locator("summary"),
@@ -763,7 +770,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
 
     private static async Task<string> ReadRemainingVisitsAsync(ILocator profile)
     {
-        return (await profile.Locator(".membership-summary-grid div")
+        return (await profile.Locator(".profile-passport-membership-facts div")
             .Filter(new LocatorFilterOptions { HasText = "Remaining visits" })
             .Locator("dd")
             .InnerTextAsync())

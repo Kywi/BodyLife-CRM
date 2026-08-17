@@ -42,7 +42,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
         768,
         "BL-CANCEL-FREEZE-TABLET",
         "Cancel Freeze Tablet",
-        "Cancelable tablet snapshot",
+        "Eight visits / 30 days",
         "Tablet schedule changed")]
     [InlineData(
         "phone",
@@ -50,7 +50,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
         844,
         "BL-CANCEL-FREEZE-PHONE",
         "Cancel Freeze Phone",
-        "Cancelable phone snapshot",
+        "Eight visits / 30 days",
         "Phone schedule changed")]
     public async Task OwnerCancelsOneCanonicalFreezeOnTargetViewport(
         string viewportName,
@@ -88,6 +88,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
                     new() { Name = clientDisplayName, Exact = true }),
                 viewportName,
                 "cancel Freeze client profile");
+            await OpenMembershipHistoryAsync(profile);
             var freezeRow = profile.Locator(
                 $"[data-extension-source-id='{freezeId}'][data-extension-source-status='active']");
             await ExpectVisibleAsync(freezeRow, viewportName, "active Freeze history row");
@@ -181,6 +182,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
                 profile.GetByText("Freeze canceled."),
                 viewportName,
                 "Freeze cancellation success message");
+            await OpenMembershipHistoryAsync(profile);
             var canceledRow = profile.Locator(
                 $"[data-extension-source-id='{freezeId}'][data-extension-source-status='canceled']");
             await ExpectVisibleAsync(canceledRow, viewportName, "canceled Freeze history row");
@@ -207,7 +209,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
                 membershipStateBefore.EffectiveEndDate.AddDays(-2),
                 membershipStateAfter.EffectiveEndDate);
             await ExpectVisibleAsync(
-                profile.Locator(".membership-summary-grid").GetByText(
+                profile.Locator(".profile-passport-membership-facts").GetByText(
                     DisplayDate(membershipStateAfter.EffectiveEndDate),
                     new() { Exact = true }),
                 viewportName,
@@ -288,6 +290,15 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
 
         await ExpectVisibleAsync(panel.Locator("form"), viewportName, "Cancel Freeze form");
         return panel;
+    }
+
+    private static async Task OpenMembershipHistoryAsync(ILocator profile)
+    {
+        var details = profile.Locator("[data-membership-extension-history]");
+        if (await details.GetAttributeAsync("open") is null)
+        {
+            await details.Locator(":scope > summary").ClickAsync();
+        }
     }
 
     private static async Task SubmitHtmxCancelFreezeAsync(

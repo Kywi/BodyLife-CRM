@@ -55,6 +55,9 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                 profile.GetByRole(AriaRole.Heading, new() { Name = "Payment History" }),
                 viewportName,
                 "Payment correction client profile");
+            var paymentsTab = profile.Locator("[data-profile-history-tab='payments']");
+            await paymentsTab.ClickAsync();
+            Assert.Equal("true", await paymentsTab.GetAttributeAsync("aria-selected"));
             var sourceRow = profile.Locator(".recent-payment-row").Filter(
                 new LocatorFilterOptions
                 {
@@ -65,7 +68,7 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
             Assert.True(Guid.TryParse(sourcePaymentIdValue, out var sourcePaymentId));
             var panelSelector = $"#correct-payment-panel-{sourcePaymentId:N}";
             var panel = page.Locator(panelSelector);
-            await OpenCorrectionPanelAsync(panel, viewportName);
+            await OpenCorrectionPanelAsync(sourceRow, panel, viewportName);
 
             var form = panel.Locator("form");
             Assert.Equal(1, await form.Locator(
@@ -195,6 +198,10 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                 profile.GetByText(expectedOutcome),
                 viewportName,
                 "Payment correction success message");
+            Assert.Equal(
+                "true",
+                await profile.Locator("[data-profile-history-tab='payments']")
+                    .GetAttributeAsync("aria-selected"));
             var canonicalSourceRow = profile.Locator(
                 $"[data-payment-id='{sourcePaymentId}']");
             await ExpectVisibleAsync(
@@ -209,6 +216,7 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
             {
                 Assert.Equal("replaced", await canonicalSourceRow.GetAttributeAsync(
                     "data-payment-status"));
+                await OpenHistoryRowAsync(canonicalSourceRow);
                 await ExpectVisibleAsync(
                     canonicalSourceRow.GetByText("Replaced payment", new() { Exact = true }),
                     viewportName,
@@ -222,6 +230,7 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                     replacementRow,
                     viewportName,
                     "canonical replacement Payment row");
+                await OpenHistoryRowAsync(replacementRow);
                 await ExpectVisibleAsync(
                     replacementRow.GetByText(
                         "Corrected replacement",
@@ -251,6 +260,7 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
             {
                 Assert.Equal("canceled", await canonicalSourceRow.GetAttributeAsync(
                     "data-payment-status"));
+                await OpenHistoryRowAsync(canonicalSourceRow);
                 await ExpectVisibleAsync(
                     canonicalSourceRow.GetByText("Cancellation", new() { Exact = true }),
                     viewportName,
@@ -330,9 +340,16 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
     }
 
     private static async Task OpenCorrectionPanelAsync(
+        ILocator sourceRow,
         ILocator panel,
         string viewportName)
     {
+        var disclosure = sourceRow.Locator(":scope > [data-profile-history-disclosure]");
+        if (await disclosure.GetAttributeAsync("open") is null)
+        {
+            await disclosure.Locator(":scope > summary").ClickAsync();
+        }
+
         await ExpectVisibleAsync(
             panel.Locator("summary"),
             viewportName,
@@ -343,6 +360,15 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
         }
 
         await ExpectVisibleAsync(panel.Locator("form"), viewportName, "Correct Payment form");
+    }
+
+    private static async Task OpenHistoryRowAsync(ILocator row)
+    {
+        var disclosure = row.Locator(":scope > [data-profile-history-disclosure]");
+        if (await disclosure.GetAttributeAsync("open") is null)
+        {
+            await disclosure.Locator(":scope > summary").ClickAsync();
+        }
     }
 
     private static async Task AssertReplacementFieldsDisabledAsync(ILocator panel)

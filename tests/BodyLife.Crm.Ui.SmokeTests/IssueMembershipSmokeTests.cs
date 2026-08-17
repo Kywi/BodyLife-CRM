@@ -223,6 +223,10 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
                 $"[data-payment-id='{payment.PaymentId}']");
             await ExpectVisibleAsync(paymentRow, viewportName, "canonical sale Payment row");
             Assert.Equal(
+                "true",
+                await profile.Locator("[data-profile-history-tab='payments']")
+                    .GetAttributeAsync("aria-selected"));
+            Assert.Equal(
                 0,
                 await paymentRow.GetByRole(
                     AriaRole.Button,
@@ -253,7 +257,8 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
             else
             {
                 await ExpectVisibleAsync(
-                    profile.Locator(".membership-summary-grid").GetByText("8", new() { Exact = true }),
+                    profile.Locator(".profile-passport-membership-facts")
+                        .GetByText("8", new() { Exact = true }),
                     viewportName,
                     "canonical remaining visits");
             }

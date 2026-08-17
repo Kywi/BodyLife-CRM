@@ -105,7 +105,7 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
             await ExpectVisibleAsync(page.Locator("#reception-title"), "Clients", "English clients title");
 
             await SubmitHtmxSearchAsync(page, "BL-1001");
-            await ExpectVisibleAsync(page.Locator("#client-profile"), "Client profile", "English htmx profile heading");
+            await ExpectProfileLabelAsync(page, "Client profile", "English htmx profile");
             await ExpectVisibleAsync(page.Locator("#client-profile"), "No current membership", "English htmx membership text");
 
             await SwitchCultureAsync(page, Ukrainian);
@@ -114,7 +114,7 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
             await ExpectVisibleAsync(page.Locator("#reception-title"), "Клієнти", "Ukrainian clients title");
 
             await SubmitHtmxSearchAsync(page, "BL-1001");
-            await ExpectVisibleAsync(page.Locator("#client-profile"), "Профіль клієнта", "Ukrainian htmx profile heading");
+            await ExpectProfileLabelAsync(page, "Профіль клієнта", "Ukrainian htmx profile");
             await ExpectVisibleAsync(page.Locator("#client-profile"), "Немає поточного абонемента", "Ukrainian htmx membership text");
 
             await page.ReloadAsync(new PageReloadOptions { WaitUntil = WaitUntilState.NetworkIdle });
@@ -127,8 +127,8 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
     }
 
     [Theory]
-    [InlineData(English, "Client profile", "Membership", "Operations", "Records & history", "Owner tools")]
-    [InlineData(Ukrainian, "Профіль клієнта", "Абонемент", "Робота", "Звіти та історія", "Інструменти власника")]
+    [InlineData(English, "Client profile", "Membership passport", "Operations", "Records & history", "Owner tools")]
+    [InlineData(Ukrainian, "Профіль клієнта", "Паспорт абонемента", "Робота", "Звіти та історія", "Інструменти власника")]
     public async Task MembershipPresentationUsesHumanLabelsInsteadOfSnapshotVocabulary(
         string culture,
         string profileLabel,
@@ -151,9 +151,20 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
             var profile = page.Locator("#client-profile");
-            await ExpectVisibleAsync(profile, profileLabel, $"{culture} membership profile");
-            await ExpectVisibleAsync(profile.Locator(".membership-summary-grid"), membershipLabel, $"{culture} membership label");
-            await ExpectVisibleAsync(profile.Locator(".membership-summary-grid"), "Eight visits / 30 days", $"{culture} membership name");
+            await profile.WaitForAsync(new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 5_000,
+            });
+            Assert.Equal(profileLabel, await profile.GetAttributeAsync("aria-label"));
+            await ExpectVisibleAsync(profile.Locator(".profile-passport"), membershipLabel, $"{culture} membership label");
+            var membershipName = profile.Locator(".profile-passport-membership-name");
+            await membershipName.WaitForAsync(new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 5_000,
+            });
+            Assert.Contains("Eight visits / 30 days", await membershipName.InnerTextAsync(), StringComparison.Ordinal);
             await ExpectVisibleAsync(profile.Locator("#mark-visit-action-panel .visit-membership-choice"), "Eight visits / 30 days", $"{culture} Mark Visit membership choice");
             Assert.DoesNotContain("snapshot", await profile.InnerTextAsync(), StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("знімку", await profile.InnerTextAsync(), StringComparison.OrdinalIgnoreCase);
@@ -512,6 +523,21 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
         var match = locator.GetByText(text, new LocatorGetByTextOptions { Exact = true });
         await match.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 5_000 });
         Assert.True(await match.IsVisibleAsync(), $"{label} should be visible.");
+    }
+
+    private static async Task ExpectProfileLabelAsync(
+        IPage page,
+        string expectedLabel,
+        string label)
+    {
+        var profile = page.Locator("#client-profile");
+        await profile.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 5_000,
+        });
+        Assert.Equal(expectedLabel, await profile.GetAttributeAsync("aria-label"));
+        Assert.True(await profile.IsVisibleAsync(), $"{label} should be visible.");
     }
 
     private static async Task ExpectLocatorTextAsync(

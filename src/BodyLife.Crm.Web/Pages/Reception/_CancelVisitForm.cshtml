@@ -76,6 +76,7 @@
               asp-page-handler="CancelVisit"
               data-busy-form
               data-cancel-visit-form
+              data-profile-history-intent="visits"
               hx-post="@Url.Page("/Reception/Index", "CancelVisit")"
               hx-target="#cancel-visit-panel-@visitKey"
               hx-swap="outerHTML"

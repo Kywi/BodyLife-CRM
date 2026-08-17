@@ -346,6 +346,13 @@ public sealed class DailyReportSmokeTests : IClassFixture<ReceptionAppFixture>, 
                 "report Client profile");
             var correctionPanel = page.Locator(
                 $"#correct-payment-panel-{activePaymentId:N}[open]");
+            var requiredPaymentRow = correctionPanel.Locator(
+                "xpath=ancestor::*[@data-profile-history-row][1]");
+            Assert.True(await requiredPaymentRow.IsVisibleAsync());
+            Assert.Equal(
+                "true",
+                await page.Locator("[data-profile-history-tab='payments']")
+                    .GetAttributeAsync("aria-selected"));
             await ExpectVisibleAsync(
                 correctionPanel.GetByText("Original amount", new() { Exact = true }),
                 viewportName,

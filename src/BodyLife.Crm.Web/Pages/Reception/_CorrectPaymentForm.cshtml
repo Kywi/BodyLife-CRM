@@ -90,6 +90,7 @@
               asp-page-handler="CorrectPayment"
               data-busy-form
               data-correct-payment-form
+              data-profile-history-intent="payments"
               hx-post="@Url.Page("/Reception/Index", "CorrectPayment")"
               hx-target="#correct-payment-panel-@paymentKey"
               hx-swap="outerHTML"

@@ -92,8 +92,8 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 new LocatorFilterOptions
                 {
                     HasText = viewportName == "tablet"
-                        ? "Freeze tablet snapshot"
-                        : "Freeze phone snapshot",
+                        ? "Eight visits / 30 days"
+                        : "Eight visits / 30 days",
                 });
             Assert.Equal(1, await membershipOption.CountAsync());
             await membership.SelectOptionAsync(membershipId.ToString());
@@ -153,6 +153,7 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 profile.GetByText("Freeze added."),
                 viewportName,
                 "Freeze success message");
+            await OpenMembershipHistoryAsync(profile);
             var freezeRow = profile.Locator(
                 "[data-extension-source-kind='freeze'][data-extension-source-status='active']");
             await ExpectVisibleAsync(freezeRow, viewportName, "canonical Freeze history row");
@@ -188,7 +189,7 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 membershipStateBefore.EffectiveEndDate.AddDays(2),
                 membershipStateAfter.EffectiveEndDate);
             await ExpectVisibleAsync(
-                profile.Locator(".membership-summary-grid").GetByText(
+                profile.Locator(".profile-passport-membership-facts").GetByText(
                     DisplayDate(membershipStateAfter.EffectiveEndDate),
                     new() { Exact = true }),
                 viewportName,
@@ -309,6 +310,15 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
         Assert.True(response.Ok, $"htmx request returned HTTP {response.Status}.");
         Assert.True(response.Request.Headers.TryGetValue("hx-request", out var htmxRequest));
         Assert.Equal("true", htmxRequest);
+    }
+
+    private static async Task OpenMembershipHistoryAsync(ILocator profile)
+    {
+        var details = profile.Locator("[data-membership-extension-history]");
+        if (await details.GetAttributeAsync("open") is null)
+        {
+            await details.Locator(":scope > summary").ClickAsync();
+        }
     }
 
     private static async Task WaitForHtmxSettleAsync(IPage page)

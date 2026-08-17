@@ -41,6 +41,7 @@
               asp-page="/Reception/Index"
               asp-page-handler="CreatePayment"
               data-busy-form
+              data-profile-history-intent="payments"
               hx-post="@Url.Page("/Reception/Index", "CreatePayment")"
               hx-target="#add-payment-action-panel"
               hx-swap="outerHTML"

@@ -59,6 +59,7 @@
                   data-busy-form
                   data-issue-membership-form
                   data-can-submit="@Model.CanSubmit.ToString().ToLowerInvariant()"
+                  data-profile-history-intent="payments"
                   hx-post="@Url.Page("/Reception/Index", "IssueMembership")"
                   hx-target="#issue-membership-action-panel"
                   hx-swap="outerHTML"

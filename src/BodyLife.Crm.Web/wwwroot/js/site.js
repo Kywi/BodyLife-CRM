@@ -555,6 +555,83 @@ const syncProfileActionWorkspaces = (root) => {
   }
 };
 
+const profileHistoryState = new Map();
+
+const getProfileHistoryRoot = (root) => root instanceof Element
+  ? root.closest("#client-profile") ?? root.querySelector?.("#client-profile")
+  : document.querySelector("#client-profile");
+
+const selectProfileHistoryTab = (profile, tabName, moveFocus = false) => {
+  if (!(profile instanceof HTMLElement)) return;
+  const clientId = profile.dataset.clientProfileClientId;
+  const tabs = Array.from(profile.querySelectorAll("[data-profile-history-tab]"));
+  const panels = Array.from(profile.querySelectorAll("[data-profile-history-panel]"));
+  const selected = tabs.find((tab) => tab.dataset.profileHistoryTab === tabName) ?? tabs[0];
+  if (!(selected instanceof HTMLButtonElement)) return;
+  for (const tab of tabs) {
+    tab.setAttribute("aria-selected", String(tab === selected));
+    tab.tabIndex = tab === selected ? 0 : -1;
+  }
+  for (const panel of panels) {
+    panel.setAttribute("role", "tabpanel");
+    panel.setAttribute("aria-labelledby", `profile-${panel.dataset.profileHistoryPanel}-tab`);
+    panel.hidden = panel.dataset.profileHistoryPanel !== selected.dataset.profileHistoryTab;
+  }
+  if (clientId) profileHistoryState.set(clientId, selected.dataset.profileHistoryTab);
+  if (moveFocus) selected.focus();
+};
+
+const syncProfileHistory = (root) => {
+  const profile = getProfileHistoryRoot(root);
+  if (!(profile instanceof HTMLElement)) return;
+  const tablist = profile.querySelector("[data-profile-history-tabs]");
+  if (tablist instanceof HTMLElement) {
+    tablist.hidden = false;
+    tablist.setAttribute("role", "tablist");
+  }
+  const clientId = profile.dataset.clientProfileClientId;
+  const openPaymentCorrection = profile.querySelector(
+    "[data-profile-history-panel='payments'] [data-profile-history-disclosure][open]");
+  const initialTab = clientId
+    ? profileHistoryState.get(clientId) ?? (openPaymentCorrection ? "payments" : "visits")
+    : openPaymentCorrection ? "payments" : "visits";
+  selectProfileHistoryTab(profile, initialTab);
+  for (const disclosure of profile.querySelectorAll("[data-profile-history-disclosure]:not([data-profile-history-initialized])")) {
+    disclosure.setAttribute("data-profile-history-initialized", "true");
+    disclosure.addEventListener("toggle", () => {
+      if (!disclosure.open) return;
+      for (const other of profile.querySelectorAll("[data-profile-history-disclosure][open]")) {
+        if (other !== disclosure) other.open = false;
+      }
+    });
+  }
+  for (const panel of profile.querySelectorAll("[data-profile-history-panel]")) {
+    const rows = Array.from(panel.querySelectorAll("[data-profile-history-row]"));
+    const toggle = panel.querySelector("[data-profile-history-more]");
+    if (!(toggle instanceof HTMLButtonElement)) continue;
+    for (const row of rows) {
+      if (row.querySelector("[data-profile-history-disclosure][open]")) {
+        row.dataset.profileHistoryPinned = "true";
+      }
+    }
+    const apply = (expanded) => {
+      rows.forEach((row, index) => {
+        row.hidden = !expanded && index >= 5 && row.dataset.profileHistoryPinned !== "true";
+      });
+      toggle.textContent = expanded ? toggle.dataset.showLessLabel : toggle.dataset.showMoreLabel;
+      toggle.setAttribute("aria-expanded", String(expanded));
+    };
+    if (rows.length > 5) {
+      toggle.hidden = false;
+      if (!toggle.dataset.profileHistoryInitialized) {
+        toggle.dataset.profileHistoryInitialized = "true";
+        toggle.addEventListener("click", () => apply(toggle.getAttribute("aria-expanded") !== "true"));
+        apply(false);
+      }
+    }
+  }
+};
+
 document.addEventListener("click", (event) => {
   if (!(event.target instanceof Element)) {
     return;
@@ -569,6 +646,62 @@ document.addEventListener("click", (event) => {
   activateProfileAction(workspace, trigger.dataset.profileActionTarget);
 });
 
+document.addEventListener("click", (event) => {
+  if (!(event.target instanceof Element)) return;
+  const tab = event.target.closest("[data-profile-history-tab]");
+  const profile = tab?.closest("#client-profile");
+  if (tab instanceof HTMLButtonElement && profile instanceof HTMLElement) {
+    selectProfileHistoryTab(profile, tab.dataset.profileHistoryTab);
+  }
+
+  const passportAction = event.target.closest("[data-profile-passport-mark-visit]");
+  if (passportAction instanceof HTMLAnchorElement) {
+    const workspace = passportAction.closest("#client-profile")?.querySelector(profileActionWorkspaceSelector);
+    if (workspace instanceof HTMLElement) {
+      event.preventDefault();
+      activateProfileAction(workspace, "mark-visit-action-panel");
+      window.setTimeout(() => {
+        const panel = workspace.querySelector("#mark-visit-action-panel");
+        panel?.scrollIntoView({ block: "start", behavior: "auto" });
+        panel?.querySelector(
+          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])")?.focus();
+      }, 0);
+    }
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  const tab = event.target;
+  if (!(tab instanceof HTMLButtonElement) || !tab.matches("[data-profile-history-tab]")) return;
+  const profile = tab.closest("#client-profile");
+  if (!(profile instanceof HTMLElement)) return;
+  const tabs = Array.from(profile.querySelectorAll("[data-profile-history-tab]"));
+  const index = tabs.indexOf(tab);
+  let target = index;
+  if (event.key === "ArrowRight") target = (index + 1) % tabs.length;
+  else if (event.key === "ArrowLeft") target = (index - 1 + tabs.length) % tabs.length;
+  else if (event.key === "Home") target = 0;
+  else if (event.key === "End") target = tabs.length - 1;
+  else return;
+  event.preventDefault();
+  selectProfileHistoryTab(profile, tabs[target].dataset.profileHistoryTab, true);
+});
+
+document.addEventListener("htmx:beforeRequest", (event) => {
+  const requestElement = event.detail?.elt;
+  const form = requestElement instanceof HTMLFormElement
+    ? requestElement
+    : requestElement?.closest?.("form");
+  if (!(form instanceof HTMLFormElement)) return;
+  const profile = form.closest("#client-profile");
+  const clientId = profile?.dataset.clientProfileClientId;
+  if (!clientId) return;
+  const intent = form.dataset.profileHistoryIntent;
+  if (intent === "visits" || intent === "payments") {
+    profileHistoryState.set(clientId, intent);
+  }
+});
+
 document.addEventListener("htmx:load", (event) => {
   syncCardIntentForms(event.detail?.elt ?? document);
   syncMarkVisitForms(event.detail?.elt ?? document);
@@ -576,6 +709,7 @@ document.addEventListener("htmx:load", (event) => {
   syncCorrectPaymentForms(event.detail?.elt ?? document);
   syncNonWorkingDayCorrectionForms(event.detail?.elt ?? document);
   syncProfileActionWorkspaces(event.detail?.elt ?? document);
+  syncProfileHistory(event.detail?.elt ?? document);
 });
 
 syncCardIntentForms(document);
@@ -584,3 +718,4 @@ syncIssueMembershipForms(document);
 syncCorrectPaymentForms(document);
 syncNonWorkingDayCorrectionForms(document);
 syncProfileActionWorkspaces(document);
+syncProfileHistory(document);

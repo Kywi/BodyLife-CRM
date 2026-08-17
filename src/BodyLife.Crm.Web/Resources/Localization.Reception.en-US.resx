@@ -76,6 +76,10 @@
   <data name="Profile.ActionWorkspaceHint" xml:space="preserve"><value>Choose one action</value></data>
   <data name="Profile.Activity" xml:space="preserve"><value>Activity ledger</value></data>
   <data name="Profile.ActivityHint" xml:space="preserve"><value>Visits and payments</value></data>
+  <data name="Profile.MembershipPassport" xml:space="preserve"><value>Membership passport</value></data>
+  <data name="Profile.ClientDetails" xml:space="preserve"><value>Client details</value></data>
+  <data name="Profile.FullVisitHistory" xml:space="preserve"><value>Full visit history</value></data>
+  <data name="Profile.FullPaymentHistory" xml:space="preserve"><value>Full payment history</value></data>
   <data name="Profile.NegativeCoverage" xml:space="preserve"><value>Negative visit coverage</value></data>
   <data name="Profile.SaleCorrections" xml:space="preserve"><value>Issued sale corrections</value></data>
 <data name="Freeze.Add" xml:space="preserve"><value>Add freeze</value></data>
@@ -432,4 +436,6 @@
   <data name="IssuedSaleCorrection.Applying" xml:space="preserve"><value>Applying…</value></data>
   <data name="Operation.IssuedMembershipSaleReplaced" xml:space="preserve"><value>Issued membership sale replaced</value></data>
   <data name="Operation.IssuedMembershipSaleCanceled" xml:space="preserve"><value>Issued membership sale canceled</value></data>
+  <data name="List.ShowMore" xml:space="preserve"><value>Show all</value></data>
+  <data name="List.ShowLess" xml:space="preserve"><value>Show fewer</value></data>
 </root>

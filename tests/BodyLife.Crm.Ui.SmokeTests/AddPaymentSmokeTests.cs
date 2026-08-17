@@ -114,10 +114,10 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
             if (membershipId is { } selectedMembershipId)
             {
                 var membershipOption = membership.Locator("option").Filter(
-                    new LocatorFilterOptions { HasText = "Payment tablet snapshot" });
+                    new LocatorFilterOptions { HasText = "Six visits / 30 days" });
                 Assert.Equal(1, await membershipOption.CountAsync());
                 Assert.Contains(
-                    "Payment tablet snapshot",
+                    "Six visits / 30 days",
                     await membershipOption.InnerTextAsync(),
                     StringComparison.Ordinal);
                 await membership.SelectOptionAsync(selectedMembershipId.ToString());
@@ -198,10 +198,14 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
                 profile.GetByText("Payment added."),
                 viewportName,
                 "Payment success message");
+            Assert.Equal(
+                "true",
+                await profile.Locator("[data-profile-history-tab='payments']")
+                    .GetAttributeAsync("aria-selected"));
             var paymentRow = profile.Locator("[data-payment-status='active']").First;
             await ExpectVisibleAsync(paymentRow, viewportName, "canonical Payment row");
             await ExpectVisibleAsync(
-                paymentRow.Locator(".recent-payment-row-header h4").GetByText(
+                paymentRow.Locator(".recent-payment-row-header strong").GetByText(
                     $"{amount.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo(ReceptionAppFixture.WorkflowCulture))} UAH",
                     new() { Exact = true }),
                 viewportName,
@@ -212,6 +216,9 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
                     new() { Exact = true }),
                 viewportName,
                 "canonical Payment context");
+            var paymentDisclosure = paymentRow.Locator(
+                ":scope > [data-profile-history-disclosure]");
+            await paymentDisclosure.Locator(":scope > summary").ClickAsync();
             await ExpectVisibleAsync(
                 paymentRow.Locator(".recent-payment-comment").GetByText(
                     comment,
@@ -223,7 +230,7 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
             {
                 await ExpectVisibleAsync(
                     paymentRow.Locator(".recent-payment-meta").GetByText(
-                        "Payment tablet snapshot",
+                        "Six visits / 30 days",
                         new() { Exact = true }),
                     viewportName,
                     "linked Membership snapshot");

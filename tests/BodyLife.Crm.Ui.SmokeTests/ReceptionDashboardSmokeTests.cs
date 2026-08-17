@@ -220,13 +220,49 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "BL-1001",
                 await page.GetByRole(AriaRole.Searchbox, new() { Name = "Client search" }).InputValueAsync());
             await ExpectVisibleAsync(clientProfile.GetByRole(AriaRole.Heading, new() { Name = "Kovalenko Olena" }), viewportName, "exact-card profile");
+            if (viewportName == "tablet")
+            {
+                await AssertRouteHeadingBelowHeaderAsync(page);
+            }
             Assert.Equal(0, await searchResults.CountAsync());
             Assert.Equal(1, await canvas.Locator("#client-profile").CountAsync());
+            var passport = clientProfile.Locator("[data-profile-passport]");
+            Assert.Equal(1, await passport.CountAsync());
+            Assert.Equal(1, await passport.Locator(".profile-passport-membership").CountAsync());
+            Assert.Equal(0, await clientProfile.Locator(".profile-identity-facts, .membership-readiness-strip").CountAsync());
+            var visitsTab = clientProfile.Locator("[data-profile-history-tab='visits']");
+            var paymentsTab = clientProfile.Locator("[data-profile-history-tab='payments']");
+            var visitsPanel = clientProfile.Locator("[data-profile-history-panel='visits']");
+            var paymentsPanel = clientProfile.Locator("[data-profile-history-panel='payments']");
+            Assert.Equal("true", await visitsTab.GetAttributeAsync("aria-selected"));
+            Assert.Equal("false", await paymentsTab.GetAttributeAsync("aria-selected"));
+            Assert.Equal("0", await visitsTab.GetAttributeAsync("tabindex"));
+            Assert.Equal("-1", await paymentsTab.GetAttributeAsync("tabindex"));
+            Assert.True(await visitsPanel.IsVisibleAsync());
+            Assert.True(await paymentsPanel.IsHiddenAsync());
+            await visitsTab.FocusAsync();
+            await visitsTab.PressAsync("ArrowRight");
+            Assert.Equal("true", await paymentsTab.GetAttributeAsync("aria-selected"));
+            Assert.True(await paymentsPanel.IsVisibleAsync());
+            await paymentsTab.PressAsync("Home");
+            Assert.Equal("true", await visitsTab.GetAttributeAsync("aria-selected"));
+            Assert.True(await visitsPanel.IsVisibleAsync());
+            var passportDetails = passport.Locator(".profile-passport-details");
+            Assert.False(await passportDetails.EvaluateAsync<bool>("element => element.open"));
+            await passportDetails.Locator(":scope > summary").ClickAsync();
             await ExpectVisibleAsync(
-                clientProfile.Locator(".client-profile-meta")
+                passportDetails.Locator(".client-profile-meta")
                     .GetByText("BL-1001", new() { Exact = true }),
                 viewportName,
                 "exact-card profile number");
+            if (viewportName != "phone")
+            {
+                Assert.Equal(
+                    "sticky",
+                    await passport.EvaluateAsync<string>(
+                        "element => getComputedStyle(element).position"));
+            }
+            await passportDetails.Locator(":scope > summary").ClickAsync();
             await ExpectVisibleAsync(clientProfile.GetByText("No current membership", new() { Exact = true }), viewportName, "membership placeholder");
             Assert.Equal(1, await clientProfile.Locator(".profile-action-workspace").CountAsync());
             Assert.Equal(3, await clientProfile.Locator(".profile-action-dock > .profile-action-panel").CountAsync());
@@ -272,6 +308,34 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "rgb(32, 38, 43)",
                 await clientProfile.Locator("[data-mark-visit-submit]")
                     .EvaluateAsync<string>("element => getComputedStyle(element).backgroundColor"));
+            await AssertMinimumTouchTargetAsync(
+                passport.Locator("[data-profile-passport-mark-visit]"),
+                viewportName,
+                "passport Mark Visit action");
+            var passportGeometry = await clientProfile.EvaluateAsync<string>(
+                """
+                profile => {
+                    const passport = profile.querySelector('[data-profile-passport]');
+                    const workflow = profile.querySelector('.profile-workflow-column');
+                    const passportBox = passport.getBoundingClientRect();
+                    const workflowBox = workflow.getBoundingClientRect();
+                    return JSON.stringify({
+                        position: getComputedStyle(passport).position,
+                        passportRight: passportBox.left > workflowBox.left,
+                        passportFirst: passportBox.top <= workflowBox.top + 1,
+                    });
+                }
+                """);
+            if (viewportName == "phone")
+            {
+                Assert.Contains("\"position\":\"static\"", passportGeometry, StringComparison.Ordinal);
+                Assert.Contains("\"passportFirst\":true", passportGeometry, StringComparison.Ordinal);
+            }
+            else
+            {
+                Assert.Contains("\"position\":\"sticky\"", passportGeometry, StringComparison.Ordinal);
+                Assert.Contains("\"passportRight\":true", passportGeometry, StringComparison.Ordinal);
+            }
             var profileRegions = await clientProfile.EvaluateAsync<string[]>(
                 """
                 profile => {
@@ -288,28 +352,26 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                     };
                     return [
                         style('#client-profile'),
-                        style('.profile-identity-facts'),
-                        style('.client-comment'),
-                        style('.membership-panel'),
+                        style('.profile-passport'),
+                        style('.profile-passport-membership'),
                         style('.profile-action-workspace'),
                         style('.profile-activity-ledger'),
                     ].flatMap(region => [region.background, region.rail, region.railColor]);
                 }
                 """);
-            Assert.Equal(18, profileRegions.Length);
+            Assert.Equal(15, profileRegions.Length);
             Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[0]);
             Assert.Equal("4px", profileRegions[1]);
             Assert.Equal("rgb(20, 109, 168)", profileRegions[2]);
-            for (var regionIndex = 1; regionIndex < 6; regionIndex++)
+            for (var regionIndex = 1; regionIndex < 5; regionIndex++)
             {
-                Assert.NotEqual("rgba(0, 0, 0, 0)", profileRegions[regionIndex * 3]);
                 Assert.Equal("0px", profileRegions[(regionIndex * 3) + 1]);
             }
-            Assert.NotEqual(profileRegions[3], profileRegions[6]);
-            Assert.NotEqual(profileRegions[6], profileRegions[9]);
-            Assert.NotEqual(profileRegions[9], profileRegions[12]);
-            Assert.NotEqual(profileRegions[12], profileRegions[15]);
             await AssertFitsViewportAsync(page, viewportName, "exact-card profile");
+            if (viewportName == "tablet")
+            {
+                await AlignRouteHeadingBelowHeaderAsync(page);
+            }
             await CaptureViewportVisualAsync(page, viewportName, "exact-profile");
 
             await SubmitHtmxSearchAsync(page, "BL-PAYMENT-HISTORY");
@@ -320,6 +382,8 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                     new() { Name = "Payment History" }),
                 viewportName,
                 "payment-history profile");
+            await clientProfile.Locator("[data-profile-history-tab='payments']").ClickAsync();
+            Assert.Equal("true", await clientProfile.Locator("[data-profile-history-tab='payments']").GetAttributeAsync("aria-selected"));
             var recentPayments = clientProfile.GetByRole(
                 AriaRole.Region,
                 new() { Name = "Recent payments" });
@@ -346,6 +410,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                     new() { Exact = true }),
                 viewportName,
                 "trial Payment context");
+            await trialPayment.Locator("[data-profile-history-disclosure] > summary").ClickAsync();
             await ExpectVisibleAsync(
                 trialPayment.Locator(".recent-payment-comment").GetByText(
                     "Trial cash entry",
@@ -359,6 +424,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 canceledPayment.GetByText("250.00 UAH", new() { Exact = true }),
                 viewportName,
                 "canceled Payment amount");
+            await canceledPayment.Locator("[data-profile-history-disclosure] > summary").ClickAsync();
             await ExpectVisibleAsync(
                 canceledPayment.GetByText("Duplicate cash entry", new() { Exact = true }),
                 viewportName,
@@ -370,9 +436,10 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             var replacementPayment = recentPayments.Locator(".recent-payment-row")
                 .Filter(new LocatorFilterOptions { HasText = "900.00 UAH" });
+            await replacementPayment.Locator("[data-profile-history-disclosure] > summary").ClickAsync();
             await ExpectVisibleAsync(
                 replacementPayment.Locator(".recent-payment-meta").GetByText(
-                    "Payment history snapshot",
+                    "Eight visits / 30 days",
                     new() { Exact = true }),
                 viewportName,
                 "Payment Membership snapshot");
@@ -397,6 +464,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
 
             var originalPayment = recentPayments.Locator(
                 "[data-payment-status='replaced']");
+            await originalPayment.Locator("[data-profile-history-disclosure] > summary").ClickAsync();
             await ExpectVisibleAsync(
                 originalPayment.GetByText("1,000.00 UAH", new() { Exact = true }),
                 viewportName,
@@ -422,19 +490,17 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 """
                 profile => {
                     const ledger = profile.querySelector('.profile-activity-ledger');
-                    const visits = profile.querySelector('.recent-visits');
-                    const payments = profile.querySelector('.recent-payments');
+                    const tablist = profile.querySelector('[data-profile-history-tabs]');
+                    const panel = profile.querySelector('[data-profile-history-panel="payments"]');
                     const row = profile.querySelector('.recent-payment-row');
                     const ledgerStyle = getComputedStyle(ledger);
                     const rowStyle = getComputedStyle(row);
-                    const visitBox = visits?.getBoundingClientRect();
-                    const paymentBox = payments?.getBoundingClientRect();
+                    const tabBox = tablist.getBoundingClientRect();
+                    const panelBox = panel.getBoundingClientRect();
                     return JSON.stringify({
                         ledgerColumns: ledgerStyle.gridTemplateColumns,
                         ledgerGap: ledgerStyle.gap,
-                        sideBySide: Boolean(visitBox && paymentBox && Math.abs(visitBox.left - paymentBox.left) > 1 && Math.abs(visitBox.top - paymentBox.top) < 1),
-                        stacked: Boolean(visitBox && paymentBox && Math.abs(visitBox.top - paymentBox.top) > 1),
-                        stretched: Boolean(visitBox && paymentBox && Math.abs(visitBox.height - paymentBox.height) < 1),
+                        aligned: Math.abs(tabBox.left - panelBox.left) < 1 && Math.abs(tabBox.width - panelBox.width) < 1,
                         rowRadius: rowStyle.borderTopLeftRadius,
                         rowBorder: rowStyle.borderTopWidth,
                         rowShadow: rowStyle.boxShadow,
@@ -445,15 +511,8 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             Assert.Contains("\"rowShadow\":\"none\"", ledgerGeometry, StringComparison.Ordinal);
             Assert.DoesNotContain("\"rowRadius\":\"0px\"", ledgerGeometry, StringComparison.Ordinal);
             Assert.DoesNotContain("\"ledgerGap\":\"0px\"", ledgerGeometry, StringComparison.Ordinal);
-            if (viewportName == "desktop")
-            {
-                Assert.Contains("\"sideBySide\":true", ledgerGeometry, StringComparison.Ordinal);
-                Assert.Contains("\"stretched\":false", ledgerGeometry, StringComparison.Ordinal);
-            }
-            else
-            {
-                Assert.Contains("\"stacked\":true", ledgerGeometry, StringComparison.Ordinal);
-            }
+            Assert.Contains("\"aligned\":true", ledgerGeometry, StringComparison.Ordinal);
+            Assert.Equal(1, await recentPayments.Locator("[data-profile-history-disclosure][open]").CountAsync());
             await AssertFitsViewportAsync(page, viewportName, "Payment history profile");
             await CaptureVisualAsync(page, viewportName, "payment-history");
 
@@ -687,6 +746,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "extension-history client profile");
             var history = profile.Locator("[data-membership-extension-history]");
             await ExpectVisibleAsync(history, viewportName, "Membership extension history");
+            await OpenMembershipHistoryAsync(profile);
             await ExpectVisibleAsync(
                 history.GetByRole(
                     AriaRole.Heading,
@@ -1003,6 +1063,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await SubmitHtmxSearchAsync(page, cardNumber);
 
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            await OpenClientDetailsAsync(profile);
             var actionPanel = profile.Locator("#profile-action-panel");
             await ExpectVisibleAsync(actionPanel.Locator("summary"), viewportName, "edit-client action");
             await actionPanel.Locator("summary").ClickAsync();
@@ -1092,6 +1153,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await SubmitHtmxSearchAsync(page, "BL-CARD-OLD");
 
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            await OpenClientDetailsAsync(profile);
             var cardPanel = profile.Locator("#card-action-panel");
             await ExpectVisibleAsync(cardPanel.Locator("summary"), "tablet", "manage-card action");
             await cardPanel.Locator("summary").ClickAsync();
@@ -1143,6 +1205,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 profile.GetByRole(AriaRole.Heading, new() { Name = "Card Change" }),
                 "tablet",
                 "new exact-card profile");
+            await OpenClientDetailsAsync(profile);
             await cardPanel.Locator("summary").ClickAsync();
             await cardPanel.GetByLabel("Reason", new() { Exact = true })
                 .FillAsync("Card returned");
@@ -1213,6 +1276,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                     new() { Name = "Open Cardless Phone", Exact = true }));
 
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            await OpenClientDetailsAsync(profile);
             var cardPanel = profile.Locator("#card-action-panel");
             await cardPanel.Locator("summary").ClickAsync();
             Assert.Equal(0, await cardPanel.GetByLabel("Reason", new() { Exact = true }).CountAsync());
@@ -1282,6 +1346,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await SubmitHtmxSearchAsync(page, "BL-CARD-STALE");
 
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            await OpenClientDetailsAsync(profile);
             var cardPanel = profile.Locator("#card-action-panel");
             await cardPanel.Locator("summary").ClickAsync();
             await cardPanel.GetByLabel("New card number", new() { Exact = true })
@@ -1364,6 +1429,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await SubmitHtmxSearchAsync(page, "BL-EDIT-STALE");
 
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
+            await OpenClientDetailsAsync(profile);
             var actionPanel = profile.Locator("#profile-action-panel");
             await actionPanel.Locator("summary").ClickAsync();
             await _app.AdvanceClientUpdatedAtAsync(clientId);
@@ -1389,7 +1455,8 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 .FillAsync("Saved after canonical refresh.");
             await SubmitHtmxUpdateAsync(page);
 
-            var canonicalNote = profile.Locator(".client-comment p");
+            await OpenClientDetailsAsync(profile);
+            var canonicalNote = profile.Locator(".client-comment");
             await ExpectVisibleAsync(canonicalNote, "tablet", "canonical retry result");
             Assert.Equal("Saved after canonical refresh.", await canonicalNote.TextContentAsync());
             Assert.Equal(1L, await _app.CountClientUpdateAuditEntriesAsync(clientId));
@@ -1438,6 +1505,15 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "full-page exact-card profile");
             var profile = page.GetByRole(AriaRole.Region, new() { Name = "Client profile" });
             Assert.True(await profile.Locator("[data-profile-action-switcher]").IsHiddenAsync());
+            Assert.True(await profile.Locator("[data-profile-history-tabs]").IsHiddenAsync());
+            await ExpectVisibleAsync(
+                profile.GetByRole(AriaRole.Region, new() { Name = "Recent visits" }),
+                "tablet",
+                "no-JavaScript Visit history");
+            await ExpectVisibleAsync(
+                profile.GetByRole(AriaRole.Region, new() { Name = "Recent payments" }),
+                "tablet",
+                "no-JavaScript Payment history");
             var markVisitPanel = profile.Locator("#mark-visit-action-panel");
             Assert.True(await markVisitPanel.EvaluateAsync<bool>("element => element.open"));
             await ExpectVisibleAsync(markVisitPanel.Locator("summary"), "tablet", "no-JavaScript Mark Visit summary");
@@ -1556,6 +1632,53 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
         await profileLink.ClickAsync();
         AssertHtmxResponse(await responseTask);
         await WaitForHtmxSettleAsync(page);
+    }
+
+    private static async Task AssertRouteHeadingBelowHeaderAsync(IPage page)
+    {
+        var routeHeadingBounds = await page.Locator(".reception-route-heading")
+            .BoundingBoxAsync();
+        var stickyHeaderBounds = await page.Locator(".app-global-header")
+            .BoundingBoxAsync();
+        Assert.NotNull(routeHeadingBounds);
+        Assert.NotNull(stickyHeaderBounds);
+        Assert.True(
+            routeHeadingBounds.Y >= stickyHeaderBounds.Y + stickyHeaderBounds.Height - 1,
+            $"Tablet Clients heading should remain below the sticky header after a Profile swap "
+            + $"(heading top {routeHeadingBounds.Y:F1}px, header bottom "
+            + $"{stickyHeaderBounds.Y + stickyHeaderBounds.Height:F1}px).");
+    }
+
+    private static Task AlignRouteHeadingBelowHeaderAsync(IPage page)
+    {
+        return page.EvaluateAsync(
+            """
+            () => {
+                const heading = document.querySelector('.reception-route-heading');
+                const header = document.querySelector('.app-global-header');
+                if (!heading || !header) return;
+                const documentTop = heading.getBoundingClientRect().top + window.scrollY;
+                window.scrollTo(0, Math.max(0, documentTop - header.getBoundingClientRect().height - 16));
+            }
+            """);
+    }
+
+    private static async Task OpenClientDetailsAsync(ILocator profile)
+    {
+        var details = profile.Locator(".profile-passport-details");
+        if (await details.GetAttributeAsync("open") is null)
+        {
+            await details.Locator(":scope > summary").ClickAsync();
+        }
+    }
+
+    private static async Task OpenMembershipHistoryAsync(ILocator profile)
+    {
+        var details = profile.Locator("[data-membership-extension-history]");
+        if (await details.GetAttributeAsync("open") is null)
+        {
+            await details.Locator(":scope > summary").ClickAsync();
+        }
     }
 
     private static async Task SubmitHtmxUpdateAsync(IPage page)
