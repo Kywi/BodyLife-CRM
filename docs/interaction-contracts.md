@@ -184,8 +184,8 @@ Common errors:
 ### IssueMembership
 
 - Purpose: видати конкретний Membership клієнту з immutable ordinary MembershipType snapshot and mandatory exact cash sale Payment in the same workflow.
-- Input: client id, active ordinary membership type id, start date, optional comment, explicit negative handling decision, common command envelope; payment amount is not staff input. A `paper_fallback` sale also supplies a first-class batch row reference.
-- Validation: client exists; type is active `ordinary` with positive price; snapshot values are copied at issue time; start date is valid; base end date follows inclusive rule; created cash Payment equals snapshot price; if client has negative balance, command carries deliberate leave-visible or ADR-018 oldest-first coverage decision. A no-payment historical declaration uses the separate opening-state command, not `IssueMembership`.
+- Input: client id, active ordinary membership type id, start date, signed `PreviewIssueMembership` token, optional comment and common command envelope; payment amount is not staff input. A `paper_fallback` sale also supplies a first-class batch row reference.
+- Validation: client exists; type is active `ordinary` with positive price; snapshot values are copied at issue time; start date is valid; base end date follows inclusive rule; created cash Payment equals snapshot price. Under ADR-020, concrete negative Visits are automatically covered oldest-first up to the new snapshot limit; a zero-limit type is ineligible while concrete negatives exist. Unknown opening/backfill remainder is never synthesized and remains visible. The signed preview token is revalidated under locks as `stale_state`. A no-payment historical declaration uses the separate opening-state command, not `IssueMembership`.
 - Permissions: Admin + Owner.
 - Transaction boundary: one ACID transaction creates a sale-mode
   `issued_memberships` row, its exact sale Payment, any explicit coverage
@@ -194,8 +194,8 @@ Common errors:
   affected Visits when coverage is involved.
 - Affected modules: Clients, MembershipTypes, Memberships, Payments, Reports, Audit, Users/Roles.
 - Recalculation: synchronous recalculation for the new membership and any source/covering membership involved in negative closure. Reports read updated canonical facts after commit.
-- Audit event: `membership.issued`; plus `payment.created` and/or `membership_negative_closure.created` if those source facts are part of the workflow. Include snapshot, start date, payment summary, negative decision, actor/session.
-- Possible errors: `permission_denied`, `not_found`, `membership_type_inactive`, `validation_failed`, `membership_not_eligible`, `negative_decision_required`, `duplicate_submission`, `recalculation_failed`, `concurrency_conflict`.
+- Audit event: `membership.issued`; plus `payment.created` and `membership_negative_closure.created` when automatic coverage allocates Visits. Include snapshot, start date, payment summary, automatic policy, locked covered Visit ids/count, forced start and remainder, actor/session.
+- Possible errors: `permission_denied`, `not_found`, `membership_type_inactive`, `validation_failed`, `membership_not_eligible`, `stale_state`, `duplicate_submission`, `recalculation_failed`, `concurrency_conflict`.
 - UI result: client profile reopens with new membership state, exact payment status and history entries. If negative balance remains, UI keeps negative warning visible.
 
 ### CreateMembershipOpeningState
@@ -399,14 +399,10 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 ### PreviewIssueMembership
 
-- Input: client id, ordinary membership type id, proposed start date, optional negative handling choice and proposed coverage count.
-- Output shape: issue snapshot, read-only exact payment, base/effective end,
-  expected initial state, existing/open negative count, oldest uncovered Visit
-  date, selected coverage count/remainder, possibly-expired warning, all
-  available methods without recommendation/preselection, permission result and
-  dependency fingerprint.
+- Input: client id, ordinary membership type id and proposed start date.
+- Output shape: issue snapshot, read-only exact payment, base/effective end, expected initial state, deterministic automatic oldest-first covered Visit count/set, forced start when applicable, concrete and unknown remainder, possibly-expired warning, `CanProceedToIssue`, signed opaque token and permission result. It exposes no method or manual quantity.
 - Source modules: Clients, MembershipTypes, Memberships, Users/Roles.
-- Consistency expectations: preview is advisory; `IssueMembership` revalidates all rules in transaction.
+- Consistency expectations: preview is advisory; its token binds client/type version/proposed date/negative state/full candidate order and `IssueMembership` locks, recalculates and revalidates it in one transaction.
 
 ### PreviewNonWorkingDayImpact
 
@@ -533,13 +529,8 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 ### New-Membership negative coverage
 
-- This is an `IssueMembership` mode, not a standalone Payment. Input adds a
-  chosen coverage count; exact Visit ids come from the locked oldest-open set.
-- Validation requires
-  `1 <= coverage_count <= new Membership visits_limit_snapshot`; the command
-  cannot make the new Membership negative at issue. If open negative Visits
-  exceed the limit, the oldest limit-sized set is covered and the remainder
-  stays visible.
+- ADR-020 makes this automatic within `IssueMembership`, not a staff-selected mode or standalone Payment. Exact Visit ids are the locked oldest-open set; `coverage_count = min(open_concrete_negative_visits, visits_limit_snapshot)`.
+- If open negatives exceed the limit, the oldest limit-sized set is covered and the concrete remainder stays visible. A zero-limit type is ineligible if concrete negatives exist; unknown-only historical balance does not block ordinary issue and stays visible.
 - The command forces new `start_date` to the business date of the oldest covered
   Visit and atomically creates the new Membership, exact sale Payment and
   allocations. Preview shows covered/remainder counts, new remaining visits,

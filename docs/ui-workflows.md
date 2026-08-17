@@ -106,7 +106,7 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 - Screen/state: warnings appear in search results, client profile, membership panel and command forms; warnings are server-provided, not locally invented.
 - Primary actions: read warning; open related drill-down when available; acknowledge blocking warning; adjust the action; cancel the action; refresh state.
 - Warnings: duplicate phone/name; zero remaining visits; negative balance; first negative visit date; expired membership; low remaining; ending soon; inactive membership type in issue flow; overlapping non-working/freeze extension explanation; backdated/paper fallback entry labels; changed-after-close marker; permission restriction.
-- Confirmations: acknowledgement is required when command contracts require `duplicate_warning_not_acknowledged`, `warning_acknowledgement_required` or explicit negative handling decision; destructive/correction actions require confirmation plus reason/comment.
+- Confirmations: acknowledgement is required when command contracts require `duplicate_warning_not_acknowledged` or `warning_acknowledgement_required`; destructive/correction actions require confirmation plus reason/comment. ADR-020 membership issue coverage is read-only automatic preview, not a choice.
 - Loading/duplicate-submit protection: acknowledgement is tied to the current command state and should become invalid when the underlying state changes; submit remains disabled while command is in flight.
 - Success state: acknowledged command succeeds only after server revalidation; any warnings that still apply remain visible after the canonical reread.
 - Failure state: missing acknowledgement returns a clear blocking error; changed warning state returns stale/conflict and asks the user to review the updated warnings.
@@ -129,12 +129,12 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 
 - User goal: issue a concrete ordinary membership to a client with its mandatory exact cash sale Payment in the same workflow.
 - Screen/state: profile quick action backed by `GetMembershipTypesForIssue` and `PreviewIssueMembership`; ordinary issue selector shows active membership types only.
-- Primary actions: choose active ordinary membership type; choose start date; review snapshot preview, read-only exact price, base end date and expected initial state; choose explicit negative balance handling when the client already has negative visits; submit `IssueMembership`.
-- Warnings: selected type became inactive; client has negative balance; start date invalid; new Membership coverage can already be expired when its required start is old; preview is advisory and command revalidates in transaction.
-- Confirmations: explicit negative handling decision is required when negative balance exists; a paper-fallback sale requires its batch row and explanation; manual opening-state backfill is a separate form and does not create a fake Payment; no hidden closure of negative visits by payment or new membership.
+- Primary actions: choose active ordinary membership type; choose start date; review snapshot preview, read-only exact price, base end date and expected initial state; submit `IssueMembership`. With JavaScript unavailable, native submit first renders the same signed preview, then a second submit issues it.
+- Warnings: selected type became inactive; compact red current-negative balance; flat blue automatic oldest-first coverage result; clearly labeled red concrete remainder or amber unknown historical remainder; zero-capacity type is blocked when concrete negatives exist; forced backdated Membership can already be expired; preview is advisory and command revalidates its signed token in transaction.
+- Confirmations: Reception never chooses a coverage method or quantity. A paper-fallback sale requires its batch row and explanation; manual opening-state backfill is a separate form and does not create a fake Payment. One-off negative closure remains a separate explicit workflow.
 - Loading/duplicate-submit protection: issue form uses idempotency key; submit is disabled/busy; preview token/state does not replace command validation; after success UI rereads profile and membership state.
 - Success state: profile opens with new membership state, copied issue-time snapshot, warnings, exact payment status and history/audit entries; if negative balance remains, the negative warning remains visible.
-- Failure state: `membership_type_inactive`, `negative_decision_required`, `membership_not_eligible`, `duplicate_submission`, `validation_failed`, `recalculation_failed` or conflict errors keep the form state and show the required correction.
+- Failure state: `membership_type_inactive`, `membership_not_eligible`, `stale_state`, `duplicate_submission`, `validation_failed`, `recalculation_failed` or conflict errors keep the form state and show the required correction.
 
 ## 12. Workflow: add payment flow
 

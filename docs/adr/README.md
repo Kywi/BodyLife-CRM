@@ -2,7 +2,7 @@
 
 Дата початкового пакета: 2026-07-07
 
-Оновлено: 2026-08-17 (ADR-019)
+Оновлено: 2026-08-17 (ADR-020)
 
 Цей пакет фіксує ADR-кандидати з `docs/architecture-research-options.md` і `docs/adr/adr-backlog.md` як прийняті архітектурні рішення для першої web-версії BodyLife CRM.
 
@@ -39,6 +39,7 @@
 | [ADR-017](017-business-time-zone-and-ui-localization.md) | Canonical instants лишаються UTC, а business dates, date filters і локалізований UI використовують фіксований календар `Europe/Kyiv`. |
 | [ADR-018](018-membership-sales-negative-coverage-and-replacement.md) | Ordinary sale завжди має exact-price cash Payment; one-off/new-membership coverage, sale replacement/cancellation і paper-sheet metadata мають explicit audited facts. |
 | [ADR-019](019-single-visit-sales-and-reception-defaults.md) | One-off/trial є linked exact-price Visit + Payment sales з Owner defaults, protected trial Client і aggregate cancellation. |
+| [ADR-020](020-automatic-negative-visit-coverage-on-membership-issue.md) | Ordinary IssueMembership автоматично покриває найдавніші concrete negative Visits у межах visits limit; UI показує лише server preview. |
 
 ## Джерела
 
@@ -60,6 +61,7 @@
 8. Зібрати reception vertical slice: ADR-003, ADR-008.
 9. Реалізувати exact sale/negative coverage/replacement contracts: ADR-018.
 10. Реалізувати linked one-off/trial sales і reception defaults: ADR-019.
-11. Підтвердити consistency reports після visits/payments/corrections: ADR-007.
-12. Закрити production readiness: ADR-009, ADR-010.
-13. Тримати майбутній client self-service як guardrail, а не scope v1: ADR-013.
+11. Автоматизувати oldest-first new-Membership coverage без UI-рішення: ADR-020.
+12. Підтвердити consistency reports після visits/payments/corrections: ADR-007.
+13. Закрити production readiness: ADR-009, ADR-010.
+14. Тримати майбутній client self-service як guardrail, а не scope v1: ADR-013.

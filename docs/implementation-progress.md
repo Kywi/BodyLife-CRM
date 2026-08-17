@@ -15741,3 +15741,75 @@ Stop point:
 - Do not merge one-off closure into ordinary Issue Membership or reinterpret
   the unknown opening remainder as Visit facts. Milestone 10.6 remains planned
   and separate from this Wave 3 visual refinement.
+
+## Step 248 - Automated concrete negative coverage during Membership issue
+
+Status: ADR-020 implementation completed and validated on 2026-08-17 after the
+product owner rejected the manual negative-handling submenu in ordinary Issue
+Membership. This step does not change the lifecycle-active Membership
+cardinality rule and does not merge the separate one-off closure aggregate into
+Membership issue.
+
+Completed:
+
+- Accepted ADR-020. Ordinary Membership issue now allocates capacity to current
+  concrete negative Visits automatically in canonical oldest-first order. The
+  covered count is the smaller of the locked concrete Visit count and the
+  issued type's immutable visit-limit snapshot; a covered issue uses the oldest
+  selected Visit's Kyiv business date as its forced start date.
+- Removed the operator decision, manual quantity and technical explicit-closure
+  choice from the Issue form. The preview shows one red current-balance plaque,
+  a blue automatic-coverage result when concrete Visits will be covered, a red
+  residual only when capacity is insufficient and an amber residual for
+  unknown opening/backfill balance.
+- Preserved the separate one-off exact-Payment workflow. Unknown opening balance
+  is never synthesized into Visit facts and is never consumed by automatic
+  allocation. A zero-capacity ordinary type is ineligible while concrete debt
+  exists; unknown-only state remains issuable.
+- Added a signed preview token binding the Client, MembershipType version,
+  proposed date, current concrete/unknown balances, full ordered candidate set
+  and automatic covered count. Submit locks and rereads canonical state before
+  validating the token, so a changed candidate set returns `stale_state`
+  instead of silently reallocating.
+- Kept issue, exact Membership-sale Payment, allocation facts, recalculation and
+  audit in one transaction. Current audit explanations present the automatic
+  policy and covered/residual facts while retaining compatibility with legacy
+  manual-decision audit entries and unknown-only records with no first Visit
+  date.
+- Added a native no-JavaScript two-step fallback: Review issuance produces the
+  signed preview without mutations; the second submit issues and canonically
+  rereads the Client profile. The htmx workflow retains its busy, duplicate-
+  submit, idempotency and canonical-reread contracts.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors. Domain automatic-
+  issue contracts passed 13/13, HMAC token security passed 3/3, PostgreSQL
+  preview coverage passed 9/9 and Web audit explanation coverage passed
+  200/200.
+- The focused Issue Membership and negative-coverage Playwright set passed 6/6.
+  After replacing the last legacy audit-label expectation, the complete
+  PostgreSQL-backed authenticated UI suite passed 149/149 with zero skips at
+  its tablet/phone/desktop viewports.
+- PostgreSQL command tests reached their automatic allocation, stale-token,
+  correction and paper-fallback assertions. The remaining unavailable checks
+  are deliberate corruption/teardown helpers requiring privileges the local
+  socket user does not have (`session_replication_role`/backend termination),
+  not product assertion failures.
+- Modified RESX XML and unique keys, JavaScript syntax and `git diff --check`
+  passed. Independent correctness review found no remaining P0-P2 issue after
+  token-order, zero-capacity, audit and no-JavaScript corrections.
+- `graphify update .` was attempted and returned `[Errno 95] Operation not
+  supported`. The semantic extraction detected 168 changed code files, 25
+  changed documents and one deletion, then stopped because no semantic LLM
+  backend/key is configured. Neither attempt produced usable graph evidence,
+  so the existing graph is not claimed as current validation.
+
+Stop point:
+
+- Restart the single local review instance on `http://localhost:41881` and
+  present normal issue, partial/full automatic coverage, zero-capacity and
+  unknown-only preview states for explicit product-owner review.
+- Keep any one-lifecycle-active-Membership follow-up and ADR-021/Milestone 10.6
+  documentation as separate coordinated work; this step intentionally changes
+  neither scope.

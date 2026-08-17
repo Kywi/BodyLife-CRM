@@ -267,7 +267,7 @@ Permissions summary:
 - Remaining visits може бути negative.
 - Negative balance є membership state, а не separate financial debt ledger у v1.
 - First negative visit date рахується як дата першого counted Visit, після якого running remaining visits став меншим за 0.
-- Negative closure/coverage є explicit and oldest-uncovered-first. One-off closure stores type/line snapshots and exact Payment; new ordinary Membership starts at the oldest covered Visit business date and uses allocations. Payment alone never hides negative state.
+- Negative closure/coverage є explicit and oldest-uncovered-first. Under ADR-020, issuing a new ordinary Membership automatically allocates its available visits to the oldest concrete negative Visits and forces its start to the oldest covered Visit business date; there is no Reception method/quantity choice. If concrete Visits exceed capacity, the remainder stays visible; zero-capacity ordinary type is ineligible while concrete negatives exist. Unknown opening/backfill negative remainder is never synthesized and stays visible. One-off closure remains separate with type/line snapshots and exact Payment. Payment alone never hides negative state. ADR-020 does not change the lifecycle-active Membership-count contract.
 - Freeze ranges і NonWorkingDay ranges inclusive.
 - New Freeze requires a lifecycle-active Membership. Its start date must be on or
   after the issued Membership start date and on or before the locked canonical

@@ -73,7 +73,7 @@ Queries/read actions не створюють business audit entries за зам�
 | `CreateMembershipType` | `membership_type.created` | Full catalog summary. |
 | `EditMembershipType` | `membership_type.edited` | Before/after catalog fields and reason/comment for meaningful business change. |
 | `DeactivateMembershipType` | `membership_type.deactivated` | Before/after active state and reason. |
-| `IssueMembership` | `membership.issued`; `payment.created` | Ordinary type snapshot, start date and one exact full snapshot-price sale Payment in the same commit; negative decision remains explicit. |
+| `IssueMembership` | `membership.issued`; `payment.created` | Ordinary type snapshot, start date and one exact full snapshot-price sale Payment in the same commit; ADR-020 automatically allocates concrete negative Visits oldest-first and records the locked policy/coverage facts. |
 | `MarkVisit` | `visit.marked` | Client, visit kind, membership/consumption, `occurred_at`, before/after membership summary, warning acknowledgement. |
 | `CancelVisit` | `visit.canceled` | Original visit summary, reason, before/after membership summary, changed-after-close marker when relevant. |
 | `CreatePayment` | `payment.created` | Standalone amount, currency, accepted non-sale/non-closure cash context, client and `occurred_at`. |

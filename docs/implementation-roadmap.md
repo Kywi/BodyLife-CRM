@@ -300,7 +300,7 @@
 - Implement Memberships recalculation service for source facts available at this stage: issued membership, opening state, adjustments, future visit/payment/freeze/non-working inputs through public interfaces.
 - Implement signed remaining visits, negative balance, first negative visit date, effective end date, extension days and warnings.
 - Implement `GetMembershipState` and membership section of `GetClientProfile`.
-- Implement `PreviewIssueMembership`, including negative balance warning and explicit negative handling decision requirement.
+- Implement `PreviewIssueMembership`, including the negative-balance warning, ADR-020 automatic oldest-first concrete-Visit allocation and signed stale-preview protection.
 - Add rebuild command/service for `membership_state_cache` from source facts.
 - Add guardrails so UI, Reports, Visits, Payments, Freezes and NonWorkingDays cannot own formulas.
 
@@ -319,7 +319,7 @@
 
 - Domain tests for inclusive end date, active-by-date, snapshot immutability and direct end-date edit rejection.
 - Domain tests for remaining visits from counted visits, negative balance, first negative date, cancellation recalculation hooks using synthetic/source fixtures.
-- Application tests for `IssueMembership`, `PreviewIssueMembership`, opening state/manual backfill metadata and negative decision requirement.
+- Application tests for `IssueMembership`, `PreviewIssueMembership`, opening state/manual backfill metadata, automatic coverage, zero-capacity eligibility and stale preview protection.
 - Rebuild tests comparing `membership_state_cache` with recalculated state.
 - PostgreSQL tests for issued membership constraints, active opening state uniqueness and cache row uniqueness.
 - Architecture tests/reviews to prevent formula duplication outside Memberships.
