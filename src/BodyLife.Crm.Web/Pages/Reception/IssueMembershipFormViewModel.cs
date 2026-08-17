@@ -20,15 +20,8 @@ public sealed record IssueMembershipFormViewModel(
 
     public MembershipIssuePreview? Preview => PreviewResult?.Preview;
 
-    public int? MaxNegativeCoverageCount => Preview?.ExistingNegativeState is { } negativeState
-        ? Math.Min(negativeState.OpenConcreteVisitCount, Preview.Snapshot.VisitsLimit)
-        : null;
-
     public IReadOnlyList<MembershipNegativeVisitCoverageCandidate> CoveredNegativeVisits =>
-        Preview?.ExistingNegativeState?.OpenConcreteVisits
-            .Take(Preview.CoveredNegativeVisitCount)
-            .ToArray()
-        ?? [];
+        Preview?.CoveredNegativeVisits ?? [];
 
     public bool CanSubmit => PreviewResult is
     {
@@ -77,12 +70,6 @@ public sealed record IssueMembershipFormViewModel(
                 item.MembershipTypeId == submittedTypeId)
             : null;
         var preview = previewResult?.Preview;
-        var negativeHandlingDecision = input.NegativeHandlingDecision is { } decision
-            && preview?.NegativeHandlingOptions.Any(option =>
-                option.Decision == decision
-                && option.IsAvailable) == true
-                    ? (MembershipNegativeHandlingDecision?)decision
-                    : null;
         var idempotencyKey = errors.Any(error =>
             error.Code == CommandErrorCode.DuplicateSubmission)
                 ? Guid.NewGuid().ToString("N")
@@ -95,15 +82,7 @@ public sealed record IssueMembershipFormViewModel(
                 MembershipTypeId = selectedType?.MembershipTypeId,
                 ExpectedMembershipTypeUpdatedAt = preview?.MembershipTypeUpdatedAt,
                 StartDate = input.StartDate,
-                NegativeHandlingDecision = negativeHandlingDecision,
-                NegativeCoverageCount = negativeHandlingDecision
-                    == MembershipNegativeHandlingDecision.CoverWithNewMembership
-                    ? input.NegativeCoverageCount
-                    : null,
-                ExpectedOldestOpenNegativeVisitId = negativeHandlingDecision
-                    == MembershipNegativeHandlingDecision.CoverWithNewMembership
-                    ? preview?.ExpectedOldestOpenNegativeVisitId
-                    : null,
+                PreviewToken = previewResult?.PreviewToken?.Value,
                 Comment = input.Comment,
                 IdempotencyKey = idempotencyKey,
                 SearchQuery = input.SearchQuery,
@@ -129,11 +108,9 @@ public sealed class IssueMembershipFormInput
 
     public DateOnly? StartDate { get; set; }
 
-    public MembershipNegativeHandlingDecision? NegativeHandlingDecision { get; set; }
+    public string? PreviewToken { get; set; }
 
-    public int? NegativeCoverageCount { get; set; }
-
-    public Guid? ExpectedOldestOpenNegativeVisitId { get; set; }
+    public bool PreviewOnly { get; set; }
 
     public string? Comment { get; set; }
 

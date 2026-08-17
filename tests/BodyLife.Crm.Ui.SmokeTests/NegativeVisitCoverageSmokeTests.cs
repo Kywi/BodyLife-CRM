@@ -63,7 +63,7 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
             await issuePanel.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
             Assert.NotNull(await issuePanel.GetAttributeAsync("open"));
             Assert.Equal(string.Empty, await issuePanel.Locator("[name='form.MembershipTypeId']").InputValueAsync());
-            Assert.Equal(0, await issuePanel.Locator("[name='form.NegativeHandlingDecision']:checked").CountAsync());
+            Assert.Equal(0, await issuePanel.Locator("[name='form.NegativeHandlingDecision']").CountAsync());
             await page.WaitForFunctionAsync(
                 "() => document.activeElement?.closest('#issue-membership-action-panel') !== null");
             Assert.True(await page.EvaluateAsync<bool>(
@@ -88,7 +88,11 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
                 await page.Locator("[data-profile-action-target='issue-membership-action-panel']")
                     .GetAttributeAsync("aria-pressed"));
             Assert.False(await page.Locator("#negative-visit-coverage-panel").IsVisibleAsync());
-            Assert.Equal(0, await issuePanel.Locator("[name='form.NegativeHandlingDecision']:checked").CountAsync());
+            Assert.Equal(0, await issuePanel.Locator("[name='form.NegativeHandlingDecision']").CountAsync());
+            await ExpectVisibleAsync(
+                issuePanel.Locator("[data-automatic-negative-coverage]"),
+                "tablet",
+                "automatic membership coverage summary");
 
             await page.EvaluateAsync(
                 """

@@ -798,12 +798,14 @@ public sealed class AuditTimelineSmokeTests : IClassFixture<ReceptionAppFixture>
                     explanation,
                     "Issued Membership",
                     "Initial effective end date"));
+            var issuedMembershipFacts = explanation.GetByRole(
+                AriaRole.Region,
+                new() { Name = "Issued Membership", Exact = true });
             Assert.Equal(
-                "Not required",
-                await ExplanationFactAsync(
-                    explanation,
-                    "Issued Membership",
-                    "Negative handling"));
+                0,
+                await issuedMembershipFacts
+                    .GetByText("Negative handling", new() { Exact = true })
+                    .CountAsync());
             Assert.Equal(
                 "None",
                 await ExplanationFactAsync(explanation, "Issued Membership", "Payment"));

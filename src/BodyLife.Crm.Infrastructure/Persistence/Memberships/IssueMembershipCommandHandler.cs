@@ -20,6 +20,7 @@ public sealed class IssueMembershipCommandHandler(
     BusinessAuditAppender auditAppender,
     IMembershipIssuePaymentWriter paymentWriter,
     MembershipNegativeVisitSelector negativeVisitSelector,
+    IMembershipIssuePreviewTokenService previewTokenService,
     MembershipStateCacheRebuilder stateCacheRebuilder,
     TimeProvider timeProvider,
     PaperFallbackEntryRowBinder? paperFallbackEntryRowBinder = null)
@@ -199,60 +200,28 @@ public sealed class IssueMembershipCommandHandler(
                     negativeSelection.FirstNegativeVisitDate,
                     negativeSelection.OpenConcreteVisits)
                 : null;
-            var usesNewMembershipCoverage = issue.NegativeHandlingDecision
-                == MembershipNegativeHandlingDecision.CoverWithNewMembership;
-            if (usesNewMembershipCoverage
-                && negativeSelection.OldestOpenConcreteVisitId
-                    != issue.ExpectedOldestOpenNegativeVisitId)
-            {
-                return IssueMembershipCommandSupport.Error(
-                    CommandErrorCode.StaleState,
-                    "The oldest open negative Visit changed after preview. Refresh canonical state.",
-                    "expectedOldestOpenNegativeVisitId");
-            }
 
-            if (usesNewMembershipCoverage
-                && issue.NegativeCoverageCount > membershipType.VisitsLimit)
-            {
-                return IssueMembershipCommandSupport.ValidationError(
-                    "Negative coverage count cannot exceed the issued Membership visit limit.",
-                    "negativeCoverageCount");
-            }
-
-            if (usesNewMembershipCoverage
-                && issue.NegativeCoverageCount
-                    > negativeSelection.OpenConcreteVisits.Count)
-            {
-                return IssueMembershipCommandSupport.ValidationError(
-                    "Negative coverage count cannot exceed the current open concrete negative Visit count.",
-                    "negativeCoverageCount");
-            }
-
-            MembershipIssuePreparation preparation;
+            var catalogItem = new MembershipTypeCatalogItem(
+                membershipType.Id,
+                membershipType.Name,
+                membershipType.DurationDays,
+                membershipType.VisitsLimit,
+                new Money(membershipType.PriceAmount, membershipType.PriceCurrency),
+                membershipType.IsActive,
+                membershipType.Comment,
+                membershipType.CreatedAt,
+                membershipType.UpdatedAt,
+                membershipType.DeactivatedAt,
+                MapMembershipTypeKind(membershipType.Kind));
+            MembershipIssuePreview currentPreview;
 
             try
             {
-                var catalogItem = new MembershipTypeCatalogItem(
-                    membershipType.Id,
-                    membershipType.Name,
-                    membershipType.DurationDays,
-                    membershipType.VisitsLimit,
-                    new Money(
-                        membershipType.PriceAmount,
-                        membershipType.PriceCurrency),
-                    membershipType.IsActive,
-                    membershipType.Comment,
-                    membershipType.CreatedAt,
-                    membershipType.UpdatedAt,
-                    membershipType.DeactivatedAt,
-                    MapMembershipTypeKind(membershipType.Kind));
-                preparation = MembershipIssuePreparationPolicy.Prepare(
+                currentPreview = MembershipIssuePreviewPolicy.Create(
                     issue.ClientId,
                     catalogItem,
                     issue.StartDate,
                     existingNegativeState,
-                    issue.NegativeHandlingDecision,
-                    issue.NegativeCoverageCount,
                     BusinessTimeZone.GetBusinessDate(recordedAt));
             }
             catch (ArgumentOutOfRangeException exception)
@@ -261,32 +230,6 @@ public sealed class IssueMembershipCommandHandler(
                 return IssueMembershipCommandSupport.ValidationError(
                     "Start date and membership duration exceed the supported calendar range.",
                     "startDate");
-            }
-            catch (ArgumentException)
-                when (existingNegativeState is not null
-                    && issue.NegativeHandlingDecision is null)
-            {
-                return IssueMembershipCommandSupport.Error(
-                    CommandErrorCode.NegativeDecisionRequired,
-                    "An explicit negative handling decision is required.",
-                    "negativeHandlingDecision");
-            }
-            catch (ArgumentException)
-                when (existingNegativeState is not null
-                    && issue.NegativeHandlingDecision is not null)
-            {
-                return IssueMembershipCommandSupport.Error(
-                    CommandErrorCode.MembershipNotEligible,
-                    "The selected negative handling decision is not available.",
-                    "negativeHandlingDecision");
-            }
-            catch (ArgumentException)
-                when (existingNegativeState is null
-                    && issue.NegativeHandlingDecision is not null)
-            {
-                return IssueMembershipCommandSupport.ValidationError(
-                    "A negative handling decision requires existing negative membership state.",
-                    "negativeHandlingDecision");
             }
             catch (ArgumentException)
             {
@@ -301,6 +244,65 @@ public sealed class IssueMembershipCommandHandler(
                     "Inactive membership type cannot be used for ordinary issue.",
                     "membershipTypeId");
             }
+
+            var tokenValidation = previewTokenService.Validate(
+                issue.PreviewToken,
+                new MembershipIssuePreviewTokenMaterial(
+                    issue.ClientId,
+                    membershipType.Id,
+                    membershipType.UpdatedAt,
+                    issue.StartDate,
+                    negativeSelection.TotalNegativeBalance,
+                    existingNegativeState?.UnknownNegativeBalance ?? 0,
+                    negativeSelection.OpenConcreteVisits,
+                    currentPreview.AutomaticCoveredNegativeVisitCount));
+            if (!tokenValidation.IsValid)
+            {
+                return IssueMembershipCommandSupport.Error(
+                    CommandErrorCode.StaleState,
+                    "Membership issue preview changed or expired. Refresh canonical state.",
+                    "previewToken");
+            }
+
+            if (!currentPreview.CanProceedToIssue)
+            {
+                return IssueMembershipCommandSupport.Error(
+                    CommandErrorCode.MembershipNotEligible,
+                    "The selected membership type has no capacity for the current concrete negative Visits.",
+                    "membershipTypeId");
+            }
+
+            MembershipIssuePreparation preparation;
+            try
+            {
+                preparation = MembershipIssuePreparationPolicy.Prepare(
+                    issue.ClientId,
+                    catalogItem,
+                    issue.StartDate,
+                    existingNegativeState,
+                    BusinessTimeZone.GetBusinessDate(recordedAt));
+            }
+            catch (ArgumentOutOfRangeException exception)
+                when (exception.ParamName == "durationDays")
+            {
+                return IssueMembershipCommandSupport.ValidationError(
+                    "Start date and membership duration exceed the supported calendar range.",
+                    "startDate");
+            }
+            catch (ArgumentException)
+            {
+                return IssueMembershipCommandSupport.ValidationError(
+                    "Canonical membership data cannot produce valid issue terms.",
+                    "membershipTypeId");
+            }
+            catch (InvalidOperationException)
+            {
+                return IssueMembershipCommandSupport.Error(
+                    CommandErrorCode.MembershipTypeInactive,
+                    "Inactive membership type cannot be used for ordinary issue.",
+                    "membershipTypeId");
+            }
+            var usesNewMembershipCoverage = preparation.CoveredNegativeVisits.Count > 0;
 
             var membershipId = Guid.NewGuid();
             var membership = new IssuedMembershipRecord
@@ -628,9 +630,6 @@ public sealed class IssueMembershipCommandHandler(
                 ["entryOrigin"] = membership.EntryOrigin,
                 ["entryBatchId"] = membership.EntryBatchId,
                 ["comment"] = membership.Comment,
-                ["negativeHandlingDecision"] =
-                    IssueMembershipCommandSupport.MapNegativeHandlingDecision(
-                        preparation.NegativeHandlingDecision),
                 ["existingNegativeState"] = preparation.ExistingNegativeState is null
                     ? null
                     : new
@@ -662,6 +661,10 @@ public sealed class IssueMembershipCommandHandler(
                     rebuildResult.RecalculationVersion,
                 },
             };
+            if (preparation.ExistingNegativeState is not null)
+            {
+                membershipAfterSummary["negativeCoveragePolicy"] = "automatic_oldest_first";
+            }
             if (negativeClosureId is not null)
             {
                 membershipAfterSummary["negativeCoverage"] = new
@@ -697,9 +700,7 @@ public sealed class IssueMembershipCommandHandler(
             await transaction.CommitAsync(cancellationToken);
 
             var warningCodes = new List<string>();
-            if (issue.NegativeHandlingDecision
-                    == MembershipNegativeHandlingDecision.LeaveVisible
-                || usesNewMembershipCoverage && remainingNegativeBalance > 0)
+            if (remainingNegativeBalance > 0)
             {
                 warningCodes.Add(MembershipWarningCodes.NegativeBalance);
             }

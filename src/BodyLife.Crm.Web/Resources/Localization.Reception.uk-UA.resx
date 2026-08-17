@@ -282,15 +282,17 @@
   <data name="Membership.AddSalePayment" xml:space="preserve"><value>Додати готівковий платіж за продаж абонемента</value></data>
   <data name="Membership.Issuing" xml:space="preserve"><value>Видача абонемента…</value></data>
   <data name="Membership.IssuingShort" xml:space="preserve"><value>Видача…</value></data>
-  <data name="Membership.NegativeDecision.LeaveVisible" xml:space="preserve"><value>Залишити від’ємний залишок видимим</value></data>
-  <data name="Membership.NegativeDecision.Cover" xml:space="preserve"><value>Покрити новим абонементом</value></data>
-  <data name="Membership.NegativeDecision.Closure" xml:space="preserve"><value>Записати явне закриття</value></data>
-  <data name="Membership.NegativeDecision.ClosureUnavailable" xml:space="preserve"><value>Скористайтеся окремим процесом закриття від’ємних відвідувань; видача абонемента не закриває разові відвідування.</value></data>
-  <data name="Membership.NegativeCoverage.Title" xml:space="preserve"><value>Покрити найдавніші від’ємні відвідування цим абонементом</value></data>
+  <data name="Membership.ReviewIssue" xml:space="preserve"><value>Перевірити видачу</value></data>
+  <data name="Membership.NegativeCoverage.Title" xml:space="preserve"><value>Автоматичне покриття від’ємних відвідувань</value></data>
+  <data name="Membership.NegativeCoverage.CurrentBalance" xml:space="preserve"><value>Поточний від’ємний баланс</value></data>
+  <data name="Membership.NegativeCoverage.ZeroCapacityTitle" xml:space="preserve"><value>Цей тип не може покрити від’ємні відвідування</value></data>
+  <data name="Membership.NegativeCoverage.ZeroCapacityMessage" xml:space="preserve"><value>Оберіть абонемент із відвідуваннями або скористайтеся окремим разовим покриттям.</value></data>
   <data name="Membership.NegativeCoverage.Count" xml:space="preserve"><value>Кількість відвідувань для покриття</value></data>
   <data name="Membership.NegativeCoverage.CountHint" xml:space="preserve"><value>Виберіть від 1 до {0}; кількість не вибирається автоматично.</value></data>
   <data name="Membership.NegativeCoverage.CoveredCount" xml:space="preserve"><value>Покрито відвідувань</value></data>
   <data name="Membership.NegativeCoverage.RemainingExisting" xml:space="preserve"><value>Залишок наявного від’ємного балансу</value></data>
+  <data name="Membership.NegativeCoverage.RemainingConcrete" xml:space="preserve"><value>Непокриті конкретні відвідування після видачі</value></data>
+  <data name="Membership.NegativeCoverage.RemainingUnknown" xml:space="preserve"><value>Історичний залишок без записів відвідувань</value></data>
   <data name="Membership.NegativeCoverage.ForcedStart" xml:space="preserve"><value>Примусова дата початку абонемента</value></data>
   <data name="Membership.NegativeCoverage.ResultingRemaining" xml:space="preserve"><value>Залишок відвідувань після покриття</value></data>
   <data name="Membership.NegativeCoverage.ResultingEffectiveEnd" xml:space="preserve"><value>Кінцева дата після покриття</value></data>

@@ -8,21 +8,13 @@ public sealed class MembershipIssuePreview
         MembershipIssueTerms issueTerms,
         MembershipCalculatedState expectedInitialState,
         MembershipIssueNegativeContext? existingNegativeState,
-        MembershipNegativeHandlingDecision? selectedNegativeHandlingDecision,
-        int? selectedNegativeCoverageCount,
-        bool negativeCoverageSelectionIsValid,
+        int automaticCoveredNegativeVisitCount,
         DateOnly? previewBusinessDate,
-        IEnumerable<MembershipNegativeHandlingOption> negativeHandlingOptions,
         IEnumerable<MembershipWarning> warnings)
     {
         ArgumentNullException.ThrowIfNull(issueTerms);
         ArgumentNullException.ThrowIfNull(expectedInitialState);
-        ArgumentNullException.ThrowIfNull(negativeHandlingOptions);
         ArgumentNullException.ThrowIfNull(warnings);
-
-        var optionItems = negativeHandlingOptions.ToArray();
-        var warningItems = warnings.ToArray();
-
         ClientId = clientId;
         MembershipTypeId = issueTerms.MembershipTypeId;
         MembershipTypeUpdatedAt = membershipTypeUpdatedAt;
@@ -34,79 +26,45 @@ public sealed class MembershipIssuePreview
         ExpectedInitialExtensionDays = expectedInitialState.ExtensionDays;
         ExpectedInitialEffectiveEndDate = expectedInitialState.EffectiveEndDate;
         ExistingNegativeState = existingNegativeState;
-        SelectedNegativeHandlingDecision = selectedNegativeHandlingDecision;
-        SelectedNegativeCoverageCount = selectedNegativeCoverageCount;
-        ExpectedOldestOpenNegativeVisitId =
-            existingNegativeState?.OldestOpenConcreteVisitId;
-        CoveredNegativeVisitCount = selectedNegativeHandlingDecision
-                == MembershipNegativeHandlingDecision.CoverWithNewMembership
-            && negativeCoverageSelectionIsValid
-            ? selectedNegativeCoverageCount!.Value
-            : 0;
+        AutomaticCoveredNegativeVisitCount = automaticCoveredNegativeVisitCount;
+        CoveredNegativeVisits = Array.AsReadOnly(
+            existingNegativeState?.OpenConcreteVisits
+                .Take(automaticCoveredNegativeVisitCount)
+                .ToArray() ?? []);
         RemainingExistingNegativeBalance = existingNegativeState is null
             ? 0
-            : existingNegativeState.NegativeBalance - CoveredNegativeVisitCount;
-        UsesForcedCoverageStartDate = selectedNegativeHandlingDecision
-                == MembershipNegativeHandlingDecision.CoverWithNewMembership
-            && existingNegativeState?.OldestOpenConcreteVisitDate is not null;
+            : existingNegativeState.NegativeBalance - automaticCoveredNegativeVisitCount;
+        RemainingConcreteNegativeVisitCount = existingNegativeState is null
+            ? 0
+            : existingNegativeState.OpenConcreteVisitCount - automaticCoveredNegativeVisitCount;
+        UnknownNegativeBalance = existingNegativeState?.UnknownNegativeBalance ?? 0;
+        UsesForcedCoverageStartDate = automaticCoveredNegativeVisitCount > 0;
         IsAlreadyExpiredAtPreview = UsesForcedCoverageStartDate
             && previewBusinessDate is { } asOfDate
             && expectedInitialState.EffectiveEndDate < asOfDate;
-        NegativeHandlingOptions = Array.AsReadOnly(optionItems);
-        Warnings = Array.AsReadOnly(warningItems);
-        RequiresNegativeHandlingDecision = existingNegativeState is not null
-            && selectedNegativeHandlingDecision is null;
         CanProceedToIssue = existingNegativeState is null
-            || selectedNegativeHandlingDecision is { } selectedDecision
-            && optionItems.Any(option =>
-                option.Decision == selectedDecision
-                && option.IsAvailable)
-            && (selectedDecision
-                    != MembershipNegativeHandlingDecision.CoverWithNewMembership
-                || negativeCoverageSelectionIsValid);
+            || existingNegativeState.OpenConcreteVisitCount == 0
+            || automaticCoveredNegativeVisitCount > 0;
+        Warnings = Array.AsReadOnly(warnings.ToArray());
     }
-
     public Guid ClientId { get; }
-
     public Guid MembershipTypeId { get; }
-
     public DateTimeOffset MembershipTypeUpdatedAt { get; }
-
     public IssuedMembershipSnapshot Snapshot { get; }
-
     public DateOnly ProposedStartDate { get; }
-
     public DateOnly BaseEndDate { get; }
-
     public MembershipCalculatedState ExpectedInitialState { get; }
-
     public int ExpectedInitialRemainingVisits { get; }
-
     public int ExpectedInitialExtensionDays { get; }
-
     public DateOnly ExpectedInitialEffectiveEndDate { get; }
-
     public MembershipIssueNegativeContext? ExistingNegativeState { get; }
-
-    public MembershipNegativeHandlingDecision? SelectedNegativeHandlingDecision { get; }
-
-    public int? SelectedNegativeCoverageCount { get; }
-
-    public Guid? ExpectedOldestOpenNegativeVisitId { get; }
-
-    public int CoveredNegativeVisitCount { get; }
-
+    public int AutomaticCoveredNegativeVisitCount { get; }
+    public IReadOnlyList<MembershipNegativeVisitCoverageCandidate> CoveredNegativeVisits { get; }
     public int RemainingExistingNegativeBalance { get; }
-
+    public int RemainingConcreteNegativeVisitCount { get; }
+    public int UnknownNegativeBalance { get; }
     public bool UsesForcedCoverageStartDate { get; }
-
     public bool IsAlreadyExpiredAtPreview { get; }
-
-    public IReadOnlyList<MembershipNegativeHandlingOption> NegativeHandlingOptions { get; }
-
-    public IReadOnlyList<MembershipWarning> Warnings { get; }
-
-    public bool RequiresNegativeHandlingDecision { get; }
-
     public bool CanProceedToIssue { get; }
+    public IReadOnlyList<MembershipWarning> Warnings { get; }
 }

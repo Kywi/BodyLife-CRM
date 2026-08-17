@@ -203,6 +203,8 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
 
     public Guid IssueTabletClientId { get; private set; }
 
+    public Guid IssueNoJavaScriptClientId { get; private set; }
+
     public Guid IssuePhoneClientId { get; private set; }
 
     public Guid IssuePhoneExistingMembershipId { get; private set; }
@@ -1738,6 +1740,13 @@ public sealed class ReceptionAppFixture : IAsyncLifetime
             "Tablet",
             "+380 67 800 01 01",
             "BL-ISSUE-TABLET");
+
+        IssueNoJavaScriptClientId = await database.SeedClientAsync(
+            ownerAccountId,
+            "Issue",
+            "No JavaScript",
+            "+380 67 800 01 06",
+            "BL-ISSUE-NO-JS");
 
         IssuePhoneClientId = await database.SeedClientAsync(
             ownerAccountId,

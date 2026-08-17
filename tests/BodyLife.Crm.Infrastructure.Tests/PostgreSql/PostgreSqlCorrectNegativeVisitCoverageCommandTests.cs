@@ -3,6 +3,7 @@ using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
@@ -951,7 +952,8 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
         var fixture = await SeedFixtureAsync(
             database,
             ActorRole.Owner,
-            AccountKind.Owner);
+            AccountKind.Owner,
+            coveringVisitsLimit: 1);
         await using var dbContext = database.CreateDbContext();
         await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, 3);
         var firstPaper = await PostgreSqlPaperFallbackTestData.SeedRowAsync(
@@ -1280,7 +1282,8 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
     private static async Task<CoverageFixture> SeedFixtureAsync(
         PostgreSqlTestDatabase database,
         ActorRole role,
-        AccountKind kind)
+        AccountKind kind,
+        int coveringVisitsLimit = 2)
     {
         var fixture = new CoverageFixture(
             new ActorContext(
@@ -1328,7 +1331,7 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             values
                 (@source_type_id, 'Two visits', 'ordinary', 30, 2, 900,
                     'UAH', true, null, @created_at, @catalog_updated_at, null),
-                (@covering_type_id, 'Cover plan', 'ordinary', 30, 2, 1200,
+                (@covering_type_id, 'Cover plan', 'ordinary', 30, @covering_visits_limit, 1200,
                     'UAH', true, null, @created_at, @catalog_updated_at, null),
                 (@one_off_a_id, 'Single A', 'one_off', 1, 1, 50,
                     'UAH', true, null, @created_at, @catalog_updated_at, null),
@@ -1363,6 +1366,7 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             ("client_id", fixture.ClientId),
             ("source_type_id", fixture.SourceTypeId),
             ("covering_type_id", fixture.CoveringTypeId),
+            ("covering_visits_limit", coveringVisitsLimit),
             ("one_off_a_id", fixture.OneOffTypeAId),
             ("one_off_b_id", fixture.OneOffTypeBId),
             ("source_membership_id", fixture.SourceMembershipId),
@@ -1466,10 +1470,7 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
                 fixture.CoveringTypeId,
                 CatalogUpdatedAt,
                 new DateOnly(2026, 7, 20),
-                MembershipNegativeHandlingDecision.CoverWithNewMembership,
-                EntryBatchId: null,
-                coverageCount,
-                expectedOldestVisitId ?? fixture.VisitIds[2]),
+                await CreateIssuePreviewTokenAsync(dbContext, fixture)),
             CancellationToken.None);
         Assert.Equal(CommandStatus.Success, result.Status);
         var membershipId = result.PrimaryEntityId!.Value.Value;
@@ -1566,9 +1567,34 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
             audit,
             new MembershipIssuePaymentWriter(dbContext, audit),
             new MembershipNegativeVisitSelector(dbContext),
+            new HmacMembershipIssuePreviewTokenService(TokenOptions(), time),
             new MembershipStateCacheRebuilder(dbContext, time),
             time);
     }
+
+    private static async Task<string> CreateIssuePreviewTokenAsync(
+        BodyLifeDbContext dbContext,
+        CoverageFixture fixture)
+    {
+        var time = new FixedTimeProvider(TestNow);
+        var preview = await new PreviewIssueMembershipQueryHandler(
+            dbContext,
+            new MembershipNegativeVisitSelector(dbContext),
+            new HmacMembershipIssuePreviewTokenService(TokenOptions(), time),
+            time).ExecuteAsync(
+                new PreviewIssueMembershipQuery(
+                    fixture.Actor,
+                    fixture.ClientId,
+                    fixture.CoveringTypeId,
+                    new DateOnly(2026, 7, 20)),
+                CancellationToken.None);
+        Assert.Equal(PreviewIssueMembershipStatus.Success, preview.Status);
+        return preview.PreviewToken!.Value;
+    }
+
+    private static NonWorkingDayPreviewTokenOptions TokenOptions() => new(
+        Convert.ToBase64String(Enumerable.Repeat((byte)29, 32).ToArray()),
+        TimeSpan.FromMinutes(5));
 
     private static CorrectNegativeVisitCoverageCommandHandler CreateCorrectionHandler(
         BodyLifeDbContext dbContext,

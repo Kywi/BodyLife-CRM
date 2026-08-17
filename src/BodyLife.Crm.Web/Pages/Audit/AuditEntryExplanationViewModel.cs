@@ -2349,14 +2349,24 @@ public sealed class AuditEntryExplanationPresenter(
                 issue.IssuedAt,
                 entry.RecordedAt)
             || issue.Status != "active"
-            || (issue.NegativeHandlingDecision is null)
-                != (issue.ExistingNegativeState is null))
+            || (issue.NegativeHandlingDecision is not null
+                && issue.NegativeCoveragePolicy is not null)
+            || (issue.NegativeCoveragePolicy is not null
+                && issue.NegativeCoveragePolicy != "automatic_oldest_first")
+            || (issue.NegativeCoveragePolicy is not null
+                && issue.ExistingNegativeState is null)
+            || (issue.NegativeCoveragePolicy is null
+                && (issue.NegativeHandlingDecision is not null)
+                    != (issue.ExistingNegativeState is not null))
+            || (issue.NegativeCoverage is not null
+                && issue.NegativeCoveragePolicy != "automatic_oldest_first"))
         {
             throw new JsonException("Membership issue summary identity is inconsistent.");
         }
 
-        var negativeHandling = MembershipNegativeHandlingLabel(
-            issue.NegativeHandlingDecision);
+        var negativeHandling = issue.NegativeCoveragePolicy is not null
+            ? MembershipNegativeCoveragePolicyLabel(issue.NegativeCoveragePolicy)
+            : MembershipNegativeHandlingLabel(issue.NegativeHandlingDecision);
         List<AuditEntryExplanationFactViewModel> beforeFacts =
         [
             Fact("Membership", Presentation.Value("NotPresent")),
@@ -2367,11 +2377,11 @@ public sealed class AuditEntryExplanationPresenter(
                     : Presentation.Number(
                         issue.ExistingNegativeState.NegativeBalance)),
         ];
-        if (issue.ExistingNegativeState is { } existingNegativeState)
+        if (issue.ExistingNegativeState is { FirstNegativeVisitDate: { } } existingNegativeState)
         {
             beforeFacts.Add(Fact(
                 "First negative visit date",
-                DateLabel(existingNegativeState.FirstNegativeVisitDate)));
+                DateLabel(existingNegativeState.FirstNegativeVisitDate.Value)));
         }
 
         List<AuditEntryExplanationFactViewModel> afterFacts =
@@ -2409,13 +2419,25 @@ public sealed class AuditEntryExplanationPresenter(
             Fact(
                 "Initial effective end date",
                 DateLabel(issue.InitialState.EffectiveEndDate)),
-            Fact("Negative handling", negativeHandling),
         ];
+        if (issue.ExistingNegativeState is not null || issue.NegativeHandlingDecision is not null)
+        {
+            afterFacts.Add(Fact("Negative handling", negativeHandling));
+        }
         if (issue.InitialState.FirstNegativeVisitDate is { } firstNegativeVisitDate)
         {
             afterFacts.Add(Fact(
                 "Initial first negative visit date",
                 DateLabel(firstNegativeVisitDate)));
+        }
+
+        if (issue.NegativeCoverage is { } negativeCoverage)
+        {
+            afterFacts.Add(Fact("Covered visits", Presentation.Number(negativeCoverage.Count)));
+            afterFacts.Add(Fact(
+                "Remaining negative balance",
+                Presentation.Number(negativeCoverage.RemainingExistingNegativeBalance)));
+            afterFacts.Add(Fact("Forced coverage start", DateLabel(negativeCoverage.ForcedStartDate)));
         }
 
         if (issue.Payment is null)
@@ -2723,8 +2745,10 @@ public sealed class AuditEntryExplanationPresenter(
             RequireString(summary, "entryOrigin"),
             RequireNullableGuid(summary, "entryBatchId"),
             RequireNullableString(summary, "comment"),
-            RequireNullableString(summary, "negativeHandlingDecision"),
+            ReadOptionalString(summary, "negativeHandlingDecision"),
+            ReadOptionalString(summary, "negativeCoveragePolicy"),
             ReadExistingNegativeState(summary),
+            ReadMembershipIssueNegativeCoverage(summary),
             ReadMembershipIssuePayment(summary),
             ReadMembershipIssueInitialState(initialState));
     }
@@ -2773,7 +2797,39 @@ public sealed class AuditEntryExplanationPresenter(
             ? null
             : new MembershipIssueExistingNegativeStateSnapshot(
                 RequirePositiveInt32(existingState.Value, "negativeBalance"),
-                RequireDateOnly(existingState.Value, "firstNegativeVisitDate"));
+                RequireNullableDateOnly(existingState.Value, "firstNegativeVisitDate"),
+                ReadOptionalInt32(existingState.Value, "openConcreteVisitCount") ?? 0,
+                ReadOptionalInt32(existingState.Value, "unknownNegativeBalance") ?? 0);
+    }
+
+    private static MembershipIssueNegativeCoverageSnapshot?
+        ReadMembershipIssueNegativeCoverage(JsonElement summary)
+    {
+        if (!summary.TryGetProperty("negativeCoverage", out var coverage)
+            || coverage.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (coverage.ValueKind != JsonValueKind.Object)
+        {
+            throw new JsonException("Membership issue negative coverage has an invalid shape.");
+        }
+
+        var visitIds = RequireGuidArray(coverage, "coveredVisitIds");
+        var count = RequirePositiveInt32(coverage, "count");
+        if (visitIds.Count != count || visitIds.Distinct().Count() != count)
+        {
+            throw new JsonException("Membership issue coverage visits are inconsistent.");
+        }
+
+        return new MembershipIssueNegativeCoverageSnapshot(
+            RequireGuid(coverage, "negativeClosureId"),
+            count,
+            visitIds,
+            RequireNonNegativeInt32(coverage, "remainingExistingNegativeBalance"),
+            RequireDateOnly(coverage, "forcedStartDate"),
+            RequireBoolean(coverage, "isAlreadyExpiredAtIssue"));
     }
 
     private static MembershipIssuePaymentSnapshot? ReadMembershipIssuePayment(
@@ -3253,10 +3309,12 @@ public sealed class AuditEntryExplanationPresenter(
             "Initial first negative visit date" => "InitialFirstNegativeVisitDate",
             "Payment record" => "PaymentRecord",
             "Negative closure" => "NegativeClosure",
+            "Covered visits" => "CoveredVisits",
+            "Remaining negative balance" => "RemainingNegativeBalance",
+            "Forced coverage start" => "ForcedCoverageStart",
             "Correction" => "Correction",
             "Replacement" => "Replacement",
             "Closure type" => "ClosureType",
-            "Covered visits" => "CoveredVisits",
             "Paper fallback batch" => "PaperFallbackBatch",
             "Paper sheet" => "PaperSheet",
             "Business dates" => "BusinessDates",
@@ -3795,6 +3853,15 @@ public sealed class AuditEntryExplanationPresenter(
         };
     }
 
+    private string MembershipNegativeCoveragePolicyLabel(string value)
+    {
+        return value switch
+        {
+            "automatic_oldest_first" => Presentation.Text("NegativeHandling.AutomaticOldestFirst"),
+            _ => throw new JsonException("Membership negative coverage policy is not supported."),
+        };
+    }
+
     private string StatusLabel(string value)
     {
         return value switch
@@ -3898,7 +3965,9 @@ public sealed class AuditEntryExplanationPresenter(
         Guid? EntryBatchId,
         string? Comment,
         string? NegativeHandlingDecision,
+        string? NegativeCoveragePolicy,
         MembershipIssueExistingNegativeStateSnapshot? ExistingNegativeState,
+        MembershipIssueNegativeCoverageSnapshot? NegativeCoverage,
         MembershipIssuePaymentSnapshot? Payment,
         MembershipIssueInitialStateSnapshot InitialState);
 
@@ -3911,7 +3980,17 @@ public sealed class AuditEntryExplanationPresenter(
 
     private sealed record MembershipIssueExistingNegativeStateSnapshot(
         int NegativeBalance,
-        DateOnly FirstNegativeVisitDate);
+        DateOnly? FirstNegativeVisitDate,
+        int OpenConcreteVisitCount,
+        int UnknownNegativeBalance);
+
+    private sealed record MembershipIssueNegativeCoverageSnapshot(
+        Guid NegativeClosureId,
+        int Count,
+        IReadOnlyList<Guid> CoveredVisitIds,
+        int RemainingExistingNegativeBalance,
+        DateOnly ForcedStartDate,
+        bool IsAlreadyExpiredAtIssue);
 
     private sealed record MembershipIssuePaymentSnapshot(
         Guid PaymentId,

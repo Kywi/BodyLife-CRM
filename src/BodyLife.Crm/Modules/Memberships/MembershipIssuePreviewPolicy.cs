@@ -10,8 +10,6 @@ public static class MembershipIssuePreviewPolicy
         MembershipTypeCatalogItem? membershipType,
         DateOnly proposedStartDate,
         MembershipIssueNegativeContext? existingNegativeState = null,
-        MembershipNegativeHandlingDecision? negativeHandlingDecision = null,
-        int? negativeCoverageCount = null,
         DateOnly? previewBusinessDate = null)
     {
         if (clientId == Guid.Empty)
@@ -20,122 +18,62 @@ public static class MembershipIssuePreviewPolicy
         }
 
         ArgumentNullException.ThrowIfNull(membershipType);
-
-        if (negativeHandlingDecision is { } selectedDecision
-            && !Enum.IsDefined(selectedDecision))
+        if (previewBusinessDate is { } date
+            && !BusinessTimeZone.IsSupportedBusinessDate(date))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(negativeHandlingDecision),
-                selectedDecision,
-                "Negative handling decision is not supported.");
+            throw new ArgumentOutOfRangeException(nameof(previewBusinessDate));
         }
 
-        if (existingNegativeState is null && negativeHandlingDecision is not null)
-        {
-            throw new ArgumentException(
-                "A negative handling decision requires existing negative membership state.",
-                nameof(negativeHandlingDecision));
-        }
-
-        if (negativeCoverageCount is not null
-            && negativeHandlingDecision
-                != MembershipNegativeHandlingDecision.CoverWithNewMembership)
-        {
-            throw new ArgumentException(
-                "Negative coverage count requires new-Membership coverage.",
-                nameof(negativeCoverageCount));
-        }
-
-        if (previewBusinessDate is { } asOfDate
-            && !BusinessTimeZone.IsSupportedBusinessDate(asOfDate))
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(previewBusinessDate),
-                previewBusinessDate,
-                "Preview business date is outside the supported range.");
-        }
-
-        var isCoverage = negativeHandlingDecision
-            == MembershipNegativeHandlingDecision.CoverWithNewMembership;
-        var forcedCoverageStartDate = isCoverage
-            ? existingNegativeState?.OldestOpenConcreteVisitDate
-            : null;
-
-        var issueTerms = MembershipIssueTerms.FromActiveMembershipType(
+        var automaticCount = existingNegativeState is { OpenConcreteVisitCount: > 0 }
+            ? Math.Min(existingNegativeState.OpenConcreteVisitCount, membershipType.VisitsLimit)
+            : 0;
+        var terms = MembershipIssueTerms.FromActiveMembershipType(
             membershipType,
-            forcedCoverageStartDate ?? proposedStartDate);
-        var coverageSelectionIsValid = isCoverage
-            && negativeCoverageCount is { } selectedCoverageCount
-            && selectedCoverageCount >= 1
-            && selectedCoverageCount <= issueTerms.Snapshot.VisitsLimit
-            && selectedCoverageCount
-                <= (existingNegativeState?.OpenConcreteVisitCount ?? 0);
-        var expectedInitialState = coverageSelectionIsValid
+            automaticCount > 0
+                ? existingNegativeState!.OldestOpenConcreteVisitDate!.Value
+                : proposedStartDate);
+        var expectedState = automaticCount > 0
             ? MembershipStateCalculator.CalculateInitialWithCoveredVisits(
-                issueTerms,
-                existingNegativeState!.OpenConcreteVisits.Take(
-                    negativeCoverageCount!.Value))
-            : MembershipStateCalculator.CalculateInitial(issueTerms);
-
-        if (existingNegativeState is null)
+                terms,
+                existingNegativeState!.OpenConcreteVisits.Take(automaticCount))
+            : MembershipStateCalculator.CalculateInitial(terms);
+        var warnings = new List<MembershipWarning>();
+        if (existingNegativeState is not null)
         {
-            return new MembershipIssuePreview(
-                clientId,
-                membershipType.UpdatedAt,
-                issueTerms,
-                expectedInitialState,
-                existingNegativeState: null,
-                selectedNegativeHandlingDecision: null,
-                selectedNegativeCoverageCount: null,
-                negativeCoverageSelectionIsValid: true,
-                previewBusinessDate: previewBusinessDate,
-                negativeHandlingOptions: [],
-                warnings: []);
-        }
-
-        var canCoverWithNewMembership =
-            existingNegativeState.OpenConcreteVisitCount > 0
-            && issueTerms.Snapshot.VisitsLimit > 0;
-        MembershipNegativeHandlingOption[] options =
-        [
-            new(MembershipNegativeHandlingDecision.LeaveVisible, isAvailable: true),
-            new(
-                MembershipNegativeHandlingDecision.CoverWithNewMembership,
-                canCoverWithNewMembership),
-            new(MembershipNegativeHandlingDecision.RecordExplicitClosure, isAvailable: false),
-        ];
-        MembershipWarning[] warnings =
-        [
-            new(
-                MembershipWarningCodes.NegativeBalance,
-                MembershipWarningSeverity.Danger,
-                "Client has negative visits. Check the start date of the new membership."),
-        ];
-        if (coverageSelectionIsValid
-            && previewBusinessDate is { } currentBusinessDate
-            && expectedInitialState.EffectiveEndDate < currentBusinessDate)
-        {
-            warnings =
-            [
-                .. warnings,
-                new MembershipWarning(
+            var remainingConcrete = existingNegativeState.OpenConcreteVisitCount - automaticCount;
+            if (remainingConcrete > 0)
+            {
+                warnings.Add(new(
+                    MembershipWarningCodes.NegativeBalance,
+                    MembershipWarningSeverity.Danger,
+                    "Some concrete negative Visits remain uncovered."));
+            }
+            else if (existingNegativeState.UnknownNegativeBalance > 0)
+            {
+                warnings.Add(new(
+                    MembershipWarningCodes.NegativeBalance,
+                    MembershipWarningSeverity.Warning,
+                    "An unknown opening or backfill remainder remains visible."));
+            }
+            if (automaticCount > 0
+                && previewBusinessDate is { } current
+                && expectedState.EffectiveEndDate < current)
+            {
+                warnings.Add(new(
                     MembershipWarningCodes.ExpiredByDate,
                     MembershipWarningSeverity.Danger,
-                    "The backdated covering membership will already be expired."),
-            ];
+                    "The automatically backdated membership will already be expired."));
+            }
         }
 
         return new MembershipIssuePreview(
             clientId,
             membershipType.UpdatedAt,
-            issueTerms,
-            expectedInitialState,
+            terms,
+            expectedState,
             existingNegativeState,
-            negativeHandlingDecision,
-            negativeCoverageCount,
-            coverageSelectionIsValid,
+            automaticCount,
             previewBusinessDate,
-            options,
             warnings);
     }
 }

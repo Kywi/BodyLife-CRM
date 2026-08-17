@@ -2,6 +2,7 @@ using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -109,43 +110,17 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
             existingMembership.MembershipId);
         var handler = CreateHandler(dbContext);
 
-        var undecided = await handler.ExecuteAsync(
-            Query(owner, fixture),
-            CancellationToken.None);
-        var leaveVisible = await handler.ExecuteAsync(
-            Query(
-                owner,
-                fixture,
-                MembershipNegativeHandlingDecision.LeaveVisible),
-            CancellationToken.None);
-        var deferredCoverage = await handler.ExecuteAsync(
-            Query(
-                owner,
-                fixture,
-                MembershipNegativeHandlingDecision.CoverWithNewMembership),
-            CancellationToken.None);
+        var result = await handler.ExecuteAsync(Query(owner, fixture), CancellationToken.None);
 
-        AssertSuccessful(undecided);
-        AssertSuccessful(leaveVisible);
-        AssertSuccessful(deferredCoverage);
-        var undecidedPreview = undecided.Preview!;
-        Assert.Equal(2, undecidedPreview.ExistingNegativeState!.NegativeBalance);
+        AssertSuccessful(result);
+        var preview = result.Preview!;
+        Assert.Equal(2, preview.ExistingNegativeState!.NegativeBalance);
         Assert.Equal(
             new DateOnly(2026, 7, 20),
-            undecidedPreview.ExistingNegativeState.FirstNegativeVisitDate);
-        Assert.True(undecidedPreview.RequiresNegativeHandlingDecision);
-        Assert.False(undecidedPreview.CanProceedToIssue);
-        Assert.Single(undecidedPreview.Warnings);
-        Assert.False(leaveVisible.Preview!.RequiresNegativeHandlingDecision);
-        Assert.True(leaveVisible.Preview.CanProceedToIssue);
-        Assert.Equal(
-            MembershipNegativeHandlingDecision.LeaveVisible,
-            leaveVisible.Preview.SelectedNegativeHandlingDecision);
-        Assert.False(deferredCoverage.Preview!.RequiresNegativeHandlingDecision);
-        Assert.False(deferredCoverage.Preview.CanProceedToIssue);
-        Assert.Equal(
-            MembershipNegativeHandlingDecision.CoverWithNewMembership,
-            deferredCoverage.Preview.SelectedNegativeHandlingDecision);
+            preview.ExistingNegativeState.FirstNegativeVisitDate);
+        Assert.Equal(0, preview.AutomaticCoveredNegativeVisitCount);
+        Assert.True(preview.CanProceedToIssue);
+        Assert.True(preview.Warnings.Count > 0);
         Assert.Equal(
             cacheBefore,
             await ReadCacheFingerprintAsync(database, existingMembership.MembershipId));
@@ -178,8 +153,8 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
         AssertSuccessful(result);
         Assert.Equal(3, result.Preview!.ExistingNegativeState!.NegativeBalance);
         Assert.Null(result.Preview.ExistingNegativeState.FirstNegativeVisitDate);
-        Assert.True(result.Preview.RequiresNegativeHandlingDecision);
-        Assert.False(result.Preview.CanProceedToIssue);
+        Assert.Equal(0, result.Preview.AutomaticCoveredNegativeVisitCount);
+        Assert.True(result.Preview.CanProceedToIssue);
     }
 
     [PostgreSqlFact]
@@ -221,8 +196,8 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
         Assert.Equal(
             new DateOnly(2026, 7, 18),
             aggregate.Preview.ExistingNegativeState.FirstNegativeVisitDate);
-        Assert.True(aggregate.Preview.RequiresNegativeHandlingDecision);
-        Assert.False(aggregate.Preview.CanProceedToIssue);
+        Assert.Equal(0, aggregate.Preview.AutomaticCoveredNegativeVisitCount);
+        Assert.True(aggregate.Preview.CanProceedToIssue);
 
         await UpdateMembershipStatusAsync(
             database,
@@ -332,14 +307,6 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
                 fixture.MembershipTypeId,
                 default),
             CancellationToken.None);
-        var invalidDecision = await handler.ExecuteAsync(
-            new PreviewIssueMembershipQuery(
-                owner,
-                fixture.ClientId,
-                fixture.MembershipTypeId,
-                ProposedStartDate,
-                (MembershipNegativeHandlingDecision)999),
-            CancellationToken.None);
         var missingClient = await handler.ExecuteAsync(
             new PreviewIssueMembershipQuery(
                 owner,
@@ -368,17 +335,10 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
                 oneOffTypeId,
                 ProposedStartDate),
             CancellationToken.None);
-        var unnecessaryDecision = await handler.ExecuteAsync(
-            Query(
-                owner,
-                fixture,
-                MembershipNegativeHandlingDecision.LeaveVisible),
-            CancellationToken.None);
 
         AssertValidationFailure(emptyClient, "clientId");
         AssertValidationFailure(emptyType, "membershipTypeId");
         AssertValidationFailure(emptyDate, "proposedStartDate");
-        AssertValidationFailure(invalidDecision, "negativeHandlingDecision");
         Assert.Equal(PreviewIssueMembershipStatus.NotFound, missingClient.Status);
         Assert.Equal("not_found", missingClient.ErrorCode);
         Assert.Equal("clientId", missingClient.ErrorField);
@@ -391,19 +351,16 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
         Assert.Equal("membership_type_inactive", inactiveType.ErrorCode);
         Assert.Equal("membershipTypeId", inactiveType.ErrorField);
         AssertValidationFailure(oneOffType, "membershipTypeId");
-        AssertValidationFailure(unnecessaryDecision, "negativeHandlingDecision");
         Assert.All(
             new[]
             {
                 emptyClient,
                 emptyType,
                 emptyDate,
-                invalidDecision,
                 missingClient,
                 missingType,
                 inactiveType,
                 oneOffType,
-                unnecessaryDecision,
             },
             result =>
             {
@@ -532,21 +489,24 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
         return new PreviewIssueMembershipQueryHandler(
             dbContext,
             new MembershipNegativeVisitSelector(dbContext),
+            new HmacMembershipIssuePreviewTokenService(TokenOptions(), new FixedTimeProvider(TestNow)),
             new FixedTimeProvider(TestNow));
     }
 
     private static PreviewIssueMembershipQuery Query(
         ActorContext actor,
-        PreviewFixture fixture,
-        MembershipNegativeHandlingDecision? decision = null)
+        PreviewFixture fixture)
     {
         return new PreviewIssueMembershipQuery(
             actor,
             fixture.ClientId,
             fixture.MembershipTypeId,
-            ProposedStartDate,
-            decision);
+            ProposedStartDate);
     }
+
+    private static NonWorkingDayPreviewTokenOptions TokenOptions() => new(
+        Convert.ToBase64String(Enumerable.Repeat((byte)17, 32).ToArray()),
+        TimeSpan.FromMinutes(5));
 
     private static void AssertSuccessful(PreviewIssueMembershipResult result)
     {

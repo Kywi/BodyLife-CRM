@@ -9,8 +9,6 @@ public static class MembershipIssuePreparationPolicy
         MembershipTypeCatalogItem? membershipType,
         DateOnly startDate,
         MembershipIssueNegativeContext? existingNegativeState = null,
-        MembershipNegativeHandlingDecision? negativeHandlingDecision = null,
-        int? negativeCoverageCount = null,
         DateOnly? previewBusinessDate = null)
     {
         var preview = MembershipIssuePreviewPolicy.Create(
@@ -18,22 +16,13 @@ public static class MembershipIssuePreparationPolicy
             membershipType,
             startDate,
             existingNegativeState,
-            negativeHandlingDecision,
-            negativeCoverageCount,
             previewBusinessDate);
-
-        if (preview.RequiresNegativeHandlingDecision)
-        {
-            throw new ArgumentException(
-                "An explicit negative handling decision is required.",
-                nameof(negativeHandlingDecision));
-        }
 
         if (!preview.CanProceedToIssue)
         {
             throw new ArgumentException(
-                "The selected negative handling decision is not available.",
-                nameof(negativeHandlingDecision));
+                "The selected membership type has no capacity for the current concrete negative Visits.",
+                nameof(membershipType));
         }
 
         return new MembershipIssuePreparation(preview);

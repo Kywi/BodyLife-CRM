@@ -48,12 +48,14 @@
                 || negativePanel.HasErrors
                 || negativePanel.ClosePreview is not null
                 || negativePanel.CorrectionPreviews.Count > 0);
-        var markVisitActionForm = negativeCoverageOpen && Model.MarkVisitForm is { } markVisit
+        var issueMembershipOpen = Model.IssueMembershipForm?.IsOpen == true;
+        var markVisitActionForm = (negativeCoverageOpen || issueMembershipOpen)
+            && Model.MarkVisitForm is { } markVisit
             ? markVisit with { IsOpen = false }
             : Model.MarkVisitForm;
         var selectedActionPanelId = negativeCoverageOpen
             ? "negative-visit-coverage-panel"
-            : Model.IssueMembershipForm?.IsOpen == true
+            : issueMembershipOpen
             ? "issue-membership-action-panel"
             : Model.AddPaymentForm?.IsOpen == true
                 ? "add-payment-action-panel"

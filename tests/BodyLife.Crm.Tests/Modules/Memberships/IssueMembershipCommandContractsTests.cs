@@ -7,325 +7,109 @@ namespace BodyLife.Crm.Tests.Modules.Memberships;
 
 public sealed class IssueMembershipCommandContractsTests
 {
-    private static readonly Guid ClientId = Guid.Parse(
-        "11111111-1111-1111-1111-111111111111");
-    private static readonly Guid MembershipTypeId = Guid.Parse(
-        "22222222-2222-2222-2222-222222222222");
-    private static readonly Guid EntryBatchId = Guid.Parse(
-        "33333333-3333-3333-3333-333333333333");
+    private static readonly Guid ClientId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid MembershipTypeId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly DateOnly StartDate = new(2026, 7, 1);
-    private static readonly DateTimeOffset CatalogTimestamp = new(
-        2026,
-        7,
-        13,
-        20,
-        0,
-        0,
-        TimeSpan.Zero);
+    private static readonly DateTimeOffset CatalogTimestamp = new(2026, 7, 13, 20, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public void CommandCarriesEnvelopeSelectorsDecisionAndBatchWithoutCallerPayment()
+    public void CommandCarriesOnlyCanonicalSelectorsAndAuthenticatedPreviewToken()
     {
-        var envelope = CreateEnvelope(
-            EntryOrigin.ManualBackfill,
-            occurredAt: new DateTimeOffset(
-                2026,
-                7,
-                1,
-                9,
-                30,
-                0,
-                TimeSpan.Zero),
-            reason: "Launch backfill from paper register");
-
+        var envelope = CreateEnvelope();
         var command = new IssueMembershipCommand(
-            envelope,
-            ClientId,
-            MembershipTypeId,
-            CatalogTimestamp,
-            StartDate,
-            MembershipNegativeHandlingDecision.LeaveVisible,
-            EntryBatchId);
+            envelope, ClientId, MembershipTypeId, CatalogTimestamp, StartDate, "signed-preview", Guid.NewGuid());
 
         Assert.IsAssignableFrom<IBodyLifeCommand>(command);
-        Assert.Same(envelope, command.Envelope);
-        Assert.Equal(ClientId, command.ClientId);
-        Assert.Equal(MembershipTypeId, command.MembershipTypeId);
-        Assert.Equal(CatalogTimestamp, command.ExpectedMembershipTypeUpdatedAt);
-        Assert.Equal(StartDate, command.StartDate);
-        Assert.Equal(
-            MembershipNegativeHandlingDecision.LeaveVisible,
-            command.NegativeHandlingDecision);
-        Assert.Equal(EntryBatchId, command.EntryBatchId);
-        Assert.Equal("issue-membership-key", command.Envelope.IdempotencyKey);
-        Assert.Equal(EntryOrigin.ManualBackfill, command.Envelope.EntryOrigin);
-        Assert.Equal("Reception note", command.Envelope.Comment);
+        Assert.Equal("signed-preview", command.PreviewToken);
+        Assert.DoesNotContain("NegativeHandlingDecision", typeof(IssueMembershipCommand).GetProperties().Select(x => x.Name));
+        Assert.DoesNotContain("NegativeCoverageCount", typeof(IssueMembershipCommand).GetProperties().Select(x => x.Name));
+        Assert.DoesNotContain("ExpectedOldestOpenNegativeVisitId", typeof(IssueMembershipCommand).GetProperties().Select(x => x.Name));
+        Assert.Equal(new EntityId("client", ClientId), command.CanonicalRereadTargetId);
     }
 
     [Fact]
-    public void OrdinaryCommandMayOmitNegativeDecisionAndBatchReference()
+    public void PreparationAutomaticallyCoversOldestConcreteVisitsUpToMembershipLimit()
     {
-        var command = new IssueMembershipCommand(
-            CreateEnvelope(),
-            ClientId,
-            MembershipTypeId,
-            CatalogTimestamp,
-            StartDate);
+        var first = Candidate("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", new DateOnly(2026, 6, 28));
+        var second = Candidate("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", new DateOnly(2026, 6, 29));
+        var third = Candidate("cccccccc-cccc-cccc-cccc-cccccccccccc", new DateOnly(2026, 6, 30));
+        var negative = new MembershipIssueNegativeContext(3, first.BusinessDate, [first, second, third]);
 
-        Assert.Null(command.NegativeHandlingDecision);
-        Assert.Null(command.EntryBatchId);
+        var preparation = MembershipIssuePreparationPolicy.Prepare(
+            ClientId, CreateMembershipType(visitsLimit: 2), StartDate, negative);
+
+        Assert.Equal(first.BusinessDate, preparation.StartDate);
+        Assert.Equal([first.VisitId, second.VisitId], preparation.CoveredNegativeVisits.Select(x => x.VisitId));
+        Assert.Equal(1, preparation.RemainingExistingNegativeBalance);
+        Assert.Equal(0, preparation.ExpectedInitialState.RemainingVisits);
+        Assert.Contains(preparation.Warnings, x => x.Code == MembershipWarningCodes.NegativeBalance);
     }
 
     [Fact]
-    public void CommandUsesCanonicalCatalogSelectorsInsteadOfClientSuppliedDerivedState()
-    {
-        var propertyNames = typeof(IssueMembershipCommand)
-            .GetProperties()
-            .Select(property => property.Name)
-            .ToArray();
-
-        Assert.DoesNotContain("Snapshot", propertyNames);
-        Assert.DoesNotContain("BaseEndDate", propertyNames);
-        Assert.DoesNotContain("ExpectedInitialState", propertyNames);
-        Assert.DoesNotContain("Payment", propertyNames);
-        Assert.DoesNotContain("Amount", propertyNames);
-    }
-
-    [Fact]
-    public void SuccessfulResultContractTargetsCanonicalClientReread()
-    {
-        var membershipId = Guid.Parse("44444444-4444-4444-4444-444444444444");
-        var command = new IssueMembershipCommand(
-            CreateEnvelope(),
-            ClientId,
-            MembershipTypeId,
-            CatalogTimestamp,
-            StartDate);
-        var result = CommandResult.Success(
-            new EntityId(IssueMembershipCommand.PrimaryEntityType, membershipId),
-            command.CanonicalRereadTargetId);
-
-        Assert.Equal(
-            new EntityId("membership", membershipId),
-            result.PrimaryEntityId);
-        Assert.Equal(new EntityId("client", ClientId), result.RereadTargetId);
-        Assert.Equal("membership", IssueMembershipCommand.PrimaryEntityType);
-        Assert.Equal("client", IssueMembershipCommand.CanonicalRereadEntityType);
-    }
-
-    [Fact]
-    public void ResultContractIncludesDocumentedNegativeDecisionError()
-    {
-        var result = CommandResult.Error(
-        [
-            new CommandError(
-                CommandErrorCode.NegativeDecisionRequired,
-                "An explicit negative handling decision is required.",
-                "negativeHandlingDecision"),
-        ]);
-
-        var error = Assert.Single(result.Errors);
-        Assert.Equal(CommandErrorCode.NegativeDecisionRequired, error.Code);
-        Assert.Equal("negativeHandlingDecision", error.Field);
-        Assert.Null(result.PrimaryEntityId);
-        Assert.Null(result.RereadTargetId);
-    }
-
-    [Fact]
-    public void PreparationCopiesImmutableSnapshotAndInclusiveInitialState()
+    public void UnknownOpeningRemainderStaysVisibleButDoesNotBlockIssue()
     {
         var preparation = MembershipIssuePreparationPolicy.Prepare(
-            ClientId,
-            CreateMembershipType(),
-            StartDate);
+            ClientId, CreateMembershipType(), StartDate,
+            new MembershipIssueNegativeContext(2, null));
 
-        Assert.Equal(ClientId, preparation.ClientId);
-        Assert.Equal(MembershipTypeId, preparation.MembershipTypeId);
-        Assert.Equal("Eight visits", preparation.Snapshot.TypeName);
-        Assert.Equal(30, preparation.Snapshot.DurationDays);
-        Assert.Equal(8, preparation.Snapshot.VisitsLimit);
-        Assert.Equal(new Money(1000m, "UAH"), preparation.Snapshot.Price);
-        Assert.Equal(StartDate, preparation.StartDate);
-        Assert.Equal(new DateOnly(2026, 7, 30), preparation.BaseEndDate);
-        Assert.Equal(0, preparation.ExpectedInitialState.CountedVisits);
-        Assert.Equal(8, preparation.ExpectedInitialState.RemainingVisits);
-        Assert.Equal(0, preparation.ExpectedInitialState.NegativeBalance);
-        Assert.Null(preparation.ExpectedInitialState.FirstNegativeVisitDate);
-        Assert.Equal(0, preparation.ExpectedInitialState.ExtensionDays);
-        Assert.Equal(
-            preparation.BaseEndDate,
-            preparation.ExpectedInitialState.EffectiveEndDate);
-        Assert.Null(preparation.ExistingNegativeState);
-        Assert.Null(preparation.NegativeHandlingDecision);
-        Assert.Empty(preparation.Warnings);
-        Assert.All(
-            typeof(MembershipIssuePreparation).GetProperties(),
-            property => Assert.Null(property.SetMethod));
+        Assert.Empty(preparation.CoveredNegativeVisits);
+        Assert.Equal(2, preparation.RemainingExistingNegativeBalance);
+        Assert.Contains(preparation.Warnings, x => x.Code == MembershipWarningCodes.NegativeBalance);
     }
 
     [Fact]
-    public void PreparationSnapshotDoesNotFollowLaterCatalogValues()
+    public void PreparationKeepsImmutableCatalogSnapshotAndInclusiveDates()
     {
-        var original = CreateMembershipType();
+        var catalog = CreateMembershipType();
         var preparation = MembershipIssuePreparationPolicy.Prepare(
-            ClientId,
-            original,
-            StartDate);
+            ClientId, catalog, StartDate);
 
-        var editedCatalogValue = original with
+        var changedCatalog = catalog with
         {
-            Name = "Twelve visits",
+            Name = "Changed tariff",
             DurationDays = 45,
             VisitsLimit = 12,
             Price = new Money(1500m, "UAH"),
-            UpdatedAt = CatalogTimestamp.AddMinutes(1),
         };
 
-        Assert.Equal("Twelve visits", editedCatalogValue.Name);
         Assert.Equal("Eight visits", preparation.Snapshot.TypeName);
         Assert.Equal(30, preparation.Snapshot.DurationDays);
         Assert.Equal(8, preparation.Snapshot.VisitsLimit);
         Assert.Equal(new Money(1000m, "UAH"), preparation.Snapshot.Price);
+        Assert.Equal(new DateOnly(2026, 7, 30), preparation.BaseEndDate);
+        Assert.Equal("Changed tariff", changedCatalog.Name);
     }
 
     [Fact]
-    public void ExistingNegativeRequiresExplicitDecision()
+    public void PoliciesRejectInvalidIdentityAndCalendarOverflowWithoutLeakingSuccessState()
     {
-        var exception = Assert.Throws<ArgumentException>(() =>
+        var invalidClient = Assert.Throws<ArgumentException>(() =>
+            MembershipIssuePreviewPolicy.Create(Guid.Empty, CreateMembershipType(), StartDate));
+        var calendarOverflow = Assert.Throws<ArgumentOutOfRangeException>(() =>
             MembershipIssuePreparationPolicy.Prepare(
-                ClientId,
-                CreateMembershipType(),
-                StartDate,
-                CreateNegativeContext()));
+                ClientId, CreateMembershipType(durationDays: 2), DateOnly.MaxValue));
+        var failure = CommandResult.Error([
+            new CommandError(CommandErrorCode.ValidationFailed, "Invalid issue request.", "startDate"),
+        ]);
 
-        Assert.Equal("negativeHandlingDecision", exception.ParamName);
-        Assert.Contains(
-            "explicit negative handling decision is required",
-            exception.Message,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("clientId", invalidClient.ParamName);
+        Assert.Equal("durationDays", calendarOverflow.ParamName);
+        Assert.Null(failure.PrimaryEntityId);
+        Assert.Null(failure.RereadTargetId);
+        Assert.Empty(failure.Warnings);
     }
 
-    [Fact]
-    public void LeaveVisiblePreservesExistingNegativeStateAndWarning()
-    {
-        var negativeState = CreateNegativeContext();
+    private static MembershipNegativeVisitCoverageCandidate Candidate(string id, DateOnly date) => new(
+        Guid.Parse(id), Guid.NewGuid(), Guid.NewGuid(),
+        date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+        date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), date);
 
-        var preparation = MembershipIssuePreparationPolicy.Prepare(
-            ClientId,
-            CreateMembershipType(),
-            StartDate,
-            negativeState,
-            MembershipNegativeHandlingDecision.LeaveVisible);
+    private static MembershipTypeCatalogItem CreateMembershipType(int visitsLimit = 8, int durationDays = 30) => new(
+        MembershipTypeId, "Eight visits", durationDays, visitsLimit, new Money(1000m, "UAH"), true,
+        null, CatalogTimestamp.AddDays(-1), CatalogTimestamp, null);
 
-        Assert.Same(negativeState, preparation.ExistingNegativeState);
-        Assert.Equal(2, preparation.ExistingNegativeState!.NegativeBalance);
-        Assert.Equal(
-            new DateOnly(2026, 6, 28),
-            preparation.ExistingNegativeState.FirstNegativeVisitDate);
-        Assert.Equal(
-            MembershipNegativeHandlingDecision.LeaveVisible,
-            preparation.NegativeHandlingDecision);
-        Assert.Equal(0, preparation.ExpectedInitialState.NegativeBalance);
-        Assert.Equal(8, preparation.ExpectedInitialState.RemainingVisits);
-        var warning = Assert.Single(preparation.Warnings);
-        Assert.Equal(MembershipWarningCodes.NegativeBalance, warning.Code);
-
-        var warningList = Assert.IsAssignableFrom<IList<MembershipWarning>>(
-            preparation.Warnings);
-        Assert.True(warningList.IsReadOnly);
-        Assert.Throws<NotSupportedException>(() => warningList.Add(warning));
-    }
-
-    [Theory]
-    [InlineData(MembershipNegativeHandlingDecision.CoverWithNewMembership)]
-    [InlineData(MembershipNegativeHandlingDecision.RecordExplicitClosure)]
-    public void DeferredNegativeDecisionsAreRejected(
-        MembershipNegativeHandlingDecision decision)
-    {
-        var exception = Assert.Throws<ArgumentException>(() =>
-            MembershipIssuePreparationPolicy.Prepare(
-                ClientId,
-                CreateMembershipType(),
-                StartDate,
-                CreateNegativeContext(),
-                decision));
-
-        Assert.Equal("negativeHandlingDecision", exception.ParamName);
-        Assert.Contains(
-            "not available",
-            exception.Message,
-            StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public void PreparationReusesPreviewValidationAndCalendarGuards()
-    {
-        Assert.Equal(
-            "clientId",
-            Assert.Throws<ArgumentException>(() =>
-                MembershipIssuePreparationPolicy.Prepare(
-                    Guid.Empty,
-                    CreateMembershipType(),
-                    StartDate)).ParamName);
-        Assert.Equal(
-            "negativeHandlingDecision",
-            Assert.Throws<ArgumentException>(() =>
-                MembershipIssuePreparationPolicy.Prepare(
-                    ClientId,
-                    CreateMembershipType(),
-                    StartDate,
-                    existingNegativeState: null,
-                    MembershipNegativeHandlingDecision.LeaveVisible)).ParamName);
-        Assert.Equal(
-            "durationDays",
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-                MembershipIssuePreparationPolicy.Prepare(
-                    ClientId,
-                    CreateMembershipType(durationDays: 2),
-                    DateOnly.MaxValue)).ParamName);
-    }
-
-    private static MembershipIssueNegativeContext CreateNegativeContext()
-    {
-        return new MembershipIssueNegativeContext(
-            negativeBalance: 2,
-            firstNegativeVisitDate: new DateOnly(2026, 6, 28));
-    }
-
-    private static MembershipTypeCatalogItem CreateMembershipType(int durationDays = 30)
-    {
-        return new MembershipTypeCatalogItem(
-            MembershipTypeId,
-            "Eight visits",
-            durationDays,
-            VisitsLimit: 8,
-            new Money(1000m, "UAH"),
-            IsActive: true,
-            Comment: null,
-            CreatedAt: CatalogTimestamp.AddDays(-1),
-            UpdatedAt: CatalogTimestamp,
-            DeactivatedAt: null);
-    }
-
-    private static CommandEnvelope CreateEnvelope(
-        EntryOrigin entryOrigin = EntryOrigin.Normal,
-        DateTimeOffset? occurredAt = null,
-        string? reason = null)
-    {
-        var actor = new ActorContext(
-            AccountId.New(),
-            ActorRole.Admin,
-            AccountKind.NamedAdmin,
-            SessionId.New(),
-            "reception tablet");
-
-        return new CommandEnvelope(
-            actor,
-            new RequestCorrelationId("issue-membership-contract"),
-            entryOrigin,
-            occurredAt,
-            IdempotencyKey: "issue-membership-key",
-            reason,
-            Comment: "Reception note");
-    }
+    private static CommandEnvelope CreateEnvelope() => new(
+        new ActorContext(AccountId.New(), ActorRole.Admin, AccountKind.NamedAdmin, SessionId.New(), "reception"),
+        new RequestCorrelationId("issue-membership-contract"), EntryOrigin.Normal, null,
+        "issue-membership-key", null, "Reception note");
 }

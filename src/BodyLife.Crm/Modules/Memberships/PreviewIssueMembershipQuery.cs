@@ -7,7 +7,5 @@ public sealed record PreviewIssueMembershipQuery(
     ActorContext Actor,
     Guid ClientId,
     Guid MembershipTypeId,
-    DateOnly ProposedStartDate,
-    MembershipNegativeHandlingDecision? NegativeHandlingDecision = null,
-    int? NegativeCoverageCount = null)
+    DateOnly ProposedStartDate)
     : IBodyLifeQuery<PreviewIssueMembershipResult>;

@@ -9,10 +9,8 @@ public sealed record IssueMembershipCommand(
     Guid MembershipTypeId,
     DateTimeOffset ExpectedMembershipTypeUpdatedAt,
     DateOnly StartDate,
-    MembershipNegativeHandlingDecision? NegativeHandlingDecision = null,
-    Guid? EntryBatchId = null,
-    int? NegativeCoverageCount = null,
-    Guid? ExpectedOldestOpenNegativeVisitId = null)
+    string PreviewToken,
+    Guid? EntryBatchId = null)
     : IBodyLifeCommand
 {
     public const string PrimaryEntityType = "membership";

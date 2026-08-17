@@ -419,6 +419,8 @@
   <data name="Fact.Replacement"><value>Replacement closure</value></data>
   <data name="Fact.ClosureType"><value>Closure type</value></data>
   <data name="Fact.CoveredVisits"><value>Covered visits</value></data>
+  <data name="Fact.RemainingNegativeBalance"><value>Remaining negative balance</value></data>
+  <data name="Fact.ForcedCoverageStart"><value>Forced coverage start</value></data>
   <data name="Payment.Method.Cash"><value>Cash</value></data>
   <data name="Changed.Currency"><value>Currency</value></data>
   <data name="Visit.Selection.Membership"><value>Explicit Membership</value></data>
@@ -436,6 +438,7 @@
   <data name="NegativeHandling.LeaveVisible"><value>Existing negative balance left visible</value></data>
   <data name="NegativeHandling.CoverWithNewMembership"><value>Covered by the new Membership</value></data>
   <data name="NegativeHandling.RecordExplicitClosure"><value>Explicit negative closure recorded</value></data>
+  <data name="NegativeHandling.AutomaticOldestFirst"><value>Automatic oldest-first policy</value></data>
 <data name="Fact.Name"><value>Name</value></data>
   <data name="Fact.CatalogComment"><value>Catalog comment</value></data>
   <data name="Fact.ExistingNegativeBalance"><value>Existing negative balance</value></data>

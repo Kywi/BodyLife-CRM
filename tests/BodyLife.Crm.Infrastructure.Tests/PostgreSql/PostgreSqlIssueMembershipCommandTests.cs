@@ -4,6 +4,7 @@ using BodyLife.Crm.Infrastructure;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
@@ -116,7 +117,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
 
         using var after = JsonDocument.Parse(audit.AfterSummary);
         var summary = after.RootElement;
-        Assert.Equal(16, summary.EnumerateObject().Count());
+        Assert.Equal(15, summary.EnumerateObject().Count());
         Assert.Equal(membershipId, summary.GetProperty("membershipId").GetGuid());
         Assert.Equal("sale", summary.GetProperty("issuanceMode").GetString());
         Assert.Equal(fixture.ClientId, summary.GetProperty("clientId").GetGuid());
@@ -130,7 +131,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         Assert.Equal("normal", summary.GetProperty("entryOrigin").GetString());
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("entryBatchId").ValueKind);
         Assert.Equal("Front desk issue", summary.GetProperty("comment").GetString());
-        Assert.Equal(JsonValueKind.Null, summary.GetProperty("negativeHandlingDecision").ValueKind);
+        Assert.False(summary.TryGetProperty("negativeHandlingDecision", out _));
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("existingNegativeState").ValueKind);
         var paymentSummary = summary.GetProperty("payment");
         Assert.Equal(payment.Id, paymentSummary.GetProperty("paymentId").GetGuid());
@@ -803,15 +804,6 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
                 await handler.ExecuteAsync(
                     valid with
                     {
-                        NegativeHandlingDecision =
-                            (MembershipNegativeHandlingDecision)999,
-                    },
-                    CancellationToken.None),
-                "negativeHandlingDecision"),
-            (
-                await handler.ExecuteAsync(
-                    valid with
-                    {
                         Envelope = valid.Envelope with
                         {
                             Comment = new string('x', 2001),
@@ -859,13 +851,6 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
                 MembershipTypeId = inactiveTypeId,
             },
             CancellationToken.None);
-        var unnecessaryDecision = await handler.ExecuteAsync(
-            CreateCommand(
-                actor,
-                fixture,
-                "unnecessary-decision",
-                MembershipNegativeHandlingDecision.LeaveVisible),
-            CancellationToken.None);
 
         AssertError(missingClient, CommandErrorCode.NotFound, "clientId");
         AssertError(missingType, CommandErrorCode.NotFound, "membershipTypeId");
@@ -873,10 +858,6 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             inactiveType,
             CommandErrorCode.MembershipTypeInactive,
             "membershipTypeId");
-        AssertError(
-            unnecessaryDecision,
-            CommandErrorCode.ValidationFailed,
-            "negativeHandlingDecision");
         await AssertNoIssueMutationAsync(database);
     }
 
@@ -923,7 +904,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task ExistingNegativeRequiresDecisionAndLeaveVisiblePreservesWarning()
+    public async Task UnknownNegativeRemainderStaysVisibleAndDoesNotBlockIssue()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -943,57 +924,20 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             remainingVisits: -2,
             firstNegativeVisitDate: new DateOnly(2026, 7, 29));
         var cacheBefore = await ReadCacheAsync(database, existing.MembershipId);
-        var handler = CreateHandler(dbContext);
+        var issue = await ExecuteWithCurrentPreviewAsync(
+            dbContext, actor, fixture, "negative-auto");
 
-        var missingDecision = await handler.ExecuteAsync(
-            CreateCommand(actor, fixture, "negative-missing"),
-            CancellationToken.None);
-        var deferredDecision = await handler.ExecuteAsync(
-            CreateCommand(
-                actor,
-                fixture,
-                "negative-deferred",
-                MembershipNegativeHandlingDecision.CoverWithNewMembership),
-            CancellationToken.None);
-        var leaveVisible = await handler.ExecuteAsync(
-            CreateCommand(
-                actor,
-                fixture,
-                "negative-visible",
-                MembershipNegativeHandlingDecision.LeaveVisible),
-            CancellationToken.None);
-
-        AssertError(
-            missingDecision,
-            CommandErrorCode.NegativeDecisionRequired,
-            "negativeHandlingDecision");
-        AssertError(
-            deferredDecision,
-            CommandErrorCode.ValidationFailed,
-            "negativeCoverageCount");
-        AssertSuccessfulResult(leaveVisible, fixture.ClientId);
-        Assert.Equal([MembershipWarningCodes.NegativeBalance], leaveVisible.Warnings);
+        AssertSuccessfulResult(issue, fixture.ClientId);
+        Assert.Equal([MembershipWarningCodes.NegativeBalance], issue.Warnings);
         Assert.Equal(
             cacheBefore,
             await ReadCacheAsync(database, existing.MembershipId));
         var newCache = await ReadCacheAsync(
             database,
-            leaveVisible.PrimaryEntityId!.Value.Value);
+            issue.PrimaryEntityId!.Value.Value);
         Assert.Equal(8, newCache.RemainingVisits);
         Assert.Equal(0, newCache.NegativeBalance);
 
-        var audit = await ReadAuditAsync(
-            database,
-            leaveVisible.AuditEntryId!.Value.Value);
-        using var after = JsonDocument.Parse(audit.AfterSummary);
-        Assert.Equal(
-            "leave_visible",
-            after.RootElement.GetProperty("negativeHandlingDecision").GetString());
-        var negativeState = after.RootElement.GetProperty("existingNegativeState");
-        Assert.Equal(2, negativeState.GetProperty("negativeBalance").GetInt32());
-        Assert.Equal(
-            "2026-07-29",
-            negativeState.GetProperty("firstNegativeVisitDate").GetString());
         Assert.Equal(2L, await CountRowsAsync(database, "issued_memberships"));
         Assert.Equal(2L, await CountRowsAsync(database, "membership_state_cache"));
         Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
@@ -1057,7 +1001,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task MultipleNegativeMembershipsCanRemainVisibleAsClientAggregate()
+    public async Task MultipleUnknownNegativeMembershipsRemainVisibleAsClientAggregate()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -1085,13 +1029,8 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             remainingVisits: -2,
             firstNegativeVisitDate: new DateOnly(2026, 7, 29));
 
-        var result = await CreateHandler(dbContext).ExecuteAsync(
-            CreateCommand(
-                actor,
-                fixture,
-                "ambiguous-negative",
-                MembershipNegativeHandlingDecision.LeaveVisible),
-            CancellationToken.None);
+        var result = await ExecuteWithCurrentPreviewAsync(
+            dbContext, actor, fixture, "ambiguous-negative");
 
         AssertSuccessfulResult(result, fixture.ClientId);
         Assert.Equal([MembershipWarningCodes.NegativeBalance], result.Warnings);
@@ -1494,6 +1433,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             auditAppender,
             new MembershipIssuePaymentWriter(dbContext, auditAppender),
             new MembershipNegativeVisitSelector(dbContext),
+            new HmacMembershipIssuePreviewTokenService(TokenOptions(), timeProvider),
             new MembershipStateCacheRebuilder(dbContext, timeProvider),
             timeProvider);
     }
@@ -1501,8 +1441,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
     private static IssueMembershipCommand CreateCommand(
         ActorContext actor,
         IssueFixture fixture,
-        string idempotencyKey,
-        MembershipNegativeHandlingDecision? decision = null)
+        string idempotencyKey)
     {
         return new IssueMembershipCommand(
             new CommandEnvelope(
@@ -1517,7 +1456,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             fixture.MembershipTypeId,
             TestNow.AddDays(-1),
             NewStartDate,
-            decision);
+            CreatePreviewToken(fixture));
     }
 
     private static IssueMembershipCommand CreatePaperCommand(
@@ -1525,10 +1464,9 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         IssueFixture fixture,
         PaperFallbackRowFixture paper,
         DateTimeOffset occurredAt,
-        string idempotencyKey,
-        MembershipNegativeHandlingDecision? decision = null)
+        string idempotencyKey)
     {
-        var command = CreateCommand(actor, fixture, idempotencyKey, decision);
+        var command = CreateCommand(actor, fixture, idempotencyKey);
         return command with
         {
             Envelope = command.Envelope with
@@ -1540,6 +1478,36 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
                 EntryBatchRowId = paper.EntryBatchRowId,
             },
         };
+    }
+
+    private static string CreatePreviewToken(IssueFixture fixture) =>
+        new HmacMembershipIssuePreviewTokenService(TokenOptions(), new FixedTimeProvider(TestNow))
+            .Issue(new MembershipIssuePreviewTokenMaterial(
+                fixture.ClientId, fixture.MembershipTypeId, TestNow.AddDays(-1), NewStartDate,
+                0, 0, [], 0)).Value;
+
+    private static NonWorkingDayPreviewTokenOptions TokenOptions() => new(
+        Convert.ToBase64String(Enumerable.Repeat((byte)19, 32).ToArray()),
+        TimeSpan.FromMinutes(5));
+
+    private static async Task<CommandResult> ExecuteWithCurrentPreviewAsync(
+        BodyLifeDbContext dbContext,
+        ActorContext actor,
+        IssueFixture fixture,
+        string idempotencyKey)
+    {
+        var time = new FixedTimeProvider(TestNow);
+        var preview = await new PreviewIssueMembershipQueryHandler(
+            dbContext,
+            new MembershipNegativeVisitSelector(dbContext),
+            new HmacMembershipIssuePreviewTokenService(TokenOptions(), time),
+            time).ExecuteAsync(
+                new PreviewIssueMembershipQuery(actor, fixture.ClientId, fixture.MembershipTypeId, NewStartDate),
+                CancellationToken.None);
+        Assert.Equal(PreviewIssueMembershipStatus.Success, preview.Status);
+        return await CreateHandler(dbContext).ExecuteAsync(
+            CreateCommand(actor, fixture, idempotencyKey) with { PreviewToken = preview.PreviewToken!.Value },
+            CancellationToken.None);
     }
 
     private static void AssertPaperAuditReference(

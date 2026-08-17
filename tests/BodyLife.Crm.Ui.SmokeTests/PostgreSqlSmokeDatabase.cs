@@ -4748,11 +4748,11 @@ internal sealed class PostgreSqlSmokeDatabase : IAsyncDisposable
         command.Parameters.AddWithValue(
             "source_business_date",
             NpgsqlDbType.Date,
-            DateOnly.FromDateTime(recordedAt.AddHours(-4).UtcDateTime));
+            BusinessTimeZone.GetBusinessDate(recordedAt.AddHours(-4)));
         command.Parameters.AddWithValue(
             "cancellation_business_date",
             NpgsqlDbType.Date,
-            DateOnly.FromDateTime(recordedAt.AddHours(-1).UtcDateTime));
+            BusinessTimeZone.GetBusinessDate(recordedAt.AddHours(-1)));
         command.Parameters.AddWithValue("session_started_at", recordedAt.AddDays(-1));
         command.Parameters.AddWithValue("session_expires_at", recordedAt.AddDays(1));
         command.Parameters.AddWithValue("session_last_seen_at", recordedAt.AddMinutes(-5));

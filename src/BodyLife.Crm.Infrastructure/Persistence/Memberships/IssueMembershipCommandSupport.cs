@@ -45,40 +45,11 @@ internal static class IssueMembershipCommandSupport
             return ValidationError("Start date is required.", "startDate");
         }
 
-        if (command.NegativeHandlingDecision is { } decision
-            && !Enum.IsDefined(decision))
+        if (string.IsNullOrWhiteSpace(command.PreviewToken))
         {
             return ValidationError(
-                "Negative handling decision is not supported.",
-                "negativeHandlingDecision");
-        }
-
-        var usesNewMembershipCoverage = command.NegativeHandlingDecision
-            == MembershipNegativeHandlingDecision.CoverWithNewMembership;
-        if (usesNewMembershipCoverage
-            && command.NegativeCoverageCount is not > 0)
-        {
-            return ValidationError(
-                "A positive negative coverage count is required.",
-                "negativeCoverageCount");
-        }
-
-        if (usesNewMembershipCoverage
-            && (!command.ExpectedOldestOpenNegativeVisitId.HasValue
-                || command.ExpectedOldestOpenNegativeVisitId.Value == Guid.Empty))
-        {
-            return ValidationError(
-                "Expected oldest open negative Visit id is required for coverage.",
-                "expectedOldestOpenNegativeVisitId");
-        }
-
-        if (!usesNewMembershipCoverage
-            && (command.NegativeCoverageCount is not null
-                || command.ExpectedOldestOpenNegativeVisitId is not null))
-        {
-            return ValidationError(
-                "Coverage count and oldest Visit selector require new-Membership coverage.",
-                "negativeCoverageCount");
+                "A signed membership issue preview is required.",
+                "previewToken");
         }
 
         if (command.EntryBatchId is not null)
@@ -101,10 +72,8 @@ internal static class IssueMembershipCommandSupport
             command.MembershipTypeId,
             command.ExpectedMembershipTypeUpdatedAt.ToUniversalTime(),
             command.StartDate,
-            command.NegativeHandlingDecision,
+            command.PreviewToken.Trim(),
             command.EntryBatchId,
-            command.NegativeCoverageCount,
-            command.ExpectedOldestOpenNegativeVisitId,
             normalizedEnvelope!);
         return null;
     }
@@ -126,11 +95,7 @@ internal static class IssueMembershipCommandSupport
             issue.MembershipTypeId,
             issue.ExpectedMembershipTypeUpdatedAt,
             issue.StartDate,
-            NegativeHandlingDecision = MapNegativeHandlingDecision(
-                issue.NegativeHandlingDecision),
             issue.EntryBatchId,
-            issue.NegativeCoverageCount,
-            issue.ExpectedOldestOpenNegativeVisitId,
         });
 
         return Convert.ToHexString(SHA256.HashData(payload));
@@ -154,7 +119,7 @@ internal static class IssueMembershipCommandSupport
                 record.PrimaryEntityId.Value,
                 issue.ClientId,
                 new AuditEntryId(record.AuditEntryId.Value),
-                WarningCodes(issue.NegativeHandlingDecision));
+                []);
         }
 
         return Error(
@@ -205,14 +170,6 @@ internal static class IssueMembershipCommandSupport
             new EntityId(IssueMembershipCommand.CanonicalRereadEntityType, clientId),
             warnings: warningCodes,
             auditEntryId: auditEntryId);
-    }
-
-    internal static IReadOnlyList<string> WarningCodes(
-        MembershipNegativeHandlingDecision? decision)
-    {
-        return decision == MembershipNegativeHandlingDecision.LeaveVisible
-            ? [MembershipWarningCodes.NegativeBalance]
-            : [];
     }
 
     internal static string? MapNegativeHandlingDecision(
@@ -392,10 +349,8 @@ internal sealed record NormalizedMembershipIssue(
     Guid MembershipTypeId,
     DateTimeOffset ExpectedMembershipTypeUpdatedAt,
     DateOnly StartDate,
-    MembershipNegativeHandlingDecision? NegativeHandlingDecision,
+    string PreviewToken,
     Guid? EntryBatchId,
-    int? NegativeCoverageCount,
-    Guid? ExpectedOldestOpenNegativeVisitId,
     CommandEnvelope Envelope)
 {
     public string IdempotencyKey => Envelope.IdempotencyKey!;

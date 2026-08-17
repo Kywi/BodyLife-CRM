@@ -419,6 +419,8 @@
   <data name="Fact.Replacement"><value>Погашення-замінник</value></data>
   <data name="Fact.ClosureType"><value>Тип погашення</value></data>
   <data name="Fact.CoveredVisits"><value>Погашені відвідування</value></data>
+  <data name="Fact.RemainingNegativeBalance"><value>Залишок від’ємного балансу</value></data>
+  <data name="Fact.ForcedCoverageStart"><value>Примусовий початок покриття</value></data>
   <data name="Payment.Method.Cash"><value>Готівка</value></data>
   <data name="Changed.Currency"><value>Валюта</value></data>
   <data name="Visit.Selection.Membership"><value>Явний абонемент</value></data>
@@ -436,6 +438,7 @@
   <data name="NegativeHandling.LeaveVisible"><value>Наявний від’ємний залишок залишено видимим</value></data>
   <data name="NegativeHandling.CoverWithNewMembership"><value>Покрито новим абонементом</value></data>
   <data name="NegativeHandling.RecordExplicitClosure"><value>Явне закриття від’ємного залишку зафіксовано</value></data>
+  <data name="NegativeHandling.AutomaticOldestFirst"><value>Автоматична політика: найдавніші спочатку</value></data>
 <data name="Fact.Name"><value>Назва</value></data>
   <data name="Fact.CatalogComment"><value>Коментар каталогу</value></data>
   <data name="Fact.ExistingNegativeBalance"><value>Наявний від’ємний залишок</value></data>

@@ -11,6 +11,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Memberships;
 public sealed class PreviewIssueMembershipQueryHandler(
     BodyLifeDbContext dbContext,
     MembershipNegativeVisitSelector negativeVisitSelector,
+    IMembershipIssuePreviewTokenService previewTokenService,
     TimeProvider timeProvider)
     : IBodyLifeQueryHandler<PreviewIssueMembershipQuery, PreviewIssueMembershipResult>
 {
@@ -49,30 +50,6 @@ public sealed class PreviewIssueMembershipQueryHandler(
             return PreviewIssueMembershipResult.Invalid(
                 "Proposed start date is required.",
                 "proposedStartDate");
-        }
-
-        if (query.NegativeHandlingDecision is { } decision
-            && !Enum.IsDefined(decision))
-        {
-            return PreviewIssueMembershipResult.Invalid(
-                "Negative handling decision is not supported.",
-                "negativeHandlingDecision");
-        }
-
-        if (query.NegativeCoverageCount is <= 0)
-        {
-            return PreviewIssueMembershipResult.Invalid(
-                "Negative coverage count must be positive.",
-                "negativeCoverageCount");
-        }
-
-        if (query.NegativeCoverageCount is not null
-            && query.NegativeHandlingDecision
-                != MembershipNegativeHandlingDecision.CoverWithNewMembership)
-        {
-            return PreviewIssueMembershipResult.Invalid(
-                "Negative coverage count requires new-Membership coverage.",
-                "negativeCoverageCount");
         }
 
         var clientExists = await dbContext.Set<ClientRecord>()
@@ -133,13 +110,6 @@ public sealed class PreviewIssueMembershipQueryHandler(
                 selection.FirstNegativeVisitDate,
                 selection.OpenConcreteVisits)
             : null;
-        if (existingNegativeState is null && query.NegativeHandlingDecision is not null)
-        {
-            return PreviewIssueMembershipResult.Invalid(
-                "A negative handling decision requires existing negative membership state.",
-                "negativeHandlingDecision");
-        }
-
         MembershipIssuePreview preview;
 
         try
@@ -161,8 +131,6 @@ public sealed class PreviewIssueMembershipQueryHandler(
                 catalogItem,
                 query.ProposedStartDate,
                 existingNegativeState,
-                query.NegativeHandlingDecision,
-                query.NegativeCoverageCount,
                 BusinessTimeZone.GetBusinessDate(now));
         }
         catch (ArgumentOutOfRangeException exception)
@@ -183,9 +151,19 @@ public sealed class PreviewIssueMembershipQueryHandler(
             return PreviewIssueMembershipResult.InactiveMembershipType();
         }
 
+        var token = previewTokenService.Issue(new MembershipIssuePreviewTokenMaterial(
+            query.ClientId,
+            membershipType.MembershipTypeId,
+            membershipType.UpdatedAt,
+            query.ProposedStartDate,
+            selection.TotalNegativeBalance,
+            existingNegativeState?.UnknownNegativeBalance ?? 0,
+            selection.OpenConcreteVisits,
+            preview.AutomaticCoveredNegativeVisitCount));
         return PreviewIssueMembershipResult.Succeeded(
             preview,
-            MembershipQuerySupport.BuildIssueActionPermissions());
+            MembershipQuerySupport.BuildIssueActionPermissions(),
+            token);
     }
 
     private sealed record MembershipTypeRow(

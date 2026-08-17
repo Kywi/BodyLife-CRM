@@ -282,15 +282,17 @@
   <data name="Membership.AddSalePayment" xml:space="preserve"><value>Add a cash membership-sale payment</value></data>
   <data name="Membership.Issuing" xml:space="preserve"><value>Issuing membership…</value></data>
   <data name="Membership.IssuingShort" xml:space="preserve"><value>Issuing…</value></data>
-  <data name="Membership.NegativeDecision.LeaveVisible" xml:space="preserve"><value>Leave the negative balance visible</value></data>
-  <data name="Membership.NegativeDecision.Cover" xml:space="preserve"><value>Cover with the new membership</value></data>
-  <data name="Membership.NegativeDecision.Closure" xml:space="preserve"><value>Record an explicit closure</value></data>
-  <data name="Membership.NegativeDecision.ClosureUnavailable" xml:space="preserve"><value>Use the separate negative-visit closure workflow; issuing a membership does not close one-off visits.</value></data>
-  <data name="Membership.NegativeCoverage.Title" xml:space="preserve"><value>Cover oldest negative visits with this membership</value></data>
+  <data name="Membership.ReviewIssue" xml:space="preserve"><value>Review issuance</value></data>
+  <data name="Membership.NegativeCoverage.Title" xml:space="preserve"><value>Automatic negative-visit coverage</value></data>
+  <data name="Membership.NegativeCoverage.CurrentBalance" xml:space="preserve"><value>Current negative balance</value></data>
+  <data name="Membership.NegativeCoverage.ZeroCapacityTitle" xml:space="preserve"><value>This type cannot cover negative visits</value></data>
+  <data name="Membership.NegativeCoverage.ZeroCapacityMessage" xml:space="preserve"><value>Choose a membership with visit capacity or use the separate one-off coverage action.</value></data>
   <data name="Membership.NegativeCoverage.Count" xml:space="preserve"><value>Visits to cover</value></data>
   <data name="Membership.NegativeCoverage.CountHint" xml:space="preserve"><value>Choose from 1 to {0}; no quantity is selected automatically.</value></data>
   <data name="Membership.NegativeCoverage.CoveredCount" xml:space="preserve"><value>Covered visits</value></data>
   <data name="Membership.NegativeCoverage.RemainingExisting" xml:space="preserve"><value>Remaining existing negative balance</value></data>
+  <data name="Membership.NegativeCoverage.RemainingConcrete" xml:space="preserve"><value>Uncovered concrete visits after issue</value></data>
+  <data name="Membership.NegativeCoverage.RemainingUnknown" xml:space="preserve"><value>Historical balance without visit records</value></data>
   <data name="Membership.NegativeCoverage.ForcedStart" xml:space="preserve"><value>Forced membership start date</value></data>
   <data name="Membership.NegativeCoverage.ResultingRemaining" xml:space="preserve"><value>Resulting remaining visits</value></data>
   <data name="Membership.NegativeCoverage.ResultingEffectiveEnd" xml:space="preserve"><value>Resulting effective end</value></data>

@@ -22,13 +22,7 @@ public sealed class MembershipIssuePreparation
         BaseEndDate = preview.BaseEndDate;
         ExpectedInitialState = preview.ExpectedInitialState;
         ExistingNegativeState = preview.ExistingNegativeState;
-        NegativeHandlingDecision = preview.SelectedNegativeHandlingDecision;
-        NegativeCoverageCount = preview.SelectedNegativeCoverageCount;
-        CoveredNegativeVisits = Array.AsReadOnly(
-            preview.ExistingNegativeState?.OpenConcreteVisits
-                .Take(preview.CoveredNegativeVisitCount)
-                .ToArray()
-            ?? []);
+        CoveredNegativeVisits = preview.CoveredNegativeVisits;
         RemainingExistingNegativeBalance = preview.RemainingExistingNegativeBalance;
         IsAlreadyExpiredAtIssue = preview.IsAlreadyExpiredAtPreview;
         Warnings = Array.AsReadOnly(warningItems);
@@ -47,10 +41,6 @@ public sealed class MembershipIssuePreparation
     public MembershipCalculatedState ExpectedInitialState { get; }
 
     public MembershipIssueNegativeContext? ExistingNegativeState { get; }
-
-    public MembershipNegativeHandlingDecision? NegativeHandlingDecision { get; }
-
-    public int? NegativeCoverageCount { get; }
 
     public IReadOnlyList<MembershipNegativeVisitCoverageCandidate> CoveredNegativeVisits { get; }
 

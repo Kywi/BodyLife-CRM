@@ -1353,9 +1353,8 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal(
             "8/30/2026",
             FactValue(explanation.AfterFacts, "Initial effective end date"));
-        Assert.Equal(
-            "Not required",
-            FactValue(explanation.AfterFacts, "Negative handling"));
+        Assert.Null(explanation.AfterFacts.SingleOrDefault(
+            fact => fact.Label == "Negative handling"));
         Assert.Equal("None", FactValue(explanation.AfterFacts, "Payment"));
         Assert.Equal("Issued Membership", explanation.ChangedFields);
         Assert.Contains("do not rewrite", explanation.Narrative, StringComparison.Ordinal);
@@ -1513,6 +1512,60 @@ public sealed class AuditEntryExplanationViewModelTests
         Assert.Equal(
             paymentId.ToString("N")[..8],
             FactValue(explanation.AfterFacts, "Payment record"));
+    }
+
+    [Fact]
+    public void MembershipIssueShowsAutomaticCoverageAndAllowsUnknownOnlyNullFirstDate()
+    {
+        var membershipId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var membershipTypeId = Guid.NewGuid();
+        var visitId = Guid.NewGuid();
+
+        var explanation = Assert.IsType<AuditEntryExplanationViewModel>(
+            Explain(
+                Entry(
+                    "membership.issued",
+                    AuditTimelineEntityType.Membership,
+                    membershipId,
+                    new { },
+                    MembershipIssueSummary(
+                        membershipId,
+                        clientId,
+                        membershipTypeId,
+                        negativeCoveragePolicy: "automatic_oldest_first",
+                        existingNegativeState: new
+                        {
+                            NegativeBalance = 2,
+                            FirstNegativeVisitDate = (DateOnly?)null,
+                            OpenConcreteVisitCount = 1,
+                            UnknownNegativeBalance = 1,
+                        },
+                        negativeCoverage: new
+                        {
+                            NegativeClosureId = Guid.NewGuid(),
+                            Count = 1,
+                            CoveredVisitIds = new[] { visitId },
+                            RemainingExistingNegativeBalance = 1,
+                            ForcedStartDate = new DateOnly(2026, 7, 29),
+                            IsAlreadyExpiredAtIssue = false,
+                        }),
+                    related: new
+                    {
+                        ClientId = clientId,
+                        MembershipTypeId = membershipTypeId,
+                        PaymentId = (Guid?)null,
+                    })));
+
+        Assert.True(explanation.IsAvailable);
+        Assert.Equal(
+            "Automatic oldest-first policy",
+            FactValue(explanation.AfterFacts, "Negative handling"));
+        Assert.Equal("1", FactValue(explanation.AfterFacts, "Covered visits"));
+        Assert.Equal("1", FactValue(explanation.AfterFacts, "Remaining negative balance"));
+        Assert.Equal("7/29/2026", FactValue(explanation.AfterFacts, "Forced coverage start"));
+        Assert.Null(explanation.BeforeFacts.SingleOrDefault(
+            fact => fact.Label == "First negative visit date"));
     }
 
     [Fact]
@@ -5488,7 +5541,9 @@ public sealed class AuditEntryExplanationViewModelTests
         Guid clientId,
         Guid membershipTypeId,
         string? negativeHandlingDecision = null,
+        string? negativeCoveragePolicy = null,
         object? existingNegativeState = null,
+        object? negativeCoverage = null,
         object? payment = null,
         string entryOrigin = "normal",
         Guid? entryBatchId = null,
@@ -5515,7 +5570,9 @@ public sealed class AuditEntryExplanationViewModelTests
             EntryBatchId = entryBatchId,
             Comment = comment,
             NegativeHandlingDecision = negativeHandlingDecision,
+            NegativeCoveragePolicy = negativeCoveragePolicy,
             ExistingNegativeState = existingNegativeState,
+            NegativeCoverage = negativeCoverage,
             Payment = payment,
             InitialState = new
             {

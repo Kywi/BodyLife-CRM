@@ -3,6 +3,7 @@ using BodyLife.Crm.Application.Commands;
 using BodyLife.Crm.Infrastructure.Persistence;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.Memberships;
+using BodyLife.Crm.Infrastructure.Persistence.NonWorkingDays;
 using BodyLife.Crm.Infrastructure.Persistence.Payments;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
@@ -35,21 +36,20 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
         var preview = await new PreviewIssueMembershipQueryHandler(
                 dbContext,
                 new MembershipNegativeVisitSelector(dbContext),
+                new HmacMembershipIssuePreviewTokenService(TokenOptions(), new FixedTimeProvider(TestNow)),
                 new FixedTimeProvider(TestNow))
             .ExecuteAsync(
                 new PreviewIssueMembershipQuery(
                     fixture.Actor,
                     fixture.ClientId,
                     fixture.CoveringTypeId,
-                    new DateOnly(2026, 7, 20),
-                    MembershipNegativeHandlingDecision.CoverWithNewMembership,
-                    NegativeCoverageCount: 2),
+                    new DateOnly(2026, 7, 20)),
                 CancellationToken.None);
         Assert.Equal(PreviewIssueMembershipStatus.Success, preview.Status);
         Assert.True(preview.Preview!.CanProceedToIssue);
-        Assert.Equal(fixture.VisitIds[2], preview.Preview.ExpectedOldestOpenNegativeVisitId);
+        Assert.Equal(fixture.VisitIds[2], preview.Preview.CoveredNegativeVisits[0].VisitId);
         Assert.Equal(new DateOnly(2026, 7, 3), preview.Preview.ProposedStartDate);
-        Assert.Equal(2, preview.Preview.CoveredNegativeVisitCount);
+        Assert.Equal(2, preview.Preview.AutomaticCoveredNegativeVisitCount);
         Assert.Equal(1, preview.Preview.RemainingExistingNegativeBalance);
         Assert.Equal(0, preview.Preview.ExpectedInitialRemainingVisits);
         var command = CreateCommand(
@@ -292,7 +292,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task InvalidCountsStaleOldestAndExpiredCoverageHaveStableOutcomes()
+    public async Task StalePreviewTokensAndExpiredAutomaticCoverageHaveStableOutcomes()
     {
         await using var database = await CreateMigratedDatabaseAsync();
         var fixture = await SeedFixtureAsync(
@@ -303,25 +303,48 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
         await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, expectedNegative: 1);
         var handler = CreateHandler(dbContext);
 
-        var zero = await handler.ExecuteAsync(
-            CreateCommand(fixture, "cover-zero", 0, fixture.VisitIds[2]),
-            CancellationToken.None);
-        var overLimit = await handler.ExecuteAsync(
-            CreateCommand(fixture, "cover-over-limit", 3, fixture.VisitIds[2]),
+        var malformed = await handler.ExecuteAsync(
+            CreateCommand(fixture, "cover-malformed", 0, fixture.VisitIds[2]) with
+            {
+                PreviewToken = "not-a-valid-preview-token",
+            },
             CancellationToken.None);
         var stale = await handler.ExecuteAsync(
-            CreateCommand(fixture, "cover-stale", 1, Guid.NewGuid()),
+            CreateCommand(fixture, "cover-stale", 1, Guid.NewGuid()) with
+            {
+                PreviewToken = new string('a', 12),
+            },
             CancellationToken.None);
 
-        AssertError(zero, CommandErrorCode.ValidationFailed, "negativeCoverageCount");
-        AssertError(
-            overLimit,
-            CommandErrorCode.ValidationFailed,
-            "negativeCoverageCount");
+        AssertError(malformed, CommandErrorCode.StaleState, "previewToken");
         AssertError(
             stale,
             CommandErrorCode.StaleState,
-            "expectedOldestOpenNegativeVisitId");
+            "previewToken");
+        var expiredToken = new HmacMembershipIssuePreviewTokenService(
+                TokenOptions(), new FixedTimeProvider(TestNow.AddMinutes(-6)))
+            .Issue(new MembershipIssuePreviewTokenMaterial(
+                fixture.ClientId,
+                fixture.CoveringTypeId,
+                CatalogUpdatedAt,
+                new DateOnly(2026, 7, 20),
+                1,
+                0,
+                [new MembershipNegativeVisitCoverageCandidate(
+                    fixture.VisitIds[2],
+                    fixture.SourceMembershipId,
+                    fixture.ConsumptionIds[2],
+                    new DateTimeOffset(2026, 7, 3, 10, 0, 0, TimeSpan.Zero),
+                    TestNow.AddMinutes(3),
+                    new DateOnly(2026, 7, 3))],
+                1)).Value;
+        var expiredTokenResult = await handler.ExecuteAsync(
+            CreateCommand(fixture, "cover-token-expired", 1, fixture.VisitIds[2]) with
+            {
+                PreviewToken = expiredToken,
+            },
+            CancellationToken.None);
+        AssertError(expiredTokenResult, CommandErrorCode.StaleState, "previewToken");
         await AssertNoNewIssueAsync(database);
 
         var expired = await handler.ExecuteAsync(
@@ -336,6 +359,62 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             new DateOnly(2026, 7, 3),
             await database.ExecuteScalarAsync<DateOnly>(
                 $"select effective_end_date from bodylife.membership_state_cache where membership_id = '{coveringMembershipId}'"));
+    }
+
+    [PostgreSqlFact]
+    public async Task ZeroCapacityStalePreviewBecomesStaleBeforeEligibilityCheck()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(
+            database,
+            sourceVisitCount: 3,
+            coveringVisitsLimit: 0);
+        await using var dbContext = database.CreateDbContext();
+
+        var noNegativeToken = new HmacMembershipIssuePreviewTokenService(
+                TokenOptions(), new FixedTimeProvider(TestNow))
+            .Issue(new MembershipIssuePreviewTokenMaterial(
+                fixture.ClientId,
+                fixture.CoveringTypeId,
+                CatalogUpdatedAt,
+                new DateOnly(2026, 7, 20),
+                0,
+                0,
+                [],
+                0)).Value;
+
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, expectedNegative: 1);
+        var stale = await CreateHandler(dbContext).ExecuteAsync(
+            CreateCommand(fixture, "zero-capacity-stale", 0, fixture.VisitIds[2]) with
+            {
+                PreviewToken = noNegativeToken,
+            },
+            CancellationToken.None);
+        AssertError(stale, CommandErrorCode.StaleState, "previewToken");
+
+        var preview = await new PreviewIssueMembershipQueryHandler(
+                dbContext,
+                new MembershipNegativeVisitSelector(dbContext),
+                new HmacMembershipIssuePreviewTokenService(TokenOptions(), new FixedTimeProvider(TestNow)),
+                new FixedTimeProvider(TestNow))
+            .ExecuteAsync(
+                new PreviewIssueMembershipQuery(
+                    fixture.Actor,
+                    fixture.ClientId,
+                    fixture.CoveringTypeId,
+                    new DateOnly(2026, 7, 20)),
+                CancellationToken.None);
+        Assert.Equal(PreviewIssueMembershipStatus.Success, preview.Status);
+        Assert.False(preview.Preview!.CanProceedToIssue);
+
+        var ineligible = await CreateHandler(dbContext).ExecuteAsync(
+            CreateCommand(fixture, "zero-capacity-current", 0, fixture.VisitIds[2]) with
+            {
+                PreviewToken = preview.PreviewToken!.Value,
+            },
+            CancellationToken.None);
+        AssertError(ineligible, CommandErrorCode.MembershipNotEligible, "membershipTypeId");
+        await AssertNoNewIssueAsync(database);
     }
 
     [PostgreSqlFact]
@@ -374,17 +453,17 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
         AssertError(
             stale,
             CommandErrorCode.StaleState,
-            "expectedOldestOpenNegativeVisitId");
+            "previewToken");
         Assert.Equal(
             1L,
             await database.ExecuteScalarAsync<long>(
                 "select count(*) from bodylife.membership_negative_closures"));
         Assert.Equal(
-            1L,
+            2L,
             await database.ExecuteScalarAsync<long>(
-                $"select count(*) from bodylife.membership_negative_closure_items where visit_id = '{fixture.VisitIds[2]}' and status = 'active'"));
+                "select count(*) from bodylife.membership_negative_closure_items where status = 'active'"));
         Assert.Equal(
-            2,
+            1,
             await ReadCacheValueAsync(
                 database,
                 fixture.SourceMembershipId,
@@ -457,7 +536,8 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
     private static async Task<CoverageFixture> SeedFixtureAsync(
         PostgreSqlTestDatabase database,
         int sourceVisitCount,
-        int coveringDurationDays = 30)
+        int coveringDurationDays = 30,
+        int coveringVisitsLimit = 2)
     {
         var fixture = new CoverageFixture(
             new ActorContext(
@@ -509,7 +589,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
                 (@source_type_id, 'Two visits', 'ordinary', 30, 2, 900,
                     'UAH', true, null, @created_at, @catalog_updated_at, null),
                 (@covering_type_id, 'Cover plan', 'ordinary', @covering_duration_days,
-                    2, 1200, 'UAH', true, null, @created_at, @catalog_updated_at, null);
+                    @covering_visits_limit, 1200, 'UAH', true, null, @created_at, @catalog_updated_at, null);
 
             insert into bodylife.issued_memberships (
                 id, client_id, membership_type_id, issuance_mode, type_name_snapshot,
@@ -539,6 +619,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             ("covering_type_id", fixture.CoveringTypeId),
             ("source_membership_id", fixture.SourceMembershipId),
             ("covering_duration_days", coveringDurationDays),
+            ("covering_visits_limit", coveringVisitsLimit),
             ("now", TestNow.AddHours(-2)),
             ("expires_at", TestNow.AddHours(8)),
             ("created_at", TestNow.AddDays(-10)),
@@ -606,10 +687,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             fixture.CoveringTypeId,
             CatalogUpdatedAt,
             new DateOnly(2026, 7, 20),
-            MembershipNegativeHandlingDecision.CoverWithNewMembership,
-            EntryBatchId: null,
-            coverageCount,
-            expectedOldestVisitId);
+            CreatePreviewToken(fixture));
     }
 
     private static IssueMembershipCommand CreatePaperCommand(
@@ -647,9 +725,30 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             auditAppender,
             new MembershipIssuePaymentWriter(dbContext, auditAppender),
             new MembershipNegativeVisitSelector(dbContext),
+            new HmacMembershipIssuePreviewTokenService(TokenOptions(), timeProvider),
             new MembershipStateCacheRebuilder(dbContext, timeProvider),
             timeProvider);
     }
+
+    private static string CreatePreviewToken(CoverageFixture fixture)
+    {
+        var candidates = fixture.VisitIds.Skip(2).Select((visitId, offset) =>
+        {
+            var index = offset + 2;
+            var occurred = new DateTimeOffset(2026, 7, index + 1, 10, 0, 0, TimeSpan.Zero);
+            return new MembershipNegativeVisitCoverageCandidate(
+                visitId, fixture.SourceMembershipId, fixture.ConsumptionIds[index], occurred,
+                TestNow.AddMinutes(index + 1), DateOnly.FromDateTime(occurred.UtcDateTime));
+        }).ToArray();
+        return new HmacMembershipIssuePreviewTokenService(TokenOptions(), new FixedTimeProvider(TestNow))
+            .Issue(new MembershipIssuePreviewTokenMaterial(
+                fixture.ClientId, fixture.CoveringTypeId, CatalogUpdatedAt, new DateOnly(2026, 7, 20),
+                candidates.Length, 0, candidates, Math.Min(2, candidates.Length))).Value;
+    }
+
+    private static NonWorkingDayPreviewTokenOptions TokenOptions() => new(
+        Convert.ToBase64String(Enumerable.Repeat((byte)23, 32).ToArray()),
+        TimeSpan.FromMinutes(5));
 
     private static async Task RebuildSourceAsync(
         BodyLifeDbContext dbContext,

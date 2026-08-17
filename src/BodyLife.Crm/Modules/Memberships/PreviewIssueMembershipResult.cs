@@ -8,11 +8,13 @@ public sealed record PreviewIssueMembershipResult(
     QueryPermissionSet AllowedActions,
     string? ErrorCode,
     string? ErrorMessage,
-    string? ErrorField)
+    string? ErrorField,
+    MembershipIssuePreviewToken? PreviewToken = null)
 {
     public static PreviewIssueMembershipResult Succeeded(
         MembershipIssuePreview preview,
-        QueryPermissionSet allowedActions)
+        QueryPermissionSet allowedActions,
+        MembershipIssuePreviewToken? previewToken = null)
     {
         ArgumentNullException.ThrowIfNull(preview);
         ArgumentNullException.ThrowIfNull(allowedActions);
@@ -23,7 +25,8 @@ public sealed record PreviewIssueMembershipResult(
             allowedActions,
             ErrorCode: null,
             ErrorMessage: null,
-            ErrorField: null);
+            ErrorField: null,
+            PreviewToken: previewToken);
     }
 
     public static PreviewIssueMembershipResult Denied()
@@ -98,6 +101,7 @@ public sealed record PreviewIssueMembershipResult(
             QueryPermissionSet.Empty,
             errorCode,
             errorMessage,
-            field);
+            field,
+            PreviewToken: null);
     }
 }

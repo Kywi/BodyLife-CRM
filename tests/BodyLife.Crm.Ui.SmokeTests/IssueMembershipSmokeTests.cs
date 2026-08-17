@@ -97,11 +97,12 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
 
             var today = BusinessTimeZone.GetBusinessDate(DateTimeOffset.UtcNow);
             var probeDate = today.AddDays(1);
+            var expectedPreviewStartDate = hasExistingNegative ? today : probeDate;
             await RefreshPreviewDateAsync(page, probeDate);
             panel = profile.Locator("#issue-membership-action-panel");
             await ExpectVisibleAsync(
                 panel.Locator(
-                    $"[data-issue-preview-base-end][data-iso-date='{probeDate.AddDays(29).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}']"),
+                    $"[data-issue-preview-base-end][data-iso-date='{expectedPreviewStartDate.AddDays(29).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}']"),
                 viewportName,
                 "refreshed base end date");
             await RefreshPreviewDateAsync(page, today);
@@ -288,6 +289,78 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
         }
     }
 
+    [Fact]
+    public async Task IssueMembershipUsesNativeTwoStepPreviewWithoutJavascript()
+    {
+        Assert.NotNull(_browser);
+        var clientId = _app.IssueNoJavaScriptClientId;
+        var membershipCountBefore = await _app.CountIssuedMembershipsAsync(clientId);
+        var paymentCountBefore = await _app.CountActivePaymentsAsync(clientId);
+        var auditCountBefore = await _app.CountIssueMembershipAuditEntriesAsync(clientId);
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            Locale = ReceptionAppFixture.WorkflowCulture,
+            JavaScriptEnabled = false,
+            ViewportSize = new ViewportSize { Width = 1024, Height = 768 },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await page.GotoAsync(_app.BaseAddress.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+            });
+            await LoginWithoutJavascriptAsync(page, "issue no-js");
+            await page.Locator("#reception-search")
+                .GetByRole(AriaRole.Searchbox, new() { Name = "Client search", Exact = true })
+                .FillAsync("BL-ISSUE-NO-JS");
+            await page.Locator("#reception-search")
+                .GetByRole(AriaRole.Button, new() { Name = "Search", Exact = true })
+                .ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var panel = page.Locator("#issue-membership-action-panel");
+            await panel.Locator("summary").ClickAsync();
+            var form = panel.Locator("form");
+            await form.GetByLabel("Membership type", new() { Exact = true })
+                .SelectOptionAsync(_app.IssueMembershipTypeId.ToString());
+
+            await form.GetByRole(AriaRole.Button, new() { Name = "Review issuance", Exact = true })
+                .ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            panel = page.Locator("#issue-membership-action-panel");
+            form = panel.Locator("form");
+            if (!await panel.EvaluateAsync<bool>("element => element.open"))
+            {
+                await panel.Locator("summary").ClickAsync();
+            }
+            Assert.True(await panel.EvaluateAsync<bool>("element => element.open"));
+            var previewToken = await form.Locator("input[name='form.PreviewToken']").InputValueAsync();
+            Assert.False(string.IsNullOrWhiteSpace(previewToken));
+            await ExpectVisibleAsync(panel.Locator(".issue-membership-preview"), "tablet", "no-JavaScript issue preview");
+            Assert.Equal(membershipCountBefore, await _app.CountIssuedMembershipsAsync(clientId));
+            Assert.Equal(paymentCountBefore, await _app.CountActivePaymentsAsync(clientId));
+            Assert.Equal(auditCountBefore, await _app.CountIssueMembershipAuditEntriesAsync(clientId));
+
+            await form.GetByRole(AriaRole.Button, new() { Name = "Issue membership", Exact = true })
+                .ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            Assert.Equal(membershipCountBefore + 1, await _app.CountIssuedMembershipsAsync(clientId));
+            Assert.Equal(paymentCountBefore + 1, await _app.CountActivePaymentsAsync(clientId));
+            Assert.Equal(auditCountBefore + 1, await _app.CountIssueMembershipAuditEntriesAsync(clientId));
+            await ExpectVisibleAsync(
+                page.Locator("#client-profile"),
+                "tablet",
+                "no-JavaScript canonical issue reread");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
     private async Task AssertNegativeCoverageAsync(
         IPage page,
         ILocator profile,
@@ -298,114 +371,20 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
         string idempotencyKey)
     {
         await ExpectVisibleAsync(
-            panel.GetByText("Balance: −1", new() { Exact = false }),
+            panel.Locator(".issue-negative-current").GetByText("−1", new() { Exact = true }),
             viewportName,
             "existing negative balance");
-        var options = panel.Locator("input[name='form.NegativeHandlingDecision']");
-        Assert.Equal(3, await options.CountAsync());
-        Assert.Equal(
-            2,
-            await panel.Locator(
-                "input[name='form.NegativeHandlingDecision']:not([disabled])").CountAsync());
-        Assert.True(await panel.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Issue membership" }).IsDisabledAsync());
-
-        await SubmitHtmxIssueMembershipAsync(page, bypassValidation: true);
-        panel = profile.Locator("#issue-membership-action-panel");
         await ExpectVisibleAsync(
-            panel.GetByText(
-                "Choose how to handle existing negative visits before issuing.",
-                new() { Exact = true }),
+            panel.Locator("[data-automatic-negative-coverage]"),
             viewportName,
-            "negative decision requirement");
-        Assert.Equal(
-            idempotencyKey,
-            await panel.Locator("input[name='form.IdempotencyKey']").InputValueAsync());
-        await AssertNoIssueMutationAsync(clientId, membershipCountBefore);
-
-        var responseTask = page.WaitForResponseAsync(response =>
-            response.Request.Method == "GET"
-            && response.Url.Contains(
-                "handler=IssueMembershipPreview",
-                StringComparison.OrdinalIgnoreCase));
-        await panel.GetByLabel(
-            "Cover with the new membership",
-            new() { Exact = true }).CheckAsync();
-        AssertHtmxResponse(await responseTask);
-        await WaitForHtmxSettleAsync(page);
-        panel = profile.Locator("#issue-membership-action-panel");
-        var count = panel.GetByLabel("Visits to cover", new() { Exact = true });
-        Assert.Equal(string.Empty, await count.InputValueAsync());
-        Assert.True(await panel.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Issue membership" }).IsDisabledAsync());
-        Assert.Equal(1, await panel.Locator(
-            "input[name='form.ExpectedOldestOpenNegativeVisitId']").CountAsync());
-
-        responseTask = page.WaitForResponseAsync(response =>
-            response.Request.Method == "GET"
-            && response.Url.Contains(
-                "handler=IssueMembershipPreview",
-                StringComparison.OrdinalIgnoreCase));
-        await count.FillAsync("1");
-        await count.PressAsync("Tab");
-        AssertHtmxResponse(await responseTask);
-        await WaitForHtmxSettleAsync(page);
-
-        panel = profile.Locator("#issue-membership-action-panel");
-        await ExpectVisibleAsync(
-            panel.GetByText("Covered visits", new() { Exact = true }),
-            viewportName,
-            "coverage preview");
-        Assert.Equal(1, await panel.Locator("[data-negative-visit-id]").CountAsync());
-        Assert.Equal(
-            "1",
-            await panel.GetByLabel("Visits to cover", new() { Exact = true }).InputValueAsync());
+            "automatic coverage preview");
+        Assert.Equal(1, await panel.Locator(".issue-negative-coverage-summary").CountAsync());
+        Assert.Equal(0, await panel.Locator("input[name='form.NegativeHandlingDecision']").CountAsync());
+        Assert.Equal(0, await panel.Locator("input[name='form.NegativeCoverageCount']").CountAsync());
+        Assert.Equal(0, await panel.Locator("input[name='form.ExpectedOldestOpenNegativeVisitId']").CountAsync());
         Assert.False(await panel.GetByRole(
             AriaRole.Button,
             new() { Name = "Issue membership" }).IsDisabledAsync());
-
-        responseTask = page.WaitForResponseAsync(response =>
-            response.Request.Method == "GET"
-            && response.Url.Contains(
-                "handler=IssueMembershipPreview",
-                StringComparison.OrdinalIgnoreCase));
-        await panel.GetByLabel(
-            "Leave the negative balance visible",
-            new() { Exact = true }).CheckAsync();
-        AssertHtmxResponse(await responseTask);
-        await WaitForHtmxSettleAsync(page);
-
-        panel = profile.Locator("#issue-membership-action-panel");
-        Assert.Equal(0, await panel.Locator(".issue-negative-coverage").CountAsync());
-        Assert.False(await panel.GetByRole(
-            AriaRole.Button,
-            new() { Name = "Issue membership" }).IsDisabledAsync());
-
-        responseTask = page.WaitForResponseAsync(response =>
-            response.Request.Method == "GET"
-            && response.Url.Contains(
-                "handler=IssueMembershipPreview",
-                StringComparison.OrdinalIgnoreCase));
-        await panel.GetByLabel(
-            "Cover with the new membership",
-            new() { Exact = true }).CheckAsync();
-        AssertHtmxResponse(await responseTask);
-        await WaitForHtmxSettleAsync(page);
-
-        panel = profile.Locator("#issue-membership-action-panel");
-        count = panel.GetByLabel("Visits to cover", new() { Exact = true });
-        Assert.Equal(string.Empty, await count.InputValueAsync());
-        responseTask = page.WaitForResponseAsync(response =>
-            response.Request.Method == "GET"
-            && response.Url.Contains(
-                "handler=IssueMembershipPreview",
-                StringComparison.OrdinalIgnoreCase));
-        await count.FillAsync("1");
-        await count.PressAsync("Tab");
-        AssertHtmxResponse(await responseTask);
-        await WaitForHtmxSettleAsync(page);
     }
 
     private async Task AssertNoIssueMutationAsync(Guid clientId, long membershipCountBefore)
@@ -429,6 +408,20 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
                 Width = width,
                 Height = height,
             },
+        });
+    }
+
+    private async Task LoginWithoutJavascriptAsync(IPage page, string deviceLabel)
+    {
+        await page.GetByRole(AriaRole.Textbox, new() { Name = "Login" })
+            .FillAsync(_app.LoginName);
+        await page.GetByLabel("Password", new() { Exact = true }).FillAsync(_app.Password);
+        await page.GetByLabel("Device", new() { Exact = true }).FillAsync(deviceLabel);
+        await page.GetByRole(AriaRole.Button, new() { Name = "Login" }).ClickAsync();
+        await page.WaitForURLAsync("**/");
+        await page.GotoAsync(new Uri(_app.BaseAddress, "/Reception/Index").ToString(), new PageGotoOptions
+        {
+            WaitUntil = WaitUntilState.NetworkIdle,
         });
     }
 
