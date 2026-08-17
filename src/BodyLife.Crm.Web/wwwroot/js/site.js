@@ -784,9 +784,9 @@ document.addEventListener("click", (event) => {
       activateProfileAction(workspace, "mark-visit-action-panel");
       window.setTimeout(() => {
         const panel = workspace.querySelector("#mark-visit-action-panel");
-        panel?.scrollIntoView({ block: "start", behavior: "auto" });
+        workspace.scrollIntoView({ block: "start", behavior: "auto" });
         panel?.querySelector(
-          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])")?.focus();
+          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])")?.focus({ preventScroll: true });
       }, 0);
     }
   }
@@ -799,9 +799,9 @@ document.addEventListener("click", (event) => {
       event.preventDefault();
       activateProfileAction(workspace, "issue-membership-action-panel");
       window.setTimeout(() => {
-        panel?.scrollIntoView({ block: "start", behavior: "auto" });
+        workspace.scrollIntoView({ block: "start", behavior: "auto" });
         panel?.querySelector(
-          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])")?.focus();
+          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])")?.focus({ preventScroll: true });
       }, 0);
     }
   }

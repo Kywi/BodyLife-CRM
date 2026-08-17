@@ -1069,6 +1069,7 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   .reception-page #client-profile .client-profile-meta,
   .reception-page #client-profile .membership-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .reception-page #client-profile .profile-passport { top: 90px; }
+  .reception-page #client-profile .profile-action-workspace { scroll-margin-top: 126px; }
   .reception-page #negative-visit-coverage-panel { scroll-margin-top: 126px; }
 }
 @media (max-width: 720px) {
@@ -1086,9 +1087,11 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   .reception-page #client-profile .profile-passport-membership-name { align-items: flex-start; flex-direction: column; }
   .reception-page #client-profile .profile-history-tabs button { flex: 1 1 0; padding-inline: var(--space-2); }
   .reception-page #client-profile .profile-history-disclosure > summary { grid-template-columns: minmax(0, 1fr) 24px; }
+  .reception-page #client-profile .profile-action-workspace { scroll-margin-top: 156px; }
   .reception-page #negative-visit-coverage-panel { scroll-margin-top: 156px; }
   .reception-page #negative-visit-coverage-panel .negative-coverage-summary,.reception-page #negative-visit-coverage-panel .negative-coverage-methods { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 480px) {
+  .reception-page #client-profile .profile-action-workspace { scroll-margin-top: 208px; }
   .reception-page #negative-visit-coverage-panel { scroll-margin-top: 208px; }
 }

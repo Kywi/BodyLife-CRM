@@ -64,6 +64,8 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
                 "() => document.activeElement?.closest('#issue-membership-action-panel') !== null");
             Assert.True(await page.EvaluateAsync<bool>(
                 "() => document.activeElement?.closest('#issue-membership-action-panel') !== null"));
+            Assert.True(await page.EvaluateAsync<bool>(
+                "() => { const workspace = document.querySelector('[data-profile-action-workspace]'); const header = document.querySelector('.app-global-header'); return workspace && header && workspace.getBoundingClientRect().top >= header.getBoundingClientRect().bottom; }"));
             Assert.Equal(1, await panel.Locator(
                 "#negative-coverage-close-form input[name='__RequestVerificationToken']").CountAsync());
             Assert.Equal(0, await panel.Locator("input[type='radio']:checked").CountAsync());
