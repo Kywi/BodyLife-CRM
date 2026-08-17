@@ -610,6 +610,7 @@ document.addEventListener("change", (event) => {
 });
 
 const profileActionWorkspaceSelector = "[data-profile-action-workspace]";
+const profileActionState = new Map();
 
 const getProfileActionWorkspaces = (root) => {
   const workspaces = new Set();
@@ -649,6 +650,9 @@ const activateProfileAction = (workspace, targetId) => {
       "aria-pressed",
       String(trigger.dataset.profileActionTarget === selectedPanel.id));
   }
+
+  const clientId = workspace.closest("#client-profile")?.dataset.clientProfileClientId;
+  if (clientId) profileActionState.set(clientId, selectedPanel.id);
 };
 
 const syncProfileActionWorkspace = (workspace) => {
@@ -663,10 +667,27 @@ const syncProfileActionWorkspace = (workspace) => {
     return;
   }
 
+  const hashTarget = window.location.hash.slice(1);
+  const restoredTarget = workspace.dataset.profileActionRestore;
+  const clientId = workspace.closest("#client-profile")?.dataset.clientProfileClientId;
+  const rememberedTarget = clientId ? profileActionState.get(clientId) : undefined;
   const openPanel = panels.find((panel) => panel.open);
   const pressedTarget = workspace.querySelector(
     "[data-profile-action-target][aria-pressed='true']")?.dataset.profileActionTarget;
-  activateProfileAction(workspace, openPanel?.id ?? pressedTarget ?? panels[0].id);
+  const hashPanel = workspace.dataset.profileActionHashApplied
+    ? undefined
+    : panels.find((panel) => panel.id === hashTarget);
+  const targetId = restoredTarget ?? hashPanel?.id ?? rememberedTarget ?? openPanel?.id ?? pressedTarget ?? panels[0].id;
+  activateProfileAction(workspace, targetId);
+  if (hashPanel) {
+    workspace.dataset.profileActionHashApplied = "true";
+    if (!restoredTarget && targetId === hashPanel.id) {
+      window.setTimeout(() => {
+        hashPanel.scrollIntoView({ block: "start", behavior: "auto" });
+      }, 0);
+    }
+  }
+  delete workspace.dataset.profileActionRestore;
   workspace.classList.add("is-enhanced");
   switcher.hidden = false;
 };
@@ -836,6 +857,11 @@ document.addEventListener("htmx:beforeRequest", (event) => {
     : requestElement?.closest?.("form");
   if (!(form instanceof HTMLFormElement)) return;
   const profile = form.closest("#client-profile");
+  const negativeCoveragePanel = form.closest("#negative-visit-coverage-panel");
+  const actionWorkspace = negativeCoveragePanel?.closest(profileActionWorkspaceSelector);
+  if (actionWorkspace instanceof HTMLElement) {
+    actionWorkspace.dataset.profileActionRestore = "negative-visit-coverage-panel";
+  }
   const clientId = profile?.dataset.clientProfileClientId;
   if (!clientId) return;
   const intent = form.dataset.profileHistoryIntent;

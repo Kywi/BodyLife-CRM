@@ -283,8 +283,8 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                 "negative Client profile");
             var coveragePanel = page.Locator("#negative-visit-coverage-panel");
             await ExpectVisibleAsync(coveragePanel, viewportName, "negative coverage panel");
-            Assert.True(await page.EvaluateAsync<bool>(
-                "() => { const panel = document.querySelector('#negative-visit-coverage-panel'); const header = document.querySelector('.app-global-header'); return panel && header && panel.getBoundingClientRect().top >= header.getBoundingClientRect().bottom; }"));
+            await page.WaitForFunctionAsync(
+                "() => { const panel = document.querySelector('#negative-visit-coverage-panel'); const header = document.querySelector('.app-global-header'); return panel && header && panel.open && panel.getBoundingClientRect().top >= header.getBoundingClientRect().bottom; }");
             await ExpectVisibleAsync(
                 coveragePanel.GetByRole(AriaRole.Link, new() { Name = "Cover with a new ordinary membership", Exact = true }),
                 viewportName,
@@ -294,6 +294,66 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                 viewportName,
                 "one-off negative coverage action");
             await AssertFitsViewportAsync(page, viewportName, "negative Client profile");
+        }
+        finally
+        {
+            await context.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task NegativeReportOpensCoverageActionWithoutJavascript()
+    {
+        Assert.NotNull(_browser);
+        var scenario = await _app.EnsureNegativeClientsReportScenarioAsync();
+        var context = await _browser.NewContextAsync(new BrowserNewContextOptions
+        {
+            JavaScriptEnabled = false,
+            Locale = ReceptionAppFixture.WorkflowCulture,
+            ViewportSize = new ViewportSize
+            {
+                Width = 390,
+                Height = 844,
+            },
+        });
+
+        try
+        {
+            var page = await context.NewPageAsync();
+            await LoginAsync(
+                page,
+                _app.LoginName,
+                _app.Password,
+                "phone no-js negative coverage");
+            await page.GotoAsync(
+                new Uri(
+                    _app.BaseAddress,
+                    $"/Reports/NegativeClients?asOf={scenario.AsOfDate:yyyy-MM-dd}").ToString(),
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+
+            var row = page.Locator("[data-negative-client-rows] > .negative-client-row")
+                .Filter(new LocatorFilterOptions { HasText = scenario.FeaturedClientDisplayName });
+            var action = row.GetByRole(
+                AriaRole.Link,
+                new() { Name = "Resolve negative visits", Exact = true });
+            var href = await action.GetAttributeAsync("href");
+            Assert.Contains("profileAction=negative", href, StringComparison.OrdinalIgnoreCase);
+            Assert.EndsWith("#negative-visit-coverage-panel", href, StringComparison.Ordinal);
+
+            await action.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var panel = page.Locator("#negative-visit-coverage-panel");
+            Assert.True(
+                await panel.GetAttributeAsync("open") is not null,
+                $"The server-rendered no-JavaScript action should be open. URL: {page.Url}{Environment.NewLine}" +
+                await panel.EvaluateAsync<string>("element => element.outerHTML"));
+            await ExpectVisibleAsync(
+                panel.Locator(".profile-action-content"),
+                "phone",
+                "no-JavaScript negative coverage action");
+            Assert.True(await page.Locator("[data-profile-action-switcher]").IsHiddenAsync());
+            await AssertFitsViewportAsync(page, "phone", "no-JavaScript negative coverage");
         }
         finally
         {

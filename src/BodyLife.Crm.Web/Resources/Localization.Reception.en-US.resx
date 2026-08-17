@@ -358,7 +358,11 @@
   <data name="NegativeCoverage.Unavailable" xml:space="preserve"><value>Negative-visit coverage is unavailable</value></data>
   <data name="NegativeCoverage.Eyebrow" xml:space="preserve"><value>Negative visits</value></data>
   <data name="NegativeCoverage.Title" xml:space="preserve"><value>Negative-visit coverage</value></data>
+  <data name="NegativeCoverage.Action" xml:space="preserve"><value>Cover negative balance</value></data>
   <data name="NegativeCoverage.Balance" xml:space="preserve"><value>Current negative balance: {0}</value></data>
+  <data name="NegativeCoverage.BalanceBadge" xml:space="preserve"><value>−{0}</value></data>
+  <data name="NegativeCoverage.BalanceLabel" xml:space="preserve"><value>Current negative balance</value></data>
+  <data name="NegativeCoverage.HistoryAction" xml:space="preserve"><value>Coverage history</value></data>
   <data name="NegativeCoverage.Intro" xml:space="preserve"><value>These visits were consumed under an earlier membership and remain visible until you explicitly cover them.</value></data>
   <data name="NegativeCoverage.Unknown" xml:space="preserve"><value>Unknown negative balance</value></data>
   <data name="NegativeCoverage.UnknownTitle" xml:space="preserve"><value>Old opening or backfill balance</value></data>

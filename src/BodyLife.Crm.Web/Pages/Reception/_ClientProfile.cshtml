@@ -37,7 +37,23 @@
             .Where(membership => membership.ExtensionExplanations.Count > 0)
             .ToArray();
         var membershipWarnings = profile.Membership.Warnings;
-        var selectedActionPanelId = Model.IssueMembershipForm?.IsOpen == true
+        var negativeCoverageBalance = Model.NegativeVisitCoveragePanel?
+            .CoverageResult.Coverage?.TotalNegativeBalance ?? 0;
+        var negativeCoverageRequested = string.Equals(
+            Context.Request.Query["profileAction"].ToString(),
+            "negative",
+            StringComparison.OrdinalIgnoreCase);
+        var negativeCoverageOpen = Model.NegativeVisitCoveragePanel is { } negativePanel
+            && (negativeCoverageRequested
+                || negativePanel.HasErrors
+                || negativePanel.ClosePreview is not null
+                || negativePanel.CorrectionPreviews.Count > 0);
+        var markVisitActionForm = negativeCoverageOpen && Model.MarkVisitForm is { } markVisit
+            ? markVisit with { IsOpen = false }
+            : Model.MarkVisitForm;
+        var selectedActionPanelId = negativeCoverageOpen
+            ? "negative-visit-coverage-panel"
+            : Model.IssueMembershipForm?.IsOpen == true
             ? "issue-membership-action-panel"
             : Model.AddPaymentForm?.IsOpen == true
                 ? "add-payment-action-panel"
@@ -203,13 +219,6 @@
                 </details>
         }
 
-        @if (Model.NegativeVisitCoveragePanel is not null)
-        {
-            <section class="profile-danger-context" aria-label="@L["Profile.NegativeCoverage"]">
-                <partial name="_NegativeVisitCoveragePanel" model="Model.NegativeVisitCoveragePanel" />
-            </section>
-        }
-
         @foreach (var issuedSaleCorrectionForm in Model.IssuedMembershipSaleCorrectionForms)
         {
             <section class="profile-review-context" aria-label="@L["Profile.SaleCorrections"]">
@@ -269,11 +278,27 @@
                         <partial name="/Pages/Shared/_Icon.cshtml" model='"freeze"' />@L["Freeze.Add"]
                     </button>
                 }
+                @if (Model.NegativeVisitCoveragePanel is not null)
+                {
+                    <button type="button"
+                            class="profile-action-trigger profile-action-trigger-negative"
+                            aria-controls="negative-visit-coverage-panel"
+                            aria-pressed="@(selectedActionPanelId == "negative-visit-coverage-panel" ? "true" : "false")"
+                            data-profile-action-target="negative-visit-coverage-panel">
+                        <partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@(negativeCoverageBalance > 0
+                            ? L["NegativeCoverage.Action"]
+                            : L["NegativeCoverage.HistoryAction"])
+                        @if (negativeCoverageBalance > 0)
+                        {
+                            <span class="profile-action-negative-badge">@L["NegativeCoverage.BalanceBadge", negativeCoverageBalance]</span>
+                        }
+                    </button>
+                }
             </div>
             <div class="profile-action-dock">
-                @if (Model.MarkVisitForm is not null)
+                @if (markVisitActionForm is not null)
                 {
-                    <partial name="_MarkVisitForm" model="Model.MarkVisitForm" />
+                    <partial name="_MarkVisitForm" model="markVisitActionForm" />
                 }
 
                 @if (Model.IssueMembershipForm is not null)
@@ -289,6 +314,11 @@
                 @if (Model.AddFreezeForm is not null)
                 {
                     <partial name="_AddFreezeForm" model="Model.AddFreezeForm" />
+                }
+
+                @if (Model.NegativeVisitCoveragePanel is not null)
+                {
+                    <partial name="_NegativeVisitCoveragePanel" model="Model.NegativeVisitCoveragePanel" />
                 }
             </div>
         </section>

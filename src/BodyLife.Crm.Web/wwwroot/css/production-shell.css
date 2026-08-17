@@ -553,7 +553,7 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
 }
 .reception-page #client-profile .profile-membership-history > .membership-extension-history { padding-bottom: var(--space-3); }
 .reception-page #client-profile .profile-action-workspace { scroll-margin-top: 104px; }
-.reception-page #client-profile .profile-workflow-column > :is(.profile-action-workspace, .profile-danger-context, .profile-review-context) {
+.reception-page #client-profile .profile-workflow-column > :is(.profile-action-workspace, .profile-review-context) {
   border-radius: calc(var(--radius-card) - 2px);
   padding: var(--space-4);
 }
@@ -645,11 +645,6 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
 .reception-page #client-profile .membership-panel-header .section-heading { color: var(--checkin-blue); }
 .reception-page #client-profile .profile-region-heading .eyebrow { margin: 0; color: var(--checkin-blue); font-size: var(--type-meta); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .reception-page #client-profile .membership-extension-history { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--line-quiet); }
-.reception-page #client-profile .profile-danger-context {
-  border-inline-start: 0;
-  background: var(--stop-red-soft);
-}
-.reception-page #client-profile .profile-danger-context > * { margin: 0; }
 .reception-page #client-profile .profile-review-context {
   border-inline-start: 0;
   background: var(--attention-amber-soft);
@@ -717,6 +712,20 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   border-color: var(--text-primary);
   background: var(--text-primary);
   color: #fff;
+}
+.reception-page #client-profile .profile-action-trigger-negative {
+  justify-content: flex-start;
+}
+.reception-page #client-profile .profile-action-negative-badge {
+  margin-inline-start: auto;
+  border: 1px solid color-mix(in srgb, var(--stop-red) 34%, var(--line-quiet));
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: color-mix(in srgb, var(--stop-red-soft) 66%, var(--desk-paper));
+  color: var(--stop-red);
+  font-size: var(--type-meta);
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
 }
 .reception-page #client-profile .profile-action-dock {
   display: grid;
@@ -1027,22 +1036,24 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   border-top: 1px solid var(--line-quiet);
   padding: var(--space-4) 0 0;
 }
-.reception-page #negative-visit-coverage-panel {
+.reception-page #client-profile .profile-action-dock > #negative-visit-coverage-panel {
   scroll-margin-top: 148px;
-  display: grid;
-  gap: var(--space-3);
-  border: 0;
-  border-radius: 0;
-  padding: var(--space-4) 0;
-  background: transparent;
-  box-shadow: none;
 }
+.reception-page #client-profile .profile-action-dock > #negative-visit-coverage-panel > .profile-action-content { display: grid; gap: var(--space-3); }
+.reception-page #client-profile .profile-action-dock > #negative-visit-coverage-panel > summary { justify-content: space-between; }
+.reception-page #client-profile .profile-action-dock > #negative-visit-coverage-panel > summary > span:first-child { display: inline-flex; min-width: 0; align-items: center; gap: 6px; }
+.reception-page #client-profile .profile-action-dock > #negative-visit-coverage-panel[open] > summary { color: var(--text-primary); }
 .reception-page #negative-visit-coverage-panel .negative-coverage-header { margin: 0; }
 .reception-page #negative-visit-coverage-panel .negative-coverage-intro { margin: 0; color: var(--text-secondary); }
+.reception-page #negative-visit-coverage-panel .negative-coverage-balance { display: flex; min-height: 44px; align-items: center; justify-content: space-between; gap: var(--space-3); border: 1px solid var(--line-quiet); border-radius: var(--radius-control); padding: var(--space-2) var(--space-3); background: var(--desk-inset); }
+.reception-page #negative-visit-coverage-panel .negative-coverage-balance > span { display: inline-flex; min-width: 0; align-items: center; gap: var(--space-2); color: var(--text-secondary); font-weight: 750; }
+.reception-page #negative-visit-coverage-panel .negative-coverage-balance .icon,.reception-page #negative-visit-coverage-panel .negative-coverage-balance > strong { color: var(--stop-red); }
+.reception-page #negative-visit-coverage-panel .negative-coverage-balance > strong { font-size: var(--type-panel); font-variant-numeric: tabular-nums; font-weight: 850; }
 .reception-page #negative-visit-coverage-panel .negative-coverage-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-1); margin: 0; }
 .reception-page #negative-visit-coverage-panel .negative-coverage-summary > div { min-width: 0; padding: var(--space-2) var(--space-3); background: var(--desk-inset); }
 .reception-page #negative-visit-coverage-panel .negative-coverage-summary dt { color: var(--text-tertiary); font-size: var(--type-meta); font-weight: 750; }
 .reception-page #negative-visit-coverage-panel .negative-coverage-summary dd { margin: var(--space-1) 0 0; color: var(--text-primary); font-size: var(--type-section); font-weight: 800; font-variant-numeric: tabular-nums; }
+.reception-page #negative-visit-coverage-panel .negative-coverage-summary > div:first-child dd { color: var(--stop-red); }
 .reception-page #negative-visit-coverage-panel :is(.negative-coverage-visits, .negative-coverage-one-off, .negative-coverage-correction) { margin: 0; border: 1px solid var(--line-quiet); border-radius: var(--radius-control); background: color-mix(in srgb, var(--desk-paper) 78%, var(--desk-inset)); }
 .reception-page #negative-visit-coverage-panel :is(.negative-coverage-visits, .negative-coverage-one-off, .negative-coverage-correction) > summary { min-height: 44px; padding: var(--space-3); color: var(--text-primary); font-weight: 750; }
 .reception-page #negative-visit-coverage-panel .negative-coverage-visits ol,.reception-page #negative-visit-coverage-panel .negative-coverage-one-off > p,.reception-page #negative-visit-coverage-panel .negative-coverage-one-off form { margin: 0 var(--space-3) var(--space-3); }
@@ -1070,7 +1081,7 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   .reception-page #client-profile .membership-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .reception-page #client-profile .profile-passport { top: 90px; }
   .reception-page #client-profile .profile-action-workspace { scroll-margin-top: 126px; }
-  .reception-page #negative-visit-coverage-panel { scroll-margin-top: 126px; }
+  .reception-page #client-profile .profile-action-dock > #negative-visit-coverage-panel { scroll-margin-top: 126px; }
 }
 @media (max-width: 720px) {
   .reception-page #client-profile > :not(.profile-loading) { padding: var(--space-3); }
@@ -1088,10 +1099,10 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   .reception-page #client-profile .profile-history-tabs button { flex: 1 1 0; padding-inline: var(--space-2); }
   .reception-page #client-profile .profile-history-disclosure > summary { grid-template-columns: minmax(0, 1fr) 24px; }
   .reception-page #client-profile .profile-action-workspace { scroll-margin-top: 156px; }
-  .reception-page #negative-visit-coverage-panel { scroll-margin-top: 156px; }
+  .reception-page #client-profile .profile-action-dock > #negative-visit-coverage-panel { scroll-margin-top: 156px; }
   .reception-page #negative-visit-coverage-panel .negative-coverage-summary,.reception-page #negative-visit-coverage-panel .negative-coverage-methods { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 480px) {
   .reception-page #client-profile .profile-action-workspace { scroll-margin-top: 208px; }
-  .reception-page #negative-visit-coverage-panel { scroll-margin-top: 208px; }
+  .reception-page #client-profile .profile-action-dock > #negative-visit-coverage-panel { scroll-margin-top: 228px; }
 }

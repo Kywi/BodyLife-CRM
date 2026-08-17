@@ -66,6 +66,38 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
                 "() => document.activeElement?.closest('#issue-membership-action-panel') !== null"));
             Assert.True(await page.EvaluateAsync<bool>(
                 "() => { const workspace = document.querySelector('[data-profile-action-workspace]'); const header = document.querySelector('.app-global-header'); return workspace && header && workspace.getBoundingClientRect().top >= header.getBoundingClientRect().bottom; }"));
+            var membershipType = issuePanel.Locator("[name='form.MembershipTypeId']");
+            var firstMembershipTypeValue = await membershipType.Locator("option:not([disabled])").First
+                .GetAttributeAsync("value");
+            Assert.False(string.IsNullOrWhiteSpace(firstMembershipTypeValue));
+            var issuePreviewResponse = page.WaitForResponseAsync(response =>
+                response.Request.Method == "GET"
+                && response.Url.Contains("handler=IssueMembershipPreview", StringComparison.OrdinalIgnoreCase));
+            await membershipType.SelectOptionAsync(firstMembershipTypeValue);
+            AssertHtmxResponse(await issuePreviewResponse);
+            await WaitForHtmxSettleAsync(page);
+            issuePanel = page.Locator("#issue-membership-action-panel");
+            await issuePanel.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
+            Assert.NotNull(await issuePanel.GetAttributeAsync("open"));
+            Assert.Equal(
+                "true",
+                await page.Locator("[data-profile-action-target='issue-membership-action-panel']")
+                    .GetAttributeAsync("aria-pressed"));
+            Assert.False(await page.Locator("#negative-visit-coverage-panel").IsVisibleAsync());
+            Assert.Equal(0, await issuePanel.Locator("[name='form.NegativeHandlingDecision']:checked").CountAsync());
+
+            await page.EvaluateAsync(
+                """
+                () => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("profileAction", "negative");
+                  url.hash = "negative-visit-coverage-panel";
+                  window.history.replaceState({}, "", url);
+                  const workspace = document.querySelector("[data-profile-action-workspace]");
+                  document.dispatchEvent(new CustomEvent("htmx:load", { detail: { elt: workspace } }));
+                }
+                """);
+            panel = await RequireAlreadyActiveCoveragePanelAsync(page, expectedBalance: 3);
             Assert.Equal(1, await panel.Locator(
                 "#negative-coverage-close-form input[name='__RequestVerificationToken']").CountAsync());
             Assert.Equal(0, await panel.Locator("input[type='radio']:checked").CountAsync());
@@ -85,7 +117,7 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
 
             await DelayMutationRequestsAsync(page, "CloseNegativeVisitsOneOff");
             await SubmitCloseAsync(page, repeatTapWhileBusy: true);
-            panel = await RequireCoveragePanelAsync(page, expectedBalance: 1);
+            panel = await RequireAlreadyActiveCoveragePanelAsync(page, expectedBalance: 1);
             await ExpectVisibleAsync(
                 OperationStatusTestHelper.Success(page).GetByText(
                     "Negative visits closed with one-off coverage",
@@ -135,7 +167,7 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
             await RequireCoveragePanelAsync(page, expectedBalance: 2);
             await PreviewCloseAsync(page, quantity: 2);
             await SubmitCloseAsync(page, repeatTapWhileBusy: false);
-            var panel = await RequireCoveragePanelAsync(page, expectedBalance: 0);
+            var panel = await RequireAlreadyActiveCoveragePanelAsync(page, expectedBalance: 0);
             Assert.Equal(0, await panel.Locator("[data-negative-open-visits] li").CountAsync());
 
             var afterClose = await _app.ReadNegativeCoverageMutationSnapshotAsync(
@@ -187,6 +219,7 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
                 $"{Environment.NewLine}DOM:{Environment.NewLine}{pageHtml}" +
                 $"{Environment.NewLine}{_app.ReadCapturedOutputForDiagnostics()}");
             panel = page.Locator("#negative-visit-coverage-panel");
+            await RequireAlreadyActiveCoveragePanelAsync(page, expectedBalance: 1);
             var replacementPanelText = await panel.InnerTextAsync();
             Assert.True(
                 afterReplace.ClosureCount == 2,
@@ -206,10 +239,10 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
             Assert.Equal(2, afterReplace.PaymentCreatedAuditCount);
             Assert.Equal(1, afterReplace.CorrectionIdempotencyCount);
 
-            Assert.Contains(
-                "Current negative balance: 1",
-                replacementPanelText,
-                StringComparison.Ordinal);
+            Assert.Equal(
+                "1",
+                await panel.Locator("[data-negative-balance]")
+                    .GetAttributeAsync("data-negative-balance-value"));
             Assert.Equal(1, await panel.Locator("[data-negative-open-visits] li").CountAsync());
             await AssertFitsViewportAsync(page, "phone", "replacement canonical result");
 
@@ -437,19 +470,45 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
         IPage page,
         int expectedBalance)
     {
+        await ActivateCoveragePanelAsync(page);
+        return await RequireAlreadyActiveCoveragePanelAsync(page, expectedBalance);
+    }
+
+    private static async Task<ILocator> RequireAlreadyActiveCoveragePanelAsync(
+        IPage page,
+        int expectedBalance)
+    {
         var panel = page.Locator("#negative-visit-coverage-panel");
         await panel.WaitForAsync(new LocatorWaitForOptions
         {
             State = WaitForSelectorState.Visible,
         });
-        await panel.GetByText(
-            $"Current negative balance: {expectedBalance}",
-            new() { Exact = true }).WaitForAsync();
+        await page.WaitForFunctionAsync(
+            "() => document.querySelector('#negative-visit-coverage-panel')?.open === true");
+        Assert.Equal(
+            "true",
+            await page.Locator("[data-profile-action-target='negative-visit-coverage-panel']")
+                .GetAttributeAsync("aria-pressed"));
+        if (expectedBalance > 0)
+        {
+            Assert.Equal(
+                expectedBalance.ToString(),
+                await panel.Locator("[data-negative-balance]")
+                    .GetAttributeAsync("data-negative-balance-value"));
+        }
+        else
+        {
+            Assert.Equal(0, await panel.Locator("[data-negative-balance]").CountAsync());
+        }
+        Assert.Equal(
+            expectedBalance > 0 ? 1 : 0,
+            await panel.Locator(".profile-action-negative-badge").CountAsync());
         return panel;
     }
 
     private static async Task PreviewCloseAsync(IPage page, int quantity)
     {
+        await ActivateCoveragePanelAsync(page);
         var disclosure = page.Locator(".negative-coverage-one-off");
         if (await disclosure.GetAttributeAsync("open") is null)
         {
@@ -467,6 +526,20 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
             new() { Name = "Preview coverage", Exact = true }).ClickAsync();
         AssertHtmxResponse(await responseTask);
         await WaitForHtmxSettleAsync(page);
+    }
+
+    private static async Task ActivateCoveragePanelAsync(IPage page)
+    {
+        var panel = page.Locator("#negative-visit-coverage-panel");
+        if (!await panel.EvaluateAsync<bool>("element => element.open"))
+        {
+            await page.Locator(
+                    "[data-profile-action-target='negative-visit-coverage-panel']")
+                .ClickAsync();
+        }
+
+        await page.WaitForFunctionAsync(
+            "() => document.querySelector('#negative-visit-coverage-panel')?.open === true");
     }
 
     private static async Task SubmitCloseAsync(IPage page, bool repeatTapWhileBusy)

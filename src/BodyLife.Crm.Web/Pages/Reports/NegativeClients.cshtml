@@ -133,6 +133,7 @@
                                     <a class="secondary-link"
                                        asp-page="/Reception/Index"
                                        asp-route-clientId="@row.ClientId"
+                                       asp-route-profileAction="negative"
                                        asp-fragment="negative-visit-coverage-panel">
                                         @(row.FirstNegativeVisitId is not null
                                             ? L["ResolveNegativeVisits"]

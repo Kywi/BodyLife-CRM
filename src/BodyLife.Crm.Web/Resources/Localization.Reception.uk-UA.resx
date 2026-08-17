@@ -358,7 +358,11 @@
   <data name="NegativeCoverage.Unavailable" xml:space="preserve"><value>Покриття від’ємних відвідувань недоступне</value></data>
   <data name="NegativeCoverage.Eyebrow" xml:space="preserve"><value>Від’ємні відвідування</value></data>
   <data name="NegativeCoverage.Title" xml:space="preserve"><value>Покриття від’ємних відвідувань</value></data>
+  <data name="NegativeCoverage.Action" xml:space="preserve"><value>Покрити мінус</value></data>
   <data name="NegativeCoverage.Balance" xml:space="preserve"><value>Поточний від’ємний баланс: {0}</value></data>
+  <data name="NegativeCoverage.BalanceBadge" xml:space="preserve"><value>−{0}</value></data>
+  <data name="NegativeCoverage.BalanceLabel" xml:space="preserve"><value>Поточний від’ємний баланс</value></data>
+  <data name="NegativeCoverage.HistoryAction" xml:space="preserve"><value>Історія покриття</value></data>
   <data name="NegativeCoverage.Intro" xml:space="preserve"><value>Ці відвідування були використані за попереднім абонементом і залишаються видимими, доки ви явно не покриєте їх.</value></data>
   <data name="NegativeCoverage.Unknown" xml:space="preserve"><value>Невідомий від’ємний баланс</value></data>
   <data name="NegativeCoverage.UnknownTitle" xml:space="preserve"><value>Старий залишок із початкового стану або бекфілу</value></data>

@@ -77,6 +77,9 @@ public sealed class IndexModel(
     [BindProperty(SupportsGet = true, Name = "create")]
     public bool Create { get; set; }
 
+    [BindProperty(SupportsGet = true, Name = "profileAction")]
+    public string? ProfileAction { get; set; }
+
     [TempData]
     public string? ClientOperationMessage { get; set; }
 
@@ -3306,6 +3309,7 @@ public sealed class IndexModel(
             includeInactive = IncludeInactive ? true : (bool?)null,
             pageCursor = PageCursor,
             clientId,
+            profileAction = ProfileAction,
         });
     }
 

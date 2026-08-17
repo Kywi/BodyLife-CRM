@@ -3,11 +3,32 @@
 @using BodyLife.Crm.Modules.Memberships
 @using BodyLife.Crm.Web.Localization
 @inject Microsoft.Extensions.Localization.IStringLocalizer<global::BodyLife.Crm.Web.Localization.Reception> L
+@{
+    var panelBalance = Model.CoverageResult.Coverage?.TotalNegativeBalance ?? 0;
+    var requestWantsPanelOpen = string.Equals(
+        Context.Request.Query["profileAction"].ToString(),
+        "negative",
+        StringComparison.OrdinalIgnoreCase);
+}
 
-<section id="negative-visit-coverage-panel"
-         class="negative-coverage-panel"
+<details id="negative-visit-coverage-panel"
+         class="profile-action-panel negative-coverage-panel"
+         name="profile-action"
+         open="@((requestWantsPanelOpen || Model.HasErrors || Model.ClosePreview is not null || Model.CorrectionPreviews.Count > 0) ? "open" : null)"
          aria-live="polite"
          data-negative-coverage-panel>
+    <summary>
+        <span>
+            <partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@(panelBalance > 0
+                ? L["NegativeCoverage.Action"]
+                : L["NegativeCoverage.HistoryAction"])
+        </span>
+        @if (Model.IsSafe && panelBalance > 0)
+        {
+            <span class="profile-action-negative-badge">@L["NegativeCoverage.BalanceBadge", panelBalance]</span>
+        }
+    </summary>
+    <div class="profile-action-content">
     @if (!Model.IsSafe)
     {
         <div class="warning-block warning-danger" role="alert">
@@ -64,24 +85,32 @@
             </div>
         }
 
-        <div class="warning-block @(coverage.TotalNegativeBalance > 0 ? "warning-danger" : null)">
-            <strong>@L["Warning.NegativeBalance.Title"]</strong>
-            <span>@L["NegativeCoverage.Balance", coverage.TotalNegativeBalance]</span>
-        </div>
+        @if (coverage.TotalNegativeBalance > 0)
+        {
+            <div class="negative-coverage-balance"
+                 data-negative-balance
+                 data-negative-balance-value="@coverage.TotalNegativeBalance">
+                <span><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["NegativeCoverage.BalanceLabel"]</span>
+                <strong>@coverage.TotalNegativeBalance</strong>
+            </div>
+        }
 
         @if (hasConcreteVisits)
         {
             <p class="negative-coverage-intro">@L["NegativeCoverage.Intro"]</p>
         }
 
-        <dl class="negative-coverage-summary">
-            <div><dt>@L["NegativeCoverage.OpenVisits"]</dt><dd>@coverage.OpenConcreteVisits.Count</dd></div>
-            <div><dt>@L["NegativeCoverage.First"]</dt><dd>@(coverage.FirstNegativeVisitDate is { } date ? ReceptionDisplayFormatter.Date(date) : L["Value.Unknown"])</dd></div>
-            @if (coverage.UnknownNegativeBalance > 0)
-            {
-                <div><dt>@L["NegativeCoverage.Unknown"]</dt><dd>@coverage.UnknownNegativeBalance</dd></div>
-            }
-        </dl>
+        @if (coverage.TotalNegativeBalance > 0)
+        {
+            <dl class="negative-coverage-summary">
+                <div><dt>@L["NegativeCoverage.OpenVisits"]</dt><dd>@coverage.OpenConcreteVisits.Count</dd></div>
+                <div><dt>@L["NegativeCoverage.First"]</dt><dd>@(coverage.FirstNegativeVisitDate is { } date ? ReceptionDisplayFormatter.Date(date) : L["Value.Unknown"])</dd></div>
+                @if (coverage.UnknownNegativeBalance > 0)
+                {
+                    <div><dt>@L["NegativeCoverage.Unknown"]</dt><dd>@coverage.UnknownNegativeBalance</dd></div>
+                }
+            </dl>
+        }
 
         @if (hasConcreteVisits)
         {
@@ -334,4 +363,5 @@
             </details>
         }
     }
-</section>
+    </div>
+</details>
