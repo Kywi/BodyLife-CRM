@@ -273,15 +273,21 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
                 "() => document.querySelector('.htmx-request') === null");
 
             var successMessage = page.Locator(
-                ".profile-operation-message.operation-success");
+                "#global-operation-status.global-operation-status-success");
             await successMessage.WaitForAsync(new LocatorWaitForOptions
             {
                 State = WaitForSelectorState.Visible,
                 Timeout = 5_000,
             });
+            Assert.Equal(1, await page.Locator("#global-operation-status").CountAsync());
+            Assert.Equal("status", await successMessage.GetAttributeAsync("role"));
+            Assert.Equal("polite", await successMessage.GetAttributeAsync("aria-live"));
+            Assert.Equal("true", await successMessage.GetAttributeAsync("aria-atomic"));
             Assert.StartsWith(
                 $"{successText}.",
-                (await successMessage.InnerTextAsync()).Trim(),
+                (await successMessage
+                    .Locator(".global-operation-status-copy > span:not(.global-operation-status-context)")
+                    .InnerTextAsync()).Trim(),
                 StringComparison.Ordinal);
             Assert.Equal(1L, await _app.CountActivePaymentsAsync(clientId));
             Assert.Equal(1L, await _app.CountCreatePaymentAuditEntriesAsync(clientId));
@@ -291,6 +297,14 @@ public sealed class LocalizationSmokeTests : IClassFixture<ReceptionAppFixture>,
             Assert.Equal("UAH", payment.Currency);
             Assert.Equal("one_off", payment.PaymentContext);
             Assert.Equal(comment, payment.Comment);
+
+            await SubmitHtmxSearchAsync(
+                page,
+                usePhoneClient ? "BL-PAYMENT-PHONE" : "BL-PAYMENT-TABLET");
+            Assert.Equal(1, await page.Locator("#global-operation-status").CountAsync());
+            Assert.True(
+                await page.Locator("#global-operation-status").IsHiddenAsync(),
+                "A later canonical Reception read must clear stale operation feedback.");
         }
         finally
         {

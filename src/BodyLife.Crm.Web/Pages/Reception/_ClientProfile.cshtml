@@ -104,7 +104,7 @@
         </aside>
         <div class="profile-workflow-column">
 
-        @if (!string.IsNullOrWhiteSpace(Model.OperationMessage))
+        @if (!Model.OperationSucceeded && !string.IsNullOrWhiteSpace(Model.OperationMessage))
         {
             <div class="operation-message profile-operation-message @(Model.OperationSucceeded ? "operation-success" : "operation-error")"
                  role="@(Model.OperationSucceeded ? "status" : "alert")">

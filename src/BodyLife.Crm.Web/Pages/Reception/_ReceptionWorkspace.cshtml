@@ -162,6 +162,18 @@
 
     </section>
     }
+
+    @if (string.Equals(Context.Request.Headers["HX-Request"], "true", StringComparison.OrdinalIgnoreCase))
+    {
+        var operationProfile = Model.Profile.Result?.Profile;
+        var operationStatus = Model.Profile.OperationSucceeded
+            ? new BodyLife.Crm.Web.Pages.Shared.OperationStatusViewModel(
+                Model.Profile.OperationMessage,
+                Context: operationProfile?.DisplayName,
+                IsUpdateFragment: true)
+            : new BodyLife.Crm.Web.Pages.Shared.OperationStatusViewModel(null, IsUpdateFragment: true);
+        <partial name="/Pages/Shared/_OperationStatus.cshtml" model="operationStatus" />
+    }
 </section>
 
 @functions {

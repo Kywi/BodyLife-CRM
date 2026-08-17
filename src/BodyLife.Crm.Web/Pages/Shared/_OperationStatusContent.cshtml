@@ -1,0 +1,23 @@
+@model BodyLife.Crm.Web.Pages.Shared.OperationStatusViewModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<BodyLife.Crm.Web.Localization.Shared> SharedLocalizer
+@{
+    var tone = Model.NormalizedTone;
+    var icon = tone == "success" ? "check" : tone is "warning" or "error" ? "warning" : "info";
+}
+<div class="global-operation-status-content">
+    <partial name="_Icon" model="icon" />
+    <span class="global-operation-status-copy">
+        @if (!string.IsNullOrWhiteSpace(Model.Context))
+        {
+            <span class="global-operation-status-context">@Model.Context</span>
+        }
+        <span>@Model.Message</span>
+    </span>
+    <button class="global-operation-status-dismiss"
+            type="button"
+            data-operation-status-dismiss
+            aria-label="@SharedLocalizer["OperationStatus.Dismiss"]">
+        <span aria-hidden="true">×</span>
+        <span class="visually-hidden">@SharedLocalizer["OperationStatus.Dismiss"]</span>
+    </button>
+</div>

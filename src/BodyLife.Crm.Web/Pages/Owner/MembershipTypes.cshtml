@@ -5,6 +5,13 @@
     ViewData["Title"] = Model.T("MembershipTypes.Title");
 }
 
+@section OperationStatus {
+    <partial name="/Pages/Shared/_OperationStatus.cshtml"
+             model="@(string.IsNullOrWhiteSpace(Model.OperationMessage)
+                 ? BodyLife.Crm.Web.Pages.Shared.OperationStatusViewModel.Empty
+                 : new BodyLife.Crm.Web.Pages.Shared.OperationStatusViewModel(Model.OperationMessage))" />
+}
+
 <main class="page-shell">
     <section class="owner-management owner-management-catalog" aria-labelledby="membership-types-title">
         <header class="management-header">
@@ -14,13 +21,6 @@
             </div>
             <a class="secondary-link" asp-page="/Reception/Index">@Model.T("MembershipTypes.Reception")</a>
         </header>
-
-        @if (!string.IsNullOrWhiteSpace(Model.OperationMessage))
-        {
-            <div class="operation-message operation-success" role="status">
-                @Model.OperationMessage
-            </div>
-        }
 
         @if (Model.CanCreateCatalog)
         {

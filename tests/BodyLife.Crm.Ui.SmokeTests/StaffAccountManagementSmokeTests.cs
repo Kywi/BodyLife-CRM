@@ -66,12 +66,24 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
             var updatedDisplayName = $"Updated {viewportName} desk";
             var loginName = $"managed.{viewportName}";
             var createForm = page.Locator("#create-account-form");
+            await createForm.GetByLabel("Display name").FillAsync("   ");
+            await createForm.GetByRole(AriaRole.Button, new() { Name = "Add account" }).ClickAsync();
+            await ExpectVisibleAsync(
+                page.Locator(".operation-message.operation-error"),
+                viewportName,
+                "local validation result");
+            Assert.True(
+                await page.Locator("#global-operation-status").IsHiddenAsync(),
+                "Failed staff commands must stay local instead of occupying the success rail.");
+
             await createForm.GetByLabel("Account type").SelectOptionAsync("SharedReceptionAdmin");
             await createForm.GetByLabel("Display name").FillAsync(displayName);
             await createForm.GetByRole(AriaRole.Button, new() { Name = "Add account" }).ClickAsync();
 
             await ExpectVisibleAsync(
-                page.GetByText("Staff account created.", new() { Exact = false }),
+                OperationStatusTestHelper.Success(page).GetByText(
+                    "Staff account created.",
+                    new() { Exact = false }),
                 viewportName,
                 "create result");
             var accountRow = FindAccountRow(page, displayName);
@@ -84,7 +96,9 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
             await accountRow.GetByLabel("Display name").FillAsync(updatedDisplayName);
             await accountRow.GetByRole(AriaRole.Button, new() { Name = "Save name" }).ClickAsync();
             await ExpectVisibleAsync(
-                page.GetByText("Staff account display name updated.", new() { Exact = false }),
+                OperationStatusTestHelper.Success(page).GetByText(
+                    "Staff account display name updated.",
+                    new() { Exact = false }),
                 viewportName,
                 "display-name result");
 
@@ -94,7 +108,9 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
                 .FillAsync($"managed {viewportName} password");
             await accountRow.GetByRole(AriaRole.Button, new() { Name = "Set credentials" }).ClickAsync();
             await ExpectVisibleAsync(
-                page.GetByText("Staff credentials configured.", new() { Exact = false }),
+                OperationStatusTestHelper.Success(page).GetByText(
+                    "Staff credentials configured.",
+                    new() { Exact = false }),
                 viewportName,
                 "credential setup result");
 
@@ -105,7 +121,9 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
                 .FillAsync("Scheduled credential rotation");
             await accountRow.GetByRole(AriaRole.Button, new() { Name = "Reset credentials" }).ClickAsync();
             await ExpectVisibleAsync(
-                page.GetByText("Staff credentials reset.", new() { Exact = false }),
+                OperationStatusTestHelper.Success(page).GetByText(
+                    "Staff credentials reset.",
+                    new() { Exact = false }),
                 viewportName,
                 "credential reset result");
 
@@ -115,7 +133,9 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
             page.Dialog += (_, dialog) => _ = dialog.AcceptAsync();
             await accountRow.GetByRole(AriaRole.Button, new() { Name = "Deactivate" }).ClickAsync();
             await ExpectVisibleAsync(
-                page.GetByText("Staff account deactivated.", new() { Exact = false }),
+                OperationStatusTestHelper.Success(page).GetByText(
+                    "Staff account deactivated.",
+                    new() { Exact = false }),
                 viewportName,
                 "deactivation result");
 
@@ -126,7 +146,9 @@ public sealed class StaffAccountManagementSmokeTests : IClassFixture<ReceptionAp
                 "inactive status");
             await accountRow.GetByRole(AriaRole.Button, new() { Name = "Activate" }).ClickAsync();
             await ExpectVisibleAsync(
-                page.GetByText("Staff account activated.", new() { Exact = false }),
+                OperationStatusTestHelper.Success(page).GetByText(
+                    "Staff account activated.",
+                    new() { Exact = false }),
                 viewportName,
                 "activation result");
 

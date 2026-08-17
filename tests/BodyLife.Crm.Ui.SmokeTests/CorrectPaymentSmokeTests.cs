@@ -195,7 +195,7 @@ public sealed class CorrectPaymentSmokeTests : IClassFixture<ReceptionAppFixture
                 ? "Payment corrected."
                 : "Payment canceled.";
             await ExpectVisibleAsync(
-                profile.GetByText(expectedOutcome),
+                OperationStatusTestHelper.Success(page).GetByText(expectedOutcome),
                 viewportName,
                 "Payment correction success message");
             Assert.Equal(

@@ -150,7 +150,7 @@ public sealed class AddFreezeSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             await SubmitHtmxAddFreezeAsync(page, repeatTapWhileBusy: true);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Freeze added."),
+                OperationStatusTestHelper.Success(page).GetByText("Freeze added."),
                 viewportName,
                 "Freeze success message");
             await OpenMembershipHistoryAsync(profile);

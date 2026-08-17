@@ -1,0 +1,38 @@
+@model BodyLife.Crm.Web.Pages.Shared.OperationStatusViewModel?
+@{
+    var status = Model ?? OperationStatusViewModel.Empty;
+    var tone = status.NormalizedTone;
+    var live = tone is "warning" or "error" ? "assertive" : "polite";
+    var role = tone is "warning" or "error" ? "alert" : "status";
+}
+@if (status.IsUpdateFragment)
+{
+    @* An inert payload travels inside the ordinary workspace swap. site.js applies it to the one shell host. *@
+    <template data-operation-status-update
+              data-operation-status-visible="@(status.IsVisible ? "true" : "false")"
+              data-operation-status-tone="@tone"
+              data-operation-status-auto-dismiss="@(status.AutoDismiss ? "true" : "false")"
+              data-operation-status-role="@role"
+              data-operation-status-live="@live">
+        @if (status.IsVisible)
+        {
+            <partial name="_OperationStatusContent" model="status" />
+        }
+    </template>
+}
+else
+{
+    <div id="global-operation-status"
+         class="global-operation-status global-operation-status-@tone"
+         data-operation-status
+         data-operation-status-auto-dismiss="@(status.AutoDismiss ? "true" : "false")"
+         role="@role"
+         aria-live="@live"
+         aria-atomic="true"
+         hidden="@(!status.IsVisible)">
+        @if (status.IsVisible)
+        {
+            <partial name="_OperationStatusContent" model="status" />
+        }
+    </div>
+}

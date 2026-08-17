@@ -195,7 +195,7 @@ public sealed class AddPaymentSmokeTests : IClassFixture<ReceptionAppFixture>, I
             await SubmitHtmxAddPaymentAsync(page, repeatTapWhileBusy: true);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Payment added."),
+                OperationStatusTestHelper.Success(page).GetByText("Payment added."),
                 viewportName,
                 "Payment success message");
             Assert.Equal(

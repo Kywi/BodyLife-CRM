@@ -179,7 +179,7 @@ public sealed class CancelFreezeSmokeTests : IClassFixture<ReceptionAppFixture>,
                 repeatTapWhileBusy: true);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Freeze canceled."),
+                OperationStatusTestHelper.Success(page).GetByText("Freeze canceled."),
                 viewportName,
                 "Freeze cancellation success message");
             await OpenMembershipHistoryAsync(profile);

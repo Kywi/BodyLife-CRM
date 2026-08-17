@@ -68,7 +68,8 @@ public sealed class TechnicalLogCorrelationSmokeTests :
             await createForm.GetByLabel("Display name").FillAsync(displayName);
             await createForm.GetByRole(AriaRole.Button, new() { Name = "Add account" })
                 .ClickAsync();
-            await page.GetByText("Staff account created.", new() { Exact = false })
+            await OperationStatusTestHelper.Success(page)
+                .GetByText("Staff account created.", new() { Exact = false })
                 .WaitForAsync();
 
             var requestCorrelationId = $"support-correlation-{Guid.NewGuid():N}";
@@ -86,7 +87,8 @@ public sealed class TechnicalLogCorrelationSmokeTests :
             page.Dialog += (_, dialog) => _ = dialog.AcceptAsync();
             await accountRow.GetByRole(AriaRole.Button, new() { Name = "Deactivate" })
                 .ClickAsync();
-            await page.GetByText("Staff account deactivated.", new() { Exact = false })
+            await OperationStatusTestHelper.Success(page)
+                .GetByText("Staff account deactivated.", new() { Exact = false })
                 .WaitForAsync();
 
             var audit = Assert.IsType<AuditCorrelationSmokeSnapshot>(

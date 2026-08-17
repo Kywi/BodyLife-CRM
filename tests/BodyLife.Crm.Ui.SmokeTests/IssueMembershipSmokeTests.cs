@@ -149,42 +149,58 @@ public sealed class IssueMembershipSmokeTests : IClassFixture<ReceptionAppFixtur
                 "Issue Membership button");
             await AssertFitsViewportAsync(page, viewportName, "Issue Membership form");
             await CaptureVisualAsync(page, viewportName, "issue-membership-form");
+            var mainContentTopBefore = await page.Locator("#main-content")
+                .EvaluateAsync<double>(
+                    "element => element.getBoundingClientRect().top + window.scrollY");
 
             await SubmitHtmxIssueMembershipAsync(page, repeatTapWhileBusy: true);
 
-            var successMessage = profile.GetByText("Membership issued with cash payment.");
+            var operationStatus = OperationStatusTestHelper.Success(page);
+            var successMessage = operationStatus.GetByText(
+                "Membership issued with cash payment.");
             Assert.True(
                 await successMessage.IsVisibleAsync(),
                 $"Issue Membership success message should be visible on {viewportName} " +
-                $"viewport.{Environment.NewLine}{await profile.InnerTextAsync()}" +
+                $"viewport.{Environment.NewLine}{await page.Locator("body").InnerTextAsync()}" +
                 $"{Environment.NewLine}{_app.ReadCapturedOutputForDiagnostics()}");
-            var successMessageGeometry = await successMessage.EvaluateAsync<string>(
+            Assert.Equal(1, await page.Locator("#global-operation-status").CountAsync());
+            await ExpectVisibleAsync(
+                operationStatus.Locator(".global-operation-status-context")
+                    .GetByText(clientDisplayName, new() { Exact = true }),
+                viewportName,
+                "operation status client context");
+            var successMessageGeometry = await operationStatus.EvaluateAsync<string>(
                 """
-                message => {
-                    const style = getComputedStyle(message);
-                    const profile = message.closest('#client-profile');
-                    const messageBox = message.getBoundingClientRect();
-                    const profileBox = profile.getBoundingClientRect();
+                host => {
+                    const style = getComputedStyle(host);
+                    const header = document.querySelector('.app-global-header');
+                    const profile = document.querySelector('#client-profile');
+                    const dismiss = host.querySelector('[data-operation-status-dismiss]');
+                    const hostBox = host.getBoundingClientRect();
+                    const headerBox = header.getBoundingClientRect();
+                    const dismissBox = dismiss.getBoundingClientRect();
                     return JSON.stringify({
-                        rail: style.borderInlineStartWidth,
+                        divider: style.borderBottomWidth,
                         radius: style.borderTopLeftRadius,
                         position: style.position,
-                        top: messageBox.top,
-                        profileTop: profileBox.top,
-                        profileBottom: profileBox.bottom,
-                        contained: messageBox.left >= profileBox.left
-                            && messageBox.right <= profileBox.right
-                            && messageBox.top >= profileBox.top
-                            && messageBox.bottom <= profileBox.bottom,
-                        inset: messageBox.width < profileBox.width - 8,
+                        aligned: Math.abs(hostBox.top - headerBox.bottom) <= 1,
+                        outsideProfile: !profile.contains(host),
+                        fits: hostBox.left >= 0 && hostBox.right <= window.innerWidth + 1,
+                        dismissTouch: dismissBox.width >= 44 && dismissBox.height >= 44,
                     });
                 }
                 """);
-            Assert.Contains("\"rail\":\"0px\"", successMessageGeometry, StringComparison.Ordinal);
-            Assert.DoesNotContain("\"radius\":\"0px\"", successMessageGeometry, StringComparison.Ordinal);
-            Assert.Contains("\"position\":\"static\"", successMessageGeometry, StringComparison.Ordinal);
-            Assert.Contains("\"contained\":true", successMessageGeometry, StringComparison.Ordinal);
-            Assert.Contains("\"inset\":true", successMessageGeometry, StringComparison.Ordinal);
+            Assert.DoesNotContain("\"divider\":\"0px\"", successMessageGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"radius\":\"0px\"", successMessageGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"position\":\"fixed\"", successMessageGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"aligned\":true", successMessageGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"outsideProfile\":true", successMessageGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"fits\":true", successMessageGeometry, StringComparison.Ordinal);
+            Assert.Contains("\"dismissTouch\":true", successMessageGeometry, StringComparison.Ordinal);
+            var mainContentTopAfter = await page.Locator("#main-content")
+                .EvaluateAsync<double>(
+                    "element => element.getBoundingClientRect().top + window.scrollY");
+            Assert.InRange(Math.Abs(mainContentTopAfter - mainContentTopBefore), 0, 1);
             Assert.Equal(
                 membershipCountBefore + 1,
                 await _app.CountIssuedMembershipsAsync(clientId));

@@ -140,7 +140,7 @@ public sealed class MembershipTypeDeactivationSmokeTests : IClassFixture<Recepti
                 "deactivation result");
             Assert.Contains(
                 "Audit reference",
-                await page.Locator(".operation-message").InnerTextAsync(),
+                await page.Locator("#global-operation-status").InnerTextAsync(),
                 StringComparison.Ordinal);
 
             var deactivatedRow = FindCatalogRow(page, membershipTypeId);

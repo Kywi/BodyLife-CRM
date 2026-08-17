@@ -65,7 +65,7 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
             await SubmitCloseAsync(page, repeatTapWhileBusy: true);
             panel = await RequireCoveragePanelAsync(page, expectedBalance: 1);
             await ExpectVisibleAsync(
-                page.GetByText(
+                OperationStatusTestHelper.Success(page).GetByText(
                     "Negative visits closed with one-off coverage",
                     new() { Exact = false }),
                 "tablet",

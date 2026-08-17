@@ -29,6 +29,16 @@
     </form>
 }
 
+@section OperationStatus {
+    @{ var operationProfile = Model.Workspace.Profile.Result?.Profile; }
+    <partial name="/Pages/Shared/_OperationStatus.cshtml"
+             model="@(Model.Workspace.Profile.OperationSucceeded
+                 ? new BodyLife.Crm.Web.Pages.Shared.OperationStatusViewModel(
+                     Model.Workspace.Profile.OperationMessage,
+                     Context: operationProfile?.DisplayName)
+                 : BodyLife.Crm.Web.Pages.Shared.OperationStatusViewModel.Empty)" />
+}
+
 <main class="page-shell reception-page">
     <section class="reception-layout" aria-labelledby="reception-title">
         <header class="reception-header reception-route-heading">

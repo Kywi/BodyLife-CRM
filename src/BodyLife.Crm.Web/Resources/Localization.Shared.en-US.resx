@@ -29,6 +29,7 @@
   <data name="Navigation.GlobalSearchPlaceholder" xml:space="preserve"><value>Card, name, phone or last four</value></data>
   <data name="Navigation.Search" xml:space="preserve"><value>Search</value></data>
   <data name="Navigation.CreateClient" xml:space="preserve"><value>Create client</value></data>
+  <data name="OperationStatus.Dismiss" xml:space="preserve"><value>Dismiss message</value></data>
   <data name="Home.Title" xml:space="preserve"><value>Reception</value></data>
   <data name="Home.BusinessDay" xml:space="preserve"><value>Current business day</value></data>
   <data name="Home.Activity" xml:space="preserve"><value>Activity now</value></data>

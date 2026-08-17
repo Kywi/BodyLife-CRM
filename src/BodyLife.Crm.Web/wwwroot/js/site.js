@@ -22,6 +22,128 @@ document.addEventListener("submit", (event) => {
   }
 });
 
+const operationStatusTimerByHost = new WeakMap();
+const operationStatusReturnFocusByHost = new WeakMap();
+
+const clearOperationStatusTimer = (host) => {
+  const timer = operationStatusTimerByHost.get(host);
+  if (timer) window.clearTimeout(timer);
+  operationStatusTimerByHost.delete(host);
+};
+
+const dismissOperationStatus = (host, restoreFocus = false) => {
+  if (!(host instanceof HTMLElement)) return;
+  const returnFocus = operationStatusReturnFocusByHost.get(host);
+  clearOperationStatusTimer(host);
+  host.hidden = true;
+  host.replaceChildren();
+  operationStatusReturnFocusByHost.delete(host);
+  if (restoreFocus && returnFocus instanceof HTMLElement && returnFocus.isConnected) {
+    window.queueMicrotask(() => returnFocus.focus({ preventScroll: true }));
+  }
+};
+
+const applyOperationStatusUpdates = (root) => {
+  const updates = [];
+  if (root instanceof HTMLTemplateElement && root.matches("[data-operation-status-update]")) {
+    updates.push(root);
+  }
+  for (const update of root.querySelectorAll?.("template[data-operation-status-update]") ?? []) {
+    updates.push(update);
+  }
+
+  const host = document.getElementById("global-operation-status");
+  if (!(host instanceof HTMLElement)) return null;
+
+  for (const update of updates) {
+    clearOperationStatusTimer(host);
+    const tone = ["info", "warning", "error"].includes(update.dataset.operationStatusTone)
+      ? update.dataset.operationStatusTone
+      : "success";
+    const visible = update.dataset.operationStatusVisible === "true";
+    host.className = `global-operation-status global-operation-status-${tone}`;
+    host.dataset.operationStatusAutoDismiss = update.dataset.operationStatusAutoDismiss === "true"
+      ? "true"
+      : "false";
+    host.setAttribute("role", update.dataset.operationStatusRole || "status");
+    host.setAttribute("aria-live", update.dataset.operationStatusLive || "polite");
+    host.setAttribute("aria-atomic", "true");
+    host.replaceChildren();
+    if (visible) host.append(update.content.cloneNode(true));
+    host.hidden = !visible;
+    update.remove();
+  }
+
+  return updates.length > 0 ? host : null;
+};
+
+const syncOperationStatus = (root) => {
+  const hosts = new Set();
+  if (root instanceof HTMLElement && root.matches("[data-operation-status]")) hosts.add(root);
+  for (const host of root.querySelectorAll?.("[data-operation-status]") ?? []) hosts.add(host);
+
+  for (const host of hosts) {
+    clearOperationStatusTimer(host);
+    if (host.hidden || host.dataset.operationStatusAutoDismiss !== "true") continue;
+
+    let remaining = 10000;
+    let startedAt = 0;
+    const start = () => {
+      if (host.hidden
+          || host.dataset.operationStatusAutoDismiss !== "true"
+          || operationStatusTimerByHost.has(host)) return;
+      startedAt = window.performance.now();
+      const timer = window.setTimeout(() => dismissOperationStatus(host), remaining);
+      operationStatusTimerByHost.set(host, timer);
+    };
+    const pause = () => {
+      const timer = operationStatusTimerByHost.get(host);
+      if (!timer) return;
+      window.clearTimeout(timer);
+      operationStatusTimerByHost.delete(host);
+      remaining = Math.max(0, remaining - (window.performance.now() - startedAt));
+    };
+    if (!host.dataset.operationStatusInitialized) {
+      host.dataset.operationStatusInitialized = "true";
+      host.addEventListener("mouseenter", pause);
+      host.addEventListener("mouseleave", start);
+      host.addEventListener("focusin", (event) => {
+        pause();
+        if (event.relatedTarget instanceof HTMLElement
+            && !host.contains(event.relatedTarget)) {
+          operationStatusReturnFocusByHost.set(host, event.relatedTarget);
+        }
+      });
+      host.addEventListener("focusout", (event) => {
+        if (host.contains(event.relatedTarget)) return;
+        start();
+      });
+      host.addEventListener("click", (event) => {
+        const dismiss = event.target instanceof Element
+          ? event.target.closest("[data-operation-status-dismiss]")
+          : null;
+        if (dismiss) dismissOperationStatus(host, true);
+      });
+      host.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        dismissOperationStatus(host, true);
+      });
+    }
+    start();
+  }
+};
+
+const syncOperationStatusOffset = () => {
+  const header = document.querySelector(".app-global-header");
+  if (!(header instanceof HTMLElement)) return;
+  document.documentElement.style.setProperty(
+    "--global-operation-status-top",
+    `${Math.round(header.getBoundingClientRect().bottom)}px`);
+};
+
+window.addEventListener("resize", syncOperationStatusOffset);
+
 const drawer = document.querySelector("[data-app-drawer]");
 const drawerToggle = document.querySelector("[data-drawer-toggle]");
 const drawerScrim = document.querySelector("[data-drawer-scrim]");
@@ -688,6 +810,11 @@ document.addEventListener("keydown", (event) => {
 });
 
 document.addEventListener("htmx:beforeRequest", (event) => {
+  const requestSource = event.detail?.elt;
+  if (requestSource instanceof Element
+      && requestSource.closest("#reception-search, #reception-workspace")) {
+    dismissOperationStatus(document.getElementById("global-operation-status"));
+  }
   const requestElement = event.detail?.elt;
   const form = requestElement instanceof HTMLFormElement
     ? requestElement
@@ -703,6 +830,10 @@ document.addEventListener("htmx:beforeRequest", (event) => {
 });
 
 document.addEventListener("htmx:load", (event) => {
+  syncOperationStatusOffset();
+  const loadedRoot = event.detail?.elt ?? document;
+  const updatedOperationStatus = applyOperationStatusUpdates(loadedRoot);
+  syncOperationStatus(updatedOperationStatus ?? loadedRoot);
   syncCardIntentForms(event.detail?.elt ?? document);
   syncMarkVisitForms(event.detail?.elt ?? document);
   syncIssueMembershipForms(event.detail?.elt ?? document);
@@ -712,6 +843,9 @@ document.addEventListener("htmx:load", (event) => {
   syncProfileHistory(event.detail?.elt ?? document);
 });
 
+syncOperationStatusOffset();
+applyOperationStatusUpdates(document);
+syncOperationStatus(document);
 syncCardIntentForms(document);
 syncMarkVisitForms(document);
 syncIssueMembershipForms(document);

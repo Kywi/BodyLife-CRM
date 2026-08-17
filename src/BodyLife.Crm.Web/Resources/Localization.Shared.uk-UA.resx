@@ -29,6 +29,7 @@
   <data name="Navigation.GlobalSearchPlaceholder" xml:space="preserve"><value>Картка, ім’я, телефон або останні 4 цифри</value></data>
   <data name="Navigation.Search" xml:space="preserve"><value>Знайти</value></data>
   <data name="Navigation.CreateClient" xml:space="preserve"><value>Створити клієнта</value></data>
+  <data name="OperationStatus.Dismiss" xml:space="preserve"><value>Закрити повідомлення</value></data>
   <data name="Home.Title" xml:space="preserve"><value>Рецепція</value></data>
   <data name="Home.BusinessDay" xml:space="preserve"><value>Поточний бізнес-день</value></data>
   <data name="Home.Activity" xml:space="preserve"><value>Активність зараз</value></data>

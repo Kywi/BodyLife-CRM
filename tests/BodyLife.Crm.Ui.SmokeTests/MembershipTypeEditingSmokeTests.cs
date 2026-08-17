@@ -142,7 +142,7 @@ public sealed class MembershipTypeEditingSmokeTests : IClassFixture<ReceptionApp
                 "edit result");
             Assert.Contains(
                 "Audit reference",
-                await page.Locator(".operation-message").InnerTextAsync(),
+                await page.Locator("#global-operation-status").InnerTextAsync(),
                 StringComparison.Ordinal);
 
             var editedRow = FindCatalogRow(page, membershipTypeId);

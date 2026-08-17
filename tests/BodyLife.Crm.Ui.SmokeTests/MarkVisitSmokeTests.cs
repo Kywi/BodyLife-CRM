@@ -84,7 +84,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             await SubmitHtmxMarkVisitAsync(page);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Visit marked."),
+                OperationStatusTestHelper.Success(page).GetByText("Visit marked."),
                 viewportName,
                 "Visit success message");
             Assert.Equal(
@@ -161,7 +161,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
                 verifyBusy: true);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Visit canceled."),
+                OperationStatusTestHelper.Success(page).GetByText("Visit canceled."),
                 viewportName,
                 "Visit cancellation success message");
 
@@ -267,7 +267,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             await SubmitHtmxCancelVisitAsync(page, visitId, verifyBusy: false);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Visit canceled."),
+                OperationStatusTestHelper.Success(page).GetByText("Visit canceled."),
                 "tablet",
                 "Admin cancellation success");
             await ExpectVisibleAsync(
@@ -322,7 +322,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             await SubmitHtmxMarkVisitAsync(page, repeatTapWhileBusy: true);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Visit marked."),
+                OperationStatusTestHelper.Success(page).GetByText("Visit marked."),
                 "tablet",
                 "negative Visit success");
             Assert.Equal("-1", await ReadRemainingVisitsAsync(profile));
@@ -381,7 +381,7 @@ public sealed class MarkVisitSmokeTests : IClassFixture<ReceptionAppFixture>, IA
             await SubmitHtmxMarkVisitAsync(page);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Visit marked."),
+                OperationStatusTestHelper.Success(page).GetByText("Visit marked."),
                 "phone",
                 "one-off success");
             Assert.Equal(

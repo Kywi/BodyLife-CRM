@@ -65,6 +65,14 @@
                     </div>
                     <partial name="_CurrentSession" />
                 </header>
+                @if (IsSectionDefined("OperationStatus"))
+                {
+                    @await RenderSectionAsync("OperationStatus", required: false)
+                }
+                else
+                {
+                    <partial name="_OperationStatus" model="null" />
+                }
                 <div id="main-content" class="app-content" tabindex="-1">
                     @RenderBody()
                 </div>

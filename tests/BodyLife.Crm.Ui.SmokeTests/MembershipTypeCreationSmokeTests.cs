@@ -34,6 +34,7 @@ public sealed class MembershipTypeCreationSmokeTests : IClassFixture<ReceptionAp
     }
 
     [Theory]
+    [InlineData("desktop", 1440, 900)]
     [InlineData("tablet", 1024, 768)]
     [InlineData("phone", 390, 844)]
     public async Task OwnerCreatesMembershipTypeWithValidationAndCanonicalReread(
@@ -48,6 +49,10 @@ public sealed class MembershipTypeCreationSmokeTests : IClassFixture<ReceptionAp
         try
         {
             var page = await context.NewPageAsync();
+            if (viewportName == "desktop")
+            {
+                await page.Clock.InstallAsync();
+            }
             await LoginAsync(page, $"{viewportName} catalog creation");
             var ownerNavigation = await AppNavigationTestHelper.OpenOwnerToolsAsync(page);
             await ownerNavigation.GetByRole(AriaRole.Link, new() { Name = "Membership types", Exact = true }).ClickAsync();
@@ -92,13 +97,28 @@ public sealed class MembershipTypeCreationSmokeTests : IClassFixture<ReceptionAp
 
             Assert.DoesNotContain("handler=Create", page.Url, StringComparison.Ordinal);
             await ExpectVisibleAsync(
-                page.GetByText("Membership type created.", new() { Exact = false }),
+                OperationStatusTestHelper.Success(page).GetByText(
+                    "Membership type created.",
+                    new() { Exact = false }),
                 viewportName,
                 "create result");
             Assert.Contains(
                 "Audit reference",
-                await page.Locator(".operation-message").InnerTextAsync(),
+                await page.Locator("#global-operation-status").InnerTextAsync(),
                 StringComparison.Ordinal);
+
+            var operationStatus = page.Locator("#global-operation-status");
+            Assert.Equal("status", await operationStatus.GetAttributeAsync("role"));
+            Assert.Equal("polite", await operationStatus.GetAttributeAsync("aria-live"));
+            Assert.Contains("global-operation-status-success", await operationStatus.GetAttributeAsync("class") ?? string.Empty);
+            Assert.True(await operationStatus.EvaluateAsync<bool>("element => { const header = document.querySelector('.app-global-header'); return header && Math.abs(element.getBoundingClientRect().top - header.getBoundingClientRect().bottom) <= 1; }"));
+            var dismissBox = await operationStatus.Locator("[data-operation-status-dismiss]").BoundingBoxAsync();
+            Assert.NotNull(dismissBox);
+            Assert.True(dismissBox!.Width >= 44 && dismissBox.Height >= 44, "The status dismiss target must remain touch-sized.");
+            await OperationStatusTestHelper.CaptureViewportAsync(
+                page,
+                viewportName,
+                "global-operation-status");
 
             var createdRow = FindCatalogRow(page, canonicalName);
             await ExpectVisibleAsync(createdRow, viewportName, "created catalog row");
@@ -125,6 +145,33 @@ public sealed class MembershipTypeCreationSmokeTests : IClassFixture<ReceptionAp
             var fitsViewport = await page.EvaluateAsync<bool>(
                 "() => document.documentElement.scrollWidth <= window.innerWidth + 1");
             Assert.True(fitsViewport, $"{viewportName} create workflow should not require horizontal scrolling.");
+
+            if (viewportName == "desktop")
+            {
+                await operationStatus.HoverAsync();
+                await page.Clock.RunForAsync(12_000);
+                Assert.True(
+                    await operationStatus.IsVisibleAsync(),
+                    "Hovering the status rail must pause its auto-dismiss timer.");
+                await page.Locator("#membership-types-title").HoverAsync();
+                await page.Clock.RunForAsync(10_001);
+                Assert.True(
+                    await operationStatus.IsHiddenAsync(),
+                    "Success feedback must auto-dismiss after the resumed timeout.");
+            }
+            else
+            {
+                var returnFocus = page.GetByRole(
+                    AriaRole.Link,
+                    new() { Name = "Reception", Exact = true });
+                await returnFocus.FocusAsync();
+                var dismiss = operationStatus.Locator("[data-operation-status-dismiss]");
+                await dismiss.FocusAsync();
+                await dismiss.PressAsync("Escape");
+                Assert.True(await operationStatus.IsHiddenAsync());
+                Assert.True(await returnFocus.EvaluateAsync<bool>(
+                    "element => document.activeElement === element"));
+            }
         }
         finally
         {

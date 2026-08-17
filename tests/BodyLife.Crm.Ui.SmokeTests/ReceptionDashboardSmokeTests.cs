@@ -921,7 +921,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 "tablet",
                 "canonical created profile");
             await ExpectVisibleAsync(
-                profile.GetByText("Client created."),
+                OperationStatusTestHelper.Success(page).GetByText("Client created."),
                 "tablet",
                 "create success message");
             Assert.Equal(
@@ -1110,7 +1110,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
                 viewportName,
                 "canonical updated profile");
             await ExpectVisibleAsync(
-                profile.GetByText("Client updated."),
+                OperationStatusTestHelper.Success(page).GetByText("Client updated."),
                 viewportName,
                 "update success message");
             Assert.Equal(0, await page.GetByRole(AriaRole.Region, new() { Name = "Search results" }).CountAsync());
@@ -1186,7 +1186,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await SubmitHtmxCardAssignmentAsync(page);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Card changed."),
+                OperationStatusTestHelper.Success(page).GetByText("Card changed."),
                 "tablet",
                 "card-change success message");
             Assert.Equal(
@@ -1217,7 +1217,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await SubmitHtmxCardAssignmentAsync(page);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Card cleared."),
+                OperationStatusTestHelper.Success(page).GetByText("Card cleared."),
                 "tablet",
                 "card-clear success message");
             Assert.Equal(
@@ -1293,7 +1293,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await SubmitHtmxCardAssignmentAsync(page);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Card assigned."),
+                OperationStatusTestHelper.Success(page).GetByText("Card assigned."),
                 "phone",
                 "first-card success message");
             Assert.Equal(
@@ -1384,7 +1384,7 @@ public sealed class ReceptionDashboardSmokeTests : IClassFixture<ReceptionAppFix
             await SubmitHtmxCardAssignmentAsync(page);
 
             await ExpectVisibleAsync(
-                profile.GetByText("Card changed."),
+                OperationStatusTestHelper.Success(page).GetByText("Card changed."),
                 "tablet",
                 "stale-card retry success");
             Assert.Equal(

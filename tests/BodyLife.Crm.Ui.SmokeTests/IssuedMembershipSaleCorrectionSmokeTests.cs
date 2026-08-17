@@ -105,7 +105,9 @@ public sealed class IssuedMembershipSaleCorrectionSmokeTests
             await DelayMutationRequestsAsync(page);
             await SubmitCorrectionAsync(page, "Replace sale", repeatTapWhileBusy: true);
             await ExpectVisibleAsync(
-                page.GetByText("Issued membership sale replaced", new() { Exact = false }),
+                OperationStatusTestHelper.Success(page).GetByText(
+                    "Issued membership sale replaced",
+                    new() { Exact = false }),
                 "tablet",
                 "replacement success message");
 
@@ -181,7 +183,7 @@ public sealed class IssuedMembershipSaleCorrectionSmokeTests
                 "Cancel sale",
                 repeatTapWhileBusy: false);
             await ExpectVisibleAsync(
-                concurrentPage.GetByText(
+                OperationStatusTestHelper.Success(concurrentPage).GetByText(
                     "Issued membership sale canceled",
                     new() { Exact = false }),
                 "phone",
@@ -398,7 +400,7 @@ public sealed class IssuedMembershipSaleCorrectionSmokeTests
         AssertHtmxResponse(await responseTask);
         await WaitForHtmxSettleAsync(page);
         await ExpectVisibleAsync(
-            page.GetByText(
+            OperationStatusTestHelper.Success(page).GetByText(
                 "Membership issued with cash payment.",
                 new() { Exact = false }),
             "workflow",
