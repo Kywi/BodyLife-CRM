@@ -359,9 +359,14 @@
   <data name="NegativeCoverage.Eyebrow" xml:space="preserve"><value>Від’ємні відвідування</value></data>
   <data name="NegativeCoverage.Title" xml:space="preserve"><value>Покриття від’ємних відвідувань</value></data>
   <data name="NegativeCoverage.Balance" xml:space="preserve"><value>Поточний від’ємний баланс: {0}</value></data>
+  <data name="NegativeCoverage.Intro" xml:space="preserve"><value>Ці відвідування були використані за попереднім абонементом і залишаються видимими, доки ви явно не покриєте їх.</value></data>
   <data name="NegativeCoverage.Unknown" xml:space="preserve"><value>Невідомий від’ємний баланс</value></data>
+  <data name="NegativeCoverage.UnknownTitle" xml:space="preserve"><value>Старий залишок із початкового стану або бекфілу</value></data>
+  <data name="NegativeCoverage.UnknownOnly" xml:space="preserve"><value>Цей старий залишок не має конкретних записів відвідувань. Разова оплата чи покриття новим абонементом не можуть чесно його закрити; залиште його видимим до звірки з історичними записами.</value></data>
+  <data name="NegativeCoverage.UnknownMixed" xml:space="preserve"><value>Дії вище покривають лише конкретні відвідування. Цей старий залишок не має конкретних записів відвідувань і лишається видимим до звірки з історичними записами.</value></data>
   <data name="NegativeCoverage.First" xml:space="preserve"><value>Перше від’ємне відвідування</value></data>
   <data name="NegativeCoverage.OpenVisits" xml:space="preserve"><value>Конкретні відвідування</value></data>
+  <data name="NegativeCoverage.ShowVisits" xml:space="preserve"><value>Показати відвідування ({0})</value></data>
   <data name="NegativeCoverage.Visit" xml:space="preserve"><value>Найстаріше непокрите відвідування: {0}</value></data>
   <data name="NegativeCoverage.OpenVisit" xml:space="preserve"><value>Непокрите відвідування: {0}</value></data>
   <data name="NegativeCoverage.CoveredVisit" xml:space="preserve"><value>Покрите відвідування: {0}</value></data>

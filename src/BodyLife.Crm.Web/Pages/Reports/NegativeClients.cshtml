@@ -133,8 +133,10 @@
                                     <a class="secondary-link"
                                        asp-page="/Reception/Index"
                                        asp-route-clientId="@row.ClientId"
-                                       asp-fragment="membership-panel-title">
-                                        @L["OpenClient"]
+                                       asp-fragment="negative-visit-coverage-panel">
+                                        @(row.FirstNegativeVisitId is not null
+                                            ? L["ResolveNegativeVisits"]
+                                            : L["ExplainOldBalance"])
                                     </a>
                                     @if (row.FirstNegativeVisitId is not null)
                                     {

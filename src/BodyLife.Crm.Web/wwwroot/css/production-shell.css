@@ -1027,11 +1027,49 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   border-top: 1px solid var(--line-quiet);
   padding: var(--space-4) 0 0;
 }
+.reception-page #negative-visit-coverage-panel {
+  scroll-margin-top: 148px;
+  display: grid;
+  gap: var(--space-3);
+  border: 0;
+  border-radius: 0;
+  padding: var(--space-4) 0;
+  background: transparent;
+  box-shadow: none;
+}
+.reception-page #negative-visit-coverage-panel .negative-coverage-header { margin: 0; }
+.reception-page #negative-visit-coverage-panel .negative-coverage-intro { margin: 0; color: var(--text-secondary); }
+.reception-page #negative-visit-coverage-panel .negative-coverage-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-1); margin: 0; }
+.reception-page #negative-visit-coverage-panel .negative-coverage-summary > div { min-width: 0; padding: var(--space-2) var(--space-3); background: var(--desk-inset); }
+.reception-page #negative-visit-coverage-panel .negative-coverage-summary dt { color: var(--text-tertiary); font-size: var(--type-meta); font-weight: 750; }
+.reception-page #negative-visit-coverage-panel .negative-coverage-summary dd { margin: var(--space-1) 0 0; color: var(--text-primary); font-size: var(--type-section); font-weight: 800; font-variant-numeric: tabular-nums; }
+.reception-page #negative-visit-coverage-panel :is(.negative-coverage-visits, .negative-coverage-one-off, .negative-coverage-correction) { margin: 0; border: 1px solid var(--line-quiet); border-radius: var(--radius-control); background: color-mix(in srgb, var(--desk-paper) 78%, var(--desk-inset)); }
+.reception-page #negative-visit-coverage-panel :is(.negative-coverage-visits, .negative-coverage-one-off, .negative-coverage-correction) > summary { min-height: 44px; padding: var(--space-3); color: var(--text-primary); font-weight: 750; }
+.reception-page #negative-visit-coverage-panel .negative-coverage-visits ol,.reception-page #negative-visit-coverage-panel .negative-coverage-one-off > p,.reception-page #negative-visit-coverage-panel .negative-coverage-one-off form { margin: 0 var(--space-3) var(--space-3); }
+.reception-page #negative-visit-coverage-panel .negative-coverage-methods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.reception-page #negative-visit-coverage-panel .negative-coverage-method {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-quiet);
+  border-radius: var(--radius-control);
+  padding: var(--space-3);
+  background: color-mix(in srgb, var(--desk-paper) 78%, var(--desk-inset));
+  color: var(--text-primary);
+  font-weight: 750;
+  text-align: center;
+  text-decoration: none;
+}
+.reception-page #negative-visit-coverage-panel .negative-coverage-method:hover { background: var(--desk-paper); color: var(--text-primary); }
+.reception-page #negative-visit-coverage-panel .negative-coverage-leave-visible { margin: 0; color: var(--text-tertiary); }
+.reception-page #negative-visit-coverage-panel .negative-coverage-unknown { margin: 0; border-color: color-mix(in srgb, var(--attention-amber) 34%, var(--line-quiet)); background: var(--attention-amber-soft); color: color-mix(in srgb, var(--attention-amber) 76%, var(--text-primary)); }
 @media (max-width: 1099px) {
   .reception-page #client-profile .profile-action-switcher { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .reception-page #client-profile .client-profile-meta,
   .reception-page #client-profile .membership-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .reception-page #client-profile .profile-passport { top: 90px; }
+  .reception-page #negative-visit-coverage-panel { scroll-margin-top: 126px; }
 }
 @media (max-width: 720px) {
   .reception-page #client-profile > :not(.profile-loading) { padding: var(--space-3); }
@@ -1048,4 +1086,9 @@ button,a,input,select,textarea { transition: background-color .14s cubic-bezier(
   .reception-page #client-profile .profile-passport-membership-name { align-items: flex-start; flex-direction: column; }
   .reception-page #client-profile .profile-history-tabs button { flex: 1 1 0; padding-inline: var(--space-2); }
   .reception-page #client-profile .profile-history-disclosure > summary { grid-template-columns: minmax(0, 1fr) 24px; }
+  .reception-page #negative-visit-coverage-panel { scroll-margin-top: 156px; }
+  .reception-page #negative-visit-coverage-panel .negative-coverage-summary,.reception-page #negative-visit-coverage-panel .negative-coverage-methods { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) {
+  .reception-page #negative-visit-coverage-panel { scroll-margin-top: 208px; }
 }

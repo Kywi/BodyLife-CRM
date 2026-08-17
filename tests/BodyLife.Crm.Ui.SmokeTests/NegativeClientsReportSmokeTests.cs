@@ -170,9 +170,9 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
             await ExpectVisibleAsync(
                 featuredRow.GetByRole(
                     AriaRole.Link,
-                    new() { Name = "View visits", Exact = true }),
+                    new() { Name = "Resolve negative visits", Exact = true }),
                 viewportName,
-                "first-negative Visit navigation");
+                "negative coverage navigation");
 
             var rowLinks = firstPageRows.Locator(".report-row-actions .secondary-link");
             await AssertMinimumTouchTargetsAsync(
@@ -219,11 +219,34 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                         AriaRole.Link,
                         new() { Name = "View visits", Exact = true })
                     .CountAsync());
+            var openingBalanceLink = openingRow.GetByRole(
+                AriaRole.Link,
+                new() { Name = "Explain old balance", Exact = true });
+            Assert.Contains(
+                "#negative-visit-coverage-panel",
+                await openingBalanceLink.GetAttributeAsync("href"),
+                StringComparison.Ordinal);
             await AssertMinimumTouchTargetsAsync(
                 openingRow.Locator(".report-row-actions .secondary-link"),
                 viewportName,
                 "opening-state row link");
             await AssertFitsViewportAsync(page, viewportName, "negative-clients second page");
+
+            await openingBalanceLink.ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            Assert.EndsWith("#negative-visit-coverage-panel", page.Url, StringComparison.Ordinal);
+            var openingPanel = page.Locator("#negative-visit-coverage-panel");
+            await ExpectVisibleAsync(openingPanel, viewportName, "old-balance coverage panel");
+            await ExpectVisibleAsync(
+                openingPanel.GetByText("Old opening or backfill balance", new() { Exact = true }),
+                viewportName,
+                "old-balance explanation");
+            Assert.Equal(0, await openingPanel.Locator("[data-negative-coverage-methods]").CountAsync());
+            await page.GotoAsync(
+                new Uri(
+                    _app.BaseAddress,
+                    $"/Reports/NegativeClients?asOf={selectedDate}&offset={scenario.PageSize}").ToString(),
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
             var previous = page.GetByRole(
                 AriaRole.Link,
@@ -243,7 +266,7 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                 });
             await featuredRow.GetByRole(
                     AriaRole.Link,
-                    new() { Name = "View visits", Exact = true })
+                    new() { Name = "Resolve negative visits", Exact = true })
                 .ClickAsync();
             await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
@@ -251,18 +274,25 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                 $"clientId={scenario.FeaturedClientId}",
                 page.Url,
                 StringComparison.OrdinalIgnoreCase);
-            Assert.EndsWith("#recent-visits-title", page.Url, StringComparison.Ordinal);
+            Assert.EndsWith("#negative-visit-coverage-panel", page.Url, StringComparison.Ordinal);
             await ExpectVisibleAsync(
                 page.GetByRole(
                     AriaRole.Heading,
                     new() { Name = scenario.FeaturedClientDisplayName, Exact = true }),
                 viewportName,
                 "negative Client profile");
+            var coveragePanel = page.Locator("#negative-visit-coverage-panel");
+            await ExpectVisibleAsync(coveragePanel, viewportName, "negative coverage panel");
+            Assert.True(await page.EvaluateAsync<bool>(
+                "() => { const panel = document.querySelector('#negative-visit-coverage-panel'); const header = document.querySelector('.app-global-header'); return panel && header && panel.getBoundingClientRect().top >= header.getBoundingClientRect().bottom; }"));
             await ExpectVisibleAsync(
-                page.Locator(
-                    $"[data-visit-id='{scenario.FeaturedFirstNegativeVisitId}']"),
+                coveragePanel.GetByRole(AriaRole.Link, new() { Name = "Cover with a new ordinary membership", Exact = true }),
                 viewportName,
-                "first-negative Visit source row");
+                "new-membership negative coverage action");
+            await ExpectVisibleAsync(
+                coveragePanel.Locator(".negative-coverage-one-off > summary"),
+                viewportName,
+                "one-off negative coverage action");
             await AssertFitsViewportAsync(page, viewportName, "negative Client profile");
         }
         finally

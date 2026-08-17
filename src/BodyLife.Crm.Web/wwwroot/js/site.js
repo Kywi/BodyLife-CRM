@@ -790,6 +790,21 @@ document.addEventListener("click", (event) => {
       }, 0);
     }
   }
+
+  const negativeCoverageAction = event.target.closest("[data-negative-coverage-issue-membership]");
+  if (negativeCoverageAction instanceof HTMLAnchorElement) {
+    const workspace = negativeCoverageAction.closest("#client-profile")?.querySelector(profileActionWorkspaceSelector);
+    const panel = workspace?.querySelector("#issue-membership-action-panel");
+    if (workspace instanceof HTMLElement && panel instanceof HTMLDetailsElement) {
+      event.preventDefault();
+      activateProfileAction(workspace, "issue-membership-action-panel");
+      window.setTimeout(() => {
+        panel?.scrollIntoView({ block: "start", behavior: "auto" });
+        panel?.querySelector(
+          "input:not([type='hidden']):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])")?.focus();
+      }, 0);
+    }
+  }
 });
 
 document.addEventListener("keydown", (event) => {

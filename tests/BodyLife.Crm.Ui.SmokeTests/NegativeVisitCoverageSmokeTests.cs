@@ -43,7 +43,27 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
             await SubmitHtmxSearchAsync(page, ReceptionAppFixture.NegativeCoverageTabletCard);
             var panel = await RequireCoveragePanelAsync(page, expectedBalance: 3);
 
-            Assert.Equal(3, await panel.Locator("[data-negative-coverage-options] li").CountAsync());
+            Assert.Equal(0, await panel.GetByText("Unknown negative balance", new() { Exact = true }).CountAsync());
+            Assert.Equal(1, await panel.Locator("[data-negative-coverage-methods]").CountAsync());
+            Assert.Equal(0, await panel.Locator("[data-negative-coverage-methods] .primary-button").CountAsync());
+            await ExpectVisibleAsync(
+                panel.Locator(".negative-coverage-one-off > summary"),
+                "tablet",
+                "one-off coverage method");
+            var newMembershipAction = panel.GetByRole(
+                AriaRole.Link,
+                new() { Name = "Cover with a new ordinary membership", Exact = true });
+            await ExpectVisibleAsync(newMembershipAction, "tablet", "new-membership coverage method");
+            await newMembershipAction.ClickAsync();
+            var issuePanel = page.Locator("#issue-membership-action-panel");
+            await issuePanel.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
+            Assert.NotNull(await issuePanel.GetAttributeAsync("open"));
+            Assert.Equal(string.Empty, await issuePanel.Locator("[name='form.MembershipTypeId']").InputValueAsync());
+            Assert.Equal(0, await issuePanel.Locator("[name='form.NegativeHandlingDecision']:checked").CountAsync());
+            await page.WaitForFunctionAsync(
+                "() => document.activeElement?.closest('#issue-membership-action-panel') !== null");
+            Assert.True(await page.EvaluateAsync<bool>(
+                "() => document.activeElement?.closest('#issue-membership-action-panel') !== null"));
             Assert.Equal(1, await panel.Locator(
                 "#negative-coverage-close-form input[name='__RequestVerificationToken']").CountAsync());
             Assert.Equal(0, await panel.Locator("input[type='radio']:checked").CountAsync());
@@ -428,6 +448,11 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
 
     private static async Task PreviewCloseAsync(IPage page, int quantity)
     {
+        var disclosure = page.Locator(".negative-coverage-one-off");
+        if (await disclosure.GetAttributeAsync("open") is null)
+        {
+            await disclosure.Locator("summary").ClickAsync();
+        }
         var form = page.Locator("#negative-coverage-close-form");
         await form.Locator("#negative-close-0").FillAsync(quantity.ToString());
         var responseTask = page.WaitForResponseAsync(response =>

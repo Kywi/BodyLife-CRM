@@ -359,9 +359,14 @@
   <data name="NegativeCoverage.Eyebrow" xml:space="preserve"><value>Negative visits</value></data>
   <data name="NegativeCoverage.Title" xml:space="preserve"><value>Negative-visit coverage</value></data>
   <data name="NegativeCoverage.Balance" xml:space="preserve"><value>Current negative balance: {0}</value></data>
+  <data name="NegativeCoverage.Intro" xml:space="preserve"><value>These visits were consumed under an earlier membership and remain visible until you explicitly cover them.</value></data>
   <data name="NegativeCoverage.Unknown" xml:space="preserve"><value>Unknown negative balance</value></data>
+  <data name="NegativeCoverage.UnknownTitle" xml:space="preserve"><value>Old opening or backfill balance</value></data>
+  <data name="NegativeCoverage.UnknownOnly" xml:space="preserve"><value>This old remainder has no concrete Visit records. One-off payment and new-membership allocation cannot honestly cover it; keep it visible until it is reconciled with historical records.</value></data>
+  <data name="NegativeCoverage.UnknownMixed" xml:space="preserve"><value>The actions above cover only the concrete visits. This old remainder has no concrete Visit records and remains visible until it is reconciled with historical records.</value></data>
   <data name="NegativeCoverage.First" xml:space="preserve"><value>First negative visit</value></data>
   <data name="NegativeCoverage.OpenVisits" xml:space="preserve"><value>Concrete visits</value></data>
+  <data name="NegativeCoverage.ShowVisits" xml:space="preserve"><value>Show visits ({0})</value></data>
   <data name="NegativeCoverage.Visit" xml:space="preserve"><value>Oldest uncovered visit: {0}</value></data>
   <data name="NegativeCoverage.OpenVisit" xml:space="preserve"><value>Uncovered visit: {0}</value></data>
   <data name="NegativeCoverage.CoveredVisit" xml:space="preserve"><value>Covered visit: {0}</value></data>

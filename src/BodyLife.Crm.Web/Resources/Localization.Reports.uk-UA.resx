@@ -26,6 +26,8 @@
   <data name="SelectDays" xml:space="preserve"><value>Оберіть дні</value></data>
   <data name="IncludeNeverVisited" xml:space="preserve"><value>Включати тих, хто не відвідував</value></data>
 <data name="OpenClient" xml:space="preserve"><value>Відкрити клієнта</value></data>
+  <data name="ResolveNegativeVisits" xml:space="preserve"><value>Покрити від’ємні відвідування</value></data>
+  <data name="ExplainOldBalance" xml:space="preserve"><value>Пояснити старий залишок</value></data>
   <data name="ViewVisits" xml:space="preserve"><value>Переглянути відвідування</value></data>
   <data name="ExtensionDetails" xml:space="preserve"><value>Деталі продовження</value></data>
   <data name="ClientHistory" xml:space="preserve"><value>Історія клієнта</value></data>

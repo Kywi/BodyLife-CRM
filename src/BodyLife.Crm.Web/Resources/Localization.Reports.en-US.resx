@@ -26,6 +26,8 @@
   <data name="SelectDays" xml:space="preserve"><value>Select days</value></data>
   <data name="IncludeNeverVisited" xml:space="preserve"><value>Include never visited</value></data>
 <data name="OpenClient" xml:space="preserve"><value>Open client</value></data>
+  <data name="ResolveNegativeVisits" xml:space="preserve"><value>Resolve negative visits</value></data>
+  <data name="ExplainOldBalance" xml:space="preserve"><value>Explain old balance</value></data>
   <data name="ViewVisits" xml:space="preserve"><value>View visits</value></data>
   <data name="ExtensionDetails" xml:space="preserve"><value>Extension details</value></data>
   <data name="ClientHistory" xml:space="preserve"><value>Client history</value></data>
