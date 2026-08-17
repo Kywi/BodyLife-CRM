@@ -6,17 +6,18 @@
 - The accepted ADR package is complete in `docs/adr/` and is the governing architecture source. If a later request conflicts with an accepted ADR, require a new ADR or an explicit ADR update instead of silently changing direction.
 - The selected application stack is fixed in `docs/technology-stack-decision.md`: ASP.NET Core 10 LTS + Razor Pages/MVC + htmx + EF Core/Npgsql + PostgreSQL.
 - Hosting provider is still pending. Production readiness requires backup/restore evidence, including at least 30-day backup retention expectation and a restore rehearsal before production use.
-- Milestone 10.5 is complete and validated. ADR-019 and Milestone 10.6
-  (single-visit sales and reception defaults) are accepted and planned but not
-  implemented. Milestone 10.6 is the next roadmap milestone; Milestone 11
-  (backup/restore/paper fallback readiness) follows it. Always confirm the
-  latest progress entry and the user's requested scope before starting work.
+- Milestone 10.5 and ADR-020 automatic negative coverage are complete and
+  validated. ADR-021 is accepted and planned but not implemented; its
+  one-lifecycle-active-Membership corrective slice is the next roadmap work.
+  ADR-019/Milestone 10.6 (single-visit sales and reception defaults) follows
+  ADR-021, then Milestone 11 (backup/restore/paper fallback readiness). Always
+  confirm the latest progress entry and the user's requested scope before work.
 
 ## Source Of Truth
 
 Use these documents before inventing implementation details:
 
-- `docs/adr/README.md` and `docs/adr/001..019-*.md` for accepted decisions.
+- `docs/adr/README.md` and `docs/adr/001..021-*.md` for accepted decisions.
 - `docs/architecture-baseline.md` for the concise implementation contract.
 - `docs/domain-model.md` for business entities, invariants, lifecycle rules, and membership calculations.
 - `docs/data-architecture.md` for source facts, derived state, schema direction, constraints, indexes, audit, backfill, and reporting data access.
@@ -120,6 +121,32 @@ Shared code should stay narrow: IDs, Money, DateRange, actor/session context, re
   default may initialize its type only after Actor selects the one-off method;
   method and quantity remain deliberate choices.
 
+## Planned Single-Active Membership Contract
+
+- ADR-021 is accepted but its corrective slice has not started. Do not claim
+  the current multiple-active persistence/query behavior satisfies it.
+- A Client may have at most one `status = active` issued Membership after
+  commit. Add explainable `closed` lifecycle facts and a PostgreSQL partial
+  unique index; do not misuse sale `canceled`/`corrected` statuses.
+- Ordinary Issue atomically closes a zero predecessor. For a negative
+  predecessor it first applies ADR-020 automatic concrete coverage, then closes
+  the predecessor. Concrete remainder stays visible and coverable; unknown
+  opening remainder stays visible but is not consumed by Visit-based coverage.
+- Positive remaining visits block ordinary Issue, including expired-by-date or
+  future-start cases. Do not silently forfeit visits or invent an early-close
+  command without a separate product decision.
+- ADR-018 one-off closure stays separate: partial closure keeps the sole
+  negative Membership active; full closure closes it at zero. Historical debt
+  from concrete Visits on `closed` Memberships remains eligible for coverage
+  without reactivation; unknown remainder needs a separate future reconciliation
+  decision.
+- Visit/coverage correction that would make a `closed` Membership positive is
+  blocked as a lifecycle dependency. Do not auto-reactivate, transfer visits or
+  leave silent unusable credit.
+- Fold the lifecycle status/source facts/indexes into the sole greenfield
+  `InitialBaseline`; no production migration chain or legacy repair is needed
+  while the system remains undeployed.
+
 ## Membership Rules
 
 - Memberships is the only owner of active status, remaining visits, negative balance, first negative visit date, effective end date, extension days, and membership warnings.
@@ -127,6 +154,10 @@ Shared code should stay narrow: IDs, Money, DateRange, actor/session context, re
 - Base end date is inclusive: `base_end_date = start_date + duration_days - 1 day`.
 - `effective_end_date` is derived. Never edit it directly in ordinary workflows.
 - Remaining visits is signed and may be negative. Negative visits are core workflow, not a separate debt ledger in v1.
+- At committed state a Client has at most one lifecycle-active Membership.
+  Lifecycle closure and open historical debt are separate: `closed` Memberships
+  cannot receive new Visits/Freezes. Their uncovered concrete Visit debt remains
+  visible and coverable; unknown opening remainder remains visible only.
 - Counted visits exclude canceled visits. Cancel/correct workflows preserve history and trigger recalculation.
 - Freeze and non-working day ranges are inclusive. Extension days are counted as a union of unique calendar dates, not a naive sum when ranges overlap.
 - AddFreeze targets a lifecycle-active Membership. Its range starts no earlier than Membership start and no later than the locked pre-command effective end; its end may cross that date. An active counted Membership Visit in the range blocks creation under ADR-015.

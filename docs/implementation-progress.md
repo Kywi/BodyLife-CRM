@@ -15813,3 +15813,76 @@ Stop point:
 - Keep any one-lifecycle-active-Membership follow-up and ADR-021/Milestone 10.6
   documentation as separate coordinated work; this step intentionally changes
   neither scope.
+
+## Step 249 - Accepted the single-active Membership corrective plan
+
+Status: ADR-021 documentation and roadmap planning completed on 2026-08-17
+after the product owner identified that issuing a new Membership leaves a
+zero-balance predecessor lifecycle-active. Product behavior is not implemented
+yet; the current runtime can still contain multiple lifecycle-active
+Memberships until the corrective slice is completed.
+
+Completed:
+
+- Accepted ADR-021, superseding only ADR-014's multiple-lifecycle-active
+  cardinality decision. Explicit Visit selection, expired/future eligibility,
+  Freeze blocking and ADR-018/020 oldest-first coverage remain intact.
+- Defined `0..1` active Membership at commit, a separate non-correction
+  `closed` lifecycle status, append-only constrained closure facts and a
+  PostgreSQL partial unique index. Ordinary closure does not cancel/correct the
+  sale Payment or imply a refund.
+- Recorded the locked transition matrix. A zero predecessor closes atomically
+  on ordinary Issue; a negative predecessor first receives ADR-020 concrete
+  allocation and then closes; positive remaining visits block ordinary Issue
+  without silent forfeiture. Date expiry, future start, backdating and
+  `paper_fallback` do not bypass the same policy.
+- Preserved both concrete-negative paths. A new Membership uses ADR-020
+  automatic oldest-first allocation; one-off closure remains a separate
+  deliberate exact-Payment aggregate. Concrete residual debt on a `closed`
+  Membership remains visible and coverable, while unknown opening/backfill
+  remainder remains visible but non-coverable pending a separate audited
+  reconciliation decision.
+- Closed correction/concurrency ambiguities: a non-positive-to-positive
+  correction on `closed` is dependency-blocked; no automatic reactivation or
+  visit transfer occurs. Issue, full one-off and dependent corrections share
+  one lock hierarchy. Closure facts require one source, distinct optional
+  same-client successor and commit-time status/fact consistency.
+- Inserted a five-step corrective slice before Milestone 10.6: contract
+  alignment; lifecycle persistence; atomic transitions; coverage/report/UI;
+  acceptance. Every step requires focused validation, progress update, one
+  logical commit and a stop before continuing.
+- Updated the ADR index, roadmap status/dependency map and `AGENTS.md` so a
+  future task cannot skip ADR-021 or claim Milestone 10.6/Milestone 11 is next.
+  No application, schema, migration, test or runtime file changed. Pre-existing
+  untracked `package.json` and `package-lock.json` remained untouched.
+
+Validation:
+
+- The required Graphify query was run before planning. Existing code and ADR
+  evidence confirmed that current `IssueMembership` always inserts `active`,
+  only `active/canceled/corrected` exist and ADR-014 explicitly allowed
+  multiple active rows; this is a real unimplemented gap, not a display label.
+- An independent `bodylife_reviewer` on Terra high found two P1 and two P2
+  planning gaps: unknown debt was called coverable, correction could strand
+  positive credit, closure constraints were underspecified and lock order was
+  incomplete. All four were corrected. Its second pass found no P0-P2 and
+  confirmed ADR index, roadmap sequencing and `AGENTS.md` consistency.
+- Structural checks found all 21 ADR rows, the ADR-021 file/reference set and
+  no stale roadmap phrase that makes 10.6 the next step or still treats
+  multiple-active cardinality as current. `git diff --check` passed.
+- `graphify . --update --no-viz` detected 168 changed code files, 26 changed
+  documents and one deletion, then stopped because no semantic LLM backend/key
+  is configured. It changed no tracked graph artifacts, so stale graph output
+  is not claimed as validation evidence.
+- No build or runtime tests were rerun because this step changes accepted
+  planning/instructions only. The unchanged ADR-020 product baseline was
+  validated immediately beforehand with Release build and the complete
+  PostgreSQL-backed UI suite passing 149/149 with zero skips.
+
+Stop point:
+
+- Start only ADR-021 step 21.1 contract alignment next. Update the architecture
+  baseline, domain/data/interaction/UI/operations/quality contracts, run the
+  documentation gate, update progress, make one logical commit and stop.
+- Do not claim the one-active invariant is implemented, do not start lifecycle
+  schema/command work in the same step, and do not start Milestone 10.6 or 11.

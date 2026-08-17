@@ -1,8 +1,9 @@
 # BodyLife CRM v1 implementation roadmap
 
 Дата: 2026-07-07, оновлено 2026-08-17
-Статус: чинний план; Milestones 1-10.5 виконані, Milestone 10.6 погоджений і
-ще не початий; Milestone 11 іде після 10.6
+Статус: чинний план; Milestones 1-10.5 та ADR-020 виконані, ADR-021 corrective
+slice є наступним; погоджений Milestone 10.6 іде після нього, Milestone 11 -
+після 10.6
 
 Основа: `docs/architecture-baseline.md`, `docs/domain-model.md`, `docs/data-architecture.md`, `docs/interaction-contracts.md`, `docs/ui-workflows.md`, `docs/ui-design-foundation.md`, `docs/operations-design.md`, `docs/technology-stack-decision.md`, `docs/vertical-slice-plan.md` і accepted ADR package у `docs/adr/`.
 
@@ -30,7 +31,8 @@
 | 9. Reports | 3, 5, 6, 7, 8 | Owner/admin operational visibility |
 | 10. Business audit/history UI | 2 through 9 | Support, dispute review, correction explanation |
 | 10.5. ADR-018 sales, negative coverage and replacement | 5 through 10 | Closed core workflows required before operations readiness |
-| 10.6. Single-visit sales and reception defaults | 3, 4, 6, 7, 9, 10, 10.5 | Coherent paid one-off/trial reception workflows |
+| ADR-021 corrective slice | 5 through 10.5 plus ADR-020 | One lifecycle-active Membership without hidden historical debt |
+| 10.6. Single-visit sales and reception defaults | 3, 4, 6, 7, 9, 10, 10.5, ADR-021 | Coherent paid one-off/trial reception workflows |
 | 11. Backup/restore/paper fallback readiness | 1 through 10.6 | Production readiness evidence |
 | 12. Production hardening | 1 through 11, including 10.5 and 10.6 | Go-live |
 
@@ -287,7 +289,10 @@
 - Milestone 2 for actor/session/permissions.
 - Milestone 3 for client ownership.
 - Milestone 4 for MembershipType snapshots.
-- Accepted product decisions: inclusive date arithmetic in ADR-005; multiple Memberships, explicit Visit selection/no-active behavior and Freeze blocking in ADR-014; ADR-018 defines later Milestone 10.5 negative closure/coverage contracts.
+- Accepted product decisions: inclusive date arithmetic in ADR-005; explicit
+  Visit selection/no-active behavior and Freeze blocking in ADR-014; ADR-018
+  and ADR-020 define negative closure/automatic issue coverage. ADR-021
+  supersedes ADR-014 multiple-active cardinality in the corrective slice below.
 
 ### Задачі
 
@@ -311,7 +316,9 @@
 - `membership_state_cache` is derived and rebuildable from source facts.
 - Memberships public query is the only source for remaining visits, negative balance, first negative date, effective end date, extension days and warnings.
 - Direct effective-end-date edit is impossible through ordinary workflows.
-- Issuing membership with existing negative state requires explicit decision and does not let a payment/new membership hide old negative visits silently.
+- Issuing with existing negative state applies ADR-020 automatic concrete
+  coverage and keeps concrete/unknown remainder visible; ADR-021 then owns the
+  explainable predecessor lifecycle transition.
 - Client profile reads Memberships state through public query after command success.
 - Recalculation failure causes command failure/rollback rather than partial success.
 
@@ -350,13 +357,17 @@
 - Milestone 2.
 - Milestone 3.
 - Milestone 5.
-- ADR-014 accepted for multiple Memberships, explicit Visit allocation, no-active contexts, ordering and Visit-during-Freeze blocking.
+- ADR-014 accepted for explicit Visit allocation, no-active contexts, ordering
+  and Visit-during-Freeze blocking. ADR-021 supersedes only its multiple-active
+  cardinality decision.
 
 ### Задачі
 
 - Створити `visits`, `visit_consumptions`, `visit_cancellations`.
 - Реалізувати `MarkVisit` with selected membership or explicit one-off/trial context.
-- Apply ADR-014: never infer a Membership; require explicit selection for ambiguity/expired state; reject future-start and Visit during active Freeze; create no consumption for one-off/trial.
+- Apply ADR-014: always validate the explicit `membership_id`; acknowledge an
+  expired current Membership; reject future-start, source-consistency ambiguity
+  and Visit during active Freeze; create no consumption for one-off/trial.
 - Реалізувати zero/negative/expired warning acknowledgement rules.
 - Реалізувати `CancelVisit` with reason/comment and changed-after-close marker support if day reconciliation exists.
 - Lock affected membership/source rows and recalculate synchronously in the same transaction.
@@ -369,7 +380,9 @@
 ### Acceptance Criteria
 
 - Marking a visit consumes exactly one active counted visit for the selected membership.
-- Multiple candidates never cause automatic allocation; one-off/trial creates no membership consumption or Memberships state change.
+- `MarkVisit` never chooses a Membership implicitly; after ADR-021, multiple
+  lifecycle-active candidates are a source-consistency failure. one-off/trial
+  creates no membership consumption or Memberships state change.
 - Visit before Membership start or during an active inclusive Freeze is rejected; expired Membership proceeds only through explicit selection and acknowledgement.
 - Recording a visit at 0 remaining visits is allowed only with explicit warning acknowledgement and produces negative state.
 - First negative visit date is recalculated by Memberships.
@@ -382,7 +395,9 @@
 ### Потрібні тести
 
 - Domain tests for remaining visits, zero-to-negative, multiple negative visits and first negative date.
-- Domain/application tests for ADR-014 single/ambiguous selection, expired/future-start eligibility, explicit one-off/trial contexts, same-date ordering and Freeze blocking.
+- Domain/application tests for ADR-014 explicit selection, ADR-021
+  source-consistency ambiguity rejection, expired/future-start eligibility,
+  explicit one-off/trial contexts, same-date ordering and Freeze blocking.
 - Domain/application tests for canceling normal visit and canceling first negative visit.
 - Application command tests for permissions, warning acknowledgement, idempotency, concurrency conflict and rollback on recalculation/audit failure.
 - PostgreSQL tests for at most one active counted consumption per visit and FK/client-membership consistency.
@@ -686,11 +701,13 @@
 - Full support ticketing system.
 
 
-## Стоп після реалізованого Milestone 10.5 і планування 10.6
+## Стоп після ADR-020; ADR-021 corrective slice є наступним
 
-ADR-018 is implemented and validated. ADR-019 and Milestone 10.6 are accepted
-and planned but implementation has not started. Milestone 11 follows 10.6 and
-has not started.
+Milestone 10.5 and ADR-020 are implemented and validated. ADR-021 is accepted
+and planned but not implemented; its one-active-Membership corrective slice is
+the next roadmap work and must finish before Milestone 10.6. ADR-019/Milestone
+10.6 remain accepted and planned, and Milestone 11 follows them without having
+started.
 
 ## Milestone 10.5. ADR-018 membership sales, negative coverage and replacement
 
@@ -757,6 +774,108 @@ Implement accepted ADR-018 without treating it as already delivered: exact ordin
 
 - Day close/reconciliation policy, refunds/deltas/cash transfer accounting or direct mutation of dependent facts.
 
+## Corrective slice ADR-021. One lifecycle-active Membership per Client
+
+### Ціль
+
+Replace the ADR-014 multiple-active model with one database-enforced
+lifecycle-active Membership per Client without hiding concrete or unknown
+negative history. Keep ADR-020 new-Membership coverage and ADR-018 one-off
+closure as separate, explainable ways to resolve concrete Visit debt.
+
+### Залежності
+
+- Milestone 10.5 and ADR-020 for exact Membership sales, oldest-first coverage,
+  signed issue preview, negative-closure correction and canonical debt state.
+- Milestones 5, 6, 8, 9 and 10 for Memberships recalculation, Visit/Freeze
+  eligibility, reports, history and business audit.
+- Accepted ADR-021 and the greenfield sole-baseline policy. There is no deployed
+  production database or legacy-row migration requirement.
+
+### Малі завершувані кроки
+
+1. **21.1 Contract alignment.** Update architecture baseline, domain model, data
+   architecture, interaction contracts, UI workflows, operations/audit and
+   quality expectations. Remove contradictory multiple-active and
+   active-status-only negative-query wording before code changes.
+2. **21.2 Lifecycle persistence.** Add `closed`, append-only Membership closure
+   source facts, reason/successor links, lifecycle mappings and a PostgreSQL
+   partial unique index for one `active` row per Client. Fold everything into
+   the sole `InitialBaseline` and prove clean apply/current-model invariants.
+3. **21.3 Atomic transitions.** Extend Issue preview/token and command locks for
+   zero, positive, concrete/unknown/mixed negative, expired, future-start,
+   backdated and paper-fallback states. Close eligible predecessor, create the
+   successor sale/allocation and audit in one transaction; block silent positive
+   forfeiture and stale/concurrent transitions.
+4. **21.4 Coverage, reports and UI.** Let ADR-020 and one-off closure operate on
+   open historical concrete Visit debt from `closed` Memberships without
+   allowing new Visits or Freezes on them. Keep unknown opening remainder
+   visible but non-coverable pending a separate reconciliation decision. Update
+   current/history/negative queries, profile, warnings, reports and audit
+   explanations for one current Membership plus explainable historical debt.
+5. **21.5 Acceptance.** Add correction/cancellation dependency regressions,
+   PostgreSQL concurrency and constraint tests, report/audit consistency and
+   tablet/phone flows. Run focused gates, full `scripts/validate.sh`, independent
+   acceptance review, progress update and logical commit before 10.6.1.
+
+Execution is sequential. After every step: run the focused gate, update
+`docs/implementation-progress.md`, stage only owned files, make one logical
+commit and stop with the next recommended step. Do not batch this corrective
+slice with Milestone 10.6.
+
+### Acceptance Criteria
+
+- PostgreSQL cannot commit two lifecycle-active Memberships for one Client,
+  including concurrent, backdated and paper-fallback issue attempts.
+- Zero-balance predecessor closes atomically with the successor Membership and
+  keeps its original exact-price Payment active and explainable.
+- Concrete/unknown/mixed negative predecessor can be superseded after the
+  ADR-020 concrete allocation step; concrete residual remains visible and
+  coverable after it is `closed`, while unknown remainder remains visible and
+  is never synthesized or Visit-covered.
+- Partial one-off closure keeps the sole negative Membership active; full
+  closure closes it at zero. One-off coverage of historical concrete Visit debt
+  does not alter an unrelated current Membership.
+- Positive remaining visits, including expired-by-date or future-start cases,
+  reject ordinary issue without writes or silent forfeiture.
+- Current Membership queries return only `none` or `single`; Visit, Freeze and
+  NonWorkingDay choices never target `closed`, while Negative Clients/history
+  retain all open debt and provenance.
+- Every closure has one unique source Membership, a distinct optional
+  same-client successor and commit-time status/fact consistency.
+- Visit/coverage correction that would make a closed non-positive Membership
+  positive is dependency-blocked with no writes; no automatic reactivation,
+  visit transfer or silent unusable credit occurs.
+- Issue/correction retries, stale preview, unique conflicts, recalculation or
+  audit failures leave no partial closure, Membership, Payment or allocation.
+- A clean PostgreSQL database applies the sole baseline and reaches the current
+  EF model with lifecycle closure and one-active invariants.
+
+### Потрібні тести
+
+- Domain/application matrix tests for zero/positive/negative/unknown/mixed,
+  expired/future/backdated states, closure reasons, canonical rereads and no
+  automatic predecessor reactivation.
+- PostgreSQL tests for the partial unique index, deterministic lock order,
+  concurrent Issue/full-one-off/correction transitions, closure
+  uniqueness/FKs/checks, transaction rollback and clean baseline
+  apply/no-op/rollback-reapply/current-model drift.
+- ADR-018/020 command tests proving oldest-first allocation, partial/full
+  remainder, exact Payments, correction dependencies, idempotency and
+  `stale_state` behavior across active and closed source Memberships, including
+  non-positive-to-positive correction rejection.
+- Report/history/audit consistency and tablet/phone Playwright flows proving one
+  current Membership, visible historical debt, blocked positive rollover and
+  understandable predecessor/successor explanation.
+
+### Що не входить
+
+- Queued/future Memberships, transferable leftover visits, automatic rollover
+  schedules or a second concurrently active Membership.
+- Silent forfeiture of positive visits or a new manual early-close/forfeit
+  command; that requires a separate explicit product decision.
+- Runtime repair/import of an already-deployed multiple-active database.
+
 ## Milestone 10.6. Single-visit sales and reception defaults
 
 ### Ціль
@@ -773,6 +892,8 @@ closure remains intact; Milestone 11 does not start until 10.6 acceptance.
   Payments, reports and audit/history.
 - Milestone 10.5 for active `one_off` catalog rules, exact Payment patterns,
   PostgreSQL transaction/locking conventions and negative-closure regression.
+- Completed ADR-021 corrective slice, so single-visit work cannot preserve or
+  reintroduce multiple lifecycle-active Membership assumptions.
 - Accepted ADR-019 and the greenfield single-baseline policy. No deployed
   database, production data migration or historical link invention is needed.
 
@@ -1054,9 +1175,9 @@ into one implementation pass.
 
 ## Roadmap Done Criteria
 
-- All 12 numbered milestones plus Milestones 10.5 and 10.6 are represented as
-  issue-tracker-ready epics with goal, dependencies, tasks, acceptance criteria,
-  tests, risks and explicit out-of-scope items.
+- All 12 numbered milestones, Milestones 10.5/10.6 and the ADR-021 corrective
+  slice are represented as issue-tracker-ready epics with goal, dependencies,
+  tasks, acceptance criteria, tests, risks and explicit out-of-scope items.
 - Dependencies are visible and no milestone assumes later business modules without naming the dependency.
 - Every state-changing v1 workflow has a command owner, permission policy, transaction boundary, recalculation/audit expectation and tests before production.
 - Reports, audit and operations are implemented as trust-building capabilities, not afterthoughts.

@@ -2,7 +2,7 @@
 
 Дата початкового пакета: 2026-07-07
 
-Оновлено: 2026-08-17 (ADR-020)
+Оновлено: 2026-08-17 (ADR-021)
 
 Цей пакет фіксує ADR-кандидати з `docs/architecture-research-options.md` і `docs/adr/adr-backlog.md` як прийняті архітектурні рішення для першої web-версії BodyLife CRM.
 
@@ -33,13 +33,14 @@
 | [ADR-011](011-membership-type-lifecycle.md) | Editable MembershipType catalog плюс immutable snapshot у виданому абонементі. |
 | [ADR-012](012-permissions-session-accountability-and-corrections.md) | Owner, named Admin і shared Reception/Admin account з чіткою accountability. |
 | [ADR-013](013-future-client-self-service-boundary.md) | Client self-service не входить у v1; домен лишається придатним для майбутнього read-only view. |
-| [ADR-014](014-visit-membership-selection-and-freeze-policy.md) | Multiple Memberships дозволені, але Visit завжди має explicit selection/context; frozen Membership не споживається. |
+| [ADR-014](014-visit-membership-selection-and-freeze-policy.md) | Visit має explicit Membership/context selection і frozen Membership не споживається; multiple-active cardinality superseded by ADR-021. |
 | [ADR-015](015-freeze-range-eligibility-policy.md) | Freeze починається тільки в locked pre-command effective date interval lifecycle-active Membership і не може перекривати active counted Membership Visit. |
 | [ADR-016](016-non-working-day-application-scope.md) | NonWorkingDay застосовується snapshot-ом до lifecycle-active Memberships з inclusive overlap і додає кожному весь підтверджений period. |
 | [ADR-017](017-business-time-zone-and-ui-localization.md) | Canonical instants лишаються UTC, а business dates, date filters і локалізований UI використовують фіксований календар `Europe/Kyiv`. |
 | [ADR-018](018-membership-sales-negative-coverage-and-replacement.md) | Ordinary sale завжди має exact-price cash Payment; one-off/new-membership coverage, sale replacement/cancellation і paper-sheet metadata мають explicit audited facts. |
 | [ADR-019](019-single-visit-sales-and-reception-defaults.md) | One-off/trial є linked exact-price Visit + Payment sales з Owner defaults, protected trial Client і aggregate cancellation. |
 | [ADR-020](020-automatic-negative-visit-coverage-on-membership-issue.md) | Ordinary IssueMembership автоматично покриває найдавніші concrete negative Visits у межах visits limit; UI показує лише server preview. |
+| [ADR-021](021-single-lifecycle-active-membership.md) | Client має щонайбільше один lifecycle-active Membership; predecessor закривається explainably, concrete historical debt лишається coverable, unknown remainder - visible. |
 
 ## Джерела
 
@@ -60,8 +61,9 @@
 7. До reception/report UI зафіксувати UTC storage, Kyiv business day, DST input і culture-aware display: ADR-017.
 8. Зібрати reception vertical slice: ADR-003, ADR-008.
 9. Реалізувати exact sale/negative coverage/replacement contracts: ADR-018.
-10. Реалізувати linked one-off/trial sales і reception defaults: ADR-019.
-11. Автоматизувати oldest-first new-Membership coverage без UI-рішення: ADR-020.
-12. Підтвердити consistency reports після visits/payments/corrections: ADR-007.
-13. Закрити production readiness: ADR-009, ADR-010.
-14. Тримати майбутній client self-service як guardrail, а не scope v1: ADR-013.
+10. Автоматизувати oldest-first new-Membership coverage без UI-рішення: ADR-020.
+11. Забезпечити один lifecycle-active Membership без приховування debt: ADR-021.
+12. Реалізувати linked one-off/trial sales і reception defaults: ADR-019.
+13. Підтвердити consistency reports після visits/payments/corrections: ADR-007.
+14. Закрити production readiness: ADR-009, ADR-010.
+15. Тримати майбутній client self-service як guardrail, а не scope v1: ADR-013.
