@@ -15367,3 +15367,62 @@ Stop point:
   present the Profile, Issue Membership success and activity-ledger paths. Do
   not mark Wave 3 approved or start Wave 4 until explicit product-owner
   acceptance.
+
+## Step 242 - Sticky membership passport and tabbed client journal
+
+Status: reworked Wave 3 candidate completed on 2026-08-17 after the product
+owner asked for a compact always-visible client/membership summary and a less
+overloaded activity journal. Explicit Profile and Cancel Visit visual approval
+is still pending; Wave 4 and Milestone 11 remain blocked.
+
+Completed:
+
+- Replaced the duplicated identity/readiness stack with one compact membership
+  passport. Desktop/tablet keep it sticky at right; phone places it first. It
+  exposes client identity/status, the human membership name/status, remaining
+  visits, effective end and a direct Mark Visit action.
+- Moved stable card, phone, note and identity/card management into one native
+  Client details disclosure. Update/Card validation and stale canonical rereads
+  automatically open that parent so an error cannot be hidden.
+- Kept one main action workspace and all existing server partial IDs, form
+  names, htmx targets, busy/idempotency guards, authorization and canonical
+  reread behavior.
+- Replaced the long visit/payment board with progressively enhanced
+  Visits/Payments tabs. Visits is default; both sections remain visible without
+  JavaScript; keyboard tabs use roving focus. Source rows are compact native
+  disclosures, one expanded at a time, with latest five and Show all/fewer.
+- Kept Cancel Visit and Correct Payment inside their source facts. Visit
+  commands retain Visits intent; payment/correction and Issue Membership retain
+  Payments intent across swaps. Required open correction rows remain visible
+  even outside the first five and direct Daily Report correction links select
+  Payments.
+- Replaced user-visible smoke-fixture `snapshot` names with realistic
+  membership names without changing immutable domain snapshot semantics.
+- Updated visual contracts, localization and UI smoke coverage for sticky
+  behavior, no-JavaScript reachability, tab semantics, nested action access,
+  stale/error visibility, direct report corrections and responsive geometry.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors; JavaScript syntax,
+  localization XML and `git diff --check` passed.
+- Web tests passed 378/378. The complete PostgreSQL-backed authenticated
+  Playwright suite passed 146/146 with zero failures or skips.
+- Final profile anchors are in
+  `/tmp/bodylife-wave3-sticky-profile-final-v2/`; visit/payment action evidence
+  is in `/tmp/bodylife-wave3-sticky-profile-actions-v4/`; payment correction
+  evidence is in `/tmp/bodylife-wave3-sticky-profile-corrections-v1/`.
+- Independent correctness and interface review found no remaining P0–P2. One
+  non-blocking P3 suggestion remains to make the Daily Report fixture itself
+  contain more than five payments, although the required-row visibility and
+  active-tab path are covered.
+- `graphify update .` was attempted after the final code/documentation change
+  and returned `[Errno 95] Operation not supported`. It did not change tracked
+  graph artifacts, so stale graph topology is not claimed as validation.
+
+Stop point:
+
+- Replace any previous local review process with one instance on port `41881`
+  and present the sticky Profile, Client details, Visits/Payments tabs, Cancel
+  Visit and Correct Payment paths. Do not mark Wave 3 approved or begin Wave 4
+  until the product owner explicitly accepts this candidate.

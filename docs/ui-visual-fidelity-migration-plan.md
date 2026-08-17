@@ -1,7 +1,7 @@
 # План міграції current-Home шаблону в production Razor UI
 
 Дата: 2026-07-22
-Оновлено: 2026-08-12
+Оновлено: 2026-08-17
 Статус: **production migration authorized; Waves 0–2 approved; Wave 3
 Profile/actions candidate completed and awaiting explicit product-owner
 approval; Wave 4 blocked**.
@@ -300,7 +300,7 @@ Stop/go:
 
 ### Wave 3 — Client profile and all Reception actions
 
-Status: **candidate completed on 2026-08-12; automated gates and independent
+Status: **reworked candidate completed on 2026-08-17; automated gates and independent
 review are green; explicit Profile and Cancel Visit visual approval remains
 pending**.
 
@@ -318,45 +318,39 @@ tablet/phone approval.
 
 Current candidate evidence:
 
-- the real server-rendered Profile is one raised paper surface ordered as
-  identity/status → warnings → membership readiness → risk contexts → actions
-  → visit/payment ledger → records → quiet identity/card management;
-- one blue rail now belongs only to the outer Profile paper. Neutral identity
-  and note, blue membership and graphite actions use tonal fills/dividers,
-  never competing inner left rails. Amber/red remain reserved for
-  review/danger contexts;
-- the membership readiness strip exposes the human membership name, status,
-  signed remaining visits and effective end date with semantic text-backed
-  signals. The server still reads the immutable issue-time snapshot, but the
-  Reception UI no longer exposes `snapshot`/`знімок` persistence vocabulary;
-  zero-safe negative coverage is omitted by a server-owned presentation
-  decision, while query failure, concrete negative balance, active closure and
-  correction/error states remain visible;
-- the reception action workstation exposes Mark Visit, Issue Membership, Add
-  Payment and Add Freeze before a single full-width active server form. Mark
-  Visit is initial; the JavaScript switcher is presentation-only and preserves
-  native `details` no-JavaScript fallback, stable partial ids, htmx swap
-  targets, busy/idempotency and canonical rereads;
-- Cancel Visit, Correct Payment and Cancel Freeze remain contextual to their
-  source rows. Negative coverage and issued-sale correction remain explicit
-  danger/review contexts rather than ordinary quick actions;
-- a successful canonical mutation now renders a compact inset status row in
-  normal flow below identity instead of a full-width highlighted region;
-- the activity ledger is split into independent Recent Visits and Recent
-  Payments groups. Desktop uses two columns without stretching an empty group;
-  tablet/phone stack the groups. Each source event is a flat readable row and
-  its cancellation/correction remains nested inside that row;
-- the shared rail now has explicit Operations, Records & history and
-  role-gated Owner tools groups rather than one flat list/More disclosure;
-- corrected Profile/status captures are under
-  `/tmp/bodylife-wave3-ledger-redesign-root-v6/` at `1440x900`, `1024x768`
-  and `390x844`; long activity-ledger captures are under
-  `/tmp/bodylife-wave3-ledger-redesign-root-v4/`;
-- Release build passed with zero warnings/errors, Web tests passed 378/378,
-  focused responsive Profile and no-JavaScript coverage passed 4/4, focused
-  action workflows passed 24/24 and the final complete authenticated
-  Playwright suite passed 146/146. The independent redesign review found no
-  remaining P0–P3 after its note-rail and coverage observations were closed.
+- the real server-rendered Profile remains one raised paper with one outer
+  blue rail. Its success layout is now a compact sticky membership passport at
+  right plus one workflow column; phone places the passport first;
+- the passport contains client identity/status, the human current-membership
+  name/status, signed remaining visits, effective end and a compact Mark Visit
+  entry. Card, phone, note, Update and Card Assignment live in one native
+  `Client details` disclosure instead of a duplicated readiness/fact grid;
+- server-open Update/Card validation or stale states open the parent Client
+  details disclosure, so canonical errors are never hidden. The passport stays
+  sticky while ordinary details are open at desktop/tablet;
+- critical warnings and negative/sale-correction contexts remain in the main
+  workflow before the action they constrain. Mark Visit, Issue Membership,
+  Add Payment and Add Freeze still select one full-width real server form with
+  stable ids, htmx targets, busy/idempotency and no-JavaScript fallback;
+- the activity ledger is now Visits/Payments tabs with Visits selected by
+  default. Without JavaScript both sections remain visible. Rows are compact
+  native disclosures with source facts and Cancel/Correct controls inside;
+  only the latest five are initially shown, with Show all/fewer;
+- Visit/Cancel commands preserve Visits intent, while Add/Correct Payment and
+  Issue Membership preserve Payments intent across canonical rereads. A
+  required open correction from Daily Report pins its source row and selects
+  Payments even when the row falls beyond the compact initial set;
+- technical `snapshot` fixture labels were replaced with realistic membership
+  names while immutable issue-time snapshot ownership remains unchanged;
+- final responsive evidence is under
+  `/tmp/bodylife-wave3-sticky-profile-final-v2/` at `1440x900`, `1024x768`
+  and `390x844`; action/cancel evidence is under
+  `/tmp/bodylife-wave3-sticky-profile-actions-v4/` and correction evidence
+  under `/tmp/bodylife-wave3-sticky-profile-corrections-v1/`;
+- Release solution build passed with zero warnings/errors, Web tests passed
+  378/378 and the complete authenticated PostgreSQL-backed Playwright suite
+  passed 146/146. Independent correctness and interface review found no
+  remaining P0–P2; one P3 fixture-strengthening idea does not block review.
 
 Stop/go:
 

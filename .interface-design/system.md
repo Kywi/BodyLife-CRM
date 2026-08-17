@@ -102,11 +102,13 @@ reread remain server-owned contracts, not visual-only states.
 ## Client profile and reception action pattern
 
 The selected canonical Profile owns exactly one raised full-width paper
-surface. Inside it, use divider-separated regions in this order: identity and
-operational status; critical server warnings; current membership readiness;
-risk-specific correction context; reception actions; visit/payment activity;
-record links; quiet identity/card management. Do not rebuild the profile as a
-stack of equally raised nested cards.
+surface. Its success composition has two responsibilities: a compact
+membership passport and the current workflow. At desktop/tablet the passport
+is a sticky right rail; at phone width it is the first block above the
+workflow. The workflow keeps critical server warnings and risk contexts before
+the action they constrain, followed by one active Reception action, the
+activity journal and record links. Do not rebuild the Profile as a stack of
+equally raised nested cards.
 
 The Profile's blue inline-start signal belongs only to the outer paper. Inner
 identity, note, membership, action and activity regions must not repeat or
@@ -116,15 +118,16 @@ readiness, graphite actions and a paper activity board. Risk-specific contexts
 alone use amber or red. This is section separation, not a nested-card or
 rainbow treatment.
 
-Identity facts and membership readiness use flat inset cells. The membership
-strip presents the human membership name, status, signed remaining visits and
-effective end date. The name still comes from the immutable issue-time type
+The membership passport presents only the client identity/status, human
+membership name/status, signed remaining visits and effective end date, plus a
+compact Mark Visit entry. Stable card, phone, note and update facts live in one
+native `Client details` disclosure; they are not repeated in a second readiness
+grid. The passport stays sticky when that disclosure opens, and a server-open
+Update/Card error opens the parent disclosure so no validation or stale state
+is hidden. The membership name still comes from the immutable issue-time type
 snapshot, but persistence vocabulary such as `snapshot` or `знімок` is never a
-Reception label. Green, amber or red belongs only to the affected value and is
-always paired with a label. Negative, expired and inactive warnings appear
-before the action they constrain. A safe zero negative balance does not render
-the negative-coverage workstation; query failure, concrete negative balance,
-active closure and correction/error states keep it visible.
+Reception label. Negative, expired and inactive warnings remain in the main
+workflow before the action they constrain.
 
 The core action workstation presents every currently allowed action first,
 then one full-width active server form. Mark Visit is the initial reception
@@ -138,14 +141,18 @@ and information. Cancel Visit, Correct Payment and Cancel Freeze remain
 contextual to their original source rows; negative coverage and issued-sale
 correction are separate risk contexts rather than ordinary quick actions.
 
-A canonical command result appears as a compact inset status row immediately
-below the identity header. It stays in normal document flow, does not overlap
-or become a new full-width semantic zone, and never introduces another left
-rail. The activity area is not one continuous gray feed: Recent Visits and
-Recent Payments are independent softly tinted groups, arranged side by side at
-desktop and stacked at tablet/phone. Every source event is a flat bordered row;
-cancellation/correction facts remain nested inside their source event with
-text-backed red, amber or blue context and no extra elevation or rail.
+A canonical command result appears as a compact inset status row at the start
+of the workflow. It stays in normal document flow, does not overlap or become a
+new full-width semantic zone, and never introduces another left rail. The
+activity area is a compact progressive-enhancement tab set: Visits is the
+default, Payments is adjacent, and without JavaScript both remain ordinary
+visible sections. Each source event is one flat expandable row; the summary
+contains only kind/amount, status and time, while details and contextual
+Cancel/Correct controls stay inside the source row. Show the latest five first
+with Show all/fewer; a server-required open correction row is always pinned and
+its Payments tab selected even when it falls outside the first five. Visit
+commands preserve Visits intent; payment/correction and Issue Membership
+commands preserve Payments intent across canonical htmx rereads.
 
 ## Baseline note
 
