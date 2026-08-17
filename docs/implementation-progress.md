@@ -15549,3 +15549,68 @@ Stop point:
 - When implementation is explicitly resumed, start only with Milestone 10.6.1
   contract alignment, validate it, update this progress file, commit it and
   stop. Do not batch the eight slices and do not start Milestone 11.
+
+## Step 245 - Restored the negative-visit coverage journey
+
+Status: focused Wave 3 Reception/report defect fixed on 2026-08-17 after the
+product owner reported that the Negative Clients drill-down exposed an
+unexplained old remainder and did not make the accepted ADR-018 coverage
+methods reachable. Broader Wave 3 visual approval remains pending; Milestone
+10.6 remains planned and not started.
+
+Completed:
+
+- Confirmed that the Memberships-owned oldest-first coverage behavior was
+  present and unchanged. The defect was in presentation and navigation: the
+  Negative Clients report linked to a removed Profile fragment, concrete
+  negative Visits were mixed with an opening/backfill remainder, and the new
+  Membership method was described but not directly reachable.
+- Replaced the stale report link with a direct
+  `#negative-visit-coverage-panel` journey. Concrete rows now say that negative
+  visits can be resolved; an unknown-only opening row instead opens an honest
+  old-balance explanation.
+- Reworked the Profile resolver into a compact server-owned summary. A zero
+  unknown balance is omitted, concrete source Visits are available through a
+  disclosure, and the two ADR-018 methods have equal neutral visual weight:
+  exact one-off closure or an ordinary Membership issue flow. No method,
+  MembershipType or negative-handling decision is preselected.
+- Added a direct action that activates, scrolls to and focuses the existing
+  Issue Membership form without changing its command, preview, payment,
+  allocation or canonical-reread contracts. The one-off form retains its
+  antiforgery token, expected-oldest selector, idempotency key and htmx
+  outer-replacement behavior.
+- Separated the unknown opening/backfill remainder into an amber explanation:
+  because it has no concrete Visit facts, ordinary one-off or new-Membership
+  allocation cannot honestly consume it. Mixed states state explicitly that
+  the available actions cover only concrete Visits.
+- Added tablet/phone regression coverage for report-to-resolver navigation,
+  sticky-header clearance, honest unknown-only rendering, method neutrality,
+  no preselection and activation/focus of the Issue Membership form.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors; JavaScript syntax,
+  all four modified localization RESX files and `git diff --check` passed.
+- Focused Negative Clients, negative coverage and Issue Membership UI tests
+  passed 8/8; focused negative-coverage ViewModel tests passed 2/2.
+- Full Web tests passed 378/378 and the complete PostgreSQL-backed authenticated
+  Playwright suite passed 147/147 with zero skips.
+- Independent domain/correctness and interface review found no remaining
+  P0-P2 findings. Current Admin/Owner route and Membership issue policies make
+  the target-availability contract consistent for this scope.
+- Implementation and regression coverage are recorded in commit `f927e66`.
+- `graphify update .` was attempted after the product commit and returned
+  `[Errno 95] Operation not supported`. The semantic update detected 152
+  changed code files, 19 changed documents and one deletion, then stopped
+  because no semantic LLM backend/key is configured. Neither attempt changed
+  tracked graph artifacts, so stale graph topology is not claimed as
+  validation evidence.
+
+Stop point:
+
+- Restart the one local review instance on port `41881` and present concrete
+  negative coverage, the one-off disclosure, new-Membership activation and the
+  unknown opening/backfill explanation for explicit product-owner review.
+- Do not reinterpret an unknown opening remainder as synthetic Visits and do
+  not change ADR-018 oldest-first allocation. Broader Wave 3 approval and
+  Milestone 10.6 implementation remain separate decisions.
