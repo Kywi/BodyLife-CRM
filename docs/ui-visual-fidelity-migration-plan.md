@@ -328,10 +328,13 @@ Current candidate evidence:
 - server-open Update/Card validation or stale states open the parent Client
   details disclosure, so canonical errors are never hidden. The passport stays
   sticky while ordinary details are open at desktop/tablet;
-- critical warnings and negative/sale-correction contexts remain in the main
-  workflow before the action they constrain. Mark Visit, Issue Membership,
-  Add Payment and Add Freeze still select one full-width real server form with
-  stable ids, htmx targets, busy/idempotency and no-JavaScript fallback;
+- critical warnings and sale-correction context remain in the main workflow
+  before the action they constrain. Mark Visit, Issue Membership, Add Payment
+  and Add Freeze still select one full-width real server form. Concrete
+  negative Visits add a conditional neutral `Cover negative balance` action;
+  only its compact signed debt signal is red, while one-off and new-Membership
+  methods are equal and unselected. Stable ids, htmx targets,
+  busy/idempotency and no-JavaScript fallback remain;
 - successful canonical rereads now publish one shared, fixed operation-status
   rail immediately below the authenticated header. Reception includes client
   context; full-page Owner successes use the same host. Local validation,

@@ -248,7 +248,7 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 ## 18. ADR-018 sales and negative coverage workflow
 
 - Issue form shows a selected active ordinary type and read-only exact snapshot price; it never offers omitted, under or over payment input.
-- Negative panel shows leave-visible, one-off closure and new-Membership coverage with dates, quantities, oldest-first consequence and expired preview. It recommends/preselects neither method nor type; stale/inactive type fails before writes.
+- The conditional `Cover negative balance` Reception action shows the signed server balance and two equal neutral methods: one-off closure or new-Membership coverage. It shows dates, quantities, oldest-first consequence and expired preview, but recommends/preselects neither method nor type; stale/inactive type fails before writes. Only the negative value/blocking error/destructive correction is red. An unknown opening/backfill remainder is explained in amber and exposes no synthetic coverage method.
 - Mistaken one-off closure has a reason-required cancel/replace action that changes its items and Payment together; generic payment correction cannot detach it from the closure.
 - Replacement/cancel form is Admin/Owner with required reason, explicit no-delta/refund notice, dependent-fact preview and blockers. Success rereads profile, history, audit and affected report state.
 - Paper fallback entry creates/uses one numbered sheet batch and displays a stable line number on every row before reconciliation through daily report and audit/history.

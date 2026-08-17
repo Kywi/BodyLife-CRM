@@ -186,11 +186,14 @@ artifact paths in the Evidence column; `—` never means approved.
   coverage is omitted; failures, concrete negatives, active closures and
   correction/error states remain explicit.
 - Mark Visit, Issue Membership, Add Payment and Add Freeze remain visible above
-  one full-width active form. The switcher enhances rather than replaces
-  native details; stable ids/hx targets and no-JavaScript reachability remain.
+  one full-width active form. A server-backed negative state adds the neutral
+  conditional `Cover negative balance` action with only a compact red signed
+  balance signal. Its one-off and new-Membership methods have equal weight and
+  no preselection; unknown opening/backfill remainder is amber and actionless.
+  The switcher enhances rather than replaces native details; stable ids/hx
+  targets and no-JavaScript reachability remain.
 - Cancel Visit, Correct Payment and Cancel Freeze remain attached to source
-  rows. Negative coverage and issued-sale correction remain explicit risk
-  contexts.
+  rows. Issued-sale correction remains an explicit risk context.
 - Canonical mutation success uses one fixed shared status rail directly below
   the authenticated header. It is no longer repeated inside Profile identity
   or workflow regions. Recent Visits and Recent Payments are separate softly

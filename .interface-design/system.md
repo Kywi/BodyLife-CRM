@@ -132,14 +132,21 @@ workflow before the action they constrain.
 The core action workstation presents every currently allowed action first,
 then one full-width active server form. Mark Visit is the initial reception
 primary; Issue Membership, Add Payment and Add Freeze are adjacent secondary
-choices. Desktop may use four choices across; tablet and phone use a readable
-2×2 arrangement. The enhanced switcher is presentation-only: native
+choices. When the server exposes concrete negative Visits or coverage history,
+`Cover negative balance` is a conditional secondary action in the same
+workstation. Its trigger and form stay neutral; only the compact signed debt
+badge/value, a blocking error or a destructive correction uses red. Desktop
+may place the available choices in one row; tablet and phone use a readable
+two-column arrangement. The enhanced switcher is presentation-only: native
 `details` summaries remain the no-JavaScript fallback, the existing partial
 ids and htmx `outerHTML` targets remain stable, and a failed/swapped form stays
 selected. The active safe submit is graphite; blue is reserved for selection
-and information. Cancel Visit, Correct Payment and Cancel Freeze remain
-contextual to their original source rows; negative coverage and issued-sale
-correction are separate risk contexts rather than ordinary quick actions.
+and information. Inside negative coverage, exact one-off closure and a new
+ordinary Membership are equal neutral methods with no recommendation or
+preselection; an unknown opening/backfill remainder is an amber explanation
+and exposes neither method. Cancel Visit, Correct Payment and Cancel Freeze
+remain contextual to their original source rows; issued-sale correction stays
+an explicit risk context.
 
 A successful canonical command result appears in the single shared operation
 status rail immediately below the authenticated header, not inside the Profile

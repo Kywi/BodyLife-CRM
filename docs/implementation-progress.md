@@ -15624,3 +15624,60 @@ Stop point:
 - Do not reinterpret an unknown opening remainder as synthetic Visits and do
   not change ADR-018 oldest-first allocation. Broader Wave 3 approval and
   Milestone 10.6 implementation remain separate decisions.
+
+## Step 246 - Integrated negative coverage into Reception actions
+
+Status: focused Wave 3 candidate refined on 2026-08-17 after the product owner
+rejected the standalone red resolver composition. The command/domain contracts
+remain unchanged; explicit visual approval is still pending.
+
+Completed:
+
+- Moved the stable `#negative-visit-coverage-panel` into the same Reception
+  action workstation as Mark Visit, Issue Membership, Add Payment and Add
+  Freeze. It appears conditionally as `Cover negative balance`; the native
+  details summary remains the no-JavaScript fallback.
+- Removed the standalone red risk surface. The action/form is neutral paper;
+  red is limited to the compact signed debt badge/value and genuine blocking
+  or destructive states. An unknown opening/backfill remainder stays an amber
+  explanation and exposes no synthetic coverage method.
+- Kept one-off closure and new ordinary Membership as equal neutral methods.
+  One-off retains its exact Payment, oldest-first selector, antiforgery,
+  idempotency and canonical reread. New Membership activates the existing
+  Issue form without selecting a type, negative decision, quantity or date.
+- Added explicit report intent through `profileAction=negative` plus the stable
+  fragment. One-shot hash intent outranks remembered action state, panel htmx
+  swaps restore the selected action, canonical full rereads remain selected,
+  and successful Issue swaps are not stolen back by the old hash.
+- Updated the interface contract, workflow and Wave 3 evidence documents to
+  record the conditional action, neutral method hierarchy and color rules.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors; JavaScript syntax,
+  modified RESX XML and `git diff --check` passed.
+- Full Web tests passed 378/378. The complete PostgreSQL-backed authenticated
+  Playwright suite passed 148/148 with zero skips; the focused Negative
+  Clients, negative coverage and Issue Membership set passed 9/9.
+- Independent correctness/design review found no remaining P0-P3. New tests
+  cover report drill-down, explicit hash vs remembered action, htmx selection
+  continuity, neutral methods/no preselection, canonical close/correction,
+  zero/history state and no-JavaScript reachability.
+- Implementation and regression coverage are recorded in commit `feabb4f`.
+- The single live review instance was restarted on port `41881`. Fresh real
+  Razor captures at 1440x900, 1024x768 and 390x844 are under
+  `/tmp/bodylife-negative-action-final-live/`. All measured viewports have no
+  horizontal overflow, two neutral concrete methods and zero primary methods;
+  the unknown-only state exposes zero methods.
+- `graphify update .` was attempted and returned `[Errno 95] Operation not
+  supported`. The semantic update detected 152 changed code files, 20 changed
+  documents and one deletion, then stopped because no semantic LLM backend/key
+  is configured. Neither attempt changed tracked graph artifacts.
+
+Stop point:
+
+- Present the live conditional action, one-off disclosure, new-Membership
+  transition and unknown opening/backfill state for product-owner review.
+- Do not fold one-off negative closure into ordinary Issue Membership: ADR-018
+  keeps it a separate exact-Payment aggregate. Milestone 10.6 remains planned
+  and separate from this Wave 3 visual refinement.
