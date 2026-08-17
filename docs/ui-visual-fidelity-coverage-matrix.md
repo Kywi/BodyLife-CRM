@@ -97,7 +97,7 @@ artifact paths in the Evidence column; `—` never means approved.
 | Reception `_CardAssignmentForm.cshtml` | 3 | assign/change/clear; duplicate block; reason; permission/stale/success | candidate — approval pending | Quiet Profile-management disclosure; assign/change/clear/stale tests remain green |
 | Reception `_MarkVisitForm.cshtml` | 3 | membership/one-off/trial; zero/negative/expired acknowledgement; freeze block; busy/stale | candidate — approval pending | Initial graphite action; native details fallback; stable htmx target; focused command coverage green |
 | Reception `_IssueMembershipForm.cshtml` | 3 | active ordinary type; immutable snapshot; one read-only exact cash Payment with no omit/under/over input; leave-visible/new-Membership negative decision; forced oldest start, remainder/expired consequence; busy/stale/success | candidate — approval pending | Secondary action above one active server form; exact-sale/negative contracts and focused suite green |
-| Reception `_NegativeVisitCoveragePanel.cshtml` | 3 | no preselected/recommended method; oldest-first concrete Visits; one-off quantities and exact Payment; leave-visible/new-Membership path; closure cancel/same-method replace, restored/replacement facts, reason/confirmation, no refund/delta, permission/stale/success | candidate — approval pending | Danger context before actions; omitted only for server-confirmed safe zero without closure/error; focused suite green |
+| Reception `_NegativeVisitCoveragePanel.cshtml` | 3 | no preselected method/type/quantity/decision/date; filled signed-balance plaque; always-visible one-off quantities and exact Payment; secondary new-Membership route; oldest-first concrete Visits in final `+ / −` disclosure; closure cancel/same-method replace, restored/replacement facts, reason/confirmation, no refund/delta, permission/stale/success | candidate — approval pending | Conditional Reception action; one red debt plaque, neutral one-off work surface and Membership route, amber unknown remainder; focused suite green |
 | Reception `_IssuedMembershipSaleCorrectionForm.cshtml` | 3 | original snapshot/exact Payment; cancel/replace with no default; replacement ordinary type/start; visits/freezes/non-working/coverage dependencies and blockers; reason/confirmation; no refund/delta; paper provenance; permission/stale/changed-after-close/success | candidate — approval pending | Explicit amber review context before routine actions; dependency/blocker/canonical-reread suite green |
 | Reception `_AddPaymentForm.cshtml` | 3 | one-off/trial/other only; ordinary sale and negative closure rejected in favor of their full workflows; normal/backfill/fallback; decimal validation; busy/duplicate/success | candidate — approval pending | Secondary action in shared workstation; workflow/localization coverage green |
 | Reception `_CorrectPaymentForm.cshtml` | 3 | standalone accepted contexts only; sale/negative-closure correction redirected to full workflows; replace/cancel; reason/confirmation; permission/stale/changed-after-close/success | candidate — approval pending | Contextual disclosure inside source payment row; correction/cancel suite and history captures green |
@@ -187,9 +187,11 @@ artifact paths in the Evidence column; `—` never means approved.
   correction/error states remain explicit.
 - Mark Visit, Issue Membership, Add Payment and Add Freeze remain visible above
   one full-width active form. A server-backed negative state adds the neutral
-  conditional `Cover negative balance` action with only a compact red signed
-  balance signal. Its one-off and new-Membership methods have equal weight and
-  no preselection; unknown opening/backfill remainder is amber and actionless.
+  conditional `Cover negative balance` action. Its open state uses one filled
+  red signed-balance plaque, an always-visible exact one-off form, a neutral
+  secondary route to Issue Membership and a final compact `+ / −` Visit
+  provenance disclosure. No method detail is preselected; unknown
+  opening/backfill remainder is amber and actionless.
   The switcher enhances rather than replaces native details; stable ids/hx
   targets and no-JavaScript reachability remain.
 - Cancel Visit, Correct Payment and Cancel Freeze remain attached to source

@@ -15681,3 +15681,63 @@ Stop point:
 - Do not fold one-off negative closure into ordinary Issue Membership: ADR-018
   keeps it a separate exact-Payment aggregate. Milestone 10.6 remains planned
   and separate from this Wave 3 visual refinement.
+
+## Step 247 - Simplified the negative-coverage action composition
+
+Status: focused Wave 3 candidate refined on 2026-08-17 after the product owner
+rejected the explanatory tiles, collapsed primary form and raw Visit list.
+Explicit visual approval of this final composition is still pending; ADR-018
+command and allocation behavior is unchanged.
+
+Completed:
+
+- Replaced the repeated debt badge/fact tiles with one filled red signed-balance
+  plaque. Removed the introductory explanation, concrete/first-negative fact
+  cells and the no-action-required hint.
+- Made the exact one-off coverage form the always-visible neutral work surface.
+  Its antiforgery token, expected-oldest selector, exact Payment preview,
+  idempotency key, busy state and htmx outer replacement remain unchanged.
+- Placed one neutral route to the existing Issue Membership action immediately
+  below the one-off form. It still selects no MembershipType, method, quantity,
+  negative-handling decision or start date.
+- Moved concrete Visit provenance to the literal end of the action. The native
+  disclosure is closed by default, uses the established `+ / -` affordance and
+  presents semantic date/time event rows rather than raw dates or fact tiles.
+- Preserved the amber unknown opening/backfill explanation without exposing a
+  synthetic coverage method. Successful closure continues to publish the
+  current Client name and operation result through the single fixed header
+  status rail.
+- Updated the interface system, Reception workflow, migration plan and coverage
+  matrix so later work does not restore the rejected equal-method/tile layout.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors. Full Web tests
+  passed 378/378 and the complete PostgreSQL-backed authenticated Playwright
+  suite passed 148/148 with zero skips; the focused negative coverage/report/
+  Issue Membership set passed 9/9.
+- JavaScript syntax, both Reception RESX files, unique resource keys and
+  `git diff --check` passed. The filled debt plaque has 5.87:1 contrast.
+- Fresh real Razor captures for 1440x900, 1024x768 and 390x844 are under
+  `/tmp/bodylife-negative-compact-action-final-v2/`. Metrics confirm no
+  horizontal overflow, a visible non-disclosure one-off form, a 44px-plus
+  Membership route, `+ / -` state changes, semantic Visit times and final DOM
+  placement. The only captured 404 was the pre-existing missing `/favicon.ico`.
+- One Luna-low read-only scout mapped the exact Razor/htmx boundary; one
+  Terra-medium worker implemented the bounded change; independent Terra-high
+  design/correctness reviews and a Luna-medium verifier found no P0-P3 after
+  the final responsive pass.
+- Implementation and regression coverage are recorded in commit `a58399b`.
+- `graphify update .` was attempted and returned `[Errno 95] Operation not
+  supported`. The semantic update detected 152 changed code files, 20 changed
+  documents and one deletion, then stopped because no semantic backend/key is
+  configured. Neither attempt changed tracked graph artifacts.
+
+Stop point:
+
+- Keep the single review instance on `http://localhost:41881` and present the
+  concrete negative action, opened Visit disclosure, Membership transition and
+  unknown opening/backfill state for explicit product-owner review.
+- Do not merge one-off closure into ordinary Issue Membership or reinterpret
+  the unknown opening remainder as Visit facts. Milestone 10.6 remains planned
+  and separate from this Wave 3 visual refinement.

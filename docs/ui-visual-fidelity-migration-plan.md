@@ -332,8 +332,10 @@ Current candidate evidence:
   before the action they constrain. Mark Visit, Issue Membership, Add Payment
   and Add Freeze still select one full-width real server form. Concrete
   negative Visits add a conditional neutral `Cover negative balance` action;
-  only its compact signed debt signal is red, while one-off and new-Membership
-  methods are equal and unselected. Stable ids, htmx targets,
+  its open state uses one filled red balance plaque, an always-visible exact
+  one-off form, then a neutral route to the existing Issue Membership action.
+  Neither path is preselected, and concrete Visit provenance is the final
+  compact `+ / −` disclosure. Stable ids, htmx targets,
   busy/idempotency and no-JavaScript fallback remain;
 - successful canonical rereads now publish one shared, fixed operation-status
   rail immediately below the authenticated header. Reception includes client

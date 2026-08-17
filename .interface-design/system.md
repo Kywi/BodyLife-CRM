@@ -134,17 +134,22 @@ then one full-width active server form. Mark Visit is the initial reception
 primary; Issue Membership, Add Payment and Add Freeze are adjacent secondary
 choices. When the server exposes concrete negative Visits or coverage history,
 `Cover negative balance` is a conditional secondary action in the same
-workstation. Its trigger and form stay neutral; only the compact signed debt
-badge/value, a blocking error or a destructive correction uses red. Desktop
+workstation. Its trigger and work surface stay neutral; one filled red balance
+plaque is the sole debt signal inside the open action. Blocking errors and
+destructive corrections may also use semantic red. Desktop
 may place the available choices in one row; tablet and phone use a readable
 two-column arrangement. The enhanced switcher is presentation-only: native
 `details` summaries remain the no-JavaScript fallback, the existing partial
 ids and htmx `outerHTML` targets remain stable, and a failed/swapped form stays
 selected. The active safe submit is graphite; blue is reserved for selection
-and information. Inside negative coverage, exact one-off closure and a new
-ordinary Membership are equal neutral methods with no recommendation or
-preselection; an unknown opening/backfill remainder is an amber explanation
-and exposes neither method. Cancel Visit, Correct Payment and Cancel Freeze
+and information. Inside negative coverage, the exact one-off form is the
+always-visible work surface and the existing Issue Membership flow is a
+neutral secondary route directly below it. This visual sequence does not
+preselect a method, type, quantity, decision or start date. Concrete Visit
+provenance is a closed `+ / −` disclosure at the end of the action, rendered
+as compact event rows rather than fact tiles. An unknown opening/backfill
+remainder is an amber explanation and exposes neither method. Cancel Visit,
+Correct Payment and Cancel Freeze
 remain contextual to their original source rows; issued-sale correction stays
 an explicit risk context.
 
