@@ -23,10 +23,6 @@
                 ? L["NegativeCoverage.Action"]
                 : L["NegativeCoverage.HistoryAction"])
         </span>
-        @if (Model.IsSafe && panelBalance > 0)
-        {
-            <span class="profile-action-negative-badge">@L["NegativeCoverage.BalanceBadge", panelBalance]</span>
-        }
     </summary>
     <div class="profile-action-content">
     @if (!Model.IsSafe)
@@ -62,16 +58,6 @@
         var canUseOneOffCoverage = hasConcreteVisits
             && coverage.ActiveOneOffTypes.Count > 0
             && canClose;
-        var oneOffDisclosureOpen = Model.HasErrors
-            || Model.ClosePreview is not null;
-
-        <header class="negative-coverage-header">
-            <p class="eyebrow">@L["NegativeCoverage.Eyebrow"]</p>
-            <h3 class="section-heading">
-                <partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["NegativeCoverage.Title"]
-            </h3>
-        </header>
-
         @if (Model.HasErrors)
         {
             <div class="warning-block warning-danger" role="alert" data-negative-coverage-errors>
@@ -91,46 +77,19 @@
                  data-negative-balance
                  data-negative-balance-value="@coverage.TotalNegativeBalance">
                 <span><partial name="/Pages/Shared/_Icon.cshtml" model='"warning"' />@L["NegativeCoverage.BalanceLabel"]</span>
-                <strong>@coverage.TotalNegativeBalance</strong>
+                <strong>−@coverage.TotalNegativeBalance</strong>
             </div>
         }
 
         @if (hasConcreteVisits)
         {
-            <p class="negative-coverage-intro">@L["NegativeCoverage.Intro"]</p>
-        }
-
-        @if (coverage.TotalNegativeBalance > 0)
-        {
-            <dl class="negative-coverage-summary">
-                <div><dt>@L["NegativeCoverage.OpenVisits"]</dt><dd>@coverage.OpenConcreteVisits.Count</dd></div>
-                <div><dt>@L["NegativeCoverage.First"]</dt><dd>@(coverage.FirstNegativeVisitDate is { } date ? ReceptionDisplayFormatter.Date(date) : L["Value.Unknown"])</dd></div>
-                @if (coverage.UnknownNegativeBalance > 0)
-                {
-                    <div><dt>@L["NegativeCoverage.Unknown"]</dt><dd>@coverage.UnknownNegativeBalance</dd></div>
-                }
-            </dl>
-        }
-
-        @if (hasConcreteVisits)
-        {
-            <details class="negative-coverage-visits" data-negative-open-visits>
-                <summary>@L["NegativeCoverage.ShowVisits", coverage.OpenConcreteVisits.Count]</summary>
-                <ol>
-                    @foreach (var visit in coverage.OpenConcreteVisits)
-                    {
-                        <li data-negative-visit-id="@visit.VisitId">
-                            @L["NegativeCoverage.OpenVisit", ReceptionDisplayFormatter.DateTime(visit.OccurredAt)]
-                        </li>
-                    }
-                </ol>
-            </details>
-
             <div class="negative-coverage-methods" data-negative-coverage-methods>
                 @if (canUseOneOffCoverage)
                 {
-                    <details class="negative-coverage-one-off" open="@(oneOffDisclosureOpen ? "open" : null)">
-                        <summary>@L["NegativeCoverage.Option.OneOff"]</summary>
+                    <section class="negative-coverage-one-off">
+                        <header>
+                            <h3>@L["NegativeCoverage.Option.OneOff"]</h3>
+                        </header>
                         <p>@L["NegativeCoverage.Option.OneOffDetail"]</p>
                         @{
                             var input = Model.CloseInput;
@@ -157,7 +116,7 @@
                             <input type="hidden" name="form.SearchIncludeInactive" value="@input.SearchIncludeInactive" />
                             <input type="hidden" name="form.SearchPageCursor" value="@input.SearchPageCursor" />
                             <fieldset>
-                                <legend>@L["NegativeCoverage.CloseTitle"]</legend>
+                                <legend class="visually-hidden">@L["NegativeCoverage.CloseTitle"]</legend>
                                 @for (var i = 0; i < closeLines.Count; i++)
                                 {
                                     var line = closeLines[i];
@@ -196,7 +155,7 @@
                                 <span id="negative-coverage-close-loading" class="request-indicator htmx-indicator" role="status">@L["Preview.Refreshing"]</span>
                             </fieldset>
                         </form>
-                    </details>
+                    </section>
                 }
                 <a class="negative-coverage-method negative-coverage-new-membership"
                    href="#issue-membership-action-panel"
@@ -204,7 +163,6 @@
                     @L["NegativeCoverage.Option.NewMembership"]
                 </a>
             </div>
-            <p class="form-hint negative-coverage-leave-visible">@L["NegativeCoverage.Option.LeaveVisibleDetail"]</p>
         }
 
         @if (coverage.UnknownNegativeBalance > 0)
@@ -360,6 +318,22 @@
                         </fieldset>
                     </form>
                 }
+            </details>
+        }
+
+        @if (hasConcreteVisits)
+        {
+            <details class="negative-coverage-visits" data-negative-open-visits>
+                <summary>@L["NegativeCoverage.ShowVisits", coverage.OpenConcreteVisits.Count]</summary>
+                <ol>
+                    @foreach (var visit in coverage.OpenConcreteVisits)
+                    {
+                        <li data-negative-visit-id="@visit.VisitId">
+                            <span>@L["NegativeCoverage.OpenVisitLabel"]</span>
+                            <time datetime="@visit.OccurredAt.ToString("O", CultureInfo.InvariantCulture)">@ReceptionDisplayFormatter.DateTime(visit.OccurredAt)</time>
+                        </li>
+                    }
+                </ol>
             </details>
         }
     }

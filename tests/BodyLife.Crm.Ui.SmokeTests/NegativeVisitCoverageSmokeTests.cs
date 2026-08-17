@@ -45,11 +45,15 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
 
             Assert.Equal(0, await panel.GetByText("Unknown negative balance", new() { Exact = true }).CountAsync());
             Assert.Equal(1, await panel.Locator("[data-negative-coverage-methods]").CountAsync());
-            Assert.Equal(0, await panel.Locator("[data-negative-coverage-methods] .primary-button").CountAsync());
+            Assert.Equal(0, await panel.Locator(".profile-action-negative-badge").CountAsync());
+            Assert.Equal(0, await panel.Locator(".negative-coverage-summary, .negative-coverage-intro, .negative-coverage-leave-visible").CountAsync());
             await ExpectVisibleAsync(
-                panel.Locator(".negative-coverage-one-off > summary"),
+                panel.Locator(".negative-coverage-one-off > header"),
                 "tablet",
                 "one-off coverage method");
+            Assert.Equal(1, await panel.Locator(".negative-coverage-one-off #negative-coverage-close-form").CountAsync());
+            Assert.Equal(0, await panel.Locator(".negative-coverage-one-off details, .negative-coverage-one-off summary").CountAsync());
+            Assert.Equal(0, await panel.Locator("[data-negative-open-visits][open]").CountAsync());
             var newMembershipAction = panel.GetByRole(
                 AriaRole.Link,
                 new() { Name = "Cover with a new ordinary membership", Exact = true });
@@ -124,6 +128,12 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
                     new() { Exact = false }),
                 "tablet",
                 "close success message");
+            await ExpectVisibleAsync(
+                OperationStatusTestHelper.Success(page)
+                    .Locator(".global-operation-status-context")
+                    .GetByText("Negative Coverage Tablet", new() { Exact = true }),
+                "tablet",
+                "current Client context in the global operation status");
             Assert.Equal(1, await panel.Locator("[data-negative-open-visits] li").CountAsync());
             Assert.Equal(1, await panel.Locator(".negative-coverage-correction").CountAsync());
             await AssertFitsViewportAsync(page, "tablet", "canonical close result");
@@ -500,20 +510,13 @@ public sealed class NegativeVisitCoverageSmokeTests : IClassFixture<ReceptionApp
         {
             Assert.Equal(0, await panel.Locator("[data-negative-balance]").CountAsync());
         }
-        Assert.Equal(
-            expectedBalance > 0 ? 1 : 0,
-            await panel.Locator(".profile-action-negative-badge").CountAsync());
+        Assert.Equal(0, await panel.Locator(".profile-action-negative-badge").CountAsync());
         return panel;
     }
 
     private static async Task PreviewCloseAsync(IPage page, int quantity)
     {
         await ActivateCoveragePanelAsync(page);
-        var disclosure = page.Locator(".negative-coverage-one-off");
-        if (await disclosure.GetAttributeAsync("open") is null)
-        {
-            await disclosure.Locator("summary").ClickAsync();
-        }
         var form = page.Locator("#negative-coverage-close-form");
         await form.Locator("#negative-close-0").FillAsync(quantity.ToString());
         var responseTask = page.WaitForResponseAsync(response =>

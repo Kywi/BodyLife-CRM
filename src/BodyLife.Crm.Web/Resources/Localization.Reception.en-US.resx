@@ -373,6 +373,7 @@
   <data name="NegativeCoverage.ShowVisits" xml:space="preserve"><value>Show visits ({0})</value></data>
   <data name="NegativeCoverage.Visit" xml:space="preserve"><value>Oldest uncovered visit: {0}</value></data>
   <data name="NegativeCoverage.OpenVisit" xml:space="preserve"><value>Uncovered visit: {0}</value></data>
+  <data name="NegativeCoverage.OpenVisitLabel" xml:space="preserve"><value>Uncovered visit</value></data>
   <data name="NegativeCoverage.CoveredVisit" xml:space="preserve"><value>Covered visit: {0}</value></data>
   <data name="NegativeCoverage.Option.LeaveVisible" xml:space="preserve"><value>Leave the negative balance visible</value></data>
   <data name="NegativeCoverage.Option.LeaveVisibleDetail" xml:space="preserve"><value>No action is required now; the balance remains on the client profile.</value></data>

@@ -373,6 +373,7 @@
   <data name="NegativeCoverage.ShowVisits" xml:space="preserve"><value>Показати відвідування ({0})</value></data>
   <data name="NegativeCoverage.Visit" xml:space="preserve"><value>Найстаріше непокрите відвідування: {0}</value></data>
   <data name="NegativeCoverage.OpenVisit" xml:space="preserve"><value>Непокрите відвідування: {0}</value></data>
+  <data name="NegativeCoverage.OpenVisitLabel" xml:space="preserve"><value>Непокрите відвідування</value></data>
   <data name="NegativeCoverage.CoveredVisit" xml:space="preserve"><value>Покрите відвідування: {0}</value></data>
   <data name="NegativeCoverage.Option.LeaveVisible" xml:space="preserve"><value>Залишити від’ємний баланс видимим</value></data>
   <data name="NegativeCoverage.Option.LeaveVisibleDetail" xml:space="preserve"><value>Зараз можна нічого не робити; баланс залишиться у профілі клієнта.</value></data>

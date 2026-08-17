@@ -290,9 +290,11 @@ public sealed class NegativeClientsReportSmokeTests : IClassFixture<ReceptionApp
                 viewportName,
                 "new-membership negative coverage action");
             await ExpectVisibleAsync(
-                coveragePanel.Locator(".negative-coverage-one-off > summary"),
+                coveragePanel.Locator(".negative-coverage-one-off > header"),
                 viewportName,
                 "one-off negative coverage action");
+            Assert.Equal(0, await coveragePanel.Locator(".negative-coverage-one-off details, .negative-coverage-one-off summary").CountAsync());
+            Assert.Equal(0, await coveragePanel.Locator("[data-negative-open-visits][open]").CountAsync());
             await AssertFitsViewportAsync(page, viewportName, "negative Client profile");
         }
         finally
