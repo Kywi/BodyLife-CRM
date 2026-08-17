@@ -1,7 +1,8 @@
 # BodyLife CRM v1 implementation roadmap
 
-Дата: 2026-07-07, оновлено 2026-08-06
-Статус: чинний план; Milestones 1-10.5 виконані, наступний — 11
+Дата: 2026-07-07, оновлено 2026-08-17
+Статус: чинний план; Milestones 1-10.5 виконані, Milestone 10.6 погоджений і
+ще не початий; Milestone 11 іде після 10.6
 
 Основа: `docs/architecture-baseline.md`, `docs/domain-model.md`, `docs/data-architecture.md`, `docs/interaction-contracts.md`, `docs/ui-workflows.md`, `docs/ui-design-foundation.md`, `docs/operations-design.md`, `docs/technology-stack-decision.md`, `docs/vertical-slice-plan.md` і accepted ADR package у `docs/adr/`.
 
@@ -29,8 +30,9 @@
 | 9. Reports | 3, 5, 6, 7, 8 | Owner/admin operational visibility |
 | 10. Business audit/history UI | 2 through 9 | Support, dispute review, correction explanation |
 | 10.5. ADR-018 sales, negative coverage and replacement | 5 through 10 | Closed core workflows required before operations readiness |
-| 11. Backup/restore/paper fallback readiness | 1 through 10.5 | Production readiness evidence |
-| 12. Production hardening | 1 through 11, including 10.5 | Go-live |
+| 10.6. Single-visit sales and reception defaults | 3, 4, 6, 7, 9, 10, 10.5 | Coherent paid one-off/trial reception workflows |
+| 11. Backup/restore/paper fallback readiness | 1 through 10.6 | Production readiness evidence |
+| 12. Production hardening | 1 through 11, including 10.5 and 10.6 | Go-live |
 
 ## Cross-Cutting Rules
 
@@ -398,7 +400,8 @@
 
 - Payment creation/correction.
 - Full daily report UI, beyond source data readiness.
-- One-off/trial product polish unless explicitly chosen for v1.
+- One-off/trial product polish inside Milestone 6; it was later explicitly
+  selected for v1 as Milestone 10.6 under ADR-019.
 - Turnstile/check-in automation, QR/NFC or self check-in.
 - Full day close/reconciliation workflow unless a separate decision adds it.
 
@@ -683,10 +686,11 @@
 - Full support ticketing system.
 
 
-## Стоп після реалізованого Milestone 10.5
+## Стоп після реалізованого Milestone 10.5 і планування 10.6
 
-ADR-018 is implemented and validated. Milestone 11 is the next roadmap
-milestone and has not started.
+ADR-018 is implemented and validated. ADR-019 and Milestone 10.6 are accepted
+and planned but implementation has not started. Milestone 11 follows 10.6 and
+has not started.
 
 ## Milestone 10.5. ADR-018 membership sales, negative coverage and replacement
 
@@ -753,6 +757,165 @@ Implement accepted ADR-018 without treating it as already delivered: exact ordin
 
 - Day close/reconciliation policy, refunds/deltas/cash transfer accounting or direct mutation of dependent facts.
 
+## Milestone 10.6. Single-visit sales and reception defaults
+
+### Ціль
+
+Implement ADR-019 as a bounded product slice: Owner-managed one-off tariffs and
+Reception defaults, paid named-client one-off sales, global anonymous trial
+sales through a protected technical Client, and one linked cancellation that
+keeps Visit, Payment, reports and audit explainable. Milestone 10.5 negative
+closure remains intact; Milestone 11 does not start until 10.6 acceptance.
+
+### Залежності
+
+- Milestones 3, 4, 6, 7, 9 and 10 for Clients, MembershipTypes, Visits,
+  Payments, reports and audit/history.
+- Milestone 10.5 for active `one_off` catalog rules, exact Payment patterns,
+  PostgreSQL transaction/locking conventions and negative-closure regression.
+- Accepted ADR-019 and the greenfield single-baseline policy. No deployed
+  database, production data migration or historical link invention is needed.
+
+### Малі завершувані кроки
+
+1. **10.6.1 Contract alignment.** Update `architecture-baseline`, domain model,
+   data architecture, interaction contracts, UI workflows, UI design
+   foundation, operations/audit matrix and quality expectations for ADR-019.
+   Name module ownership and remove contradictory raw one-off/trial product
+   wording before code changes.
+2. **10.6.2 Owner catalog and defaults.** Expose immutable
+   `ordinary`/`one_off` kind at MembershipType creation, enforce the one-visit
+   positive-price shape, display kind clearly, and add Owner-only optimistic
+   settings for default one-off and trial types. Allow one type in both roles,
+   audit changes, block deactivation while assigned and never choose a fallback
+   silently.
+3. **10.6.3 Protected trial Client.** Add exactly one `system_trial` Client with
+   deterministic idempotent bootstrap and database uniqueness. Exclude it from
+   ordinary search, duplicate checks, profile/client mutations, Membership
+   issue, normal Visit/Payment commands and inactive-client reports while
+   preserving translated report/audit explanation.
+4. **10.6.4 Aggregate persistence and commands.** Add a Visits-owned
+   `SingleVisitSale` source aggregate linking exactly one Visit and one exact
+   cash Payment with the same Client/purpose/time plus immutable tariff
+   snapshot. Fold schema, FKs, unique/deferred commit invariants and indexes into
+   `InitialBaseline`; implement `CreateOneOffSaleForClient`, `RecordTrialSale`
+   and supporting queries for Owner, named Admin and shared Reception/Admin with
+   idempotency, deterministic locks, stale checks, rollback,
+   entry-origin/paper-row metadata, one aggregate audit event and canonical
+   rereads. Reject generic creation/correction bypasses.
+5. **10.6.5 Named-client one-off UI.** Replace the raw one-off option in Mark
+   Visit and Add Payment with a separate paid action on the Client profile. Show
+   all active one-off tariffs, preselect only the configured default, display
+   server price read-only, keep Client/Membership warnings visible, prevent
+   duplicate submit and reread canonical Visits/Payments after success.
+6. **10.6.6 Global trial UI.** Remove trial from the named-client path and add a
+   Reception dashboard action that needs no search/profile. Show the configured
+   trial tariff and exact price; disable with a clear configuration message when
+   absent; commit against the system trial Client and return a receipt-like
+   operation result without exposing a fake Client profile.
+7. **10.6.7 Linked cancellation and explanation.** Add reason-required
+   `CancelSingleVisitSale` for Owner, named Admin and shared Reception/Admin on
+   current or older dates. Cancel the linked Visit and Payment atomically,
+   reject generic child cancellation or correction, preserve retry/concurrency
+   behavior, update original-day live totals together and cross-link
+   sale/cancellation in history, reports and audit. Preserve
+   `changed_after_close` only when an existing/future reconciliation marker
+   applies; add no refund/delta row or day-close ledger.
+8. **10.6.8 Negative-closure default and acceptance.** Reuse the configured
+   default only to initialize the first type after Actor deliberately selects
+   one-off closure; never preselect method or quantity and do not change
+   oldest-first allocation/correction rules. Run focused regressions, complete
+   PostgreSQL/report/audit/tablet/phone gates, full `scripts/validate.sh`, an
+   independent acceptance review and final progress update.
+
+Execution is sequential. After every step: run the focused gate, update
+`docs/implementation-progress.md`, stage only owned files, make one logical
+commit and stop with the next recommended step. Do not combine the eight slices
+into one implementation pass.
+
+### Acceptance Criteria
+
+- Owner can create/edit/deactivate ordinary and one-off catalog types, while
+  non-Owner actors cannot; kind and historical snapshots remain immutable.
+- Owner can save/clear both defaults, assign one type to both roles and sees an
+  exact stale/configuration-in-use error instead of silent fallback.
+- Named-client one-off sale creates one aggregate, one `one_off` Visit, one
+  exact-price cash Payment and one aggregate audit entry in one transaction.
+- Trial sale creates the same shape with purpose `trial`, configured tariff and
+  the singleton technical Client, without asking Reception for a person/profile.
+- Owner, named Admin and shared Reception/Admin can create/cancel these sales;
+  every unauthorized account is rejected before writes.
+- Neither workflow creates an Issued Membership, Visit consumption, hidden
+  negative coverage or Memberships state change.
+- Catalog edits affect future sales only; old sales/report/audit rows retain
+  type/name/price/currency snapshots.
+- Missing/stale/inactive configuration, wrong Client kind, wrong price/currency,
+  duplicate submit, concurrency conflict or child/audit failure leaves no
+  partial sale facts.
+- Generic MarkVisit/CreatePayment reject `one_off`/`trial` contexts outright;
+  generic CancelVisit/CorrectPayment cannot split a linked sale.
+- Linked cancellation is reason-required, idempotent, available to Admin/Owner
+  for older dates and cancels both child facts or neither.
+- Daily visit and cash totals exclude canceled child facts together while
+  drill-down/history/audit preserve the original sale and later cancellation.
+- Technical trial Client never appears as an ordinary searchable/inactive
+  person but every trial remains reachable from report/audit explanation.
+- Existing one-off negative closure remains oldest-first and regression green;
+  default initialization never chooses its method or quantity.
+- Normal and `paper_fallback` entry metadata remain complete and explainable.
+- A clean PostgreSQL database applies the sole baseline and reaches the current
+  EF model with all aggregate/configuration/technical-client invariants.
+
+### Потрібні тести
+
+- Domain/application tests for tariff/default validation, same-type defaults,
+  missing configuration, the full Owner/named Admin/shared/unauthorized role
+  matrix, stale type/settings, snapshots, idempotency, later-date cancellation
+  and canonical reread targets.
+- PostgreSQL tests for singleton settings/technical Client, FK/client-purpose
+  consistency, unique Visit/Payment links, exact amount/currency, deferred
+  aggregate constraints, transaction rollback, deterministic lock ordering,
+  concurrent create/cancel and raw generic create attempts that reject without
+  committing any Visit, Payment or audit rows.
+- Migration tests for clean baseline apply, no-op reapply, rollback/reapply,
+  current-model drift and all new PostgreSQL invariants.
+- Report/history/audit consistency tests proving linked active/canceled totals,
+  technical-client presentation, immutable tariff explanation, aggregate event
+  matrix coverage and preserved negative-closure behavior.
+- Playwright tablet/phone flows for Owner kind/default configuration,
+  named-client one-off, global trial, missing/stale configuration, busy
+  double-tap prevention, linked cancellation reason/errors and canonical
+  Visits/Payments/report/audit rereads.
+
+### Ризики
+
+- A technical Client can pollute search, duplicate detection or inactive-client
+  reports if its protected kind is treated as an ordinary person.
+- Matching separate facts by timestamp/client instead of a constrained
+  aggregate can leave unexplained or half-canceled Visit/Payment rows.
+- Generic command paths can bypass exact-price/snapshot rules unless rejected
+  server-side and tested.
+- Catalog/default edits between preview and submit can charge a stale price
+  without locking and optimistic version checks.
+- Two raw audit events can look like two manual actions; aggregate audit and
+  related ids must explain one Reception command.
+- Applying the default before explicit negative-closure method choice would
+  silently weaken ADR-018 deliberate-choice behavior.
+
+### Що не входить
+
+- Free trials or zero-price sales.
+- Anonymous one-off sales; the technical Client is trial-only in v1.
+- Trial visitor identity/lead capture, conversion or merge into a future Client.
+- Coupons, scheduled promotions, automatic discount rules or complex product
+  taxonomy; Owner uses catalog edit/create/remap for future prices.
+- Quantity bundles, reservations, turnstile/check-in automation or self-service.
+- Receipts, POS/cash drawer, online payments, refunds, cash deltas, accounting
+  settlement or day-close ledger.
+- Generic amount/type correction of a linked sale. Cancel it with reason and
+  create the correct sale.
+- Replacing or merging ADR-018 negative-closure facts/commands.
+
 ## Milestone 11. Backup/restore/paper fallback readiness
 
 ### Ціль
@@ -762,7 +925,8 @@ Implement accepted ADR-018 without treating it as already delivered: exact ordin
 ### Залежності
 
 - Milestone 1 for deployment/migration foundation.
-- Milestones 2 through 10.5 for business data, audit, reports, ADR-018 corrections and paper-batch workflow.
+- Milestones 2 through 10.6 for business data, audit, reports, ADR-018
+  corrections, linked one-off/trial sales and paper-batch workflow.
 - Chosen hosting/provider backup capabilities.
 
 ### Задачі
@@ -829,7 +993,7 @@ Implement accepted ADR-018 without treating it as already delivered: exact ordin
 
 ### Залежності
 
-- Milestones 1 through 11, including Milestone 10.5.
+- Milestones 1 through 11, including Milestones 10.5 and 10.6.
 - Passed restore rehearsal and owner restore-check.
 - Hosting/deployment target selected and accepted by owner/developer.
 
@@ -890,7 +1054,9 @@ Implement accepted ADR-018 without treating it as already delivered: exact ordin
 
 ## Roadmap Done Criteria
 
-- All 12 numbered milestones plus Milestone 10.5 are represented as issue-tracker-ready epics with goal, dependencies, tasks, acceptance criteria, tests, risks and explicit out-of-scope items.
+- All 12 numbered milestones plus Milestones 10.5 and 10.6 are represented as
+  issue-tracker-ready epics with goal, dependencies, tasks, acceptance criteria,
+  tests, risks and explicit out-of-scope items.
 - Dependencies are visible and no milestone assumes later business modules without naming the dependency.
 - Every state-changing v1 workflow has a command owner, permission policy, transaction boundary, recalculation/audit expectation and tests before production.
 - Reports, audit and operations are implemented as trust-building capabilities, not afterthoughts.

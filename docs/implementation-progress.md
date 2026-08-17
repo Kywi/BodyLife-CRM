@@ -15485,3 +15485,67 @@ Stop point:
   present the shared status rail together with the sticky Profile and
   Visits/Payments journal. Do not mark Wave 3 approved or begin Wave 4 until
   the product owner explicitly accepts the complete candidate.
+
+## Step 244 - Planned Milestone 10.6 single-visit sales
+
+Status: product contract and implementation plan accepted on 2026-08-17;
+Milestone 10.6 implementation has not started. Milestone 10.5 remains complete,
+and Milestone 11 now follows 10.6.
+
+Completed:
+
+- Reconciled the original requirements, ADR-014/018, current MembershipType,
+  Visit, Payment, Owner UI, report and audit implementation after the Product
+  Owner clarified paid one-off and trial behavior.
+- Accepted ADR-019: `one_off` MembershipTypes are tariffs; named-client one-off
+  and global trial each become one exact-price `SingleVisitSale` aggregate with
+  linked Visit/Payment snapshots; trial uses one protected system Client; one
+  reason-required command cancels both facts on current or older dates.
+- Added Owner default one-off/trial settings, dynamic future-price/remap rules,
+  aggregate audit/report semantics and the explicit no refund/delta/day-close
+  boundary. Existing ADR-018 oldest-first negative closure stays separate.
+- Added Milestone 10.6 between completed 10.5 and operations Milestone 11. It is
+  split into eight sequential, independently validated/committed steps:
+  contract alignment; Owner catalog/defaults; protected trial Client;
+  aggregate persistence/commands; named-client one-off UI; global trial UI;
+  linked cancellation/explanation; negative-closure default plus acceptance.
+- Recorded acceptance criteria, PostgreSQL/command/migration/report/audit/UI
+  gates, risks and explicit out-of-scope items including free trials, anonymous
+  one-offs, promotion engine, POS/refunds and generic linked-sale correction.
+- Updated `AGENTS.md` so a future context does not skip 10.6, start Milestone 11
+  early or mistake the current raw one-off/trial paths for the accepted target.
+- No application, schema, migration, test or runtime behavior changed in this
+  planning step. Pre-existing untracked `package.json` and `package-lock.json`
+  remained untouched.
+
+Validation:
+
+- Required Graphify query was run first. A read-only `bodylife_scout` on Luna
+  low mapped the source contracts and current gaps; an independent
+  `bodylife_reviewer` on Terra high found seven P1/P2 planning risks. The final
+  ADR/roadmap addresses the accepted-ADR conflict, first-class aggregate/DB
+  constraints, later-day permission, technical-Client protection, stale exact
+  price, generic bypasses and aggregate-aware report/history drill-downs.
+- A final independent `bodylife_reviewer` on Terra high inspected the actual
+  five-document diff. It found no P0/P1 and two P2 ambiguities; both were closed
+  by naming the Owner/named Admin/shared Reception policy and requiring generic
+  MarkVisit/CreatePayment to reject raw one-off/trial creates without any rows.
+- Documentation consistency checks and `git diff --check` passed. The ADR
+  index, dependency map, current-state instructions and roadmap stop point all
+  identify Milestone 10.6 as planned/not started and Milestone 11 as following
+  it.
+- No build or product tests were rerun because this commit changes planning and
+  agent documentation only; Step 243 already validated the unchanged product
+  candidate with Release build, Web 378/378 and PostgreSQL-backed UI 147/147.
+- `graphify . --update --no-viz` detected 150 changed code files, 19 changed
+  documents and one deletion, then stopped because no semantic LLM backend/key
+  is configured. It changed no tracked graph artifacts, so stale graph output
+  is not claimed as validation.
+
+Stop point:
+
+- Keep the current Wave 3 review candidate available for explicit visual
+  acceptance. Product implementation remains stopped.
+- When implementation is explicitly resumed, start only with Milestone 10.6.1
+  contract alignment, validate it, update this progress file, commit it and
+  stop. Do not batch the eight slices and do not start Milestone 11.

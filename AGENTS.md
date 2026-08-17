@@ -6,13 +6,17 @@
 - The accepted ADR package is complete in `docs/adr/` and is the governing architecture source. If a later request conflicts with an accepted ADR, require a new ADR or an explicit ADR update instead of silently changing direction.
 - The selected application stack is fixed in `docs/technology-stack-decision.md`: ASP.NET Core 10 LTS + Razor Pages/MVC + htmx + EF Core/Npgsql + PostgreSQL.
 - Hosting provider is still pending. Production readiness requires backup/restore evidence, including at least 30-day backup retention expectation and a restore rehearsal before production use.
-- Milestone 10.5 is complete and validated. The next roadmap milestone is Milestone 11 (backup/restore/paper fallback readiness), but always confirm the latest progress entry and the user's requested scope before starting it.
+- Milestone 10.5 is complete and validated. ADR-019 and Milestone 10.6
+  (single-visit sales and reception defaults) are accepted and planned but not
+  implemented. Milestone 10.6 is the next roadmap milestone; Milestone 11
+  (backup/restore/paper fallback readiness) follows it. Always confirm the
+  latest progress entry and the user's requested scope before starting work.
 
 ## Source Of Truth
 
 Use these documents before inventing implementation details:
 
-- `docs/adr/README.md` and `docs/adr/001..018-*.md` for accepted decisions.
+- `docs/adr/README.md` and `docs/adr/001..019-*.md` for accepted decisions.
 - `docs/architecture-baseline.md` for the concise implementation contract.
 - `docs/domain-model.md` for business entities, invariants, lifecycle rules, and membership calculations.
 - `docs/data-architecture.md` for source facts, derived state, schema direction, constraints, indexes, audit, backfill, and reporting data access.
@@ -90,6 +94,31 @@ Use these top-level business modules when scaffolding or organizing code:
 - `Users/Roles`: Owner, named Admin, shared Reception/Admin account, sessions, device/session accountability, permission policies.
 
 Shared code should stay narrow: IDs, Money, DateRange, actor/session context, request correlation id, command envelope/result, and error taxonomy. Do not create shared business-rule services that steal ownership from modules.
+
+## Planned Single-Visit Sales Contract
+
+- ADR-019 is accepted but its Milestone 10.6 implementation has not started.
+  Do not claim the current raw one-off/trial Visit and Payment paths already
+  satisfy it.
+- `one_off` MembershipTypes are tariffs for named-client one-off sales, global
+  trial sales and the existing ADR-018 negative-closure selector. Owner will
+  configure separate default one-off and trial type references; one type may
+  serve both roles, and catalog prices affect future sales only.
+- Visits owns the planned `SingleVisitSale` aggregate. One command creates one
+  Visit and one exact cash Payment with an immutable tariff snapshot; it creates
+  no Issued Membership, consumption or Memberships state change. Owner, named
+  Admin and shared Reception/Admin may create it; unauthorized accounts may not.
+- Generic `MarkVisit` and `CreatePayment` will reject all `one_off`/`trial`
+  contexts; generic child cancellation/correction will reject linked sale facts.
+- Trial is a global Reception action using one protected system technical
+  Client, never a trial option on an ordinary Client profile. Anonymous one-off
+  sales and free trials are outside v1.
+- One reason-required Owner/named Admin/shared Reception/Admin command cancels
+  both linked facts, including on an older date. Reports remain live canonical
+  queries; no refund/delta or day-close ledger is added.
+- ADR-018 negative closure stays a separate oldest-first aggregate. The Owner
+  default may initialize its type only after Actor selects the one-off method;
+  method and quantity remain deliberate choices.
 
 ## Membership Rules
 
