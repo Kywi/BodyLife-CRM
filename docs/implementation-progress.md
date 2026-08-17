@@ -15599,6 +15599,16 @@ Validation:
   P0-P2 findings. Current Admin/Owner route and Membership issue policies make
   the target-availability contract consistent for this scope.
 - Implementation and regression coverage are recorded in commit `f927e66`.
+- A final live 1024/390 capture found that the sticky phone header could cover
+  the top of the Issue Membership form after resolver activation. Commit
+  `6b72039` now scrolls the complete action workspace with responsive header
+  offsets and focuses without a second browser scroll; the focused negative
+  coverage UI suite passed 3/3 after that repair.
+- Fresh concrete, opened one-off, new-Membership and unknown-opening captures
+  are under `/tmp/bodylife-negative-coverage-final-live/`. Both viewports have
+  zero horizontal overflow; the concrete resolver exposes two neutral methods
+  with no primary treatment, the unknown-only resolver exposes none, and both
+  targets clear the sticky header.
 - `graphify update .` was attempted after the product commit and returned
   `[Errno 95] Operation not supported`. The semantic update detected 152
   changed code files, 19 changed documents and one deletion, then stopped
