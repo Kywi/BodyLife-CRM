@@ -332,6 +332,12 @@ Current candidate evidence:
   workflow before the action they constrain. Mark Visit, Issue Membership,
   Add Payment and Add Freeze still select one full-width real server form with
   stable ids, htmx targets, busy/idempotency and no-JavaScript fallback;
+- successful canonical rereads now publish one shared, fixed operation-status
+  rail immediately below the authenticated header. Reception includes client
+  context; full-page Owner successes use the same host. Local validation,
+  permission and stale/concurrency errors remain beside the affected form;
+  Reception htmx swaps carry an inert update fragment and never add a second
+  host to the DOM;
 - the activity ledger is now Visits/Payments tabs with Visits selected by
   default. Without JavaScript both sections remain visible. Rows are compact
   native disclosures with source facts and Cancel/Correct controls inside;
@@ -342,15 +348,15 @@ Current candidate evidence:
   Payments even when the row falls beyond the compact initial set;
 - technical `snapshot` fixture labels were replaced with realistic membership
   names while immutable issue-time snapshot ownership remains unchanged;
-- final responsive evidence is under
-  `/tmp/bodylife-wave3-sticky-profile-final-v2/` at `1440x900`, `1024x768`
-  and `390x844`; action/cancel evidence is under
-  `/tmp/bodylife-wave3-sticky-profile-actions-v4/` and correction evidence
-  under `/tmp/bodylife-wave3-sticky-profile-corrections-v1/`;
+- final responsive Profile evidence is under
+  `/tmp/bodylife-wave3-sticky-profile-final-v2/`; the shared status rail and
+  refreshed action evidence are under
+  `/tmp/bodylife-global-operation-status-root/` at `1440x900`, `1024x768` and
+  `390x844`;
 - Release solution build passed with zero warnings/errors, Web tests passed
   378/378 and the complete authenticated PostgreSQL-backed Playwright suite
-  passed 146/146. Independent correctness and interface review found no
-  remaining P0–P2; one P3 fixture-strengthening idea does not block review.
+  passed 147/147. Independent correctness, interface and final verification
+  found no remaining P0–P3.
 
 Stop/go:
 
@@ -437,7 +443,9 @@ Severity:
 
 ## Current next action
 
-Present the real Wave 3 Profile/actions candidate from
-`/tmp/bodylife-wave3-profile-root-v5/` and
-`/tmp/bodylife-wave3-profile-actions-v3/` in the single live review instance.
-Obtain explicit Profile and Cancel Visit approval before starting Wave 4.
+Present the real Wave 3 sticky Profile/actions candidate and shared operation
+status rail from `/tmp/bodylife-wave3-sticky-profile-final-v2/`,
+`/tmp/bodylife-wave3-sticky-profile-actions-v4/` and
+`/tmp/bodylife-global-operation-status-root/` in the single live review
+instance. Obtain explicit Profile and Cancel Visit approval before starting
+Wave 4.

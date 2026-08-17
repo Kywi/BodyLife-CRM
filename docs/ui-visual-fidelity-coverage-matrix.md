@@ -107,7 +107,7 @@ artifact paths in the Evidence column; `—` never means approved.
 | Owner `_NonWorkingDayPreviewWorkspace.cshtml` | 4 | input/preview/impact/confirmation/token expiry/scope change/success | not started | — |
 | Owner `_NonWorkingDayCorrectionWorkspace.cshtml` | 4 | replace/cancel preview/confirmation/token expiry/scope change/success | not started | — |
 
-## Shared composition partial ledger — 5
+## Shared composition partial ledger — 7
 
 | Partial | Wave | Mandatory fixtures/states | Status | Evidence / approval |
 | --- | ---: | --- | --- | --- |
@@ -116,6 +116,8 @@ artifact paths in the Evidence column; `—` never means approved.
 | `_CurrentSession.cshtml` | 1 | Owner/named/shared labels; fixed/masked long session/device ids; phone order | approved 2026-08-12 | Owner, named Admin and shared Reception/Admin account-menu identity/device/session evidence passed |
 | `_LanguageSelector.cshtml` | 1, 5 | uk-UA/en-US; long labels; POST success/failure; keyboard/focus | Wave 1 authenticated approved; public final pending Wave 5 | Authenticated account-menu placement and full localization regression passed |
 | `_Icon.cshtml` | 1–5 | local sprite, accessible labels where needed, semantic color not sole signal | Wave 1 Home/navigation slice approved | Local sprite, visible semantic labels and contrast checks passed; later waves extend route coverage |
+| `_OperationStatus.cshtml` | 3–5 | one shell host; success context; full-page and htmx update; manual/automatic dismiss; pause/focus; stale clear; local errors remain local | Wave 3 shared candidate — approval pending | Fixed header-adjacent rail at 1440/1024/390 under `/tmp/bodylife-global-operation-status-root/`; exact one-host, ARIA, 44px, no-shift, timer and focus-return assertions; full UI 147/147 |
+| `_OperationStatusContent.cshtml` | 3–5 | semantic icon, optional operation context, result copy and localized 44px dismiss action | Wave 3 shared candidate — approval pending | Reused by full-page host and Reception htmx update payload; bilingual and responsive command captures green |
 
 ## Wave 1 revised and approved evidence — 2026-08-11/12
 
@@ -189,10 +191,12 @@ artifact paths in the Evidence column; `—` never means approved.
 - Cancel Visit, Correct Payment and Cancel Freeze remain attached to source
   rows. Negative coverage and issued-sale correction remain explicit risk
   contexts.
-- Canonical mutation success is a compact inset row below identity. Recent
-  Visits and Recent Payments are separate softly tinted groups: two columns on
-  desktop, stacked on tablet/phone, with flat event rows and nested correction
-  facts instead of one continuous gray ledger.
+- Canonical mutation success uses one fixed shared status rail directly below
+  the authenticated header. It is no longer repeated inside Profile identity
+  or workflow regions. Recent Visits and Recent Payments are separate softly
+  tinted groups: two columns on desktop, stacked on tablet/phone, with flat
+  event rows and nested correction facts instead of one continuous gray
+  ledger.
 - Navigation is split into Operations, Records & history and role-gated Owner
   tools groups with bilingual headings and responsive drawer coverage.
 - Final viewport/status captures are under
@@ -229,6 +233,28 @@ artifact paths in the Evidence column; `—` never means approved.
   pass. Web tests are 378/378 and the authenticated PostgreSQL-backed UI suite
   is 146/146. Independent review reports no remaining P0–P2; explicit
   product-owner Profile/Cancel Visit approval is still required before Wave 4.
+
+## Shared operation-status refinement — 2026-08-17
+
+- Successful Reception commands and supported Owner full-page commands now
+  publish one calm fixed strip below the authenticated header. Reception adds
+  client context; local validation, permission and stale/concurrency failures
+  stay beside the action they constrain.
+- Reception htmx canonical rereads carry an inert template payload that updates
+  the shell host. The response never injects a duplicate host, and a later
+  search/profile request clears stale feedback.
+- Success is text/icon backed with a restrained green tint. The rail has one
+  44px close target, `role=status`, polite atomic live announcement, ten-second
+  auto-dismiss, hover/focus pause and Escape focus return. It does not move
+  document flow or steal focus.
+- Fresh rail anchors are
+  `/tmp/bodylife-global-operation-status-root/desktop-global-operation-status.png`,
+  `tablet-global-operation-status.png` and
+  `phone-global-operation-status.png`; command captures in the same directory
+  show the htmx result over real Profile states.
+- Release build, all 14 RESX parses, JavaScript syntax and `git diff --check`
+  pass. Web is 378/378 and the repeated complete PostgreSQL-backed UI suite is
+  147/147. Independent review and verification report no P0–P3 findings.
 
 ## Superseded production candidate evidence
 

@@ -141,10 +141,20 @@ and information. Cancel Visit, Correct Payment and Cancel Freeze remain
 contextual to their original source rows; negative coverage and issued-sale
 correction are separate risk contexts rather than ordinary quick actions.
 
-A canonical command result appears as a compact inset status row at the start
-of the workflow. It stays in normal document flow, does not overlap or become a
-new full-width semantic zone, and never introduces another left rail. The
-activity area is a compact progressive-enhancement tab set: Visits is the
+A successful canonical command result appears in the single shared operation
+status rail immediately below the authenticated header, not inside the Profile
+or sticky passport. The fixed flat strip does not shift page layout, carries
+the current client name when Reception knows it, and replaces rather than
+stacks messages. Success uses a restrained green tint plus icon/text, exposes
+one 44px dismiss action and auto-dismisses after ten seconds; hover or keyboard
+focus pauses the timer. Escape returns focus to its previous control. Full-page
+responses render the same host directly; Reception htmx responses transport an
+inert update payload into that one shell host, so duplicate ids never enter the
+DOM. A later Reception request clears stale feedback. Validation, permission,
+stale/concurrency and action-specific errors stay beside the form or canonical
+warning they constrain.
+
+The activity area is a compact progressive-enhancement tab set: Visits is the
 default, Payments is adjacent, and without JavaScript both remain ordinary
 visible sections. Each source event is one flat expandable row; the summary
 contains only kind/amount, status and time, while details and contextual

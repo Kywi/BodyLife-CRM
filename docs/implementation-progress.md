@@ -15426,3 +15426,62 @@ Stop point:
   and present the sticky Profile, Client details, Visits/Payments tabs, Cancel
   Visit and Correct Payment paths. Do not mark Wave 3 approved or begin Wave 4
   until the product owner explicitly accepts this candidate.
+
+## Step 243 - Added shared header-adjacent operation feedback
+
+Status: Wave 3 refinement completed on 2026-08-17 after the product owner chose
+a shared result strip below the authenticated header. Explicit Profile and
+Cancel Visit visual approval is still pending; Wave 4 and Milestone 11 remain
+blocked.
+
+Completed:
+
+- Added one reusable operation-status model/partial and one stable shell host
+  immediately below the authenticated header. The fixed strip follows the real
+  header height at desktop, tablet and phone without shifting page content.
+- Moved successful Reception canonical-reread feedback out of the Profile.
+  Reception messages include client context; validation, permission and
+  stale/concurrency failures remain local to their existing action/warning
+  surfaces.
+- Replaced the rejected htmx out-of-band duplicate-host approach with an inert
+  update template inside the ordinary workspace swap. JavaScript applies that
+  payload to the single shell host, and a subsequent Reception request clears
+  stale feedback.
+- Routed Membership Types and successful Staff Account results through the
+  shared host while preserving failed Staff commands as local error messages.
+  Non-Working-Day workflow results remain contextual to their preview and
+  correction workspaces.
+- Added a restrained green success tint, text/icon pairing, a 44px close
+  target, polite atomic live semantics, ten-second automatic dismissal,
+  hover/focus pause, manual dismissal and Escape focus return. Messages replace
+  rather than stack and never steal focus.
+- Migrated workflow smoke locators from the retired Profile success row and
+  added regression coverage for one host, htmx ARIA propagation, stale clear,
+  header alignment, no layout shift/overflow, timer pause/resume, local errors
+  and keyboard focus return.
+
+Validation:
+
+- Release solution build passed with zero warnings/errors; JavaScript syntax,
+  all 14 localization RESX files and `git diff --check` passed.
+- Web tests passed 378/378. Focused Reception/Owner suites passed, and the
+  repeated complete PostgreSQL-backed authenticated Playwright suite passed
+  147/147 with zero skips.
+- Fresh desktop/tablet/phone status anchors and real Reception action captures
+  are under `/tmp/bodylife-global-operation-status-root/`.
+- Implementation and regression coverage are recorded in commit `35ba5d4`.
+- Independent correctness/interface review and final verifier report no
+  remaining P0–P3 findings. A transient dynamic-port bind collision affected
+  the verifier's first full run only; its repeated full run passed 147/147.
+- `graphify update .` was attempted after code/documentation changes and again
+  returned `[Errno 95] Operation not supported`. The semantic update detected
+  150 changed code files, 17 changed documents and one deletion but stopped
+  without a configured semantic backend. Neither attempt changed tracked graph
+  artifacts, so stale graph topology is not claimed as validation evidence.
+
+Stop point:
+
+- Restart the single review instance on port `41881` with this candidate and
+  present the shared status rail together with the sticky Profile and
+  Visits/Payments journal. Do not mark Wave 3 approved or begin Wave 4 until
+  the product owner explicitly accepts the complete candidate.
