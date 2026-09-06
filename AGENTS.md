@@ -57,14 +57,14 @@ Use the local BodyLife skills when the task matches their scope:
 - `bodylife-operations-production-readiness`: structured logging, correlation IDs, PII masking, health checks, backup/restore, restore rehearsal, paper fallback, production hardening.
 - `bodylife-quality-gates`: tests and acceptance gates for domain rules, commands, PostgreSQL, migrations, reports, audit, Playwright, restore readiness.
 - `bodylife-logical-commits`: post-validation workflow for splitting completed task changes into logical commits and writing clear commit messages.
-- `bodylife-codex-orchestrator`: model-tiered coordination for nontrivial implementation, diagnosis, review, research, milestone, or cross-module tasks; Sol owns decisions while Luna/Terra handle bounded work.
+- `bodylife-codex-orchestrator`: model-tiered coordination for nontrivial implementation, diagnosis, review, research, milestone, or cross-module tasks; Astra owns decisions while Luna/Terra handle bounded work.
 - Use the design/research skills (`research-architecture-options`, `choose-technology-stack`, `design-data-architecture`, `design-system-interactions`, `design-observability-operations`) only for new research or design work. Do not reopen already accepted decisions unless the user asks to revisit them.
 
 ## Codex Orchestration
 
 - Use `bodylife-codex-orchestrator` for nontrivial work with multiple independent investigations, cross-module/data/UI/test scope, noisy validation output, implementation plus review, or milestone acceptance evidence.
 - Before any workspace write, check for another active Codex task, inspect `git status --short`, and acquire the owner-token lease with `.codex/skills/bodylife-codex-orchestrator/scripts/write_lease.py`. If acquisition fails, inspect status and wait; never replace another owner's lease.
-- Keep Sol/Ultra as the root decision-maker. Route read-heavy exploration to `bodylife_scout`, validation/log triage to `bodylife_verifier`, one bounded implementation at a time to `bodylife_worker`, and independent risk review to `bodylife_reviewer`.
+- Keep Astra/Ultra as the root decision-maker. Route read-heavy exploration to `bodylife_scout`, validation/log triage to `bodylife_verifier`, one bounded implementation at a time to `bodylife_worker`, and independent risk review to `bodylife_reviewer`.
 - Never allow more than one writing agent in the shared worktree. The root holds the write lease and explicitly grants it to one worker or verifier at a time; child agents must not delegate, stage, commit, or decide ADR/product direction.
 - The root agent owns final integration, full acceptance, progress and Graphify updates, explicit staging, and logical commits.
 - Writable children must match the root-granted owner/writer tokens before every write-capable command. Revoke a grant before transferring it, and release the owner lease only after all writable children stop and final staging/commit work is complete. Treat a leftover lease as stale only after confirming its recorded owner/writer are inactive.

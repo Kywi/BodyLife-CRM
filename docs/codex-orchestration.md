@@ -2,13 +2,13 @@
 
 ## Purpose
 
-This repository uses a native Codex multi-agent workflow to reserve GPT-5.6 Sol Ultra for scope, architecture decisions, integration, and final acceptance. Cheaper models handle bounded exploration, implementation, verification, and review. This changes the development workflow only; it does not change application runtime behavior or product architecture.
+This repository uses a native Codex multi-agent workflow to reserve GPT-6 Astra Ultra for scope, architecture decisions, integration, and final acceptance. Cheaper models handle bounded exploration, implementation, verification, and review. This changes the development workflow only; it does not change application runtime behavior or product architecture.
 
 ## Model routing
 
 | Agent | Model and effort | Typical work |
 |---|---|---|
-| Root orchestrator | GPT-5.6 Sol / ultra | Scope, ADR decisions, handoffs, integration, acceptance, commits |
+| Root orchestrator | GPT-6 Astra / ultra | Scope, ADR decisions, handoffs, integration, acceptance, commits |
 | `bodylife_scout` | GPT-5.6 Luna / low | Graphify, file discovery, requirements and ADR evidence |
 | `bodylife_verifier` | GPT-5.6 Luna / medium | Builds, tests, analyzers, migrations, browser checks, log summaries |
 | `bodylife_worker` | GPT-5.6 Terra / medium | One bounded implementation task at a time |
@@ -25,28 +25,28 @@ The `bodylife-codex-orchestrator` skill applies when work has multiple independe
 For an explicit run, ask:
 
 ```text
-Use $bodylife-codex-orchestrator to implement this BodyLife CRM task, keep one writer, wait for verification and review, and let Sol own final integration and the commit.
+Use $bodylife-codex-orchestrator to implement this BodyLife CRM task, keep one writer, wait for verification and review, and let Astra own final integration and the commit.
 ```
 
 Before writing, the root checks for another active Codex task in the repository, inspects the worktree, and acquires the write lease. If another task is writing or holds the lease, orchestration waits to avoid conflicting edits.
 
 ## Workflow
 
-1. Sol runs the required Graphify query, reads the latest implementation progress, selects matching BodyLife skills, and defines acceptance criteria.
+1. Astra runs the required Graphify query, reads the latest implementation progress, selects matching BodyLife skills, and defines acceptance criteria.
 2. Luna gathers bounded evidence without changing tracked files.
-3. Sol acquires the owner lease and grants one writer token; one Terra worker receives the tokens with a decision-complete implementation handoff and runs focused checks.
-4. After the writer stops, Sol revokes its token and grants a verifier token for writable validation while Terra performs an independent read-only review.
-5. Sol resolves findings, performs final validation, updates progress and Graphify, stages explicit paths, creates the logical commit, revokes the final grant, and releases the owner lease.
+3. Astra acquires the owner lease and grants one writer token; one Terra worker receives the tokens with a decision-complete implementation handoff and runs focused checks.
+4. After the writer stops, Astra revokes its token and grants a verifier token for writable validation while Terra performs an independent read-only review.
+5. Astra resolves findings, performs final validation, updates progress and Graphify, stages explicit paths, creates the logical commit, revokes the final grant, and releases the owner lease.
 
-After two failed worker attempts, an ADR conflict, unclear module ownership, or unresolved membership/payment/concurrency semantics, work returns to Sol instead of spawning more agents.
+After two failed worker attempts, an ADR conflict, unclear module ownership, or unresolved membership/payment/concurrency semantics, work returns to Astra instead of spawning more agents.
 
 ## Availability and fallback
 
-The project config pins Sol Ultra and enables stable multi-agent support. Start a new Codex task after pulling configuration changes so project config, custom agents, and the skill are reloaded.
+The project config pins Astra Ultra and enables stable multi-agent support. Start a new Codex task after pulling configuration changes so project config, custom agents, and the skill are reloaded.
 
-The local model catalog includes Luna. If the spawn surface supports selecting named custom agents, use the checked-in profiles. If it exposes only model/effort/message parameters, copy the role instructions into the handoff and use an explicit Terra low/medium fallback when Luna is not accepted. Do not silently move those roles to Sol. The root records the actual model and effort supplied to each spawn; a child's role name or self-report is not evidence that Luna actually ran.
+The local model catalog includes Luna. If the spawn surface supports selecting named custom agents, use the checked-in profiles. If it exposes only model/effort/message parameters, copy the role instructions into the handoff and use an explicit Terra low/medium fallback when Luna is not accepted. Do not silently move those roles to Astra. The root records the actual model and effort supplied to each spawn; a child's role name or self-report is not evidence that Luna actually ran.
 
-Use the Codex Subagents panel or CLI `/agent` view to inspect active and completed child threads. The final task response should state which roles/models ran, validation results, whether fallback occurred, and the commit. Multi-agent execution can consume more total tokens; the objective is to spend Sol reasoning only where it adds the most value, not to guarantee a lower bill.
+Use the Codex Subagents panel or CLI `/agent` view to inspect active and completed child threads. The final task response should state which roles/models ran, validation results, whether fallback occurred, and the commit. Multi-agent execution can consume more total tokens; the objective is to spend Astra reasoning only where it adds the most value, not to guarantee a lower bill.
 
 ## Preflight and acceptance checks
 
@@ -59,7 +59,7 @@ python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" .co
 git diff --check
 ```
 
-Confirm that Sol supports `ultra`, Terra supports the configured efforts, Luna is present, project config loads, and the skill validates. Then exercise four bounded scenarios: a simple status request with no spawn, a read-only investigation, a current-diff review, and a simulated cross-module handoff. If the current spawn API lacks a custom-agent selector or Luna override, the test must use and report the explicit Terra compatibility path rather than claim that the named Luna profile ran.
+Confirm that Astra supports `ultra`, Terra supports the configured efforts, Luna is present, project config loads, and the skill validates. Then exercise four bounded scenarios: a simple status request with no spawn, a read-only investigation, a current-diff review, and a simulated cross-module handoff. If the current spawn API lacks a custom-agent selector or Luna override, the test must use and report the explicit Terra compatibility path rather than claim that the named Luna profile ran.
 
 The validator command requires the installed `skill-creator` system skill under `CODEX_HOME`.
 
