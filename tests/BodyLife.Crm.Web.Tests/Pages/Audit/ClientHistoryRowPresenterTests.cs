@@ -37,6 +37,27 @@ public sealed partial class ClientHistoryRowPresenterTests
         new DateOnly(2026, 7, 5),
         new DateOnly(2026, 7, 7));
 
+    [Theory]
+    [InlineData("en-US", "Closed")]
+    [InlineData("uk-UA", "Закритий")]
+    public void ClosedMembershipKeepsItsIssuedHistoryWithALocalizedLifecycleStatus(string culture, string label)
+    {
+        var row = CreateMembershipIssuedRow();
+        row = row with
+        {
+            MembershipSourceRow = row.MembershipSourceRow! with
+            {
+                IssuedMembership = row.MembershipSourceRow.IssuedMembership! with
+                {
+                    Status = IssuedMembershipLifecycleStatus.Closed,
+                },
+            },
+        };
+        var result = Present(row, culture);
+        Assert.Equal(label, result.StatusLabel);
+        Assert.Equal("status-inactive", result.StatusClass);
+    }
+
     public static IEnumerable<object[]> ExpectedRows()
     {
         yield return RowExpectation(

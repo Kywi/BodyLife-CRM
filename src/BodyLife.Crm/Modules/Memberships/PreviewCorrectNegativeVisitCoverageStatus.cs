@@ -13,4 +13,5 @@ public enum PreviewCorrectNegativeVisitCoverageStatus
     AlreadyCanceled,
     RecalculationFailed,
     CanonicalStateInvalid,
+    LifecycleDependency,
 }

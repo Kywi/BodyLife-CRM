@@ -12,8 +12,8 @@ public sealed class HmacMembershipIssuePreviewTokenService(
     TimeProvider timeProvider)
     : IMembershipIssuePreviewTokenService
 {
-    private const string TokenPrefix = "bodylife-membership-issue-preview-v1";
-    private const string Schema = "bodylife.membership-issue-preview.v1";
+    private const string TokenPrefix = "bodylife-membership-issue-preview-v2";
+    private const string Schema = "bodylife.membership-issue-preview.v2";
     private const int MaxTokenLength = 2048;
     private readonly HmacNonWorkingDayTokenCodec codec = new(
         options, timeProvider, TokenPrefix, MaxTokenLength);
@@ -54,6 +54,17 @@ public sealed class HmacMembershipIssuePreviewTokenService(
             writer.WriteNumber("totalNegativeBalance", material.TotalNegativeBalance);
             writer.WriteNumber("unknownNegativeBalance", material.UnknownNegativeBalance);
             writer.WriteNumber("coveredNegativeVisitCount", material.CoveredNegativeVisitCount);
+            writer.WriteString("activePredecessorId", material.ActivePredecessorId?.ToString("D", CultureInfo.InvariantCulture));
+            writer.WriteString("activePredecessorStatus", material.ActivePredecessorStatus?.ToString());
+            writer.WriteString("activePredecessorStateVersion", material.ActivePredecessorStateVersion);
+            if (material.ActivePredecessorRemainingVisits is { } remaining)
+            {
+                writer.WriteNumber("activePredecessorRemainingVisits", remaining);
+            }
+            else
+            {
+                writer.WriteNull("activePredecessorRemainingVisits");
+            }
             writer.WriteStartArray("candidates");
             foreach (var visit in material.CandidateVisits)
             {

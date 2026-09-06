@@ -450,4 +450,11 @@
   <data name="Operation.IssuedMembershipSaleCanceled" xml:space="preserve"><value>Issued membership sale canceled</value></data>
   <data name="List.ShowMore" xml:space="preserve"><value>Show all</value></data>
   <data name="List.ShowLess" xml:space="preserve"><value>Show fewer</value></data>
+  <data name="Status.Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Error.LifecycleDependency" xml:space="preserve"><value>This change is blocked by membership closure history. It cannot leave unused visits on a closed membership or undo its successor link.</value></data>
+  <data name="Membership.Predecessor.Remaining" xml:space="preserve"><value>Current membership: {0} visits remaining</value></data>
+  <data name="Membership.Predecessor.Positive" xml:space="preserve"><value>Use the remaining visits before issuing another membership. Expiry alone does not discard them.</value></data>
+  <data name="Membership.Predecessor.WillClose" xml:space="preserve"><value>Issuing this membership will close the previous one. Its sale payment and any uncovered debt remain in history.</value></data>
+  <data name="IssuedSaleCorrection.Dependency.LifecycleClosure" xml:space="preserve"><value>Membership closure</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Predecessor" xml:space="preserve"><value>Closed predecessor</value></data>
 </root>

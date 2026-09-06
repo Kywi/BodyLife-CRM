@@ -206,6 +206,8 @@ public sealed class GetClientNegativeVisitCoverageHistorySourceRowsQueryHandler(
             return GetClientNegativeVisitCoverageHistorySourceRowsResult.InconsistentSource();
         }
 
+        var lifecycleClosures = await dbContext.Set<MembershipLifecycleClosureRecord>().AsNoTracking()
+            .Where(row => row.ClientId == query.ClientId).ToArrayAsync(cancellationToken);
         var expectedPaperLinks = BuildExpectedPaperLinks(
             allClosures,
             lines,
@@ -214,7 +216,7 @@ public sealed class GetClientNegativeVisitCoverageHistorySourceRowsQueryHandler(
             corrections,
             incomingByClosureId,
             paperReferences,
-            correctionPaperReferences);
+            correctionPaperReferences, lifecycleClosures);
         if (expectedPaperLinks is null
             || !HasMatchingCorrectionPaperReferences(
                 corrections,
@@ -446,7 +448,8 @@ public sealed class GetClientNegativeVisitCoverageHistorySourceRowsQueryHandler(
         IReadOnlyCollection<MembershipNegativeClosureCorrectionRecord> corrections,
         IReadOnlyDictionary<Guid, MembershipNegativeClosureCorrectionRecord> incoming,
         IReadOnlyDictionary<Guid, PaperFallbackEntryRowReference> closureReferences,
-        IReadOnlyDictionary<Guid, PaperFallbackEntryRowReference> correctionReferences)
+        IReadOnlyDictionary<Guid, PaperFallbackEntryRowReference> correctionReferences,
+        IReadOnlyList<MembershipLifecycleClosureRecord> lifecycleClosures)
     {
         var expected = new Dictionary<(string EntityType, Guid EntityId), Guid?>();
         foreach (var closure in closures)
@@ -459,6 +462,16 @@ public sealed class GetClientNegativeVisitCoverageHistorySourceRowsQueryHandler(
                     rowId))
             {
                 return null;
+            }
+
+            foreach (var lifecycle in lifecycleClosures.Where(row => row.NegativeClosureId == closure.Id
+                         || (!incoming.ContainsKey(closure.Id) && closure.CoveringMembershipId.HasValue
+                             && row.SuccessorMembershipId == closure.CoveringMembershipId)))
+            {
+                if (!TryAddExpected(expected, "membership_lifecycle_closure", lifecycle.Id, rowId))
+                {
+                    return null;
+                }
             }
 
             foreach (var line in lines.Where(line => line.NegativeClosureId == closure.Id))

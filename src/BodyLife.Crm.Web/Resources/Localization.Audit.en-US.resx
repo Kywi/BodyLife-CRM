@@ -626,4 +626,5 @@
   <data name="PaperFallback.EventType.negative_coverage"><value>Negative Visit coverage</value></data>
   <data name="PaperFallback.EventType.correction_or_cancellation"><value>Correction or cancellation</value></data>
   <data name="Value.Unavailable"><value>Unavailable</value></data>
+  <data name="Status.Closed"><value>Closed</value></data>
 </root>

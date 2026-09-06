@@ -125,9 +125,9 @@ Visit - це факт приходу клієнта. Він фіксує біз�
 
 Counted Visit списує одне заняття з пов'язаного Membership. Canceled Visit лишається в history, але не входить у visit counts, remaining visits, daily visit totals, last-visit calculations, negative balance і first negative visit date.
 
-ADR-021 supersedes ADR-014's cardinality decision. Its contracts and persistence
-are complete through 21.2; command transitions and query/UI integration remain
-pending:
+ADR-021 supersedes ADR-014's cardinality decision. Its contracts, persistence and command
+transitions are complete through 21.3; full current/history and query/UI
+integration remain pending in 21.4:
 
 - committed Client має `0..1` `active` issued Membership; `closed` є
   non-correction lifecycle state з append-only closure fact, а не sale cancel,

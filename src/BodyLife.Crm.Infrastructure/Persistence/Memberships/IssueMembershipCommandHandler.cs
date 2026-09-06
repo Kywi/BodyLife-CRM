@@ -194,6 +194,8 @@ public sealed class IssueMembershipCommandHandler(
             }
 
             var negativeSelection = negativeSelectionResult.Selection!;
+            var predecessorContext = await MembershipIssuePredecessorReader.ReadAsync(
+                dbContext, negativeSelection.ActivePredecessor, cancellationToken);
             var existingNegativeState = negativeSelection.TotalNegativeBalance > 0
                 ? new MembershipIssueNegativeContext(
                     negativeSelection.TotalNegativeBalance,
@@ -222,7 +224,8 @@ public sealed class IssueMembershipCommandHandler(
                     catalogItem,
                     issue.StartDate,
                     existingNegativeState,
-                    BusinessTimeZone.GetBusinessDate(recordedAt));
+                    BusinessTimeZone.GetBusinessDate(recordedAt),
+                    predecessorContext);
             }
             catch (ArgumentOutOfRangeException exception)
                 when (exception.ParamName == "durationDays")
@@ -255,7 +258,9 @@ public sealed class IssueMembershipCommandHandler(
                     negativeSelection.TotalNegativeBalance,
                     existingNegativeState?.UnknownNegativeBalance ?? 0,
                     negativeSelection.OpenConcreteVisits,
-                    currentPreview.AutomaticCoveredNegativeVisitCount));
+                    currentPreview.AutomaticCoveredNegativeVisitCount,
+                    predecessorContext?.MembershipId, predecessorContext?.LifecycleStatus,
+                    predecessorContext?.StateVersion, predecessorContext?.RemainingVisits));
             if (!tokenValidation.IsValid)
             {
                 return IssueMembershipCommandSupport.Error(
@@ -268,8 +273,10 @@ public sealed class IssueMembershipCommandHandler(
             {
                 return IssueMembershipCommandSupport.Error(
                     CommandErrorCode.MembershipNotEligible,
-                    "The selected membership type has no capacity for the current concrete negative Visits.",
-                    "membershipTypeId");
+                    predecessorContext?.BlocksIssue == true
+                        ? "The current Membership still has unused visits."
+                        : "The selected membership type has no capacity for the current concrete negative Visits.",
+                    predecessorContext?.BlocksIssue == true ? "predecessorMembershipId" : "membershipTypeId");
             }
 
             MembershipIssuePreparation preparation;
@@ -304,6 +311,16 @@ public sealed class IssueMembershipCommandHandler(
             }
             var usesNewMembershipCoverage = preparation.CoveredNegativeVisits.Count > 0;
 
+            var predecessor = negativeSelection.ActivePredecessor;
+            if (predecessor is not null)
+            {
+                var trackedPredecessor = dbContext.Set<IssuedMembershipRecord>().Local
+                    .SingleOrDefault(row => row.Id == predecessor.Id)
+                    ?? dbContext.Attach(predecessor).Entity;
+                trackedPredecessor.Status = MembershipQuerySupport.ClosedMembershipStatus;
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+
             var membershipId = Guid.NewGuid();
             var membership = new IssuedMembershipRecord
             {
@@ -327,6 +344,37 @@ public sealed class IssueMembershipCommandHandler(
                 Comment = issue.Envelope.Comment,
             };
             dbContext.Set<IssuedMembershipRecord>().Add(membership);
+            Guid? lifecycleClosureId = null;
+            if (predecessor is not null)
+            {
+                lifecycleClosureId = Guid.NewGuid();
+                dbContext.Set<MembershipLifecycleClosureRecord>().Add(
+                    new MembershipLifecycleClosureRecord
+                    {
+                        Id = lifecycleClosureId.Value,
+                        ClientId = issue.ClientId,
+                        SourceMembershipId = predecessor.Id,
+                        SuccessorMembershipId = membershipId,
+                        NegativeClosureId = null,
+                        ReasonCode = predecessorContext!.ClosureReasonCode!,
+                        RecordedByAccountId = issue.Envelope.Actor.AccountId.Value,
+                        SessionId = issue.Envelope.Actor.SessionId.Value,
+                        CorrelationId = issue.Envelope.RequestCorrelationId.Value!,
+                        IdempotencyKey = issue.IdempotencyKey,
+                        EntryOrigin = MembershipCommandSupport.MapEntryOrigin(issue.Envelope.EntryOrigin),
+                        EntryBatchId = entryBatchId,
+                        OccurredAt = issue.Envelope.OccurredAt ?? recordedAt,
+                        RecordedAt = recordedAt,
+                        Explanation = issue.Envelope.Comment,
+                    });
+                if (paperBinding.Reference is { } lifecyclePaperReference)
+                {
+                    paperFallbackBinder.LinkEntity(
+                        lifecyclePaperReference,
+                        "membership_lifecycle_closure",
+                        lifecycleClosureId.Value);
+                }
+            }
             if (paperBinding.Reference is { } membershipPaperReference)
             {
                 paperFallbackBinder.LinkEntity(
@@ -473,6 +521,20 @@ public sealed class IssueMembershipCommandHandler(
                 }
             }
 
+            if (predecessor is not null && !sourceMembershipIds.Contains(predecessor.Id))
+            {
+                var predecessorRebuild = await stateCacheRebuilder.RebuildAsync(
+                    predecessor.Id,
+                    cancellationToken);
+                if (!predecessorRebuild.Succeeded || predecessorRebuild.State is null)
+                {
+                    await MembershipCommandSupport.RollBackAndClearAsync(dbContext, transaction);
+                    return IssueMembershipCommandSupport.Error(
+                        CommandErrorCode.RecalculationFailed,
+                        "Closed predecessor state could not be rebuilt from canonical facts.");
+                }
+            }
+
             var rebuildResult = await stateCacheRebuilder.RebuildAsync(
                 membershipId,
                 cancellationToken);
@@ -492,7 +554,7 @@ public sealed class IssueMembershipCommandHandler(
             var remainingNegativeBalance = negativeSelection.TotalNegativeBalance;
             if (usesNewMembershipCoverage)
             {
-                var activeMembershipIds = negativeSelection.ActiveMemberships
+                var activeMembershipIds = negativeSelection.Memberships
                     .Select(activeMembership => activeMembership.Id)
                     .ToArray();
                 remainingNegativeBalance = await dbContext
@@ -586,6 +648,11 @@ public sealed class IssueMembershipCommandHandler(
                 ["membershipTypeId"] = issue.MembershipTypeId,
                 ["paymentId"] = paymentWrite.PaymentId,
             };
+            if (lifecycleClosureId is not null)
+            {
+                membershipRelatedEntityRefs["lifecycleClosureId"] = lifecycleClosureId;
+                membershipRelatedEntityRefs["predecessorMembershipId"] = predecessor!.Id;
+            }
             if (negativeClosureId is not null)
             {
                 membershipRelatedEntityRefs["negativeClosureId"] = negativeClosureId;
@@ -678,6 +745,27 @@ public sealed class IssueMembershipCommandHandler(
                 };
             }
 
+            if (lifecycleClosureId is not null)
+            {
+                var closedPredecessorState = await dbContext.Set<MembershipStateCacheRecord>()
+                    .AsNoTracking()
+                    .SingleAsync(row => row.MembershipId == predecessor!.Id, cancellationToken);
+                membershipAfterSummary["predecessorClosure"] = new
+                {
+                    LifecycleClosureId = lifecycleClosureId.Value,
+                    SourceMembershipId = predecessor!.Id,
+                    SuccessorMembershipId = membershipId,
+                    ReasonCode = predecessorContext!.ClosureReasonCode,
+                    Status = MembershipQuerySupport.ClosedMembershipStatus,
+                    RemainingVisitsBefore = predecessorContext.RemainingVisits,
+                    RemainingVisitsAfter = closedPredecessorState.RemainingVisits,
+                    RemainingClientNegativeBalance = remainingNegativeBalance,
+                    RemainingClientConcreteVisitCount = negativeSelection.OpenConcreteVisits.Count
+                        - preparation.CoveredNegativeVisits.Count,
+                    RemainingClientUnknownNegativeBalance = negativeSelection.UnknownNegativeBalance,
+                };
+            }
+
             var auditEntryId = auditAppender.Append(
                 issue.Envelope,
                 MembershipAuditActions.Issued,
@@ -746,7 +834,7 @@ public sealed class IssueMembershipCommandHandler(
                 select *
                 from bodylife.clients
                 where id = {clientId}
-                for update
+                for no key update
                 """)
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);

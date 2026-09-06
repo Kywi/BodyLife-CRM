@@ -109,6 +109,8 @@ public static class ClientProfileMembershipProjection
                 => ClientMembershipSummaryStatusCodes.Active,
             IssuedMembershipLifecycleStatus.Active
                 => ClientMembershipSummaryStatusCodes.Expired,
+            IssuedMembershipLifecycleStatus.Closed
+                => ClientMembershipSummaryStatusCodes.Closed,
             IssuedMembershipLifecycleStatus.Canceled
                 => ClientMembershipSummaryStatusCodes.Canceled,
             IssuedMembershipLifecycleStatus.Corrected

@@ -264,7 +264,7 @@ public sealed class CreatePaymentCommandHandler(
                 select *
                 from bodylife.clients
                 where id = {clientId}
-                for update
+                for no key update
                 """)
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);

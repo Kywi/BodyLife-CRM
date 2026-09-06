@@ -47,6 +47,8 @@ public static class ReceptionCommandErrorLocalizer
         (CommandErrorCode.ValidationFailed, "range.startDate") => "Error.Validation.StartDate",
         (CommandErrorCode.ValidationFailed, "range.endDate") => "Error.Validation.EndDate",
         (CommandErrorCode.ValidationFailed, "range") => "Error.Validation.DateRange",
+        (CommandErrorCode.LifecycleDependency, _) => "Error.LifecycleDependency",
+        (CommandErrorCode.MembershipNotEligible, "predecessorMembershipId") => "Membership.Predecessor.Positive",
         (CommandErrorCode.PermissionDenied, _) => "Error.PermissionDenied",
         (CommandErrorCode.NotFound, "membershipTypeId") => "Error.NotFound.MembershipType",
         (CommandErrorCode.NotFound, "membershipId") => "Error.NotFound.Membership",

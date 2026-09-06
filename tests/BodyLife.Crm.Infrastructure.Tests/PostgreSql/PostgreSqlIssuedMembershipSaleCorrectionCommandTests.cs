@@ -493,9 +493,10 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
                 fixture.OriginalMembershipId,
                 currentPreview.DependencyToken),
             CancellationToken.None);
-        AssertIssuedSaleCorrectionError(blocked, CommandErrorCode.MembershipNotEligible);
+        AssertIssuedSaleCorrectionError(blocked, scenario is "negative_source" or "negative_covering"
+            ? CommandErrorCode.LifecycleDependency : CommandErrorCode.MembershipNotEligible);
         Assert.Equal(
-            "active",
+            scenario == "negative_source" ? "closed" : "active",
             await database.ExecuteScalarAsync<string>(
                 $"select status from bodylife.issued_memberships where id = '{fixture.OriginalMembershipId}'"));
         Assert.Equal(
@@ -1242,11 +1243,7 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         IssuedSaleCorrectionFixture fixture,
         bool originalIsSource)
     {
-        var otherMembership = await InsertIssuedMembershipAsync(
-            database,
-            new IssueFixture(fixture.ClientId, fixture.MembershipTypeId),
-            fixture.Actor.AccountId.Value,
-            TestNow.AddDays(-2));
+        var otherMembership = new ExistingMembershipFixture(Guid.NewGuid(), ExistingBaseEndDate);
         var sourceMembershipId = originalIsSource
             ? fixture.OriginalMembershipId
             : otherMembership.MembershipId;
@@ -1269,9 +1266,43 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
 
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             """
+            update bodylife.issued_memberships set status = 'closed'
+            where id = @source_membership_id;
+            insert into bodylife.issued_memberships (
+                id, client_id, membership_type_id, issuance_mode, type_name_snapshot,
+                duration_days_snapshot, visits_limit_snapshot, price_amount_snapshot, price_currency_snapshot,
+                start_date, base_end_date, issued_at, issued_by_account_id, status, entry_origin)
+            select @other_id, client_id, membership_type_id, issuance_mode, type_name_snapshot,
+                duration_days_snapshot, visits_limit_snapshot, price_amount_snapshot, price_currency_snapshot,
+                start_date, base_end_date, issued_at, issued_by_account_id,
+                case when @other_id = @source_membership_id then 'closed' else 'active' end, entry_origin
+            from bodylife.issued_memberships where id = @original_id;
+            insert into bodylife.payments (id, client_id, membership_id, amount, currency,
+                method, payment_context, occurred_at, recorded_at, recorded_by_account_id, session_id, entry_origin, status)
+            values (gen_random_uuid(), @client_id, @other_id, 900, 'UAH', 'cash', 'membership_sale',
+                @occurred_at, @occurred_at, @account_id, @session_id, 'normal', 'active');
+            insert into bodylife.visits (id, client_id, occurred_at, recorded_at, recorded_by_account_id,
+                session_id, visit_kind, entry_origin, status)
+            values (@baseline_a, @client_id, @occurred_at - interval '2 hours', @occurred_at - interval '2 hours',
+                    @account_id, @session_id, 'membership', 'normal', 'active'),
+                   (@baseline_b, @client_id, @occurred_at - interval '1 hour', @occurred_at - interval '1 hour',
+                    @account_id, @session_id, 'membership', 'normal', 'active');
+            insert into bodylife.visit_consumptions (id, visit_id, client_id, visit_kind, membership_id,
+                consumption_type, source_fact_type, source_fact_id, recorded_at, recorded_by_account_id, recorded_session_id, status)
+            select gen_random_uuid(), id, @client_id, 'membership', @source_membership_id,
+                'counted', 'visit', id, recorded_at, @account_id, @session_id, 'active'
+            from bodylife.visits where id in (@baseline_a, @baseline_b);
+            insert into bodylife.membership_lifecycle_closures (id, client_id, source_membership_id,
+                successor_membership_id, reason_code, recorded_by_account_id, session_id,
+                correlation_id, idempotency_key, entry_origin, occurred_at, recorded_at)
+            values (gen_random_uuid(), @client_id, @source_membership_id, @covering_membership_id,
+                'negative_balance_rollover', @account_id, @session_id, 'sale-dependency-fixture',
+                @idempotency_key, 'normal', @occurred_at, @occurred_at);
             insert into bodylife.visits (
                 id, client_id, occurred_at, recorded_at, recorded_by_account_id,
                 session_id, visit_kind, entry_origin, status)
@@ -1314,6 +1345,10 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
                 @source_membership_id, @old_consumption_id,
                 @covering_membership_id, @new_consumption_id, 'active')
             """;
+        command.Parameters.AddWithValue("other_id", otherMembership.MembershipId);
+        command.Parameters.AddWithValue("original_id", fixture.OriginalMembershipId);
+        command.Parameters.AddWithValue("baseline_a", Guid.NewGuid());
+        command.Parameters.AddWithValue("baseline_b", Guid.NewGuid());
         command.Parameters.AddWithValue("visit_id", visitId);
         command.Parameters.AddWithValue("old_consumption_id", oldConsumptionId);
         command.Parameters.AddWithValue("new_consumption_id", newConsumptionId);
@@ -1330,7 +1365,8 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             originalIsSource
                 ? "issued-sale-negative-source"
                 : "issued-sale-negative-covering");
-        Assert.Equal(5, await command.ExecuteNonQueryAsync());
+        Assert.Equal(originalIsSource ? 13 : 12, await command.ExecuteNonQueryAsync());
+        await transaction.CommitAsync();
         return new IssuedSaleDependencyFixture(
             itemId,
             otherMembership.MembershipId);
@@ -1402,13 +1438,13 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
                 var originalIsSource = scenario == "negative_source";
                 AssertIssuedSaleDependencyCache(
                     originalCache,
-                    countedVisits: originalIsSource ? 0 : 1,
-                    remainingVisits: originalIsSource ? 2 : 1,
+                    countedVisits: originalIsSource ? 2 : 1,
+                    remainingVisits: originalIsSource ? 0 : 1,
                     extensionDays: 0);
                 AssertIssuedSaleDependencyCache(
                     otherCache,
-                    countedVisits: originalIsSource ? 1 : 0,
-                    remainingVisits: originalIsSource ? 1 : 2,
+                    countedVisits: originalIsSource ? 1 : 2,
+                    remainingVisits: originalIsSource ? 1 : 0,
                     extensionDays: 0);
                 break;
             default:

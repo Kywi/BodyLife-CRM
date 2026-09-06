@@ -283,7 +283,7 @@ public sealed class CreateMembershipOpeningStateCommandHandler(
     private async Task<ClientRecord?> LockClientAsync(Guid clientId, CancellationToken cancellationToken)
     {
         var rows = await dbContext.Set<ClientRecord>()
-            .FromSqlInterpolated($"select * from bodylife.clients where id = {clientId} for update")
+            .FromSqlInterpolated($"select * from bodylife.clients where id = {clientId} for no key update")
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);
         return rows.SingleOrDefault();

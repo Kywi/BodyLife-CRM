@@ -158,33 +158,18 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
     }
 
     [PostgreSqlFact]
-    public async Task MultipleNegativeMembershipsReturnOneClientAggregateContext()
+    public async Task ClosedAndCurrentNegativeMembershipsReturnOneClientAggregateContext()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var owner = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
         var fixture = await SeedPreviewFixtureAsync(database, owner.AccountId.Value);
-        var firstMembership = await InsertIssuedMembershipAsync(
-            database,
-            fixture,
-            owner.AccountId.Value,
-            issuedAt: TestNow.AddDays(-2));
-        var secondMembership = await InsertIssuedMembershipAsync(
-            database,
-            fixture,
-            owner.AccountId.Value,
-            issuedAt: TestNow.AddDays(-1));
-        await InsertCacheAsync(
-            database,
-            firstMembership,
-            remainingVisits: -1,
-            firstNegativeVisitDate: new DateOnly(2026, 7, 18));
-        await InsertCacheAsync(
-            database,
-            secondMembership,
-            remainingVisits: -2,
-            firstNegativeVisitDate: new DateOnly(2026, 7, 22));
+        var firstId = await PostgreSqlMembershipLifecycleTestData.CreateOpeningAsync(
+            database, owner, fixture.ClientId, fixture.MembershipTypeId, -1, ExistingStartDate, TestNow);
+        var secondId = await PostgreSqlMembershipLifecycleTestData.CreateOpeningAsync(
+            database, owner, fixture.ClientId, fixture.MembershipTypeId, -2, ExistingStartDate, TestNow, firstId);
+        var secondMembership = new IssuedMembershipFixture(secondId, ExistingBaseEndDate);
         var handler = CreateHandler(dbContext);
 
         var aggregate = await handler.ExecuteAsync(
@@ -193,9 +178,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
 
         AssertSuccessful(aggregate);
         Assert.Equal(3, aggregate.Preview!.ExistingNegativeState!.NegativeBalance);
-        Assert.Equal(
-            new DateOnly(2026, 7, 18),
-            aggregate.Preview.ExistingNegativeState.FirstNegativeVisitDate);
+        Assert.Null(aggregate.Preview.ExistingNegativeState.FirstNegativeVisitDate);
         Assert.Equal(0, aggregate.Preview.AutomaticCoveredNegativeVisitCount);
         Assert.True(aggregate.Preview.CanProceedToIssue);
 
@@ -209,9 +192,7 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
 
         AssertSuccessful(unambiguous);
         Assert.Equal(1, unambiguous.Preview!.ExistingNegativeState!.NegativeBalance);
-        Assert.Equal(
-            new DateOnly(2026, 7, 18),
-            unambiguous.Preview.ExistingNegativeState.FirstNegativeVisitDate);
+        Assert.Null(unambiguous.Preview.ExistingNegativeState.FirstNegativeVisitDate);
     }
 
     [PostgreSqlFact]
@@ -876,6 +857,8 @@ public sealed class PostgreSqlPreviewIssueMembershipQueryTests
         command.Parameters.AddWithValue("last_counted_visit_at", TestNow.AddDays(-1));
         command.Parameters.AddWithValue("recalculated_at", TestNow.AddMinutes(-10));
         command.Parameters.AddWithValue("recalculation_version", recalculationVersion);
+        Assert.Equal(1, await command.ExecuteNonQueryAsync());
+        command.CommandText = "update bodylife.membership_opening_states set declared_remaining_visits = @remaining_visits, declared_negative_balance = @negative_balance where membership_id = @membership_id";
         Assert.Equal(1, await command.ExecuteNonQueryAsync());
     }
 

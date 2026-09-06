@@ -16059,3 +16059,103 @@ Stop point:
 - Ordinary Issue currently rejects a second active Membership with controlled
   refresh feedback; it does not yet perform automatic rollover. Do not claim
   the whole corrective slice, Milestone 10.6 or Milestone 11 is implemented.
+
+
+## Step 252 - Implemented ADR-021 atomic Membership lifecycle transitions
+
+Status: ADR-021 step 21.3 completed on 2026-09-06. Contracts, persistence and
+atomic commands are complete. Next is 21.4 current/history, reports and UI;
+21.5 full acceptance, Milestone 10.6 and Milestone 11 have not started.
+
+Completed:
+
+- Issue preview signs the sole active predecessor id, lifecycle status, signed
+  canonical balance and opaque PostgreSQL Membership/cache row version. A
+  repeatable-read preview binds absence as well as presence; same-balance state
+  changes invalidate the token. Positive predecessors block ordinary Issue,
+  including expired and future-start cases, without source/cache/audit writes.
+- Issue atomically closes a zero predecessor, or applies ADR-020 concrete
+  oldest-first coverage and closes a negative predecessor. The successor, exact
+  cash Payment, allocation, lifecycle provenance, cache rebuild, audit and
+  idempotency commit together. Unknown opening debt stays visible and is never
+  synthesized as Visits; concrete residual stays coverable after closure.
+- Full one-off coverage closes the affected sole active Membership at zero;
+  partial coverage preserves active status. Historical concrete debt remains
+  eligible without reactivation. Exact paper row sets include the new lifecycle
+  facts in both coverage and history rereads, including later cancellation.
+- Unified Client/Membership/source dependency locking across Issue, one-off,
+  correction and Visit paths. Serialization-only Client locks use PostgreSQL
+  FOR NO KEY UPDATE, allowing FK KEY SHARE while a global NonWorkingDay command
+  holds a Membership. Stable Membership ids precede Visit/consumption rows.
+- Memberships projects final correction state before writes. Visit cancellation
+  or coverage correction that would leave a closed Membership positive returns
+  lifecycle_dependency. Replacement uses the exact planned allocation ids and
+  validates the final state, allowing a safe replacement even when cancellation
+  alone would temporarily restore positive visits. Sale cancellation/replacement
+  exposes lifecycle dependencies and cannot silently reactivate a predecessor.
+- Issue audit includes closure reason, source/successor/fact, before/after signed
+  balance and concrete/unknown residual debt. Full-one-off audit explains its
+  lifecycle closure. Added minimum Closed labels, server preview/error feedback,
+  canonical active/closed debt reads and negative attention counts required by
+  commands. Dedicated lifecycle history rows and complete one-current profile
+  presentation remain 21.4 work.
+- No migration or baseline change was needed. Converted affected legacy tests
+  from multiple active rows to valid closed history or controlled conflict
+  expectations; no tests were disabled or skipped. Visits calls a scalar
+  Memberships guard contract and does not reference calculation source facts.
+
+Validation:
+
+- Native .NET SDK 10.0.301 Release solution build passed with zero warnings and
+  errors; dotnet format --verify-no-changes passed. Core 406/406, Web 381/381 and
+  Infrastructure non-PostgreSQL 24/24 passed, with zero skips.
+- Real PostgreSQL 18.6 focused acceptance covers 244 distinct tests: 224 command,
+  storage, migration and concurrency tests passed in the final broad run; the
+  20 coverage/read/preview tests passed after fixing their shared two-active
+  fixture. The latter rerun resolves all 15 setup failures from the broad run.
+  TRX evidence is in /tmp/adr021-213-results/final-*.trx for this session.
+- Gates cover zero/positive/unknown/mixed debt, normal/paper provenance, replay,
+  stale predecessor versions, closed-source/covering correction outcomes,
+  negative attention, exact paper history, clean baseline/model checks, opening
+  state conflicts and Visit/Freeze/Payment command compatibility.
+- Forced final membership.issued audit failure restores a zero predecessor and
+  allows retry. Paper concrete rollover tests force both allocation-audit and
+  final issue-audit failures and prove predecessor/cache/lifecycle/link rollback.
+  Held-client Issue/full-one-off contention and the Membership/FK lock test pass.
+- Independent review found no actionable runtime defect; its rollback and
+  cross-workflow concurrency test requests are covered. Initial checks exposed
+  a malformed negative test fixture, unlisted public preview contracts, a Visits
+  source-fact type reference, whitespace and old multiple-active setup; all
+  findings were fixed and the affected gates rerun successfully.
+- Graphify query and code update ran; task-owned code and project-knowledge docs
+  receive a scoped AST/host-semantic refresh. Unrelated source freshness stays
+  unchanged. Host semantic token usage is unavailable from the collaboration API.
+- Documentation structure/local links, graph integrity and git diff --check
+  are checked before commit. Pre-existing package.json/package-lock.json remain
+  outside staging. Isolated PostgreSQL test databases and temporary role are
+  cleaned after validation; no existing application database is rebuilt.
+- Full scripts/validate.sh and Playwright are reserved for the remaining
+  corrective acceptance after 21.4. These focused results do not claim full
+  ADR-021 acceptance or completion of all legacy current/history/UI fixtures.
+
+Orchestration record:
+
+- Root owner lease: adr021-21.3-root-01a075ea-20260906. Exclusive writer grants
+  were transferred sequentially between the bounded worker, root integration
+  and final verifier. Root owns final acceptance, docs/Graphify and commits.
+- Dispatch record across this continued step: bodylife_scout = gpt-5.6-luna / low;
+  bodylife_worker = gpt-5.6-terra / medium; bodylife_reviewer = gpt-5.6-terra / high;
+  bodylife_verifier = gpt-5.6-luna / medium. No Luna model compatibility fallback.
+- Root completed integration after two partial worker handoffs. An earlier
+  verifier dispatch hit the agent thread limit, so root ran that baseline;
+  a fresh verifier performed the final gates after continuation. Final review
+  used fresh context. Children did not delegate, stage or commit.
+
+Stop point:
+
+- Next: ADR-021 / 21.4 only. Finish none/single current semantics, separate
+  historical closure/debt presentation, dedicated closure reason/successor
+  history, reports and reception tablet/phone workflows; retain the working
+  canonical coverage reads already added here.
+- Then complete 21.5 full validation and acceptance before ADR-019/Milestone 10.6.
+  Do not start single-visit sales or Milestone 11 in this task.

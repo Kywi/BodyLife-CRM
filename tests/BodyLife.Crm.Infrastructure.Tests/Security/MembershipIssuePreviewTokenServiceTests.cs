@@ -51,6 +51,35 @@ public sealed class MembershipIssuePreviewTokenServiceTests
         Assert.Equal(MembershipIssuePreviewTokenValidationStatus.PreviewMismatch, service.Validate(token, changedMetadata).Status);
     }
 
+    [Fact]
+    public void SignsPredecessorPresenceIdentityLifecycleStateVersionAndBalance()
+    {
+        var service = CreateService(new MutableTimeProvider(Now));
+        var absent = CreateMaterial();
+        var current = absent with
+        {
+            ActivePredecessorId = Guid.NewGuid(),
+            ActivePredecessorStatus = IssuedMembershipLifecycleStatus.Active,
+            ActivePredecessorStateVersion = "1234:5678",
+            ActivePredecessorRemainingVisits = 0,
+        };
+        var token = service.Issue(current).Value;
+        Assert.Equal(MembershipIssuePreviewTokenValidationStatus.Valid, service.Validate(token, current).Status);
+        foreach (var changed in new[]
+        {
+            absent,
+            current with { ActivePredecessorId = Guid.NewGuid() },
+            current with { ActivePredecessorStatus = IssuedMembershipLifecycleStatus.Closed },
+            current with { ActivePredecessorStateVersion = "1234:5679" },
+            current with { ActivePredecessorRemainingVisits = 1 },
+        })
+        {
+            Assert.Equal(MembershipIssuePreviewTokenValidationStatus.PreviewMismatch, service.Validate(token, changed).Status);
+        }
+        Assert.Equal(MembershipIssuePreviewTokenValidationStatus.PreviewMismatch,
+            service.Validate(service.Issue(absent).Value, current).Status);
+    }
+
     private static HmacMembershipIssuePreviewTokenService CreateService(TimeProvider clock) => new(
         new NonWorkingDayPreviewTokenOptions(Convert.ToBase64String(Enumerable.Repeat((byte)41, 32).ToArray()), TimeSpan.FromMinutes(1)),
         clock);

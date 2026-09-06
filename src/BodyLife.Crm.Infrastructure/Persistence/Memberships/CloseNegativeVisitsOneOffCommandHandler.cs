@@ -303,6 +303,8 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
             }
             await dbContext.SaveChangesAsync(cancellationToken);
 
+            Guid? lifecycleClosureId = null;
+            Guid? closedMembershipId = null;
             foreach (var membershipId in sourceMembershipIds.Order())
             {
                 var rebuild = await stateCacheRebuilder.RebuildAsync(
@@ -317,9 +319,41 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                         CommandErrorCode.RecalculationFailed,
                         "Affected membership state could not be rebuilt from closure facts.");
                 }
+                if (selection.ActivePredecessor is { } active
+                    && active.Id == membershipId && rebuild.State.RemainingVisits == 0)
+                {
+                    var tracked = dbContext.Set<IssuedMembershipRecord>().Local
+                        .SingleOrDefault(row => row.Id == membershipId)
+                        ?? dbContext.Attach(active).Entity;
+                    tracked.Status = "closed";
+                    lifecycleClosureId = Guid.NewGuid();
+                    closedMembershipId = membershipId;
+                    dbContext.Set<MembershipLifecycleClosureRecord>().Add(new MembershipLifecycleClosureRecord
+                    {
+                        Id = lifecycleClosureId.Value,
+                        ClientId = closure.ClientId,
+                        SourceMembershipId = membershipId,
+                        NegativeClosureId = closureId,
+                        ReasonCode = "one_off_zero_balance",
+                        RecordedByAccountId = closure.Envelope.Actor.AccountId.Value,
+                        SessionId = closure.Envelope.Actor.SessionId.Value,
+                        CorrelationId = closure.Envelope.RequestCorrelationId.Value!,
+                        IdempotencyKey = closure.IdempotencyKey,
+                        EntryOrigin = MembershipCommandSupport.MapEntryOrigin(closure.Envelope.EntryOrigin),
+                        EntryBatchId = entryBatchId,
+                        OccurredAt = occurredAt,
+                        RecordedAt = recordedAt,
+                        Explanation = closure.Envelope.Comment,
+                    });
+                    if (paperBinding.Reference is { } lifecyclePaper)
+                    {
+                        paperFallbackEntryRowBinder.LinkEntity(lifecyclePaper,
+                            "membership_lifecycle_closure", lifecycleClosureId.Value);
+                    }
+                }
             }
 
-            var activeMembershipIds = selection.ActiveMemberships
+            var activeMembershipIds = selection.Memberships
                 .Select(membership => membership.Id)
                 .ToArray();
             var remainingNegativeBalance = await dbContext
@@ -349,6 +383,8 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                         ClientId = closure.ClientId,
                         PaymentId = paymentWrite.PaymentId,
                         PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
+                        LifecycleClosureId = lifecycleClosureId,
+                        ClosedMembershipId = closedMembershipId,
                         SourceMembershipIds = sourceMembershipIds.Order().ToArray(),
                         VisitIds = visitIds,
                         closureAuditPaperReference.EntryBatchId,
@@ -362,6 +398,8 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                         ClientId = closure.ClientId,
                         PaymentId = paymentWrite.PaymentId,
                         PaymentAuditEntryId = paymentWrite.AuditEntryId.Value,
+                        LifecycleClosureId = lifecycleClosureId,
+                        ClosedMembershipId = closedMembershipId,
                         SourceMembershipIds = sourceMembershipIds.Order().ToArray(),
                         VisitIds = visitIds,
                     },
@@ -375,6 +413,9 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                 afterSummary: new
                 {
                     NegativeClosureId = closureId,
+                    LifecycleClosureId = lifecycleClosureId,
+                    ClosedMembershipId = closedMembershipId,
+                    ClosureReasonCode = lifecycleClosureId.HasValue ? "one_off_zero_balance" : null,
                     ClosureType = closureRecord.ClosureType,
                     closureRecord.VisitsCount,
                     Lines = lineSummaries,
@@ -445,7 +486,7 @@ public sealed class CloseNegativeVisitsOneOffCommandHandler(
                 select *
                 from bodylife.clients
                 where id = {clientId}
-                for update
+                for no key update
                 """)
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);

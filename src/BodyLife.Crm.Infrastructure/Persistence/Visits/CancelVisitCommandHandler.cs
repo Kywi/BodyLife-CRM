@@ -4,6 +4,7 @@ using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.Audit;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.Idempotency;
+using BodyLife.Crm.Infrastructure.Persistence.Memberships;
 using BodyLife.Crm.Modules.Audit;
 using BodyLife.Crm.Modules.Memberships;
 using BodyLife.Crm.Modules.Visits;
@@ -218,6 +219,15 @@ public sealed class CancelVisitCommandHandler(
             MembershipStateReadModel? beforeMembershipState = null;
             if (preparation.RequiresMembershipRecalculation)
             {
+                if (await MembershipLifecycleCorrectionGuard.FindBlockedVisitCancellationAsync(
+                        dbContext, source.MembershipId!.Value, source.VisitId, cancellationToken) is not null)
+                {
+                    return await RollBackAsync(VisitCommandSupport.Error(
+                        CommandErrorCode.LifecycleDependency,
+                        "Canceling this Visit would leave unused visits on a closed Membership.",
+                        "membershipId"));
+                }
+
                 var beforeRecalculation = await membershipStateRecalculator
                     .RecalculateAsync(source.MembershipId!.Value, cancellationToken);
                 if (!beforeRecalculation.Succeeded)
@@ -453,7 +463,7 @@ public sealed class CancelVisitCommandHandler(
                 select *
                 from bodylife.clients
                 where id = {clientId}
-                for update
+                for no key update
                 """)
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);

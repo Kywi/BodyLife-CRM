@@ -2,7 +2,8 @@
 
 Дата: 2026-07-07, оновлено 2026-09-06
 Статус: чинний план; Milestones 1-10.5 та ADR-020 виконані, ADR-021 corrective
-slice: 21.1 contracts та 21.2 persistence виконані, наступний крок 21.3 transitions;
+slice: 21.1 contracts, 21.2 persistence та 21.3 transitions виконані;
+наступний крок 21.4 current/history, reports та UI;
 погоджений Milestone 10.6 іде після нього, Milestone 11 -
 після 10.6
 
@@ -704,9 +705,10 @@ slice: 21.1 contracts та 21.2 persistence виконані, наступний
 
 ## Стоп після ADR-020; ADR-021 corrective slice є наступним
 
-Milestone 10.5 and ADR-020 are implemented and validated. ADR-021 contracts and
-lifecycle persistence are complete through Step 251; atomic transitions (21.3)
-are next, and the corrective slice must finish before Milestone 10.6. ADR-019/Milestone
+Milestone 10.5 and ADR-020 are implemented and validated. ADR-021 contracts,
+lifecycle persistence and atomic transitions are complete through Step 252.
+Current/history, reports and UI (21.4) are next; the corrective slice must finish
+before Milestone 10.6. ADR-019/Milestone
 10.6 remain accepted and planned, and Milestone 11 follows them without having
 started.
 
@@ -805,19 +807,25 @@ closure as separate, explainable ways to resolve concrete Visit debt.
    partial unique index for one `active` row per Client. Fold everything into
    the sole `InitialBaseline` and prove clean apply/current-model invariants.
    Completed as Step 251 on 2026-09-06: schema, closure provenance, deferred
-   guards, mappings and PostgreSQL gates. Automatic transitions and presentation
-   remain pending. Next: 21.3 only.
+   guards, mappings and PostgreSQL gates. Atomic transitions followed in Step 252;
+   full presentation remains 21.4 work.
 3. **21.3 Atomic transitions.** Extend Issue preview/token and command locks for
    zero, positive, concrete/unknown/mixed negative, expired, future-start,
    backdated and paper-fallback states. Close eligible predecessor, create the
    successor sale/allocation and audit in one transaction; block silent positive
    forfeiture and stale/concurrent transitions.
+   Completed as Step 252 on 2026-09-06, including full-one-off lifecycle closure,
+   correction guards, audit, shared locks and the minimum canonical debt/Closed
+   presentation needed by these commands. Next: 21.4 only.
 4. **21.4 Coverage, reports and UI.** Let ADR-020 and one-off closure operate on
    open historical concrete Visit debt from `closed` Memberships without
    allowing new Visits or Freezes on them. Keep unknown opening remainder
    visible but non-coverable pending a separate reconciliation decision. Update
    current/history/negative queries, profile, warnings, reports and audit
    explanations for one current Membership plus explainable historical debt.
+   Step 252 already enables active/closed coverage selection, canonical coverage
+   rereads and negative attention counts. Finish the broader current/history
+   contract and dedicated lifecycle history/report/tablet/phone presentation here.
 5. **21.5 Acceptance.** Add correction/cancellation dependency regressions,
    PostgreSQL concurrency and constraint tests, report/audit consistency and
    tablet/phone flows. Run focused gates, full `scripts/validate.sh`, independent

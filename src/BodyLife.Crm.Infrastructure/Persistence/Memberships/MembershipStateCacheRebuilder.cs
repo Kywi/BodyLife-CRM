@@ -195,12 +195,26 @@ public sealed class MembershipStateCacheRebuilder
             cancellationToken);
     }
 
+    internal Task<MembershipCanonicalStateCalculation> CalculateCanonicalStateForCorrectionAsync(
+        IssuedMembershipRecord source,
+        Guid? excludedVisitId,
+        Guid? excludedNegativeClosureId,
+        IReadOnlyList<MembershipNegativeCoverageSourceFact> projectedCoverage,
+        CancellationToken cancellationToken)
+    {
+        return CalculateCanonicalStateAfterMembershipLockCoreAsync(
+            source, null, excludedNegativeClosureId, cancellationToken,
+            excludedVisitId, projectedCoverage);
+    }
+
     private async Task<MembershipCanonicalStateCalculation>
         CalculateCanonicalStateAfterMembershipLockCoreAsync(
             IssuedMembershipRecord source,
             IReadOnlySet<Guid>? excludedNonWorkingDayApplicationIds,
             Guid? excludedNegativeClosureId,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            Guid? excludedVisitId = null,
+            IReadOnlyList<MembershipNegativeCoverageSourceFact>? projectedCoverage = null)
     {
         ArgumentNullException.ThrowIfNull(source);
 
@@ -260,6 +274,7 @@ public sealed class MembershipStateCacheRebuilder
                 consumption.Status))
             .ToArrayAsync(cancellationToken);
         var originalVisitFacts = originalVisitSourceRows
+            .Where(row => row.VisitId != excludedVisitId)
             .GroupBy(sourceRow => sourceRow.VisitId)
             .Select(sourceRows => MembershipVisitSourceMapper.Map(
                 membershipId,
@@ -316,6 +331,9 @@ public sealed class MembershipStateCacheRebuilder
                 || coverage.SourceMembershipId != membershipId
                 || coverage.OldConsumptionRecordedAt > openingStateSource.RecordedAt)
             .Select(MapCoverageSource)
+            .Concat((projectedCoverage ?? []).Where(fact =>
+                fact.SourceMembershipId == membershipId
+                || fact.CoveringMembershipId == membershipId))
             .ToArray();
         var visitFacts = MembershipVisitCoverageResolver.ResolveEffectiveVisits(
             membershipId,

@@ -173,7 +173,7 @@ Each result row shows enough context to choose safely without opening generic ed
 - operational status;
 - match type;
 - current membership summary from server reads;
-- ADR-021 target: one operational current Membership, with closed lifecycle history and concrete-versus-unknown debt explanation rendered separately (accepted, pending runtime implementation);
+- ADR-021 target: one operational current Membership, with closed lifecycle history and concrete-versus-unknown debt explanation rendered separately (21.3 command preview and Closed labels implemented; full presentation remains 21.4);
 - row-level warnings.
 
 Rows must be touch-selectable and keep warnings visible on phone.

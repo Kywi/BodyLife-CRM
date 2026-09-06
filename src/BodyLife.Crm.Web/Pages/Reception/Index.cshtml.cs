@@ -2959,6 +2959,7 @@ public sealed class IndexModel(
             "permission_denied" => CommandErrorCode.PermissionDenied,
             "not_found" => CommandErrorCode.NotFound,
             "membership_type_inactive" => CommandErrorCode.MembershipTypeInactive,
+            "lifecycle_dependency" => CommandErrorCode.LifecycleDependency,
             "membership_not_eligible" => CommandErrorCode.MembershipNotEligible,
             "canonical_state_invalid" => CommandErrorCode.RecalculationFailed,
             _ => CommandErrorCode.ValidationFailed,

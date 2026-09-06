@@ -939,24 +939,19 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
             ActorRole.Admin,
             AccountKind.NamedAdmin);
         var fixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
-        var existing = await InsertIssuedMembershipAsync(
-            database,
-            fixture,
-            actor.AccountId.Value);
-        await InsertCacheAsync(
-            database,
-            existing,
-            remainingVisits: -2,
-            firstNegativeVisitDate: new DateOnly(2026, 7, 29));
+        var existingId = await PostgreSqlMembershipLifecycleTestData.CreateOpeningAsync(
+            database, actor, fixture.ClientId, fixture.MembershipTypeId, -2, ExistingStartDate, TestNow);
+        var existing = new ExistingMembershipFixture(existingId, ExistingBaseEndDate);
         var cacheBefore = await ReadCacheAsync(database, existing.MembershipId);
         var issue = await ExecuteWithCurrentPreviewAsync(
             dbContext, actor, fixture, "negative-auto");
 
         AssertSuccessfulResult(issue, fixture.ClientId);
         Assert.Equal([MembershipWarningCodes.NegativeBalance], issue.Warnings);
-        Assert.Equal(
-            cacheBefore,
-            await ReadCacheAsync(database, existing.MembershipId));
+        Assert.Equal(cacheBefore.RemainingVisits,
+            (await ReadCacheAsync(database, existing.MembershipId)).RemainingVisits);
+        Assert.Equal("closed", await database.ExecuteScalarAsync<string>(
+            $"select status from bodylife.issued_memberships where id = '{existing.MembershipId}'"));
         var newCache = await ReadCacheAsync(
             database,
             issue.PrimaryEntityId!.Value.Value);
@@ -1026,33 +1021,17 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task MultipleUnknownNegativeMembershipsRemainVisibleAsClientAggregate()
+    public async Task ClosedAndCurrentUnknownNegativeMembershipsRemainVisibleAsClientAggregate()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
         await dbContext.Database.MigrateAsync();
         var actor = await SeedActorAsync(database, ActorRole.Owner, AccountKind.Owner);
         var fixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
-        var first = await InsertIssuedMembershipAsync(
-            database,
-            fixture,
-            actor.AccountId.Value,
-            issuedAt: TestNow.AddDays(-3));
-        var second = await InsertIssuedMembershipAsync(
-            database,
-            fixture,
-            actor.AccountId.Value,
-            issuedAt: TestNow.AddDays(-2));
-        await InsertCacheAsync(
-            database,
-            first,
-            remainingVisits: -1,
-            firstNegativeVisitDate: new DateOnly(2026, 7, 28));
-        await InsertCacheAsync(
-            database,
-            second,
-            remainingVisits: -2,
-            firstNegativeVisitDate: new DateOnly(2026, 7, 29));
+        var first = await PostgreSqlMembershipLifecycleTestData.CreateOpeningAsync(
+            database, actor, fixture.ClientId, fixture.MembershipTypeId, -1, ExistingStartDate, TestNow);
+        await PostgreSqlMembershipLifecycleTestData.CreateOpeningAsync(
+            database, actor, fixture.ClientId, fixture.MembershipTypeId, -2, ExistingStartDate, TestNow, first);
 
         var result = await ExecuteWithCurrentPreviewAsync(
             dbContext, actor, fixture, "ambiguous-negative");
@@ -1061,7 +1040,9 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
         Assert.Equal([MembershipWarningCodes.NegativeBalance], result.Warnings);
         Assert.Equal(3L, await CountRowsAsync(database, "issued_memberships"));
         Assert.Equal(3L, await CountRowsAsync(database, "membership_state_cache"));
-        Assert.Equal(3L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(1L, await CountRowsAsync(database, "payments"));
+        Assert.Equal(1L, await database.ExecuteScalarAsync<long>("select count(*) from bodylife.issued_memberships where status = 'active'"));
+        Assert.Equal(2L, await CountRowsAsync(database, "membership_lifecycle_closures"));
         Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
         Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
     }

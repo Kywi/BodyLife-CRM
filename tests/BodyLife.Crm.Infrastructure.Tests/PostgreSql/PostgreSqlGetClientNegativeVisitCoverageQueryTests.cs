@@ -385,10 +385,18 @@ public sealed partial class PostgreSqlGetClientNegativeVisitCoverageQueryTests
             values
                 (@source_membership, @client, @source_type, 'sale', 'Source membership',
                  30, 1, 100, 'UAH', date '2026-07-01', date '2026-07-30', @now - interval '1 hour',
-                 @account, 'active', 'normal'),
+                 @account, 'closed', 'normal'),
                 (@covering_membership, @client, @covering_type, 'sale', 'Coverage membership',
                  30, 3, 300, 'UAH', date '2026-07-30', date '2026-08-28', @now - interval '10 minutes',
                  @account, 'active', 'normal');
+
+            insert into bodylife.membership_lifecycle_closures (
+                id, client_id, source_membership_id, successor_membership_id, reason_code,
+                recorded_by_account_id, session_id, correlation_id, idempotency_key,
+                entry_origin, occurred_at, recorded_at)
+            values (gen_random_uuid(), @client, @source_membership, @covering_membership,
+                'negative_balance_rollover', @account, @session, 'query-rollover', 'query-rollover',
+                'normal', @now - interval '10 minutes', @now - interval '10 minutes');
 
             insert into bodylife.payments (
                 id, client_id, membership_id, amount, currency, method, payment_context,

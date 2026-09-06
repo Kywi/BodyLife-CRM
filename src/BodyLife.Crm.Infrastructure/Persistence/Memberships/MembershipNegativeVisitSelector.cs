@@ -82,7 +82,7 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
                     select *
                     from bodylife.issued_memberships
                     where client_id = {clientId}
-                      and status = 'active'
+                      and status in ('active', 'closed')
                     order by id
                     for update
                     """)
@@ -94,7 +94,7 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
             memberships = await dbContext.Set<IssuedMembershipRecord>()
                 .AsNoTracking()
                 .Where(membership => membership.ClientId == clientId
-                    && membership.Status == "active")
+                    && (membership.Status == "active" || membership.Status == "closed"))
                 .OrderBy(membership => membership.Id)
                 .ToArrayAsync(cancellationToken);
         }
@@ -103,6 +103,11 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
         {
             return MembershipNegativeVisitSelectionResult.Succeeded(
                 new MembershipNegativeVisitSelection([], [], 0, 0, null));
+        }
+
+        if (memberships.Count(membership => membership.Status == "active") > 1)
+        {
+            return MembershipNegativeVisitSelectionResult.InconsistentCanonicalState();
         }
 
         var membershipIds = memberships.Select(membership => membership.Id).ToArray();
@@ -115,6 +120,13 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
                 != MembershipStateCacheRebuilder.CurrentRecalculationVersion))
         {
             return MembershipNegativeVisitSelectionResult.MissingCanonicalState();
+        }
+
+        if (forUpdate)
+        {
+            await dbContext.Set<MembershipOpeningStateRecord>()
+                .FromSqlInterpolated($"select * from bodylife.membership_opening_states where membership_id = any ({membershipIds}) order by membership_id, id for update")
+                .AsNoTracking().ToArrayAsync(cancellationToken);
         }
 
         VisitRecord[] lockedVisits;
@@ -194,6 +206,25 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
                 !visitsById.ContainsKey(consumption.VisitId)))
         {
             return MembershipNegativeVisitSelectionResult.InconsistentCanonicalState();
+        }
+
+        if (forUpdate)
+        {
+            // The state calculation below consumes only counted sources, but the
+            // shared lifecycle lock hierarchy must also protect active coverage
+            // consumptions before a predecessor can be closed.
+            await dbContext.Set<VisitConsumptionRecord>()
+                .FromSqlInterpolated(
+                    $"""
+                    select *
+                    from bodylife.visit_consumptions
+                    where membership_id = any ({membershipIds})
+                      and status = 'active'
+                    order by membership_id, visit_id, id
+                    for update
+                    """)
+                .AsNoTracking()
+                .ToArrayAsync(cancellationToken);
         }
 
         var coverageRows = await (
@@ -399,12 +430,17 @@ public sealed class MembershipNegativeVisitSelector(BodyLifeDbContext dbContext)
 }
 
 internal sealed record MembershipNegativeVisitSelection(
-    IReadOnlyList<IssuedMembershipRecord> ActiveMemberships,
+    IReadOnlyList<IssuedMembershipRecord> Memberships,
     IReadOnlyList<MembershipNegativeVisitCoverageCandidate> OpenConcreteVisits,
     int TotalNegativeBalance,
     int UnknownNegativeBalance,
     DateOnly? FirstNegativeVisitDate)
 {
+    public IReadOnlyList<IssuedMembershipRecord> ActiveMemberships => Memberships
+        .Where(membership => membership.Status == "active")
+        .ToArray();
+
+    public IssuedMembershipRecord? ActivePredecessor => ActiveMemberships.SingleOrDefault();
     public Guid? OldestOpenConcreteVisitId => OpenConcreteVisits.Count == 0
         ? null
         : OpenConcreteVisits[0].VisitId;

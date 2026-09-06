@@ -144,6 +144,8 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
                 GetClientNegativeVisitCoverageResult.CanonicalStateInvalid());
         }
 
+        var lifecycleClosures = await dbContext.Set<MembershipLifecycleClosureRecord>().AsNoTracking()
+            .Where(row => row.ClientId == query.ClientId).ToArrayAsync(cancellationToken);
         var paperReferenceReader = new PaperFallbackEntryRowReferenceReader(dbContext);
         var paperReferencesByClosureId = await paperReferenceReader.LoadAsync(
             closures.Select(closure => new PaperFallbackEntryRowReferenceSource(
@@ -168,7 +170,7 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
                     items,
                     payments,
                     correctionsByReplacementId,
-                    paperReferencesByClosureId),
+                    paperReferencesByClosureId, lifecycleClosures),
                 cancellationToken)
             || closures.Any(closure =>
                 closure.EntryOrigin == "paper_fallback"
@@ -352,7 +354,7 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
                     || salePayments.Length != 1
                     || !memberships.TryGetValue(coveringMembershipId, out var coveringMembership)
                     || coveringMembership.ClientId != clientId
-                    || coveringMembership.Status != "active"
+                    || coveringMembership.Status is not ("active" or "closed")
                     || !ValidateNewMembershipSalePayment(
                         clientId,
                         closure,
@@ -711,7 +713,8 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
             IReadOnlyDictionary<Guid, MembershipNegativeClosureCorrectionRecord>
                 correctionsByReplacementId,
             IReadOnlyDictionary<Guid, PaperFallbackEntryRowReference>
-                paperReferences)
+                paperReferences,
+            IReadOnlyList<MembershipLifecycleClosureRecord> lifecycleClosures)
     {
         var expected = new List<PaperFallbackExpectedEntityLink>();
         foreach (var closure in closures)
@@ -743,6 +746,12 @@ public sealed class GetClientNegativeVisitCoverageQueryHandler(
                     correction.Id,
                     expectedRowId));
             }
+
+            expected.AddRange(lifecycleClosures.Where(row => row.NegativeClosureId == closure.Id
+                    || (!isReplacement && closure.CoveringMembershipId.HasValue
+                        && row.SuccessorMembershipId == closure.CoveringMembershipId))
+                .Select(row => new PaperFallbackExpectedEntityLink(
+                    "membership_lifecycle_closure", row.Id, expectedRowId)));
 
             expected.AddRange(allLines
                 .Where(line => line.NegativeClosureId == closure.Id)

@@ -146,7 +146,7 @@ internal sealed class NegativeVisitCoverageCorrectionSourceReader(
                     coveringMembershipId,
                     out coveringMembership)
                 || coveringMembership.ClientId != closure.ClientId
-                || coveringMembership.Status != "active"
+                || coveringMembership.Status is not ("active" or "closed")
                 || items.Any(item => item.ClosureLineId is not null
                     || item.CoveringMembershipId != coveringMembershipId
                     || !ValidateNewConsumption(
@@ -216,7 +216,7 @@ internal sealed class NegativeVisitCoverageCorrectionSourceReader(
         IReadOnlyDictionary<Guid, VisitConsumptionRecord> consumptions) => items.All(item =>
         memberships.TryGetValue(item.SourceMembershipId, out var membership)
         && membership.ClientId == clientId
-        && membership.Status == "active"
+        && membership.Status is "active" or "closed"
         && visits.TryGetValue(item.VisitId, out var visit)
         && visit.ClientId == clientId
         && visit.Status == "active"

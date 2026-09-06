@@ -164,6 +164,10 @@ public sealed class PostgreSqlCloseNegativeVisitsOneOffCommandTests
 
         Assert.Equal(CommandStatus.Success, result.Status);
         var closureId = result.PrimaryEntityId!.Value.Value;
+        Assert.Equal("active", await database.ExecuteScalarAsync<string>(
+            $"select status from bodylife.issued_memberships where id = '{fixture.SourceMembershipId}'"));
+        Assert.Equal(0L, await database.ExecuteScalarAsync<long>("select count(*) from bodylife.membership_lifecycle_closures"));
+
         var paymentId = await database.ExecuteScalarAsync<Guid>(
             $"select id from bodylife.payments where negative_closure_id = '{closureId}'");
         Assert.Equal(

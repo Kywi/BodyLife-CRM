@@ -1012,6 +1012,9 @@ public sealed class ClientHistoryRowPresenter(AuditPresentation presentation)
             IssuedMembershipLifecycleStatus.Active => new(
                 presentation.Status("ActiveSource"),
                 "status-active"),
+            IssuedMembershipLifecycleStatus.Closed => new(
+                presentation.Status("Closed"),
+                "status-inactive"),
             IssuedMembershipLifecycleStatus.Canceled => new(
                 presentation.Status("Canceled"),
                 "status-canceled"),

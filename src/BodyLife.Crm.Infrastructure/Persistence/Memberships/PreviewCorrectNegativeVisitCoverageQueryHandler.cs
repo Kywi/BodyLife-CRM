@@ -175,31 +175,10 @@ public sealed class PreviewCorrectNegativeVisitCoverageQueryHandler(
         {
             var membership = source.CoveringMembership!;
             var cache = source.CoveringCache!;
-            int restoredRemaining;
-            try
-            {
-                restoredRemaining = checked(
-                    cache.RemainingVisits + source.Closure.VisitsCount);
-            }
-            catch (OverflowException)
-            {
-                return await CompleteAsync(Failure(
-                    PreviewCorrectNegativeVisitCoverageStatus.CanonicalStateInvalid,
-                    "canonical_state_invalid",
-                    "Covering Membership capacity is outside the supported range.",
-                    null));
-            }
-
-            if (cache.NegativeBalance != 0
-                || restoredRemaining < 0
-                || restoredRemaining > membership.VisitsLimitSnapshot)
-            {
-                return await CompleteAsync(Failure(
-                    PreviewCorrectNegativeVisitCoverageStatus.CanonicalStateInvalid,
-                    "canonical_state_invalid",
-                    "Covering Membership state is inconsistent.",
-                    null));
-            }
+            var restored = await new MembershipStateCacheRebuilder(dbContext, timeProvider)
+                .CalculateCanonicalStateForNegativeCoveragePreviewAsync(
+                    membership, source.Closure.Id, cancellationToken);
+            var restoredRemaining = restored.State.RemainingVisits;
 
             int? replacementRemaining = null;
             if (query.Mode == NegativeVisitCoverageCorrectionMode.Replace)
@@ -227,6 +206,23 @@ public sealed class PreviewCorrectNegativeVisitCoverageQueryHandler(
                 replacementRemaining,
                 cache.NegativeBalance,
                 cache.EffectiveEndDate);
+        }
+
+        var projectedCoverage = selection.OpenConcreteVisits.Take(replacementCount)
+            .Select(candidate => new MembershipNegativeCoverageSourceFact(
+                Guid.NewGuid(), candidate.VisitId, candidate.SourceMembershipId,
+                source.Closure.CoveringMembershipId, candidate.BusinessDate,
+                candidate.OccurredAt, timeProvider.GetUtcNow(), MembershipNegativeCoverageSourceStatus.Active))
+            .ToArray();
+        if (await MembershipLifecycleCorrectionGuard.FindBlockedMembershipAsync(
+                dbContext, selection.Memberships.Select(row => row.Id).ToArray(),
+                null, source.Closure.Id, projectedCoverage, cancellationToken) is not null)
+        {
+            return await CompleteAsync(Failure(
+                PreviewCorrectNegativeVisitCoverageStatus.LifecycleDependency,
+                "lifecycle_dependency",
+                "This correction would leave unused visits on a closed Membership.",
+                "originalNegativeClosureId", selectors));
         }
 
         var originalPayment = source.OriginalPayment is null

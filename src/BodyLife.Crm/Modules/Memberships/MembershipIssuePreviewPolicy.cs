@@ -10,7 +10,8 @@ public static class MembershipIssuePreviewPolicy
         MembershipTypeCatalogItem? membershipType,
         DateOnly proposedStartDate,
         MembershipIssueNegativeContext? existingNegativeState = null,
-        DateOnly? previewBusinessDate = null)
+        DateOnly? previewBusinessDate = null,
+        MembershipIssuePredecessor? predecessor = null)
     {
         if (clientId == Guid.Empty)
         {
@@ -74,6 +75,7 @@ public static class MembershipIssuePreviewPolicy
             existingNegativeState,
             automaticCount,
             previewBusinessDate,
-            warnings);
+            warnings,
+            predecessor);
     }
 }

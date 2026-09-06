@@ -152,6 +152,17 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
             var paperReference = paperBinding.Reference;
             var entryBatchId = paperReference?.EntryBatchId;
 
+            var initialSelectionResult = await negativeVisitSelector
+                .SelectForUpdateAfterClientLockAsync(
+                    originalReference.ClientId,
+                    cancellationToken);
+            if (initialSelectionResult.Status
+                != MembershipNegativeVisitSelectionStatus.Succeeded)
+            {
+                return await RollBackAsync(RecalculationFailure(
+                    "Canonical membership state is missing or inconsistent."));
+            }
+
             var original = await LockClosureAsync(
                 correction.OriginalNegativeClosureId,
                 cancellationToken);
@@ -180,17 +191,6 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                     CorrectNegativeVisitCoverageCommandSupport.ValidationError(
                         "Replacement must preserve the original coverage method.",
                         "replacement"));
-            }
-
-            var initialSelectionResult = await negativeVisitSelector
-                .SelectForUpdateAfterClientLockAsync(
-                    original.ClientId,
-                    cancellationToken);
-            if (initialSelectionResult.Status
-                != MembershipNegativeVisitSelectionStatus.Succeeded)
-            {
-                return await RollBackAsync(RecalculationFailure(
-                    "Canonical membership state is missing or inconsistent."));
             }
 
             var items = await LockItemsAsync(original.Id, cancellationToken);
@@ -249,6 +249,80 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                 }
 
                 preparedOneOffReplacement = preparationResult.Preparation;
+            }
+
+            var restoredSelectionResult = await negativeVisitSelector
+                .SelectHypotheticallyWithoutClosureAsync(original.ClientId, original.Id, cancellationToken);
+            if (restoredSelectionResult.Status != MembershipNegativeVisitSelectionStatus.Succeeded)
+            {
+                return await RollBackAsync(RecalculationFailure(
+                    "Restored negative Visit state is missing or inconsistent."));
+            }
+            var restoredSelection = restoredSelectionResult.Selection!;
+            var replacementVisitsCount = 0;
+            if (correction.Mode == NegativeVisitCoverageCorrectionMode.Replace)
+            {
+                if (restoredSelection.OldestOpenConcreteVisitId
+                    != correction.ExpectedOldestOpenNegativeVisitId)
+                {
+                    return await RollBackAsync(
+                        CorrectNegativeVisitCoverageCommandSupport.Error(
+                            CommandErrorCode.StaleState,
+                            "The oldest open negative Visit changed. Refresh canonical state.",
+                            "expectedOldestOpenNegativeVisitId"));
+                }
+
+                replacementVisitsCount = preparedOneOffReplacement?.VisitsCount
+                    ?? correction.ReplacementNewMembershipCoverageCount!.Value;
+                if (replacementVisitsCount > restoredSelection.OpenConcreteVisits.Count)
+                {
+                    return await RollBackAsync(
+                        CorrectNegativeVisitCoverageCommandSupport.ValidationError(
+                            "Replacement cannot exceed open concrete negative Visits.",
+                            "replacement"));
+                }
+
+                if (string.Equals(
+                        original.ClosureType,
+                        "new_membership",
+                        StringComparison.Ordinal)
+                    && !await HasCoveringCapacityAsync(
+                        original.CoveringMembershipId!.Value,
+                        replacementVisitsCount,
+                        original.Id,
+                        restoredSelection.OpenConcreteVisits[0].BusinessDate,
+                        cancellationToken))
+                {
+                    return await RollBackAsync(
+                        CorrectNegativeVisitCoverageCommandSupport.Error(
+                            CommandErrorCode.MembershipNotEligible,
+                            "The covering Membership cannot accept the replacement allocation.",
+                            "replacementNewMembershipCoverageCount"));
+                }
+
+            }
+            var replacementPlan = restoredSelection.OpenConcreteVisits.Take(replacementVisitsCount)
+                .Select(candidate => new ReplacementCoverageItemPlan(
+                    candidate, Guid.NewGuid(),
+                    original.CoveringMembershipId.HasValue ? Guid.NewGuid() : null))
+                .ToArray();
+            foreach (var item in replacementPlan)
+            {
+                affectedMembershipIds.Add(item.Candidate.SourceMembershipId);
+            }
+            var projectedCoverage = replacementPlan.Select(item => new MembershipNegativeCoverageSourceFact(
+                item.ItemId, item.Candidate.VisitId, item.Candidate.SourceMembershipId,
+                original.CoveringMembershipId, item.Candidate.BusinessDate,
+                item.Candidate.OccurredAt, recordedAt, MembershipNegativeCoverageSourceStatus.Active))
+                .ToArray();
+            if (await MembershipLifecycleCorrectionGuard.FindBlockedMembershipAsync(
+                    dbContext, affectedMembershipIds, null, original.Id,
+                    projectedCoverage, cancellationToken) is not null)
+            {
+                return await RollBackAsync(CorrectNegativeVisitCoverageCommandSupport.Error(
+                    CommandErrorCode.LifecycleDependency,
+                    "This correction would leave unused visits on a closed Membership.",
+                    "originalNegativeClosureId"));
             }
 
             var originalLines = await dbContext
@@ -312,18 +386,6 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                     "Membership state could not be rebuilt after removing coverage."));
             }
 
-            var restoredSelectionResult = await negativeVisitSelector
-                .SelectForUpdateAfterClientLockAsync(
-                    original.ClientId,
-                    cancellationToken);
-            if (restoredSelectionResult.Status
-                != MembershipNegativeVisitSelectionStatus.Succeeded)
-            {
-                return await RollBackAsync(RecalculationFailure(
-                    "Restored negative Visit state is missing or inconsistent."));
-            }
-
-            var restoredSelection = restoredSelectionResult.Selection!;
             Guid? replacementClosureId = null;
             Guid? replacementPaymentId = null;
             AuditEntryId? replacementPaymentAuditId = null;
@@ -331,46 +393,8 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
             PaymentRecord? replacementPayment = null;
             IReadOnlyList<Guid> replacementVisitIds = [];
             IReadOnlyList<object> replacementLineSummaries = [];
-            var replacementVisitsCount = 0;
             if (correction.Mode == NegativeVisitCoverageCorrectionMode.Replace)
             {
-                if (restoredSelection.OldestOpenConcreteVisitId
-                    != correction.ExpectedOldestOpenNegativeVisitId)
-                {
-                    return await RollBackAsync(
-                        CorrectNegativeVisitCoverageCommandSupport.Error(
-                            CommandErrorCode.StaleState,
-                            "The oldest open negative Visit changed. Refresh canonical state.",
-                            "expectedOldestOpenNegativeVisitId"));
-                }
-
-                replacementVisitsCount = preparedOneOffReplacement?.VisitsCount
-                    ?? correction.ReplacementNewMembershipCoverageCount!.Value;
-                if (replacementVisitsCount > restoredSelection.OpenConcreteVisits.Count)
-                {
-                    return await RollBackAsync(
-                        CorrectNegativeVisitCoverageCommandSupport.ValidationError(
-                            "Replacement cannot exceed open concrete negative Visits.",
-                            "replacement"));
-                }
-
-                if (string.Equals(
-                        original.ClosureType,
-                        "new_membership",
-                        StringComparison.Ordinal)
-                    && !await HasCoveringCapacityAsync(
-                        original.CoveringMembershipId!.Value,
-                        replacementVisitsCount,
-                        restoredSelection.OpenConcreteVisits[0].BusinessDate,
-                        cancellationToken))
-                {
-                    return await RollBackAsync(
-                        CorrectNegativeVisitCoverageCommandSupport.Error(
-                            CommandErrorCode.MembershipNotEligible,
-                            "The covering Membership cannot accept the replacement allocation.",
-                            "replacementNewMembershipCoverageCount"));
-                }
-
                 replacementClosureId = Guid.NewGuid();
                 var replacement = new MembershipNegativeClosureRecord
                 {
@@ -404,7 +428,7 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                 var staged = StageReplacementFacts(
                     correction,
                     replacement,
-                    restoredSelection,
+                    replacementPlan,
                     preparedOneOffReplacement,
                     affectedMembershipIds,
                     rowBinder,
@@ -822,7 +846,7 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                 select *
                 from bodylife.clients
                 where id = {clientId}
-                for update
+                for no key update
                 """)
             .AsNoTracking()
             .ToArrayAsync(cancellationToken);
@@ -936,37 +960,34 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
     private async Task<bool> HasCoveringCapacityAsync(
         Guid membershipId,
         int replacementCount,
+        Guid excludedClosureId,
         DateOnly oldestVisitDate,
         CancellationToken cancellationToken)
     {
-        var row = await (
-            from membership in dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
-            join cache in dbContext.Set<MembershipStateCacheRecord>().AsNoTracking()
-                on membership.Id equals cache.MembershipId
-            where membership.Id == membershipId
-                && membership.Status == "active"
-            select new
-            {
-                membership.StartDate,
-                membership.VisitsLimitSnapshot,
-                cache.RemainingVisits,
-                cache.NegativeBalance,
-                cache.RecalculationVersion,
-            })
-            .SingleOrDefaultAsync(cancellationToken);
-        return row is not null
-            && row.StartDate == oldestVisitDate
-            && replacementCount <= row.VisitsLimitSnapshot
-            && replacementCount <= row.RemainingVisits
-            && row.NegativeBalance == 0
-            && row.RecalculationVersion
-                == MembershipStateCacheRebuilder.CurrentRecalculationVersion;
+        var membership = await dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
+            .SingleOrDefaultAsync(row => row.Id == membershipId
+                && (row.Status == "active" || row.Status == "closed"), cancellationToken);
+        if (membership is null)
+        {
+            return false;
+        }
+        var restored = await stateCacheRebuilder.CalculateCanonicalStateForNegativeCoveragePreviewAsync(
+            membership, excludedClosureId, cancellationToken);
+        return membership.StartDate == oldestVisitDate
+            && replacementCount <= membership.VisitsLimitSnapshot
+            && replacementCount <= restored.State.RemainingVisits
+            && restored.State.NegativeBalance == 0;
     }
+
+    private sealed record ReplacementCoverageItemPlan(
+        MembershipNegativeVisitCoverageCandidate Candidate,
+        Guid ItemId,
+        Guid? NewConsumptionId);
 
     private StagedReplacementFacts StageReplacementFacts(
         NormalizedNegativeCoverageCorrection correction,
         MembershipNegativeClosureRecord replacement,
-        MembershipNegativeVisitSelection restoredSelection,
+        IReadOnlyList<ReplacementCoverageItemPlan> replacementPlan,
         PreparedOneOffClosureLines? preparedOneOff,
         ISet<Guid> affectedMembershipIds,
         PaperFallbackEntryRowBinder rowBinder,
@@ -1018,10 +1039,11 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
                      quantity < preparedLine.Selection.Quantity;
                      quantity++)
                 {
-                    var candidate = restoredSelection.OpenConcreteVisits[candidateIndex++];
+                    var plannedItem = replacementPlan[candidateIndex++];
+                    var candidate = plannedItem.Candidate;
                     visitIds.Add(candidate.VisitId);
                     affectedMembershipIds.Add(candidate.SourceMembershipId);
-                    var itemId = Guid.NewGuid();
+                    var itemId = plannedItem.ItemId;
                     dbContext.Set<MembershipNegativeClosureItemRecord>().Add(
                         new MembershipNegativeClosureItemRecord
                         {
@@ -1049,12 +1071,12 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
         }
         else
         {
-            foreach (var candidate in restoredSelection.OpenConcreteVisits
-                         .Take(replacement.VisitsCount))
+            foreach (var plannedItem in replacementPlan)
             {
                 candidateIndex++;
-                var itemId = Guid.NewGuid();
-                var consumptionId = Guid.NewGuid();
+                var candidate = plannedItem.Candidate;
+                var itemId = plannedItem.ItemId;
+                var consumptionId = plannedItem.NewConsumptionId!.Value;
                 visitIds.Add(candidate.VisitId);
                 affectedMembershipIds.Add(candidate.SourceMembershipId);
                 dbContext.Set<VisitConsumptionRecord>().Add(
@@ -1119,7 +1141,7 @@ public sealed class CorrectNegativeVisitCoverageCommandHandler(
             join cache in dbContext.Set<MembershipStateCacheRecord>().AsNoTracking()
                 on membership.Id equals cache.MembershipId
             where membership.ClientId == clientId
-                && membership.Status == "active"
+                && (membership.Status == "active" || membership.Status == "closed")
             select cache.NegativeBalance)
             .SumAsync(cancellationToken);
     }

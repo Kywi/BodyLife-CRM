@@ -17,6 +17,19 @@ public sealed class ClientProfileMembershipProjectionTests
     private static readonly DateOnly AsOfDate = new(2026, 7, 25);
 
     [Fact]
+    public void ClosedHistoricalDebtHasClosedLabelAndDoesNotBecomeCurrent()
+    {
+        var closed = CreateItem(HistoricalMembershipId, new DateOnly(2026, 7, 1),
+            IssuedMembershipLifecycleStatus.Closed, remainingVisits: -1);
+        var projection = ClientProfileMembershipProjection.Project(
+            ClientMembershipStatesPolicy.Create(ClientId, AsOfDate, [closed]));
+        Assert.Null(projection.CurrentMembership);
+        var history = Assert.Single(projection.Timeline);
+        Assert.Equal(ClientMembershipSummaryStatusCodes.Closed, history.Status);
+        Assert.Equal(-1, history.RemainingVisits);
+    }
+
+    [Fact]
     public void SingleCandidateProjectsCanonicalSummaryWarningsAndTimelineOrder()
     {
         var current = CreateItem(
@@ -236,7 +249,7 @@ public sealed class ClientProfileMembershipProjectionTests
             issueTerms,
             countedVisits: visitsLimit - remainingVisits,
             remainingVisits,
-            negativeBalance: 0,
+            negativeBalance: Math.Max(0, -remainingVisits),
             firstNegativeVisitId: null,
             firstNegativeVisitDate: null,
             extensionDays: 0,

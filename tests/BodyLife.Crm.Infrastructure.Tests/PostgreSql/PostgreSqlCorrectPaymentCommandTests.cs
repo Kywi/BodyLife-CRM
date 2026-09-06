@@ -1466,6 +1466,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         PostgreSqlTestDatabase database,
         CorrectPaymentFixture fixture)
     {
+        var clientId = Guid.NewGuid();
         var membershipId = Guid.NewGuid();
         var paymentId = Guid.NewGuid();
         await using var connection = new NpgsqlConnection(database.ConnectionString);
@@ -1475,6 +1476,11 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         command.Transaction = transaction;
         command.CommandText =
             """
+            insert into bodylife.clients (id, surname, name, normalized_full_name,
+                operational_status, created_at, created_by_account_id, updated_at)
+            values (@client_id, 'Sale', 'Client', 'SALE CLIENT', 'active',
+                @recorded_at, @account_id, @recorded_at);
+
             insert into bodylife.issued_memberships (
                 id,
                 client_id,
@@ -1547,7 +1553,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
             """;
         command.Parameters.AddWithValue("membership_id", membershipId);
         command.Parameters.AddWithValue("payment_id", paymentId);
-        command.Parameters.AddWithValue("client_id", fixture.ClientId);
+        command.Parameters.AddWithValue("client_id", clientId);
         command.Parameters.AddWithValue("membership_type_id", fixture.MembershipTypeId);
         command.Parameters.AddWithValue(
             "start_date",
@@ -1560,7 +1566,7 @@ public sealed class PostgreSqlCorrectPaymentCommandTests
         command.Parameters.AddWithValue("recorded_at", TestNow.AddHours(-1));
         command.Parameters.AddWithValue("account_id", fixture.Owner.AccountId.Value);
         command.Parameters.AddWithValue("session_id", fixture.Owner.SessionId.Value);
-        Assert.Equal(2, await command.ExecuteNonQueryAsync());
+        Assert.Equal(3, await command.ExecuteNonQueryAsync());
         await transaction.CommitAsync();
         return paymentId;
     }

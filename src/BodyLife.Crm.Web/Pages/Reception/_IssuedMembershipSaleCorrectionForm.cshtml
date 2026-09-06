@@ -24,6 +24,8 @@
     {
         return dependency.DependencyType switch
         {
+            "lifecycle_closure" => L["IssuedSaleCorrection.Dependency.LifecycleClosure"],
+            "lifecycle_predecessor" => L["IssuedSaleCorrection.Dependency.Predecessor"],
             "visit" => L["IssuedSaleCorrection.Dependency.Visit"],
             "freeze" => L["IssuedSaleCorrection.Dependency.Freeze"],
             "non_working_day_application" => L["IssuedSaleCorrection.Dependency.NonWorkingDay"],

@@ -39,24 +39,6 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
         var negativeClosure = await CloseOneOffAsync(dbContext, fixture,
             "one-off-before-lifecycle", quantity: 3, fixture.OneOffTypeAId);
         Assert.Equal(0, await ReadNegativeAsync(database, fixture.SourceMembershipId));
-        // Storage fixture models the full-close transition scheduled for ADR-021 / 21.3.
-        await using (var connection = new NpgsqlConnection(database.ConnectionString))
-        {
-            await connection.OpenAsync();
-            await using var transaction = await connection.BeginTransactionAsync();
-            await using var command = new NpgsqlCommand($"""
-                insert into bodylife.membership_lifecycle_closures (id, client_id, source_membership_id,
-                    negative_closure_id, reason_code, recorded_by_account_id, session_id,
-                    correlation_id, idempotency_key, entry_origin, occurred_at, recorded_at)
-                values (gen_random_uuid(), '{fixture.ClientId}', '{fixture.SourceMembershipId}', '{negativeClosure}',
-                    'one_off_zero_balance', '{fixture.Actor.AccountId.Value}', '{fixture.Actor.SessionId.Value}',
-                    'lifecycle-correction', 'lifecycle-correction', 'normal', now(), now());
-                update bodylife.issued_memberships set status = 'closed' where id = '{fixture.SourceMembershipId}';
-                """, connection, transaction);
-            await command.ExecuteNonQueryAsync();
-            await transaction.CommitAsync();
-        }
-
         dbContext.ChangeTracker.Clear();
         var result = await CreateCorrectionHandler(dbContext).ExecuteAsync(
             CreateCancelCommand(fixture, negativeClosure, "cancel-after-lifecycle"), CancellationToken.None);

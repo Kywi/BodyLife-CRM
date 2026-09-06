@@ -42,12 +42,12 @@ public sealed class NegativeMembershipStateRowsPage
 
         foreach (var item in sourceItems)
         {
-            if (item.LifecycleStatus != IssuedMembershipLifecycleStatus.Active
+            if (item.LifecycleStatus is not (IssuedMembershipLifecycleStatus.Active or IssuedMembershipLifecycleStatus.Closed)
                 || item.State.AsOfDate != asOfDate
                 || item.State.NegativeBalance <= 0)
             {
                 throw new ArgumentException(
-                    "Every negative Membership source row must be lifecycle-active and have a positive negative balance.",
+                    "Every negative Membership source row must be active or closed and have a positive negative balance.",
                     nameof(items));
             }
         }

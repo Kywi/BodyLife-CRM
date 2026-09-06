@@ -19,11 +19,13 @@ public sealed class GetReceptionAttentionCountsQueryHandler(BodyLifeDbContext db
         var through = query.AsOfDate.AddDays(query.EndingSoonDaysThreshold);
         var activeMemberships = dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
             .Where(x => x.Status == MembershipQuerySupport.ActiveMembershipStatus);
-        if (await activeMemberships.AnyAsync(m => !dbContext.Set<MembershipStateCacheRecord>().Any(c => c.MembershipId == m.Id && c.RecalculationVersion == MembershipStateCacheRebuilder.CurrentRecalculationVersion), cancellationToken))
+        var debtMemberships = dbContext.Set<IssuedMembershipRecord>().AsNoTracking()
+            .Where(x => x.Status == MembershipQuerySupport.ActiveMembershipStatus || x.Status == MembershipQuerySupport.ClosedMembershipStatus);
+        if (await debtMemberships.AnyAsync(m => !dbContext.Set<MembershipStateCacheRecord>().Any(c => c.MembershipId == m.Id && c.RecalculationVersion == MembershipStateCacheRebuilder.CurrentRecalculationVersion), cancellationToken))
             return GetReceptionAttentionCountsResult.Failure(GetReceptionAttentionCountsStatus.RecalculationFailed, "recalculation_failed", "Membership state is unavailable because recalculation has not completed successfully.");
         var cache = dbContext.Set<MembershipStateCacheRecord>().AsNoTracking();
         var endingSoon = await (from m in activeMemberships join c in cache on m.Id equals c.MembershipId where c.RecalculationVersion == MembershipStateCacheRebuilder.CurrentRecalculationVersion && c.EffectiveEndDate >= query.AsOfDate && c.EffectiveEndDate <= through select m.Id).CountAsync(cancellationToken);
-        var negativeClients = await (from m in activeMemberships join c in cache on m.Id equals c.MembershipId where c.RecalculationVersion == MembershipStateCacheRebuilder.CurrentRecalculationVersion && c.NegativeBalance > 0 select m.ClientId).Distinct().CountAsync(cancellationToken);
+        var negativeClients = await (from m in debtMemberships join c in cache on m.Id equals c.MembershipId where c.RecalculationVersion == MembershipStateCacheRebuilder.CurrentRecalculationVersion && c.NegativeBalance > 0 select m.ClientId).Distinct().CountAsync(cancellationToken);
         return GetReceptionAttentionCountsResult.Success(endingSoon, negativeClients);
     }
 }

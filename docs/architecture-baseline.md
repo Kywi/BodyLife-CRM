@@ -2,8 +2,9 @@
 
 Джерело: accepted ADR package у `docs/adr/`, ADR-001..ADR-021.
 
-ADR-021 / 21.1 aligns the accepted one-active lifecycle contract only. Its
-persistence, commands and UI remain pending; Milestone 10.5/ADR-020 are complete,
+ADR-021 contracts, persistence and atomic transitions are complete through
+21.3. Full current/history, reports and UI integration remain pending in 21.4;
+Milestone 10.5/ADR-020 are complete,
 and ADR-019/Milestone 10.6 follows ADR-021 acceptance. Runtime status is recorded
 in `docs/implementation-progress.md`.
 
@@ -29,7 +30,7 @@ Canonical instants і technical logs лишаються UTC, але єдиний
 - Можна: мати shared IDs/value objects: `ClientId`, `MembershipId`, `Money`, `DateRange`, `ActorId`. Не можна: створювати shared "god service" для бізнес-правил абонементів. (ADR-004)
 - Можна: тримати source facts і централізований derived state для абонементів. Не можна: редагувати `effective_end_date` напряму або рахувати active status, remaining visits, negative balance, first negative visit date, extension days чи warnings поза Memberships. (ADR-004, ADR-005)
 - Можна: підтримати negative visits як core membership workflow. Не можна: вводити окремий debt ledger у v1, якщо membership state + explicit closure workflow достатні. (ADR-005)
-- Accepted ADR-021 target (21.2 persistence complete; command/query/UI integration pending): committed Client має `0..1` lifecycle-active Membership; `closed` є explainable non-correction lifecycle state, а historical concrete debt не зникає. `MarkVisit` все одно має explicit `membership_id`, не обирає membership автоматично, не створює мінус без Membership і не споживає frozen Membership. (ADR-014, ADR-021)
+- ADR-021 (21.3 transitions complete; full query/UI integration pending): committed Client має `0..1` lifecycle-active Membership; `closed` є explainable non-correction lifecycle state, а historical concrete debt не зникає. `MarkVisit` все одно має explicit `membership_id`, не обирає membership автоматично, не створює мінус без Membership і не споживає frozen Membership. (ADR-014, ADR-021)
 - Можна: додати Freeze до lifecycle-active Membership, якщо range починається в `membership.start_date..pre-command effective_end_date`; end може вийти за попередню effective end. Не можна: post-expiry/before-start Freeze, silent clipping або overlap з active counted Membership Visit. (ADR-015)
 - Можна: Owner-confirmed NonWorkingDay snapshot для lifecycle-active Memberships із будь-яким inclusive overlap з locked pre-command canonical interval; кожна application додає весь confirmed period. Не можна: intersection-only contribution, self-expanding eligibility, stale preview або silent scope changes після confirmation. (ADR-016)
 - Можна: Reports як query/report layer поверх canonical records і Memberships queries. Не можна: робити reports окремою доменною правдою, exported snapshots source of truth або дублювати membership formulas у reports. (ADR-007)
@@ -45,7 +46,7 @@ Canonical instants і technical logs лишаються UTC, але єдиний
 
 - `Clients/Search`: owns client identity, current card number, phone normalization, last 4 phone digits, duplicate warnings and search behavior. Other modules reference clients by ID and do not redefine card/phone duplicate rules. (ADR-008)
 - `MembershipTypes`: owns membership type catalog: create/edit/deactivate, owner-only policy, no hard delete, audit. Issuing a membership copies immutable snapshot fields. (ADR-011, ADR-012)
-- `Memberships`: owns issued memberships, opening state, lifecycle status/closure history, recalculation, remaining visits, negative balance, first negative visit date, effective end date, extension days and warnings. This is the only owner of membership formulas. ADR-021's one-active target is accepted but not yet runtime behavior. (ADR-004, ADR-005, ADR-011, ADR-021)
+- `Memberships`: owns issued memberships, opening state, lifecycle status/closure history, recalculation, remaining visits, negative balance, first negative visit date, effective end date, extension days and warnings. This is the only owner of membership formulas. ADR-021's one-active persistence and automatic command transitions are implemented; full current/history presentation remains 21.4 work. (ADR-004, ADR-005, ADR-011, ADR-021)
 - `Visits`: owns visit source records, explicit membership consumptions, one-off/trial contexts, cancellations and visit commands. It never infers a Membership, and must trigger Memberships recalculation and business audit after successful counted state changes. (ADR-005, ADR-006, ADR-007, ADR-014)
 - `Payments`: owns payment source records, cash payments, one-off negative closures and payment corrections/cancellations. It must trigger audit and keep reports consistent through canonical records. (ADR-005, ADR-006, ADR-007, ADR-012)
 - `Memberships` coordinates explicit oldest-first negative coverage allocations; `Payments` does not let a standalone payment close negative Visits. Replace/cancel issued sale coordinates Memberships, Payments, dependent facts and Audit atomically. (ADR-018)

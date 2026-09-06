@@ -295,8 +295,10 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
             if (dependencies.Dependencies.Count > 0)
             {
                 return await RollBackAsync(Error(
-                    CommandErrorCode.MembershipNotEligible,
-                    "The sale has active Visits, Freezes, NonWorkingDay applications or negative coverage. Resolve those dependencies first.",
+                    dependencies.Dependencies.Any(dependency => dependency.DependencyType.StartsWith("lifecycle_", StringComparison.Ordinal))
+                        ? CommandErrorCode.LifecycleDependency
+                        : CommandErrorCode.MembershipNotEligible,
+                    "The sale has lifecycle closure or active Visits, Freezes, NonWorkingDay applications or negative coverage. Resolve those dependencies first.",
                     "originalMembershipId"));
             }
 
@@ -700,7 +702,7 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
     {
         var rows = await dbContext.Set<ClientRecord>()
             .FromSqlInterpolated(
-                $"select * from bodylife.clients where id = {clientId} for update")
+                $"select * from bodylife.clients where id = {clientId} for no key update")
             .ToArrayAsync(cancellationToken);
         return rows.SingleOrDefault();
     }
@@ -741,13 +743,13 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
         Guid membershipId,
         CancellationToken cancellationToken)
     {
+        await dbContext.Set<VisitRecord>()
+            .FromSqlInterpolated(
+                $"select visit.* from bodylife.visits visit where exists (select 1 from bodylife.visit_consumptions consumption where consumption.visit_id = visit.id and consumption.membership_id = {membershipId} and consumption.status = 'active') order by visit.occurred_at, visit.recorded_at, visit.id for update")
+            .LoadAsync(cancellationToken);
         await dbContext.Set<VisitConsumptionRecord>()
             .FromSqlInterpolated(
                 $"select * from bodylife.visit_consumptions where membership_id = {membershipId} and status = 'active' order by visit_id, id for update")
-            .LoadAsync(cancellationToken);
-        await dbContext.Set<VisitRecord>()
-            .FromSqlInterpolated(
-                $"select visit.* from bodylife.visits visit where exists (select 1 from bodylife.visit_consumptions consumption where consumption.visit_id = visit.id and consumption.membership_id = {membershipId} and consumption.status = 'active') order by visit.occurred_at, visit.id for update")
             .LoadAsync(cancellationToken);
         await dbContext.Set<FreezeRecord>()
             .FromSqlInterpolated(
@@ -761,14 +763,14 @@ public sealed class IssuedMembershipSaleCorrectionCommandExecutor(
             .FromSqlInterpolated(
                 $"select period.* from bodylife.non_working_periods period where exists (select 1 from bodylife.non_working_period_applications application where application.non_working_period_id = period.id and application.membership_id = {membershipId} and application.status = 'active') order by period.start_date, period.id for update")
             .LoadAsync(cancellationToken);
-        await dbContext.Set<MembershipNegativeClosureItemRecord>()
-            .FromSqlInterpolated(
-                $"select * from bodylife.membership_negative_closure_items where status = 'active' and (source_membership_id = {membershipId} or covering_membership_id = {membershipId}) order by visit_id, id for update")
-            .LoadAsync(cancellationToken);
         await dbContext.Set<MembershipNegativeClosureRecord>()
             .FromSqlInterpolated(
                 $"select closure.* from bodylife.membership_negative_closures closure where exists (select 1 from bodylife.membership_negative_closure_items item where item.negative_closure_id = closure.id and item.status = 'active' and (item.source_membership_id = {membershipId} or item.covering_membership_id = {membershipId})) order by closure.id for update")
+            .LoadAsync(cancellationToken); await dbContext.Set<MembershipNegativeClosureItemRecord>()
+            .FromSqlInterpolated(
+                $"select * from bodylife.membership_negative_closure_items where status = 'active' and (source_membership_id = {membershipId} or covering_membership_id = {membershipId}) order by visit_id, id for update")
             .LoadAsync(cancellationToken);
+
     }
 
     private static bool IsEligibleOrdinaryType(MembershipTypeRecord membershipType)

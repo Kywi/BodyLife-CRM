@@ -137,6 +137,17 @@
                                   aria-live="polite">@L["Preview.Refreshing"]</span>
                         </header>
 
+                        @if (preview.Predecessor is { } predecessor)
+                        {
+                            <div class="warning-block @(predecessor.BlocksIssue ? "warning-danger" : "warning-caution")"
+                                 data-issue-predecessor="@predecessor.MembershipId" role="status">
+                                <strong>@L["Membership.Predecessor.Remaining", predecessor.RemainingVisits]</strong>
+                                <span>@L[predecessor.BlocksIssue
+                                    ? "Membership.Predecessor.Positive"
+                                    : "Membership.Predecessor.WillClose"]</span>
+                            </div>
+                        }
+
                         <dl class="issue-membership-snapshot">
                             <div>
                                 <dt>@L["Membership.SnapshotName"]</dt>

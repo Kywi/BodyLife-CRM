@@ -58,6 +58,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             coverageCount: 2,
             fixture.VisitIds[2]);
 
+        command = await WithCurrentPreviewAsync(dbContext, command);
         var result = await CreateHandler(dbContext).ExecuteAsync(
             command,
             CancellationToken.None);
@@ -137,11 +138,8 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
         await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, expectedNegative: 1);
 
         var result = await CreateHandler(dbContext).ExecuteAsync(
-            CreateCommand(
-                fixture,
-                "cover-one",
-                coverageCount: 1,
-                fixture.VisitIds[2]),
+            await WithCurrentPreviewAsync(dbContext, CreateCommand(
+                fixture, "cover-one", coverageCount: 1, fixture.VisitIds[2])),
             CancellationToken.None);
 
         Assert.Equal(CommandStatus.Success, result.Status);
@@ -184,6 +182,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             fixture.VisitIds[2]);
         var handler = CreateHandler(dbContext);
 
+        command = await WithCurrentPreviewAsync(dbContext, command);
         var result = await handler.ExecuteAsync(command, CancellationToken.None);
         var replay = await handler.ExecuteAsync(command, CancellationToken.None);
 
@@ -220,7 +219,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
         var links = await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
             database,
             paper.EntryBatchRowId);
-        Assert.Equal(7, links.Count);
+        Assert.Equal(8, links.Count);
         Assert.Equal(
             [membershipId],
             LinkIds(links, MembershipAuditActions.MembershipEntityType));
@@ -348,7 +347,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
         await AssertNoNewIssueAsync(database);
 
         var expired = await handler.ExecuteAsync(
-            CreateCommand(fixture, "cover-expired", 1, fixture.VisitIds[2]),
+            await WithCurrentPreviewAsync(dbContext, CreateCommand(fixture, "cover-expired", 1, fixture.VisitIds[2])),
             CancellationToken.None);
 
         Assert.Equal(CommandStatus.Success, expired.Status);
@@ -432,21 +431,13 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
 
         await using var firstContext = database.CreateDbContext();
         await using var secondContext = database.CreateDbContext();
+        var firstCommand = await WithCurrentPreviewAsync(firstContext,
+            CreateCommand(fixture, "concurrent-cover-a", 1, fixture.VisitIds[2]));
+        var secondCommand = await WithCurrentPreviewAsync(secondContext,
+            CreateCommand(fixture, "concurrent-cover-b", 1, fixture.VisitIds[2]));
         var results = await Task.WhenAll(
-            CreateHandler(firstContext).ExecuteAsync(
-                CreateCommand(
-                    fixture,
-                    "concurrent-cover-a",
-                    1,
-                    fixture.VisitIds[2]),
-                CancellationToken.None),
-            CreateHandler(secondContext).ExecuteAsync(
-                CreateCommand(
-                    fixture,
-                    "concurrent-cover-b",
-                    1,
-                    fixture.VisitIds[2]),
-                CancellationToken.None));
+            CreateHandler(firstContext).ExecuteAsync(firstCommand, CancellationToken.None),
+            CreateHandler(secondContext).ExecuteAsync(secondCommand, CancellationToken.None));
 
         Assert.Single(results, result => result.Status == CommandStatus.Success);
         var stale = Assert.Single(results, result => result.Status == CommandStatus.Error);
@@ -470,8 +461,10 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
                 "negative_balance"));
     }
 
-    [PostgreSqlFact]
-    public async Task PaperCoverageAuditFailureRollsBackAllLinksAndAllowsRetry()
+    [Theory]
+    [InlineData("membership_negative_closure.created")]
+    [InlineData("membership.issued")]
+    public async Task PaperCoverageAuditFailureRollsBackAllLinksAndAllowsRetry(string rejectedAction)
     {
         await using var database = await CreateMigratedDatabaseAsync();
         var fixture = await SeedFixtureAsync(database, sourceVisitCount: 5);
@@ -490,18 +483,26 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             "paper-coverage-audit-failure",
             coverageCount: 2,
             fixture.VisitIds[2]);
+        var cacheBefore = await database.ExecuteScalarAsync<string>(
+            $"select row_to_json(c)::text from bodylife.membership_state_cache c where membership_id = '{fixture.SourceMembershipId}'");
         await ExecuteSqlAsync(
             database,
-            """
+            $"""
             alter table bodylife.business_audit_entries
             add constraint ck_test_reject_paper_negative_closure_audit
-            check (action_type <> 'membership_negative_closure.created')
+            check (action_type <> '{rejectedAction}')
             """);
 
+        command = await WithCurrentPreviewAsync(dbContext, command);
         await Assert.ThrowsAsync<DbUpdateException>(() =>
             CreateHandler(dbContext).ExecuteAsync(command, CancellationToken.None));
 
         await AssertNoNewIssueAsync(database);
+        Assert.Equal("active", await database.ExecuteScalarAsync<string>(
+            $"select status from bodylife.issued_memberships where id = '{fixture.SourceMembershipId}'"));
+        Assert.Equal(0L, await database.ExecuteScalarAsync<long>("select count(*) from bodylife.membership_lifecycle_closures"));
+        Assert.Equal(cacheBefore, await database.ExecuteScalarAsync<string>(
+            $"select row_to_json(c)::text from bodylife.membership_state_cache c where membership_id = '{fixture.SourceMembershipId}'"));
         Assert.Empty(await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
             database,
             paper.EntryBatchRowId));
@@ -519,7 +520,7 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
 
         Assert.Equal(CommandStatus.Success, retry.Status);
         Assert.Equal(
-            7,
+            8,
             (await PostgreSqlPaperFallbackTestData.ReadLinksAsync(
                 database,
                 paper.EntryBatchRowId)).Count);
@@ -728,6 +729,19 @@ public sealed class PostgreSqlIssueMembershipNegativeCoverageCommandTests
             new HmacMembershipIssuePreviewTokenService(TokenOptions(), timeProvider),
             new MembershipStateCacheRebuilder(dbContext, timeProvider),
             timeProvider);
+    }
+
+    private static async Task<IssueMembershipCommand> WithCurrentPreviewAsync(
+        BodyLifeDbContext dbContext, IssueMembershipCommand command)
+    {
+        var time = new FixedTimeProvider(TestNow);
+        var result = await new PreviewIssueMembershipQueryHandler(dbContext,
+            new MembershipNegativeVisitSelector(dbContext),
+            new HmacMembershipIssuePreviewTokenService(TokenOptions(), time), time)
+            .ExecuteAsync(new PreviewIssueMembershipQuery(command.Envelope.Actor,
+                command.ClientId, command.MembershipTypeId, command.StartDate), CancellationToken.None);
+        Assert.Equal(PreviewIssueMembershipStatus.Success, result.Status);
+        return command with { PreviewToken = result.PreviewToken!.Value };
     }
 
     private static string CreatePreviewToken(CoverageFixture fixture)

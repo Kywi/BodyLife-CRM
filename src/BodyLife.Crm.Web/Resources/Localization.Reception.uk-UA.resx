@@ -450,4 +450,11 @@
   <data name="Operation.IssuedMembershipSaleCanceled" xml:space="preserve"><value>Продаж виданого абонемента скасовано</value></data>
   <data name="List.ShowMore" xml:space="preserve"><value>Показати всі</value></data>
   <data name="List.ShowLess" xml:space="preserve"><value>Показати менше</value></data>
+  <data name="Status.Closed" xml:space="preserve"><value>Закритий</value></data>
+  <data name="Error.LifecycleDependency" xml:space="preserve"><value>Ця зміна заблокована історією закриття абонемента. Не можна залишити невикористані відвідування на закритому абонементі або скасувати його зв’язок із наступним.</value></data>
+  <data name="Membership.Predecessor.Remaining" xml:space="preserve"><value>Поточний абонемент: залишок {0} відвідувань</value></data>
+  <data name="Membership.Predecessor.Positive" xml:space="preserve"><value>Використайте залишок відвідувань перед видачею наступного абонемента. Закінчення строку саме по собі їх не списує.</value></data>
+  <data name="Membership.Predecessor.WillClose" xml:space="preserve"><value>Під час видачі попередній абонемент буде закрито. Його оплата й непокритий борг залишаться в історії.</value></data>
+  <data name="IssuedSaleCorrection.Dependency.LifecycleClosure" xml:space="preserve"><value>Закриття абонемента</value></data>
+  <data name="IssuedSaleCorrection.Dependency.Predecessor" xml:space="preserve"><value>Закритий попередній абонемент</value></data>
 </root>

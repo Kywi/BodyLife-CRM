@@ -8,4 +8,8 @@ public sealed record MembershipIssuePreviewTokenMaterial(
     int TotalNegativeBalance,
     int UnknownNegativeBalance,
     IReadOnlyList<MembershipNegativeVisitCoverageCandidate> CandidateVisits,
-    int CoveredNegativeVisitCount);
+    int CoveredNegativeVisitCount,
+    Guid? ActivePredecessorId = null,
+    IssuedMembershipLifecycleStatus? ActivePredecessorStatus = null,
+    string? ActivePredecessorStateVersion = null,
+    int? ActivePredecessorRemainingVisits = null);

@@ -42,7 +42,7 @@ internal static class IssuedMembershipSaleCorrectionSupport
                 correction => correction.OriginalMembershipId == membershipId,
                 cancellationToken);
 
-        if (membership.Status != ActiveStatus
+        if (membership.Status is not ("active" or "closed")
             || membership.IssuanceMode != SaleMode
             || hasCorrection)
         {
@@ -67,7 +67,7 @@ internal static class IssuedMembershipSaleCorrectionSupport
             && membership.MembershipTypeId != Guid.Empty
             && membership.IssuedByAccountId != Guid.Empty
             && membership.IssuanceMode == SaleMode
-            && membership.Status == ActiveStatus
+            && membership.Status is "active" or "closed"
             && !string.IsNullOrWhiteSpace(membership.TypeNameSnapshot)
             && membership.DurationDaysSnapshot > 0
             && membership.VisitsLimitSnapshot >= 0
@@ -179,7 +179,18 @@ internal static class IssuedMembershipSaleCorrectionSupport
             return IssuedMembershipSaleDependenciesResult.Inconsistent();
         }
 
+        var lifecycleRows = await dbContext.Set<MembershipLifecycleClosureRecord>().AsNoTracking()
+            .Where(row => row.SourceMembershipId == membershipId || row.SuccessorMembershipId == membershipId)
+            .ToArrayAsync(cancellationToken);
+        if (lifecycleRows.Any(row => row.ClientId != clientId))
+        {
+            return IssuedMembershipSaleDependenciesResult.Inconsistent();
+        }
         var dependencies = new List<IssuedMembershipSaleDependency>();
+        dependencies.AddRange(lifecycleRows.Select(row => new IssuedMembershipSaleDependency(
+            row.SourceMembershipId == membershipId ? "lifecycle_closure" : "lifecycle_predecessor",
+            row.Id, BusinessTimeZone.GetBusinessDate(row.OccurredAt), row.ReasonCode)));
+
         dependencies.AddRange(consumptionRows
             .Where(row => row.Consumption.ConsumptionType == "counted")
             .Select(row => new IssuedMembershipSaleDependency(

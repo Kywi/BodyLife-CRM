@@ -37,7 +37,8 @@ public sealed class GetNegativeMembershipStateRowsQueryHandler(
             .Set<IssuedMembershipRecord>()
             .AsNoTracking()
             .Where(membership =>
-                membership.Status == MembershipQuerySupport.ActiveMembershipStatus)
+                (membership.Status == MembershipQuerySupport.ActiveMembershipStatus
+                    || membership.Status == MembershipQuerySupport.ClosedMembershipStatus))
             .AnyAsync(
                 membership => !dbContext.Set<MembershipStateCacheRecord>()
                     .Any(cache => cache.MembershipId == membership.Id
@@ -55,7 +56,8 @@ public sealed class GetNegativeMembershipStateRowsQueryHandler(
                 on cache.MembershipId equals membership.Id
             join client in dbContext.Set<ClientRecord>().AsNoTracking()
                 on membership.ClientId equals client.Id
-            where membership.Status == MembershipQuerySupport.ActiveMembershipStatus
+            where (membership.Status == MembershipQuerySupport.ActiveMembershipStatus
+                    || membership.Status == MembershipQuerySupport.ClosedMembershipStatus)
                 && cache.RecalculationVersion
                     == MembershipStateCacheRebuilder.CurrentRecalculationVersion
                 && cache.NegativeBalance > 0
@@ -94,7 +96,7 @@ public sealed class GetNegativeMembershipStateRowsQueryHandler(
             if (!MembershipQuerySupport.TryMapLifecycleStatus(
                     row.Membership.Status,
                     out var lifecycleStatus)
-                || lifecycleStatus != IssuedMembershipLifecycleStatus.Active
+                || lifecycleStatus is not (IssuedMembershipLifecycleStatus.Active or IssuedMembershipLifecycleStatus.Closed)
                 || !MembershipStateReadModelFactory.TryCreate(
                     row.Membership,
                     row.Cache,

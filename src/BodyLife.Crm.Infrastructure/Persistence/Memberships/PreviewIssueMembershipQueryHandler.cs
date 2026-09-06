@@ -1,3 +1,4 @@
+using System.Data;
 using BodyLife.Crm.Application.Queries;
 using BodyLife.Crm.Infrastructure.Persistence.ClientsSearch;
 using BodyLife.Crm.Infrastructure.Persistence.MembershipTypes;
@@ -21,6 +22,9 @@ public sealed class PreviewIssueMembershipQueryHandler(
     {
         ArgumentNullException.ThrowIfNull(query);
 
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.RepeatableRead, cancellationToken);
+        await dbContext.Database.ExecuteSqlRawAsync("set transaction read only", cancellationToken);
         var now = timeProvider.GetUtcNow();
         if (!await MembershipQuerySupport.IsActorAuthorizedAsync(
                 dbContext,
@@ -104,6 +108,8 @@ public sealed class PreviewIssueMembershipQueryHandler(
         }
 
         var selection = selectionResult.Selection!;
+        var predecessor = await MembershipIssuePredecessorReader.ReadAsync(
+            dbContext, selection.ActivePredecessor, cancellationToken);
         var existingNegativeState = selection.TotalNegativeBalance > 0
             ? new MembershipIssueNegativeContext(
                 selection.TotalNegativeBalance,
@@ -131,7 +137,8 @@ public sealed class PreviewIssueMembershipQueryHandler(
                 catalogItem,
                 query.ProposedStartDate,
                 existingNegativeState,
-                BusinessTimeZone.GetBusinessDate(now));
+                BusinessTimeZone.GetBusinessDate(now),
+                predecessor);
         }
         catch (ArgumentOutOfRangeException exception)
             when (exception.ParamName == "durationDays")
@@ -159,7 +166,9 @@ public sealed class PreviewIssueMembershipQueryHandler(
             selection.TotalNegativeBalance,
             existingNegativeState?.UnknownNegativeBalance ?? 0,
             selection.OpenConcreteVisits,
-            preview.AutomaticCoveredNegativeVisitCount));
+            preview.AutomaticCoveredNegativeVisitCount,
+            predecessor?.MembershipId, predecessor?.LifecycleStatus,
+            predecessor?.StateVersion, predecessor?.RemainingVisits));
         return PreviewIssueMembershipResult.Succeeded(
             preview,
             MembershipQuerySupport.BuildIssueActionPermissions(),

@@ -10,7 +10,8 @@ public sealed class MembershipIssuePreview
         MembershipIssueNegativeContext? existingNegativeState,
         int automaticCoveredNegativeVisitCount,
         DateOnly? previewBusinessDate,
-        IEnumerable<MembershipWarning> warnings)
+        IEnumerable<MembershipWarning> warnings,
+        MembershipIssuePredecessor? predecessor = null)
     {
         ArgumentNullException.ThrowIfNull(issueTerms);
         ArgumentNullException.ThrowIfNull(expectedInitialState);
@@ -42,9 +43,10 @@ public sealed class MembershipIssuePreview
         IsAlreadyExpiredAtPreview = UsesForcedCoverageStartDate
             && previewBusinessDate is { } asOfDate
             && expectedInitialState.EffectiveEndDate < asOfDate;
-        CanProceedToIssue = existingNegativeState is null
+        Predecessor = predecessor;
+        CanProceedToIssue = predecessor?.BlocksIssue != true && (existingNegativeState is null
             || existingNegativeState.OpenConcreteVisitCount == 0
-            || automaticCoveredNegativeVisitCount > 0;
+            || automaticCoveredNegativeVisitCount > 0);
         Warnings = Array.AsReadOnly(warnings.ToArray());
     }
     public Guid ClientId { get; }
@@ -66,5 +68,6 @@ public sealed class MembershipIssuePreview
     public bool UsesForcedCoverageStartDate { get; }
     public bool IsAlreadyExpiredAtPreview { get; }
     public bool CanProceedToIssue { get; }
+    public MembershipIssuePredecessor? Predecessor { get; }
     public IReadOnlyList<MembershipWarning> Warnings { get; }
 }

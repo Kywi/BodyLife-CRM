@@ -23,5 +23,6 @@ public enum CommandErrorCode
     FreezeConflictsWithVisit,
     PreviewExpired,
     AffectedScopeChanged,
-    VisitHasActiveNegativeCoverage
+    VisitHasActiveNegativeCoverage,
+    LifecycleDependency
 }

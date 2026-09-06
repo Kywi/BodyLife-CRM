@@ -31,6 +31,21 @@ public sealed class CancelVisitSourcePreparer
                 + "transaction so the Visit and active consumption remain locked.");
         }
 
+        var clientId = await dbContext.Set<VisitRecord>().AsNoTracking()
+            .Where(row => row.Id == visitId)
+            .Select(row => (Guid?)row.ClientId)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (clientId is null)
+        {
+            return CancelVisitSourcePreparationResult.NotFound(visitId);
+        }
+
+        // Discover first, then lock Memberships before any Visit or consumption.
+        // The command's Client lock prevents its membership/source set changing.
+        await dbContext.Set<IssuedMembershipRecord>()
+            .FromSqlInterpolated($"select * from bodylife.issued_memberships where client_id = {clientId.Value} order by id for update")
+            .AsNoTracking().ToArrayAsync(cancellationToken);
+
         var visits = await dbContext.Set<VisitRecord>()
             .FromSqlInterpolated(
                 $"""

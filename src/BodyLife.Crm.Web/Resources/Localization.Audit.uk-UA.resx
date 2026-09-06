@@ -626,4 +626,5 @@
   <data name="PaperFallback.EventType.negative_coverage"><value>Погашення мінусових відвідувань</value></data>
   <data name="PaperFallback.EventType.correction_or_cancellation"><value>Виправлення або скасування</value></data>
   <data name="Value.Unavailable"><value>Недоступно</value></data>
+  <data name="Status.Closed"><value>Закритий</value></data>
 </root>

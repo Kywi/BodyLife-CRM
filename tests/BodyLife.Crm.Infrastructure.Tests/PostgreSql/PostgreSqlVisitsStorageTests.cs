@@ -455,13 +455,13 @@ public sealed class PostgreSqlVisitsStorageTests
             "ux_visit_cancellations_visit_id");
         await AssertPostgresViolationAsync(
             () => DeleteByIdAsync(database.ConnectionString, "visits", visitId),
-            PostgresErrorCodes.ForeignKeyViolation);
+            PostgresErrorCodes.RestrictViolation);
         await AssertPostgresViolationAsync(
             () => DeleteByIdAsync(
                 database.ConnectionString,
                 "issued_memberships",
                 fixture.MembershipId),
-            PostgresErrorCodes.ForeignKeyViolation);
+            PostgresErrorCodes.RestrictViolation);
     }
 
     [PostgreSqlFact]

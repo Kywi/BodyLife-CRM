@@ -488,7 +488,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task DistinctKeysCreateDistinctPaymentlessOpeningMemberships()
+    public async Task DistinctKeysCannotCreateASecondActiveOpeningMembership()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using var dbContext = database.CreateDbContext();
@@ -516,18 +516,15 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             CancellationToken.None);
 
         AssertSuccessfulResult(first, membership.ClientId);
-        AssertSuccessfulResult(second, membership.ClientId);
-        Assert.NotEqual(first.PrimaryEntityId, second.PrimaryEntityId);
+        AssertError(second, CommandErrorCode.StaleState);
         var firstCache = await ReadCacheAsync(database, first.PrimaryEntityId!.Value.Value);
-        var secondCache = await ReadCacheAsync(database, second.PrimaryEntityId!.Value.Value);
         Assert.Equal(-1, firstCache.RemainingVisits);
-        Assert.Equal(2, secondCache.RemainingVisits);
-        Assert.Equal(2L, await CountRowsAsync(database, "issued_memberships"));
-        Assert.Equal(2L, await CountRowsAsync(database, "membership_opening_states"));
-        Assert.Equal(2L, await CountRowsAsync(database, "membership_state_cache"));
+        Assert.Equal(1L, await CountRowsAsync(database, "issued_memberships"));
+        Assert.Equal(1L, await CountRowsAsync(database, "membership_opening_states"));
+        Assert.Equal(1L, await CountRowsAsync(database, "membership_state_cache"));
         Assert.Equal(0L, await CountRowsAsync(database, "payments"));
-        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
-        Assert.Equal(2L, await CountRowsAsync(database, "command_idempotency_keys"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
     [PostgreSqlFact]
@@ -560,7 +557,7 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
     }
 
     [PostgreSqlFact]
-    public async Task ConcurrentDifferentKeysCommitTwoCompleteOpeningWorkflows()
+    public async Task ConcurrentDifferentKeysCommitOnlyOneCompleteOpeningWorkflow()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();
         await using (var migrationContext = database.CreateDbContext())
@@ -590,9 +587,10 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             CreateHandler(firstContext).ExecuteAsync(firstCommand, CancellationToken.None),
             CreateHandler(secondContext).ExecuteAsync(secondCommand, CancellationToken.None));
 
-        Assert.All(results, result => AssertSuccessfulResult(result, membership.ClientId));
-        Assert.NotEqual(results[0].PrimaryEntityId, results[1].PrimaryEntityId);
-        foreach (var result in results)
+        var winner = Assert.Single(results, result => result.Status == CommandStatus.Success);
+        AssertSuccessfulResult(winner, membership.ClientId);
+        AssertError(Assert.Single(results, result => result.Status == CommandStatus.Error), CommandErrorCode.StaleState);
+        foreach (var result in new[] { winner })
         {
             var opening = await ReadOpeningStateAsync(
                 database,
@@ -602,12 +600,12 @@ public sealed class PostgreSqlCreateMembershipOpeningStateCommandTests
             Assert.Equal(opening.DeclaredNegativeBalance, cache.NegativeBalance);
         }
 
-        Assert.Equal(2L, await CountRowsAsync(database, "issued_memberships"));
-        Assert.Equal(2L, await CountRowsAsync(database, "membership_opening_states"));
-        Assert.Equal(2L, await CountRowsAsync(database, "membership_state_cache"));
+        Assert.Equal(1L, await CountRowsAsync(database, "issued_memberships"));
+        Assert.Equal(1L, await CountRowsAsync(database, "membership_opening_states"));
+        Assert.Equal(1L, await CountRowsAsync(database, "membership_state_cache"));
         Assert.Equal(0L, await CountRowsAsync(database, "payments"));
-        Assert.Equal(2L, await CountRowsAsync(database, "business_audit_entries"));
-        Assert.Equal(2L, await CountRowsAsync(database, "command_idempotency_keys"));
+        Assert.Equal(1L, await CountRowsAsync(database, "business_audit_entries"));
+        Assert.Equal(1L, await CountRowsAsync(database, "command_idempotency_keys"));
     }
 
     [PostgreSqlFact]
