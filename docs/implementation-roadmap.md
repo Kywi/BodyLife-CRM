@@ -1,8 +1,9 @@
 # BodyLife CRM v1 implementation roadmap
 
-Дата: 2026-07-07, оновлено 2026-08-17
+Дата: 2026-07-07, оновлено 2026-09-06
 Статус: чинний план; Milestones 1-10.5 та ADR-020 виконані, ADR-021 corrective
-slice є наступним; погоджений Milestone 10.6 іде після нього, Milestone 11 -
+slice: 21.1 contracts узгоджені, наступний крок 21.2 persistence;
+погоджений Milestone 10.6 іде після нього, Milestone 11 -
 після 10.6
 
 Основа: `docs/architecture-baseline.md`, `docs/domain-model.md`, `docs/data-architecture.md`, `docs/interaction-contracts.md`, `docs/ui-workflows.md`, `docs/ui-design-foundation.md`, `docs/operations-design.md`, `docs/technology-stack-decision.md`, `docs/vertical-slice-plan.md` і accepted ADR package у `docs/adr/`.
@@ -798,6 +799,8 @@ closure as separate, explainable ways to resolve concrete Visit debt.
    architecture, interaction contracts, UI workflows, operations/audit and
    quality expectations. Remove contradictory multiple-active and
    active-status-only negative-query wording before code changes.
+   Completed as documentation-only Step 250 on 2026-09-06; runtime lifecycle
+   behavior remains pending. Next: 21.2 only.
 2. **21.2 Lifecycle persistence.** Add `closed`, append-only Membership closure
    source facts, reason/successor links, lifecycle mappings and a PostgreSQL
    partial unique index for one `active` row per Client. Fold everything into

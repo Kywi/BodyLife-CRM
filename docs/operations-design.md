@@ -73,12 +73,12 @@ Queries/read actions не створюють business audit entries за зам�
 | `CreateMembershipType` | `membership_type.created` | Full catalog summary. |
 | `EditMembershipType` | `membership_type.edited` | Before/after catalog fields and reason/comment for meaningful business change. |
 | `DeactivateMembershipType` | `membership_type.deactivated` | Before/after active state and reason. |
-| `IssueMembership` | `membership.issued`; `payment.created` | Ordinary type snapshot, start date and one exact full snapshot-price sale Payment in the same commit; ADR-020 automatically allocates concrete negative Visits oldest-first and records the locked policy/coverage facts. |
+| `IssueMembership` | `membership.issued`; `payment.created` | Ordinary type snapshot, predecessor/closure effect when applicable, start date and one exact full snapshot-price sale Payment in the same commit; ADR-020 automatically allocates concrete negative Visits oldest-first and records the locked policy/coverage facts. ADR-021 lifecycle audit target is accepted, pending implementation. |
 | `MarkVisit` | `visit.marked` | Client, visit kind, membership/consumption, `occurred_at`, before/after membership summary, warning acknowledgement. |
 | `CancelVisit` | `visit.canceled` | Original visit summary, reason, before/after membership summary, changed-after-close marker when relevant. |
 | `CreatePayment` | `payment.created` | Standalone amount, currency, accepted non-sale/non-closure cash context, client and `occurred_at`. |
 | `CorrectPayment` | `payment.corrected`, `payment.canceled` | Original standalone payment, replacement/cancellation summary, before/after amount/date/context, reason, changed-after-close marker. It rejects sale/closure-linked rows. |
-| `CloseNegativeVisitsOneOff` / `IssueMembership` coverage mode | `membership_negative_closure.created` | Deliberate method/type, oldest-first items/allocations, exact Payment, partial remainder and resulting Membership summary. |
+| `CloseNegativeVisitsOneOff` / automatic `IssueMembership` coverage | `membership_negative_closure.created` | One-off records deliberate method/type/quantity and its exact Payment; Issue records ADR-020 automatic allocation and its sale Payment, without a separate closure Payment. Both preserve oldest-first Visit items, source/covering ids and concrete/unknown remainder. Full one-off at canonical zero closes the active lifecycle atomically; partial one-off keeps it active. |
 | `CorrectNegativeVisitCoverage` | `membership_negative_closure.canceled` / `membership_negative_closure.replaced` | Original/replacement items and Payment, reason, before/after negative state and no cash-difference calculation. |
 | `ReplaceIssuedMembership` / `CancelIssuedMembershipSale` | `membership.replaced` / `membership.sale_canceled` | Required reason, original/replacement/canceled sale links, dependency preview/blockers, no refund/delta calculation, changed-after-close marker if applicable. |
 | `AddFreeze` | `freeze.added` | Membership, inclusive range, day count, reason, before/after effective end date summary. |
@@ -87,6 +87,16 @@ Queries/read actions не створюють business audit entries за зам�
 | `CorrectNonWorkingDay` | `non_working_day.corrected`, `non_working_day.canceled` | Before/after period, old/new affected counts, reason, recalculation summary. |
 
 ### Backdated and correction audit rules
+
+ADR-021 adds append-only lifecycle closure source facts, distinct from negative
+coverage facts and technical logs. `membership.issued` explains predecessor
+id/status, reason/successor, atomic closure, unchanged predecessor Payment and
+concrete/unknown remainder. Full one-off audit explains closure without a
+successor. No independent closure button or invented correction event is needed.
+Failed positive Issue, stale predecessor or closed-positive correction creates
+no successful business-audit entry and leaves source facts untouched. Paper
+fallback uses the same lifecycle policy, actor/session and occurred/recorded
+provenance; neither support nor reconciliation directly repairs lifecycle rows.
 
 - Any `entry_origin` other than `normal` must be visible in owner/admin history where it matters.
 - `occurred_at` and `recorded_at` must both be stored and displayed for backfilled/fallback entries.
@@ -290,10 +300,10 @@ The restore-check is the owner-visible acceptance procedure that proves a restor
 4. Technical operator/developer verifies technical counts: clients, issued memberships, visits, payments, freezes, non-working periods and audit entries are present and plausible for the snapshot time.
 5. Owner logs into the restored environment with a safe test/staging route.
 6. Owner searches for at least one known client by card/name/phone and opens the client profile.
-7. Owner checks that current membership state, remaining visits, negative warning if applicable, payment history, visit history and freeze/non-working explanations look plausible for the backup timestamp.
+7. Owner checks that current membership state, remaining visits, negative warning if applicable, payment history, visit history and freeze/non-working explanations look plausible for the backup timestamp. When ADR-021 is implemented, this includes one active Membership at most, readable closed lifecycle reason/successor and visible concrete-versus-unknown historical debt.
 8. Owner opens the daily report for a known recent business day and checks visit count, payment count, cash sum, corrections/cancellations and drill-down links.
 9. Owner opens audit/history for at least one recent command and confirms actor/session, `occurred_at`, `recorded_at`, action type and reason/comment are readable.
-10. If the backup included paper fallback or manual backfill records, owner verifies that `entry_origin`, first-class paper sheet/line reference, explanation, `occurred_at` and `recorded_at` are visible.
+10. If the backup included paper fallback or manual backfill records, owner verifies that `entry_origin`, first-class paper sheet/line reference, explanation, `occurred_at` and `recorded_at` are visible. Lifecycle closure facts and closed historical debt, once ADR-021 is implemented, are preserved and readable through the same restore/reconciliation check.
 11. Technical operator/developer records restore-check pass/fail, observed RPO/RTO and any discrepancies.
 12. Production readiness passes only if restore-check passes or all blocking discrepancies are corrected and the rehearsal is repeated.
 

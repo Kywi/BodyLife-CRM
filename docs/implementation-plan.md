@@ -237,8 +237,7 @@ Acceptance criteria:
 
 Risks:
 
-- Multiple active Memberships require the explicit ADR-014 Visit selection
-  contract in every command and screen.
+- Superseded planning assumption: ADR-014 originally allowed multiple active Memberships. ADR-021 now requires one active Membership with explainable closure history; explicit membership IDs and ADR-014 expiry/future/Freeze rules remain.
 - Negative coverage can hide old Visits if an implementation omits the
   ADR-018 oldest-first source and allocation facts.
 
@@ -457,8 +456,9 @@ Risks:
 
 Open questions from the docs:
 
-ADR-005 resolves inclusive date arithmetic. ADR-014 resolves multiple
-Memberships, Visit selection/no-active behavior, one-off/trial context,
+ADR-005 resolves inclusive date arithmetic. ADR-021 supersedes ADR-014's
+multiple-Membership cardinality; ADR-014 still resolves explicit Visit IDs,
+Visit selection/no-active behavior, one-off/trial context,
 same-date ordering and Visit-during-Freeze blocking. ADR-015 resolves Freeze
 range eligibility, the inverse counted-Visit conflict and Membership-first
 locking. ADR-016 resolves NonWorkingDay lifecycle/date eligibility,

@@ -93,9 +93,9 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 
 - User goal: see whether the client can visit today and what membership consequences an action will have.
 - Screen/state: membership status panel backed by `GetMembershipState` or the current membership state inside `GetClientProfile`; shows snapshot, start/base/effective end dates, counted visits, remaining visits, negative balance, first negative visit date, extension days/explanation, last counted visit and warnings.
-- Primary actions: explicitly select the membership for visit marking when candidates are ambiguous; choose one-off/trial when no membership should be consumed; mark visit; add freeze; issue new membership; open extension explanation or history drill-down.
-- Warnings: zero remaining visits; negative balance and first negative visit date; expired by date; future-start ineligibility; Visit date covered by active Freeze; ending soon; low remaining; active extension sources; missing/ambiguous current membership selection.
-- Confirmations: no confirmation for reading state; ADR-014 requires explicit membership choice for ambiguity and current-state acknowledgement for every zero/negative/expired condition. Freeze coverage is blocking rather than acknowledgeable; one-off/trial must be an explicit non-membership choice.
+- Primary actions: use the one current active Membership for visit/freeze actions; choose one-off/trial when no membership should be consumed; mark visit; add freeze; issue new membership; open closure/debt history or extension explanation.
+- Warnings: zero/negative remaining visits, expired by date, future-start ineligibility, Freeze conflict, ending soon, low remaining, active extension sources, predecessor closure effect, concrete coverable debt and unknown visible/non-coverable remainder. ADR-021 is accepted but this one-active presentation remains pending implementation.
+- Confirmations: no confirmation for reading state; current-state acknowledgement remains required for zero/negative/expired conditions. Freeze coverage is blocking rather than acknowledgeable; one-off/trial must be an explicit non-membership choice.
 - Loading/duplicate-submit protection: membership state reads can show loading independently of profile shell; state-changing actions disable submit and reread the panel after commit.
 - Success state: panel reflects recalculated canonical state after visit/payment/membership/freeze/correction commands.
 - Failure state: `membership_not_eligible`, `visit_during_freeze`, `not_found`, `stale_state`, `concurrency_conflict` or recalculation errors keep the previous state and ask for refresh/retry.
@@ -118,7 +118,7 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 - Time input/state: visible current/default time is Kyiv local wall time. A
   spring-forward gap returns localized validation without writes; a fall-back
   overlap uses the deterministic first occurrence defined by ADR-017.
-- Primary actions: open mark visit; use the sole preselected date-active candidate or deliberately choose among multiple candidates; explicitly select expired membership or one-off/trial when no date-active candidate exists; acknowledge every required zero/negative/expired condition; submit.
+- Primary actions: open mark visit against the displayed current active Membership; explicitly select eligible expired Membership or one-off/trial only where ADR-014 permits it; acknowledge every required zero/negative/expired condition; submit. Closed history never appears as a new-Visit choice.
 - Warnings: selected membership does not belong to client; no eligible membership selected; future-start membership; zero/negative remaining visits; expired by date; Visit date covered by active Freeze; backdated or paper fallback entry requires reason/comment; possible stale membership state.
 - Confirmations: typed current-state acknowledgement for zero/negative/expired states; deliberate one-off/trial choice; reason/comment for backdated/paper fallback entries. Active Freeze cannot be overridden: correct/cancel it or use one-off/trial without consuming the Membership.
 - Loading/duplicate-submit protection: `MarkVisit` uses an idempotency key; submit is disabled/busy after click/tap; repeated scan/tap should not create multiple visits; command rereads profile/membership state after commit.
@@ -130,7 +130,7 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 - User goal: issue a concrete ordinary membership to a client with its mandatory exact cash sale Payment in the same workflow.
 - Screen/state: profile quick action backed by `GetMembershipTypesForIssue` and `PreviewIssueMembership`; ordinary issue selector shows active membership types only.
 - Primary actions: choose active ordinary membership type; choose start date; review snapshot preview, read-only exact price, base end date and expected initial state; submit `IssueMembership`. With JavaScript unavailable, native submit first renders the same signed preview, then a second submit issues it.
-- Warnings: selected type became inactive; compact red current-negative balance; flat blue automatic oldest-first coverage result; clearly labeled red concrete remainder or amber unknown historical remainder; zero-capacity type is blocked when concrete negatives exist; forced backdated Membership can already be expired; preview is advisory and command revalidates its signed token in transaction.
+- Warnings: selected type became inactive; predecessor id/status and closure consequence; compact red current-negative balance; flat blue automatic oldest-first coverage result; clearly labeled red concrete remainder or amber unknown historical remainder; positive predecessor blocks issue even if expired/future-start; zero-capacity type is blocked when concrete negatives exist; forced backdated Membership can already be expired; preview is advisory and command revalidates its signed token in transaction.
 - Confirmations: Reception never chooses a coverage method or quantity. A paper-fallback sale requires its batch row and explanation; manual opening-state backfill is a separate form and does not create a fake Payment. One-off negative closure remains a separate explicit workflow.
 - Loading/duplicate-submit protection: issue form uses idempotency key; submit is disabled/busy; preview token/state does not replace command validation; after success UI rereads profile and membership state.
 - Success state: profile opens with new membership state, copied issue-time snapshot, warnings, exact payment status and history/audit entries; if negative balance remains, the negative warning remains visible.
@@ -231,6 +231,16 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 
 ## 17. Acceptance checklist for v1 reception slice
 
+- ADR-021 tablet/phone acceptance (pending implementation): show `none`/one
+  current Membership separately from closed history and aggregate debt; new
+  Visit/Freeze choices never include closed Memberships. Zero/negative rollover
+  preview and canonical reread show closure reason/successor and unchanged old
+  sale Payment. Positive balance blocks Issue even when expired/future-start.
+- Partial/full one-off and historical concrete coverage preserve warnings;
+  unknown opening remainder is visible without a fake coverage action. Closed
+  positive-crossing correction displays the exact lifecycle dependency and
+  writes nothing. Stale predecessor, retry and duplicate submit refresh the
+  same canonical state on tablet and phone.
 - Reception can start from dashboard, search by card/name/phone, open profile, read membership state and perform mark visit without reading domain requirements.
 - Exact unique current card match auto-opens; partial or non-unique matches never auto-open.
 - Multiple result selection is compact and task-oriented, not generic CRUD.
@@ -251,4 +261,8 @@ Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv busines
 - The conditional `Cover negative balance` Reception action starts with one filled red signed-balance plaque. Its exact one-off closure form is always visible; a neutral secondary route below opens the existing Issue Membership flow. This visual order does not preselect a method, type, quantity, negative-handling decision or start date. Concrete Visit provenance is a closed `+ / −` event disclosure at the end rather than summary fact tiles. Oldest-first consequences and expired preview remain server-owned; stale/inactive types fail before writes. Blocking errors and destructive corrections may also use red. An unknown opening/backfill remainder is explained in amber and exposes no synthetic coverage method.
 - Mistaken one-off closure has a reason-required cancel/replace action that changes its items and Payment together; generic payment correction cannot detach it from the closure.
 - Replacement/cancel form is Admin/Owner with required reason, explicit no-delta/refund notice, dependent-fact preview and blockers. Success rereads profile, history, audit and affected report state.
+- Lifecycle closure/successor dependencies appear in correction preview. No
+  action silently reactivates a predecessor or transfers unusable positive
+  credit. Full one-off closes at canonical zero; partial keeps the sole active
+  Membership, while already closed concrete debt remains separately coverable.
 - Paper fallback entry creates/uses one numbered sheet batch and displays a stable line number on every row before reconciliation through daily report and audit/history.

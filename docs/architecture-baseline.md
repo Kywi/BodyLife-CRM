@@ -1,6 +1,11 @@
 # BodyLife CRM v1 architecture baseline
 
-Джерело: accepted ADR package у `docs/adr/`, ADR-001..ADR-018; ADR-018 accepted 2026-07-30.
+Джерело: accepted ADR package у `docs/adr/`, ADR-001..ADR-021.
+
+ADR-021 / 21.1 aligns the accepted one-active lifecycle contract only. Its
+persistence, commands and UI remain pending; Milestone 10.5/ADR-020 are complete,
+and ADR-019/Milestone 10.6 follows ADR-021 acceptance. Runtime status is recorded
+in `docs/implementation-progress.md`.
 
 Це короткий implementation contract для розробки BodyLife CRM v1. Він не замінює ADR і не вибирає technology stack: мова, framework, database, hosting provider, ORM, queue, UI library та observability vendor мають обиратися окремо. Якщо цей документ конфліктує з ADR, перемагає ADR.
 
@@ -24,7 +29,7 @@ Canonical instants і technical logs лишаються UTC, але єдиний
 - Можна: мати shared IDs/value objects: `ClientId`, `MembershipId`, `Money`, `DateRange`, `ActorId`. Не можна: створювати shared "god service" для бізнес-правил абонементів. (ADR-004)
 - Можна: тримати source facts і централізований derived state для абонементів. Не можна: редагувати `effective_end_date` напряму або рахувати active status, remaining visits, negative balance, first negative visit date, extension days чи warnings поза Memberships. (ADR-004, ADR-005)
 - Можна: підтримати negative visits як core membership workflow. Не можна: вводити окремий debt ledger у v1, якщо membership state + explicit closure workflow достатні. (ADR-005)
-- Можна: кілька lifecycle-active Memberships із explicit `membership_id` або one-off/trial context у `MarkVisit`. Не можна: автоматично обирати newest/first Membership, створювати мінус без Membership або споживати frozen Membership. (ADR-014)
+- Accepted ADR-021 target (runtime corrective slice pending): committed Client має `0..1` lifecycle-active Membership; `closed` є explainable non-correction lifecycle state, а historical concrete debt не зникає. `MarkVisit` все одно має explicit `membership_id`, не обирає membership автоматично, не створює мінус без Membership і не споживає frozen Membership. (ADR-014, ADR-021)
 - Можна: додати Freeze до lifecycle-active Membership, якщо range починається в `membership.start_date..pre-command effective_end_date`; end може вийти за попередню effective end. Не можна: post-expiry/before-start Freeze, silent clipping або overlap з active counted Membership Visit. (ADR-015)
 - Можна: Owner-confirmed NonWorkingDay snapshot для lifecycle-active Memberships із будь-яким inclusive overlap з locked pre-command canonical interval; кожна application додає весь confirmed period. Не можна: intersection-only contribution, self-expanding eligibility, stale preview або silent scope changes після confirmation. (ADR-016)
 - Можна: Reports як query/report layer поверх canonical records і Memberships queries. Не можна: робити reports окремою доменною правдою, exported snapshots source of truth або дублювати membership formulas у reports. (ADR-007)
@@ -40,7 +45,7 @@ Canonical instants і technical logs лишаються UTC, але єдиний
 
 - `Clients/Search`: owns client identity, current card number, phone normalization, last 4 phone digits, duplicate warnings and search behavior. Other modules reference clients by ID and do not redefine card/phone duplicate rules. (ADR-008)
 - `MembershipTypes`: owns membership type catalog: create/edit/deactivate, owner-only policy, no hard delete, audit. Issuing a membership copies immutable snapshot fields. (ADR-011, ADR-012)
-- `Memberships`: owns issued memberships, opening state, recalculation, active status, remaining visits, negative balance, first negative visit date, effective end date, extension days and warnings. This is the only owner of membership formulas. (ADR-004, ADR-005, ADR-011)
+- `Memberships`: owns issued memberships, opening state, lifecycle status/closure history, recalculation, remaining visits, negative balance, first negative visit date, effective end date, extension days and warnings. This is the only owner of membership formulas. ADR-021's one-active target is accepted but not yet runtime behavior. (ADR-004, ADR-005, ADR-011, ADR-021)
 - `Visits`: owns visit source records, explicit membership consumptions, one-off/trial contexts, cancellations and visit commands. It never infers a Membership, and must trigger Memberships recalculation and business audit after successful counted state changes. (ADR-005, ADR-006, ADR-007, ADR-014)
 - `Payments`: owns payment source records, cash payments, one-off negative closures and payment corrections/cancellations. It must trigger audit and keep reports consistent through canonical records. (ADR-005, ADR-006, ADR-007, ADR-012)
 - `Memberships` coordinates explicit oldest-first negative coverage allocations; `Payments` does not let a standalone payment close negative Visits. Replace/cancel issued sale coordinates Memberships, Payments, dependent facts and Audit atomically. (ADR-018)
@@ -58,7 +63,7 @@ Not top-level v1 modules: `Extensions`, separate debt ledger, full import/migrat
 - UI may format a canonical instant through the shared `Europe/Kyiv` contract and active culture. It may not perform independent offset/DST arithmetic or treat `datetime-local` as UTC. (ADR-003, ADR-017)
 - Application commands may coordinate owned module behavior inside one server-side transaction and may call public commands/queries of other modules where ADR ownership requires it. Direct cross-module table writes are forbidden. (ADR-002, ADR-004)
 - Visits, Payments, Freezes, NonWorkingDays and backfill/fallback workflows may create source facts through their own commands and must cause Memberships recalculation through Memberships public interfaces/hooks. (ADR-004, ADR-005, ADR-010)
-- Membership Visit must submit explicit `membership_id`; one-off/trial creates no consumption. Memberships owns Visit eligibility/warnings, and active inclusive Freeze blocks membership consumption until correction/cancellation. (ADR-014)
+- Membership Visit must submit explicit `membership_id` for the sole current active Membership; one-off/trial creates no consumption. Memberships owns Visit eligibility/warnings, and active inclusive Freeze blocks membership consumption until correction/cancellation. (ADR-014, ADR-021)
 - AddFreeze must lock the selected Membership, validate its start against the pre-command canonical effective period, reject active counted Visit overlap and synchronously rebuild state/explanations before success. (ADR-015)
 - Add/CorrectNonWorkingDay must revalidate the exact previewed Membership set and full applied ranges against canonical state in one transaction snapshot, persist the confirmed applications, and synchronously rebuild the old/new scope before success. (ADR-016)
 - Memberships may read required canonical source facts or module-provided query results to compute derived membership state. Other modules must read membership state through Memberships public queries. (ADR-004, ADR-005)
@@ -96,7 +101,7 @@ Not top-level v1 modules: `Extensions`, separate debt ledger, full import/migrat
 - Use `occurred_at` for business event time and `recorded_at` for system entry time in backfill/fallback-capable commands. Store marker `manual_backfill` or `paper_fallback` where applicable. (ADR-001, ADR-010)
 - Normalize `occurred_at`/`recorded_at` instants to UTC. Validate Kyiv wall-time input before a transaction; reject DST gaps, select the first chronological occurrence for a DST fold, and derive DateOnly/report ranges from `Europe/Kyiv`. (ADR-017)
 - Keep Memberships recalculation testable outside UI. Required domain coverage includes inclusive end date, canceled visits, negative visits, first negative date, freeze/non-working overlap as union calendar days, backdated entries and correction-triggered recalculation. (ADR-005)
-- Before Visit persistence, lock ADR-014 in pure Memberships tests: explicit ambiguous selection, expired acknowledgement, future-start rejection, one-off/trial no-consumption, deterministic Visit ordering and active-Freeze blocking. (ADR-014)
+- ADR-021 corrective gates must prove the partial unique one-active invariant, closure-source/status consistency, atomic zero/negative rollover, positive-balance rejection, closed-debt coverage and correction blocking. ADR-014 explicit membership ID, expired acknowledgement, future-start rejection, one-off/trial no-consumption, deterministic Visit ordering and active-Freeze blocking remain required. (ADR-014, ADR-021)
 - Before AddFreeze persistence, lock ADR-015 in pure Memberships tests: lifecycle status, inclusive endpoints, before-start/post-expiry rejection, end-after-effective acceptance and active/canceled Visit overlap. (ADR-015)
 - Before NonWorkingDay persistence, lock ADR-016 in pure Memberships tests: lifecycle and inclusive-overlap eligibility, full-period boundary contribution, proposed-source exclusion, exact scope fingerprint and old/new correction scope. (ADR-016)
 - Make reports drill-down-first: every total must explain which source records are counted and how cancellations/corrections changed the result. (ADR-007)
@@ -108,11 +113,11 @@ Not top-level v1 modules: `Extensions`, separate debt ledger, full import/migrat
 
 ## 7. Quality gates before coding
 
-- ADR traceability gate: each module boundary, command rule, report rule, audit rule and out-of-scope rejection must cite ADR-001..ADR-018 or stay out of the baseline.
+- ADR traceability gate: each module boundary, command rule, report rule, audit rule and out-of-scope rejection must cite ADR-001..ADR-021 or stay out of the baseline. ADR-021 supersedes only ADR-014's multiple-active cardinality and rejection of the partial unique index.
 - Scope gate: v1 contains no offline-first sync, multi-tenant/SaaS scope, native mobile app, public client portal, client accounts, online payments, turnstile/NFC/QR identity, full import, complex accounting/full POS or long-period financial reports. (ADR-001, ADR-008, ADR-010, ADR-012, ADR-013)
 - Module gate: every state-changing workflow has an owning module and uses public interfaces for cross-module behavior. No direct cross-module writes are allowed. (ADR-002, ADR-004)
 - Membership gate: no UI/report/controller logic may calculate membership state independently. Memberships owns formulas and recalculation tests exist before relying on reports/UI. (ADR-004, ADR-005, ADR-007)
-- Visit allocation gate: `MarkVisit` has explicit Membership/context, never auto-selects under ambiguity, creates no consumption for one-off/trial and blocks membership consumption during active Freeze. (ADR-014)
+- Visit allocation gate: `MarkVisit` has explicit Membership/context for the sole active Membership, creates no consumption for one-off/trial and blocks membership consumption during active Freeze. Historical closed concrete debt remains eligible only for ADR-020/ADR-018 coverage, not new Visits. (ADR-014, ADR-018, ADR-020, ADR-021)
 - Freeze eligibility gate: `AddFreeze` uses locked pre-command Membership state, rejects invalid lifecycle/range and active counted Visit overlap, then recalculates through Memberships. (ADR-015)
 - NonWorkingDay scope gate: preview and command use the same ADR-016 policy, exact confirmed snapshot and full-period application range; stale scope fails without partial recalculation/audit. (ADR-016)
 - Command gate: server-side command/action path includes authorization, transaction boundary, duplicate-submit guard, recalculation decision, audit entry and canonical reread for UI. (ADR-002, ADR-003, ADR-005, ADR-006, ADR-012)
@@ -123,3 +128,10 @@ Not top-level v1 modules: `Extensions`, separate debt ledger, full import/migrat
 - Permissions/accountability gate: Owner, named Admin and shared Reception/Admin behavior is enforced and represented honestly in audit. (ADR-012)
 - Operations gate: production use waits for managed backup configuration, documented restore runbook, minimum 30-day backup retention expectation, RPO/RTO expectation review, and at least one restore rehearsal with recorded result. (ADR-009)
 - Cache-version gate: deploy does not accept traffic until every issued Membership cache has the current recalculation version; the canonical bulk rebuild is rerunnable and its result is recorded in technical logs. (ADR-005, ADR-009, ADR-017)
+- ADR-021 acceptance gate: PostgreSQL clean sole-baseline apply and model drift,
+  concurrent Issue/full-one-off/corrections, signed predecessor stale checks,
+  idempotent retries and injected recalculation/audit rollback must prove no
+  partial closure, sale or allocation. Reports/audit must reconcile active and
+  closed debt, and tablet/phone flows must preserve closure consequences,
+  positive blockers and concrete/unknown warnings. Full `scripts/validate.sh`
+  and independent review belong to step 21.5, before Milestone 10.6.

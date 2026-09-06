@@ -15886,3 +15886,79 @@ Stop point:
   documentation gate, update progress, make one logical commit and stop.
 - Do not claim the one-active invariant is implemented, do not start lifecycle
   schema/command work in the same step, and do not start Milestone 10.6 or 11.
+
+## Step 250 - Aligned ADR-021 single-active lifecycle contracts
+
+Status: ADR-021 step 21.1 documentation completed on 2026-09-06. The runtime
+corrective slice is still unimplemented. Milestone 10.5 and ADR-020 remain the
+completed product baseline; Milestone 10.6 and Milestone 11 have not started.
+
+Completed:
+
+- Aligned architecture, domain, data, command/query, UI and operations contracts
+  with one committed active Membership, explainable non-correction `closed`
+  history and the zero/negative/positive Issue transition matrix. Expired,
+  future-start, backdated and paper-fallback cases obey the same balance policy.
+- Specified unique closure source, distinct optional same-client successor,
+  deferred status/fact consistency and the partial unique index in the sole
+  greenfield `InitialBaseline`. Manual opening declaration cannot bypass
+  cardinality by creating a second active Membership.
+- Bound issue preview to predecessor id/status/version and documented the shared
+  Client/Membership/source/closure/Payment lock order and atomic audit,
+  recalculation and idempotency boundary. Closed-to-positive Visit/coverage
+  correction is dependency-blocked; sale correction never silently reactivates
+  the predecessor or transfers unusable credit.
+- Kept ADR-020 automatic concrete allocation and ADR-018 deliberate one-off
+  coverage separate. Full one-off at canonical zero closes without a successor;
+  partial one-off keeps active. Closed concrete debt remains coverable, while
+  unknown opening remainder remains visible without synthetic coverage.
+- Separated current `none`/`single` reads from closed history and aggregate debt.
+  Visit/Freeze/NonWorkingDay and ending/low choices use active Memberships;
+  Negative Clients/history retain active and closed debt. Audit and restore
+  checks preserve closure reason/successor and actual sale Payment status.
+- Added domain, PostgreSQL concurrency/rollback/rebuild and tablet/phone
+  acceptance expectations. Removed obsolete manual ordinary-Issue coverage
+  choices and marked historical ADR-014 cardinality evidence as superseded.
+- Updated roadmap to stop here with 21.2 next. Application, schema, migrations
+  and executable tests are unchanged. The pre-existing untracked `package.json`
+  and `package-lock.json` remain outside this task.
+
+Validation:
+
+- Required Graphify query ran before implementation; current ADR/source docs
+  governed decisions because the broader graph contains older evidence.
+- Documentation gate passed: UTF-8, headings, paired fences, table structure,
+  local Markdown links/reference resolution, ADR traceability, targeted stale
+  contract scans and `git diff --check`. Glob/root-relative references were
+  checked as such rather than treated as missing literal local files.
+- Independent review found command-specific opening-state, Visit cancellation,
+  full one-off and report-scope omissions plus a stale optional-coverage test
+  scenario. Root integration corrected them; final review found no remaining
+  actionable issue. The documentation verifier independently passed the gate.
+- Full semantic CLI update detected 168 stale code files, 33 changed documents
+  and one deletion, then exited because no LLM backend was configured. A
+  targeted host semantic refresh covers this task's contract/progress sources
+  and ADR-021; unrelated graph sources retain their previous freshness and are
+  not claimed current. Host extraction token counts are unavailable from the
+  collaboration tool, rather than measured as zero.
+- Runtime build/PostgreSQL/Playwright gates were not rerun for documentation-only
+  work. They remain required for implementation and final step 21.5 acceptance.
+
+Orchestration record:
+
+- Root owner lease: `adr021-21.1-root-01a075ea-20260906`; one granted writer at a
+  time (`adr021-21.1-doc-worker`, then `adr021-21.1-root-integrator`).
+- Explicit spawn arguments: `bodylife_scout` = `gpt-5.6-luna` / low;
+  `bodylife_worker` = `gpt-5.6-terra` / medium;
+  `bodylife_reviewer` = `gpt-5.6-terra` / high;
+  `bodylife_verifier` = `gpt-5.6-luna` / medium. No Luna compatibility fallback.
+- Root retained decisions, integration, progress/Graphify updates and explicit
+  staging/commits; children did not delegate or stage/commit.
+
+Stop point:
+
+- Next is ADR-021 / 21.2 lifecycle persistence: `closed`, constrained closure
+  source facts, same-client successor links, partial unique active index and
+  deferred consistency in the sole `InitialBaseline`, with PostgreSQL gates.
+- Do not claim runtime one-active enforcement yet. Stop after this documentation
+  step; do not start 21.2, Milestone 10.6 or Milestone 11 in the same task.

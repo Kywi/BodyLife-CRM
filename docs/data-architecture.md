@@ -146,8 +146,9 @@ The deterministic card, phone, last-four and name representation used by these f
 | Table | Key fields | Relationships | Notes |
 |---|---|---|---|
 | `membership_types` | `id`, `name`, `kind`, `duration_days`, `visits_limit`, `price_amount`, `price_currency`, `is_active`, `comment`, `created_at`, `updated_at`, `deactivated_at` | Referenced by issued memberships and one-off closure lines. | `kind`: ordinary/one_off and immutable after create. Owner-only create/edit/deactivate. No hard delete. Active sale types have positive price; one_off has one visit. |
-| `issued_memberships` | `id`, `client_id`, `membership_type_id`, `issuance_mode`, `type_name_snapshot`, `duration_days_snapshot`, `visits_limit_snapshot`, `price_amount_snapshot`, `price_currency_snapshot`, `start_date`, `base_end_date`, `issued_at`, `issued_by_account_id`, `status`, `entry_origin`, `entry_batch_row_id`, `comment` | `client_id -> clients.id`, `membership_type_id -> membership_types.id` | `issuance_mode` is immutable `sale` or `opening_state`. Snapshot fields are immutable. An ordinary sale has exactly one active membership_sale Payment linked through `payments.membership_id`; opening-state backfill is explicitly paymentless. |
+| `issued_memberships` | `id`, `client_id`, `membership_type_id`, `issuance_mode`, `type_name_snapshot`, `duration_days_snapshot`, `visits_limit_snapshot`, `price_amount_snapshot`, `price_currency_snapshot`, `start_date`, `base_end_date`, `issued_at`, `issued_by_account_id`, `status`, `entry_origin`, `entry_batch_row_id`, `comment` | `client_id -> clients.id`, `membership_type_id -> membership_types.id` | `issuance_mode` is immutable `sale` or `opening_state`. ADR-021 adds `closed` beside active/sale-correction statuses as a non-correction lifecycle projection, pending implementation. Snapshot fields are immutable. An ordinary sale has exactly one active membership_sale Payment linked through `payments.membership_id`; opening-state backfill is explicitly paymentless. |
 | `membership_opening_states` | `id`, `membership_id`, `opening_as_of_date`, `declared_remaining_visits`, `declared_negative_balance`, `known_effective_end_date`, `known_extension_days`, `source_reference`, `reason`, `recorded_at`, `recorded_by_account_id`, `entry_batch_row_id`, `status` | `membership_id -> issued_memberships.id` | Source fact for manual backfill when old history is incomplete. At most one active opening state per membership; no synthetic sale Payment. |
+| `membership_lifecycle_closures` | `id`, `source_membership_id`, optional `successor_membership_id`, reason, actor/session, correlation/idempotency, entry origin, occurred/recorded times | Same-client Membership composite references | ADR-021 target append-only explanation of `closed`; one fact per source, distinct source/successor. Added only to the sole greenfield `InitialBaseline` when the pending corrective slice is implemented. |
 | `membership_adjustments` | `id`, `membership_id`, `adjustment_type`, `days_delta`, `visits_delta`, `money_delta`, `effective_date`, `reason`, `recorded_at`, `recorded_by_account_id`, `recorded_session_id`, `entry_origin`, `entry_batch_row_id`, `status` | `membership_id -> issued_memberships.id` | Escape hatch for explicit audited corrections. Active v1 calculation accepts only positive day-only `extension_days` and signed non-zero visit-only `visit_balance`; unsupported active money/mixed/unknown shapes fail rebuild. Canceled/corrected history is retained. Prefer domain-specific correction tables when possible. |
 | `issued_membership_sale_corrections` | `id`, `mode`, `original_membership_id`, `original_payment_id`, `replacement_membership_id`, `replacement_payment_id`, `reason`, `occurred_at`, `recorded_at`, `recorded_by_account_id`, `session_id`, `idempotency_key`, `status` | Required original Membership/Payment; replacement ids required only for replace mode. | Retained Admin/Owner cancel/replace fact. It never stores or derives refund/delta. |
 | `membership_replacement_dependency_items` | `id`, `sale_correction_id`, `dependency_type`, `original_fact_id`, `replacement_fact_id`, `validation_summary`, `status` | References sale correction and original/replacement Visit consumption, Freeze, NonWorking application or negative-coverage fact. | Explicit transfer/reallocation explanation; unsupported or invalid dependency blocks the whole correction. |
@@ -258,7 +259,7 @@ Core constraints:
   `line_number > 0`. Non-paper source facts may not forge paper row metadata.
 - At most one active opening state per membership.
 - At most one active counted `visit_consumption` per visit.
-- Multiple lifecycle-active issued Memberships per Client are allowed; no uniqueness constraint may silently encode a current Membership.
+- ADR-021 accepted target, pending implementation: PostgreSQL partial unique index permits at most one `issued_memberships.status = active` row per Client. A closure fact has `UNIQUE(source_membership_id)`, rejects identical source/successor and uses same-client composite FKs/locked validation for an optional successor. Deferred commit validation aligns each `closed` status with exactly one closure fact and active with none. These facts and indexes belong only in the sole greenfield `InitialBaseline`; no legacy repair or production migration chain is added while deployment remains greenfield.
 - Membership-kind Visit requires exactly one active counted consumption after command success; one_off/trial Visit requires none. PostgreSQL prevents any one_off/trial consumption, while the command transaction is responsible for creating the required membership consumption atomically.
 - `visit_consumptions` repeats `client_id` and controlled `visit_kind` only to support composite FKs: the selected Membership must belong to the Visit Client and the referenced Visit must be membership kind. These repeated values are relational guards, not independent editable business facts.
 - Visit before selected Membership `start_date`, consumption of canceled/corrected Membership, and membership Visit during an active Freeze covering `occurred_at` are rejected under lock by the command/domain boundary; expired selection requires current-state acknowledgement.
@@ -273,6 +274,10 @@ Core constraints:
   `issued_memberships` row first, then read and lock the relevant `freezes` and
   membership Visit rows. MarkVisit, AddFreeze and future CancelFreeze workflows
   keep that order so neither side observes a stale eligibility window.
+- ADR-021 Issue/full-one-off/dependent-correction transaction order is Client;
+  affected Memberships by stable id; opening/Visit/consumption rows in ADR-020
+  order; closure/allocation rows; then Payment dependencies. It commits closure,
+  exact Payment, allocation, recalculation, audit and idempotency together.
 - NonWorkingDay scope includes only lifecycle-active issued Memberships whose
   locked canonical interval, calculated without the proposed/replaced period,
   has any inclusive overlap. Each stored application uses the full period for
@@ -298,9 +303,9 @@ Important indexes:
 | Duplicate warning by phone | Non-unique index on `clients(phone_normalized)`. |
 | Client profile memberships | Index on `issued_memberships(client_id, start_date desc, issued_at desc)`. |
 | Membership state read | Primary/unique index on `membership_state_cache(membership_id)` and index on `(effective_end_date)`, `(remaining_visits)`, `(negative_balance)`. |
-| Ending soon report | Index on `membership_state_cache(effective_end_date)` plus active/canceled membership filter. |
-| Low remaining report | Index on `membership_state_cache(remaining_visits)`. |
-| Negative clients report | Index on `membership_state_cache(negative_balance)` where `negative_balance > 0`. |
+| Ending soon report | Index on `membership_state_cache(effective_end_date)` plus lifecycle `status = active` filter. |
+| Low remaining report | Index on `membership_state_cache(remaining_visits)` plus lifecycle `status = active` filter. |
+| Negative clients report | Index on `membership_state_cache(negative_balance)` where `negative_balance > 0`; includes active and closed Membership debt. |
 | Inactive clients report | Index on `membership_state_cache(last_counted_visit_at)` or derived client summary if membership-level history is insufficient. |
 | Daily visits report | Index on `visits(occurred_at)` plus active status; include `client_id` for drill-down. |
 | Daily cash report | Index on `payments(occurred_at, status, method)` and optional covering index including `amount`. |
@@ -366,9 +371,9 @@ client dates use the same mapping. (ADR-017)
 |---|---|---|---|
 | Daily cash/visits | `payments` where method cash, active status, `occurred_at` on business date; `visits` and active `visit_consumptions` where `occurred_at` on business date. | Payment rows, visit rows, cancellation/correction rows, related audit. | Excludes canceled payments/visits. If a corrected payment changes date/amount, old and new dates remain explainable. |
 | Day close/reconciliation view | Daily report sources plus `day_reconciliations`. | Records with `recorded_at > closed_at` or correction rows after close. | Close records a reconciliation point; it does not freeze truth. |
-| Memberships ending soon | `membership_state_cache.effective_end_date`, query date, active/canceled membership filter. | Issued membership, extension source facts, extension day explanation, audit. | `days_left <= 7`; `days_left` computed from query date. |
-| Low remaining visits | `membership_state_cache.remaining_visits <= 2`. | Membership, counted visits/consumptions, cancellations, opening state if any. | Same state as client profile. |
-| Negative clients | `membership_state_cache.negative_balance > 0`. | Membership, first negative visit, counted visits, negative closure facts if any. | Negative is membership state, not separate debt ledger in v1. |
+| Memberships ending soon | Memberships public state over effective end date and query date; lifecycle `status = active` only. | Issued membership, extension source facts, extension day explanation, audit. | Memberships owns inclusive ending-soon eligibility. |
+| Low remaining visits | Memberships public low-remaining state; lifecycle `status = active` only. | Membership, counted visits/consumptions, cancellations, opening state if any. | Same state as client profile. |
+| Negative clients | Memberships public negative state for active and closed Memberships. | Concrete uncovered Visits, unknown opening remainder, closure/allocation and lifecycle facts. | Do not filter out closed debt; distinguish coverable concrete debt from visible-only unknown remainder. |
 | Inactive clients | `membership_state_cache.last_counted_visit_at` or derived client last counted visit summary. | Last counted visit, client profile, membership history. | Thresholds 14/30/60 days. Canceled visits do not count. Clients with no visits can be shown separately. |
 | Client history | Canonical facts for client: memberships, visits, payments, freezes, non-working applications, corrections, audit summaries. | Exact source rows and audit rows. | History view should label backfilled/paper fallback entries. |
 
@@ -383,6 +388,9 @@ Consistency rules:
 - Daily totals must match drill-down rows.
 - Audit is used for explanation and accountability, not for computing report totals.
 - Corrections after day close change live totals and are labeled through report drill-down/audit.
+- Closing a lifecycle does not cancel its sale Payment or historical Visits and
+  does not remove them from daily cash/visit totals. Current/history/debt reads
+  expose closure reason and successor without duplicating Memberships formulas.
 
 ## 8. Backfill/fallback model
 
@@ -513,6 +521,18 @@ Validation scenarios:
     Admin/Owner permission, unauthorized rejection, idempotent retry after
     failure, exact Payment links and full rollback on blockers.
 21. Restore database to staging. Rebuild membership state, compare caches, verify audit and source rows are transactionally consistent.
+22. Apply the sole `InitialBaseline` from empty PostgreSQL and verify one-active
+    uniqueness, closure source uniqueness, distinct same-client successor and
+    deferred closed/active status-to-fact consistency. Invalid direct inserts
+    in persistence tests must fail; these are not operational repair workflows.
+23. Race Issue, full one-off and dependent corrections under the shared lock
+    hierarchy. Verify stale predecessor/token, positive balance and duplicate
+    issue cannot leave two active rows or partial closure/Payment/allocation.
+24. Rebuild active and closed state from canonical sources. Verify closed
+    concrete debt remains coverable and appears in Negative Clients/history,
+    unknown remainder stays visible only, and lifecycle facts are unchanged.
+25. Inject recalculation/audit failures and retry with idempotency. Verify full
+    rollback and closed-to-positive correction rejection before any writes.
 
 Open validation question to settle before its migration:
 
@@ -524,7 +544,7 @@ Resolved before Visit migrations:
 - ADR-016 accepts full NonWorkingDay period contribution after any inclusive overlap.
 - ADR-018 accepts exact sale payment, oldest-first partial/full negative
   coverage, issued-sale correction and first-class paper sheet/line metadata.
-- ADR-014 allows multiple lifecycle-active Memberships and requires explicit `membership_id`; no automatic allocation is permitted.
+- ADR-021 supersedes ADR-014's multiple-active cardinality only: current query is none/single, while `MarkVisit` retains explicit `membership_id`, expiry/future rules and Freeze blocking. Closed concrete debt stays in ADR-020/ADR-018 candidate sets; unknown opening debt remains visible but non-coverable.
 - ADR-014 blocks membership Visit during an active Freeze covering the business date.
 - ADR-014 uses explicit one_off/trial Visit kinds without consumption and permits a dedicated technical Client for unidentified visitors.
 

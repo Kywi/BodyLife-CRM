@@ -186,12 +186,14 @@ Common errors:
 - Purpose: видати конкретний Membership клієнту з immutable ordinary MembershipType snapshot and mandatory exact cash sale Payment in the same workflow.
 - Input: client id, active ordinary membership type id, start date, signed `PreviewIssueMembership` token, optional comment and common command envelope; payment amount is not staff input. A `paper_fallback` sale also supplies a first-class batch row reference.
 - Validation: client exists; type is active `ordinary` with positive price; snapshot values are copied at issue time; start date is valid; base end date follows inclusive rule; created cash Payment equals snapshot price. Under ADR-020, concrete negative Visits are automatically covered oldest-first up to the new snapshot limit; a zero-limit type is ineligible while concrete negatives exist. Unknown opening/backfill remainder is never synthesized and remains visible. The signed preview token is revalidated under locks as `stale_state`. A no-payment historical declaration uses the separate opening-state command, not `IssueMembership`.
+- ADR-021 accepted target (pending runtime implementation): preview also binds predecessor id/status/version and shows closure plus concrete/unknown residual effects. Issue creates none→one, atomically closes a zero predecessor, or allocates ADR-020 concrete debt before closing a negative predecessor; positive balance blocks, including expired, future-start, backdated and paper-fallback cases. Closure, new exact sale Payment, allocation, recalculation, audit and idempotency commit together.
 - Permissions: Admin + Owner.
 - Transaction boundary: one ACID transaction creates a sale-mode
   `issued_memberships` row, its exact sale Payment, any explicit coverage
-  facts, initial `membership_state_cache`, extension-day derived rows if
-  relevant, and audit entries. Lock client, source/covering memberships and
-  affected Visits when coverage is involved.
+  facts, predecessor closure/status when applicable, initial
+  `membership_state_cache`, extension-day derived rows if relevant, and audit
+  entries. Always lock Client and all affected Memberships, including a zero
+  predecessor, using the shared ADR-021 hierarchy below.
 - Affected modules: Clients, MembershipTypes, Memberships, Payments, Reports, Audit, Users/Roles.
 - Recalculation: synchronous recalculation for the new membership and any source/covering membership involved in negative closure. Reports read updated canonical facts after commit.
 - Audit event: `membership.issued`; plus `payment.created` and `membership_negative_closure.created` when automatic coverage allocates Visits. Include snapshot, start date, payment summary, automatic policy, locked covered Visit ids/count, forced start and remainder, actor/session.
@@ -209,6 +211,11 @@ Common errors:
 - Validation: opening data is internally consistent; origin is
   `manual_backfill`; no active duplicate opening state exists; no Payment
   amount/context is accepted or created.
+- ADR-021 invariant: lock Client and its affected Memberships before creating
+  this active declaration. An existing active Membership is a conflict and
+  rejects the command without writes; manual opening state cannot create a
+  second active row or silently close/replace an existing one. No new opening
+  reconciliation or lifecycle-correction workflow is introduced here.
 - Permissions: Admin + Owner.
 - Transaction: creates an immutable `issuance_mode = opening_state` Membership,
   its opening-state fact, derived state and Audit together; exactly zero
@@ -221,22 +228,27 @@ Common errors:
 
 - Purpose: зафіксувати Visit and, for membership visit, consume one counted visit from selected Membership.
 - Input: client id; controlled visit kind `membership`, `one_off` or `trial`; explicit membership id only for membership kind; Kyiv local `occurred_at` input normalized to UTC; typed current-state acknowledgements for expired/zero/negative conditions; optional comment; common command envelope.
-- Selection: ADR-014 permits multiple lifecycle-active Memberships. Server never selects newest/first implicitly. UI may preselect only one ordinary date-active candidate, but every membership Visit command still submits explicit `membership_id`; ambiguous candidates require deliberate selection.
+- Selection: ADR-021 target has one current active Membership, but every membership Visit command still submits explicit `membership_id` and server never infers a historical Membership. A closed Membership is ineligible for new Visit/Freeze actions; its concrete debt remains eligible only for ADR-020/ADR-018 coverage.
 - Validation: client exists; selected membership belongs to client and has lifecycle status active; Visit date is not before membership start; future-start/canceled/corrected Membership is ineligible; expired Membership requires explicit expired acknowledgement; 0 or negative remaining visits require their current server-derived acknowledgements; all simultaneous required warning conditions must be acknowledged; one-off/trial rejects membership id and creates no consumption; at most one active counted consumption per visit; backdated/paper fallback entries require reason/comment.
 - Freeze policy: an active Freeze whose inclusive range covers the Visit business date blocks membership kind with `visit_during_freeze`; v1 has no override. Actor must correct/cancel Freeze first or explicitly use one-off/trial without membership consumption.
 - Permissions: Admin + Owner.
 - Transaction boundary: one ACID transaction locks selected membership state/source and relevant Freeze rows, revalidates selection/warnings, creates `visits`, creates active `visit_consumptions` only for membership kind, recalculates affected membership, and appends audit. One-off/trial creates only the Visit/audit facts and no Memberships recalculation.
 - Affected modules: Clients, Visits, Memberships, Reports, Audit, Users/Roles.
 - Recalculation: synchronous recalculation of selected membership from ordered active counted Visits (`occurred_at`, `recorded_at`, stable Visit id): counted visits, remaining visits, negative balance, first negative visit/date, last counted visit and warnings. Daily report reads every visit kind after commit.
-- Audit event: `visit.marked`; include client, explicit membership or one-off/trial context, occurred_at, before/after membership summary when counted, candidate ambiguity context and warning acknowledgements.
+- Audit event: `visit.marked`; include client, explicit membership or one-off/trial context, occurred_at, before/after membership summary when counted and warning acknowledgements. Historical ambiguity payloads remain readable.
 - Possible errors: `permission_denied`, `not_found`, `validation_failed`, `membership_not_eligible`, `visit_during_freeze`, `warning_acknowledgement_required`, `duplicate_submission`, `recalculation_failed`, `concurrency_conflict`.
-- UI result: profile membership panel refreshes only for membership kind; daily visit count can update for every kind; if state becomes negative, show first negative visit date and warning. Ambiguous/no-active forms retain the explicit selected context after validation errors without inventing canonical state.
+- UI result: profile membership panel refreshes only for membership kind; daily visit count can update for every kind; if state becomes negative, show first negative visit date and warning. Forms retain the explicit selected context after validation errors; committed current selection is only `none` or `single`.
 
 ### CancelVisit
 
 - Purpose: скасувати mistaken Visit without deleting history and remove it from counted visits/reports.
 - Input: visit id, reason/comment, common command envelope.
 - Validation: visit exists; not already canceled; reason/comment required; if visit belongs to closed/reconciled business day, correction follows day-close permission policy; cancellation must deactivate related counted consumption in same transaction.
+- ADR-021 lifecycle dependency: under the shared Client/Membership/source locks,
+  Memberships previews the resulting canonical state. If cancellation would
+  make a closed non-positive Membership positive, reject before writes with the
+  exact lifecycle dependency. A permitted correction preserves `closed`, does
+  not transfer visits or reactivate, and keeps historical debt explainable.
 - Permissions: Admin + Owner for current-day/open-day cancellation; after day close/reconciliation Owner-only or explicit owner-approved policy.
 - Transaction boundary: one ACID transaction creates `visit_cancellations`, updates visit/consumption status, recalculates affected membership, and appends audit.
 - Affected modules: Visits, Memberships, Reports, Audit, Users/Roles.
@@ -358,7 +370,7 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 `GetReceptionAttentionSummary` is a Reports-owned read query. Input is an explicit `ActorContext`, Kyiv `as_of` date and `ending_soon_days_threshold`. Owner, named Admin and shared Reception/Admin are authorized. It returns exact lifecycle-active ending-soon count with the same inclusive `[as_of, as_of + threshold]` effective-end-date rule as `ListEndingSoonMemberships`, plus distinct negative-client count and typed report destination keys. Reports composes the Memberships public exact-count query over fresh canonical `membership_state_cache`; it does not calculate membership state. Status is exactly `success`, `permission_denied`, `validation_failed`, `recalculation_failed` or `source_inconsistent`. Failure has no counts and must never be rendered as zero. The query creates no business audit.
 
-`GetReceptionActivity` is a Reports-owned read query. Input is explicit `ActorContext`, Kyiv `recorded_business_date`, limit 1–20 and a versioned, URL-safe, HMAC integrity-protected opaque cursor binding the requested Kyiv day, fixed sort, UTC `recorded_at` and `business_audit_entries.id`. Cursor signature, version, canonical encoding and date-scope failures are `validation_failed`; the cursor is not an authorization substitute. It filters successful whitelisted client/card, membership issue, visit, payment and freeze audit actions with `BusinessTimeZone.GetUtcDayRange`, ordered by `(recorded_at DESC, id DESC)` and PostgreSQL row-value keyset continuation. Each row exposes a controlled event type, audit/source id, safely resolved client id/display name, canonical UTC occurred/recorded instants, entry origin, correction/cancel/changed-after-close indicator, and only action-approved typed navigable related entities; duplicate acknowledgement/match IDs and unknown JSON fields are not exposed. Memberships supplies a compact selection state: `none` retains the latest timeline state when available, `single` returns its candidate, and `ambiguous` returns every active candidate summary/warnings without pretending no membership exists. Missing/deleted client, absent required client ref, malformed source, invalid origin, row invariant failure or stale/unavailable Membership state fails the whole query as `source_inconsistent` or `recalculation_failed`; no row is dropped, guessed or fabricated. Backfill remains visible by recorded date even when occurred earlier, and reads create no business audit.
+`GetReceptionActivity` is a Reports-owned read query. Input is explicit `ActorContext`, Kyiv `recorded_business_date`, limit 1–20 and a versioned, URL-safe, HMAC integrity-protected opaque cursor binding the requested Kyiv day, fixed sort, UTC `recorded_at` and `business_audit_entries.id`. Cursor signature, version, canonical encoding and date-scope failures are `validation_failed`; the cursor is not an authorization substitute. It filters successful whitelisted client/card, membership issue, visit, payment and freeze audit actions with `BusinessTimeZone.GetUtcDayRange`, ordered by `(recorded_at DESC, id DESC)` and PostgreSQL row-value keyset continuation. Each row exposes a controlled event type, audit/source id, safely resolved client id/display name, canonical UTC occurred/recorded instants, entry origin, correction/cancel/changed-after-close indicator, and only action-approved typed navigable related entities; duplicate acknowledgement/match IDs and unknown JSON fields are not exposed. Memberships supplies `none` or the one current active candidate; history carries closed memberships and their open debt separately. Missing/deleted client, absent required client ref, malformed source, invalid origin, row invariant failure or stale/unavailable Membership state fails the whole query as `source_inconsistent` or `recalculation_failed`; no row is dropped, guessed or fabricated. Backfill remains visible by recorded date even when occurred earlier, and reads create no business audit.
 
 ### SearchClients
 
@@ -371,6 +383,9 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 - Input: client id, optional as_of date for membership warnings, include history/drill-down flags.
 - Output shape: client identity, current card, operational status, membership timeline, current membership state, warnings, recent visits, payments, freezes, non-working applications, audit/history summaries, allowed quick actions for actor.
+- ADR-021 current selection is `none` or `single`; closed Membership history
+  and aggregate open concrete/unknown debt are separate. Closing a predecessor
+  preserves its sale Payment status and exposes closure reason/successor.
 - Source modules: Clients, Memberships, Visits, Payments, Freezes, NonWorkingDays, Audit, Users/Roles.
 - Consistency expectations: profile reads committed source facts and Memberships public state. UI must use this query after each successful command instead of applying client-side business formulas.
 
@@ -393,7 +408,7 @@ Query access uses the same actor/session context as commands. Reception/profile/
 ### GetMembershipState
 
 - Input: membership id or client id/current-membership selector, as_of date.
-- Output shape: snapshot fields, start/base/effective end dates, counted visits, remaining visits, negative balance, first negative visit date/id, extension days, extension explanation rows, last counted visit, warnings.
+- Output shape: snapshot fields, start/base/effective end dates, counted visits, remaining visits, negative balance, first negative visit date/id, extension days, extension explanation rows, last counted visit and warnings. Current selector returns `none` or one active Membership; membership-id lookup can return historical `closed` state, which additionally labels closure reason/successor and separates concrete coverable debt from unknown visible/non-coverable remainder.
 - Source modules: Memberships; source drill-down may read Visits, Freezes, NonWorkingDays and adjustments.
 - Consistency expectations: this is the canonical membership state read. Reports, profile and UI warnings must use this state and must not duplicate formulas.
 
@@ -401,8 +416,12 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 - Input: client id, ordinary membership type id and proposed start date.
 - Output shape: issue snapshot, read-only exact payment, base/effective end, expected initial state, deterministic automatic oldest-first covered Visit count/set, forced start when applicable, concrete and unknown remainder, possibly-expired warning, `CanProceedToIssue`, signed opaque token and permission result. It exposes no method or manual quantity.
+- ADR-021 output also identifies the predecessor (or absence), closure reason
+  and consequence, positive-balance blocker and residual historical debt. The
+  token binds active predecessor id/status/version; submit rejects a changed
+  predecessor or stale balance as `stale_state` before mutation.
 - Source modules: Clients, MembershipTypes, Memberships, Users/Roles.
-- Consistency expectations: preview is advisory; its token binds client/type version/proposed date/negative state/full candidate order and `IssueMembership` locks, recalculates and revalidates it in one transaction.
+- Consistency expectations: preview is advisory; its token binds client/type version/proposed date/negative state/full candidate order plus active predecessor id/status/version. `IssueMembership` locks Client, affected Memberships by stable id, opening/Visit/consumption rows in ADR-020 order, closure/allocation rows and Payment dependencies, then recalculates and revalidates in one transaction.
 
 ### PreviewNonWorkingDayImpact
 
@@ -424,6 +443,7 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Output shape: memberships with client summary, effective_end_date, days_left, remaining visits, warnings, extension explanation link.
 - Source modules: Reports over Memberships public state/read model plus Clients.
 - Consistency expectations: `days_left` is computed from query date and Memberships effective_end_date; no independent end-date formula in Reports.
+- Lifecycle scope: the sole active Membership only; closed history is excluded.
 
 ### ListLowRemainingMemberships
 
@@ -431,6 +451,7 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Output shape: memberships with client summary, remaining visits, visit limit snapshot, counted visits, last counted visit, warnings.
 - Source modules: Reports over Memberships public state/read model plus Clients.
 - Consistency expectations: remaining visits comes from Memberships state, not report-local counting.
+- Lifecycle scope: the sole active Membership only; closed history is excluded.
 
 ### ListNegativeClients
 
@@ -438,6 +459,10 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Output shape: clients/memberships with negative balance, remaining visits, first negative visit date/id, related negative closure state if any, quick navigation to profile.
 - Source modules: Reports over Memberships public state/read model plus Clients and optional closure facts.
 - Consistency expectations: negative balance and first negative visit date come from Memberships recalculation. Payment existence alone never hides negative state.
+- Lifecycle scope: all open debt from active and closed Memberships. Expose
+  concrete uncovered Visit debt separately from visible-only unknown opening
+  remainder; the resolver and ADR-018/020 candidates must not filter concrete
+  Visits by active-only Membership status.
 
 ### ListInactiveClients
 
@@ -450,6 +475,9 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 - Input: client id, date range, entity filters, pagination.
 - Output shape: chronological source facts and corrections: memberships, visits, payments, freezes, non-working applications, opening states, negative closures, audit summaries, entry_origin labels.
+- ADR-021 history includes lifecycle closure source, canonical reason, successor
+  when present, unchanged sale-Payment status and concrete/unknown open debt,
+  separately from the current `none`/`single` operational Membership.
 - Source modules: Clients, Memberships, Visits, Payments, Freezes, NonWorkingDays, Audit.
 - Consistency expectations: history shows source facts and correction/cancellation facts, not silent rewritten state. Date filters use Kyiv business-day half-open UTC ranges. Backfilled and paper fallback entries show both occurred_at and recorded_at as culture-formatted Kyiv local time.
 
@@ -464,6 +492,10 @@ Query access uses the same actor/session context as commands. Reception/profile/
 
 - Commands that create or change visits, payments, freezes, non-working days, issued memberships, backfill/opening state or corrections must commit source fact, recalculation and audit consistently.
 - Recalculation for single-membership commands is synchronous in the same transaction.
+- ADR-021 target transactions lock Client; affected Memberships by stable id;
+  opening/Visit/consumption rows in ADR-020 order; closure/allocation rows; and
+  Payment dependencies. Issue/full-one-off/dependent corrections commit all
+  lifecycle, allocation, recalculation, audit and idempotency facts together.
 - NonWorkingDay commands recalculate affected memberships in the same completed action for v1. If this ever becomes async, the command contract must expose pending/failed/retry state before UI treats the action as complete.
 - The standalone versioned Membership cache rebuild is a derived-state release/repair operation, not a business command. It commits one Membership at a time, creates no business audit, logs progress/failure, and is safely rerun after partial completion. It does not change the atomic transaction contract of `AddNonWorkingDay` or any user workflow. (ADR-017)
 - Reports and profile screens read committed state after command success. UI must not optimistically keep calculated membership values after a state-changing command.
@@ -476,6 +508,12 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Direct database edits, synthetic fake history and unmarked backdated entries are outside the application contract.
 
 ## ADR-018 sale, coverage and replacement contract
+
+ADR-021 target dependency rule: cancellation/replacement of an issued sale and
+coverage correction must expose and handle their closure/allocation
+dependencies through the existing reason-required ADR-018 workflows or reject
+without partial state. They do not auto-reactivate a predecessor, transfer
+Visits, or introduce an independent lifecycle-correction action.
 
 ### PreviewCloseNegativeVisitsOneOff
 
@@ -523,6 +561,12 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Transaction: lock Client, source Memberships and Visits in canonical order;
   create closure, line snapshots, one item per Visit, exact Payment,
   recalculation and Audit, or roll back all.
+- ADR-021 extends this to the common lock hierarchy. Partial coverage keeps the
+  sole negative Membership active; full coverage bringing its canonical balance
+  to zero closes it in the same commit with a lifecycle fact and no successor.
+  Concrete debt on already closed Memberships remains eligible oldest-first;
+  covering it does not change an unrelated current Membership. Unknown opening
+  remainder has no Visit ids and remains visible but non-coverable.
 - Result/errors: reread profile, negative report, history and affected daily
   report. Stable errors include inactive/stale type, stale oldest set,
   duplicate coverage, validation, idempotency and concurrency failures.
@@ -547,6 +591,11 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Permissions: Admin + Owner. Transaction retains the original, cancels its
   active items/Payment, optionally creates the full replacement, recalculates
   source/covering Memberships and updates Audit/reports atomically.
+- Under ADR-021 shared locks, preflight every affected Membership. A result
+  crossing a closed non-positive balance to positive is an exact lifecycle
+  dependency and rejects before writes; allowed correction leaves it closed.
+  Closure and allocation dependencies are explicit; no silent reactivation,
+  transfer to current Membership or new lifecycle-correction action is allowed.
 - No input, output or UI summary contains a calculated refund, extra payment or
   price difference.
 
@@ -559,14 +608,20 @@ Query access uses the same actor/session context as commands. Reception/profile/
 - Permissions: Admin, including shared Reception/Admin, and Owner. This remains
   true for an older/closed day; a future close policy adds only a
   changed-after-close marker.
-- Preview lists counted Visits, Freezes, NonWorkingDay applications and
-  negative-coverage links. Command locks the sale and dependency set. Every
+- Preview lists counted Visits, Freezes, NonWorkingDay applications,
+  lifecycle closure/successor and negative-coverage links. Command uses the
+  shared Client-first hierarchy to lock the sale and dependency set. Every
   transferred effect requires an explicit valid replacement/reallocation fact;
   any blocker, stale set or rule violation rolls back everything.
 - Replace marks original Membership corrected/replaced, cancels its sale
   Payment, creates new Membership and exact-price Payment, recalculates and
   appends Audit. Cancel-only cancels original Membership/Payment. Neither
   workflow calculates or displays cash difference/refund.
+- Cancel/replacement of a successor does not reactivate its predecessor. A
+  closure/allocation dependency must be handled by an accepted explicit
+  reason-required workflow or the whole command rejects. Existing sale
+  replacement rules do not authorize a new closed-lifecycle correction or
+  transfer of positive credit; that requires a separate product decision.
 - Result rereads profile, history, Audit and all affected daily reports.
 
 ### CreatePaperFallbackBatch / CreatePaperFallbackBatchRow

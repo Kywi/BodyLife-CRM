@@ -173,6 +173,7 @@ Each result row shows enough context to choose safely without opening generic ed
 - operational status;
 - match type;
 - current membership summary from server reads;
+- ADR-021 target: one operational current Membership, with closed lifecycle history and concrete-versus-unknown debt explanation rendered separately (accepted, pending runtime implementation);
 - row-level warnings.
 
 Rows must be touch-selectable and keep warnings visible on phone.
@@ -182,6 +183,12 @@ Rows must be touch-selectable and keep warnings visible on phone.
 Shows client name, current card, phone, operational status and duplicate/inactive markers. It should fit above membership state without feeling like a marketing profile card.
 
 ### Membership status panel
+
+ADR-021 target separates `none`/one current operational Membership from closed
+history and aggregate debt. History shows closure reason/successor and actual
+sale-Payment status; concrete coverable debt and unknown visible-only remainder
+keep their server-provided warnings on both tablet and phone. Positive Issue
+blockers and closed-lifecycle correction dependencies are visible inline.
 
 Shows server-provided membership state only:
 

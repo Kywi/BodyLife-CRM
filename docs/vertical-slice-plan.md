@@ -294,6 +294,6 @@ The slice is accepted when all of the following are true:
 - Correction semantics: payment replacement/cancellation and visit cancellation must stay explainable without silent history rewrites.
 - Audit noise vs audit gaps: too much audit becomes unreadable, but missing before/after summaries makes disputes hard to resolve.
 - htmx interaction risk: partial refreshes must not leave stale membership values after command success.
-- Visit implementation may regress ADR-014 explicit allocation under ambiguous Memberships; ADR-018 separately defines negative closure/coverage and must be implemented in Milestone 10.5.
+- Historical note: ADR-014 originally required explicit allocation under multiple active Memberships. ADR-021 supersedes that cardinality with one active Membership while preserving explicit IDs, expiry/future and Freeze behavior; ADR-018/020 coverage ordering remains unchanged.
 - Backdated metadata can be technically stored in the slice, but real paper fallback reconciliation still needs a later workflow.
 - Passing the slice does not equal production readiness; backup/restore rehearsal, hosting monitoring, full paper fallback process and owner operations checklist remain separate gates before production use.

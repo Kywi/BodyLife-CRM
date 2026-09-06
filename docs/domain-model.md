@@ -125,11 +125,14 @@ Visit - це факт приходу клієнта. Він фіксує біз�
 
 Counted Visit списує одне заняття з пов'язаного Membership. Canceled Visit лишається в history, але не входить у visit counts, remaining visits, daily visit totals, last-visit calculations, negative balance і first negative visit date.
 
-ADR-014 уточнює allocation policy для v1:
+ADR-021 supersedes ADR-014's cardinality decision; it is accepted target
+contract, pending the runtime corrective slice:
 
-- Client може мати кілька lifecycle-active issued Memberships;
-- membership Visit завжди зберігає explicit selected Membership, а при кількох
-  date-active candidates UI/server не обирають newest/first автоматично;
+- committed Client має `0..1` `active` issued Membership; `closed` є
+  non-correction lifecycle state з append-only closure fact, а не sale cancel,
+  correction чи Payment refund;
+- membership Visit завжди зберігає explicit selected Membership; current query
+  повертає none/single, а closed history не є candidate для нового Visit;
 - Visit не може передувати `start_date`; expired Membership можна вибрати лише
   явно з current-state warning acknowledgement;
 - без date-active Membership Actor явно обирає expired Membership або
@@ -328,8 +331,31 @@ Permissions summary:
 6. Visits consume remaining visits і можуть довести balance до 0 або negative.
 7. Freeze і NonWorkingDay source records extend effective end date через recalculation.
 8. Warnings derived для ending soon, low visits, zero visits, negative visits або expired-by-date state.
-9. Membership може завершитись by date, by visits, by both, або бути canceled/corrected.
+9. Date expiry, zero visits and negative visits are derived conditions; they do not independently close the lifecycle. ADR-021 closes through the transitions below. `canceled`/`corrected` remain sale-correction statuses.
 10. Будь-яка cancellation, correction або backdated entry перераховує derived state from source facts.
+
+ADR-021 accepted transition matrix (implementation pending):
+
+| Locked pre-command state | Ordinary Issue result |
+|---|---|
+| No active Membership | Create one active successor; ADR-020 still covers eligible historical concrete debt. |
+| Active remaining `0` | Close the zero predecessor and create its successor atomically. |
+| Active concrete, unknown or mixed negative | Apply ADR-020 concrete allocation, then close predecessor and create successor in the same transaction. Concrete remainder stays visible/coverable; unknown stays visible/non-coverable. |
+| Active positive remaining | Reject without writes or silent forfeiture. A mistaken sale uses ADR-018 correction subject to dependencies. |
+| Expired-by-date or future-start active Membership | Apply exactly the same signed-balance policy; dates do not bypass a positive blocker. |
+| Backdated or `paper_fallback` Issue | Apply the same matrix and locks; historical date overlap is allowed, two committed active rows are not. |
+
+Each closure is an append-only Memberships-owned source fact with unique source
+Membership, distinct optional same-client successor, canonical reason,
+actor/session, correlation/idempotency, entry origin and occurred/recorded time.
+It leaves the predecessor sale Payment unchanged and does not imply a refund.
+Full ADR-018 one-off coverage that brings the sole active Membership to canonical
+zero closes it atomically without a successor; partial coverage leaves it active.
+Covering concrete debt on an already closed Membership changes no current
+Membership. Unknown opening remainder cannot be consumed by either Visit-based
+path. A Visit/coverage correction that would cross closed state from non-positive
+to positive is blocked before writes: no reactivation, visit transfer or stranded
+credit. A new lifecycle correction/forfeiture command needs a separate decision.
 
 Manual opening state для неповної давньої історії не є ordinary sale і не
 створює вигаданий Payment. Ordinary sale, внесений після збою як
@@ -543,14 +569,15 @@ Negative visits не моделюються як separate financial debt ledger 
 Client has negative visits. Check the start date of the new membership.
 ```
 
-Actor має бачити `first_negative_visit_date` і всі доступні способи без
-автоматичної рекомендації або попереднього вибору системою. Він явно обирає:
-лишити мінус, закрити його вибраними active one-off types або покрити новим
-ordinary Membership. Payment сам по собі нічого не закриває.
+Ordinary Issue uses ADR-020 automatic coverage: preview shows
+`first_negative_visit_date`, exact oldest-first allocation and lifecycle
+consequences, with no method or quantity input. ADR-018 one-off closure is a
+separate deliberate method/type/quantity workflow. Payment alone closes no debt.
 
 Domain expectation:
 
-- coverage завжди бере найдавніші ще непокриті negative Visits клієнта; Actor
+- coverage бере concrete negative Visits із active та closed Memberships,
+  завжди найдавніші ще непокриті Visits клієнта; Actor
   не може довільно пропустити старіший Visit і закрити новіший;
 - partial і full coverage дозволені; після partial coverage залишок мінуса
   лишається видимим;
@@ -558,14 +585,17 @@ Domain expectation:
   Payment і окремий item для кожного covered Visit;
 - new ordinary Membership створюється разом з exact-price sale Payment,
   стартує в business date найдавнішого covered Visit, а explicit allocations
-  споживають його visits limit; `coverage_count` має бути не менше 1 і не
-  більше `visits_limit_snapshot`, тому новий Membership не починає з мінуса;
+  споживають його visits limit; automatic count дорівнює
+  `min(open_concrete_negative_visits, visits_limit_snapshot)`, тому новий
+  Membership не починає з мінуса. Zero-capacity type блокується, якщо є concrete
+  debt; без concrete debt count є 0 і дата лишається звичайною;
 - base/effective end date нового Membership рахується від цієї backdated start
   date, тому він може одразу бути expired; preview має це показати;
 - старі Visits/consumptions не переписуються і не видаляються; closure та
   allocation facts пояснюють зміну state;
-- якщо Actor лишає мінус або покриває його частково, warning і negative report
-  продовжують показувати відкритий remainder.
+- concrete remainder після partial coverage і unknown opening remainder
+  залишаються у warning/report навіть після lifecycle closure; unknown не має
+  Visit ids, тому не покривається і не породжує synthetic Visits/Payments.
 
 ### Freeze extension
 
@@ -648,6 +678,11 @@ Negative clients:
 ```text
 negative_balance > 0
 ```
+
+Ending-soon, low-remaining, Visit and Freeze operational choices use only the
+single active Membership. Negative Clients and history include open debt on
+both active and closed Memberships, using Memberships public state rather than
+report formulas.
 
 Inactive clients:
 
@@ -754,9 +789,9 @@ Backdated correction:
 | Negative visits | Visit recorded when remaining visits are 0 | Visit is allowed; remaining visits becomes `-1`; negative warning is visible | Membership recalculates `remaining_visits`, `negative_balance`, `first_negative_visit_date`; daily visits include Visit |
 | Negative visits | Client goes to `-2` or lower | Each counted Visit keeps reducing signed remaining visits | `negative_balance` grows; first negative date remains earliest current negative-causing Visit |
 | Negative visits | First negative Visit is canceled | Canceled Visit no longer counts | Remaining visits increases; first negative date moves to next negative-causing Visit or clears |
-| Negative visits | New Membership issued after negative visits | Actor sees warning and first negative date; start date may be first negative date | Negative coverage must be explicit; old negative state is not hidden by payment alone |
-| Negative visits | Negative visits closed by one-off workflow | One-off closure is explicit and visible | Membership state changes only through closure fact; Audit explains closure reason |
-| Negative visits | Membership expired by date but visits remain | System shows both: expired by date and remaining visits | Admin decision is outside automatic calculation; Reports use Memberships state |
+| Negative visits | New Membership issued after negative visits | ADR-020 automatically allocates concrete Visits and forces start to the oldest covered Visit date when count is positive | ADR-021 then closes the predecessor atomically; concrete/unknown remainder stays visible, Payment alone never hides debt |
+| Negative visits | Negative visits covered by one-off workflow | Deliberate oldest-first partial/full coverage | Partial keeps active; full canonical zero closes with source fact and no successor; historical closed debt coverage leaves current Membership unchanged |
+| Negative visits | Membership expired by date but positive visits remain | Show both expiry and balance; ordinary Issue is blocked | No silent forfeiture; Reports use Memberships state |
 | Negative visits | Membership active by date but visits are 0 | System shows 0 visits and allows negative Visit if business permits | Recording Visit creates negative state and warning |
 | Cancellations | Normal counted Visit is canceled | Visit remains in history but is excluded from active counts | Remaining visits and daily visit report recalculate; Audit captures actor/reason |
 | Cancellations | Visit that created negative balance is canceled | Negative state recalculated from remaining counted visits | `negative_balance` may clear; `first_negative_visit_date` may change |
@@ -814,15 +849,17 @@ These scenarios should be testable through domain/application commands and queri
    - When 2026-10-02 Visit is canceled.
    - Then first negative date becomes 2026-10-05, or clears if no remaining Visit creates negative balance.
 
-7. New Membership after negative visits warns and can start at first negative date
-   - Given Client has `negative_balance > 0` and `first_negative_visit_date = 2026-10-02`.
-   - When Actor issues new Membership.
-   - Then command exposes warning and allows start date 2026-10-02.
-   - And if Actor chooses to cover negative visits with new Membership, coverage is explicit and auditable.
+7. Ordinary Issue automatically covers concrete negative Visits
+   - Given eligible concrete debt whose oldest Visit has Kyiv date 2026-10-02.
+   - When Actor issues an ordinary Membership with positive visit capacity.
+   - Then locked ADR-020 allocation covers the oldest capacity-limited set and
+     forces start to 2026-10-02 without Actor method/quantity input.
+   - ADR-021 closes an eligible predecessor atomically; concrete remainder stays
+     coverable, unknown opening remainder stays visible only, and audit explains both.
 
 8. New Payment alone does not hide negative visits
    - Given Client has negative visits.
-   - When cash Payment is recorded without selecting negative coverage by new Membership or one-off closure.
+   - When a standalone cash Payment is recorded outside ordinary Issue or the one-off closure aggregate.
    - Then negative state remains visible.
 
 9. One-off negative closure is explicit
@@ -910,16 +947,41 @@ These scenarios should be testable through domain/application commands and queri
    - When Actor proposes a Freeze covering 2026-01-10 to 2026-01-12.
    - Then command fails with `freeze_conflicts_with_visit` until that Visit is canceled/corrected or the range changes.
 
+26. Single active lifecycle cardinality
+   - Given a Client with a zero-balance active Membership.
+   - When an ordinary Membership is issued.
+   - Then the predecessor has one explainable closure fact, the new Membership is the sole active row and the sale Payment remains active.
+
+27. Negative rollover retains honest debt
+   - Given an active Membership with mixed concrete and unknown negative balance.
+   - When an ordinary Membership is issued.
+   - Then ADR-020 allocates only the deterministic concrete Visits before predecessor closure; concrete remainder is coverable and unknown remainder remains visible only.
+
+28. Positive predecessor blocks all ordinary issue dates
+   - Given an active Membership with positive remaining visits, including one expired-by-date or future-start case.
+   - When an Actor attempts ordinary, backdated or paper-fallback Issue.
+   - Then the command writes neither successor nor closure and reports the lifecycle blocker.
+
+29. Closed-state positive correction is blocked
+   - Given a closed Membership with non-positive recalculated balance.
+   - When a Visit or coverage correction would make it positive.
+   - Then the lifecycle dependency blocks the correction before source facts change; the system does not reactivate or transfer visits.
+
 ## 9. Open implementation questions
 
-Inclusive date arithmetic is accepted by ADR-005 and locked by tests. Multiple
-Memberships, Visit allocation/no-active behavior, same-day ordering and Visit
+Inclusive date arithmetic is accepted by ADR-005 and locked by tests. Explicit
+Membership Visit allocation/no-active behavior, same-day ordering and Visit
 during Freeze are accepted by ADR-014. Freeze range eligibility and its inverse
 Visit conflict are accepted by ADR-015. NonWorkingDay lifecycle/date
 eligibility, full-period contribution and confirmed scope snapshot are accepted
 by ADR-016.
 
-ADR-018 resolves ordinary-sale exact payment, one-off closure and replacement/cancel semantics. Day close/reconciliation remains separate.
+ADR-018 resolves ordinary-sale exact payment, deliberate one-off method and
+quantity, and replacement/cancel semantics. ADR-020 resolves automatic
+deterministic Visit-only allocation. ADR-021 supersedes ADR-014's
+multiple-active cardinality while preserving explicit Visit ID, expiry/future
+eligibility and Freeze behavior; its corrective implementation remains pending.
+Day close/reconciliation remains separate.
 
 1. Define which correction/cancellation actions always require reason/comment beyond ADR-018 sale commands.
 2. Define day close/reconciliation policy: who closes the day, what owner approval means after close, and how changed-after-close is labeled in Reports.

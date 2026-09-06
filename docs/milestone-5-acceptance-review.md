@@ -16,8 +16,8 @@ canonical owner of every calculated value it exposes, and all source facts
 available at this milestone now have a controlled calculation or rebuild
 boundary.
 
-ADR-014 closes the product-decision gate: multiple lifecycle-active Memberships
-are allowed, membership Visits always identify one explicitly, no-active state
+Historical acceptance evidence: ADR-014 then allowed multiple lifecycle-active Memberships;
+ADR-021 later superseded only that cardinality. Membership Visits always identify one explicitly, no-active state
 requires an explicit expired or one-off/trial choice, and active Freeze blocks
 membership consumption. Step 86 closes the required pure source-fact gate for
 counted visits, negative transition, first negative Visit, cancellation and
@@ -82,7 +82,7 @@ cache. An opening declaration includes facts recorded through its own
 | Decision | State before Milestone 6 |
 |---|---|
 | Inclusive date convention | Resolved and locked by tests. |
-| Multiple active memberships and visit allocation | Resolved by ADR-014. Multiple lifecycle-active rows are allowed; `MarkVisit` always carries explicit `membership_id`, and ambiguous candidates are never auto-selected. |
+| Multiple active memberships and visit allocation | Historical ADR-014 result superseded by ADR-021: one lifecycle-active row is the accepted target; `MarkVisit` retains explicit `membership_id` and never auto-selects. |
 | Visit without an active membership | Resolved by ADR-014. Actor explicitly selects an expired Membership with acknowledgements or one-off/trial without consumption; there is no default. |
 | Visit during an active freeze | Resolved by ADR-014. Membership consumption is blocked for an inclusive active Freeze range; correct/cancel Freeze or use explicit one-off/trial. |
 | One-off negative closure | Explicitly deferred to Milestone 7 Payments. Current issue workflow supports only leaving prior negative state visible. |
