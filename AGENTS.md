@@ -7,8 +7,8 @@
 - The selected application stack is fixed in `docs/technology-stack-decision.md`: ASP.NET Core 10 LTS + Razor Pages/MVC + htmx + EF Core/Npgsql + PostgreSQL.
 - Hosting provider is still pending. Production readiness requires backup/restore evidence, including at least 30-day backup retention expectation and a restore rehearsal before production use.
 - Milestone 10.5 and ADR-020 automatic negative coverage are complete and
-  validated. ADR-021 is accepted and planned but not implemented; its
-  one-lifecycle-active-Membership corrective slice is the next roadmap work.
+  validated. ADR-021 contracts (21.1) and lifecycle persistence (21.2) are
+  complete; atomic command transitions (21.3) are the next roadmap work.
   ADR-019/Milestone 10.6 (single-visit sales and reception defaults) follows
   ADR-021, then Milestone 11 (backup/restore/paper fallback readiness). Always
   confirm the latest progress entry and the user's requested scope before work.
@@ -123,8 +123,10 @@ Shared code should stay narrow: IDs, Money, DateRange, actor/session context, re
 
 ## Planned Single-Active Membership Contract
 
-- ADR-021 is accepted but its corrective slice has not started. Do not claim
-  the current multiple-active persistence/query behavior satisfies it.
+- ADR-021 contracts and persistence are complete through Step 251. The sole
+  greenfield baseline enforces one active row and explainable closed history;
+  automatic command transitions and current/history/UI integration remain
+  pending in 21.3/21.4. Do not claim the complete corrective slice is delivered.
 - A Client may have at most one `status = active` issued Membership after
   commit. Add explainable `closed` lifecycle facts and a PostgreSQL partial
   unique index; do not misuse sale `canceled`/`corrected` statuses.

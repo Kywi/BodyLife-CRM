@@ -86,6 +86,7 @@ public sealed class MembershipVisitEligibilityPolicyTests
     [Theory]
     [InlineData(IssuedMembershipLifecycleStatus.Canceled)]
     [InlineData(IssuedMembershipLifecycleStatus.Corrected)]
+    [InlineData(IssuedMembershipLifecycleStatus.Closed)]
     public void InactiveLifecycleMembershipIsIneligible(
         IssuedMembershipLifecycleStatus lifecycleStatus)
     {

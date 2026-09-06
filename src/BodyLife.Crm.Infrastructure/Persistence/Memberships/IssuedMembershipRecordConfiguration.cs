@@ -38,7 +38,7 @@ internal sealed class IssuedMembershipRecordConfiguration
                     "base_end_date = start_date + (duration_days_snapshot - 1)");
                 table.HasCheckConstraint(
                     "ck_issued_memberships_status",
-                    "status in ('active', 'canceled', 'corrected')");
+                    "status in ('active', 'canceled', 'corrected', 'closed')");
                 table.HasCheckConstraint(
                     "ck_issued_memberships_entry_origin",
                     "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
@@ -148,5 +148,10 @@ internal sealed class IssuedMembershipRecordConfiguration
 
         builder.HasIndex(membership => membership.IssuedByAccountId)
             .HasDatabaseName("ix_issued_memberships_issued_by_account_id");
+
+        builder.HasIndex(membership => membership.ClientId)
+            .IsUnique()
+            .HasFilter("status = 'active'")
+            .HasDatabaseName("ux_issued_memberships_active_client");
     }
 }

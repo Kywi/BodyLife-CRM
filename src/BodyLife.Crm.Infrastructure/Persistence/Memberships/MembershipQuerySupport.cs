@@ -9,6 +9,7 @@ internal static class MembershipQuerySupport
     internal const string ActiveMembershipStatus = "active";
     internal const string CanceledMembershipStatus = "canceled";
     internal const string CorrectedMembershipStatus = "corrected";
+    internal const string ClosedMembershipStatus = "closed";
     internal const string ActiveOpeningStateStatus = "active";
     private static readonly QueryPermissionSet OpeningStateActionPermissions = new(
     [
@@ -61,6 +62,7 @@ internal static class MembershipQuerySupport
             ActiveMembershipStatus => IssuedMembershipLifecycleStatus.Active,
             CanceledMembershipStatus => IssuedMembershipLifecycleStatus.Canceled,
             CorrectedMembershipStatus => IssuedMembershipLifecycleStatus.Corrected,
+            ClosedMembershipStatus => IssuedMembershipLifecycleStatus.Closed,
             _ => default,
         };
 

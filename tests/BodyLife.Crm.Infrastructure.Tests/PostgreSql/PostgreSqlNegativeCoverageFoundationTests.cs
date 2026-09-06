@@ -131,6 +131,148 @@ public sealed class PostgreSqlNegativeCoverageFoundationTests
         return database;
     }
 
+    [PostgreSqlFact]
+    public async Task ClosedSourceAndCoveringRetainAllocationAndExactSalePayments()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedBaseAsync(database);
+        var coverage = await InsertNewMembershipCoverageAsync(database, fixture, [2]);
+        await CloseAtZeroWithOpeningSuccessorAsync(database, fixture, coverage.CoveringMembershipId);
+
+        await using var dbContext = database.CreateDbContext();
+        var rebuilder = new MembershipStateCacheRebuilder(dbContext, new FixedTimeProvider(TestNow.AddHours(1)));
+        var source = await rebuilder.RebuildAsync(fixture.SourceMembershipId);
+        var covering = await rebuilder.RebuildAsync(coverage.CoveringMembershipId);
+        Assert.True(source.Succeeded);
+        Assert.Equal(-1, source.State!.RemainingVisits);
+        Assert.True(covering.Succeeded);
+        Assert.Equal(0, covering.State!.RemainingVisits);
+        Assert.Equal(2L, await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.issued_memberships where status = 'closed'"));
+        Assert.Equal(2L, await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.payments where payment_context = 'membership_sale' and status = 'active'"));
+        Assert.Equal("active", await database.ExecuteScalarAsync<string>(
+            $"select status from bodylife.membership_negative_closures where id = '{coverage.ClosureId}'"));
+
+        var rejectedPayment = await Assert.ThrowsAsync<PostgresException>(() => database.ExecuteScalarAsync<int>(
+            $"update bodylife.payments set status = 'canceled' where membership_id = '{coverage.CoveringMembershipId}'"));
+        Assert.Equal("ck_issued_memberships_sale_payment_status", rejectedPayment.ConstraintName);
+    }
+
+    [PostgreSqlFact]
+    public async Task OneOffFactBeforeStatusCommitsAtZeroAndPreservesItsExactPayment()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedBaseAsync(database);
+        var negativeClosure = await InsertOneOffClosureAsync(database, fixture,
+            [new OneOffLine(fixture.OneOffTypeAId, 2, 50m)], [2, 3], 100m);
+        await InsertOneOffLifecycleAsync(database, fixture, fixture.SourceMembershipId, negativeClosure);
+
+        await using var dbContext = database.CreateDbContext();
+        var state = await new MembershipStateCacheRebuilder(dbContext, new FixedTimeProvider(TestNow.AddHours(1)))
+            .RebuildAsync(fixture.SourceMembershipId);
+        Assert.True(state.Succeeded);
+        Assert.Equal(0, state.State!.RemainingVisits);
+        Assert.Equal("closed", await database.ExecuteScalarAsync<string>(
+            $"select status from bodylife.issued_memberships where id = '{fixture.SourceMembershipId}'"));
+        Assert.Equal(1100m, await database.ExecuteScalarAsync<decimal>(
+            "select sum(amount) from bodylife.payments where status = 'active'"));
+        Assert.Equal(0L, await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.issued_memberships where status = 'active'"));
+
+        var successor = await InsertZeroOpeningAsync(database, fixture, fixture.SourceMembershipId);
+        var duplicate = await Assert.ThrowsAsync<PostgresException>(() =>
+            InsertOneOffLifecycleAsync(database, fixture, successor, negativeClosure));
+        Assert.Equal("ux_membership_lifecycle_closures_negative_closure", duplicate.ConstraintName);
+    }
+
+    [PostgreSqlFact]
+    public async Task OneOffLifecycleRejectsMembershipAllocationAndUnrelatedHistoricalCoverage()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedBaseAsync(database);
+        var coverage = await InsertNewMembershipCoverageAsync(database, fixture, [2]);
+        var wrongMethod = await Assert.ThrowsAsync<PostgresException>(() =>
+            InsertOneOffLifecycleAsync(database, fixture, coverage.CoveringMembershipId, coverage.ClosureId));
+        Assert.Equal("ck_membership_lifecycle_closure_one_off_provenance", wrongMethod.ConstraintName);
+
+        var oneOff = await InsertOneOffClosureAsync(database, fixture,
+            [new OneOffLine(fixture.OneOffTypeAId, 1, 50m)], [3], 50m);
+        var wrongSource = await Assert.ThrowsAsync<PostgresException>(() =>
+            InsertOneOffLifecycleAsync(database, fixture, coverage.CoveringMembershipId, oneOff));
+        Assert.Equal("ck_membership_lifecycle_closure_one_off_provenance", wrongSource.ConstraintName);
+        Assert.Equal("active", await database.ExecuteScalarAsync<string>(
+            $"select status from bodylife.issued_memberships where id = '{coverage.CoveringMembershipId}'"));
+    }
+
+    private static async Task InsertOneOffLifecycleAsync(PostgreSqlTestDatabase database,
+        CoverageFixture fixture, Guid source, Guid negativeClosure)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        // The fact deliberately precedes the projection update: consistency is deferred.
+        await ExecuteAsync(connection, transaction, $"""
+            insert into bodylife.membership_lifecycle_closures (id, client_id, source_membership_id,
+                negative_closure_id, reason_code, recorded_by_account_id, session_id,
+                correlation_id, idempotency_key, entry_origin, occurred_at, recorded_at)
+            values (gen_random_uuid(), '{fixture.ClientId}', '{source}', '{negativeClosure}',
+                'one_off_zero_balance', '{fixture.AccountId}', '{fixture.SessionId}', 'one-off-lifecycle',
+                '{Guid.NewGuid()}', 'normal', now(), now());
+            update bodylife.issued_memberships set status = 'closed' where id = '{source}';
+            """);
+        await transaction.CommitAsync();
+    }
+
+    private static async Task<Guid> CloseAtZeroWithOpeningSuccessorAsync(PostgreSqlTestDatabase database,
+        CoverageFixture fixture, Guid source)
+    {
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await ExecuteAsync(connection, transaction,
+            $"update bodylife.issued_memberships set status = 'closed' where id = '{source}'");
+        var successor = Guid.NewGuid();
+        await ExecuteAsync(connection, transaction, ZeroOpeningSql(fixture, source, successor));
+        await ExecuteAsync(connection, transaction, $"""
+            insert into bodylife.membership_lifecycle_closures (id, client_id, source_membership_id,
+                successor_membership_id, reason_code, recorded_by_account_id, session_id,
+                correlation_id, idempotency_key, entry_origin, occurred_at, recorded_at)
+            values (gen_random_uuid(), '{fixture.ClientId}', '{source}', '{successor}',
+                'zero_balance_rollover', '{fixture.AccountId}', '{fixture.SessionId}', 'coverage-rollover',
+                '{Guid.NewGuid()}', 'normal', now(), now());
+            """);
+        await transaction.CommitAsync();
+        return successor;
+    }
+
+    private static async Task<Guid> InsertZeroOpeningAsync(PostgreSqlTestDatabase database,
+        CoverageFixture fixture, Guid template)
+    {
+        var id = Guid.NewGuid();
+        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await ExecuteAsync(connection, transaction, ZeroOpeningSql(fixture, template, id));
+        await transaction.CommitAsync();
+        return id;
+    }
+
+    private static string ZeroOpeningSql(CoverageFixture fixture, Guid template, Guid id) => $"""
+        insert into bodylife.issued_memberships (id, client_id, membership_type_id, issuance_mode,
+            type_name_snapshot, duration_days_snapshot, visits_limit_snapshot, price_amount_snapshot,
+            price_currency_snapshot, start_date, base_end_date, issued_at, issued_by_account_id, status, entry_origin)
+        select '{id}', client_id, membership_type_id, 'opening_state', type_name_snapshot, duration_days_snapshot,
+            visits_limit_snapshot, price_amount_snapshot, price_currency_snapshot, start_date, base_end_date,
+            now(), issued_by_account_id, 'active', 'manual_backfill' from bodylife.issued_memberships where id = '{template}';
+        insert into bodylife.membership_opening_states (id, membership_id, opening_as_of_date,
+            declared_remaining_visits, declared_negative_balance, known_effective_end_date, known_extension_days,
+            source_reference, reason, recorded_at, recorded_by_account_id, recorded_session_id, entry_origin, status)
+        select gen_random_uuid(), '{id}', start_date, 0, 0, base_end_date, 0, 'Historical zero',
+            'Known historical zero', now(), '{fixture.AccountId}', '{fixture.SessionId}', 'manual_backfill', 'active'
+        from bodylife.issued_memberships where id = '{template}';
+        """;
+
     private static async Task<CoverageFixture> SeedBaseAsync(
         PostgreSqlTestDatabase database)
     {
@@ -375,6 +517,8 @@ public sealed class PostgreSqlNegativeCoverageFoundationTests
             connection,
             transaction,
             """
+            update bodylife.issued_memberships set status = 'closed' where id = @source_membership_id;
+
             insert into bodylife.issued_memberships (
                 id, client_id, membership_type_id, issuance_mode, type_name_snapshot,
                 duration_days_snapshot, visits_limit_snapshot, price_amount_snapshot,
@@ -405,7 +549,16 @@ public sealed class PostgreSqlNegativeCoverageFoundationTests
                 @oldest_visit_id, @visits_count, null,
                 @now, @now, @account_id, @session_id,
                 'normal', null, @idempotency_key, 'active');
+
+            insert into bodylife.membership_lifecycle_closures (
+                id, client_id, source_membership_id, successor_membership_id, reason_code,
+                recorded_by_account_id, session_id, correlation_id, idempotency_key,
+                entry_origin, occurred_at, recorded_at)
+            values (gen_random_uuid(), @client_id, @source_membership_id, @membership_id,
+                'negative_balance_rollover', @account_id, @session_id, 'coverage-fixture',
+                @idempotency_key, 'normal', @now, @now);
             """,
+            ("source_membership_id", fixture.SourceMembershipId),
             ("membership_id", coveringMembershipId),
             ("client_id", fixture.ClientId),
             ("membership_type_id", fixture.CoveringTypeId),

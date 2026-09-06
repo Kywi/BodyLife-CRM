@@ -106,8 +106,8 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                             message = 'Sale Membership requires exactly one cash Payment equal to its price snapshot.';
                     end if;
 
-                    if (membership_status = 'active' and active_count <> 1)
-                        or (membership_status <> 'active' and active_count <> 0) then
+                    if (membership_status in ('active', 'closed') and active_count <> 1)
+                        or (membership_status in ('canceled', 'corrected') and active_count <> 0) then
                         raise exception using
                             errcode = '23514',
                             constraint = 'ck_issued_memberships_sale_payment_status',
@@ -300,7 +300,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                                or old_consumption.source_fact_id <> item.visit_id
                                or (target_status = 'active' and (
                                     visit.status <> 'active'
-                                    or source_membership.status <> 'active'
+                                    or source_membership.status not in ('active', 'closed')
                                     or old_consumption.status <> 'active')))
                     into
                         item_count,
@@ -472,7 +472,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                             or target_visits_count > covering_visits_limit
                             or covering_start_date is distinct from oldest_visit_date
                             or covering_mode <> 'sale'
-                            or (target_status = 'active' and covering_status <> 'active') then
+                            or (target_status = 'active' and covering_status not in ('active', 'closed')) then
                             raise exception using
                                 errcode = '23514',
                                 constraint = 'ck_negative_closure_membership_allocation',
@@ -782,7 +782,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                         return;
                     end if;
 
-                    if membership_status = 'active' then
+                    if membership_status in ('active', 'closed') then
                         if correction_id is not null then
                             raise exception using
                                 errcode = '23514',
@@ -903,7 +903,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                     )
                     into replacement_has_own_correction;
 
-                    if replacement_membership_status = 'active'
+                    if replacement_membership_status in ('active', 'closed')
                         and replacement_payment_status = 'active'
                         and not replacement_has_own_correction then
                         return;

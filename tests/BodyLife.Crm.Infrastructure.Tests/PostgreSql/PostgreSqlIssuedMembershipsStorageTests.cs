@@ -277,7 +277,7 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
         Assert.Equal("UAH", persisted.PriceCurrencySnapshot);
         Assert.Equal(new DateOnly(2026, 7, 30), persisted.BaseEndDate);
 
-        await AssertForeignKeyViolationAsync(
+        await AssertRestrictViolationAsync(
             () => DeleteMembershipTypeAsync(database.ConnectionString, membershipTypeId),
             "FK_issued_memberships_membership_types_membership_type_id");
     }
@@ -593,6 +593,15 @@ public sealed class PostgreSqlIssuedMembershipsStorageTests
     {
         var exception = await Assert.ThrowsAsync<PostgresException>(action);
         Assert.Equal(PostgresErrorCodes.ForeignKeyViolation, exception.SqlState);
+        Assert.Equal(constraintName, exception.ConstraintName);
+    }
+
+    private static async Task AssertRestrictViolationAsync(
+        Func<Task> action,
+        string constraintName)
+    {
+        var exception = await Assert.ThrowsAsync<PostgresException>(action);
+        Assert.Equal(PostgresErrorCodes.RestrictViolation, exception.SqlState);
         Assert.Equal(constraintName, exception.ConstraintName);
     }
 

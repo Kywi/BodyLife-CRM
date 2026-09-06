@@ -17,6 +17,8 @@ internal static class MembershipCommandSupport
     private const string IdempotencyUniqueConstraint = "ux_command_idempotency_keys_command_key";
     private const string ActiveOpeningStateUniqueConstraint =
         "ux_membership_opening_states_active_membership";
+    private const string ActiveMembershipUniqueConstraint =
+        "ux_issued_memberships_active_client";
     private const int IdempotencyKeyMaxLength = 200;
     private const int CorrelationIdMaxLength = 128;
     private const int DeviceLabelMaxLength = 120;
@@ -263,11 +265,14 @@ internal static class MembershipCommandSupport
         }
 
         if (exception.SqlState == PostgresErrorCodes.UniqueViolation
-            && exception.ConstraintName == ActiveOpeningStateUniqueConstraint)
+            && exception.ConstraintName is ActiveOpeningStateUniqueConstraint
+                or ActiveMembershipUniqueConstraint)
         {
             result = Error(
                 CommandErrorCode.StaleState,
-                "An active opening state already exists. Refresh canonical membership state.",
+                exception.ConstraintName == ActiveMembershipUniqueConstraint
+                    ? "An active Membership already exists. Refresh canonical membership state."
+                    : "An active opening state already exists. Refresh canonical membership state.",
                 "membershipId");
             return true;
         }

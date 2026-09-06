@@ -34,6 +34,31 @@ public sealed partial class PostgreSqlIssueMembershipCommandTests
     private static readonly DateOnly ExistingBaseEndDate = new(2026, 7, 30);
 
     [PostgreSqlFact]
+    public async Task ActiveClientUniqueViolationReturnsControlledErrorWithoutPartialSale()
+    {
+        await using var database = await PostgreSqlTestDatabase.CreateAsync();
+        await using var dbContext = database.CreateDbContext();
+        await dbContext.Database.MigrateAsync();
+        var actor = await SeedActorAsync(database, ActorRole.Admin, AccountKind.NamedAdmin, deviceLabel: "lifecycle tablet");
+        var fixture = await SeedIssueFixtureAsync(database, actor.AccountId.Value);
+        var first = await CreateHandler(dbContext).ExecuteAsync(
+            CreateCommand(actor, fixture, "lifecycle-first-sale"), CancellationToken.None);
+        AssertSuccessfulResult(first, fixture.ClientId);
+        var auditCount = await database.ExecuteScalarAsync<long>("select count(*) from bodylife.business_audit_entries");
+
+        var rejected = await CreateHandler(dbContext).ExecuteAsync(
+            CreateCommand(actor, fixture, "lifecycle-conflicting-sale"), CancellationToken.None);
+
+        Assert.Equal(CommandErrorCode.StaleState, Assert.Single(rejected.Errors).Code);
+        Assert.Equal(1L, await database.ExecuteScalarAsync<long>("select count(*) from bodylife.issued_memberships"));
+        Assert.Equal(1L, await database.ExecuteScalarAsync<long>("select count(*) from bodylife.payments"));
+        Assert.Equal(0L, await database.ExecuteScalarAsync<long>("select count(*) from bodylife.membership_lifecycle_closures"));
+        Assert.Equal(auditCount, await database.ExecuteScalarAsync<long>("select count(*) from bodylife.business_audit_entries"));
+        Assert.Equal(0L, await database.ExecuteScalarAsync<long>(
+            "select count(*) from bodylife.command_idempotency_keys where idempotency_key = 'lifecycle-conflicting-sale'"));
+    }
+
+    [PostgreSqlFact]
     public async Task NamedAdminIssuesExactSaleSnapshotCacheAuditAndIdempotencyAtomically()
     {
         await using var database = await PostgreSqlTestDatabase.CreateAsync();

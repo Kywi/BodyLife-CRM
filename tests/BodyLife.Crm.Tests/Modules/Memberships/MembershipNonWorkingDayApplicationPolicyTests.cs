@@ -54,6 +54,7 @@ public sealed class MembershipNonWorkingDayApplicationPolicyTests
     [Theory]
     [InlineData(IssuedMembershipLifecycleStatus.Canceled)]
     [InlineData(IssuedMembershipLifecycleStatus.Corrected)]
+    [InlineData(IssuedMembershipLifecycleStatus.Closed)]
     public void HistoricalLifecycleMembershipIsExcluded(
         IssuedMembershipLifecycleStatus lifecycleStatus)
     {

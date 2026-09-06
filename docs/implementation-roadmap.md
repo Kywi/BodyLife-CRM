@@ -2,7 +2,7 @@
 
 Дата: 2026-07-07, оновлено 2026-09-06
 Статус: чинний план; Milestones 1-10.5 та ADR-020 виконані, ADR-021 corrective
-slice: 21.1 contracts узгоджені, наступний крок 21.2 persistence;
+slice: 21.1 contracts та 21.2 persistence виконані, наступний крок 21.3 transitions;
 погоджений Milestone 10.6 іде після нього, Milestone 11 -
 після 10.6
 
@@ -704,9 +704,9 @@ slice: 21.1 contracts узгоджені, наступний крок 21.2 persi
 
 ## Стоп після ADR-020; ADR-021 corrective slice є наступним
 
-Milestone 10.5 and ADR-020 are implemented and validated. ADR-021 is accepted
-and planned but not implemented; its one-active-Membership corrective slice is
-the next roadmap work and must finish before Milestone 10.6. ADR-019/Milestone
+Milestone 10.5 and ADR-020 are implemented and validated. ADR-021 contracts and
+lifecycle persistence are complete through Step 251; atomic transitions (21.3)
+are next, and the corrective slice must finish before Milestone 10.6. ADR-019/Milestone
 10.6 remain accepted and planned, and Milestone 11 follows them without having
 started.
 
@@ -799,12 +799,14 @@ closure as separate, explainable ways to resolve concrete Visit debt.
    architecture, interaction contracts, UI workflows, operations/audit and
    quality expectations. Remove contradictory multiple-active and
    active-status-only negative-query wording before code changes.
-   Completed as documentation-only Step 250 on 2026-09-06; runtime lifecycle
-   behavior remains pending. Next: 21.2 only.
+   Completed as documentation-only Step 250 on 2026-09-06.
 2. **21.2 Lifecycle persistence.** Add `closed`, append-only Membership closure
    source facts, reason/successor links, lifecycle mappings and a PostgreSQL
    partial unique index for one `active` row per Client. Fold everything into
    the sole `InitialBaseline` and prove clean apply/current-model invariants.
+   Completed as Step 251 on 2026-09-06: schema, closure provenance, deferred
+   guards, mappings and PostgreSQL gates. Automatic transitions and presentation
+   remain pending. Next: 21.3 only.
 3. **21.3 Atomic transitions.** Extend Issue preview/token and command locks for
    zero, positive, concrete/unknown/mixed negative, expired, future-start,
    backdated and paper-fallback states. Close eligible predecessor, create the

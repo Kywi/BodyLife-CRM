@@ -402,7 +402,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                     table.CheckConstraint("ck_issued_memberships_entry_origin", "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
                     table.CheckConstraint("ck_issued_memberships_issuance_mode", "issuance_mode in ('sale', 'opening_state')");
                     table.CheckConstraint("ck_issued_memberships_price_snapshot_non_negative", "price_amount_snapshot >= 0");
-                    table.CheckConstraint("ck_issued_memberships_status", "status in ('active', 'canceled', 'corrected')");
+                    table.CheckConstraint("ck_issued_memberships_status", "status in ('active', 'canceled', 'corrected', 'closed')");
                     table.CheckConstraint("ck_issued_memberships_type_name_snapshot_not_empty", "length(btrim(type_name_snapshot)) > 0");
                     table.CheckConstraint("ck_issued_memberships_visits_snapshot_non_negative", "visits_limit_snapshot >= 0");
                     table.ForeignKey(
@@ -2471,12 +2471,154 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                 table: "visits",
                 column: "session_id");
 
+            migrationBuilder.CreateTable(
+                name: "membership_lifecycle_closures",
+                schema: "bodylife",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    client_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    source_membership_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    successor_membership_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    negative_closure_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    reason_code = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    recorded_by_account_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    session_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    correlation_id = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    idempotency_key = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    entry_origin = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    entry_batch_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    occurred_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    recorded_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    explanation = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_membership_lifecycle_closures", x => x.id);
+                    table.CheckConstraint("ck_membership_lifecycle_closures_correlation", "length(btrim(correlation_id)) > 0");
+                    table.CheckConstraint("ck_membership_lifecycle_closures_distinct_memberships", "successor_membership_id is null or successor_membership_id <> source_membership_id");
+                    table.CheckConstraint("ck_membership_lifecycle_closures_explanation", "explanation is null or length(btrim(explanation)) > 0");
+                    table.CheckConstraint("ck_membership_lifecycle_closures_idempotency", "length(btrim(idempotency_key)) > 0");
+                    table.CheckConstraint("ck_membership_lifecycle_closures_origin", "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
+                    table.CheckConstraint("ck_membership_lifecycle_closures_reason", "reason_code in ('zero_balance_rollover', 'negative_balance_rollover', 'one_off_zero_balance')");
+                    table.CheckConstraint("ck_membership_lifecycle_closures_shape", "(reason_code in ('zero_balance_rollover', 'negative_balance_rollover') and successor_membership_id is not null and negative_closure_id is null) or (reason_code = 'one_off_zero_balance' and successor_membership_id is null and negative_closure_id is not null)");
+                    table.ForeignKey(
+                        name: "FK_membership_lifecycle_closures_accounts_recorded_by_account_~",
+                        column: x => x.recorded_by_account_id,
+                        principalSchema: "bodylife",
+                        principalTable: "accounts",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_membership_lifecycle_closures_clients_client_id",
+                        column: x => x.client_id,
+                        principalSchema: "bodylife",
+                        principalTable: "clients",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_membership_lifecycle_closures_issued_memberships_source_mem~",
+                        columns: x => new { x.source_membership_id, x.client_id },
+                        principalSchema: "bodylife",
+                        principalTable: "issued_memberships",
+                        principalColumns: new[] { "id", "client_id" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_membership_lifecycle_closures_issued_memberships_successor_~",
+                        columns: x => new { x.successor_membership_id, x.client_id },
+                        principalSchema: "bodylife",
+                        principalTable: "issued_memberships",
+                        principalColumns: new[] { "id", "client_id" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_membership_lifecycle_closures_membership_negative_closures_~",
+                        columns: x => new { x.negative_closure_id, x.client_id },
+                        principalSchema: "bodylife",
+                        principalTable: "membership_negative_closures",
+                        principalColumns: new[] { "id", "client_id" },
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_membership_lifecycle_closures_sessions_session_id",
+                        column: x => x.session_id,
+                        principalSchema: "bodylife",
+                        principalTable: "sessions",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "ux_issued_memberships_active_client",
+                schema: "bodylife",
+                table: "issued_memberships",
+                column: "client_id",
+                unique: true,
+                filter: "status = 'active'");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_membership_lifecycle_closures_client_timeline",
+                schema: "bodylife",
+                table: "membership_lifecycle_closures",
+                columns: new[] { "client_id", "recorded_at" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_membership_lifecycle_closures_negative_closure_id_client_id",
+                schema: "bodylife",
+                table: "membership_lifecycle_closures",
+                columns: new[] { "negative_closure_id", "client_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_membership_lifecycle_closures_recorded_by_account_id",
+                schema: "bodylife",
+                table: "membership_lifecycle_closures",
+                column: "recorded_by_account_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_membership_lifecycle_closures_session_id",
+                schema: "bodylife",
+                table: "membership_lifecycle_closures",
+                column: "session_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_membership_lifecycle_closures_source_membership_id_client_id",
+                schema: "bodylife",
+                table: "membership_lifecycle_closures",
+                columns: new[] { "source_membership_id", "client_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_membership_lifecycle_closures_successor_membership",
+                schema: "bodylife",
+                table: "membership_lifecycle_closures",
+                column: "successor_membership_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_membership_lifecycle_closures_successor_membership_id_clien~",
+                schema: "bodylife",
+                table: "membership_lifecycle_closures",
+                columns: new[] { "successor_membership_id", "client_id" });
+
+            migrationBuilder.CreateIndex(
+                name: "ux_membership_lifecycle_closures_negative_closure",
+                schema: "bodylife",
+                table: "membership_lifecycle_closures",
+                column: "negative_closure_id",
+                unique: true,
+                filter: "negative_closure_id is not null");
+
+            migrationBuilder.CreateIndex(
+                name: "ux_membership_lifecycle_closures_source_membership",
+                schema: "bodylife",
+                table: "membership_lifecycle_closures",
+                column: "source_membership_id",
+                unique: true);
+
             AddPostgreSqlInvariants(migrationBuilder);
+            AddMembershipLifecycleInvariants(migrationBuilder);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            RemoveMembershipLifecycleInvariants(migrationBuilder);
             RemovePostgreSqlInvariants(migrationBuilder);
 
             migrationBuilder.DropTable(
@@ -2517,6 +2659,10 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "membership_negative_closure_corrections",
+                schema: "bodylife");
+
+            migrationBuilder.DropTable(
+                name: "membership_lifecycle_closures",
                 schema: "bodylife");
 
             migrationBuilder.DropTable(

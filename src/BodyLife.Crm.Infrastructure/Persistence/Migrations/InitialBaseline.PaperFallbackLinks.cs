@@ -74,6 +74,11 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                             into source_origin, source_batch_id
                             from bodylife.membership_negative_closures source
                             where source.id = target_entity_id;
+                        when 'membership_lifecycle_closure' then
+                            select source.entry_origin, source.entry_batch_id
+                            into source_origin, source_batch_id
+                            from bodylife.membership_lifecycle_closures source
+                            where source.id = target_entity_id;
                         when 'membership_negative_closure_correction' then
                             select source.entry_origin, source.entry_batch_id
                             into source_origin, source_batch_id
@@ -354,6 +359,10 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                                 from bodylife.membership_negative_closure_corrections correction
                                 where correction.replacement_closure_id = closure.id)
                             union all
+                            select 'membership_lifecycle_closure', closure.id
+                            from bodylife.membership_lifecycle_closures closure
+                            where closure.successor_membership_id = anchor_id
+                            union all
                             select 'membership_negative_closure_line', line.id
                             from bodylife.membership_negative_closure_lines line
                             join bodylife.membership_negative_closures closure
@@ -434,6 +443,10 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                             select 'payment', payment.id
                             from bodylife.payments payment
                             where payment.negative_closure_id = anchor_id
+                            union all
+                            select 'membership_lifecycle_closure', closure.id
+                            from bodylife.membership_lifecycle_closures closure
+                            where closure.negative_closure_id = anchor_id
                         ) expected;
                     elsif anchor_type in (
                         'visit_cancellation',
@@ -481,6 +494,13 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                             union all
                             select 'membership_negative_closure', correction.replacement_closure_id
                             from bodylife.membership_negative_closure_corrections correction
+                            where correction.id = anchor_id
+                              and correction.mode = 'replace'
+                            union all
+                            select 'membership_lifecycle_closure', lifecycle_closure.id
+                            from bodylife.membership_negative_closure_corrections correction
+                            join bodylife.membership_lifecycle_closures lifecycle_closure
+                              on lifecycle_closure.negative_closure_id = correction.replacement_closure_id
                             where correction.id = anchor_id
                               and correction.mode = 'replace'
                             union all
@@ -548,6 +568,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                         when 'issued_memberships' then 'membership'
                         when 'issued_membership_sale_corrections' then 'issued_membership_sale_correction'
                         when 'membership_negative_closures' then 'membership_negative_closure'
+                        when 'membership_lifecycle_closures' then 'membership_lifecycle_closure'
                         when 'membership_negative_closure_corrections' then 'membership_negative_closure_correction'
                         when 'membership_negative_closure_lines' then 'membership_negative_closure_line'
                         when 'membership_negative_closure_items' then 'membership_negative_closure_item'
@@ -710,6 +731,10 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                     after insert or update or delete on bodylife.membership_negative_closures
                     deferrable initially deferred for each row
                     execute function bodylife.enforce_paper_source_entity_link();
+                create constraint trigger ck_membership_lifecycle_closures_paper_link
+                    after insert or update or delete on bodylife.membership_lifecycle_closures
+                    deferrable initially deferred for each row
+                    execute function bodylife.enforce_paper_source_entity_link();
                 create constraint trigger ck_negative_closure_corrections_paper_link
                     after insert or update or delete on bodylife.membership_negative_closure_corrections
                     deferrable initially deferred for each row
@@ -744,6 +769,8 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                     on bodylife.membership_negative_closure_corrections;
                 drop trigger if exists ck_negative_closures_paper_link
                     on bodylife.membership_negative_closures;
+                drop trigger if exists ck_membership_lifecycle_closures_paper_link
+                    on bodylife.membership_lifecycle_closures;
                 drop trigger if exists ck_issued_sale_corrections_paper_link
                     on bodylife.issued_membership_sale_corrections;
                 drop trigger if exists ck_memberships_paper_link

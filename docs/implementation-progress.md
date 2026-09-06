@@ -15962,3 +15962,100 @@ Stop point:
   deferred consistency in the sole `InitialBaseline`, with PostgreSQL gates.
 - Do not claim runtime one-active enforcement yet. Stop after this documentation
   step; do not start 21.2, Milestone 10.6 or Milestone 11 in the same task.
+
+## Step 251 - Persisted ADR-021 single-active lifecycle invariants
+
+Status: ADR-021 step 21.2 persistence completed on 2026-09-06. Step 21.1
+contracts and 21.2 schema are complete; automatic transitions, current/history
+queries and presentation remain pending. Milestone 10.6 and Milestone 11 have
+not started.
+
+Completed:
+
+- Added `Closed = 4` without renumbering existing lifecycle values, persistence
+  parsing and inactive eligibility coverage for Visit, Freeze and NonWorkingDay.
+- Added `membership_lifecycle_closures` with unique source, distinct same-client
+  successor, constrained reason/context fields and actor/session references.
+  Rollover requires a successor; one-off requires its originating negative
+  closure, a matching historical item and at most one newly closed Membership
+  per aggregate. Canceled/replaced coverage remains valid historical evidence.
+- Added `ux_issued_memberships_active_client` and deferred final-state checks:
+  closed means exactly one lifecycle fact; active/canceled/corrected means none.
+  UPDATE, DELETE and TRUNCATE, including a cascading truncate, cannot erase
+  closure history. There are no membership balance formulas in SQL.
+- Folded generated EF table/index operations, custom PostgreSQL guards,
+  Designer and current model snapshot into the sole `InitialBaseline`. No
+  production migration chain, legacy repair or existing local database rebuild
+  was introduced.
+- Preserved the exact active sale Payment for closed Memberships and active
+  coverage whose source/covering Membership later closes. Added lifecycle facts
+  to canonical paper sale/one-off/replacement row sets and source-link checks.
+- Mapped the exact active-client unique violation to controlled `StaleState`.
+  A competing ordinary Issue rolls back Membership, Payment, audit and
+  idempotency writes. Automatic predecessor closure is still a 21.3 command
+  change, not a behavior delivered by this persistence step.
+- Added PostgreSQL race, rollback, deferred consistency, uniqueness, shape/FK,
+  append-only, paper-link, retained Payment/allocation and one-off provenance
+  regressions. A real coverage cancellation command preserves closed lifecycle
+  history while restoring negative balance. Updated the directly affected
+  coverage storage fixture to use a valid closed predecessor.
+
+Validation:
+
+- Native .NET SDK 10.0.301 Release solution build passed with zero warnings and
+  errors; `dotnet format --verify-no-changes` passed. Core tests passed 405/405
+  and Web tests passed 379/379, with zero skips.
+- Focused real PostgreSQL 18.6 gate passed 41/41, with zero skips: migration,
+  issued/lifecycle storage, negative-coverage and exact-sale foundation,
+  baseline paper links, paper entry commands, new Issue rollback and closed
+  coverage cancellation regressions, plus existing sale cancellation,
+  replacement, repeated replacement and direct lifecycle-guard scenarios.
+- Clean baseline apply, repeat apply, rollback/reapply and EF model drift checks
+  passed. Migration listing contains only `20260806074535_InitialBaseline`;
+  generated SQL was inspected at `/tmp/adr021-212-baseline.sql` for table,
+  partial unique index, deferred consistency and append-only statements.
+- Initial Windows/WSL-share validation could not run PostgreSQL tests. Root
+  located the native SDK and used isolated databases on local PostgreSQL with
+  a temporary test role. The native baseline exposed an existing referenced
+  MembershipType delete assertion expecting 23503; it now checks PostgreSQL's
+  precise 23001 RestrictViolation, while insertion FK assertions retain 23503.
+- Independent review identified TRUNCATE and one-off provenance gaps; these
+  were fixed and covered. Final review found no actionable persistence issue.
+  New paper tests were corrected to assert the first applicable exact-shape /
+  source-batch guard rather than a later guard for the same invalid fixture.
+- Required Graphify query and `graphify update .` ran. Final graph integration
+  refreshes this task's code and contract/progress sources through AST and host
+  semantic extraction; unrelated sources retain prior freshness. Host semantic
+  token counts are unavailable from the collaboration API, not measured zero.
+- Documentation structure/local links, graph integrity and `git diff --check`
+  passed. The pre-existing untracked package files remain outside the task.
+- Full `scripts/validate.sh` and Playwright were not run for this persistence
+  step. Legacy PostgreSQL/UI fixtures that intentionally create multiple active
+  Memberships need conversion during 21.3/21.4; this focused result is not full
+  ADR-021 acceptance. No tests were disabled or marked skipped to pass this gate.
+
+Orchestration record:
+
+- Root owner lease: `adr021-21.2-root-01a075ea-20260906`; exclusive grants were
+  passed sequentially through baseline verification, environment preparation,
+  the persistence worker, root integration and final verification. Root kept
+  final acceptance, progress/Graphify updates, staging and commits.
+- Dispatch record: `bodylife_scout` = `gpt-5.6-luna` / low;
+  `bodylife_verifier` = `gpt-5.6-luna` / medium;
+  `bodylife_worker` = `gpt-5.6-terra` / medium;
+  `bodylife_reviewer` = `gpt-5.6-terra` / high. No Luna model fallback occurred.
+- Worker handed off schema/guard implementation with Designer and dedicated
+  tests unfinished. Root completed those, aligned actual baseline operations
+  with the generated EF model, resolved test fixtures and ran the final focused
+  PostgreSQL gate after the independent verifier's build/domain/Web checks.
+
+Stop point:
+
+- Next is ADR-021 / 21.3 only: signed predecessor preview, shared locks and
+  atomic Issue/full-one-off transitions, correction dependencies and audit.
+- Before product commands create closed rows, address their canonical reread
+  needs alongside the planned 21.4 current/history/profile/audit presentation;
+  existing presentation switches do not yet handle Closed everywhere.
+- Ordinary Issue currently rejects a second active Membership with controlled
+  refresh feedback; it does not yet perform automatic rollover. Do not claim
+  the whole corrective slice, Milestone 10.6 or Milestone 11 is implemented.

@@ -159,6 +159,7 @@ public sealed class MembershipFreezeEligibilityPreparer
             "active" => IssuedMembershipLifecycleStatus.Active,
             "canceled" => IssuedMembershipLifecycleStatus.Canceled,
             "corrected" => IssuedMembershipLifecycleStatus.Corrected,
+            "closed" => IssuedMembershipLifecycleStatus.Closed,
             _ => throw new InvalidOperationException(
                 $"Issued Membership status '{source.Status}' is not supported."),
         };

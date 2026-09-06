@@ -1009,6 +1009,11 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                     b.HasAlternateKey("Id", "ClientId")
                         .HasName("AK_issued_memberships_id_client_id");
 
+                    b.HasIndex("ClientId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_issued_memberships_active_client")
+                        .HasFilter("status = 'active'");
+
                     b.HasIndex("IssuedByAccountId")
                         .HasDatabaseName("ix_issued_memberships_issued_by_account_id");
 
@@ -1035,7 +1040,7 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("ck_issued_memberships_price_snapshot_non_negative", "price_amount_snapshot >= 0");
 
-                            t.HasCheckConstraint("ck_issued_memberships_status", "status in ('active', 'canceled', 'corrected')");
+                            t.HasCheckConstraint("ck_issued_memberships_status", "status in ('active', 'canceled', 'corrected', 'closed')");
 
                             t.HasCheckConstraint("ck_issued_memberships_type_name_snapshot_not_empty", "length(btrim(type_name_snapshot)) > 0");
 
@@ -1327,6 +1332,122 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_membership_extension_days_source_label_not_empty", "length(btrim(source_label)) > 0");
 
                             t.HasCheckConstraint("ck_membership_extension_days_source_type_not_empty", "length(btrim(source_type)) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("BodyLife.Crm.Infrastructure.Persistence.Memberships.MembershipLifecycleClosureRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_id");
+
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("correlation_id");
+
+                    b.Property<Guid?>("EntryBatchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_batch_id");
+
+                    b.Property<string>("EntryOrigin")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("entry_origin");
+
+                    b.Property<string>("Explanation")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("explanation");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<Guid?>("NegativeClosureId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("negative_closure_id");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("ReasonCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("reason_code");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("recorded_at");
+
+                    b.Property<Guid>("RecordedByAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recorded_by_account_id");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("session_id");
+
+                    b.Property<Guid>("SourceMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_membership_id");
+
+                    b.Property<Guid?>("SuccessorMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("successor_membership_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NegativeClosureId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_membership_lifecycle_closures_negative_closure")
+                        .HasFilter("negative_closure_id is not null");
+
+                    b.HasIndex("RecordedByAccountId");
+
+                    b.HasIndex("SessionId");
+
+                    b.HasIndex("SourceMembershipId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_membership_lifecycle_closures_source_membership");
+
+                    b.HasIndex("SuccessorMembershipId")
+                        .HasDatabaseName("ix_membership_lifecycle_closures_successor_membership");
+
+                    b.HasIndex("ClientId", "RecordedAt")
+                        .HasDatabaseName("ix_membership_lifecycle_closures_client_timeline");
+
+                    b.HasIndex("NegativeClosureId", "ClientId");
+
+                    b.HasIndex("SourceMembershipId", "ClientId");
+
+                    b.HasIndex("SuccessorMembershipId", "ClientId");
+
+                    b.ToTable("membership_lifecycle_closures", "bodylife", t =>
+                        {
+                            t.HasCheckConstraint("ck_membership_lifecycle_closures_correlation", "length(btrim(correlation_id)) > 0");
+
+                            t.HasCheckConstraint("ck_membership_lifecycle_closures_distinct_memberships", "successor_membership_id is null or successor_membership_id <> source_membership_id");
+
+                            t.HasCheckConstraint("ck_membership_lifecycle_closures_explanation", "explanation is null or length(btrim(explanation)) > 0");
+
+                            t.HasCheckConstraint("ck_membership_lifecycle_closures_idempotency", "length(btrim(idempotency_key)) > 0");
+
+                            t.HasCheckConstraint("ck_membership_lifecycle_closures_origin", "entry_origin in ('normal', 'manual_backfill', 'paper_fallback', 'future_import')");
+
+                            t.HasCheckConstraint("ck_membership_lifecycle_closures_reason", "reason_code in ('zero_balance_rollover', 'negative_balance_rollover', 'one_off_zero_balance')");
+
+                            t.HasCheckConstraint("ck_membership_lifecycle_closures_shape", "(reason_code in ('zero_balance_rollover', 'negative_balance_rollover') and successor_membership_id is not null and negative_closure_id is null) or (reason_code = 'one_off_zero_balance' and successor_membership_id is null and negative_closure_id is not null)");
                         });
                 });
 
@@ -3059,6 +3180,46 @@ namespace BodyLife.Crm.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Membership");
+                });
+
+            modelBuilder.Entity("BodyLife.Crm.Infrastructure.Persistence.Memberships.MembershipLifecycleClosureRecord", b =>
+                {
+                    b.HasOne("BodyLife.Crm.Infrastructure.Persistence.ClientsSearch.ClientRecord", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BodyLife.Crm.Infrastructure.Persistence.UsersRoles.AccountRecord", null)
+                        .WithMany()
+                        .HasForeignKey("RecordedByAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BodyLife.Crm.Infrastructure.Persistence.UsersRoles.SessionRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BodyLife.Crm.Infrastructure.Persistence.Memberships.MembershipNegativeClosureRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NegativeClosureId", "ClientId")
+                        .HasPrincipalKey("Id", "ClientId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BodyLife.Crm.Infrastructure.Persistence.Memberships.IssuedMembershipRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SourceMembershipId", "ClientId")
+                        .HasPrincipalKey("Id", "ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BodyLife.Crm.Infrastructure.Persistence.Memberships.IssuedMembershipRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SuccessorMembershipId", "ClientId")
+                        .HasPrincipalKey("Id", "ClientId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("BodyLife.Crm.Infrastructure.Persistence.Memberships.MembershipNegativeClosureCorrectionRecord", b =>

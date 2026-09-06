@@ -30,6 +30,48 @@ public sealed partial class PostgreSqlCorrectNegativeVisitCoverageCommandTests
     private static readonly DateTimeOffset CatalogUpdatedAt = TestNow.AddDays(-1);
 
     [PostgreSqlFact]
+    public async Task CancelOneOffPreservesClosedLifecycleAndHistoricalProvenance()
+    {
+        await using var database = await CreateMigratedDatabaseAsync();
+        var fixture = await SeedFixtureAsync(database, ActorRole.Admin, AccountKind.NamedAdmin);
+        await using var dbContext = database.CreateDbContext();
+        await RebuildSourceAsync(dbContext, fixture.SourceMembershipId, 3);
+        var negativeClosure = await CloseOneOffAsync(dbContext, fixture,
+            "one-off-before-lifecycle", quantity: 3, fixture.OneOffTypeAId);
+        Assert.Equal(0, await ReadNegativeAsync(database, fixture.SourceMembershipId));
+        // Storage fixture models the full-close transition scheduled for ADR-021 / 21.3.
+        await using (var connection = new NpgsqlConnection(database.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var transaction = await connection.BeginTransactionAsync();
+            await using var command = new NpgsqlCommand($"""
+                insert into bodylife.membership_lifecycle_closures (id, client_id, source_membership_id,
+                    negative_closure_id, reason_code, recorded_by_account_id, session_id,
+                    correlation_id, idempotency_key, entry_origin, occurred_at, recorded_at)
+                values (gen_random_uuid(), '{fixture.ClientId}', '{fixture.SourceMembershipId}', '{negativeClosure}',
+                    'one_off_zero_balance', '{fixture.Actor.AccountId.Value}', '{fixture.Actor.SessionId.Value}',
+                    'lifecycle-correction', 'lifecycle-correction', 'normal', now(), now());
+                update bodylife.issued_memberships set status = 'closed' where id = '{fixture.SourceMembershipId}';
+                """, connection, transaction);
+            await command.ExecuteNonQueryAsync();
+            await transaction.CommitAsync();
+        }
+
+        dbContext.ChangeTracker.Clear();
+        var result = await CreateCorrectionHandler(dbContext).ExecuteAsync(
+            CreateCancelCommand(fixture, negativeClosure, "cancel-after-lifecycle"), CancellationToken.None);
+
+        AssertSuccessful(result, fixture.ClientId);
+        Assert.Equal(3, await ReadNegativeAsync(database, fixture.SourceMembershipId));
+        Assert.Equal("closed", await database.ExecuteScalarAsync<string>(
+            $"select status from bodylife.issued_memberships where id = '{fixture.SourceMembershipId}'"));
+        Assert.Equal(3L, await database.ExecuteScalarAsync<long>(
+            $"select count(*) from bodylife.membership_negative_closure_items where negative_closure_id = '{negativeClosure}' and status = 'canceled'"));
+        Assert.Equal(1L, await database.ExecuteScalarAsync<long>(
+            $"select count(*) from bodylife.membership_lifecycle_closures where negative_closure_id = '{negativeClosure}'"));
+    }
+
+    [PostgreSqlFact]
     public async Task CancelOneOffRestoresNegativeAndCancelsClosureItemsAndPayment()
     {
         await using var database = await CreateMigratedDatabaseAsync();

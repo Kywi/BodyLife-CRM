@@ -4,5 +4,6 @@ public enum IssuedMembershipLifecycleStatus
 {
     Active = 1,
     Canceled,
-    Corrected
+    Corrected,
+    Closed
 }

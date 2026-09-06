@@ -45,7 +45,12 @@ public sealed class PostgreSqlMigrationTests
                 'ck_issued_memberships_exact_sale_payment',
                 'ck_negative_closures_consistent',
                 'ck_issued_sale_corrections_lifecycle',
-                'ck_entry_batch_row_entities_exact_shape')
+                'ck_entry_batch_row_entities_exact_shape',
+                'ck_issued_memberships_lifecycle_closure',
+                'ck_membership_lifecycle_closures_status',
+                'ck_membership_lifecycle_closures_append_only',
+                'ck_membership_lifecycle_closures_no_truncate',
+                'ck_membership_lifecycle_closures_paper_link')
             """);
 
         var migration = Assert.Single(appliedMigrations);
@@ -56,7 +61,7 @@ public sealed class PostgreSqlMigrationTests
         Assert.Equal(
             $"bodylife.{BodyLifeDbContextOptions.MigrationsHistoryTable}",
             historyTableName);
-        Assert.Equal(5L, criticalTriggerCount);
+        Assert.Equal(10L, criticalTriggerCount);
     }
 
     [PostgreSqlFact]
