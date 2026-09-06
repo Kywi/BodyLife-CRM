@@ -117,6 +117,14 @@
       "input_tokens": null,
       "output_tokens": null,
       "usage_note": "Unavailable from collaboration API; known totals unchanged"
+    },
+    {
+      "date": "2026-09-06T11:13:13.799262+00:00",
+      "scope": "ADR-021 / 21.2 targeted semantic refresh",
+      "files": 7,
+      "input_tokens": null,
+      "output_tokens": null,
+      "usage_note": "Unavailable from collaboration API; known totals unchanged"
     }
   ],
   "total_input_tokens": 0,
