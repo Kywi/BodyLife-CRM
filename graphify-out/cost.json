@@ -125,6 +125,14 @@
       "input_tokens": null,
       "output_tokens": null,
       "usage_note": "Unavailable from collaboration API; known totals unchanged"
+    },
+    {
+      "date": "2026-09-06T13:05:34.905533+00:00",
+      "scope": "ADR-021 /21.3 targeted AST and host semantic refresh",
+      "files": 10,
+      "input_tokens": null,
+      "output_tokens": null,
+      "usage_note": "Unavailable from collaboration API; known totals unchanged"
     }
   ],
   "total_input_tokens": 0,
