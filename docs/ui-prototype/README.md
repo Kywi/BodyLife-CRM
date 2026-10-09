@@ -52,7 +52,7 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-09.
-- Source SHA-256: `3fb7dcea556530c771b5cb566d43e944cf603f4e014c66d6e2a063db1852c603`.
+- Source SHA-256: `d523f054e15b983902065a966700db2c1f8ce595a17c8dc77bf093202dc86089`.
 - Scope: UI31 staff access forms and history; UI30 name/login editing approved.
 - Coordination: root integration plus independent `bodylife_reviewer`
   (loaded role target GPT-6.1 Sol/high; effective runtime telemetry unavailable).
@@ -83,3 +83,11 @@ label/value columns in both active and inactive states.
 Validated column alignment, separate action-row bounds, absence of overflow and
 restore/disable clicks for active, inactive and pending accounts at 1280, 768
 and 320 pixels in Chromium. Desktop and narrow screenshots were inspected.
+
+UI31 credentials refinement: login and password actions are integrated into
+field rows inside the same account panel. Short visible action labels retain
+full accessible names. Pending accounts offer setup in the same row pattern;
+small screens stack each action with its field.
+Validated active/inactive/pending row bounds and 44px action targets at 1280,
+768 and 320 pixels in Chromium; login change, password reset, Back and pending
+setup entry passed with no page errors. Desktop/narrow screenshots inspected.
