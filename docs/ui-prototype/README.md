@@ -1,7 +1,7 @@
 # BodyLife interactive UI prototype
 
 Open https://kywi.github.io/BodyLife-CRM/ to review the current Ukrainian,
-light-theme desktop prototype through the staff name/login editing flow (UI30).
+light-theme desktop prototype through staff access deactivation/reactivation (UI31).
 The entry page replaces the earlier static review-lab dashboard.
 
 ## Trying the prototype
@@ -52,11 +52,27 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-09.
-- Source SHA-256: `90f3cf44b9a4c64d9c2ef87905e5cd52ec967c92f2953eb9f1113e8d3e7a3bb3`.
-- Scope: current prototype export and its documentation only.
+- Source SHA-256: `177997ad1098a8a146500ec16d3fda21b7075daf2b4c06a7324470b72aaab851`.
+- Scope: UI31 staff access forms and history; UI30 name/login editing approved.
 - Coordination: root integration plus independent `bodylife_reviewer`
   (loaded role target GPT-6.1 Sol/high; effective runtime telemetry unavailable).
 - Local export checks: exact embedded fragment, sandbox/CSP, fixed date and
   whitespace validation passed. Browser checks at 1440 and 390 pixels passed
   demo login, search, staff rename, login/password change and new-credential
   sign-in, with no JavaScript errors or prototype horizontal overflow.
+
+## UI31 — staff access
+
+Owner → Staff access → Details now offers Disable access / Restore access.
+Disabling requires a reason and ends the account’s simulated sessions while
+retaining its login/password. Restoring requires no reason and does not restore
+ended sessions. Both actions remain in history; an already-applied state is a
+no-op. Pending accounts remain eligible but still need credentials to sign in.
+This interaction is ready for design review; it is not yet user-approved.
+
+UI31 validation passed: reason limits and escaping; Owner/target guards;
+error/stale rollback and retry; duplicate-submit and Escape protection;
+credential preservation; same-state no-op; current-session recovery and
+late-callback isolation; details, forms and history at 1024/320 pixels.
+The source fragment, fixed date, mirror, sandbox/CSP and script syntax were
+checked. Browser runs reported no JavaScript errors.
