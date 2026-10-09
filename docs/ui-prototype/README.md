@@ -52,7 +52,7 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-09.
-- Source SHA-256: `177997ad1098a8a146500ec16d3fda21b7075daf2b4c06a7324470b72aaab851`.
+- Source SHA-256: `3fb7dcea556530c771b5cb566d43e944cf603f4e014c66d6e2a063db1852c603`.
 - Scope: UI31 staff access forms and history; UI30 name/login editing approved.
 - Coordination: root integration plus independent `bodylife_reviewer`
   (loaded role target GPT-6.1 Sol/high; effective runtime telemetry unavailable).
@@ -76,3 +76,10 @@ credential preservation; same-state no-op; current-session recovery and
 late-callback isolation; details, forms and history at 1024/320 pixels.
 The source fragment, fixed date, mirror, sandbox/CSP and script syntax were
 checked. Browser runs reported no JavaScript errors.
+
+UI31 layout refinement: access actions occupy a separate full-width row inside
+the account information panel. Login, status and session count use aligned
+label/value columns in both active and inactive states.
+Validated column alignment, separate action-row bounds, absence of overflow and
+restore/disable clicks for active, inactive and pending accounts at 1280, 768
+and 320 pixels in Chromium. Desktop and narrow screenshots were inspected.
