@@ -57,7 +57,7 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-28.
-- Source SHA-256: `d8b3ed59f6cc3dc9cecc48f3ef414f6f1052c9ac382cbed2ec47f4077023f7e9`.
+- Source SHA-256: `654fcb5535f87bb41f0489a77d82a85f1a5b56b218c1a5213a1077e8388b57c6`.
 - Scope: UI33 Owner staff-access audit; UI32 sessions were approved by the user.
 - The audit surface uses selected fictional fixture events and subsequent
   successful staff changes from this page session, not a complete historic ledger.
@@ -161,3 +161,6 @@ Updated orchestrator: explicit GPT-6 Luna/low scout, GPT-6.1 Sol/medium worker
 and fresh GPT-6.1 Sol/high independent reviewer dispatches accepted. Root fixed
 the review's focus-restoration findings and the auth-reset browser finding.
 Effective runtime model metadata is unavailable. No production milestone changed.
+
+UI33 spacing refinement: the reset/count toolbar has 16px clearance below
+the filter divider or date range, with the existing 12px gap before results.
