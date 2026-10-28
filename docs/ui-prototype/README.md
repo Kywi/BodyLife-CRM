@@ -1,7 +1,7 @@
 # BodyLife interactive UI prototype
 
 Open https://kywi.github.io/BodyLife-CRM/ to review the current Ukrainian,
-light-theme desktop prototype through staff access change history (UI33).
+light-theme desktop prototype through client contact/card change history (UI34).
 The entry page replaces the earlier static review-lab dashboard.
 
 ## Trying the prototype
@@ -44,7 +44,7 @@ Then apply the same fixed-light wrapper styling as the local preview server
 and set the outer/inner document language to `uk`. Keep the embedded fragment
 unchanged. Validate the resulting iframe interactions before publication.
 
-For the UI32 and UI33 refreshes the pinned exporter was unavailable. The exact escaped
+For the UI32, UI33 and UI34 refreshes the pinned exporter was unavailable. The exact escaped
 source fragment was replaced once in the existing export; everything outside
 that fragment, including both CSP policies and the sandbox, was preserved byte
 for byte. The replacement was checked by reversing it against the prior export.
@@ -57,10 +57,11 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-28.
-- Source SHA-256: `654fcb5535f87bb41f0489a77d82a85f1a5b56b218c1a5213a1077e8388b57c6`.
-- Scope: UI33 Owner staff-access audit; UI32 sessions were approved by the user.
-- The audit surface uses selected fictional fixture events and subsequent
-  successful staff changes from this page session, not a complete historic ledger.
+- Source SHA-256: `b30a0f000fa329dca32dac2cf7d976b12eaf10dfc9ad8e7f480c9e41873c6ff1`.
+- Scope: UI34 client contact/card change history; UI33 and its toolbar spacing
+  were approved by the user.
+- The audit surfaces use selected fictional fixture events and subsequent
+  successful scoped changes from this page session, not a complete historic ledger.
 - Local checks: exact fragment/mirror, unchanged sandbox/CSP wrapper, fixed
   date, two script blocks and whitespace checks. Chromium 1280/768/320 checks
   cover filtering, immutable snapshots, safe details, pagination, linked-account
@@ -144,8 +145,8 @@ excluded. The existing demo date remains 2026-09-15 and reload resets all change
 This first audit slice is limited to the Owner staff-administration surface.
 It does not replace the general Owner/Admin GetAuditTimeline contract, add audit
 of all prototype business actions, or implement a new backend command. UI32
-manual session termination remains a proposed interaction. The user has not
-approved UI33 yet; the broader client/business audit is still a later UI slice.
+manual session termination remains a proposed interaction. The user approved UI33 and its spacing refinement on 2026-10-28. UI34 adds
+client contact/card history; broader financial/business audit remains later scope.
 
 Validation: Chromium 1280/768/320 covered date and combined filters, inclusive
 Kyiv midnight boundaries over recordedAt, empty/invalid ranges, details and
@@ -164,3 +165,44 @@ Effective runtime model metadata is unavailable. No production milestone changed
 
 UI33 spacing refinement: the reset/count toolbar has 16px clearance below
 the filter divider or date range, with the existing 12px gap before results.
+
+## UI34 — client contact/card change history (proposal)
+
+Sign in as Reception or Owner, search card **1042** (Марія Іваненко), then open
+Контакти → Історія змін даних → Переглянути. Two selected example events show a
+phone change by named administrator Olena and a card change by the shared
+Reception account. Other untouched clients demonstrate the empty state.
+
+The compact Contacts entry opens a separate read-only list. Filter by change
+kind and recorded Kyiv dates, open details, compare Було / Стало and inspect the
+reason or preserved duplicate acknowledgements. Same-number card reissue keeps
+its explicit label, card number and reason. Back retains filters and loaded rows;
+X/Escape returns focus to the Contacts entry. Shared accounts identify an account
+and device, never a physical person. Technical identifiers remain collapsed.
+
+Existing contact edits and card assignment/change/reissue now append frozen
+snapshots with actor/session/device and stable same-time ordering. Old names,
+values and duplicate explanations remain unchanged. Reads do not append events.
+Submit-time actor context, open/current-form checks and auth/session checks
+prevent late callbacks after dismissal, replacement or session changes.
+
+This slice covers existing contact/card changes only. It does not add a client
+creation audit surface, card-clearing workflow, full financial/business audit,
+backend commands or persistence. Current card/search behavior and all membership
+balances remain unchanged. The fixed demo date is still 2026-09-15.
+
+Validation: Chromium 1280/768/320 checked filters, invalid/empty ranges, recorded
+Kyiv midnight boundaries, list/detail/back and retained pagination, keyboard
+focus, X/Escape return, calendar overlays and modal viewport bounds. Real shared
+Reception edits, card change/reissue, named Admin actor snapshots, duplicate
+acknowledgements, frozen nested values, escaping, error/stale retry, auth changes,
+closed/replaced forms, cross-client detail denial and no-op reads passed.
+Desktop/narrow screenshots inspected; no page errors or horizontal overflow.
+Safari was not exercised. Two scripts parse; fragment/mirror, sandbox/CSP and
+fixed date are preserved. UI34 awaits user review.
+
+Coordination used the updated orchestrator: explicit Luna/low scout,
+Sol6.1/medium worker and fresh Sol6.1/high reviewer. One transient worker capacity
+failure was retried with unchanged model/effort; runtime telemetry unavailable.
+Root applied the corrected prepared patch after two failed deliveries, then fixed
+reviewed focus/lifecycle findings and browser-observed narrow modal placement.
