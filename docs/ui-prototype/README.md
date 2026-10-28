@@ -57,7 +57,7 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-28.
-- Source SHA-256: `b30a0f000fa329dca32dac2cf7d976b12eaf10dfc9ad8e7f480c9e41873c6ff1`.
+- Source SHA-256: `e6512eec5e36a07adbcd4a1b9cc7327758b7568504b736ca493695412e2428e7`.
 - Scope: UI34 client contact/card change history; UI33 and its toolbar spacing
   were approved by the user.
 - The audit surfaces use selected fictional fixture events and subsequent
@@ -206,3 +206,7 @@ Sol6.1/medium worker and fresh Sol6.1/high reviewer. One transient worker capaci
 failure was retried with unchanged model/effort; runtime telemetry unavailable.
 Root applied the corrected prepared patch after two failed deliveries, then fixed
 reviewed focus/lifecycle findings and browser-observed narrow modal placement.
+
+UI34 layout refinement: each client audit row places Details in its own final
+row, aligned right. Actor/device/time text uses the full preceding row and wraps
+without moving the action to a different position.
