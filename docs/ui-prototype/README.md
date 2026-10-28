@@ -1,7 +1,7 @@
 # BodyLife interactive UI prototype
 
 Open https://kywi.github.io/BodyLife-CRM/ to review the current Ukrainian,
-light-theme desktop prototype through staff session management (UI32).
+light-theme desktop prototype through staff access change history (UI33).
 The entry page replaces the earlier static review-lab dashboard.
 
 ## Trying the prototype
@@ -44,7 +44,7 @@ Then apply the same fixed-light wrapper styling as the local preview server
 and set the outer/inner document language to `uk`. Keep the embedded fragment
 unchanged. Validate the resulting iframe interactions before publication.
 
-For the UI32 refresh the pinned exporter was unavailable. The exact escaped
+For the UI32 and UI33 refreshes the pinned exporter was unavailable. The exact escaped
 source fragment was replaced once in the existing export; everything outside
 that fragment, including both CSP policies and the sandbox, was preserved byte
 for byte. The replacement was checked by reversing it against the prior export.
@@ -57,15 +57,14 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-28.
-- Source SHA-256: `2cb7d53abab5eeeadaffc65082cad6b5ca5c90b32cc0e9ee2589fd0999838e2a`.
-- Scope: UI32 session list and manual termination proposal; user moved review
-  forward after UI31 staff access and credential layout refinements.
-- Coordination: root integration plus independent `bodylife_reviewer`
-  (loaded role target GPT-6.1 Sol/high; effective runtime telemetry unavailable).
-- Local export checks: exact embedded fragment, sandbox/CSP, fixed date and
-  whitespace validation passed. Browser checks at 1440 and 390 pixels passed
-  demo login, search, staff rename, login/password change and new-credential
-  sign-in, with no JavaScript errors or prototype horizontal overflow.
+- Source SHA-256: `d8b3ed59f6cc3dc9cecc48f3ef414f6f1052c9ac382cbed2ec47f4077023f7e9`.
+- Scope: UI33 Owner staff-access audit; UI32 sessions were approved by the user.
+- The audit surface uses selected fictional fixture events and subsequent
+  successful staff changes from this page session, not a complete historic ledger.
+- Local checks: exact fragment/mirror, unchanged sandbox/CSP wrapper, fixed
+  date, two script blocks and whitespace checks. Chromium 1280/768/320 checks
+  cover filtering, immutable snapshots, safe details, pagination, linked-account
+  navigation, authorization, keyboard focus and calendar overlays.
 
 ## UI31 — staff access
 
@@ -111,7 +110,7 @@ all use the same in-memory session rows.
 Session metadata follows the existing SessionRecord model and fixed 12-hour
 expiry policy. Per-session query and audited manual termination are UI proposals;
 they are not implemented backend commands and do not change ADR acceptance.
-UI32 awaits user review. The next planned prototype interaction is audit.
+The user approved UI32 on 2026-10-28; UI33 begins the staff-access audit surface.
 
 Validation: local Chromium 1280/768/320 checks covered reason bounds/escaping,
 single/all/empty/ended/expired states, busy/double-submit/Escape protection,
@@ -122,3 +121,43 @@ scripts parse; exact fragment/mirror, fixed date, sandbox/CSP and diff checks pa
 Independent explicit GPT-6.1 Sol/high source review found no actionable issues;
 implementation used explicit GPT-6.1 Sol/medium and read-only discovery used
 GPT-6 Luna/low. Runtime model telemetry is unavailable.
+
+## UI33 — staff access change history (proposal)
+
+Owner → Доступи → Історія змін. The two tabs keep staff administration and its
+read-only history together. Filter by staff account, action group and recorded
+Kyiv date; a chosen end date is inclusive. Newest entries appear first, with
+stable ordering for changes at the same demo time and ten rows per page.
+
+Details show the action, historical staff name, actor, device, before/after
+where available, required reason and ended sessions. Event time appears
+separately only when different from recorded time. Technical identifiers stay
+collapsed. Open the current staff account and return to the same event or
+filtered history. Missing accounts do not remove historical evidence.
+
+Three selected demo entries cover account creation, configured reception login
+and Maria's disabled access. Renaming, credential changes, access changes and
+UI32 session termination append new snapshots. Reads never create entries.
+Snapshots and copied session arrays are frozen; passwords and login values are
+excluded. The existing demo date remains 2026-09-15 and reload resets all changes.
+
+This first audit slice is limited to the Owner staff-administration surface.
+It does not replace the general Owner/Admin GetAuditTimeline contract, add audit
+of all prototype business actions, or implement a new backend command. UI32
+manual session termination remains a proposed interaction. The user has not
+approved UI33 yet; the broader client/business audit is still a later UI slice.
+
+Validation: Chromium 1280/768/320 covered date and combined filters, inclusive
+Kyiv midnight boundaries over recordedAt, empty/invalid ranges, details and
+retained filters/pagination, source-account return, unchanged historical names,
+real rename/session-end append, same-time ordering, frozen copied arrays,
+escaped user content, excluded credentials, missing target and auth reset.
+Keyboard focus is restored after filters, tabs, dates, load more and Back,
+including an originating row pushed outside the loaded page. Calendar overlays
+do not move the result list. Desktop/narrow screenshots inspected; no page
+errors or horizontal overflow. Safari was not exercised.
+
+Updated orchestrator: explicit GPT-6 Luna/low scout, GPT-6.1 Sol/medium worker
+and fresh GPT-6.1 Sol/high independent reviewer dispatches accepted. Root fixed
+the review's focus-restoration findings and the auth-reset browser finding.
+Effective runtime model metadata is unavailable. No production milestone changed.
