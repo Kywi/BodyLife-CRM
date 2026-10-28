@@ -1,7 +1,7 @@
 # BodyLife interactive UI prototype
 
 Open https://kywi.github.io/BodyLife-CRM/ to review the current Ukrainian,
-light-theme desktop prototype through staff access deactivation/reactivation (UI31).
+light-theme desktop prototype through staff session management (UI32).
 The entry page replaces the earlier static review-lab dashboard.
 
 ## Trying the prototype
@@ -44,6 +44,11 @@ Then apply the same fixed-light wrapper styling as the local preview server
 and set the outer/inner document language to `uk`. Keep the embedded fragment
 unchanged. Validate the resulting iframe interactions before publication.
 
+For the UI32 refresh the pinned exporter was unavailable. The exact escaped
+source fragment was replaced once in the existing export; everything outside
+that fragment, including both CSP policies and the sandbox, was preserved byte
+for byte. The replacement was checked by reversing it against the prior export.
+
 The existing `ui-prototype-pages.yml` workflow publishes only this directory.
 Other flat HTML pages and `assets/` remain earlier review references; they are
 not part of the current entry page's navigation. Real application visual
@@ -51,9 +56,10 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 
 ## Export record
 
-- Export date: 2026-10-09.
-- Source SHA-256: `d523f054e15b983902065a966700db2c1f8ce595a17c8dc77bf093202dc86089`.
-- Scope: UI31 staff access forms and history; UI30 name/login editing approved.
+- Export date: 2026-10-28.
+- Source SHA-256: `2cb7d53abab5eeeadaffc65082cad6b5ca5c90b32cc0e9ee2589fd0999838e2a`.
+- Scope: UI32 session list and manual termination proposal; user moved review
+  forward after UI31 staff access and credential layout refinements.
 - Coordination: root integration plus independent `bodylife_reviewer`
   (loaded role target GPT-6.1 Sol/high; effective runtime telemetry unavailable).
 - Local export checks: exact embedded fragment, sandbox/CSP, fixed date and
@@ -68,7 +74,7 @@ Disabling requires a reason and ends the account’s simulated sessions while
 retaining its login/password. Restoring requires no reason and does not restore
 ended sessions. Both actions remain in history; an already-applied state is a
 no-op. Pending accounts remain eligible but still need credentials to sign in.
-This interaction is ready for design review; it is not yet user-approved.
+The user moved review forward to UI32 on 2026-10-28 after the layout refinements.
 
 UI31 validation passed: reason limits and escaping; Owner/target guards;
 error/stale rollback and retry; duplicate-submit and Escape protection;
@@ -91,3 +97,28 @@ small screens stack each action with its field.
 Validated active/inactive/pending row bounds and 44px action targets at 1280,
 768 and 320 pixels in Chromium; login change, password reset, Back and pending
 setup entry passed with no page errors. Desktop/narrow screenshots inspected.
+
+## UI32 — staff sessions (proposal)
+
+Owner → Доступи → Олена Бондар → Деталі → Переглянути сеанси. Two fictional
+active sessions allow checking single-session and all-session termination. Each
+confirmation requires a reason and preserves credentials and account access.
+Ended/expired rows remain visible without termination actions; empty accounts
+have a clear empty state. New sessions appearing during confirmation require a
+refreshed selection. The account count, reset, deactivation and login/logout
+all use the same in-memory session rows.
+
+Session metadata follows the existing SessionRecord model and fixed 12-hour
+expiry policy. Per-session query and audited manual termination are UI proposals;
+they are not implemented backend commands and do not change ADR acceptance.
+UI32 awaits user review. The next planned prototype interaction is audit.
+
+Validation: local Chromium 1280/768/320 checks covered reason bounds/escaping,
+single/all/empty/ended/expired states, busy/double-submit/Escape protection,
+error retry, changed-scope reconfirmation, authorization and detached callbacks.
+Credential reset/manual end/real demo login/logout, shared account and protected
+Owner boundaries passed. Desktop and phone screenshots were inspected. Two
+scripts parse; exact fragment/mirror, fixed date, sandbox/CSP and diff checks pass.
+Independent explicit GPT-6.1 Sol/high source review found no actionable issues;
+implementation used explicit GPT-6.1 Sol/medium and read-only discovery used
+GPT-6 Luna/low. Runtime model telemetry is unavailable.
