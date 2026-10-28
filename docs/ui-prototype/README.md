@@ -57,7 +57,7 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-28.
-- Source SHA-256: `e6512eec5e36a07adbcd4a1b9cc7327758b7568504b736ca493695412e2428e7`.
+- Source SHA-256: `e248bc1c1764d9f6269325c81adb8751fb9fc0f7cb3025b6314eaa1cc1c76db1`.
 - Scope: UI34 client contact/card change history; UI33 and its toolbar spacing
   were approved by the user.
 - The audit surfaces use selected fictional fixture events and subsequent
@@ -210,3 +210,10 @@ reviewed focus/lifecycle findings and browser-observed narrow modal placement.
 UI34 layout refinement: each client audit row places Details in its own final
 row, aligned right. Actor/device/time text uses the full preceding row and wraps
 without moving the action to a different position.
+
+UI34 detail refinement: each changed field is a single grouped Before/After
+card using the existing borders, typography and soft green surface. Event context
+and the reason are grouped separately. Narrow layouts stack each pair; audit
+snapshots, acknowledgements, technical details and navigation remain unchanged.
+Chromium 1280/768/320 checked paired values, multiple fields, long/empty text,
+escaping, same-number reissue, Back/Escape and no horizontal overflow.
