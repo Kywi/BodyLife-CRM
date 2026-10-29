@@ -32,6 +32,35 @@
 - Confirmation and reason/comment UI для corrections/destructive actions має бути доступним і на tablet, і на phone.
 - Compact layout не має приховувати critical warnings: negative balance, expired membership, zero visits, duplicate identity, changed-after-close і permission restrictions.
 
+### 2.1. Visible viewport and scrolling — tablet redesign requirement (2026-10-29)
+
+The user identified excessive scrolling while reviewing the prototype on iPad
+Air 5. These are acceptance requirements for the next production UI, not a
+claim that the current Razor implementation has passed them.
+
+- Use the visible browser area, accounting for browser chrome, orientation and
+  software keyboard. Do not create page overflow from fixed minimum heights,
+  decorative outer margins or nested preview frames.
+- With the keyboard closed, normal login, the short Contacts profile and short
+  informational/creation dialogs must fit the tablet viewport. Use available
+  width and concise grouping before reducing vertical spacing.
+- Keep global search available while long page content scrolls. Prefer one
+  scroll owner for the active content; long lists, histories, expanded details,
+  errors and small phone/keyboard viewports may require scrolling.
+- Long dialogs keep their title/close and primary action reachable. Sticky
+  controls must not cover the final field, validation message or warning.
+  Recompute placement when dynamic errors/duplicate acknowledgements change
+  the dialog height. Opening/closing preserves background position and focus.
+- Calendars and information popovers overlay content without layout shifts;
+  every item remains reachable when the popup itself needs scrolling.
+- Never hide critical warnings/actions or shrink readable text/touch targets
+  to force a fit. Preserve at least 44px touch controls and 16px editable text.
+- Measure actual scroll/client sizes, control bounds and click reachability at
+  1180x720 and 820x1060 (landscape/portrait with browser-chrome allowance),
+  existing 1024x768, phone 390/320 widths, short 360/420px height, expanded/error
+  states and enlarged text. Browser emulation is supplemental: verify real iPad
+  Safari keyboard, zoom and orientation before production visual acceptance.
+
 ## 3. Workflow: reception dashboard
 
 Today attention uses `GetReceptionAttentionSummary` for an explicit Kyiv business date, with the exact same lifecycle-active effective-end-date range semantics as the Ending Soon report. A successful empty result may display zero; permission, validation, recalculation and source-consistency failures display unavailable/error, never fake zero. Activity now uses `GetReceptionActivity` for the explicit Kyiv recorded business date: render empty/loading/failure states and label manual-backfill/paper-fallback rows with distinct occurred and recorded timestamps. The query retains an opaque cursor for stable continuation; the Wave 1 Home intentionally renders a five-row preview and routes to the complete History surface instead of paginating that compact card. The server returns UTC instants; Web alone converts instants to Kyiv using the active culture. DST filtering uses the half-open Kyiv day range, and compact Membership status/warnings are explicitly as of the selected recorded business date.
