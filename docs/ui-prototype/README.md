@@ -57,7 +57,7 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-29.
-- Source SHA-256: `d6fec09aec7fe0bc392bf7288bc2db88bac428205c635d1fbf43b5eb0e4511e2`.
+- Source SHA-256: `5c467e2d4b7d415288fe9e9b116a5716ecb48caea31d933138ef415771afd653`.
 - Scope: UI34 client contact/card change history; UI33 and its toolbar spacing
   were approved by the user.
 - The audit surfaces use selected fictional fixture events and subsequent
@@ -240,3 +240,24 @@ or ResizeObserver loop errors. iPad Safari keyboard/zoom still needs physical
 device review; Chromium viewport emulation does not certify that behavior.
 The production acceptance requirement is recorded in docs/ui-workflows.md 2.1.
 This refinement does not approve UI34 or change the fixed 2026-09-15 demo date.
+
+## Contextual dialog navigation refinement (2026-10-29)
+
+Employee details now start with one contextual Back action: to the exact access
+audit event or to Employees. Setup opened from details returns to that employee;
+setup opened from the list or after creation returns to Employees. Opening a new
+list target clears old audit context; audit filters remain when returning to the
+event/history. The redundant bottom return/list pair is removed.
+
+Confirmed navigation transitions reset the dialog scroll, including employee,
+payment correction/backfill, freeze review and existing-membership entry flows.
+Newly opened dialogs start at the top. Existing form errors, information/calendar
+popovers, drafts, busy guards, domain behavior and fixed demo date are preserved.
+Back controls stay in their forms and use the existing button design.
+
+Navigation checks passed at 1180x720, 820x1060, 1024x768 and320x700, plus long
+forms at320x420 and1024x420. Covered exact audit returns, nested setup origins,
+new/list targets, creation, Escape/reopen, payment/freeze/opening drafts and
+payment error recovery. UI33 audit/focus and UI32 credential regressions passed.
+Screenshots at1180/320 were inspected; no browser errors. iPad Safari physical
+keyboard/zoom/orientation still requires device review.

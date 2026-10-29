@@ -51,6 +51,10 @@ claim that the current Razor implementation has passed them.
   controls must not cover the final field, validation message or warning.
   Recompute placement when dynamic errors/duplicate acknowledgements change
   the dialog height. Opening/closing preserves background position and focus.
+- Keep one contextual Back action before dialog content, returning to the exact
+  prior view and preserving its filters or draft. A new view starts at the top;
+  active-form validation and popovers must not trigger a blanket scroll reset.
+  Clear a previous record's return context when opening another list target.
 - Calendars and information popovers overlay content without layout shifts;
   every item remains reachable when the popup itself needs scrolling.
 - Never hide critical warnings/actions or shrink readable text/touch targets
