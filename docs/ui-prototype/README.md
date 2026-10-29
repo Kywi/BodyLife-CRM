@@ -56,8 +56,8 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 
 ## Export record
 
-- Export date: 2026-10-28.
-- Source SHA-256: `e248bc1c1764d9f6269325c81adb8751fb9fc0f7cb3025b6314eaa1cc1c76db1`.
+- Export date: 2026-10-29.
+- Source SHA-256: `d6fec09aec7fe0bc392bf7288bc2db88bac428205c635d1fbf43b5eb0e4511e2`.
 - Scope: UI34 client contact/card change history; UI33 and its toolbar spacing
   were approved by the user.
 - The audit surfaces use selected fictional fixture events and subsequent
@@ -217,3 +217,26 @@ and the reason are grouped separately. Narrow layouts stack each pair; audit
 snapshots, acknowledgements, technical details and navigation remain unchanged.
 Chromium 1280/768/320 checked paired values, multiple fields, long/empty text,
 escaping, same-number reissue, Back/Escape and no horizontal overflow.
+
+## Tablet viewport refinement (2026-10-29)
+
+The standalone export now fills the visible browser viewport instead of growing
+its iframe to the whole page content. Both CSP policies, iframe sandbox and
+state bridge remain unchanged. The editable fragment applies app-height rules
+only in standalone mode; ordinary inline rendering retains its existing sizing.
+Global search remains visible; long page content scrolls in its main area.
+
+Compact login, wider bounded dialogs and grouped Contacts use tablet width.
+On touch Chromium at 1180x720, 820x1060 and 1024x768, normal login and Contacts
+fit without scrolling; the two-fixture client audit list/detail and new-client
+form also fit. Short screens, long histories, expanded/error forms retain
+intentional scrolling with visible close/actions. ResizeObserver repositions
+forms after dynamic duplicate warnings grow them.
+
+Validation includes phone390/320, 360/420px short height, simulated outer viewport
+pan, retained background/focus, editable final fields, busy/error states, owner
+sections/credentials, calendar/help overlays and UI34 audit regression. No runtime
+or ResizeObserver loop errors. iPad Safari keyboard/zoom still needs physical
+device review; Chromium viewport emulation does not certify that behavior.
+The production acceptance requirement is recorded in docs/ui-workflows.md 2.1.
+This refinement does not approve UI34 or change the fixed 2026-09-15 demo date.

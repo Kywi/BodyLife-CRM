@@ -6,7 +6,7 @@
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Body Life — інтерактивний макет</title>
-<style>:root{color-scheme:light;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+<style>:root{color-scheme:light;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0;height:100%;overflow:hidden}body{box-sizing:border-box;background:inherit}iframe{position:absolute;top:var(--app-viewport-top,0px);left:0;display:block;width:100%;height:100vh;height:100dvh;height:var(--app-viewport-height,100dvh);margin:0;border:0}</style>
 </head>
 <body>
 <iframe id="codex-visualization" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Body Life — інтерактивний макет" data-srcdoc="&lt;!doctype html&gt;
@@ -1538,6 +1538,75 @@ html,body{background:#fff!important;color-scheme:light!important}html&gt;body{pa
 })();
 &lt;/script&gt;
 &lt;style&gt;
+/* Standalone app viewport: reception content owns its scrolling. */
+html[data-visualize-standalone],html[data-visualize-standalone] body{height:100%;margin:0;padding:0}
+html[data-visualize-standalone] #bl-reception-01{height:100vh;height:100dvh;min-height:0;display:flex;flex-direction:column;border:0;border-radius:0;overflow:hidden}
+html[data-visualize-standalone] #bl-reception-01&gt;.bl-global-header{flex-shrink:0;gap:16px;padding:10px 16px}
+html[data-visualize-standalone] #bl-reception-01&gt;.bl-shell{flex:1;min-height:0;grid-template-rows:minmax(0,1fr)}
+html[data-visualize-standalone] #bl-reception-01 .bl-main{min-height:0;overflow:auto;overscroll-behavior:contain;padding:16px;gap:16px;scroll-padding:16px}
+html[data-visualize-standalone] #bl-reception-01:has(.bl-drawer[open]) .bl-main,html[data-visualize-standalone] #bl-reception-01:has(.bl-drawer[open]) .bl-nav{overflow:hidden}
+html[data-visualize-standalone] #bl-reception-01 .bl-nav{min-height:0;overflow:auto;overscroll-behavior:contain;padding:16px 12px;gap:16px}
+html[data-visualize-standalone] #bl-reception-01 .bl-work{gap:16px;grid-template-columns:minmax(200px,.7fr) minmax(0,1.65fr)}
+html[data-visualize-standalone] #bl-reception-01 .bl-section-view{padding:16px}
+html[data-visualize-standalone] #bl-reception-01 .bl-section-heading{margin-bottom:16px}
+html[data-visualize-standalone] #bl-reception-01 .bl-profile-top{padding:16px 16px 0}
+html[data-visualize-standalone] #bl-reception-01 .bl-profile-name{margin:0 0 12px}
+html[data-visualize-standalone] #bl-reception-01 .bl-profile-body{padding:16px;gap:14px}
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-details{gap:12px}
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-facts{padding:14px 16px;gap:12px}
+html[data-visualize-standalone] #bl-reception-01 .bl-login-view{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;align-content:safe center;gap:14px;padding:20px 16px}
+html[data-visualize-standalone] #bl-reception-01 .bl-login-card{padding:22px 26px 18px}
+html[data-visualize-standalone] #bl-reception-01 .bl-login-heading{gap:6px;margin-bottom:18px}
+html[data-visualize-standalone] #bl-reception-01 .bl-login-logo{width:40px;height:56px;margin-bottom:4px}
+html[data-visualize-standalone] #bl-reception-01 .bl-login-form{gap:13px}
+html[data-visualize-standalone] #bl-reception-01 .bl-login-languages{margin-top:14px}
+html[data-visualize-standalone] #bl-reception-01 .bl-device-options{padding-top:10px}
+html[data-visualize-standalone] #bl-reception-01 .bl-device-options summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+html[data-visualize-standalone] #bl-reception-01 .bl-drawer{width:min(640px,calc(100% - 24px));max-height:calc(100vh - 24px);max-height:var(--bl-visit-dialog-height,calc(100dvh - 24px));top:var(--bl-visit-dialog-top,auto);bottom:auto;margin-block:0;overscroll-behavior:contain;scroll-padding:88px 0 100px}
+html[data-visualize-standalone] #bl-reception-01 .bl-dialog-head{padding:16px 20px;background:var(--bl-panel)}
+html[data-visualize-standalone] #bl-reception-01 .bl-dialog-body{padding:16px 20px;gap:14px}
+html[data-visualize-standalone] #bl-reception-01 .bl-form-actions,html[data-visualize-standalone] #bl-reception-01 .bl-visit-actions{position:sticky;bottom:-16px;z-index:3;background:var(--bl-panel);padding-block:12px;margin-bottom:-16px;border-top:1px solid var(--bl-line)}
+html[data-visualize-standalone] #bl-reception-01 .bl-close{min-width:44px;min-height:44px}
+@media(min-width:760px){
+html[data-visualize-standalone] #bl-reception-01&gt;.bl-global-header{grid-template-columns:148px minmax(0,1fr) auto}
+html[data-visualize-standalone] #bl-reception-01 .bl-global-create{grid-column:auto;grid-row:auto}
+html[data-visualize-standalone] #bl-reception-01 .bl-global-header .bl-search{grid-column:auto;grid-row:auto}
+html[data-visualize-standalone] #bl-reception-01&gt;.bl-shell{grid-template-columns:148px minmax(0,1fr)}
+html[data-visualize-standalone] #bl-reception-01 .bl-nav{flex-direction:column;align-items:stretch;justify-content:normal;flex-wrap:nowrap;border-right:1px solid var(--bl-line);border-bottom:0}
+html[data-visualize-standalone] #bl-reception-01 .bl-nav nav{display:grid;flex:0;width:100%;gap:6px}
+html[data-visualize-standalone] #bl-reception-01 .bl-nav-foot{display:grid;margin-top:auto;padding:10px 8px 0}
+html[data-visualize-standalone] #bl-reception-01 .bl-nav-foot&gt;:not(.bl-logout){display:revert}
+html[data-visualize-standalone] #bl-reception-01 .bl-nav-foot&gt;.bl-avatar{display:grid}
+html[data-visualize-standalone] #bl-reception-01 .bl-nav .bl-logout{border-top:1px solid var(--bl-line);padding:12px 0 0;margin-top:8px}
+html[data-visualize-standalone] #bl-reception-01 [data-client-audit-row] .bl-operation-bottom{grid-template-columns:minmax(0,1fr) auto;align-items:end}
+}
+@container bl-contacts (min-width:520px){
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-facts&gt;div{grid-template-columns:1fr;gap:3px}
+}
+@media(min-width:1000px){
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-details{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-details&gt;.bl-contact-group:first-child{grid-column:1/-1}
+html[data-visualize-standalone] #bl-reception-01 .bl-client-audit-entry{grid-column:auto}
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-details&gt;.bl-contact-group:not(:first-child) .bl-contact-group-head{grid-template-columns:minmax(0,1fr) 110px;gap:8px;padding:10px 12px}
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-details&gt;.bl-contact-group.bl-client-audit-entry .bl-contact-group-head{grid-template-columns:1fr}
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-group-head .bl-button{padding-inline:8px}
+html[data-visualize-standalone] #bl-reception-01 .bl-contact-facts{padding:12px;gap:8px}
+html[data-visualize-standalone] #bl-reception-01 .bl-profile-top{padding-top:12px}
+html[data-visualize-standalone] #bl-reception-01 .bl-profile-body{padding-block:12px}
+html[data-visualize-standalone] #bl-reception-01 .bl-main{gap:12px}
+}
+@media(max-width:759px){
+html[data-visualize-standalone] #bl-reception-01&gt;.bl-shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+html[data-visualize-standalone] #bl-reception-01 .bl-nav{max-height:30vh;padding:6px 12px;gap:6px}
+html[data-visualize-standalone] #bl-reception-01 .bl-nav nav{gap:4px}
+html[data-visualize-standalone] #bl-reception-01 .bl-work{grid-template-columns:1fr}
+html[data-visualize-standalone] #bl-reception-01 .bl-main{padding:12px}
+html[data-visualize-standalone] #bl-reception-01 .bl-dialog-head{padding:12px 16px}
+html[data-visualize-standalone] #bl-reception-01 .bl-dialog-body{padding-inline:16px}
+}
+&lt;/style&gt;
+&lt;style&gt;
 #bl-reception-01 [data-client-audit-tools]{margin-top:16px;margin-bottom:12px}
 #bl-reception-01 .bl-client-audit-entry{grid-column:1/-1}
 #bl-reception-01 [data-client-audit-row] .bl-operation-bottom{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
@@ -2189,7 +2258,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
   const icons=()=&gt;{enhanceDates();ensureMembershipReturn();if(globalThis.lucide)globalThis.lucide.createIcons({attrs:{width:16,height:16}});positionVisitDialog();};
   let visitDialogPositionVersion=0;
   function positionVisitDialog(){
-    const dialog=$(&#x27;#bl-dialog-01&#x27;);if(!dialog.open||!dialog.hasAttribute(&#x27;data-visit-flow&#x27;))return;
+    const dialog=$(&#x27;#bl-dialog-01&#x27;);if(!dialog.open)return;
+    if(document.documentElement.hasAttribute(&#x27;data-visualize-standalone&#x27;)){
+      const viewport=window.visualViewport,top=viewport?.offsetTop||0,height=viewport?.height||innerHeight;
+      dialog.style.setProperty(&#x27;--bl-visit-dialog-height&#x27;,Math.max(0,height-24)+&#x27;px&#x27;);
+      dialog.style.setProperty(&#x27;--bl-visit-dialog-top&#x27;,(top+Math.max(12,(height-dialog.getBoundingClientRect().height)/2))+&#x27;px&#x27;);
+      return;
+    }
+    if(!dialog.hasAttribute(&#x27;data-visit-flow&#x27;))return;
     const version=++visitDialogPositionVersion;
     // Intersection geometry respects the outer viewport even inside the sandboxed, auto-sized frame.
     const observer=new IntersectionObserver(([entry])=&gt;{
@@ -2201,6 +2277,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
     });observer.observe(root);
   }
   window.addEventListener(&#x27;resize&#x27;,positionVisitDialog);
+  window.visualViewport?.addEventListener(&#x27;resize&#x27;,positionVisitDialog);
+  window.visualViewport?.addEventListener(&#x27;scroll&#x27;,positionVisitDialog);
+  if(document.documentElement.hasAttribute(&#x27;data-visualize-standalone&#x27;))new ResizeObserver(positionVisitDialog).observe($(&#x27;#bl-dialog-01&#x27;));
   function statusText(c){return c.remaining===null?(c.debt?&#x27;Історичний мінус · −&#x27;+c.debt:&#x27;Без абонемента&#x27;):c.expired?&#x27;Термін минув · &#x27;+c.remaining+&#x27; &#x27;+sessions(c.remaining):(c.remaining&lt;0?&#x27;Мінус · &#x27;+c.remaining:c.remaining+&#x27; &#x27;+sessions(c.remaining)+&#x27; залишилось&#x27;);}
   const nameKey=value=&gt;String(value).normalize(&#x27;NFC&#x27;).trim().replace(/\s+/g,&#x27; &#x27;).replace(/[’‘`ʼ]/g,&quot;&#x27;&quot;).replace(/[‐‑‒–—−]/g,&#x27;-&#x27;).toUpperCase();
   function searchMatches(){
@@ -2385,7 +2464,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
   }
   function renderEvents(){$(&#x27;#bl-day-visits-01&#x27;).textContent=&#x27;Візити сьогодні: &#x27;+events.filter(e=&gt;e.isVisit&amp;&amp;!e.canceled&amp;&amp;(e.date||demoToday)===demoToday).length;if(currentPage===&#x27;journal&#x27;||currentPage===&#x27;reports&#x27;)renderSection();}
   function notify(text){$(&#x27;#bl-toast-01&#x27;).textContent=text;$(&#x27;#bl-toast-01&#x27;).hidden=false;}
-  function open(title,content){const dialog=$(&#x27;#bl-dialog-01&#x27;);if(!dialog.open)previousFocus=document.activeElement;if(currentPage===&#x27;reports&#x27;)dialog.dataset.visitFlow=&#x27;true&#x27;;$(&#x27;#bl-dialog-title-01&#x27;).textContent=title;$(&#x27;#bl-dialog-body-01&#x27;).innerHTML=content;if(!dialog.open)dialog.showModal();}
+  function open(title,content){const dialog=$(&#x27;#bl-dialog-01&#x27;);if(!dialog.open)previousFocus=document.activeElement;if(currentPage===&#x27;reports&#x27;)dialog.dataset.visitFlow=&#x27;true&#x27;;$(&#x27;#bl-dialog-title-01&#x27;).textContent=title;$(&#x27;#bl-dialog-body-01&#x27;).innerHTML=content;if(!dialog.open)dialog.showModal();positionVisitDialog();}
   function close(){$(&#x27;#bl-dialog-01&#x27;).close();}
   $(&#x27;#bl-dialog-01&#x27;).addEventListener(&#x27;close&#x27;,()=&gt;{delete $(&#x27;#bl-dialog-01&#x27;).dataset.visitFlow;delete $(&#x27;#bl-dialog-01&#x27;).dataset.nonworkingFlow;visitDialogPositionVersion++;membershipReturn=null;});
   $(&#x27;#bl-dialog-01&#x27;).addEventListener(&#x27;close&#x27;,()=&gt;{const visible=el=&gt;el?.isConnected&amp;&amp;el.getClientRects().length&gt;0&amp;&amp;!el.closest(&#x27;dialog&#x27;);const target=visible(previousFocus)?previousFocus:currentPage===&#x27;reports&#x27;?$(&#x27;.bl-report-date .bl-date-trigger&#x27;):currentPage===&#x27;journal&#x27;?$(&#x27;[data-feed-scope=&quot;journal&quot;] [data-feed-filter]&#x27;):person()&amp;&amp;tab===&#x27;history&#x27;?$(&#x27;[data-tab=&quot;history&quot;]&#x27;):person()?$(&#x27;[data-action=&quot;oneoff&quot;]&#x27;):$(&#x27;#bl-search-01&#x27;);target?.focus({preventScroll:true});});
@@ -5320,7 +5399,20 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
   if (!(frame instanceof HTMLIFrameElement)) {
     return;
   }
-  let viewportHeight = globalThis.innerHeight;
+  const sizeViewport = () => {
+    const viewport = globalThis.visualViewport;
+    // Follow keyboard viewport panning without disabling browser zoom.
+    document.documentElement.style.setProperty(
+      "--app-viewport-top", (viewport?.offsetTop || 0) + "px",
+    );
+    // Child content height never changes the app viewport, including keyboard resize.
+    document.documentElement.style.setProperty(
+      "--app-viewport-height", (viewport?.height || globalThis.innerHeight) + "px",
+    );
+  };
+  sizeViewport();
+  globalThis.visualViewport?.addEventListener("resize", sizeViewport);
+  globalThis.visualViewport?.addEventListener("scroll", sizeViewport);
   const storageKey = `codex:visualization-widget-state-v2:${JSON.stringify([
     globalThis.location.pathname,
     globalThis.location.search,
@@ -5414,15 +5506,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
       return;
     }
     if (data.type === "height") {
-      const height = data.height;
-      if (
-        typeof height === "number" &&
-        Number.isFinite(height) &&
-        height >= 0 &&
-        height <= 10_000
-      ) {
-        frame.style.height = Math.ceil(height) + "px";
-      }
+      // This app fills the visible viewport; content scrolls inside reception.
       return;
     }
     if (data.type === "scroll-to") {
@@ -5485,11 +5569,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
     return;
   }
   globalThis.addEventListener("resize", () => {
-    const height = Number.parseFloat(frame.style.height);
-    if (!Number.isFinite(height) || height <= viewportHeight) {
-      frame.style.removeProperty("height");
-    }
-    viewportHeight = globalThis.innerHeight;
+    sizeViewport();
     channel.port1.postMessage({ type: "measure" });
   });
   frame.addEventListener(
