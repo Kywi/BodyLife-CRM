@@ -57,7 +57,7 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-30.
-- Source SHA-256: `b4f8ad7eacaeb05b75ee64af999b2792738c806fcee29fbdfbc6620aa1dd52c8`.
+- Source SHA-256: `18d1467a9c82110b40de2035ff9817b9d52b792826e3a2a589238200d60fbc9b`.
 - Scope: UI35 standalone payment history, ready for review; the user moved on
   from UI34 and its layout/navigation refinements on 2026-10-30.
 - The audit surfaces use selected fictional fixture events and subsequent
@@ -266,14 +266,16 @@ keyboard/zoom/orientation still requires device review.
 ## UI35 — standalone payment change history (proposal)
 
 Open **Журнал → Операція: Окремі оплати → PAY-DEMO-001 or PAY-DEMO-002 →
-Історія оплати: Переглянути → Оплату виправлено: Деталі**.
+Історія змін оплати → Оплату виправлено: Деталі**.
 The fictional Maria 1042 example records a correction from 150 to 200 UAH and
 10:00 to10:05 on 14 September. It does not alter today's cash, visits or balances.
 
 Each change groups its Before/After values, reason and captured account/device.
 Short field comparisons sit side by side on wide screens; comments use full
-width. Technical identifiers are collapsed. Original/replacement links return
-to the exact event; Back then returns through history to the source payment.
+width. Technical identifiers are collapsed. Payment details show concise status
+and a History entry; reasons and Before/After live in history. The event has one
+link to the current payment when different, with Back returning to the originating
+journal/report/client history. Event Back returns to the list and source payment.
 Journal filters remain. Long histories/details retain intentional scrolling.
 
 Actual successful creation, correction and cancellation now append immutable
@@ -312,3 +314,30 @@ sandbox and CSP. Source is under1MB; no test globals are published.
   tied to Milestone 11 readiness.
 - Final end-to-end iPad Safari keyboard, zoom, orientation and error/recovery
   acceptance. Viewport emulation is supporting evidence only.
+
+
+## UI35 refinement — simpler payment details (2026-10-30)
+
+Removed Previous record and Replacement payment actions from payment details,
+along with repeated correction reasons and the extra bottom Done action. There
+is one top Back and one History entry. The corrected source still states that it
+is excluded from daily cash; a canceled payment retains its cancellation reason.
+Current replacements are labeled as current payments after correction.
+
+History retains immutable comparisons and reasons. From an older source it
+offers one forward action to the current same-client payment in the chain,
+including a clearly labeled canceled terminal record. There is no link to the
+old record and no self-link when already viewing the current payment. Missing,
+foreign, linked or ambiguous targets leave historical information available.
+Opening the current payment exits the nested event return path; its Back leads
+to the original journal, report or client history. Pure history Back remains
+event → list → source payment. No payment mutation or report rule changed.
+
+
+Validation: Chromium touch1180×720,820×1060 and320×700 showed the corrected source
+without scrolling. Journal/report/client-history origins, event/list/source
+Back, self-link suppression, actual multiple corrections and cancellation, and
+missing/foreign/linked/ambiguous current targets passed. Historical values and
+cancellation reasons remain. Final history entry is a single full-width icon
+button rather than a heading plus a cramped action. Physical Safari remains
+unverified; no backend behavior changed.
