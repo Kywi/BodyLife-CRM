@@ -1,7 +1,7 @@
 # BodyLife interactive UI prototype
 
 Open https://kywi.github.io/BodyLife-CRM/ to review the current Ukrainian,
-light-theme desktop prototype through standalone payment change history (UI35).
+light-theme desktop prototype through membership-sale change history (UI36).
 The entry page replaces the earlier static review-lab dashboard.
 
 ## Trying the prototype
@@ -44,7 +44,7 @@ Then apply the same fixed-light wrapper styling as the local preview server
 and set the outer/inner document language to `uk`. Keep the embedded fragment
 unchanged. Validate the resulting iframe interactions before publication.
 
-For the UI32, UI33 and UI34 refreshes the pinned exporter was unavailable. The exact escaped
+For the UI32–36 refreshes the pinned exporter was unavailable. The exact escaped
 source fragment was replaced once in the existing export; everything outside
 that fragment, including both CSP policies and the sandbox, was preserved byte
 for byte. The replacement was checked by reversing it against the prior export.
@@ -57,9 +57,9 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 ## Export record
 
 - Export date: 2026-10-30.
-- Source SHA-256: `18d1467a9c82110b40de2035ff9817b9d52b792826e3a2a589238200d60fbc9b`.
-- Scope: UI35 standalone payment history, ready for review; the user moved on
-  from UI34 and its layout/navigation refinements on 2026-10-30.
+- Source SHA-256: `aa24af7a18167ddebd7ca5d9f37ec0cb5dde4e362b3ac17b23b5332d4920a60c`.
+- Scope: UI36 membership-sale history, ready for review. UI35 payment history
+  and its simpler navigation were approved by the user on 2026-10-30.
 - The audit surfaces use selected fictional fixture events and subsequent
   successful scoped changes from this page session, not a complete historic ledger.
 - Local checks: exact fragment/mirror, unchanged sandbox/CSP wrapper, fixed
@@ -263,7 +263,7 @@ Screenshots at1180/320 were inspected; no browser errors. iPad Safari physical
 keyboard/zoom/orientation still requires device review.
 
 
-## UI35 — standalone payment change history (proposal)
+## UI35 — standalone payment change history (approved)
 
 Open **Журнал → Операція: Окремі оплати → PAY-DEMO-001 or PAY-DEMO-002 →
 Історія змін оплати → Оплату виправлено: Деталі**.
@@ -285,8 +285,8 @@ submissions add no successful event. Received time and recorded/action time are
 distinct; backfilled creation retains its origin. Reconciled-day changes retain
 the existing Owner restriction. Reads do not affect cash or membership balances.
 
-This slice covers ordinary standalone payments only. Membership sales, debt
-coverage and one-off/trial audit are separate remaining variants. It adds no
+This slice covers ordinary standalone payments only. Membership sales are covered separately by UI36; debt
+coverage and one-off/trial audit remain separate variants. It adds no
 backend command or global audit menu. The fixed date remains 2026-09-15.
 Browser evidence uses Chromium; physical iPad Safari review is still required.
 
@@ -303,10 +303,10 @@ sandbox and CSP. Source is under1MB; no test globals are published.
 
 ## Current review queue (2026-10-30)
 
-- UI1–34: reviewed, including the reported layout and navigation refinements.
-  UI35 is the current proposal; do not repeat approved interactions without a
-  specific defect or unmet requirement.
-- Remaining business history: membership sale/correction, debt coverage,
+- UI1–35: reviewed and approved, including the reported layout/navigation
+  refinements. UI36 is the current proposal; repeat approved interactions only
+  for a specific defect or unmet requirement.
+- Remaining business history after UI36: debt coverage,
   one-off/trial, visit/freeze and opening-balance changes; reuse the accepted
   history pattern and review only their distinct effects.
 - Client creation audit; contact/card change history is already covered by UI34.
@@ -341,3 +341,42 @@ missing/foreign/linked/ambiguous current targets passed. Historical values and
 cancellation reasons remain. Final history entry is a single full-width icon
 button rather than a heading plus a cramped action. Physical Safari remains
 unverified; no backend behavior changed.
+
+## UI36 — membership-sale change history (proposal)
+
+Search **7072 → Історія → DEMO-001: Деталі → Історія змін оформлення**.
+Kateryna's fictional initial issue is already present. Replace or cancel an
+eligible issue to add a change, then inspect its details. Main membership
+details stay concise, with one History action, contextual Back and the client
+action beside the identity. History uses the approved event → list → source
+pattern and at most one link to the current record, without recursive returns.
+
+Successful normal/backdated issue, replacement and cancellation capture frozen
+terms, cash, period, original result, reason and actor/session/device. Replacing
+cancels the old exact payment and records the new full-price payment. Canceling
+a mistaken issue preserves its original amount and records the exact predecessor
+and automatic-coverage reversal. The event-time result does not become today's
+balance. Conditional reconciliation metadata is immutable; an older date alone
+does not imply a reconciled day. Shared Reception remains eligible under the
+membership aggregate contract.
+
+Try **2087 → Оформити абонемент → Фітнес · 8 занять**, then cancel that issue
+from client history: the previous -2 balance is restored; source Visits stay unchanged.
+Later visits, freezes, non-working periods, changed coverage or successor
+rollover still block a quick cancellation. Opening-balance and other aggregate
+history remain separate queue items. No backend behavior or demo date changed.
+
+Validation passed in touch Chromium at1180×720,820×1060,320×700 and1024×420:
+actual creation/backfill/replacement/cancellation, exact cash and predecessor
+effects, frozen nested snapshots, named/shared actors, failed/stale writes,
+duplicate/busy Escape, auth/session and detached callback guards, dependency
+checks, reconciliation distinctions, journal/report/client returns, target
+guards and escaped long text. Ordinary tablet details fit without scrolling;
+long event/technical content intentionally scrolls. UI35 navigation regression
+passed. Independent static review is clean after the reconciliation fix.
+
+The app script was formatted with compression and identifier mangling disabled
+to retain the under1MB source limit. Parsed AST/cooked strings, all comments and
+tagged-template raw data agree before/after formatting. Exact fragment reversal
+preserves the entire export wrapper, both CSPs and sandbox. Physical iPad Safari
+keyboard, zoom and orientation remain for user acceptance.
