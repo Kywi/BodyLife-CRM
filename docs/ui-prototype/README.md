@@ -1,7 +1,7 @@
 # BodyLife interactive UI prototype
 
 Open https://kywi.github.io/BodyLife-CRM/ to review the current Ukrainian,
-light-theme desktop prototype through client contact/card change history (UI34).
+light-theme desktop prototype through standalone payment change history (UI35).
 The entry page replaces the earlier static review-lab dashboard.
 
 ## Trying the prototype
@@ -56,10 +56,10 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 
 ## Export record
 
-- Export date: 2026-10-29.
-- Source SHA-256: `5c467e2d4b7d415288fe9e9b116a5716ecb48caea31d933138ef415771afd653`.
-- Scope: UI34 client contact/card change history; UI33 and its toolbar spacing
-  were approved by the user.
+- Export date: 2026-10-30.
+- Source SHA-256: `b4f8ad7eacaeb05b75ee64af999b2792738c806fcee29fbdfbc6620aa1dd52c8`.
+- Scope: UI35 standalone payment history, ready for review; the user moved on
+  from UI34 and its layout/navigation refinements on 2026-10-30.
 - The audit surfaces use selected fictional fixture events and subsequent
   successful scoped changes from this page session, not a complete historic ledger.
 - Local checks: exact fragment/mirror, unchanged sandbox/CSP wrapper, fixed
@@ -199,7 +199,7 @@ acknowledgements, frozen nested values, escaping, error/stale retry, auth change
 closed/replaced forms, cross-client detail denial and no-op reads passed.
 Desktop/narrow screenshots inspected; no page errors or horizontal overflow.
 Safari was not exercised. Two scripts parse; fragment/mirror, sandbox/CSP and
-fixed date are preserved. UI34 awaits user review.
+fixed date are preserved. User moved to UI35 on 2026-10-30 after refinements.
 
 Coordination used the updated orchestrator: explicit Luna/low scout,
 Sol6.1/medium worker and fresh Sol6.1/high reviewer. One transient worker capacity
@@ -261,3 +261,54 @@ new/list targets, creation, Escape/reopen, payment/freeze/opening drafts and
 payment error recovery. UI33 audit/focus and UI32 credential regressions passed.
 Screenshots at1180/320 were inspected; no browser errors. iPad Safari physical
 keyboard/zoom/orientation still requires device review.
+
+
+## UI35 — standalone payment change history (proposal)
+
+Open **Журнал → Операція: Окремі оплати → PAY-DEMO-001 or PAY-DEMO-002 →
+Історія оплати: Переглянути → Оплату виправлено: Деталі**.
+The fictional Maria 1042 example records a correction from 150 to 200 UAH and
+10:00 to10:05 on 14 September. It does not alter today's cash, visits or balances.
+
+Each change groups its Before/After values, reason and captured account/device.
+Short field comparisons sit side by side on wide screens; comments use full
+width. Technical identifiers are collapsed. Original/replacement links return
+to the exact event; Back then returns through history to the source payment.
+Journal filters remain. Long histories/details retain intentional scrolling.
+
+Actual successful creation, correction and cancellation now append immutable
+event snapshots. Multiple corrections keep their chain; cancellation preserves
+the original amount and changes its status. Failed, stale, duplicate or detached
+submissions add no successful event. Received time and recorded/action time are
+distinct; backfilled creation retains its origin. Reconciled-day changes retain
+the existing Owner restriction. Reads do not affect cash or membership balances.
+
+This slice covers ordinary standalone payments only. Membership sales, debt
+coverage and one-off/trial audit are separate remaining variants. It adds no
+backend command or global audit menu. The fixed date remains 2026-09-15.
+Browser evidence uses Chromium; physical iPad Safari review is still required.
+
+Validation: Chromium touch viewports1180×720,820×1060,320×700 and a short
+1024×420 screen covered list/detail/exact returns, snapshots, real creation and
+two corrections followed by cancellation, backfilled receipt/action timestamps,
+shared/named actor identity, no-op reads and membership preservation. Failed and
+stale writes, duplicate submits, busy Escape, actor/session changes, missing links,
+cross-scope denial, reconciled-day restrictions, same-value correction and long
+escaped text passed. Final replacement/queued-close checks protect a newer busy
+form's close control. The ordinary detail needs only28px overflow at1180×720;
+long content remains scrollable. Source/export reversal retains the exact wrapper,
+sandbox and CSP. Source is under1MB; no test globals are published.
+
+## Current review queue (2026-10-30)
+
+- UI1–34: reviewed, including the reported layout and navigation refinements.
+  UI35 is the current proposal; do not repeat approved interactions without a
+  specific defect or unmet requirement.
+- Remaining business history: membership sale/correction, debt coverage,
+  one-off/trial, visit/freeze and opening-balance changes; reuse the accepted
+  history pattern and review only their distinct effects.
+- Client creation audit; contact/card change history is already covered by UI34.
+- Paper record entry/reconciliation: separate from approved backdated forms and
+  tied to Milestone 11 readiness.
+- Final end-to-end iPad Safari keyboard, zoom, orientation and error/recovery
+  acceptance. Viewport emulation is supporting evidence only.

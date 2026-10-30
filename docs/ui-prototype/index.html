@@ -1578,7 +1578,7 @@ html[data-visualize-standalone] #bl-reception-01 .bl-nav-foot{display:grid;margi
 html[data-visualize-standalone] #bl-reception-01 .bl-nav-foot&gt;:not(.bl-logout){display:revert}
 html[data-visualize-standalone] #bl-reception-01 .bl-nav-foot&gt;.bl-avatar{display:grid}
 html[data-visualize-standalone] #bl-reception-01 .bl-nav .bl-logout{border-top:1px solid var(--bl-line);padding:12px 0 0;margin-top:8px}
-html[data-visualize-standalone] #bl-reception-01 [data-client-audit-row] .bl-operation-bottom{grid-template-columns:minmax(0,1fr) auto;align-items:end}
+html[data-visualize-standalone] #bl-reception-01 :is([data-client-audit-row],[data-payment-audit-row]) .bl-operation-bottom{grid-template-columns:minmax(0,1fr) auto;align-items:end}
 }
 @container bl-contacts (min-width:520px){
 html[data-visualize-standalone] #bl-reception-01 .bl-contact-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1609,11 +1609,12 @@ html[data-visualize-standalone] #bl-reception-01 .bl-dialog-body{padding-inline:
 &lt;style&gt;
 #bl-reception-01 [data-client-audit-tools]{margin-top:16px;margin-bottom:12px}
 #bl-reception-01 .bl-client-audit-entry{grid-column:1/-1}
-#bl-reception-01 [data-client-audit-row] .bl-operation-bottom{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
-#bl-reception-01 [data-client-audit-row] .bl-operation-bottom&gt;span{min-width:0;overflow-wrap:anywhere}
-#bl-reception-01 [data-client-audit-detail]{justify-self:end}
+#bl-reception-01 :is([data-client-audit-row],[data-payment-audit-row]) .bl-operation-bottom{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+#bl-reception-01 :is([data-client-audit-row],[data-payment-audit-row]) .bl-operation-bottom&gt;span{min-width:0;overflow-wrap:anywhere}
+#bl-reception-01 :is([data-client-audit-detail],[data-payment-event]){justify-self:end}
 #bl-reception-01 [data-client-audit-view] .bl-feed-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
 #bl-reception-01 [data-client-audit-view] .bl-feed-filters&gt;label:first-child{grid-column:auto}
+@media(min-width:600px){#bl-reception-01 .bl-payment-changes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}#bl-reception-01 .bl-payment-changes&gt;[data-payment-field=comment],#bl-reception-01 .bl-payment-changes&gt;.bl-issue-summary{grid-column:1/-1}}
 #bl-reception-01 .bl-client-audit-context{display:grid;gap:14px;padding:16px;background:var(--bl-soft);border-radius:8px;min-width:0}
 #bl-reception-01 .bl-client-audit-context .bl-issue-summary{padding:14px 0 0;background:transparent;border-top:1px solid var(--bl-line);border-radius:0}
 #bl-reception-01 .bl-client-audit-context .bl-issue-summary&gt;div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px}
@@ -4018,14 +4019,49 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
     return Number.isSafeInteger(cents)&amp;&amp;cents&gt;0?cents:null;
   }
   const paymentTimeValid=value=&gt;/^([01]\d|2[0-3]):[0-5]\d$/.test(value);
-  function paymentHistory(c){return demoPayments.filter(p=&gt;p.clientId===c.id).map(p=&gt;({code:p.code,html:`&lt;div&gt;&lt;strong&gt;${p.date===demoToday?&#x27;Сьогодні&#x27;:dateLabel(p.date,false)}, ${p.time} · інша оплата${p.status===&#x27;canceled&#x27;?&#x27; · скасовано&#x27;:p.status===&#x27;corrected&#x27;?&#x27; · виправлено&#x27;:&#x27;&#x27;}&lt;/strong&gt;${backdatedVisitLabel(p)}&lt;p&gt;${paymentMoney(p.amount)} · готівка · ${p.code}&lt;/p&gt;&lt;button class=&quot;bl-link&quot; type=&quot;button&quot; data-payment-open=&quot;${p.code}&quot;&gt;Деталі оплати&lt;/button&gt;&lt;/div&gt;`}));}
+  const paymentAudit=[];let paymentAuditSequence=0,paymentReturn=null;
+  const paymentSnapshot=p=&gt;Object.freeze(Object.fromEntries([&#x27;code&#x27;,&#x27;amount&#x27;,&#x27;date&#x27;,&#x27;time&#x27;,&#x27;comment&#x27;,&#x27;status&#x27;,&#x27;occurredAt&#x27;].map(k=&gt;[k,p[k]??&#x27;&#x27;])));
+  const paymentClientAllowed=c=&gt;!!c?.id&amp;&amp;c.id!==&#x27;system_trial&#x27;&amp;&amp;c.kind!==&#x27;system_trial&#x27;&amp;&amp;clientAuditAllowed(c);
+  const paymentReadable=p=&gt;!!p&amp;&amp;demoPayments.includes(p)&amp;&amp;paymentClientAllowed(clients.find(c=&gt;c.id===p.clientId))&amp;&amp;!p.saleId&amp;&amp;!p.coverageId&amp;&amp;!p.membershipId;
+  const paymentAttached=f=&gt;f.isConnected&amp;&amp;$(&#x27;#bl-dialog-01&#x27;).open&amp;&amp;$(&#x27;#bl-dialog-body-01 form&#x27;)===f;
+  function appendPaymentAudit(p,kind,before=null,actor=clientAuditContext(),reason=&#x27;&#x27;,metadata={}){
+    const after=paymentSnapshot(p),sequence=++paymentAuditSequence;
+    paymentAudit.push(Object.freeze({id:&#x27;payment-audit-&#x27;+sequence,sequence,family:p.family||p.code,clientId:p.clientId,clientName:p.clientName,kind,before,after,reason,origin:kind===&#x27;created&#x27;?p.entryOrigin:&#x27;normal&#x27;,changedAfterReconciliation:kind!==&#x27;created&#x27;&amp;&amp;!!p.reconciled,occurredAt:kind===&#x27;created&#x27;?p.occurredAt:metadata.recordedAt||p.recordedAt,recordedAt:metadata.recordedAt||p.recordedAt,...actor}));
+  }
+  const paymentAuditLabel=r=&gt;r.kind===&#x27;created&#x27;?&#x27;Оплату створено&#x27;:r.kind===&#x27;corrected&#x27;?&#x27;Оплату виправлено&#x27;:&#x27;Оплату скасовано&#x27;;
+  const paymentBack=(attr,label)=&gt;&#x27;&lt;button class=&quot;bl-button bl-back-button&quot; type=&quot;button&quot; &#x27;+attr+&#x27;&gt;&lt;i data-lucide=&quot;arrow-left&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&#x27;+label+&#x27;&lt;/button&gt;&#x27;;
+  function paymentAuditView(title,body,selector){$(&#x27;.bl-close&#x27;).disabled=false;open(title,&#x27;&lt;div class=&quot;bl-stack bl-staff-view&quot; data-payment-audit-view&gt;&#x27;+body+&#x27;&lt;/div&gt;&#x27;);$(&#x27;#bl-dialog-01&#x27;).dataset.visitFlow=&#x27;true&#x27;;$(&#x27;#bl-dialog-01&#x27;).scrollTop=0;icons();$(selector)?.focus({preventScroll:true});}
+  function showPaymentHistory(p,focus=&#x27;[data-payment-history-back]&#x27;){
+    if(!paymentReadable(p))return;const rows=paymentAudit.filter(r=&gt;r.family===(p.family||p.code)&amp;&amp;r.clientId===p.clientId).sort((a,b)=&gt;Date.parse(b.recordedAt)-Date.parse(a.recordedAt)||b.sequence-a.sequence);
+    paymentAuditView(&#x27;Історія оплати&#x27;,paymentBack(&#x27;data-payment-history-back&#x27;,&#x27;Назад до оплати&#x27;)+&#x27;&lt;section class=&quot;bl-client-audit-context&quot;&gt;&lt;h3&gt;&#x27;+escape(rows[0]?.clientName||p.clientName)+&#x27;&lt;/h3&gt;&lt;p class=&quot;bl-small bl-muted&quot;&gt;Інша оплата · готівка&lt;/p&gt;&lt;/section&gt;&#x27;+rows.map(r=&gt;&#x27;&lt;article class=&quot;bl-operation-row&quot; data-payment-audit-row&gt;&lt;div class=&quot;bl-operation-top&quot;&gt;&lt;strong&gt;&#x27;+paymentAuditLabel(r)+&#x27;&lt;/strong&gt;&lt;/div&gt;&lt;div class=&quot;bl-operation-bottom&quot;&gt;&lt;span class=&quot;bl-small bl-muted&quot;&gt;&#x27;+escape(r.actorDisplayName)+&#x27;&lt;br&gt;&#x27;+staffAuditTime(r.recordedAt)+&#x27;&lt;/span&gt;&lt;button class=&quot;bl-button&quot; type=&quot;button&quot; data-payment-event=&quot;&#x27;+r.id+&#x27;&quot;&gt;&lt;i data-lucide=&quot;file-text&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Деталі&lt;/button&gt;&lt;/div&gt;&lt;/article&gt;&#x27;).join(&#x27;&#x27;),focus);
+    $(&#x27;[data-payment-history-back]&#x27;).onclick=()=&gt;{showPayment(p);$(&#x27;[data-payment-history]&#x27;)?.focus({preventScroll:true});};
+    root.querySelectorAll(&#x27;[data-payment-event]&#x27;).forEach(b=&gt;b.onclick=()=&gt;showPaymentAudit(p,b.dataset.paymentEvent));
+  }
+  function showPaymentAudit(p,id){
+    if(!paymentReadable(p))return;const r=paymentAudit.find(r=&gt;r.id===id&amp;&amp;r.family===(p.family||p.code)&amp;&amp;r.clientId===p.clientId);if(!r)return;
+    const fact=(k,v)=&gt;&#x27;&lt;div&gt;&lt;dt&gt;&#x27;+k+&#x27;&lt;/dt&gt;&lt;dd&gt;&#x27;+escape(v||&#x27;Не вказано&#x27;)+&#x27;&lt;/dd&gt;&lt;/div&gt;&#x27;,labels={amount:&#x27;Сума&#x27;,date:&#x27;Дата отримання&#x27;,time:&#x27;Час отримання&#x27;,comment:&#x27;Коментар&#x27;,status:&#x27;Стан&#x27;},value=(k,v)=&gt;k===&#x27;amount&#x27;?paymentMoney(v):k===&#x27;date&#x27;?dateLabel(v):k===&#x27;status&#x27;?({active:&#x27;Проведено&#x27;,corrected:&#x27;Виправлено&#x27;,canceled:&#x27;Скасовано&#x27;}[v]||v):v||&#x27;Не вказано&#x27;;
+    const keys=Object.keys(labels).filter(k=&gt;r.before&amp;&amp;(r.before[k]!==r.after[k]||r.kind===&#x27;canceled&#x27;&amp;&amp;k===&#x27;amount&#x27;));
+    const target=(code,label)=&gt;{const q=demoPayments.find(q=&gt;q.code===code),valid=paymentReadable(q)&amp;&amp;q.clientId===r.clientId&amp;&amp;(q.family||q.code)===r.family;return &#x27;&lt;button class=&quot;bl-button&quot; type=&quot;button&quot; data-payment-event-target=&quot;&#x27;+escape(code)+&#x27;&quot; &#x27;+(valid?&#x27;&#x27;:&#x27;disabled&#x27;)+&#x27;&gt;&lt;i data-lucide=&quot;receipt&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&#x27;+label+&#x27;&lt;/button&gt;&#x27;+(valid?&#x27;&#x27;:&#x27;&lt;p class=&quot;bl-small bl-muted&quot;&gt;Запис недоступний. Історичні дані збережено.&lt;/p&gt;&#x27;);};
+    const changes=r.before?keys.map(k=&gt;&#x27;&lt;section class=&quot;bl-contact-group bl-client-audit-change&quot; data-payment-field=&quot;&#x27;+k+&#x27;&quot;&gt;&lt;h3&gt;&#x27;+labels[k]+(r.kind===&#x27;canceled&#x27;&amp;&amp;k===&#x27;amount&#x27;?&#x27; · без змін&#x27;:&#x27;&#x27;)+&#x27;&lt;/h3&gt;&lt;dl class=&quot;bl-client-audit-values&quot;&gt;&lt;div&gt;&lt;dt&gt;Було&lt;/dt&gt;&lt;dd&gt;&#x27;+escape(value(k,r.before[k]))+&#x27;&lt;/dd&gt;&lt;/div&gt;&lt;div&gt;&lt;dt&gt;Стало&lt;/dt&gt;&lt;dd&gt;&#x27;+escape(value(k,r.after[k]))+&#x27;&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;/section&gt;&#x27;).join(&#x27;&#x27;):&#x27;&lt;dl class=&quot;bl-issue-summary&quot;&gt;&#x27;+fact(&#x27;Сума&#x27;,paymentMoney(r.after.amount))+(r.after.comment?fact(&#x27;Коментар&#x27;,r.after.comment):&#x27;&#x27;)+&#x27;&lt;/dl&gt;&#x27;;
+    paymentAuditView(&#x27;Деталі зміни оплати&#x27;,paymentBack(&#x27;data-payment-event-back&#x27;,&#x27;Назад до історії&#x27;)+&#x27;&lt;section class=&quot;bl-client-audit-context&quot;&gt;&lt;div&gt;&lt;h3&gt;&#x27;+paymentAuditLabel(r)+&#x27;&lt;/h3&gt;&lt;p class=&quot;bl-small bl-muted&quot;&gt;&#x27;+escape(r.clientName)+&#x27;&lt;/p&gt;&lt;/div&gt;&lt;dl class=&quot;bl-issue-summary&quot;&gt;&#x27;+fact(&#x27;Хто&#x27;,r.actorDisplayName)+fact(&#x27;Дата внесення&#x27;,staffAuditTime(r.recordedAt))+fact(&#x27;Пристрій&#x27;,r.device)+fact(&#x27;Отримано&#x27;,staffAuditTime(r.after.occurredAt))+(r.origin===&#x27;manual_backfill&#x27;?fact(&#x27;Внесення&#x27;,&#x27;Минулою датою&#x27;):&#x27;&#x27;)+(r.changedAfterReconciliation?fact(&#x27;Звіряння&#x27;,&#x27;Змінено після звіряння&#x27;):&#x27;&#x27;)+&#x27;&lt;/dl&gt;&lt;/section&gt;&#x27;+(r.before&amp;&amp;!keys.length?&#x27;&lt;p class=&quot;bl-small bl-muted&quot;&gt;Сума, дата, час і коментар без змін.&lt;/p&gt;&#x27;:&#x27;&lt;div class=&quot;bl-payment-changes&quot;&gt;&#x27;+changes+&#x27;&lt;/div&gt;&#x27;)+(r.reason?&#x27;&lt;section class=&quot;bl-client-audit-reason&quot;&gt;&lt;h3&gt;Причина&lt;/h3&gt;&lt;p&gt;&#x27;+escape(r.reason)+&#x27;&lt;/p&gt;&lt;/section&gt;&#x27;:&#x27;&#x27;)+&#x27;&lt;div class=&quot;bl-sale-links&quot;&gt;&#x27;+target(r.before?.code||r.after.code,r.kind===&#x27;created&#x27;?&#x27;Відкрити оплату&#x27;:&#x27;Початкова оплата&#x27;)+(r.kind===&#x27;corrected&#x27;?target(r.after.code,&#x27;Виправлена оплата&#x27;):&#x27;&#x27;)+&#x27;&lt;/div&gt;&lt;details class=&quot;bl-client-extras&quot;&gt;&lt;summary&gt;Технічні деталі&lt;/summary&gt;&lt;dl class=&quot;bl-issue-summary&quot;&gt;&#x27;+fact(&#x27;Подія&#x27;,r.id)+fact(&#x27;Ланцюжок оплат&#x27;,r.family)+fact(&#x27;Клієнт&#x27;,String(r.clientId))+fact(&#x27;Акаунт&#x27;,r.actorAccountId)+fact(&#x27;Тип акаунта&#x27;,r.actorAccountKind)+fact(&#x27;Роль&#x27;,r.actorRole)+fact(&#x27;Сеанс&#x27;,r.actorSessionId)+&#x27;&lt;/dl&gt;&lt;/details&gt;&#x27;,&#x27;[data-payment-event-back]&#x27;);
+    $(&#x27;[data-payment-event-back]&#x27;).onclick=()=&gt;showPaymentHistory(p,&#x27;[data-payment-event=&quot;&#x27;+r.id+&#x27;&quot;]&#x27;);
+    root.querySelectorAll(&#x27;[data-payment-event-target]&#x27;).forEach(b=&gt;b.onclick=()=&gt;{if(b.disabled||!paymentReadable(p))return;const q=demoPayments.find(q=&gt;q.code===b.dataset.paymentEventTarget);if(paymentReadable(q)&amp;&amp;q.clientId===r.clientId&amp;&amp;(q.family||q.code)===r.family){paymentReturn={...paymentReturn,event:r.id,source:p.code,parent:paymentReturn};showPayment(q);}});
+  }
+  function seedPaymentAudit(){
+    const c=clients.find(c=&gt;c.card===&#x27;1042&#x27;);if(!c)return;const actor=Object.freeze({actorAccountId:&#x27;staff-reception&#x27;,actorAccountKind:&#x27;shared_reception_admin&#x27;,actorRole:&#x27;reception&#x27;,actorSessionId:&#x27;demo-reception-0914&#x27;,device:&#x27;Рецепція · iPad&#x27;,actorDisplayName:&#x27;Рецепція · спільний акаунт&#x27;}),reason=&#x27;Помилково вказали суму та час&#x27;;
+    const p={code:&#x27;PAY-DEMO-001&#x27;,family:&#x27;PAY-DEMO-001&#x27;,clientId:c.id,clientName:c.name,amount:15000,date:&#x27;2026-09-14&#x27;,time:&#x27;10:00&#x27;,comment:&#x27;&#x27;,status:&#x27;active&#x27;,version:1,recordedDate:&#x27;2026-09-14&#x27;,recordedTime:&#x27;10:01&#x27;,occurredAt:&#x27;2026-09-14T07:00:00.000Z&#x27;,recordedAt:&#x27;2026-09-14T07:01:00.000Z&#x27;,entryOrigin:&#x27;normal&#x27;,actorRole:&#x27;reception&#x27;,device:actor.device};
+    const before=paymentSnapshot(p);appendPaymentAudit(p,&#x27;created&#x27;,null,actor);Object.assign(p,{status:&#x27;corrected&#x27;,replacementId:&#x27;PAY-DEMO-002&#x27;,changeReason:reason,changedDate:&#x27;2026-09-14&#x27;,changedAt:&#x27;10:10&#x27;,changedActorRole:&#x27;admin&#x27;,changedDevice:&#x27;Рецепція · ПК&#x27;});
+    const q={...p,actorRole:&#x27;admin&#x27;,device:&#x27;Рецепція · ПК&#x27;,code:&#x27;PAY-DEMO-002&#x27;,status:&#x27;active&#x27;,amount:20000,time:&#x27;10:05&#x27;,occurredAt:&#x27;2026-09-14T07:05:00.000Z&#x27;,recordedAt:&#x27;2026-09-14T07:10:00.000Z&#x27;,recordedTime:&#x27;10:10&#x27;,replaces:p.code,reason};delete q.replacementId;demoPayments.push(p,q);
+    appendPaymentAudit(q,&#x27;corrected&#x27;,before,{...actor,actorAccountId:&#x27;staff-olena&#x27;,actorAccountKind:&#x27;named_admin&#x27;,actorRole:&#x27;admin&#x27;,actorDisplayName:&#x27;Олена Бондар&#x27;,actorSessionId:&#x27;demo-olena-0914&#x27;,device:q.changedDevice},reason);
+    for(const r of [p,q])events.push({time:r.time,date:r.date,client:r.clientName,action:&#x27;Інша оплата&#x27;,detail:&#x27;Готівка · &#x27;+r.code,amount:r.amount/100,paymentId:r.code,canceled:r.status===&#x27;corrected&#x27;,paymentStatus:r.status});
+  }
   function paymentActorAllowed(p=null){return root.dataset.actorActive!==&#x27;false&#x27;&amp;&amp;(!root.dataset.actorRole||[&#x27;owner&#x27;,&#x27;admin&#x27;,&#x27;reception&#x27;].includes(root.dataset.actorRole))&amp;&amp;(!p?.reconciled||root.dataset.actorRole===&#x27;owner&#x27;);}
   function paymentStamp(c,p=null){return JSON.stringify([c.id,c.name,c.version||0,root.dataset.actorActive,root.dataset.actorRole,p?.code,p?.status,p?.version,p?.amount,p?.date,p?.time,p?.comment,p?.reconciled]);}
   function backdatedPaymentStamp(c){return JSON.stringify([paymentStamp(c),demoPayments.filter(p=&gt;p.clientId===c.id).map(p=&gt;[p.code,p.date,p.time,p.amount,p.status,p.version,p.reconciled])]);}
   function addDemoPayment(c,amount,comment,time,replaces=null,reason=&#x27;&#x27;,metadata={}){
     const date=metadata.date||demoToday;
     const p={code:&#x27;DEMO-&#x27;+String(++sequence).padStart(3,&#x27;0&#x27;),clientId:c.id,clientName:c.name,amount,comment,time,date,recordedDate:demoToday,recordedTime:&#x27;12:45&#x27;,occurredAt:backdatedKyivInstants(date,time)[0],recordedAt:backdatedKyivInstants(demoToday,&#x27;12:45&#x27;)[0],entryOrigin:metadata.entryOrigin||&#x27;normal&#x27;,backfillReason:metadata.backfillReason||&#x27;&#x27;,actorRole:root.dataset.actorRole||&#x27;reception&#x27;,device:$(&#x27;#bl-session-device-01&#x27;).textContent,status:&#x27;active&#x27;,version:1,replaces,reason};
-    demoPayments.unshift(p);events.unshift({time,date,client:c.name,action:&#x27;Інша оплата&#x27;,detail:&#x27;Готівка · &#x27;+p.code,amount:amount/100,paymentId:p.code});return p;
+    p.family=replaces?demoPayments.find(x=&gt;x.code===replaces)?.family||replaces:p.code;demoPayments.unshift(p);if(!replaces)appendPaymentAudit(p,&#x27;created&#x27;,null,metadata.actor, p.backfillReason);events.unshift({time,date,client:c.name,action:&#x27;Інша оплата&#x27;,detail:&#x27;Готівка · &#x27;+p.code,amount:amount/100,paymentId:p.code});return p;
   }
   function paymentEvent(p){return events.find(e=&gt;e.paymentId===p.code);}
   function refreshPaymentViews(p){
@@ -4037,12 +4073,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
     const ev=paymentEvent(p);if(ev){ev.canceled=true;ev.paymentStatus=status;}
   }
   function showPayment(p,fresh=false,message=&#x27;&#x27;){
+    if(!paymentReadable(p))return;$(&#x27;.bl-close&#x27;).disabled=false;
     if(p.entryOrigin===&#x27;manual_backfill&#x27;)$(&#x27;#bl-dialog-01&#x27;).dataset.visitFlow=&#x27;true&#x27;;
     const inactive=p.status!==&#x27;active&#x27;,linked=demoPayments.find(x=&gt;x.code===p.replaces),replacement=demoPayments.find(x=&gt;x.code===p.replacementId);
     const title=p.status===&#x27;canceled&#x27;?&#x27;Оплату скасовано&#x27;:p.status===&#x27;corrected&#x27;?&#x27;Оплату виправлено&#x27;:fresh?&#x27;Оплату збережено&#x27;:&#x27;Деталі оплати&#x27;;
     if(!$(&#x27;#bl-dialog-01&#x27;).open)open(title,&#x27;&#x27;);else $(&#x27;#bl-dialog-title-01&#x27;).textContent=title;
     $(&#x27;#bl-dialog-body-01&#x27;).innerHTML=`&lt;div id=&quot;bl-payment-details-01&quot; class=&quot;bl-stack&quot; data-payment-id=&quot;${p.code}&quot;&gt;
-      ${message?`&lt;div class=&quot;bl-note&quot; role=&quot;alert&quot;&gt;${escape(message)}&lt;/div&gt;`:&#x27;&#x27;}
+      ${paymentReturn?.event?paymentBack(&#x27;data-payment-return-event&#x27;,&#x27;Назад до події&#x27;):!fresh&amp;&amp;paymentReturn?.origin?paymentBack(&#x27;data-close&#x27;,paymentReturn.origin===&#x27;journal&#x27;?&#x27;Назад до журналу&#x27;:paymentReturn.origin===&#x27;reports&#x27;?&#x27;Назад до звіту&#x27;:&#x27;Назад до історії&#x27;):&#x27;&#x27;}${message?`&lt;div class=&quot;bl-note&quot; role=&quot;alert&quot;&gt;${escape(message)}&lt;/div&gt;`:&#x27;&#x27;}
       &lt;div class=&quot;bl-visit-success&quot;&gt;&lt;span&gt;&lt;i data-lucide=&quot;${inactive?&#x27;history&#x27;:&#x27;check&#x27;}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div&gt;&lt;strong&gt;${escape(p.clientName)}&lt;/strong&gt;&lt;p class=&quot;bl-small&quot;&gt;${p.code} · ${p.status===&#x27;canceled&#x27;?&#x27;скасовано&#x27;:p.status===&#x27;corrected&#x27;?&#x27;виправлено&#x27;:&#x27;збережено&#x27;}&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
       ${backdatedVisitLabel(p)}&lt;dl class=&quot;bl-issue-summary&quot;&gt;&lt;div&gt;&lt;dt&gt;Категорія&lt;/dt&gt;&lt;dd&gt;Інша оплата · готівка&lt;/dd&gt;&lt;/div&gt;&lt;div&gt;&lt;dt&gt;${p.entryOrigin===&#x27;manual_backfill&#x27;?&#x27;Отримано&#x27;:&#x27;Дата і час&#x27;}&lt;/dt&gt;&lt;dd&gt;${dateLabel(p.date)} · ${p.time}&lt;/dd&gt;&lt;/div&gt;${p.entryOrigin===&#x27;manual_backfill&#x27;?`&lt;div&gt;&lt;dt&gt;Запис внесено&lt;/dt&gt;&lt;dd&gt;${dateLabel(p.recordedDate)} · ${p.recordedTime}&lt;/dd&gt;&lt;/div&gt;`:&#x27;&#x27;}&lt;div class=&quot;bl-issue-total&quot;&gt;&lt;dt&gt;${inactive?&#x27;Сума запису&#x27;:&#x27;Отримано готівкою&#x27;}&lt;/dt&gt;&lt;dd&gt;${paymentMoney(p.amount)}&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;
       ${p.backfillReason?`&lt;div class=&quot;bl-note bl-payment-context&quot;&gt;&lt;strong&gt;Причина внесення пізніше&lt;/strong&gt;&lt;span&gt;${escape(p.backfillReason)}&lt;/span&gt;&lt;/div&gt;`:&#x27;&#x27;}${p.sourceBackfillReason?`&lt;div class=&quot;bl-note bl-payment-context&quot;&gt;&lt;strong&gt;Причина пізнішого внесення початкової оплати&lt;/strong&gt;&lt;span&gt;${escape(p.sourceBackfillReason)}&lt;/span&gt;&lt;/div&gt;`:&#x27;&#x27;}
@@ -4050,13 +4087,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
       ${inactive?`&lt;div class=&quot;bl-note&quot;&gt;&lt;strong&gt;${p.status===&#x27;corrected&#x27;?&#x27;Початковий запис виправлено&#x27;:&#x27;Оплату скасовано&#x27;}&lt;/strong&gt;&lt;span&gt;Не входить до суми за день.&lt;/span&gt;&lt;span&gt;Причина: ${escape(p.changeReason||&#x27;&#x27;)}&lt;/span&gt;&lt;/div&gt;`:&#x27;&#x27;}
       ${linked?`&lt;div class=&quot;bl-note bl-payment-context&quot;&gt;&lt;strong&gt;Замість ${linked.code}&lt;/strong&gt;&lt;span&gt;Причина виправлення: ${escape(p.reason)}&lt;/span&gt;&lt;/div&gt;&lt;button class=&quot;bl-button&quot; type=&quot;button&quot; data-payment-open=&quot;${linked.code}&quot;&gt;&lt;i data-lucide=&quot;arrow-left&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Попередній запис&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;}
       ${replacement?`&lt;button class=&quot;bl-button&quot; type=&quot;button&quot; data-payment-open=&quot;${replacement.code}&quot;&gt;&lt;i data-lucide=&quot;arrow-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Виправлена оплата&lt;/span&gt;&lt;/button&gt;`:&#x27;&#x27;}
-      &lt;details class=&quot;bl-client-extras&quot;&gt;&lt;summary&gt;Історія запису&lt;/summary&gt;&lt;p class=&quot;bl-small&quot;&gt;Запис внесено ${dateLabel(p.recordedDate||p.date)} о ${p.recordedTime} · ${escape(freezeActorLabel(p.actorRole))} · ${escape(p.device)}&lt;/p&gt;${inactive?`&lt;p class=&quot;bl-small&quot;&gt;${p.status===&#x27;corrected&#x27;?&#x27;Виправлено&#x27;:&#x27;Скасовано&#x27;} ${dateLabel(p.changedDate||demoToday)} о ${p.changedAt} · ${escape(freezeActorLabel(p.changedActorRole))} · ${escape(p.changedDevice)}&lt;/p&gt;`:&#x27;&#x27;}&lt;/details&gt;
+      &lt;section class=&quot;bl-contact-group&quot;&gt;&lt;div class=&quot;bl-contact-group-head&quot;&gt;&lt;h3&gt;&lt;i data-lucide=&quot;history&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Історія оплати&lt;/h3&gt;&lt;button class=&quot;bl-button&quot; type=&quot;button&quot; data-payment-history&gt;&lt;i data-lucide=&quot;history&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;Переглянути&lt;/button&gt;&lt;/div&gt;&lt;/section&gt;
       &lt;div class=&quot;bl-sale-links&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;bl-button&quot; data-payment-client=&quot;${p.clientId}&quot;&gt;&lt;i data-lucide=&quot;user-round&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Відкрити клієнта&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;
       ${!inactive?`&lt;div class=&quot;bl-sale-links&quot;&gt;&lt;button class=&quot;bl-button&quot; type=&quot;button&quot; data-payment-correct=&quot;${p.code}&quot;&gt;&lt;i data-lucide=&quot;pencil&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Виправити оплату&lt;/span&gt;&lt;/button&gt;&lt;button class=&quot;bl-button bl-danger-outline&quot; type=&quot;button&quot; data-payment-cancel=&quot;${p.code}&quot;&gt;&lt;i data-lucide=&quot;circle-x&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Скасувати оплату&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`:&#x27;&#x27;}
-      &lt;div class=&quot;bl-visit-actions&quot;&gt;&lt;button class=&quot;bl-button bl-primary&quot; type=&quot;button&quot; data-close&gt;Готово&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`;
-    icons();$(&#x27;.bl-close&#x27;).focus({preventScroll:true});$(&#x27;#bl-dialog-01&#x27;).scrollTop=0;
+      ${paymentReturn?.event||!fresh&amp;&amp;paymentReturn?.origin?&#x27;&#x27;:&#x27;&lt;div class=&quot;bl-visit-actions&quot;&gt;&lt;button class=&quot;bl-button bl-primary&quot; type=&quot;button&quot; data-close&gt;Готово&lt;/button&gt;&lt;/div&gt;&#x27;}&lt;/div&gt;`;
+    $(&#x27;[data-payment-history]&#x27;).onclick=()=&gt;showPaymentHistory(p);$(&#x27;[data-payment-return-event]&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;{const ctx=paymentReturn,s=demoPayments.find(x=&gt;x.code===ctx?.source);if(s){paymentReturn=ctx.parent;showPaymentAudit(s,ctx.event);}});
+    icons();($(&#x27;#bl-payment-details-01 .bl-back-button&#x27;)||$(&#x27;.bl-close&#x27;)).focus({preventScroll:true});$(&#x27;#bl-dialog-01&#x27;).scrollTop=0;
   }
   function openPayment(c,seed={}){
+    if(!paymentClientAllowed(c))return;$(&#x27;.bl-close&#x27;).disabled=false;paymentReturn=null;
     const draft={amount:seed.amount||&#x27;&#x27;,comment:seed.comment||&#x27;&#x27;,time:seed.time??&#x27;12:45&#x27;,extras:!!seed.extras,backdated:seed.backdated},attempt={done:false,sim:false};
     function draw(message=&#x27;&#x27;){
       $(&#x27;#bl-dialog-title-01&#x27;).textContent=&#x27;Додати оплату&#x27;;
@@ -4075,14 +4114,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
         const amount=paymentCents(draft.amount),error=$(&#x27;#bl-payment-error-01&#x27;);
         if(!paymentActorAllowed()){error.hidden=false;error.textContent=&#x27;Цей обліковий запис не має доступу до внесення оплат.&#x27;;return;}
         if(!amount||!paymentTimeValid(draft.time)){error.hidden=false;error.textContent=!amount?&#x27;Вкажіть суму понад нуль, не більше двох цифр після коми.&#x27;:&#x27;Вкажіть коректний час оплати.&#x27;;if(!paymentTimeValid(draft.time))f.querySelector(&#x27;details&#x27;).open=true;return;}
-        const stamp=paymentStamp(c);f.dataset.busy=&#x27;true&#x27;;f.setAttribute(&#x27;aria-busy&#x27;,&#x27;true&#x27;);error.hidden=true;
+        if(!paymentAttached(f))return;const actor=clientAuditContext(),auth=clientAuditStamp(),stamp=paymentStamp(c);f.dataset.busy=&#x27;true&#x27;;f.setAttribute(&#x27;aria-busy&#x27;,&#x27;true&#x27;);error.hidden=true;
         f.querySelectorAll(&#x27;input,textarea,button&#x27;).forEach(x=&gt;x.disabled=true);$(&#x27;.bl-close&#x27;).disabled=true;$(&#x27;#bl-payment-status-01&#x27;).hidden=false;$(&#x27;#bl-payment-status-01&#x27;).textContent=&#x27;Зберігаємо оплату…&#x27;;
         setTimeout(()=&gt;{
-          const out=attempt.sim?&#x27;success&#x27;:root.dataset.paymentOutcome||&#x27;success&#x27;;attempt.sim=true;
+          if(!paymentAttached(f))return;if(auth!==clientAuditStamp()||!paymentClientAllowed(c)){delete f.dataset.busy;$(&#x27;.bl-close&#x27;).disabled=false;draw(&#x27;Сесія змінилася. Оплату не збережено.&#x27;);return;}const out=attempt.sim?&#x27;success&#x27;:root.dataset.paymentOutcome||&#x27;success&#x27;;attempt.sim=true;
           if(out===&#x27;stale&#x27;)c.version=(c.version||0)+1;$(&#x27;.bl-close&#x27;).disabled=false;
           if(paymentStamp(c)!==stamp){draw(&#x27;Дані клієнта змінилися. Оплату не збережено. Перевірте та повторіть.&#x27;);return;}
           if(out===&#x27;error&#x27;){delete f.dataset.busy;f.removeAttribute(&#x27;aria-busy&#x27;);f.querySelectorAll(&#x27;input,textarea,button&#x27;).forEach(x=&gt;x.disabled=false);$(&#x27;#bl-payment-status-01&#x27;).hidden=true;error.hidden=false;error.textContent=&#x27;Не вдалося зберегти. Оплату не створено. Спробуйте ще раз.&#x27;;return;}
-          attempt.done=true;const p=addDemoPayment(c,amount,draft.comment,draft.time);refreshPaymentViews(p);showPayment(p,true);notify(&#x27;Оплату збережено · &#x27;+paymentMoney(amount));
+          attempt.done=true;const p=addDemoPayment(c,amount,draft.comment,draft.time,null,&#x27;&#x27;,{actor});refreshPaymentViews(p);showPayment(p,true);notify(&#x27;Оплату збережено · &#x27;+paymentMoney(amount));
         },650);
       });icons();f.elements.amount.focus();
     }
@@ -4102,6 +4141,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
     return {amount,occurredAt:instants[0]};
   }
   function openBackdatedPayment(c,seed={}){
+    if(!paymentClientAllowed(c))return;$(&#x27;.bl-close&#x27;).disabled=false;paymentReturn=null;
     const draft={amount:seed.amount??seed.backdated?.amount??&#x27;&#x27;,date:seed.backdated?.date||addDemoDays(demoToday,-1),time:seed.backdated?.time??&#x27;&#x27;,reason:seed.backdated?.reason||&#x27;&#x27;,comment:seed.comment??seed.backdated?.comment??&#x27;&#x27;,extras:!!seed.backdated?.extras};
     const normal={amount:seed.amount||&#x27;&#x27;,time:seed.time??&#x27;12:45&#x27;,comment:seed.comment||&#x27;&#x27;,extras:!!seed.extras};
     const attempt={done:false,sim:false};$(&#x27;#bl-dialog-01&#x27;).dataset.visitFlow=&#x27;true&#x27;;open(&#x27;Оплата за минулу дату&#x27;,&#x27;&#x27;);
@@ -4134,27 +4174,28 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
       icons();const form=$(&#x27;#bl-backdated-payment-review-01&#x27;);form.querySelector(&#x27;[data-backdated-payment-back]&#x27;).onclick=()=&gt;{draw();$(&#x27;#bl-dialog-01&#x27;).scrollTop=0;};form.querySelector(&#x27;[data-backdated-payment-back]&#x27;).focus({preventScroll:true});if(!message)$(&#x27;#bl-dialog-01&#x27;).scrollTop=0;
       form.addEventListener(&#x27;submit&#x27;,e=&gt;{
         e.preventDefault();if(attempt.done||form.dataset.busy)return;
-        const current=backdatedPaymentPreview(c,draft);if(current.error){draw(current.error,current.field);return;}
+        if(!paymentAttached(form))return;const actor=clientAuditContext(),auth=clientAuditStamp(),current=backdatedPaymentPreview(c,draft);if(current.error){draw(current.error,current.field);return;}
         if(backdatedPaymentStamp(c)!==stamp){review(current,&#x27;Дані клієнта або оплати змінилися. Перевірте оновлений результат і підтвердьте ще раз.&#x27;);return;}
         form.dataset.busy=&#x27;true&#x27;;form.setAttribute(&#x27;aria-busy&#x27;,&#x27;true&#x27;);form.querySelectorAll(&#x27;button&#x27;).forEach(x=&gt;x.disabled=true);$(&#x27;.bl-close&#x27;).disabled=true;$(&#x27;#bl-backdated-payment-status-01&#x27;).hidden=false;$(&#x27;#bl-backdated-payment-status-01&#x27;).textContent=&#x27;Зберігаємо оплату…&#x27;;
         setTimeout(()=&gt;{
-          const outcome=attempt.sim?&#x27;success&#x27;:root.dataset.backdatedPaymentOutcome||&#x27;success&#x27;;attempt.sim=true;
+          if(!paymentAttached(form))return;if(auth!==clientAuditStamp()||!paymentClientAllowed(c)){delete form.dataset.busy;$(&#x27;.bl-close&#x27;).disabled=false;draw(&#x27;Сесія змінилася. Оплату не збережено.&#x27;);return;}const outcome=attempt.sim?&#x27;success&#x27;:root.dataset.backdatedPaymentOutcome||&#x27;success&#x27;;attempt.sim=true;
           if(outcome===&#x27;stale&#x27;)c.version=(c.version||0)+1;
           const latest=backdatedPaymentPreview(c,draft);$(&#x27;.bl-close&#x27;).disabled=false;
           if(latest.error){draw(latest.error,latest.field);return;}
           if(backdatedPaymentStamp(c)!==stamp){review(latest,&#x27;Дані клієнта або оплати змінилися. Оплату не збережено. Перевірте й підтвердьте ще раз.&#x27;);return;}
           if(outcome===&#x27;error&#x27;){delete form.dataset.busy;form.removeAttribute(&#x27;aria-busy&#x27;);form.querySelectorAll(&#x27;button&#x27;).forEach(x=&gt;x.disabled=false);$(&#x27;#bl-backdated-payment-status-01&#x27;).hidden=true;const error=form.querySelector(&#x27;[role=alert]&#x27;);error.hidden=false;error.textContent=&#x27;Не вдалося зберегти. Оплату не створено. Спробуйте ще раз.&#x27;;return;}
-          attempt.done=true;const p=addDemoPayment(c,latest.amount,draft.comment.trim(),draft.time,null,&#x27;&#x27;,{date:draft.date,entryOrigin:&#x27;manual_backfill&#x27;,backfillReason:draft.reason.trim()});refreshPaymentViews(p);showPayment(p,true);notify(&#x27;Оплату за &#x27;+dateLabel(p.date,false)+&#x27; збережено · &#x27;+paymentMoney(p.amount));
+          attempt.done=true;const p=addDemoPayment(c,latest.amount,draft.comment.trim(),draft.time,null,&#x27;&#x27;,{actor,date:draft.date,entryOrigin:&#x27;manual_backfill&#x27;,backfillReason:draft.reason.trim()});refreshPaymentViews(p);showPayment(p,true);notify(&#x27;Оплату за &#x27;+dateLabel(p.date,false)+&#x27; збережено · &#x27;+paymentMoney(p.amount));
         },650);
       });
     }
     draw();$(&#x27;#bl-dialog-01&#x27;).scrollTop=0;
   }
   function openPaymentChange(p,mode){
+    if(!paymentReadable(p))return;
     const client=clients.find(c=&gt;c.id===p.clientId);
     if(!client||p.status!==&#x27;active&#x27;){showPayment(p,false,&#x27;Цей запис уже змінено.&#x27;);return;}
     if(!paymentActorAllowed(p)){showPayment(p,false,p.reconciled?&#x27;День оплати вже звірено. Для зміни потрібен власник.&#x27;:&#x27;Цей обліковий запис не має доступу до зміни оплат.&#x27;);return;}
-    const sourceStamp=paymentStamp(client,p),draft={amount:(p.amount/100).toFixed(2),comment:p.comment,time:p.time,reason:&#x27;&#x27;},attempt={done:false,sim:false},cancel=mode===&#x27;cancel&#x27;;
+    $(&#x27;.bl-close&#x27;).disabled=false;const sourceStamp=paymentStamp(client,p),draft={amount:(p.amount/100).toFixed(2),comment:p.comment,time:p.time,reason:&#x27;&#x27;},attempt={done:false,sim:false},cancel=mode===&#x27;cancel&#x27;;
     function draw(review=false,message=&#x27;&#x27;){
       $(&#x27;#bl-dialog-title-01&#x27;).textContent=cancel?&#x27;Скасувати оплату&#x27;:review?&#x27;Перевірити виправлення&#x27;:&#x27;Виправити оплату&#x27;;
       $(&#x27;#bl-dialog-body-01&#x27;).innerHTML=`&lt;form id=&quot;bl-payment-${cancel?&#x27;cancel&#x27;:&#x27;correct&#x27;}-form-01&quot; class=&quot;bl-stack&quot; data-stage=&quot;${review?&#x27;review&#x27;:&#x27;edit&#x27;}&quot;&gt;
@@ -4173,17 +4214,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
         if(!paymentActorAllowed(p)){error.hidden=false;error.textContent=p.reconciled?&#x27;День оплати вже звірено. Для зміни потрібен власник.&#x27;:&#x27;Цей обліковий запис не має доступу до зміни оплат.&#x27;;return;}
         if(!cancel&amp;&amp;!backdatedKyivInstants(p.date,draft.time).length){error.hidden=false;error.textContent=&#x27;Такого часу в Києві не було через переведення годинника. Уточніть час.&#x27;;return;}
         if(paymentStamp(client,p)!==sourceStamp||p.status!==&#x27;active&#x27;){refreshPaymentViews(p);showPayment(p,false,&#x27;Запис уже змінився. Зміни не застосовано.&#x27;);return;}
-        if(!cancel&amp;&amp;!review){draw(true);return;}
+        if(!paymentAttached(f))return;if(!cancel&amp;&amp;!review){draw(true);return;}const actor=clientAuditContext(),auth=clientAuditStamp(),before=paymentSnapshot(p);
         f.dataset.busy=&#x27;true&#x27;;f.setAttribute(&#x27;aria-busy&#x27;,&#x27;true&#x27;);error.hidden=true;
         f.querySelectorAll(&#x27;input,textarea,button&#x27;).forEach(x=&gt;x.disabled=true);$(&#x27;.bl-close&#x27;).disabled=true;$(&#x27;#bl-payment-change-status-01&#x27;).hidden=false;$(&#x27;#bl-payment-change-status-01&#x27;).textContent=cancel?&#x27;Скасовуємо оплату…&#x27;:&#x27;Зберігаємо виправлення…&#x27;;
         setTimeout(()=&gt;{
-          const out=attempt.sim?&#x27;success&#x27;:root.dataset.paymentCorrectionOutcome||&#x27;success&#x27;;attempt.sim=true;
+          if(!paymentAttached(f))return;if(auth!==clientAuditStamp()||!paymentReadable(p)){delete f.dataset.busy;$(&#x27;.bl-close&#x27;).disabled=false;showPayment(p,false,&#x27;Сесія змінилася. Зміни не застосовано.&#x27;);return;}const out=attempt.sim?&#x27;success&#x27;:root.dataset.paymentCorrectionOutcome||&#x27;success&#x27;;attempt.sim=true;
           if(out===&#x27;stale&#x27;)changePaymentStatus(p,&#x27;canceled&#x27;,&#x27;Скасовано в іншій сесії.&#x27;);$(&#x27;.bl-close&#x27;).disabled=false;
           if(paymentStamp(client,p)!==sourceStamp||p.status!==&#x27;active&#x27;||!paymentActorAllowed(p)){refreshPaymentViews(p);showPayment(p,false,&#x27;Запис або доступ змінився. Зміни не застосовано.&#x27;);return;}
           if(out===&#x27;error&#x27;){delete f.dataset.busy;f.removeAttribute(&#x27;aria-busy&#x27;);f.querySelectorAll(&#x27;input,textarea,button&#x27;).forEach(x=&gt;x.disabled=false);$(&#x27;#bl-payment-change-status-01&#x27;).hidden=true;error.hidden=false;error.textContent=&#x27;Не вдалося зберегти. Зміни не застосовано. Спробуйте ще раз.&#x27;;return;}
           attempt.done=true;changePaymentStatus(p,cancel?&#x27;canceled&#x27;:&#x27;corrected&#x27;,draft.reason);let shown=p;
           if(!cancel){const replacement=addDemoPayment(client,amount,draft.comment,draft.time,p.code,draft.reason,{date:p.date,entryOrigin:p.date&lt;demoToday?&#x27;manual_backfill&#x27;:&#x27;normal&#x27;});replacement.sourceEntryOrigin=p.sourceEntryOrigin||p.entryOrigin;replacement.sourceBackfillReason=p.sourceBackfillReason||p.backfillReason||&#x27;&#x27;;replacement.reconciled=!!p.reconciled;p.replacementId=replacement.code;shown=replacement;}
-          refreshPaymentViews(p);showPayment(shown,true);notify(cancel?&#x27;Оплату скасовано&#x27;:&#x27;Оплату виправлено&#x27;);
+          appendPaymentAudit(shown,cancel?&#x27;canceled&#x27;:&#x27;corrected&#x27;,before,actor,draft.reason,{recordedAt:backdatedKyivInstants(demoToday,&#x27;12:45&#x27;)[0]});refreshPaymentViews(p);showPayment(shown,true);notify(cancel?&#x27;Оплату скасовано&#x27;:&#x27;Оплату виправлено&#x27;);
         },650);
       });icons();(f.elements.amount||f.elements.reason||$(&#x27;#bl-payment-edit-01&#x27;)).focus({preventScroll:true});if(!message)$(&#x27;#bl-dialog-01&#x27;).scrollTop=0;
     }
@@ -4668,7 +4709,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
     const freezeOpen=e.target.closest(&#x27;[data-freeze-open]&#x27;);if(freezeOpen&amp;&amp;!freezeOpen.disabled){const f=demoFreezes.find(f=&gt;f.code===freezeOpen.dataset.freezeOpen);if(f)showFreeze(f);return;}
     const freezeCancel=e.target.closest(&#x27;[data-freeze-cancel]&#x27;);if(freezeCancel&amp;&amp;!freezeCancel.disabled){const f=demoFreezes.find(f=&gt;f.code===freezeCancel.dataset.freezeCancel);if(f)openFreezeCancel(f);return;}
     const freezeClient=e.target.closest(&#x27;[data-freeze-client]&#x27;);if(freezeClient){cancelSearch();selected=Number(freezeClient.dataset.freezeClient);tab=&#x27;history&#x27;;$(&#x27;#bl-search-01&#x27;).value=&#x27;&#x27;;close();showPage(&#x27;reception&#x27;);renderList();renderProfile();$(&#x27;[data-tab=&quot;history&quot;]&#x27;)?.focus();return;}
-    const paymentOpen=e.target.closest(&#x27;[data-payment-open]&#x27;);if(paymentOpen&amp;&amp;!paymentOpen.disabled){const p=demoPayments.find(p=&gt;p.code===paymentOpen.dataset.paymentOpen);if(p)showPayment(p);return;}
+    const paymentOpen=e.target.closest(&#x27;[data-payment-open]&#x27;);if(paymentOpen&amp;&amp;!paymentOpen.disabled){const p=demoPayments.find(p=&gt;p.code===paymentOpen.dataset.paymentOpen);if(!paymentOpen.closest(&#x27;dialog&#x27;))paymentReturn={origin:currentPage===&#x27;journal&#x27;?&#x27;journal&#x27;:currentPage===&#x27;reports&#x27;?&#x27;reports&#x27;:tab===&#x27;history&#x27;?&#x27;history&#x27;:null};if(p)showPayment(p);return;}
     const paymentCorrect=e.target.closest(&#x27;[data-payment-correct]&#x27;);if(paymentCorrect&amp;&amp;!paymentCorrect.disabled){const p=demoPayments.find(p=&gt;p.code===paymentCorrect.dataset.paymentCorrect);if(p)openPaymentChange(p,&#x27;correct&#x27;);return;}
     const paymentCancel=e.target.closest(&#x27;[data-payment-cancel]&#x27;);if(paymentCancel&amp;&amp;!paymentCancel.disabled){const p=demoPayments.find(p=&gt;p.code===paymentCancel.dataset.paymentCancel);if(p)openPaymentChange(p,&#x27;cancel&#x27;);return;}
     const paymentClient=e.target.closest(&#x27;[data-payment-client]&#x27;);if(paymentClient){cancelSearch();selected=Number(paymentClient.dataset.paymentClient);tab=&#x27;history&#x27;;$(&#x27;#bl-search-01&#x27;).value=&#x27;&#x27;;close();showPage(&#x27;reception&#x27;);renderList();renderProfile();$(&#x27;[data-tab=&quot;history&quot;]&#x27;)?.focus();return;}
@@ -4722,6 +4763,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
   $(&#x27;.bl-search-clear&#x27;).addEventListener(&#x27;click&#x27;,()=&gt;{$(&#x27;#bl-search-01&#x27;).value=&#x27;&#x27;;searchClients(true);$(&#x27;#bl-search-01&#x27;).focus();});
   $(&#x27;#bl-dialog-01&#x27;).addEventListener(&#x27;cancel&#x27;,e=&gt;{if($(&#x27;#bl-dialog-01 form&#x27;)?.dataset.busy)e.preventDefault();});
   function setAuthenticated(signedIn){
+    if($(&#x27;[data-payment-audit-view]&#x27;)||$(&#x27;#bl-payment-details-01&#x27;)||$(&#x27;#bl-payment-form-01&#x27;)||$(&#x27;#bl-backdated-payment-form-01&#x27;)||$(&#x27;#bl-backdated-payment-review-01&#x27;)||$(&#x27;#bl-payment-change-status-01&#x27;))close();paymentReturn=null;
     if($(&#x27;[data-client-audit-view]&#x27;)){closeDateCalendar();close();}resetClientAudit();
     if($(&#x27;[data-staff-audit-detail]&#x27;)||staffAuditReturn){closeDateCalendar();close();}
     if(!signedIn&amp;&amp;staffSignedInId){staffEndRows(staffSessionRows.filter(s=&gt;s.accountId===staffSignedInId&amp;&amp;s.id===root.dataset.actorSessionId&amp;&amp;!s.endedAt));staffSignedInId=null;}
@@ -4796,6 +4838,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
     appendClientAudit(c,{before:{...base,phone:&#x27;+380 67 000 99 91&#x27;},after:base,date:&#x27;2026-09-12&#x27;,time:&#x27;10:15&#x27;},{actorAccountId:&#x27;staff-olena&#x27;,actorAccountKind:&#x27;named_admin&#x27;,actorRole:&#x27;admin&#x27;,actorSessionId:&#x27;demo-client-fixture-olena&#x27;,actorDisplayName:&#x27;Олена Бондар&#x27;,device:&#x27;Ноутбук адміністратора&#x27;});
     appendClientAudit(c,{kind:&#x27;card&#x27;,before:{card:&#x27;0942&#x27;},after:{card:c.card},oldAssignmentId:&#x27;demo-old-card-1&#x27;,newAssignmentId:currentCardAssignment(c),reason:&#x27;Клієнт замінив пошкоджену картку&#x27;,label:&#x27;Картку змінено&#x27;,date:&#x27;2026-09-14&#x27;,time:&#x27;16:20&#x27;},{actorAccountId:&#x27;staff-reception&#x27;,actorAccountKind:&#x27;shared_reception_admin&#x27;,actorRole:&#x27;reception&#x27;,actorSessionId:&#x27;demo-client-fixture-reception&#x27;,actorDisplayName:&#x27;Рецепція · спільний акаунт&#x27;,device:&#x27;Планшет рецепції&#x27;});
   }
+  seedPaymentAudit();$(&#x27;#bl-dialog-01&#x27;).addEventListener(&#x27;close&#x27;,()=&gt;{if(!$(&#x27;#bl-dialog-01&#x27;).open){paymentReturn=null;$(&#x27;.bl-close&#x27;).disabled=false;}});
   seedCancelableVisits();
   seedCorrectableMembership();
   seedInactiveClient();
