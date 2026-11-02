@@ -424,6 +424,15 @@ scrolling. UI36 regression and independent static review are clean.
 Both scripts parse. No-compression/no-mangling formatting preserves normalized
 AST/cooked strings, all comments and tagged-template raw data. The exact embedded
 source replaces the prior fragment with unchanged iframe sandbox and both CSPs.
-The fragment is 1004686 bytes; this update is delivered as a static Pages site,
+The fragment is 1004895 bytes; this update is delivered as a static Pages site,
 not through the inline visualization tool. Physical iPad Safari keyboard, zoom
 and orientation remain for device acceptance.
+
+### UI37 balance presentation correction (2026-11-02)
+
+Equal before/after balances now read “−1 · без змін” instead of “−1 → −1”.
+Only actual numeric changes use arrows. This applies to current and historical
+debt in confirmation, details and immutable history. Replacement result details
+are labeled “Результат на момент зміни”. Changing the price of one covered Visit
+does not cover that Visit again or reduce the remaining debt a second time.
+Coverage formulas, exact payments, source Visits and closure rules are unchanged.
