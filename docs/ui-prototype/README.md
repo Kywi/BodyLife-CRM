@@ -1,7 +1,7 @@
 # BodyLife interactive UI prototype
 
 Open https://kywi.github.io/BodyLife-CRM/ to review the current Ukrainian,
-light-theme desktop prototype through one-off negative-coverage history (UI37).
+light-theme desktop prototype through one-off/trial sale history (UI38).
 The entry page replaces the earlier static review-lab dashboard.
 
 ## Trying the prototype
@@ -56,10 +56,10 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 
 ## Export record
 
-- Export date: 2026-10-30.
-- Source SHA-256: `c062af98e73c9e335409a81a9f897823a71c5015f50346ae3a6e51709d3964f0`.
-- Scope: UI37 one-off negative-coverage history, ready for review. UI36
-  membership-sale history was approved by the user on 2026-10-30.
+- Export date: 2026-11-02.
+- Source SHA-256: `7aef4a8137418ae09f9aeef9d3bb81c939e894dbe55f312e05c61fb90a771c58`.
+- Scope: UI38 one-off/trial sale history, ready for review. UI37 coverage
+  history and its unchanged-balance correction were approved on 2026-11-02.
 - The audit surfaces use selected fictional fixture events and subsequent
   successful scoped changes from this page session, not a complete historic ledger.
 - Local checks: exact fragment/mirror, unchanged sandbox/CSP wrapper, fixed
@@ -301,12 +301,12 @@ form's close control. The ordinary detail needs only28px overflow at1180×720;
 long content remains scrollable. Source/export reversal retains the exact wrapper,
 sandbox and CSP. Source is under1MB; no test globals are published.
 
-## Current review queue (2026-10-30)
+## Current review queue (2026-11-02)
 
-- UI1–36: reviewed and approved, including the reported layout/navigation
-  refinements. UI37 is the current proposal; repeat approved interactions only
+- UI1–37: reviewed and approved, including the reported layout/navigation
+  refinements. UI38 is the current proposal; repeat approved interactions only
   for a specific defect or unmet requirement.
-- Remaining business history after UI37: one-off/trial, visit/freeze and opening-balance changes; reuse the accepted
+- Remaining business history after UI38: visit/freeze and opening-balance changes; reuse the accepted
   history pattern and review only their distinct effects.
 - Client creation audit; contact/card change history is already covered by UI34.
 - Paper record entry/reconciliation: separate from approved backdated forms and
@@ -380,7 +380,7 @@ tagged-template raw data agree before/after formatting. Exact fragment reversal
 preserves the entire export wrapper, both CSPs and sandbox. Physical iPad Safari
 keyboard, zoom and orientation remain for user acceptance.
 
-## UI37 — one-off negative-coverage history (proposal)
+## UI37 — one-off negative-coverage history (approved)
 
 Search **2087 → Покрити мінус → Разовими тарифами**, choose one coverage and
 confirm the cash received. Open **Історія змін покриття**. Change its positions
@@ -436,3 +436,46 @@ debt in confirmation, details and immutable history. Replacement result details
 are labeled “Результат на момент зміни”. Changing the price of one covered Visit
 does not cover that Visit again or reduce the remaining debt a second time.
 Coverage formulas, exact payments, source Visits and closure rules are unchanged.
+
+## UI38 — one-off/trial sale history (proposal)
+
+Open Reception → Пробний візит, confirm its payment, then open Історія змін.
+Alternatively search2087 → Разовий візит. Cancel the operation with a reason
+and inspect the two grouped Visit/Payment status changes in history.
+
+Main details retain the date, exact price, paired status, one History action,
+cancellation and a contextual Back. The history list and event use the same
+navigation as prior approved flows. Named-client sales have a client action;
+trial sales retain an anonymous label without a human profile.
+
+Successful creation/backfill/cancellation captures immutable tariff, linked
+Visit/Payment ids and states, original amount, business and recorded times,
+reason/comment, client name and actor/account/session/device. Existing demo
+sales—including the archived client fixture—receive illustrative creation
+events without adding sales or changing baseline totals. Original events do
+not change when the catalog, client or current actor changes.
+
+Cancellation removes both facts from the original date's live totals, preserves
+the original amount in history and does not change Memberships or negative debt.
+Shared Reception/Admin may cancel older or reconciled dates; an actual
+reconciliation marker is shown when applicable. This adds no replacement,
+refund, paper workflow or backend behavior. Fixed demo date remains2026-09-15.
+
+Attached-form/auth guards prevent detached or outdated callbacks from committing
+or unlocking newer forms. Reads, failures, stale attempts and duplicate submits
+do not append successful history. The first stale cancellation is retryable
+through the actual form without resetting the demo scenario.
+
+Static Pages source: 1014845bytes; SHA2567aef4a8137418ae09f9aeef9d3bb81c939e894dbe55f312e05c61fb90a771c58. Both scripts parse and formatting
+preserves AST/comments/tagged data. Export wrapper, CSP and sandbox are unchanged.
+
+Validation passed in touch Chromium at1180x720,820x1060,320x700 and1024x420:
+actual named/trial creation, backfill and linked cancellation, exact original-day
+cash/visit totals, unchanged Memberships/negative balances and frozen history.
+Error/stale retries, busy Escape/duplicates, fifteen callback auth cases, three
+controlled old/new callback orderings, four reconciliation cases, named actor
+immutability, protected/foreign reads, archive history and long escaped text
+passed. Main tablet details fit without scrolling; history/short screens retain
+necessary scroll. Journal/report/client-history returns and the approved UI37
+coverage regression passed. Independent final review is clean. Physical iPad
+Safari keyboard, zoom and orientation remain for device acceptance.
