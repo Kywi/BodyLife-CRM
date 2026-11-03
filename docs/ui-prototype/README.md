@@ -1,7 +1,7 @@
 # BodyLife interactive UI prototype
 
 Open https://kywi.github.io/BodyLife-CRM/ to review the current Ukrainian,
-light-theme desktop prototype through one-off/trial sale history (UI38).
+light-theme desktop prototype through ordinary membership Visit history (UI39).
 The entry page replaces the earlier static review-lab dashboard.
 
 ## Trying the prototype
@@ -56,10 +56,10 @@ acceptance is documented separately in `docs/ui-visual-fidelity-migration-plan.m
 
 ## Export record
 
-- Export date: 2026-11-02.
-- Source SHA-256: `7aef4a8137418ae09f9aeef9d3bb81c939e894dbe55f312e05c61fb90a771c58`.
-- Scope: UI38 one-off/trial sale history, ready for review. UI37 coverage
-  history and its unchanged-balance correction were approved on 2026-11-02.
+- Export date: 2026-11-03.
+- Source SHA-256: `a454d48b53aa8627d7b8b6857b42509e768821d8a80ed178205a4584509e3a9d`.
+- Scope: UI39 ordinary membership Visit history, ready for review. UI38
+  one-off/trial history was approved by the next-interaction request.
 - The audit surfaces use selected fictional fixture events and subsequent
   successful scoped changes from this page session, not a complete historic ledger.
 - Local checks: exact fragment/mirror, unchanged sandbox/CSP wrapper, fixed
@@ -301,12 +301,12 @@ form's close control. The ordinary detail needs only28px overflow at1180×720;
 long content remains scrollable. Source/export reversal retains the exact wrapper,
 sandbox and CSP. Source is under1MB; no test globals are published.
 
-## Current review queue (2026-11-02)
+## Current review queue (2026-11-03)
 
-- UI1–37: reviewed and approved, including the reported layout/navigation
-  refinements. UI38 is the current proposal; repeat approved interactions only
+- UI1–38: reviewed and approved, including the reported layout/navigation
+  refinements. UI39 is the current proposal; repeat approved interactions only
   for a specific defect or unmet requirement.
-- Remaining business history after UI38: visit/freeze and opening-balance changes; reuse the accepted
+- Remaining business history after UI39: freeze and opening-balance changes; reuse the accepted
   history pattern and review only their distinct effects.
 - Client creation audit; contact/card change history is already covered by UI34.
 - Paper record entry/reconciliation: separate from approved backdated forms and
@@ -437,7 +437,7 @@ are labeled “Результат на момент зміни”. Changing the 
 does not cover that Visit again or reduce the remaining debt a second time.
 Coverage formulas, exact payments, source Visits and closure rules are unchanged.
 
-## UI38 — one-off/trial sale history (proposal)
+## UI38 — one-off/trial sale history (approved)
 
 Open Reception → Пробний візит, confirm its payment, then open Історія змін.
 Alternatively search2087 → Разовий візит. Cancel the operation with a reason
@@ -478,4 +478,46 @@ immutability, protected/foreign reads, archive history and long escaped text
 passed. Main tablet details fit without scrolling; history/short screens retain
 necessary scroll. Journal/report/client-history returns and the approved UI37
 coverage regression passed. Independent final review is clean. Physical iPad
+Safari keyboard, zoom and orientation remain for device acceptance.
+
+## UI39 — ordinary membership Visit history (proposal)
+
+Search **1042 → Відмітити візит → Підтвердити візит → Історія змін**.
+Cancel that Visit with a reason and inspect the new event. Existing Visits also
+open from Journal, daily Visit report and client history. Source details remain
+compact, with one History action and a contextual Back. Events return to the
+list, then the same Visit; membership-dependency paths retain one local Back.
+
+Successful marking, backdated entry and cancellation append immutable Visit,
+Membership, client, account/session/device, reason/comment, acknowledgement and
+balance snapshots. Creation facts remain unchanged after cancellation. Business
+and recorded timestamps stay distinct; unknown fixture times remain unknown.
+Ten existing Visit fixtures receive illustrative creation history without adding
+Visits, money or Memberships. Shared Reception identifies an account, not a person.
+
+Cancellation removes the Visit from its original date's total without changing
+cash. Try card2087 / VIS-12 for a shifted first negative date,5026 / VIS-11-5026
+for expired0→0, and4018 / VIS-10 for closed historical debt. Equal balances use
+“без змін”. Coverage and closed-positive dependencies still block cancellation;
+a closed Membership is never reactivated. Actual reconciliation requires Owner
+for this ordinary Visit workflow. Older date alone does not; SingleVisitSale
+continues to use its separate approved policy.
+
+Current warnings stay visible and explicitly separate from historical effects:
+negative and first unpaid date, zero, expired, ending soon and historical debt.
+Event details translate acknowledgements, omit redundant context and retain
+technical identifiers in a disclosure. The demo date remains2026-09-15.
+
+Touch Chromium1180×720,820×1060,320×700 and1024×420 checks cover actual mark,
+backfill and cancellation, exact Visit totals and unchanged cash, frozen nested
+snapshots, four balance cases, contextual returns and long escaped content.
+Six error/stale retries, fifteen callback auth changes, three out-of-order
+callback cases, six reconciliation policies, source ownership, dependency and
+reason-limit checks passed. Actual membership→Visit→history/cancellation Back,
+visible warning states and named-actor immutability passed. UI38 paired-sale
+regression passed. Independent review findings were fixed and rechecked.
+
+Source1027358bytes; both scripts parse. Exact escaped-fragment replacement
+retains the entire wrapper, iframe sandbox and both CSPs. Static Pages only;
+no production/backend acceptance or Milestone11 advancement. Physical iPad
 Safari keyboard, zoom and orientation remain for device acceptance.
